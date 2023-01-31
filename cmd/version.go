@@ -12,10 +12,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package cmd
 
-import "github.com/interlynk-io/sbomqs/cmd"
+import (
+	_ "embed"
+	"fmt"
 
-func main() {
-	cmd.Execute()
+	"github.com/spf13/cobra"
+)
+
+//go:generate bash version.sh
+//go:embed version.txt
+var version string
+
+func init() {
+	rootCmd.AddCommand(versionCmd)
+}
+
+var versionCmd = &cobra.Command{
+	Use:   "version",
+	Short: "Print the version number of sbomqs",
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Printf("sbomqs version %s", version)
+	},
 }
