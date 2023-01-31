@@ -1,0 +1,99 @@
+// Copyright 2023 Interlynk.io
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package scorer
+
+import (
+	"fmt"
+
+	"github.com/interlynk-io/sbomqs/pkg/sbom"
+	"github.com/samber/lo"
+)
+
+func docWithRequiredFieldScore(d sbom.Document) score {
+	s := newScore(CategorySemantic, string(docWithAllRequiredFields))
+
+	totalComponents := len(d.Components())
+
+	docOK := d.Spec().RequiredFields()
+	noOfPkgs := lo.CountBy(d.Components(), func(c sbom.Component) bool {
+		return c.RequiredFields()
+	})
+	pkgsOK := false
+	if totalComponents > 0 && noOfPkgs == totalComponents {
+		pkgsOK = true
+	}
+
+	var docScore, pkgScore float64
+
+	if !docOK && pkgsOK {
+		docScore = 0
+		pkgScore = 10.0
+		s.setScore((docScore + pkgScore) / 2.0)
+		s.setScore(0.0)
+	}
+
+	if docOK && !pkgsOK {
+		docScore = 10.0
+		if totalComponents > 0 {
+			pkgScore = (float64(noOfPkgs) / float64(totalComponents)) * 10.0
+		}
+		s.setScore((docScore + pkgScore) / 2.0)
+
+	}
+
+	if docOK && pkgsOK {
+		s.setScore(10.0)
+	}
+
+	s.setDesc(fmt.Sprintf("Doc Fields:%t Pkg Fields:%t", docOK, pkgsOK))
+
+	return *s
+}
+
+func compWithLicenseScore(d sbom.Document) score {
+	s := newScore(CategorySemantic, string(compWithLicenses))
+
+	totalComponents := len(d.Components())
+
+	withLicenses := lo.CountBy(d.Components(), func(c sbom.Component) bool {
+		return len(c.Licenses()) > 0
+	})
+
+	if totalComponents > 0 {
+		s.setScore((float64(withLicenses) / float64(totalComponents)) * 10.0)
+	}
+
+	s.setDesc(fmt.Sprintf("%d/%d have licenses", withLicenses, totalComponents))
+
+	return *s
+}
+
+func compWithChecksumsScore(d sbom.Document) score {
+	s := newScore(CategorySemantic, string(compWithChecksums))
+
+	totalComponents := len(d.Components())
+
+	withChecksums := lo.CountBy(d.Components(), func(c sbom.Component) bool {
+		return len(c.Checksums()) > 0
+	})
+
+	if totalComponents > 0 {
+		s.setScore((float64(withChecksums) / float64(totalComponents)) * 10.0)
+	}
+
+	s.setDesc(fmt.Sprintf("%d/%d have checksums", withChecksums, totalComponents))
+
+	return *s
+}

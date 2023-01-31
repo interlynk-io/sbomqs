@@ -1,2 +1,21 @@
-# sbomqs
-SBOM quality score - Quality metrics for your sboms
+## Overview
+
+### What is SBOM quality score
+
+
+
+### Installation
+
+
+### Examples
+
+
+### Scoring
+
+#### Categories 
+
+#### Features 
+
+
+
+
