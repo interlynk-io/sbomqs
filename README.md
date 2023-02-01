@@ -17,6 +17,14 @@ golang version 1.19
 3. make
 4. To test if the build was successful run the following command ```./build/sbomqs version```
 
+### Getting access to SBOMS
+For new users, we have listed a few places, where you could find sboms to play around with.
+- This repo has a [samples](https://github.com/interlynk-io/sbomqs/tree/main/samples) directory
+- If you use docker images and would like to generate an SBOM, follow the steps [here](https://docs.docker.com/engine/sbom/)
+- [Syft](https://github.com/anchore/syft) / [Trivy](https://github.com/aquasecurity/trivy) are open source tools which can be used to generate SBOM from containers as well as repos. 
+- Chainguard has created a repo called [bom-shelter](https://github.com/chainguard-dev/bom-shelter)
+
+
 ### Usage and examples
 ##### Using single file option
 Sbomqs can run with just a single argument pointing to an sbom file 
