@@ -1,0 +1,746 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.4",
+  "serialNumber": "urn:uuid:ef49031e-0a55-4372-8df3-fb31e3c5a1b2",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2023-01-31T18:15:32-08:00",
+    "tools": [
+      {
+        "vendor": "CycloneDX",
+        "name": "cyclonedx-gomod",
+        "version": "v1.3.0",
+        "hashes": [
+          {
+            "alg": "MD5",
+            "content": "51b16b288f734411884e26df6b363ad9"
+          },
+          {
+            "alg": "SHA-1",
+            "content": "e4fa9a92bd53ebaf3bb7916227527de40b38e5a6"
+          },
+          {
+            "alg": "SHA-256",
+            "content": "d939f1ba1d57cd97db0923a8c42ce4c92102647ab31bc6c1b99c09c14dafb871"
+          },
+          {
+            "alg": "SHA-384",
+            "content": "d4611aa2a69e854c884245eae70bb8eeb8ae1da7ee25d129df5c48ecc015429e7512da4805924a917879fc677058d671"
+          },
+          {
+            "alg": "SHA-512",
+            "content": "740cddcf9b5ffe960710556ae734ff32e413a2b20d7d1109f7e16142c20faa1bdb04ac06f6551d2dac30ca4ea850160977d0b6abccd3803b4624b2a68b250ea6"
+          }
+        ],
+        "externalReferences": [
+          {
+            "url": "https://github.com/CycloneDX/cyclonedx-gomod",
+            "type": "vcs"
+          },
+          {
+            "url": "https://cyclonedx.org",
+            "type": "website"
+          }
+        ]
+      }
+    ],
+    "component": {
+      "bom-ref": "pkg:golang/github.com/interlynk-io/sbomqs@v0.0.2-0.20230131230801-a00b2a733eb0?type=module",
+      "type": "application",
+      "name": "github.com/interlynk-io/sbomqs",
+      "version": "v0.0.2-0.20230131230801-a00b2a733eb0",
+      "purl": "pkg:golang/github.com/interlynk-io/sbomqs@v0.0.2-0.20230131230801-a00b2a733eb0?type=module",
+      "externalReferences": [
+        {
+          "url": "https://github.com/interlynk-io/sbomqs",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:gomod:build:env:CGO_ENABLED",
+          "value": "1"
+        },
+        {
+          "name": "cdx:gomod:build:env:GOARCH",
+          "value": "amd64"
+        },
+        {
+          "name": "cdx:gomod:build:env:GOOS",
+          "value": "linux"
+        },
+        {
+          "name": "cdx:gomod:build:env:GOVERSION",
+          "value": "go1.19.5"
+        }
+      ],
+      "components": [
+        {
+          "type": "library",
+          "name": "github.com/interlynk-io/sbomqs",
+          "version": "v0.0.2-0.20230131230801-a00b2a733eb0",
+          "purl": "pkg:golang/github.com/interlynk-io/sbomqs@v0.0.2-0.20230131230801-a00b2a733eb0?type=package"
+        },
+        {
+          "type": "library",
+          "name": "github.com/interlynk-io/sbomqs/cmd",
+          "version": "v0.0.2-0.20230131230801-a00b2a733eb0",
+          "purl": "pkg:golang/github.com/interlynk-io/sbomqs/cmd@v0.0.2-0.20230131230801-a00b2a733eb0?type=package"
+        },
+        {
+          "type": "library",
+          "name": "github.com/interlynk-io/sbomqs/pkg/licenses",
+          "version": "v0.0.2-0.20230131230801-a00b2a733eb0",
+          "purl": "pkg:golang/github.com/interlynk-io/sbomqs/pkg/licenses@v0.0.2-0.20230131230801-a00b2a733eb0?type=package"
+        },
+        {
+          "type": "library",
+          "name": "github.com/interlynk-io/sbomqs/pkg/logger",
+          "version": "v0.0.2-0.20230131230801-a00b2a733eb0",
+          "purl": "pkg:golang/github.com/interlynk-io/sbomqs/pkg/logger@v0.0.2-0.20230131230801-a00b2a733eb0?type=package"
+        },
+        {
+          "type": "library",
+          "name": "github.com/interlynk-io/sbomqs/pkg/reporter",
+          "version": "v0.0.2-0.20230131230801-a00b2a733eb0",
+          "purl": "pkg:golang/github.com/interlynk-io/sbomqs/pkg/reporter@v0.0.2-0.20230131230801-a00b2a733eb0?type=package"
+        },
+        {
+          "type": "library",
+          "name": "github.com/interlynk-io/sbomqs/pkg/sbom",
+          "version": "v0.0.2-0.20230131230801-a00b2a733eb0",
+          "purl": "pkg:golang/github.com/interlynk-io/sbomqs/pkg/sbom@v0.0.2-0.20230131230801-a00b2a733eb0?type=package"
+        },
+        {
+          "type": "library",
+          "name": "github.com/interlynk-io/sbomqs/pkg/scorer",
+          "version": "v0.0.2-0.20230131230801-a00b2a733eb0",
+          "purl": "pkg:golang/github.com/interlynk-io/sbomqs/pkg/scorer@v0.0.2-0.20230131230801-a00b2a733eb0?type=package"
+        }
+      ],
+      "evidence": {
+        "licenses": [
+          {
+            "license": {
+              "id": "Apache-2.0"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "components": [
+    {
+      "bom-ref": "pkg:golang/github.com/CycloneDX/cyclonedx-go@v0.7.0?type=module",
+      "type": "library",
+      "name": "github.com/CycloneDX/cyclonedx-go",
+      "version": "v0.7.0",
+      "scope": "required",
+      "purl": "pkg:golang/github.com/CycloneDX/cyclonedx-go@v0.7.0?type=module",
+      "externalReferences": [
+        {
+          "url": "https://github.com/CycloneDX/cyclonedx-go",
+          "type": "vcs"
+        }
+      ],
+      "components": [
+        {
+          "type": "library",
+          "name": "github.com/CycloneDX/cyclonedx-go",
+          "version": "v0.7.0",
+          "purl": "pkg:golang/github.com/CycloneDX/cyclonedx-go@v0.7.0?type=package"
+        }
+      ],
+      "evidence": {
+        "licenses": [
+          {
+            "license": {
+              "id": "Apache-2.0"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "pkg:golang/github.com/mattn/go-runewidth@v0.0.9?type=module",
+      "type": "library",
+      "name": "github.com/mattn/go-runewidth",
+      "version": "v0.0.9",
+      "scope": "required",
+      "purl": "pkg:golang/github.com/mattn/go-runewidth@v0.0.9?type=module",
+      "externalReferences": [
+        {
+          "url": "https://github.com/mattn/go-runewidth",
+          "type": "vcs"
+        }
+      ],
+      "components": [
+        {
+          "type": "library",
+          "name": "github.com/mattn/go-runewidth",
+          "version": "v0.0.9",
+          "purl": "pkg:golang/github.com/mattn/go-runewidth@v0.0.9?type=package"
+        }
+      ],
+      "evidence": {
+        "licenses": [
+          {
+            "license": {
+              "id": "MIT"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "pkg:golang/github.com/olekukonko/tablewriter@v0.0.5?type=module",
+      "type": "library",
+      "name": "github.com/olekukonko/tablewriter",
+      "version": "v0.0.5",
+      "scope": "required",
+      "purl": "pkg:golang/github.com/olekukonko/tablewriter@v0.0.5?type=module",
+      "externalReferences": [
+        {
+          "url": "https://github.com/olekukonko/tablewriter",
+          "type": "vcs"
+        }
+      ],
+      "components": [
+        {
+          "type": "library",
+          "name": "github.com/olekukonko/tablewriter",
+          "version": "v0.0.5",
+          "purl": "pkg:golang/github.com/olekukonko/tablewriter@v0.0.5?type=package"
+        }
+      ],
+      "evidence": {
+        "licenses": [
+          {
+            "license": {
+              "id": "MIT"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "pkg:golang/github.com/samber/lo@v1.37.0?type=module",
+      "type": "library",
+      "name": "github.com/samber/lo",
+      "version": "v1.37.0",
+      "scope": "required",
+      "purl": "pkg:golang/github.com/samber/lo@v1.37.0?type=module",
+      "externalReferences": [
+        {
+          "url": "https://github.com/samber/lo",
+          "type": "vcs"
+        }
+      ],
+      "components": [
+        {
+          "type": "library",
+          "name": "github.com/samber/lo",
+          "version": "v1.37.0",
+          "purl": "pkg:golang/github.com/samber/lo@v1.37.0?type=package"
+        }
+      ],
+      "evidence": {
+        "licenses": [
+          {
+            "license": {
+              "id": "MIT"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "pkg:golang/github.com/spdx/gordf@v0.0.0-20201111095634-7098f93598fb?type=module",
+      "type": "library",
+      "name": "github.com/spdx/gordf",
+      "version": "v0.0.0-20201111095634-7098f93598fb",
+      "scope": "required",
+      "purl": "pkg:golang/github.com/spdx/gordf@v0.0.0-20201111095634-7098f93598fb?type=module",
+      "externalReferences": [
+        {
+          "url": "https://github.com/spdx/gordf",
+          "type": "vcs"
+        }
+      ],
+      "components": [
+        {
+          "type": "library",
+          "name": "github.com/spdx/gordf/rdfloader",
+          "version": "v0.0.0-20201111095634-7098f93598fb",
+          "purl": "pkg:golang/github.com/spdx/gordf/rdfloader@v0.0.0-20201111095634-7098f93598fb?type=package"
+        },
+        {
+          "type": "library",
+          "name": "github.com/spdx/gordf/rdfloader/parser",
+          "version": "v0.0.0-20201111095634-7098f93598fb",
+          "purl": "pkg:golang/github.com/spdx/gordf/rdfloader/parser@v0.0.0-20201111095634-7098f93598fb?type=package"
+        },
+        {
+          "type": "library",
+          "name": "github.com/spdx/gordf/rdfloader/xmlreader",
+          "version": "v0.0.0-20201111095634-7098f93598fb",
+          "purl": "pkg:golang/github.com/spdx/gordf/rdfloader/xmlreader@v0.0.0-20201111095634-7098f93598fb?type=package"
+        },
+        {
+          "type": "library",
+          "name": "github.com/spdx/gordf/rdfwriter",
+          "version": "v0.0.0-20201111095634-7098f93598fb",
+          "purl": "pkg:golang/github.com/spdx/gordf/rdfwriter@v0.0.0-20201111095634-7098f93598fb?type=package"
+        },
+        {
+          "type": "library",
+          "name": "github.com/spdx/gordf/uri",
+          "version": "v0.0.0-20201111095634-7098f93598fb",
+          "purl": "pkg:golang/github.com/spdx/gordf/uri@v0.0.0-20201111095634-7098f93598fb?type=package"
+        }
+      ],
+      "evidence": {
+        "licenses": [
+          {
+            "license": {
+              "id": "MIT"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "pkg:golang/github.com/spdx/tools-golang@v0.4.0?type=module",
+      "type": "library",
+      "name": "github.com/spdx/tools-golang",
+      "version": "v0.4.0",
+      "scope": "required",
+      "purl": "pkg:golang/github.com/spdx/tools-golang@v0.4.0?type=module",
+      "externalReferences": [
+        {
+          "url": "https://github.com/spdx/tools-golang",
+          "type": "vcs"
+        }
+      ],
+      "components": [
+        {
+          "type": "library",
+          "name": "github.com/spdx/tools-golang/json",
+          "version": "v0.4.0",
+          "purl": "pkg:golang/github.com/spdx/tools-golang/json@v0.4.0?type=package"
+        },
+        {
+          "type": "library",
+          "name": "github.com/spdx/tools-golang/rdfloader",
+          "version": "v0.4.0",
+          "purl": "pkg:golang/github.com/spdx/tools-golang/rdfloader@v0.4.0?type=package"
+        },
+        {
+          "type": "library",
+          "name": "github.com/spdx/tools-golang/rdfloader/parser2v2",
+          "version": "v0.4.0",
+          "purl": "pkg:golang/github.com/spdx/tools-golang/rdfloader/parser2v2@v0.4.0?type=package"
+        },
+        {
+          "type": "library",
+          "name": "github.com/spdx/tools-golang/rdfloader/parser2v3",
+          "version": "v0.4.0",
+          "purl": "pkg:golang/github.com/spdx/tools-golang/rdfloader/parser2v3@v0.4.0?type=package"
+        },
+        {
+          "type": "library",
+          "name": "github.com/spdx/tools-golang/spdx/common",
+          "version": "v0.4.0",
+          "purl": "pkg:golang/github.com/spdx/tools-golang/spdx/common@v0.4.0?type=package"
+        },
+        {
+          "type": "library",
+          "name": "github.com/spdx/tools-golang/spdx/v2_1",
+          "version": "v0.4.0",
+          "purl": "pkg:golang/github.com/spdx/tools-golang/spdx/v2_1@v0.4.0?type=package"
+        },
+        {
+          "type": "library",
+          "name": "github.com/spdx/tools-golang/spdx/v2_2",
+          "version": "v0.4.0",
+          "purl": "pkg:golang/github.com/spdx/tools-golang/spdx/v2_2@v0.4.0?type=package"
+        },
+        {
+          "type": "library",
+          "name": "github.com/spdx/tools-golang/spdx/v2_3",
+          "version": "v0.4.0",
+          "purl": "pkg:golang/github.com/spdx/tools-golang/spdx/v2_3@v0.4.0?type=package"
+        },
+        {
+          "type": "library",
+          "name": "github.com/spdx/tools-golang/tvloader",
+          "version": "v0.4.0",
+          "purl": "pkg:golang/github.com/spdx/tools-golang/tvloader@v0.4.0?type=package"
+        },
+        {
+          "type": "library",
+          "name": "github.com/spdx/tools-golang/tvloader/parser2v1",
+          "version": "v0.4.0",
+          "purl": "pkg:golang/github.com/spdx/tools-golang/tvloader/parser2v1@v0.4.0?type=package"
+        },
+        {
+          "type": "library",
+          "name": "github.com/spdx/tools-golang/tvloader/parser2v2",
+          "version": "v0.4.0",
+          "purl": "pkg:golang/github.com/spdx/tools-golang/tvloader/parser2v2@v0.4.0?type=package"
+        },
+        {
+          "type": "library",
+          "name": "github.com/spdx/tools-golang/tvloader/parser2v3",
+          "version": "v0.4.0",
+          "purl": "pkg:golang/github.com/spdx/tools-golang/tvloader/parser2v3@v0.4.0?type=package"
+        },
+        {
+          "type": "library",
+          "name": "github.com/spdx/tools-golang/tvloader/reader",
+          "version": "v0.4.0",
+          "purl": "pkg:golang/github.com/spdx/tools-golang/tvloader/reader@v0.4.0?type=package"
+        },
+        {
+          "type": "library",
+          "name": "github.com/spdx/tools-golang/yaml",
+          "version": "v0.4.0",
+          "purl": "pkg:golang/github.com/spdx/tools-golang/yaml@v0.4.0?type=package"
+        }
+      ],
+      "evidence": {
+        "licenses": [
+          {
+            "license": {
+              "id": "Apache-2.0"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "pkg:golang/github.com/spf13/cobra@v1.6.1?type=module",
+      "type": "library",
+      "name": "github.com/spf13/cobra",
+      "version": "v1.6.1",
+      "scope": "required",
+      "purl": "pkg:golang/github.com/spf13/cobra@v1.6.1?type=module",
+      "externalReferences": [
+        {
+          "url": "https://github.com/spf13/cobra",
+          "type": "vcs"
+        }
+      ],
+      "components": [
+        {
+          "type": "library",
+          "name": "github.com/spf13/cobra",
+          "version": "v1.6.1",
+          "purl": "pkg:golang/github.com/spf13/cobra@v1.6.1?type=package"
+        }
+      ],
+      "evidence": {
+        "licenses": [
+          {
+            "license": {
+              "id": "Apache-2.0"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "pkg:golang/github.com/spf13/pflag@v1.0.5?type=module",
+      "type": "library",
+      "name": "github.com/spf13/pflag",
+      "version": "v1.0.5",
+      "scope": "required",
+      "purl": "pkg:golang/github.com/spf13/pflag@v1.0.5?type=module",
+      "externalReferences": [
+        {
+          "url": "https://github.com/spf13/pflag",
+          "type": "vcs"
+        }
+      ],
+      "components": [
+        {
+          "type": "library",
+          "name": "github.com/spf13/pflag",
+          "version": "v1.0.5",
+          "purl": "pkg:golang/github.com/spf13/pflag@v1.0.5?type=package"
+        }
+      ],
+      "evidence": {
+        "licenses": [
+          {
+            "license": {
+              "id": "BSD-3-Clause"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "pkg:golang/go.uber.org/atomic@v1.7.0?type=module",
+      "type": "library",
+      "name": "go.uber.org/atomic",
+      "version": "v1.7.0",
+      "scope": "required",
+      "purl": "pkg:golang/go.uber.org/atomic@v1.7.0?type=module",
+      "components": [
+        {
+          "type": "library",
+          "name": "go.uber.org/atomic",
+          "version": "v1.7.0",
+          "purl": "pkg:golang/go.uber.org/atomic@v1.7.0?type=package"
+        }
+      ],
+      "evidence": {
+        "licenses": [
+          {
+            "license": {
+              "id": "MIT"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "pkg:golang/go.uber.org/multierr@v1.6.0?type=module",
+      "type": "library",
+      "name": "go.uber.org/multierr",
+      "version": "v1.6.0",
+      "scope": "required",
+      "purl": "pkg:golang/go.uber.org/multierr@v1.6.0?type=module",
+      "components": [
+        {
+          "type": "library",
+          "name": "go.uber.org/multierr",
+          "version": "v1.6.0",
+          "purl": "pkg:golang/go.uber.org/multierr@v1.6.0?type=package"
+        }
+      ],
+      "evidence": {
+        "licenses": [
+          {
+            "license": {
+              "id": "MIT"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "pkg:golang/go.uber.org/zap@v1.24.0?type=module",
+      "type": "library",
+      "name": "go.uber.org/zap",
+      "version": "v1.24.0",
+      "scope": "required",
+      "purl": "pkg:golang/go.uber.org/zap@v1.24.0?type=module",
+      "components": [
+        {
+          "type": "library",
+          "name": "go.uber.org/zap",
+          "version": "v1.24.0",
+          "purl": "pkg:golang/go.uber.org/zap@v1.24.0?type=package"
+        },
+        {
+          "type": "library",
+          "name": "go.uber.org/zap/buffer",
+          "version": "v1.24.0",
+          "purl": "pkg:golang/go.uber.org/zap/buffer@v1.24.0?type=package"
+        },
+        {
+          "type": "library",
+          "name": "go.uber.org/zap/internal",
+          "version": "v1.24.0",
+          "purl": "pkg:golang/go.uber.org/zap/internal@v1.24.0?type=package"
+        },
+        {
+          "type": "library",
+          "name": "go.uber.org/zap/internal/bufferpool",
+          "version": "v1.24.0",
+          "purl": "pkg:golang/go.uber.org/zap/internal/bufferpool@v1.24.0?type=package"
+        },
+        {
+          "type": "library",
+          "name": "go.uber.org/zap/internal/color",
+          "version": "v1.24.0",
+          "purl": "pkg:golang/go.uber.org/zap/internal/color@v1.24.0?type=package"
+        },
+        {
+          "type": "library",
+          "name": "go.uber.org/zap/internal/exit",
+          "version": "v1.24.0",
+          "purl": "pkg:golang/go.uber.org/zap/internal/exit@v1.24.0?type=package"
+        },
+        {
+          "type": "library",
+          "name": "go.uber.org/zap/zapcore",
+          "version": "v1.24.0",
+          "purl": "pkg:golang/go.uber.org/zap/zapcore@v1.24.0?type=package"
+        }
+      ],
+      "evidence": {
+        "licenses": [
+          {
+            "license": {
+              "id": "MIT"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "pkg:golang/golang.org/x/exp@v0.0.0-20220303212507-bbda1eaf7a17?type=module",
+      "type": "library",
+      "name": "golang.org/x/exp",
+      "version": "v0.0.0-20220303212507-bbda1eaf7a17",
+      "scope": "required",
+      "purl": "pkg:golang/golang.org/x/exp@v0.0.0-20220303212507-bbda1eaf7a17?type=module",
+      "components": [
+        {
+          "type": "library",
+          "name": "golang.org/x/exp/constraints",
+          "version": "v0.0.0-20220303212507-bbda1eaf7a17",
+          "purl": "pkg:golang/golang.org/x/exp/constraints@v0.0.0-20220303212507-bbda1eaf7a17?type=package"
+        }
+      ],
+      "evidence": {
+        "licenses": [
+          {
+            "license": {
+              "id": "BSD-3-Clause"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "pkg:golang/gopkg.in/yaml.v2@v2.4.0?type=module",
+      "type": "library",
+      "name": "gopkg.in/yaml.v2",
+      "version": "v2.4.0",
+      "scope": "required",
+      "purl": "pkg:golang/gopkg.in/yaml.v2@v2.4.0?type=module",
+      "externalReferences": [
+        {
+          "url": "https://github.com/go-yaml/yaml",
+          "type": "vcs"
+        }
+      ],
+      "components": [
+        {
+          "type": "library",
+          "name": "gopkg.in/yaml.v2",
+          "version": "v2.4.0",
+          "purl": "pkg:golang/gopkg.in/yaml.v2@v2.4.0?type=package"
+        }
+      ],
+      "evidence": {
+        "licenses": [
+          {
+            "license": {
+              "id": "Apache-2.0"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "pkg:golang/sigs.k8s.io/yaml@v1.3.0?type=module",
+      "type": "library",
+      "name": "sigs.k8s.io/yaml",
+      "version": "v1.3.0",
+      "scope": "required",
+      "purl": "pkg:golang/sigs.k8s.io/yaml@v1.3.0?type=module",
+      "components": [
+        {
+          "type": "library",
+          "name": "sigs.k8s.io/yaml",
+          "version": "v1.3.0",
+          "purl": "pkg:golang/sigs.k8s.io/yaml@v1.3.0?type=package"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "pkg:golang/github.com/interlynk-io/sbomqs@v0.0.2-0.20230131230801-a00b2a733eb0?type=module",
+      "dependsOn": [
+        "pkg:golang/github.com/CycloneDX/cyclonedx-go@v0.7.0?type=module",
+        "pkg:golang/github.com/olekukonko/tablewriter@v0.0.5?type=module",
+        "pkg:golang/github.com/samber/lo@v1.37.0?type=module",
+        "pkg:golang/github.com/spdx/tools-golang@v0.4.0?type=module",
+        "pkg:golang/github.com/spf13/cobra@v1.6.1?type=module",
+        "pkg:golang/go.uber.org/zap@v1.24.0?type=module",
+        "pkg:golang/gopkg.in/yaml.v2@v2.4.0?type=module"
+      ]
+    },
+    {
+      "ref": "pkg:golang/github.com/CycloneDX/cyclonedx-go@v0.7.0?type=module"
+    },
+    {
+      "ref": "pkg:golang/github.com/mattn/go-runewidth@v0.0.9?type=module"
+    },
+    {
+      "ref": "pkg:golang/github.com/olekukonko/tablewriter@v0.0.5?type=module",
+      "dependsOn": [
+        "pkg:golang/github.com/mattn/go-runewidth@v0.0.9?type=module"
+      ]
+    },
+    {
+      "ref": "pkg:golang/github.com/samber/lo@v1.37.0?type=module",
+      "dependsOn": [
+        "pkg:golang/golang.org/x/exp@v0.0.0-20220303212507-bbda1eaf7a17?type=module"
+      ]
+    },
+    {
+      "ref": "pkg:golang/github.com/spdx/gordf@v0.0.0-20201111095634-7098f93598fb?type=module"
+    },
+    {
+      "ref": "pkg:golang/github.com/spdx/tools-golang@v0.4.0?type=module",
+      "dependsOn": [
+        "pkg:golang/github.com/spdx/gordf@v0.0.0-20201111095634-7098f93598fb?type=module",
+        "pkg:golang/sigs.k8s.io/yaml@v1.3.0?type=module"
+      ]
+    },
+    {
+      "ref": "pkg:golang/github.com/spf13/cobra@v1.6.1?type=module",
+      "dependsOn": [
+        "pkg:golang/github.com/spf13/pflag@v1.0.5?type=module"
+      ]
+    },
+    {
+      "ref": "pkg:golang/github.com/spf13/pflag@v1.0.5?type=module"
+    },
+    {
+      "ref": "pkg:golang/go.uber.org/atomic@v1.7.0?type=module"
+    },
+    {
+      "ref": "pkg:golang/go.uber.org/multierr@v1.6.0?type=module",
+      "dependsOn": [
+        "pkg:golang/go.uber.org/atomic@v1.7.0?type=module"
+      ]
+    },
+    {
+      "ref": "pkg:golang/go.uber.org/zap@v1.24.0?type=module",
+      "dependsOn": [
+        "pkg:golang/go.uber.org/atomic@v1.7.0?type=module",
+        "pkg:golang/go.uber.org/multierr@v1.6.0?type=module"
+      ]
+    },
+    {
+      "ref": "pkg:golang/golang.org/x/exp@v0.0.0-20220303212507-bbda1eaf7a17?type=module"
+    },
+    {
+      "ref": "pkg:golang/gopkg.in/yaml.v2@v2.4.0?type=module"
+    },
+    {
+      "ref": "pkg:golang/sigs.k8s.io/yaml@v1.3.0?type=module",
+      "dependsOn": [
+        "pkg:golang/gopkg.in/yaml.v2@v2.4.0?type=module"
+      ]
+    }
+  ]
+}
