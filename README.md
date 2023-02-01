@@ -1,12 +1,12 @@
 ## Overview
 
 ### What is SBOM quality score
-A quality SBOM is one that is accurate, complete, and up-to-date. It should accurately reflect the components and dependencies used in the software application, including their version numbers and optionally any known vulnerabilities. In addition, it should be easily accessible and understandable by stakeholders, such as developers, security teams, and compliance officers.
+A quality SBOM is one that is accurate, complete, and up-to-date. It should accurately reflect the components and dependencies used in the software application, including their version and optionally any known vulnerabilities. In addition, it should be easily accessible to and understandable by stakeholders, such as developers, security teams, and compliance officers.
 
 [Interlyk.io](mailto:hello@interlynk.io) has developed sbomqs to simplify the evaluation of SBOM quality for both producers and consumers. A higher score indicates greater usability of the SBOM contents.
 
 ### SBOM Support
-We support SPDX and CycloneDX sbom formats, in various file formats.
+We support SPDX and CycloneDX sbom standards, in various file formats.
 
 ### Installation 
 Use the steps below to try out the tool. You will need
@@ -18,14 +18,14 @@ golang version 1.19
 4. To test if the build was successful run the following command ```./build/sbomqs version```
 
 ### Getting access to SBOMS
-For new users, we have listed a few places, where you could find sboms to play around with.
+For new users, we have listed a few places, where you could find sample sboms.
 - This repo has a [samples](https://github.com/interlynk-io/sbomqs/tree/main/samples) directory
 - If you use docker images and would like to generate an SBOM, follow the steps [here](https://docs.docker.com/engine/sbom/)
 - [Syft](https://github.com/anchore/syft) / [Trivy](https://github.com/aquasecurity/trivy) are open source tools which can be used to generate SBOM from containers as well as repos. 
-- Chainguard has created a repo called [bom-shelter](https://github.com/chainguard-dev/bom-shelter)
+- Another public repository for SBOMS [bom-shelter](https://github.com/chainguard-dev/bom-shelter)
 
 ### Scoring
-Each feature listed [below](#features) returns a score between 0 and 10. The higher the score the better. 
+Each feature listed [below](#features) returns a score between 0 and 10. The more accurate, complete and up-to-date SBOM is the higher the score. 
 The scores from each feature are averaged to provide an aggregate score. 
 
 ### Usage and examples
@@ -136,8 +136,8 @@ Name        | Description                               |
 [NTIA-minimum-elements](https://www.ntia.doc.gov/files/ntia/publications/sbom_minimum_elements_report.pdf)  | NTIA has put forth certain minimum requirements that should exist in every SBOM, this category verifies if these requirements are satisfied  |
 Structural| In this category, we check if the SBOM complies with basic SPEC guides, be it spdx or cdx |
 Semantic| Semantic Quality covers test cases that check meaning of SBOM fields specific to specific standard and format | 
-Quality | These series of checks, help determine the quaility of the data  in the SBOM|
-Sharing| These checks help highlight if the SBOM can be shared | 
+Quality | These series of checks, help determine the quaility of the data in the SBOM|
+Sharing| These checks indicate if the sbom can be shared with someone else | 
 
 #### Features 
 Below is a listing of the various criteria we evaluate
