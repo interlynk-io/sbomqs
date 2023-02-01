@@ -15,6 +15,7 @@
 package sbom
 
 type Component interface {
+	ID() string
 	SupplierName() string
 	Name() string
 	Version() string
@@ -42,6 +43,7 @@ type component struct {
 
 	purpose            string
 	isReqFieldsPresent bool
+	id                 string
 }
 
 func newComponent() *component {
@@ -74,4 +76,8 @@ func (c component) PrimaryPurpose() string {
 }
 func (c component) RequiredFields() bool {
 	return c.isReqFieldsPresent
+}
+
+func (c component) ID() string {
+	return c.id
 }

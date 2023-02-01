@@ -144,6 +144,7 @@ func (s *spdxDoc) parseComps() {
 		nc.cpes = s.cpes(index)
 		nc.checksums = s.checksums(index)
 		nc.licenses = s.licenses(index)
+		nc.id = string(sc.PackageSPDXIdentifier)
 
 		s.comps = append(s.comps, nc)
 	}
