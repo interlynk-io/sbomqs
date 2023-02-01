@@ -16,23 +16,10 @@ package cmd
 
 import (
 	_ "embed"
-	"fmt"
 
-	"github.com/spf13/cobra"
+	version "sigs.k8s.io/release-utils/version"
 )
 
-//go:generate bash version.sh
-//go:embed version.txt
-var version string
-
 func init() {
-	rootCmd.AddCommand(versionCmd)
-}
-
-var versionCmd = &cobra.Command{
-	Use:   "version",
-	Short: "Print the version number of sbomqs",
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("sbomqs version %s", version)
-	},
+	rootCmd.AddCommand(version.Version())
 }
