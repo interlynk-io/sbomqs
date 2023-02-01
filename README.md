@@ -32,7 +32,7 @@ The scores from each feature are averaged to provide an aggregate score.
 ##### Using single file option
 Sbomqs can run with just a single argument pointing to an sbom file 
 ```
-➜  sbomqs git:(feature/update-readme) ./build/sbomqs score --filepath ../sbom-samples/docker-images/syft-httpd-2.4.54.spdx
+➜  sbomqs git:(main) ./build/sbomqs score --filepath ../sbom-samples/docker-images/syft-httpd-2.4.54.spdx
 SBOM Quality Score: 7.0	../sbom-samples/docker-images/syft-httpd-2.4.54.spdx
 +-----------------------+--------------------------------+-----------+--------------------------------+
 |       CATEGORY        |            FEATURE             |   SCORE   |              DESC              |
@@ -95,7 +95,7 @@ SBOM Quality Score: 7.0	../sbom-samples/docker-images/syft-httpd-2.4.54.spdx
 ##### Using directory option
 You can point sbomqs to a directory containing sboms and just print out the score per file, instead of the details 
 ```
-➜  sbomqs git:(feature/update-readme) ./build/sbomqs score --dirpath ../sbom-samples/repos --reportFormat basic | sort
+➜  sbomqs git:(main) ./build/sbomqs score --dirpath ../sbom-samples/repos --reportFormat basic | sort
 6.3	../sbom-samples/repos/trivy-cartography.spdx
 6.3	../sbom-samples/repos/trivy-cartography.spdx.json
 6.8	../sbom-samples/repos/trivy-bom.spdx
@@ -113,7 +113,7 @@ You can point sbomqs to a directory containing sboms and just print out the scor
 ##### Using directory with category scoring option
 You can evaluate your SBOM's based on specific categories, as described [here](#categories).
 ```
-➜  sbomqs git:(feature/update-readme) ./build/sbomqs score --dirpath ../sbom-samples/repos --reportFormat basic --category NTIA-minimum-elements | sort
+➜  sbomqs git:(main) ./build/sbomqs score --dirpath ../sbom-samples/repos --reportFormat basic --category NTIA-minimum-elements | sort
 7.4	../sbom-samples/repos/trivy-cartography.spdx
 7.4	../sbom-samples/repos/trivy-cartography.spdx.json
 8.2	../sbom-samples/repos/trivy-cartography.cdx.json
