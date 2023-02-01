@@ -24,6 +24,9 @@ For new users, we have listed a few places, where you could find sboms to play a
 - [Syft](https://github.com/anchore/syft) / [Trivy](https://github.com/aquasecurity/trivy) are open source tools which can be used to generate SBOM from containers as well as repos. 
 - Chainguard has created a repo called [bom-shelter](https://github.com/chainguard-dev/bom-shelter)
 
+### Scoring
+Each feature listed [below](#features) returns a score between 0 and 10. The higher the score the better. 
+The scores from each feature are averaged to provide an aggregate score. 
 
 ### Usage and examples
 ##### Using single file option
