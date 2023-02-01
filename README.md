@@ -10,11 +10,21 @@ We support SPDX and CycloneDX sbom standards, in various file formats.
 
 ### Installation 
 Use the steps below to try out the tool. You will need
-golang version 1.19
+golang version 1.19 and above.
+
+##### Using Go install
+Using go install is an easy way to install the binary. Once compiled this will be installed 
+in $(GOBIN) or $(GOPATH)/bin or $(GOROOT)/bin. 
+```
+go install github.com/interlynk-io/sbomqs@latest
+```
+
+##### Using repo
+This approach invovles cloning the repo and building it. 
 
 1. Clone the repo ```git clone git@github.com:interlynk-io/sbomqs.git```
 2. `cd` into `sbomqs` folder 
-3. make
+3. make build
 4. To test if the build was successful run the following command ```./build/sbomqs version```
 
 ### Getting access to SBOMS

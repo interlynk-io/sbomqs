@@ -10,9 +10,11 @@ require (
 	github.com/spf13/cobra v1.6.1
 	go.uber.org/zap v1.24.0
 	gopkg.in/yaml.v2 v2.4.0
+	sigs.k8s.io/release-utils v0.7.3
 )
 
 require (
+	github.com/common-nighthawk/go-figure v0.0.0-20210622060536-734e95fb86be // indirect
 	github.com/inconshreveable/mousetrap v1.0.1 // indirect
 	github.com/mattn/go-runewidth v0.0.9 // indirect
 	github.com/spdx/gordf v0.0.0-20201111095634-7098f93598fb // indirect
