@@ -189,6 +189,7 @@ func (c *cdxDoc) parseComps() {
 		nc.cpes = []string{sc.CPE}
 		nc.checksums = c.checksums(index)
 		nc.licenses = c.licenses(index)
+		nc.id = sc.BOMRef
 
 		c.comps = append(c.comps, nc)
 	}

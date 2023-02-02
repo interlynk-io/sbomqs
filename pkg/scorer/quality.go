@@ -65,15 +65,15 @@ func compWithAllIdScore(d sbom.Document) score {
 
 	withCpe := lo.FilterMap(d.Components(), func(c sbom.Component, _ int) (string, bool) {
 		if len(c.Cpes()) > 0 {
-			return c.Name(), true
+			return c.ID(), true
 		}
-		return c.Name(), false
+		return c.ID(), false
 	})
 	withPurl := lo.FilterMap(d.Components(), func(c sbom.Component, _ int) (string, bool) {
 		if len(c.Purls()) > 0 {
-			return c.Name(), true
+			return c.ID(), true
 		}
-		return c.Name(), false
+		return c.ID(), false
 	})
 
 	compsWithCPE := len(withCpe)
