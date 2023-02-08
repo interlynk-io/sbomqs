@@ -9,8 +9,16 @@ A quality SBOM is one that is accurate, complete, and up-to-date. It should accu
 We support SPDX and CycloneDX sbom standards, in various file formats.
 
 ### Installation 
-Use the steps below to try out the tool. You will need
-golang version 1.19 and above.
+Use the steps below to try out the tool.
+
+#### Using Prebuild binaries 
+We use go-release to compile pre-built binaries for Linux/Mac and Windows for AMD64. 
+You can use this to try out the tool, without requiring to install golang. Find the binaries
+in the releases link below. 
+
+```
+https://github.com/interlynk-io/sbomqs/releases
+```
 
 ##### Using Go install
 Using go install is an easy way to install the binary. Once compiled this will be installed 
