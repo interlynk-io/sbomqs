@@ -175,6 +175,11 @@ Doc has require fields | check if the sbom has all the required fields as specif
 Doc has sharable license | check if the sbom doc has an unemcumbered license which can aid in sharing | 
 
 
+## Stargazers over time
+
+[![Stargazers over time](https://starchart.cc/interlynk-io/sbomqs.svg)](https://starchart.cc/interlynk-io/sbomqs)
+
+
 
 
 
