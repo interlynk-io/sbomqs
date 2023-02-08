@@ -178,6 +178,7 @@ Components have checksums | checks if the sbom components have checksums |
 Components have valid spdx licenses | checks if the sbom components have licenses which match the spdx license list |
 Components dont have deprecated licenses| checks if the sbom components dont have licenses that are deprecated |
 Components have all uniq lookup ids| checks if the sbom components have both purl and cpe | 
+Components have restricted licenses | checks if the sbom components have restricted licenses which match the restricted license list |
 Components have primary purpose defined | checks if the sbom components have a primary purpose defined e.g application/library|
 Doc has Relations | checks if sbom has specified relations between its components | 
 Doc has Authors | checks if sbom has authors i.e  person/ org or tool | 
