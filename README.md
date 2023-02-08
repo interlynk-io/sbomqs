@@ -50,63 +50,66 @@ The scores from each feature are averaged to provide an aggregate score.
 ##### Using single file option
 Sbomqs can run with just a single argument pointing to an sbom file 
 ```
-➜  sbomqs git:(main) ./build/sbomqs score --filepath ../sbom-samples/docker-images/syft-httpd-2.4.54.spdx
-SBOM Quality Score: 7.0	../sbom-samples/docker-images/syft-httpd-2.4.54.spdx
+➜  sbomqs git:(main) ./build/sbomqs score --filepath ./samples/julia.spdx.json
+SBOM Quality Score: 6.9 ./samples/julia.spdx.json
 +-----------------------+--------------------------------+-----------+--------------------------------+
 |       CATEGORY        |            FEATURE             |   SCORE   |              DESC              |
 +-----------------------+--------------------------------+-----------+--------------------------------+
-| NTIA-minimum-elements | Components have uniq ids       | 10.0/10.0 | 117/117 have unique ID's       |
+| NTIA-minimum-elements | Doc has authors                | 10.0/10.0 | doc has 2 authors              |
 +                       +--------------------------------+-----------+--------------------------------+
-|                       | Components have versions       | 10.0/10.0 | 117/117 have versions          |
+|                       | Components have names          | 10.0/10.0 | 34/34 have names               |
 +                       +--------------------------------+-----------+--------------------------------+
-|                       | Doc has authors                | 10.0/10.0 | doc has 2 authors              |
+|                       | Components have supplier names | 0.6/10.0  | 2/34 have supplier names       |
 +                       +--------------------------------+-----------+--------------------------------+
-|                       | Doc has relationships          | 0.0/10.0  | doc has 0 relationships        |
+|                       | Components have uniq ids       | 0.0/10.0  | 0/34 have unique ID's          |
 +                       +--------------------------------+-----------+--------------------------------+
-|                       | Components have supplier names | 0.0/10.0  | 0/117 have supplier names      |
+|                       | Doc has relationships          | 10.0/10.0 | doc has 1 relationships        |
 +                       +--------------------------------+-----------+--------------------------------+
-|                       | Components have names          | 10.0/10.0 | 117/117 have names             |
+|                       | Components have versions       | 0.3/10.0  | 1/34 have versions             |
 +                       +--------------------------------+-----------+--------------------------------+
 |                       | Doc has creation timestamp     | 10.0/10.0 | doc has creation timestamp     |
-|                       |                                |           | 2022-12-07T08:11:44Z           |
+|                       |                                |           | 2021-12-21T07:13:19Z           |
 +-----------------------+--------------------------------+-----------+--------------------------------+
-| Quality               | Components have valid spdx     | 7.7/10.0  | 90/117 components with valid   |
+| Quality               | Components have valid spdx     | 9.3/10.0  | 33/34 components with valid    |
 |                       | licenses                       |           | license                        |
 +                       +--------------------------------+-----------+--------------------------------+
-|                       | Components have multiple       | 5.0/10.0  | comp with uniq ids: cpe:0,     |
-|                       | formats of uniq ids            |           | purl:117, total:117            |
-+                       +--------------------------------+-----------+--------------------------------+
-|                       | Components have primary        | 0.0/10.0  | 0/117 components have primary  |
+|                       | Components have primary        | 0.0/10.0  | 0/34 components have primary   |
 |                       | purpose defined                |           | purpose specified              |
 +                       +--------------------------------+-----------+--------------------------------+
-|                       | Components have no deprecated  | 3.5/10.0  | 76/117 components have         |
+|                       | Components have no deprecated  | 9.7/10.0  | 1/34 components have           |
 |                       | licenses                       |           | deprecated licenses            |
-+-----------------------+--------------------------------+-----------+--------------------------------+
-| Semantic              | Components have licenses       | 7.7/10.0  | 90/117 have licenses           |
 +                       +--------------------------------+-----------+--------------------------------+
-|                       | Components have checksums      | 0.0/10.0  | 0/117 have checksums           |
+|                       | Components have no restricted  | 8.8/10.0  | 4/34 components have           |
+|                       | licenses                       |           | restricted licenses            |
++                       +--------------------------------+-----------+--------------------------------+
+|                       | Components have multiple       | 0.0/10.0  | comp with uniq ids: cpe:0,     |
+|                       | formats of uniq ids            |           | purl:0, total:34               |
++-----------------------+--------------------------------+-----------+--------------------------------+
+| Semantic              | Components have checksums      | 0.0/10.0  | 0/34 have checksums            |
 +                       +--------------------------------+-----------+--------------------------------+
 |                       | Doc has all required fields    | 10.0/10.0 | Doc Fields:true Pkg            |
 |                       |                                |           | Fields:true                    |
++                       +--------------------------------+-----------+--------------------------------+
+|                       | Components have licenses       | 10.0/10.0 | 34/34 have licenses            |
 +-----------------------+--------------------------------+-----------+--------------------------------+
 | Sharing               | Doc sharable license           | 10.0/10.0 | doc has a sharable license     |
 |                       |                                |           | free 1 :: of 1                 |
 +-----------------------+--------------------------------+-----------+--------------------------------+
 | Structural            | Spec is parsable               | 10.0/10.0 | provided sbom is parsable      |
 +                       +--------------------------------+-----------+--------------------------------+
-|                       | Spec Version                   | 10.0/10.0 | provided sbom should be in     |
-|                       |                                |           | supported spec version for     |
-|                       |                                |           | spec:SPDX-2.2 and versions:    |
-|                       |                                |           | SPDX-2.1,SPDX-2.2,SPDX-2.3     |
-+                       +--------------------------------+-----------+--------------------------------+
 |                       | Spec File Format               | 10.0/10.0 | provided sbom should be in     |
 |                       |                                |           | supported file format for      |
-|                       |                                |           | spec: tag-value and version:   |
+|                       |                                |           | spec: json and version:        |
 |                       |                                |           | json,yaml,rdf,tag-value        |
 +                       +--------------------------------+-----------+--------------------------------+
 |                       | SBOM Specification             | 10.0/10.0 | provided sbom is in a          |
 |                       |                                |           | supported sbom format of       |
 |                       |                                |           | spdx,cyclonedx                 |
++                       +--------------------------------+-----------+--------------------------------+
+|                       | Spec Version                   | 10.0/10.0 | provided sbom should be in     |
+|                       |                                |           | supported spec version for     |
+|                       |                                |           | spec:SPDX-2.2 and versions:    |
+|                       |                                |           | SPDX-2.1,SPDX-2.2,SPDX-2.3     |
 +-----------------------+--------------------------------+-----------+--------------------------------+
 ```
 
@@ -175,6 +178,7 @@ Components have checksums | checks if the sbom components have checksums |
 Components have valid spdx licenses | checks if the sbom components have licenses which match the spdx license list |
 Components dont have deprecated licenses| checks if the sbom components dont have licenses that are deprecated |
 Components have all uniq lookup ids| checks if the sbom components have both purl and cpe | 
+Components have restricted licenses | checks if the sbom components have restricted licenses which match the restricted license list |
 Components have primary purpose defined | checks if the sbom components have a primary purpose defined e.g application/library|
 Doc has Relations | checks if sbom has specified relations between its components | 
 Doc has Authors | checks if sbom has authors i.e  person/ org or tool | 

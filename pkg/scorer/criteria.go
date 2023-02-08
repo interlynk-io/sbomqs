@@ -53,10 +53,11 @@ const (
 	compWithLicenses         criteria = "Components have licenses"
 	compWithChecksums        criteria = "Components have checksums"
 
-	compWithValidLicenses   criteria = "Components have valid spdx licenses"
-	compWithNoDepLicenses   criteria = "Components have no deprecated licenses"
-	compWithAllId           criteria = "Components have multiple formats of uniq ids"
-	compWithPrimaryPackages criteria = "Components have primary purpose defined"
+	compWithValidLicenses      criteria = "Components have valid spdx licenses"
+	compWithNoDepLicenses      criteria = "Components have no deprecated licenses"
+	compWithAllId              criteria = "Components have multiple formats of uniq ids"
+	compWithPrimaryPackages    criteria = "Components have primary purpose defined"
+	compWithRestrictedLicenses criteria = "Components have no restricted licenses"
 
 	docShareLicense criteria = "Doc sharable license"
 )
@@ -90,6 +91,7 @@ func init() {
 	_ = registerCriteria(compWithNoDepLicenses, compWithNoDepLicensesScore)
 	_ = registerCriteria(compWithAllId, compWithAllIdScore)
 	_ = registerCriteria(compWithPrimaryPackages, compWithPrimaryPackageScore)
+	_ = registerCriteria(compWithRestrictedLicenses, compWithRestrictedLicensesScore)
 
 	//sharing
 	_ = registerCriteria(docShareLicense, sharableLicenseScore)
