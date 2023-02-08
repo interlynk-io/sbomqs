@@ -46,27 +46,27 @@ LDFLAGS=-buildid= -X $(PKG).gitVersion=$(GIT_VERSION) \
 
 BUILD_DIR = ./build
 
-.PHONY: all 
-all: clean dep test build 
-
 .PHONY: dep
 dep:
-	go mod vendor 
-	go mod tidy 
+	go mod vendor
+	go mod tidy
 
-.PHONY: test 
+.PHONY: test
 test:
 	go test -cover -race ./...
 
 .PHONY: build
-build: 
+build:
 	CGO_ENABLED=0 go build -trimpath -ldflags "$(LDFLAGS)" -o $(BUILD_DIR)/sbomqs main.go
 
 .PHONY: clean
 clean:
-	rm -rf $(BUILD_DIR)
+	\rm -rf $(BUILD_DIR)
 
-
-
-
-
+.PHONY: snapshot
+snapshot:
+	LDFLAGS="$(LDFLAGS)" \goreleaser release --clean --snapshot --skip-sign --skip-publish --timeout 120m
+	
+.PHONY: release
+release:
+	LDFLAGS="$(LDFLAGS)" \goreleaser release --clean --timeout 120m
