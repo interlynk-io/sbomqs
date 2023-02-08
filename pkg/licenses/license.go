@@ -14,7 +14,9 @@
 
 package licenses
 
-import "strings"
+import (
+	"strings"
+)
 
 type LicenseMeta interface {
 	Name() string
@@ -580,6 +582,55 @@ func LookUp(lic string) (LicenseMeta, bool) {
 func FreeForAnyUse(lic string) bool {
 	if _, ok := freeAnyUser[strings.ToLower(lic)]; ok {
 		return true
+	}
+	return false
+}
+
+// Restricted Licenses
+var restrictedLicenses = []string{
+	"bcl",
+	"cc-by-nd-1.0",
+	"cc-by-nd-2.0",
+	"cc-by-nd-2.5",
+	"cc-by-nd-3.0",
+	"cc-by-nd-4.0",
+	"cc-by-sa-1.0",
+	"cc-by-sa-2.0",
+	"cc-by-sa-2.5",
+	"cc-by-sa-3.0",
+	"cc-by-sa-4.0",
+	"gpl-1.0",
+	"gpl-2.0",
+	"gpl-2.0-with-autoconf-exception",
+	"gpl-2.0-with-bison-exception",
+	"gpl-2.0-with-classpath-exception",
+	"gpl-2.0-with-font-exception",
+	"gpl-2.0-with-gcc-exception",
+	"gpl-3.0",
+	"gpl-3.0-with-autoconf-exception",
+	"gpl-3.0-with-gcc-exception",
+	"lgpl-2.0",
+	"lgpl-2.1",
+	"lgpl-3.0",
+	"NPL-1.0",
+	"NPL-1.1",
+	"osl-1.0",
+	"osl-1.1",
+	"osl-2.0",
+	"osl-2.1",
+	"osl-3.0",
+	"qpl-1.0",
+	"sleepycat",
+}
+
+func RestrictedLicense(lic string) bool {
+	if lic == "" {
+		return true
+	}
+	for _, rl := range restrictedLicenses {
+		if strings.Contains(strings.ToLower(lic), rl) {
+			return true
+		}
 	}
 	return false
 }

@@ -19,6 +19,7 @@ import (
 	"math"
 	"strings"
 
+	"github.com/interlynk-io/sbomqs/pkg/licenses"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 	"github.com/samber/lo"
 )
@@ -121,5 +122,21 @@ func compWithNoDepLicensesScore(d sbom.Document) score {
 	finalScore := (float64(totalComponents-withDepLicense) / float64(totalComponents)) * 10.0
 	s.setScore(finalScore)
 	s.setDesc(fmt.Sprintf("%d/%d components have deprecated licenses", withDepLicense, totalComponents))
+	return *s
+}
+
+func compWithRestrictedLicensesScore(d sbom.Document) score {
+	s := newScore(CategoryQuality, string(compWithRestrictedLicenses))
+	totalComponents := len(d.Components())
+	withRestrictLicense := lo.CountBy(d.Components(), func(c sbom.Component) bool {
+		rest := lo.CountBy(c.Licenses(), func(l sbom.License) bool {
+			return licenses.RestrictedLicense(l.Name())
+		})
+		return rest > 0
+	})
+
+	finalScore := (float64(totalComponents-withRestrictLicense) / float64(totalComponents)) * 10.0
+	s.setScore(finalScore)
+	s.setDesc(fmt.Sprintf("%d/%d components have restricted licenses", withRestrictLicense, totalComponents))
 	return *s
 }
