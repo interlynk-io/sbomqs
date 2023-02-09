@@ -187,6 +187,15 @@ Doc has require fields | check if the sbom has all the required fields as specif
 Doc has sharable license | check if the sbom doc has an unemcumbered license which can aid in sharing | 
 
 
+## Contributions
+We look forward to your contributions, below are a few guidelines on how to submit them 
+
+- Fork the repo
+- Create your feature/bug branch (```git checkout -b feature/new-feature```)
+- Commit your changes (```git commit -am "awesome new feature"```)
+- Push your changes (```git push origin feature/new-feature```)
+- Create a new pull-request
+
 ## Stargazers over time
 
 [![Stargazers over time](https://starchart.cc/interlynk-io/sbomqs.svg)](https://starchart.cc/interlynk-io/sbomqs)
