@@ -135,9 +135,7 @@ func (s *spdxDoc) parseComps() {
 
 		nc.version = sc.PackageVersion
 		nc.name = sc.PackageName
-		if sc.PackageSupplier != nil {
-			nc.supplerName = sc.PackageSupplier.Supplier
-		}
+		nc.supplierName = s.addSupplierName(index)
 		nc.purpose = sc.PrimaryPackagePurpose
 		nc.isReqFieldsPresent = s.pkgRequiredFields(index)
 		nc.purls = s.purls(index)
@@ -415,4 +413,20 @@ func (s *spdxDoc) licenses(index int) []License {
 	}
 
 	return finalLics
+}
+
+func (s *spdxDoc) addSupplierName(index int) string {
+	pkg := s.doc.Packages[index]
+
+	if pkg.PackageSupplier == nil {
+		s.addToLogs(fmt.Sprintf("spdx doc pkg %s at index %d no supplier found", pkg.PackageName, index))
+	}
+
+	name := strings.ToLower(pkg.PackageSupplier.Supplier)
+
+	if name == "" || name == "noassertion" {
+		s.addToLogs(fmt.Sprintf("spdx doc pkg %s at index %d no supplier found", pkg.PackageName, index))
+		return ""
+	}
+	return name
 }
