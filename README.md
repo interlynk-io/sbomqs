@@ -1,12 +1,18 @@
 ## Overview
 
 ### What is SBOM quality score
-A quality SBOM is one that is accurate, complete, and up-to-date. It should accurately reflect the components and dependencies used in the software application, including their version and optionally any known vulnerabilities. In addition, it should be easily accessible to and understandable by stakeholders, such as developers, security teams, and compliance officers.
+A quality SBOM is one that is accurate, complete, and up-to-date. It should accurately reflect the components and dependencies used in the underlying product, including their versions and optionally all known vulnerabilities. In addition, it should be easily accessible to; and understandable by stakeholders - such as developers, security teams, and compliance officers.
 
-[Interlyk.io](mailto:hello@interlynk.io) has developed sbomqs to simplify the evaluation of SBOM quality for both producers and consumers. A higher score indicates greater usability of the SBOM contents.
+[Interlyk.io](mailto:hello@interlynk.io) has developed sbomqs to simplify the evaluation of SBOM quality for all stakholders. A higher `sbomqs` score indicates greater usability of the SBOM contents.
+
+`sbomqs` evaluates SBOM against the set of rquirements recommeneded by [NTIA Minimum Elements](https://www.ntia.doc.gov/files/ntia/publications/sbom_minimum_elements_report.pdf) and improved by [OWASP Software Component Verification Standard](https://scvs.owasp.org/) (Work in progress) and in the future the tool will continue to align with related community and regulatory requirements.
+
+The output format is inspired by [OpenSSF Security Scorecard](https://securityscorecards.dev/).
 
 ### SBOM Support
-We support SPDX and CycloneDX sbom standards, in various file formats.
+We support SPDX and CycloneDX sbom standards, in supported file formats:
+- CycloneDX: JSON, XML
+- SPDX: JSON, YAML, RDF, tag-value
 
 ### Installation 
 Use the steps below to try out the tool.
