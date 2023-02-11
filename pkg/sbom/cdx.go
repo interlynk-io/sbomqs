@@ -21,6 +21,7 @@ import (
 	"strings"
 
 	cydx "github.com/CycloneDX/cyclonedx-go"
+	"github.com/interlynk-io/sbomqs/pkg/cpe"
 	"github.com/samber/lo"
 )
 
@@ -185,7 +186,12 @@ func (c *cdxDoc) parseComps() {
 		nc.purpose = string(sc.Type)
 		nc.isReqFieldsPresent = c.pkgRequiredFields(index)
 		nc.purls = []string{sc.PackageURL}
-		nc.cpes = []string{sc.CPE}
+		ncpe := cpe.NewCPE(sc.CPE)
+		if ncpe.Valid() {
+			nc.cpes = []cpe.CPE{ncpe}
+		} else {
+			c.addToLogs(fmt.Sprintf("cdx doc component %s at index %d invalid cpes found", sc.Name, index))
+		}
 		nc.checksums = c.checksums(index)
 		nc.licenses = c.licenses(index)
 		nc.id = sc.BOMRef

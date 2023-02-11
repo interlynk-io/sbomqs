@@ -20,6 +20,7 @@ import (
 	"io"
 	"strings"
 
+	"github.com/interlynk-io/sbomqs/pkg/cpe"
 	"github.com/interlynk-io/sbomqs/pkg/logger"
 	spdx_json "github.com/spdx/tools-golang/json"
 	spdx_rdf "github.com/spdx/tools-golang/rdfloader"
@@ -315,8 +316,8 @@ func (s *spdxDoc) purls(index int) []string {
 
 }
 
-func (s *spdxDoc) cpes(index int) []string {
-	urls := []string{}
+func (s *spdxDoc) cpes(index int) []cpe.CPE {
+	urls := []cpe.CPE{}
 	pkg := s.doc.Packages[index]
 
 	if len(pkg.PackageExternalReferences) == 0 {
@@ -325,13 +326,15 @@ func (s *spdxDoc) cpes(index int) []string {
 	}
 
 	for _, p := range pkg.PackageExternalReferences {
-		if strings.ToLower(p.RefType) == spdx_common.TypeSecurityCPE23Type {
-			urls = append(urls, p.Locator)
+		if strings.ToLower(p.RefType) == spdx_common.TypeSecurityCPE23Type || strings.ToLower(p.RefType) == spdx_common.TypeSecurityCPE22Type {
+			cpeV := cpe.NewCPE(p.Locator)
+			if cpeV.Valid() {
+				urls = append(urls, cpeV)
+			} else {
+				s.addToLogs(fmt.Sprintf("spdx doc pkg %s at index %d invalid cpes found", pkg.PackageName, index))
+			}
 		}
 
-		if strings.ToLower(p.RefType) == spdx_common.TypeSecurityCPE22Type {
-			urls = append(urls, p.Locator)
-		}
 	}
 	if len(urls) == 0 {
 		s.addToLogs(fmt.Sprintf("spdx doc pkg %s at index %d no cpes found", pkg.PackageName, index))

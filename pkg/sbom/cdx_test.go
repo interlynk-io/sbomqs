@@ -39,6 +39,7 @@ func cdxBOM() *cydx.BOM {
 			Name:       "go-testlib",
 			Version:    "v0.0.3",
 			PackageURL: "pkg:golang/github.com/interlynk-io/go-testlib@v0.0.3",
+			CPE: "cpe:2:a:golang:go-testlib:v0.0.3:*:*:*:*:*:*:*",
 		},
 		{
 			BOMRef:     "pkg:golang/github.com/dummy/dummyLib@v3.0.0",
@@ -47,6 +48,7 @@ func cdxBOM() *cydx.BOM {
 			Name:       "dummyLib",
 			Version:    "v3.0.0",
 			PackageURL: "pkg:golang/github.com/dummy/dummyLib@v3.0.0",
+			CPE:        "cpe:2.3:a:golang:dummyLib:v3.0.0:*:*:*:*:*:*:*",
 			Supplier: &cydx.OrganizationalEntity{
 				Name: "Dummy",
 			},
@@ -58,6 +60,7 @@ func cdxBOM() *cydx.BOM {
 			Name:       "dummyArrayLib",
 			Version:    "v2.4.1",
 			PackageURL: "pkg:golang/github.com/dummy/dummyArrayLib@v2.4.1",
+			CPE: "cpe:/o:dummy:dummyArrayLib:2.4.1:update4",
 			Supplier: &cydx.OrganizationalEntity{
 				Name: "",
 			},
@@ -109,4 +112,36 @@ func Test_cdxDoc_addSupplierName(t *testing.T) {
 			}
 		})
 	}
+}
+
+func Test_cdxDoc_parseComps_Cpes(t *testing.T) {
+	type fields struct {
+		doc     *cydx.BOM
+		comps   []Component
+	}
+	type args struct {
+		index int
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+		want   int
+	}{
+		{"CPE is present but invalid", fields{doc: cdxBOM()}, args{index: 0}, 0},
+		{"CPE is present with valid", fields{doc: cdxBOM()}, args{index: 1}, 1},
+		{"CPE 2.2 is present with valid", fields{doc: cdxBOM()}, args{index: 2}, 1},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c := &cdxDoc{
+				doc:     tt.fields.doc,
+			}
+			c.parseComps()
+			if got := c.comps[tt.args.index].Cpes(); len(got) != tt.want {
+				t.Errorf("cdxDoc.parseComps() = %d, want %d", len(got), tt.want)
+			}
+		})
+	}
+
 }
