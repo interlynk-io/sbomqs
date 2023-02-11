@@ -65,6 +65,28 @@ func cdxBOM() *cydx.BOM {
 				Name: "",
 			},
 		},
+		{
+			BOMRef:     "pkg:golang/github.com/dummy/dummyArrayLib@v2.4.1",
+			Type:       cydx.ComponentTypeLibrary,
+			Author:     "Dummy",
+			Name:       "dummyArrayLib",
+			Version:    "v2.4.1",
+			PackageURL: "",
+			Supplier: &cydx.OrganizationalEntity{
+				Name: "",
+			},
+		},
+		{
+			BOMRef:     "pkg:golang/github.com/dummy/dummyArrayLib@v2.4.1",
+			Type:       cydx.ComponentTypeLibrary,
+			Author:     "Dummy",
+			Name:       "dummyArrayLib",
+			Version:    "v2.4.1",
+			PackageURL: "dummy:golang/github.com/dummy/dummyArrayLib@v2.4.1",
+			Supplier: &cydx.OrganizationalEntity{
+				Name: "",
+			},
+		},
 	}
 	bom := cydx.NewBOM()
 	bom.Metadata = &m
@@ -139,6 +161,50 @@ func Test_cdxDoc_parseComps_Cpes(t *testing.T) {
 			}
 			c.parseComps()
 			if got := c.comps[tt.args.index].Cpes(); len(got) != tt.want {
+				t.Errorf("cdxDoc.parseComps() = %d, want %d", len(got), tt.want)
+			}
+		})
+	}
+
+}
+
+
+func Test_cdxDoc_parseComps_purl(t *testing.T) {
+	type fields struct {
+		doc     *cydx.BOM
+		spec    *spec
+		comps   []Component
+		authors []Author
+		tools   []Tool
+		rels    []Relation
+		logs    []string
+	}
+	type args struct {
+		index int
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+		want   int
+	}{
+		{"PURL is present but invalid", fields{doc: cdxBOM()}, args{index: 4}, 0},
+		{"Empty PURL", fields{doc: cdxBOM()}, args{index: 3}, 0},
+		{"Valid Purl", fields{doc: cdxBOM()}, args{index: 2}, 1},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c := &cdxDoc{
+				doc:     tt.fields.doc,
+				spec:    tt.fields.spec,
+				comps:   tt.fields.comps,
+				authors: tt.fields.authors,
+				tools:   tt.fields.tools,
+				rels:    tt.fields.rels,
+				logs:    tt.fields.logs,
+			}
+			c.parseComps()
+			if got := c.comps[tt.args.index].Purls(); len(got) != tt.want {
 				t.Errorf("cdxDoc.parseComps() = %d, want %d", len(got), tt.want)
 			}
 		})

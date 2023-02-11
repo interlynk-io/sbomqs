@@ -6,6 +6,7 @@ require (
 	github.com/CycloneDX/cyclonedx-go v0.7.0
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.6.1
 	github.com/olekukonko/tablewriter v0.0.5
+	github.com/package-url/packageurl-go v0.1.0
 	github.com/samber/lo v1.37.0
 	github.com/spdx/tools-golang v0.4.0
 	github.com/spf13/cobra v1.6.1

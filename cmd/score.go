@@ -33,7 +33,6 @@ var scoreCmd = &cobra.Command{
 	Short: "provides a comprehensive quality score for your sbom",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := logger.WithLogger(context.Background())
-
 		var err error
 
 		if len(inFile) > 0 {

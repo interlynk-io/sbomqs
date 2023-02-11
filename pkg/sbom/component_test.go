@@ -18,6 +18,7 @@ import (
 	"testing"
 
 	"github.com/interlynk-io/sbomqs/pkg/cpe"
+	"github.com/interlynk-io/sbomqs/pkg/purl"
 )
 
 func TestGetCpeFromCompo(t *testing.T) {
@@ -36,6 +37,27 @@ func TestGetCpeFromCompo(t *testing.T) {
 			}
 			if len(tt.input) != len(cp.cpes) {
 				t.Errorf("got %d, want %d", len(cp.cpes), len(tt.input))
+			}
+		})
+	}
+}
+
+func Test_component_Purls(t *testing.T) {
+	var tests = []struct {
+		name  string
+		input []purl.PURL
+		want  int
+	}{
+		{"1 PURL set on component", []purl.PURL{"pkg:golang/github.com/dummy/dummyArrayLib@v2.4.1"}, 1},
+		{"0 PURL set on component", []purl.PURL{""}, 0},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			pl := component{
+				purls: tt.input,
+			}
+			if len(tt.input) != len(pl.purls) {
+				t.Errorf("got %d, want %d", len(pl.purls), len(tt.input))
 			}
 		})
 	}
