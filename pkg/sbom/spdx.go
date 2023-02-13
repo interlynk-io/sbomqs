@@ -420,6 +420,7 @@ func (s *spdxDoc) addSupplierName(index int) string {
 
 	if pkg.PackageSupplier == nil {
 		s.addToLogs(fmt.Sprintf("spdx doc pkg %s at index %d no supplier found", pkg.PackageName, index))
+		return ""
 	}
 
 	name := strings.ToLower(pkg.PackageSupplier.Supplier)
