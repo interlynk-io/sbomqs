@@ -40,6 +40,9 @@ var scoreCmd = &cobra.Command{
 			err = processFile(ctx, inFile, false)
 		} else if len(inDirPath) > 0 {
 			err = processDir(ctx, inDirPath)
+		} else if len(args) > 0 {
+			// if file and file path arguments are missing
+			err = processFile(ctx, args[0], false)
 		}
 
 		return err
