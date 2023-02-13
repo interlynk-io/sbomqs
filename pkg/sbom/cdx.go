@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"strings"
 
 	cydx "github.com/CycloneDX/cyclonedx-go"
 	"github.com/samber/lo"
@@ -180,9 +181,7 @@ func (c *cdxDoc) parseComps() {
 
 		nc.version = sc.Version
 		nc.name = sc.Name
-		if sc.Supplier != nil {
-			nc.supplerName = sc.Supplier.Name
-		}
+		nc.supplierName = c.addSupplierName(index)
 		nc.purpose = string(sc.Type)
 		nc.isReqFieldsPresent = c.pkgRequiredFields(index)
 		nc.purls = []string{sc.PackageURL}
@@ -310,4 +309,20 @@ func (c *cdxDoc) parseRels() {
 		}
 	}
 
+}
+func (c *cdxDoc) addSupplierName(index int) string {
+	comp := lo.FromPtr(c.doc.Components)[index]
+
+	if comp.Supplier == nil {
+		c.addToLogs(fmt.Sprintf("cdx doc comp %s at index %d no supplier found", comp.Name, index))
+		return ""
+	}
+
+	name := strings.ToLower(comp.Supplier.Name)
+
+	if name == "" {
+		c.addToLogs(fmt.Sprintf("cdx doc comp %s at index %d no supplier found", comp.Name, index))
+		return ""
+	}
+	return name
 }
