@@ -315,6 +315,7 @@ func (c *cdxDoc) addSupplierName(index int) string {
 
 	if comp.Supplier == nil {
 		c.addToLogs(fmt.Sprintf("cdx doc comp %s at index %d no supplier found", comp.Name, index))
+		return ""
 	}
 
 	name := strings.ToLower(comp.Supplier.Name)
