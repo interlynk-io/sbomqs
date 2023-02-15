@@ -41,7 +41,14 @@ func sampleDocs() []sbom.Document {
 	fakeComp3.LicensesReturns([]sbom.License{})
 	fakeDoc3.ComponentsReturns([]sbom.Component{fakeComp3})
 
-	return []sbom.Document{fakeDoc, fakeDoc2, fakeDoc3}
+	var fakeLicDep = &sbomfakes.FakeLicense{}
+	var fakeComp4 = &sbomfakes.FakeComponent{}
+	var fakeDoc4 = &sbomfakes.FakeDocument{}
+	fakeLicDep.DeprecatedReturns(true)
+	fakeComp4.LicensesReturns([]sbom.License{fakeLicDep})
+	fakeDoc4.ComponentsReturns([]sbom.Component{fakeComp4})
+
+	return []sbom.Document{fakeDoc, fakeDoc2, fakeDoc3, fakeDoc4}
 }
 
 func Test_compWithRestrictedLicensesScore(t *testing.T) {
@@ -63,6 +70,29 @@ func Test_compWithRestrictedLicensesScore(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := compWithRestrictedLicensesScore(tt.args.d); got.score != tt.want {
 				t.Errorf("compWithRestrictedLicensesScore() = %v, want %v", got.score, tt.want)
+			}
+		})
+	}
+}
+
+func Test_compWithNoDepLicensesScore(t *testing.T) {
+	testDocs := sampleDocs()
+	type args struct {
+		d sbom.Document
+	}
+	tests := []struct {
+		name string
+		args args
+		want float64
+	}{
+		{"Doc has no deprecated licenses", args{d: testDocs[0]}, 10.0},
+		{"Doc has deprecated licenses", args{d: testDocs[3]}, 0.0},
+		{"Doc has no licenses", args{d: testDocs[2]}, 0.0},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := compWithNoDepLicensesScore(tt.args.d); got.score != tt.want {
+				t.Errorf("compWithNoDepLicensesScore() = %v, want %v", got.score, tt.want)
 			}
 		})
 	}
