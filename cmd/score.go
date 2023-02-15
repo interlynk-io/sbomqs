@@ -35,6 +35,13 @@ var scoreCmd = &cobra.Command{
 		ctx := logger.WithLogger(context.Background())
 
 		var err error
+		if len(category) > 0 && !lo.Contains(scorer.Categories, category) {
+			return fmt.Errorf(fmt.Sprintf("Category not found %s in %s", category, strings.Join(scorer.Categories, ",")))
+		}
+
+		if len(reportFormat) > 0 && !lo.Contains(reporter.ReportFormats, reportFormat) {
+			return fmt.Errorf("report format options are basic or detailed")
+		}
 
 		if len(inFile) > 0 {
 			err = processFile(ctx, inFile, false)
@@ -79,14 +86,6 @@ func processFile(ctx context.Context, filePath string, basic bool) error {
 		log.Debugf("%s\n", err)
 		fmt.Printf("failed to parse %s\n", filePath)
 		return err
-	}
-
-	if len(category) > 0 && !lo.Contains(scorer.Categories, category) {
-		return fmt.Errorf(fmt.Sprintf("Category not found %s in %s", category, strings.Join(scorer.Categories, ",")))
-	}
-
-	if len(reportFormat) > 0 && !lo.Contains(reporter.ReportFormats, reportFormat) {
-		return fmt.Errorf("report format options are basic or detailed")
 	}
 
 	sr := scorer.NewScorer(ctx,
