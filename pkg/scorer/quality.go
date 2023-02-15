@@ -112,6 +112,11 @@ func compWithPrimaryPackageScore(d sbom.Document) score {
 func compWithNoDepLicensesScore(d sbom.Document) score {
 	s := newScore(CategoryQuality, string(compWithNoDepLicenses))
 	totalComponents := len(d.Components())
+
+	totalLicenses := lo.Reduce(d.Components(), func(agg int, c sbom.Component, _ int) int {
+		return agg + len(c.Licenses())
+	}, 0)
+
 	withDepLicense := lo.CountBy(d.Components(), func(c sbom.Component) bool {
 		deps := lo.CountBy(c.Licenses(), func(l sbom.License) bool {
 			return l.Deprecated()
@@ -119,15 +124,25 @@ func compWithNoDepLicensesScore(d sbom.Document) score {
 		return deps > 0
 	})
 
-	finalScore := (float64(totalComponents-withDepLicense) / float64(totalComponents)) * 10.0
-	s.setScore(finalScore)
-	s.setDesc(fmt.Sprintf("%d/%d components have deprecated licenses", withDepLicense, totalComponents))
+	if totalLicenses == 0 {
+		s.setScore(0.0)
+		s.setDesc("no licenses found")
+	} else {
+		finalScore := (float64(totalComponents-withDepLicense) / float64(totalComponents)) * 10.0
+		s.setScore(finalScore)
+		s.setDesc(fmt.Sprintf("%d/%d components have deprecated licenses", withDepLicense, totalComponents))
+	}
 	return *s
 }
 
 func compWithRestrictedLicensesScore(d sbom.Document) score {
 	s := newScore(CategoryQuality, string(compWithRestrictedLicenses))
 	totalComponents := len(d.Components())
+
+	totalLicenses := lo.Reduce(d.Components(), func(agg int, c sbom.Component, _ int) int {
+		return agg + len(c.Licenses())
+	}, 0)
+
 	withRestrictLicense := lo.CountBy(d.Components(), func(c sbom.Component) bool {
 		rest := lo.CountBy(c.Licenses(), func(l sbom.License) bool {
 			return licenses.RestrictedLicense(l.Name())
@@ -135,8 +150,13 @@ func compWithRestrictedLicensesScore(d sbom.Document) score {
 		return rest > 0
 	})
 
-	finalScore := (float64(totalComponents-withRestrictLicense) / float64(totalComponents)) * 10.0
-	s.setScore(finalScore)
-	s.setDesc(fmt.Sprintf("%d/%d components have restricted licenses", withRestrictLicense, totalComponents))
+	if totalLicenses == 0 {
+		s.setScore(0.0)
+		s.setDesc("no licenses found")
+	} else {
+		finalScore := (float64(totalComponents-withRestrictLicense) / float64(totalComponents)) * 10.0
+		s.setScore(finalScore)
+		s.setDesc(fmt.Sprintf("%d/%d components have restricted licenses", withRestrictLicense, totalComponents))
+	}
 	return *s
 }

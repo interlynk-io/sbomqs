@@ -21,6 +21,7 @@ import (
 	"github.com/interlynk-io/sbomqs/pkg/licenses"
 )
 
+//counterfeiter:generate . License
 type License interface {
 	Short() string
 	Name() string
