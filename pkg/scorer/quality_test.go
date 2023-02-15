@@ -10,44 +10,60 @@
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
-// limitations under the License
+// limitations under the License.
 
 package scorer
 
 import (
-	"context"
-	"os"
 	"testing"
 
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
+	"github.com/interlynk-io/sbomqs/pkg/sbom/sbomfakes"
 )
 
-// test scenario for restricted license score
-func TestCompWithRestrictedLicensesScore(t *testing.T) {
-	ctx := context.Background()
-	var tests = []struct {
-		name      string
-		inputPath string
-		want      float64
+func sampleDocs() []sbom.Document {
+	var fakeLicRestrictive = &sbomfakes.FakeLicense{}
+	var fakeRestComp = &sbomfakes.FakeComponent{}
+	var fakeDoc2 = &sbomfakes.FakeDocument{}
+	fakeLicRestrictive.NameReturns("GPL-3.0")
+	fakeRestComp.LicensesReturns([]sbom.License{fakeLicRestrictive})
+	fakeDoc2.ComponentsReturns([]sbom.Component{fakeRestComp})
+
+	var fakeLicNonRestrictive = &sbomfakes.FakeLicense{}
+	var fakeComp = &sbomfakes.FakeComponent{}
+	var fakeDoc = &sbomfakes.FakeDocument{}
+	fakeLicNonRestrictive.NameReturns("MIT")
+	fakeComp.LicensesReturns([]sbom.License{fakeLicNonRestrictive})
+	fakeDoc.ComponentsReturns([]sbom.Component{fakeComp})
+
+	var fakeComp3 = &sbomfakes.FakeComponent{}
+	var fakeDoc3 = &sbomfakes.FakeDocument{}
+	fakeComp3.LicensesReturns([]sbom.License{})
+	fakeDoc3.ComponentsReturns([]sbom.Component{fakeComp3})
+
+	return []sbom.Document{fakeDoc, fakeDoc2, fakeDoc3}
+}
+
+func Test_compWithRestrictedLicensesScore(t *testing.T) {
+	testDocs := sampleDocs()
+
+	type args struct {
+		d sbom.Document
+	}
+	tests := []struct {
+		name string
+		args args
+		want float64
 	}{
-		{"With Restricted File", "../../samples/julia.spdx.json", float64(8.823529411764707)},
-		{"Without Restricted File", "../../samples/sbomqs.syft-spdx.json", float64(10)},
+		{"Doc has no restrictive licenses", args{d: testDocs[0]}, 10.0},
+		{"Doc has restrictive licenses", args{d: testDocs[1]}, 0.0},
+		{"Doc has no licenses", args{d: testDocs[2]}, 0.0},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			f, err := os.Open(tt.inputPath)
-			if err != nil {
-				t.Errorf("os.Open failed for file :%s\n", tt.inputPath)
-				return
-			}
-			defer f.Close()
-			doc, _ := sbom.NewSBOMDocument(ctx, f)
-			score := compWithRestrictedLicensesScore(doc)
-			if score.score != tt.want {
-				t.Errorf("got %f, want %f", score.score, tt.want)
+			if got := compWithRestrictedLicensesScore(tt.args.d); got.score != tt.want {
+				t.Errorf("compWithRestrictedLicensesScore() = %v, want %v", got.score, tt.want)
 			}
 		})
 	}
-
 }
-

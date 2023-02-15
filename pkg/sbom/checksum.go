@@ -14,6 +14,7 @@
 
 package sbom
 
+//counterfeiter:generate . Checksum
 type Checksum interface {
 	Algo() string
 	Content() string

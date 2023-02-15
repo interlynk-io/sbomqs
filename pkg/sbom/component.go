@@ -14,6 +14,7 @@
 
 package sbom
 
+//counterfeiter:generate . Component
 type Component interface {
 	ID() string
 	SupplierName() string

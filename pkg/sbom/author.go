@@ -14,6 +14,7 @@
 
 package sbom
 
+//counterfeiter:generate . Author
 type Author interface {
 	Name() string
 	Type() string

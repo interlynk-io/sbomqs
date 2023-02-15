@@ -138,6 +138,7 @@ func compWithNoDepLicensesScore(d sbom.Document) score {
 func compWithRestrictedLicensesScore(d sbom.Document) score {
 	s := newScore(CategoryQuality, string(compWithRestrictedLicenses))
 	totalComponents := len(d.Components())
+
 	totalLicenses := lo.Reduce(d.Components(), func(agg int, c sbom.Component, _ int) int {
 		return agg + len(c.Licenses())
 	}, 0)
