@@ -22,24 +22,24 @@ We use go-release to compile pre-built binaries for Linux/Mac and Windows for AM
 You can use this to try out the tool, without requiring to install golang. Find the binaries
 in the releases link below. 
 
-```
+```console
 https://github.com/interlynk-io/sbomqs/releases
 ```
 
 ##### Using Go install
 Using go install is an easy way to install the binary. Once compiled this will be installed 
 in $(GOBIN) or $(GOPATH)/bin or $(GOROOT)/bin. 
-```
+```console
 go install github.com/interlynk-io/sbomqs@latest
 ```
 
 ##### Using repo
 This approach invovles cloning the repo and building it. 
 
-1. Clone the repo ```git clone git@github.com:interlynk-io/sbomqs.git```
+1. Clone the repo `git clone git@github.com:interlynk-io/sbomqs.git`
 2. `cd` into `sbomqs` folder 
 3. make build
-4. To test if the build was successful run the following command ```./build/sbomqs version```
+4. To test if the build was successful run the following command `./build/sbomqs version`
 
 ### Getting access to SBOMS
 For new users, we have listed a few places, where you could find sample sboms.
@@ -55,8 +55,7 @@ The scores from each feature are averaged to provide an aggregate score.
 ### Usage and examples
 ##### Using single file option
 Sbomqs can run with just a single argument pointing to an sbom file 
-```
-With --filepath arguments
+```console
 ➜  sbomqs git:(main) ./build/sbomqs score --filepath ./samples/julia.spdx.json
 Without --filepath arguments (Default)
 ➜  sbomqs git:(main) ./build/sbomqs score -f ./samples/julia.spdx.json
@@ -64,32 +63,32 @@ SBOM Quality Score: 6.9 ./samples/julia.spdx.json
 +-----------------------+--------------------------------+-----------+--------------------------------+
 |       CATEGORY        |            FEATURE             |   SCORE   |              DESC              |
 +-----------------------+--------------------------------+-----------+--------------------------------+
-| NTIA-minimum-elements | Doc has authors                | 10.0/10.0 | doc has 2 authors              |
+| NTIA-minimum-elements | Components have versions       | 0.3/10.0  | 1/34 have versions             |
 +                       +--------------------------------+-----------+--------------------------------+
-|                       | Components have names          | 10.0/10.0 | 34/34 have names               |
-+                       +--------------------------------+-----------+--------------------------------+
-|                       | Components have supplier names | 0.6/10.0  | 2/34 have supplier names       |
-+                       +--------------------------------+-----------+--------------------------------+
-|                       | Components have uniq ids       | 0.0/10.0  | 0/34 have unique ID's          |
+|                       | Doc has authors                | 10.0/10.0 | doc has 2 authors              |
 +                       +--------------------------------+-----------+--------------------------------+
 |                       | Doc has relationships          | 10.0/10.0 | doc has 1 relationships        |
 +                       +--------------------------------+-----------+--------------------------------+
-|                       | Components have versions       | 0.3/10.0  | 1/34 have versions             |
+|                       | Components have uniq ids       | 0.0/10.0  | 0/34 have unique ID's          |
++                       +--------------------------------+-----------+--------------------------------+
+|                       | Components have names          | 10.0/10.0 | 34/34 have names               |
 +                       +--------------------------------+-----------+--------------------------------+
 |                       | Doc has creation timestamp     | 10.0/10.0 | doc has creation timestamp     |
 |                       |                                |           | 2021-12-21T07:13:19Z           |
++                       +--------------------------------+-----------+--------------------------------+
+|                       | Components have supplier names | 0.6/10.0  | 2/34 have supplier names       |
 +-----------------------+--------------------------------+-----------+--------------------------------+
-| Quality               | Components have valid spdx     | 9.3/10.0  | 33/34 components with valid    |
-|                       | licenses                       |           | license                        |
+| Quality               | Components have no restricted  | 8.8/10.0  | 4/34 components have           |
+|                       | licenses                       |           | restricted licenses            |
 +                       +--------------------------------+-----------+--------------------------------+
 |                       | Components have primary        | 0.0/10.0  | 0/34 components have primary   |
 |                       | purpose defined                |           | purpose specified              |
 +                       +--------------------------------+-----------+--------------------------------+
+|                       | Components have valid spdx     | 9.3/10.0  | 33/34 components with valid    |
+|                       | licenses                       |           | license                        |
++                       +--------------------------------+-----------+--------------------------------+
 |                       | Components have no deprecated  | 9.7/10.0  | 1/34 components have           |
 |                       | licenses                       |           | deprecated licenses            |
-+                       +--------------------------------+-----------+--------------------------------+
-|                       | Components have no restricted  | 8.8/10.0  | 4/34 components have           |
-|                       | licenses                       |           | restricted licenses            |
 +                       +--------------------------------+-----------+--------------------------------+
 |                       | Components have multiple       | 0.0/10.0  | comp with uniq ids: cpe:0,     |
 |                       | formats of uniq ids            |           | purl:0, total:34               |
@@ -104,14 +103,7 @@ SBOM Quality Score: 6.9 ./samples/julia.spdx.json
 | Sharing               | Doc sharable license           | 10.0/10.0 | doc has a sharable license     |
 |                       |                                |           | free 1 :: of 1                 |
 +-----------------------+--------------------------------+-----------+--------------------------------+
-| Structural            | Spec is parsable               | 10.0/10.0 | provided sbom is parsable      |
-+                       +--------------------------------+-----------+--------------------------------+
-|                       | Spec File Format               | 10.0/10.0 | provided sbom should be in     |
-|                       |                                |           | supported file format for      |
-|                       |                                |           | spec: json and version:        |
-|                       |                                |           | json,yaml,rdf,tag-value        |
-+                       +--------------------------------+-----------+--------------------------------+
-|                       | SBOM Specification             | 10.0/10.0 | provided sbom is in a          |
+| Structural            | SBOM Specification             | 10.0/10.0 | provided sbom is in a          |
 |                       |                                |           | supported sbom format of       |
 |                       |                                |           | spdx,cyclonedx                 |
 +                       +--------------------------------+-----------+--------------------------------+
@@ -119,12 +111,19 @@ SBOM Quality Score: 6.9 ./samples/julia.spdx.json
 |                       |                                |           | supported spec version for     |
 |                       |                                |           | spec:SPDX-2.2 and versions:    |
 |                       |                                |           | SPDX-2.1,SPDX-2.2,SPDX-2.3     |
++                       +--------------------------------+-----------+--------------------------------+
+|                       | Spec is parsable               | 10.0/10.0 | provided sbom is parsable      |
++                       +--------------------------------+-----------+--------------------------------+
+|                       | Spec File Format               | 10.0/10.0 | provided sbom should be in     |
+|                       |                                |           | supported file format for      |
+|                       |                                |           | spec: json and version:        |
+|                       |                                |           | json,yaml,rdf,tag-value        |
 +-----------------------+--------------------------------+-----------+--------------------------------+
 ```
 
 ##### Using directory option
 You can point sbomqs to a directory containing sboms and just print out the score per file, instead of the details 
-```
+```console
 ➜  sbomqs git:(main) ./build/sbomqs score --dirpath ../sbom-samples/repos --reportFormat basic | sort
 6.3	../sbom-samples/repos/trivy-cartography.spdx
 6.3	../sbom-samples/repos/trivy-cartography.spdx.json
@@ -142,7 +141,7 @@ You can point sbomqs to a directory containing sboms and just print out the scor
 
 ##### Using directory with category scoring option
 You can evaluate your SBOM's based on specific categories, as described [here](#categories).
-```
+```console
 ➜  sbomqs git:(main) ./build/sbomqs score --dirpath ../sbom-samples/repos --reportFormat basic --category NTIA-minimum-elements | sort
 7.4	../sbom-samples/repos/trivy-cartography.spdx
 7.4	../sbom-samples/repos/trivy-cartography.spdx.json
@@ -200,9 +199,9 @@ Doc has sharable license | check if the sbom doc has an unemcumbered license whi
 We look forward to your contributions, below are a few guidelines on how to submit them 
 
 - Fork the repo
-- Create your feature/bug branch (```git checkout -b feature/new-feature```)
-- Commit your changes (```git commit -am "awesome new feature"```)
-- Push your changes (```git push origin feature/new-feature```)
+- Create your feature/bug branch (`git checkout -b feature/new-feature`)
+- Commit your changes (`git commit -am "awesome new feature"`)
+- Push your changes (`git push origin feature/new-feature`)
 - Create a new pull-request
 
 ## Stargazers over time

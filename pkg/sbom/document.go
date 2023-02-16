@@ -14,6 +14,9 @@
 
 package sbom
 
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
+
+//counterfeiter:generate . Document
 type Document interface {
 	Spec() Spec
 	Components() []Component

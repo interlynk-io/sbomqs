@@ -51,8 +51,12 @@ dep:
 	go mod vendor
 	go mod tidy
 
+.PHONY: generate 
+generate:
+	go generate ./...
+
 .PHONY: test
-test:
+test: generate
 	go test -cover -race ./...
 
 .PHONY: build

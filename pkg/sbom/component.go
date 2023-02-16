@@ -14,6 +14,7 @@
 
 package sbom
 
+//counterfeiter:generate . Component
 type Component interface {
 	ID() string
 	SupplierName() string
@@ -31,9 +32,9 @@ type Component interface {
 }
 
 type component struct {
-	supplerName string
-	name        string
-	version     string
+	supplierName string
+	name         string
+	version      string
 
 	purls []string
 	cpes  []string
@@ -51,7 +52,7 @@ func newComponent() *component {
 }
 
 func (c component) SupplierName() string {
-	return c.supplerName
+	return c.supplierName
 }
 func (c component) Name() string {
 	return c.name

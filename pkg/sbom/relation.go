@@ -14,6 +14,7 @@
 
 package sbom
 
+//counterfeiter:generate . Relation
 type Relation interface {
 	From() string
 	To() string
