@@ -192,6 +192,8 @@ func (c *cdxDoc) parseComps() {
 		} else {
 			c.addToLogs(fmt.Sprintf("cdx doc component %s at index %d invalid cpes found", sc.Name, index))
 		}
+
+		npurl := purl.NewPURL(sc.PackageURL)
 		if npurl.Valid() {
 			nc.purls = []purl.PURL{npurl}
 		} else {
