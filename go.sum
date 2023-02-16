@@ -23,6 +23,8 @@ github.com/maxbrunsfeld/counterfeiter/v6 v6.6.1/go.mod h1:qbKwBR+qQODzH2WD/s53md
 github.com/olekukonko/tablewriter v0.0.5 h1:P2Ga83D34wi1o9J6Wh1mRuqd4mF/x/lgBS7N7AbDhec=
 github.com/olekukonko/tablewriter v0.0.5/go.mod h1:hPp6KlRPjbx+hW8ykQs1w3UBbZlj6HuIJcUGPhkA7kY=
 github.com/onsi/gomega v1.26.0 h1:03cDLK28U6hWvCAns6NeydX3zIm4SF3ci69ulidS32Q=
+github.com/package-url/packageurl-go v0.1.0 h1:efWBc98O/dBZRg1pw2xiDzovnlMjCa9NPnfaiBduh8I=
+github.com/package-url/packageurl-go v0.1.0/go.mod h1:C/ApiuWpmbpni4DIOECf6WCjFUZV7O1Fx7VAzrZHgBw=
 github.com/pkg/errors v0.8.1 h1:iURUrRGxPUNPdy5/HRSm+Yj6okJ6UtLINN0Q9M4+h3I=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=

@@ -22,6 +22,7 @@ import (
 
 	"github.com/interlynk-io/sbomqs/pkg/cpe"
 	"github.com/interlynk-io/sbomqs/pkg/logger"
+	"github.com/interlynk-io/sbomqs/pkg/purl"
 	spdx_json "github.com/spdx/tools-golang/json"
 	spdx_rdf "github.com/spdx/tools-golang/rdfloader"
 	spdx_common "github.com/spdx/tools-golang/spdx/common"
@@ -293,8 +294,8 @@ func (s *spdxDoc) pkgRequiredFields(index int) bool {
 
 }
 
-func (s *spdxDoc) purls(index int) []string {
-	urls := []string{}
+func (s *spdxDoc) purls(index int) []purl.PURL {
+	urls := []purl.PURL{}
 	pkg := s.doc.Packages[index]
 
 	if len(pkg.PackageExternalReferences) == 0 {
@@ -304,7 +305,12 @@ func (s *spdxDoc) purls(index int) []string {
 
 	for _, p := range pkg.PackageExternalReferences {
 		if strings.ToLower(p.RefType) == spdx_common.TypePackageManagerPURL {
-			urls = append(urls, p.Locator)
+			prl := purl.NewPURL(p.Locator)
+			if prl.Valid() {
+				urls = append(urls, prl)
+			} else {
+				s.addToLogs(fmt.Sprintf("spdx doc pkg %s at index %d invalid purl found", pkg.PackageName, index))
+			}
 		}
 	}
 

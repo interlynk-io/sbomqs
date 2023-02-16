@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/interlynk-io/sbomqs/pkg/cpe"
+	"github.com/interlynk-io/sbomqs/pkg/purl"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 )
 
@@ -69,15 +70,15 @@ type FakeComponent struct {
 	primaryPurposeReturnsOnCall map[int]struct {
 		result1 string
 	}
-	PurlsStub        func() []string
+	PurlsStub        func() []purl.PURL
 	purlsMutex       sync.RWMutex
 	purlsArgsForCall []struct {
 	}
 	purlsReturns struct {
-		result1 []string
+		result1 []purl.PURL
 	}
 	purlsReturnsOnCall map[int]struct {
-		result1 []string
+		result1 []purl.PURL
 	}
 	RequiredFieldsStub        func() bool
 	requiredFieldsMutex       sync.RWMutex
@@ -431,7 +432,7 @@ func (fake *FakeComponent) PrimaryPurposeReturnsOnCall(i int, result1 string) {
 	}{result1}
 }
 
-func (fake *FakeComponent) Purls() []string {
+func (fake *FakeComponent) Purls() []purl.PURL {
 	fake.purlsMutex.Lock()
 	ret, specificReturn := fake.purlsReturnsOnCall[len(fake.purlsArgsForCall)]
 	fake.purlsArgsForCall = append(fake.purlsArgsForCall, struct {
@@ -455,32 +456,32 @@ func (fake *FakeComponent) PurlsCallCount() int {
 	return len(fake.purlsArgsForCall)
 }
 
-func (fake *FakeComponent) PurlsCalls(stub func() []string) {
+func (fake *FakeComponent) PurlsCalls(stub func() []purl.PURL) {
 	fake.purlsMutex.Lock()
 	defer fake.purlsMutex.Unlock()
 	fake.PurlsStub = stub
 }
 
-func (fake *FakeComponent) PurlsReturns(result1 []string) {
+func (fake *FakeComponent) PurlsReturns(result1 []purl.PURL) {
 	fake.purlsMutex.Lock()
 	defer fake.purlsMutex.Unlock()
 	fake.PurlsStub = nil
 	fake.purlsReturns = struct {
-		result1 []string
+		result1 []purl.PURL
 	}{result1}
 }
 
-func (fake *FakeComponent) PurlsReturnsOnCall(i int, result1 []string) {
+func (fake *FakeComponent) PurlsReturnsOnCall(i int, result1 []purl.PURL) {
 	fake.purlsMutex.Lock()
 	defer fake.purlsMutex.Unlock()
 	fake.PurlsStub = nil
 	if fake.purlsReturnsOnCall == nil {
 		fake.purlsReturnsOnCall = make(map[int]struct {
-			result1 []string
+			result1 []purl.PURL
 		})
 	}
 	fake.purlsReturnsOnCall[i] = struct {
-		result1 []string
+		result1 []purl.PURL
 	}{result1}
 }
 
