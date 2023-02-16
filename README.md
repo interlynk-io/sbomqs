@@ -59,7 +59,7 @@ Sbomqs can run with just a single argument pointing to an sbom file
 With --filepath arguments
 ➜  sbomqs git:(main) ./build/sbomqs score --filepath ./samples/julia.spdx.json
 Without --filepath arguments (Default)
-➜  sbomqs git:(main) ./build/sbomqs score ./samples/julia.spdx.json
+➜  sbomqs git:(main) ./build/sbomqs score -f ./samples/julia.spdx.json
 SBOM Quality Score: 6.9 ./samples/julia.spdx.json
 +-----------------------+--------------------------------+-----------+--------------------------------+
 |       CATEGORY        |            FEATURE             |   SCORE   |              DESC              |

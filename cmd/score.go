@@ -40,9 +40,6 @@ var scoreCmd = &cobra.Command{
 			err = processFile(ctx, inFile, false)
 		} else if len(inDirPath) > 0 {
 			err = processDir(ctx, inDirPath)
-		} else if len(args) > 0 {
-			// if file and file path arguments are missing
-			err = processFile(ctx, args[0], false)
 		}
 
 		return err
@@ -51,11 +48,11 @@ var scoreCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(scoreCmd)
-	scoreCmd.Flags().StringVar(&inFile, "filepath", "", "sbom file path")
-	scoreCmd.Flags().StringVar(&inDirPath, "dirpath", "", "sbom dir path")
+	scoreCmd.Flags().StringVarP(&inFile, "filepath", "f", "", "sbom file path")
+	scoreCmd.Flags().StringVarP(&inDirPath, "dirpath", "d", "", "sbom dir path")
 	scoreCmd.MarkFlagsMutuallyExclusive("filepath", "dirpath")
-	scoreCmd.Flags().StringVar(&category, "category", "", "scoring category")
-	scoreCmd.Flags().StringVar(&reportFormat, "reportFormat", "", "reporting format basic or detailed")
+	scoreCmd.Flags().StringVarP(&category, "category", "c", "", "scoring category")
+	scoreCmd.Flags().StringVarP(&reportFormat, "reportFormat", "r", "", "reporting format basic or detailed")
 }
 
 func processFile(ctx context.Context, filePath string, basic bool) error {
