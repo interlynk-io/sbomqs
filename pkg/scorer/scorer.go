@@ -21,6 +21,8 @@ import (
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 )
 
+const EngineVersion = "1"
+
 type Scorer struct {
 	ctx context.Context
 	doc sbom.Document
