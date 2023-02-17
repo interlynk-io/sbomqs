@@ -39,7 +39,7 @@ func cdxBOM() *cydx.BOM {
 			Name:       "go-testlib",
 			Version:    "v0.0.3",
 			PackageURL: "pkg:golang/github.com/interlynk-io/go-testlib@v0.0.3",
-			CPE: "cpe:2:a:golang:go-testlib:v0.0.3:*:*:*:*:*:*:*",
+			CPE:        "cpe:2:a:golang:go-testlib:v0.0.3:*:*:*:*:*:*:*",
 		},
 		{
 			BOMRef:     "pkg:golang/github.com/dummy/dummyLib@v3.0.0",
@@ -60,7 +60,7 @@ func cdxBOM() *cydx.BOM {
 			Name:       "dummyArrayLib",
 			Version:    "v2.4.1",
 			PackageURL: "pkg:golang/github.com/dummy/dummyArrayLib@v2.4.1",
-			CPE: "cpe:/o:dummy:dummyArrayLib:2.4.1:update4",
+			CPE:        "cpe:/o:dummy:dummyArrayLib:2.4.1:update4",
 			Supplier: &cydx.OrganizationalEntity{
 				Name: "",
 			},
@@ -138,8 +138,8 @@ func Test_cdxDoc_addSupplierName(t *testing.T) {
 
 func Test_cdxDoc_parseComps_Cpes(t *testing.T) {
 	type fields struct {
-		doc     *cydx.BOM
-		comps   []Component
+		doc   *cydx.BOM
+		comps []Component
 	}
 	type args struct {
 		index int
@@ -157,7 +157,8 @@ func Test_cdxDoc_parseComps_Cpes(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			c := &cdxDoc{
-				doc:     tt.fields.doc,
+				doc:   tt.fields.doc,
+				comps: tt.fields.comps,
 			}
 			c.parseComps()
 			if got := c.comps[tt.args.index].Cpes(); len(got) != tt.want {
@@ -168,16 +169,10 @@ func Test_cdxDoc_parseComps_Cpes(t *testing.T) {
 
 }
 
-
 func Test_cdxDoc_parseComps_purl(t *testing.T) {
 	type fields struct {
-		doc     *cydx.BOM
-		spec    *spec
-		comps   []Component
-		authors []Author
-		tools   []Tool
-		rels    []Relation
-		logs    []string
+		doc   *cydx.BOM
+		comps []Component
 	}
 	type args struct {
 		index int
@@ -195,13 +190,8 @@ func Test_cdxDoc_parseComps_purl(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			c := &cdxDoc{
-				doc:     tt.fields.doc,
-				spec:    tt.fields.spec,
-				comps:   tt.fields.comps,
-				authors: tt.fields.authors,
-				tools:   tt.fields.tools,
-				rels:    tt.fields.rels,
-				logs:    tt.fields.logs,
+				doc:   tt.fields.doc,
+				comps: tt.fields.comps,
 			}
 			c.parseComps()
 			if got := c.comps[tt.args.index].Purls(); len(got) != tt.want {

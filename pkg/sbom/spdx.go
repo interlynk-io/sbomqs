@@ -325,14 +325,13 @@ func (s *spdxDoc) purls(index int) []purl.PURL {
 func (s *spdxDoc) cpes(index int) []cpe.CPE {
 	urls := []cpe.CPE{}
 	pkg := s.doc.Packages[index]
-
 	if len(pkg.PackageExternalReferences) == 0 {
 		s.addToLogs(fmt.Sprintf("spdx doc pkg %s at index %d no cpes found", pkg.PackageName, index))
 		return urls
 	}
 
 	for _, p := range pkg.PackageExternalReferences {
-		if strings.ToLower(p.RefType) == spdx_common.TypeSecurityCPE23Type || strings.ToLower(p.RefType) == spdx_common.TypeSecurityCPE22Type {
+		if p.RefType == spdx_common.TypeSecurityCPE23Type || p.RefType == spdx_common.TypeSecurityCPE22Type {
 			cpeV := cpe.NewCPE(p.Locator)
 			if cpeV.Valid() {
 				urls = append(urls, cpeV)
