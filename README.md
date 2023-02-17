@@ -1,39 +1,178 @@
-## Overview
+<!--
+ Copyright 2023 Interlynk.io
+ 
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+ 
+     http://www.apache.org/licenses/LICENSE-2.0
+ 
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
 
-### What is SBOM quality score
-A quality SBOM is one that is accurate, complete, and up-to-date. It should accurately reflect the components and dependencies used in the underlying product, including their versions and optionally all known vulnerabilities. In addition, it should be easily accessible to; and understandable by stakeholders - such as developers, security teams, and compliance officers.
+# `sbomqs`: Quality metrics for sbom's 
+---
+[![Go Reference](https://pkg.go.dev/badge/github.com/interlynk-io/sbomqs.svg)](https://pkg.go.dev/github.com/interlynk-io/sbomqs)
+[![Go Report Card](https://goreportcard.com/badge/github.com/interlynk-io/sbomqs)](https://goreportcard.com/report/github.com/interlynk-io/sbomqs)
 
-[Interlyk.io](mailto:hello@interlynk.io) has developed sbomqs to simplify the evaluation of SBOM quality for all stakholders. A higher `sbomqs` score indicates greater usability of the SBOM contents.
+`sbomqs` is your primary tool to assess the quality of sboms. The higher the score the more consumable your sboms are. 
 
-`sbomqs` evaluates SBOM against the set of rquirements recommeneded by [NTIA Minimum Elements](https://www.ntia.doc.gov/files/ntia/publications/sbom_minimum_elements_report.pdf) and improved by [OWASP Software Component Verification Standard](https://scvs.owasp.org/) (Work in progress) and in the future the tool will continue to align with related community and regulatory requirements.
+```sh
+go install github.com/interlynk-io/sbomqs@latest
+```
+other installation [options](#installation).
 
-The output format is inspired by [OpenSSF Security Scorecard](https://securityscorecards.dev/).
+# What is a high quality SBOM
+A high quailty SBOM should allow for managements of assets, license, vulnerabilities, Intellectual Property, configuration management and incidence response. 
 
-### SBOM Support
-We support SPDX and CycloneDX sbom standards, in supported file formats:
-- CycloneDX: JSON, XML
-- SPDX: JSON, YAML, RDF, tag-value
+A quality SBOM is one that is accurate, complete, and up-to-date.There are many factors that go into constructing a good high quality sbom
+1. Identify & list all components of your product along with their transitive dependencies. 
+2. List all your components along with their versions & content checksums. 
+3. Include accurate component licenses. 
+4. Include accurate lookup identifiers i.e Purls/CPE. 
+5. Quality SBOM depends a lot upon which stage of the lifecycle it has been generated at, we believe closer to the build time is ideal. 
+6. Signed sboms.
+7. Should layout information based on industry standard specs like CycloneDX, SPDX and SWID. 
 
-### Installation 
-Use the steps below to try out the tool.
 
-#### Using Prebuild binaries 
-We use go-release to compile pre-built binaries for Linux/Mac and Windows for AMD64. 
-You can use this to try out the tool, without requiring to install golang. Find the binaries
-in the releases link below. 
+# Goals
+
+The main goals of the utility are
+1. Make it easy and fast to asses the quality of your sboms, generated or acquired. 
+2. Support all well known sbom standards. 
+3. Scoring output should be customizable.
+4. Scoring output should be consumable. 
+
+## Goal #1: Easy & Fast 
+
+SBOM can be generated using both commercial and open-source tooling. As consumers of SBOM we wanted a fast & easy way to assess the quality of an SBOM. An sbom with a low score, needs to be re-evaluated or rejected. 
+
+`sbomqs` makes getting a quick assesment, relatively painless. Just point. 
+
+```sh
+sbomqs score --filepath samples/julia.spdx.tv --reportFormat basic 
+6.9     samples/julia.spdx.json
+```
+
+## Goal #2: SBOM Standards
+
+NTIA recommends the following standards for SBOM's
+- SPDX
+- CycloneDX
+- SWID
+
+`sbomqs` supports SPDX and CycloneDX formats. Support for SWID is incoming. 
+
+In additon to supporting the sbom formats, we support various file formats 
+
+- **SPDX**: json, yaml, rdf and tag-value
+- **CycloneDX**: json and xml
+
+## Goal #3: Customizable ouptut 
+
+`sbomqs` scoring output can be customized by category or by feature. We understand everyone needs for scoring would not match ours, we have added customizability around which categories or features should or should not be included for scoring. 
+
+#### Category Scoring
+We have categorized our current features into the following categories 
+- **NTIA-minimum-elements**: Includes features, which help you quickly understand if your sboms comply with NTIA minimum element guidelines. 
+- **Structural**: We check if the SBOM complies with basic SPEC guides, be it SPDX or CycloneDX
+- **Semantic**: We check meaning of sbom fields specific to their standard. 
+- **Quality**: Help determine the quality of the data present in the sbom.
+- **Sharing**: Helps determine if the sbom can be shared. 
+- [OWASP BOM Maturity Model](https://docs.google.com/spreadsheets/d/1wu6KbgwuokC5357ikrhFN-QkwQ7Pyb6z0zE80sTNNus/edit#gid=0): Work in progress
+
+
+#### Feature Scoring
+At present individual features cannot be selected. We are working on adding this 
+[here](https://github.com/interlynk-io/sbomqs/issues/19)
+
+For the list of features currently supported, visit [features.md](./Features.md). 
+
+## Goal #4: Consumable ouptut 
+
+`sbomqs` provides its scoring output in basic and detailed forms. 
+
+Basic output is great for a quick check of the quality of our sboms. Once you get a good sense of how the tool works, this could also be your primary way of consuming data from this tool. 
+
+```sh 
+6.0     samples/blogifier-dotnet-SBOM.json
+6.9     samples/julia.spdx.json
+7.6     samples/sbom.spdx.yaml
+```
+
+Detailed output is presented in tabular and json formats currently 
+
+Tabular format: this format has been inspired by oss scorecard project. 
+```sh
+SBOM Quality Score: 6.0 samples/blogifier-dotnet-SBOM.json
++-----------------------+--------------------------------+-----------+--------------------------------+
+|       CATEGORY        |            FEATURE             |   SCORE   |              DESC              |
++-----------------------+--------------------------------+-----------+--------------------------------+
+| NTIA-minimum-elements | Doc has creation timestamp     | 10.0/10.0 | doc has creation timestamp     |
+|                       |                                |           | 2022-11-04T16:51:54Z           |
++                       +--------------------------------+-----------+--------------------------------+
+|                       | Components have supplier names | 0.0/10.0  | 0/1649 have supplier names     |
++                       +--------------------------------+-----------+--------------------------------+
+|                       | Components have names          | 10.0/10.0 | 1649/1649 have names           |
++                       +--------------------------------+-----------+--------------------------------+
+|                       | Doc has relationships          | 0.0/10.0  | doc has 0 relationships        |
++                       +--------------------------------+-----------+--------------------------------+
+...
+...
+```
+
+json format
+```json
+{
+  "run_id": "fc86a94d-7490-4f20-a202-b04bb3cdfde9",
+  "timestamp": "2023-02-17T14:58:55Z",
+  "creation_info": {
+    "name": "sbomqs",
+    "version": "v0.0.6-3-g248d059",
+    "scoring_engine_version": "1"
+  },
+  "files": [
+    {
+      "file_name": "samples/blogifier-dotnet-SBOM.json",
+      "spec": "cyclonedx",
+      "spec_version": "1.4",
+      "file_format": "json",
+      "avg_score": 6,
+      "scores": [
+        {
+          "category": "Structural",
+          "feature": "Spec File Format",
+          "score": 10,
+          "max_score": 10,
+          "description": "provided sbom should be in supported file format for spec: json and version: json,xml"
+        }
+      ]
+    }
+  ]
+}
+```
+
+
+# Installation 
+
+## Using Prebuilt binaries 
 
 ```console
 https://github.com/interlynk-io/sbomqs/releases
 ```
 
-##### Using Go install
-Using go install is an easy way to install the binary. Once compiled this will be installed 
-in $(GOBIN) or $(GOPATH)/bin or $(GOROOT)/bin. 
+## Using Go install
+
 ```console
 go install github.com/interlynk-io/sbomqs@latest
 ```
 
-##### Using repo
+## Using repo
+
 This approach invovles cloning the repo and building it. 
 
 1. Clone the repo `git clone git@github.com:interlynk-io/sbomqs.git`
@@ -41,188 +180,8 @@ This approach invovles cloning the repo and building it.
 3. make build
 4. To test if the build was successful run the following command `./build/sbomqs version`
 
-### Getting access to SBOMS
-For new users, we have listed a few places, where you could find sample sboms.
-- This repo has a [samples](https://github.com/interlynk-io/sbomqs/tree/main/samples) directory
-- If you use docker images and would like to generate an SBOM, follow the steps [here](https://docs.docker.com/engine/sbom/)
-- [Syft](https://github.com/anchore/syft) / [Trivy](https://github.com/aquasecurity/trivy) are open source tools which can be used to generate SBOM from containers as well as repos. 
-- Another public repository for SBOMS [bom-shelter](https://github.com/chainguard-dev/bom-shelter)
 
-### Scoring
-Each feature listed [below](#features) returns a score between 0 and 10. The more accurate, complete and up-to-date SBOM is the higher the score. 
-The scores from each feature are averaged to provide an aggregate score. 
-
-### Usage and examples
-##### Using single file option
-Sbomqs can run with just a single argument pointing to an sbom file 
-```console
-➜  sbomqs git:(main) ./build/sbomqs score --filepath ./samples/julia.spdx.json
-SBOM Quality Score: 6.9 ./samples/julia.spdx.json
-+-----------------------+--------------------------------+-----------+--------------------------------+
-|       CATEGORY        |            FEATURE             |   SCORE   |              DESC              |
-+-----------------------+--------------------------------+-----------+--------------------------------+
-| NTIA-minimum-elements | Components have versions       | 0.3/10.0  | 1/34 have versions             |
-+                       +--------------------------------+-----------+--------------------------------+
-|                       | Doc has authors                | 10.0/10.0 | doc has 2 authors              |
-+                       +--------------------------------+-----------+--------------------------------+
-|                       | Doc has relationships          | 10.0/10.0 | doc has 1 relationships        |
-+                       +--------------------------------+-----------+--------------------------------+
-|                       | Components have uniq ids       | 0.0/10.0  | 0/34 have unique ID's          |
-+                       +--------------------------------+-----------+--------------------------------+
-|                       | Components have names          | 10.0/10.0 | 34/34 have names               |
-+                       +--------------------------------+-----------+--------------------------------+
-|                       | Doc has creation timestamp     | 10.0/10.0 | doc has creation timestamp     |
-|                       |                                |           | 2021-12-21T07:13:19Z           |
-+                       +--------------------------------+-----------+--------------------------------+
-|                       | Components have supplier names | 0.6/10.0  | 2/34 have supplier names       |
-+-----------------------+--------------------------------+-----------+--------------------------------+
-| Quality               | Components have no restricted  | 8.8/10.0  | 4/34 components have           |
-|                       | licenses                       |           | restricted licenses            |
-+                       +--------------------------------+-----------+--------------------------------+
-|                       | Components have primary        | 0.0/10.0  | 0/34 components have primary   |
-|                       | purpose defined                |           | purpose specified              |
-+                       +--------------------------------+-----------+--------------------------------+
-|                       | Components have valid spdx     | 9.3/10.0  | 33/34 components with valid    |
-|                       | licenses                       |           | license                        |
-+                       +--------------------------------+-----------+--------------------------------+
-|                       | Components have no deprecated  | 9.7/10.0  | 1/34 components have           |
-|                       | licenses                       |           | deprecated licenses            |
-+                       +--------------------------------+-----------+--------------------------------+
-|                       | Components have multiple       | 0.0/10.0  | comp with uniq ids: cpe:0,     |
-|                       | formats of uniq ids            |           | purl:0, total:34               |
-+-----------------------+--------------------------------+-----------+--------------------------------+
-| Semantic              | Components have checksums      | 0.0/10.0  | 0/34 have checksums            |
-+                       +--------------------------------+-----------+--------------------------------+
-|                       | Doc has all required fields    | 10.0/10.0 | Doc Fields:true Pkg            |
-|                       |                                |           | Fields:true                    |
-+                       +--------------------------------+-----------+--------------------------------+
-|                       | Components have licenses       | 10.0/10.0 | 34/34 have licenses            |
-+-----------------------+--------------------------------+-----------+--------------------------------+
-| Sharing               | Doc sharable license           | 10.0/10.0 | doc has a sharable license     |
-|                       |                                |           | free 1 :: of 1                 |
-+-----------------------+--------------------------------+-----------+--------------------------------+
-| Structural            | SBOM Specification             | 10.0/10.0 | provided sbom is in a          |
-|                       |                                |           | supported sbom format of       |
-|                       |                                |           | spdx,cyclonedx                 |
-+                       +--------------------------------+-----------+--------------------------------+
-|                       | Spec Version                   | 10.0/10.0 | provided sbom should be in     |
-|                       |                                |           | supported spec version for     |
-|                       |                                |           | spec:SPDX-2.2 and versions:    |
-|                       |                                |           | SPDX-2.1,SPDX-2.2,SPDX-2.3     |
-+                       +--------------------------------+-----------+--------------------------------+
-|                       | Spec is parsable               | 10.0/10.0 | provided sbom is parsable      |
-+                       +--------------------------------+-----------+--------------------------------+
-|                       | Spec File Format               | 10.0/10.0 | provided sbom should be in     |
-|                       |                                |           | supported file format for      |
-|                       |                                |           | spec: json and version:        |
-|                       |                                |           | json,yaml,rdf,tag-value        |
-+-----------------------+--------------------------------+-----------+--------------------------------+
-```
-
-##### Using directory option
-You can point sbomqs to a directory containing sboms and just print out the score per file, instead of the details 
-```console
-➜  sbomqs git:(main) ./build/sbomqs score --dirpath ../sbom-samples/repos --reportFormat basic | sort
-6.3	../sbom-samples/repos/trivy-cartography.spdx
-6.3	../sbom-samples/repos/trivy-cartography.spdx.json
-6.8	../sbom-samples/repos/trivy-bom.spdx
-6.8	../sbom-samples/repos/trivy-bom.spdx.json
-6.8	../sbom-samples/repos/trivy-spdx-sbom-generator.spdx
-6.8	../sbom-samples/repos/trivy-spdx-sbom-generator.spdx.json
-6.8	../sbom-samples/repos/trivy-trivy-ci-test.spdx
-6.8	../sbom-samples/repos/trivy-trivy-ci-test.spdx.json
-7.2	../sbom-samples/repos/trivy-cartography.cdx.json
-7.3	../sbom-samples/repos/trivy-trivy-ci-test.cdx.json
-7.4	../sbom-samples/repos/trivy-bom.cdx.json
-7.4	../sbom-samples/repos/trivy-spdx-sbom-generator.cdx.json
-```
-
-##### Using directory with category scoring option
-You can evaluate your SBOM's based on specific categories, as described [here](#categories).
-```console
-➜  sbomqs git:(main) ./build/sbomqs score --dirpath ../sbom-samples/repos --reportFormat basic --category NTIA-minimum-elements | sort
-7.4	../sbom-samples/repos/trivy-cartography.spdx
-7.4	../sbom-samples/repos/trivy-cartography.spdx.json
-8.2	../sbom-samples/repos/trivy-cartography.cdx.json
-8.4	../sbom-samples/repos/trivy-bom.spdx
-8.4	../sbom-samples/repos/trivy-bom.spdx.json
-8.4	../sbom-samples/repos/trivy-spdx-sbom-generator.spdx
-8.4	../sbom-samples/repos/trivy-spdx-sbom-generator.spdx.json
-8.4	../sbom-samples/repos/trivy-trivy-ci-test.spdx
-8.4	../sbom-samples/repos/trivy-trivy-ci-test.spdx.json
-8.5	../sbom-samples/repos/trivy-bom.cdx.json
-8.5	../sbom-samples/repos/trivy-spdx-sbom-generator.cdx.json
-8.5	../sbom-samples/repos/trivy-trivy-ci-test.cdx.json
-```
-
-#### Using json output format
-We can output the quality score results as json
-```console
-➜  sbomqs ./build/sbomqs score --filepath samples/sbomqs.syft-spdx.json --reportFormat json
-{
-  "run_id": "b6c9b850-8f66-4b70-8d62-d8f29087e68a",
-  "timestamp": "2023-02-18T07:41:58Z",
-  "creation_info": {
-    "name": "sbomqs",
-    "version": "v0.0.6-2-g20e141c",
-    "scoring_engine_version": "1"
-  },
-  "files": [
-    {
-      "file_name": "samples/sbomqs.syft-spdx.json",
-      "spec": "spdx",
-      "spec_version": "SPDX-2.3",
-      "file_format": "json",
-      "avg_score": 6.15,
-      "scores": [
-        {
-          "category": "Quality",
-          "feature": "Components have no deprecated licenses",
-          "score": 0,
-          "max_score": 10,
-          "description": "no licenses found"
-        },
-```
-
-#### Categories 
-We have catergorizes scoring into 5 categories
-
-Name        | Description                               | 
------------ | ----------------------------------------- | 
-[NTIA-minimum-elements](https://www.ntia.doc.gov/files/ntia/publications/sbom_minimum_elements_report.pdf)  | NTIA has put forth certain minimum requirements that should exist in every SBOM, this category verifies if these requirements are satisfied  |
-Structural| In this category, we check if the SBOM complies with basic SPEC guides, be it spdx or cdx |
-Semantic| Semantic Quality covers test cases that check meaning of SBOM fields specific to specific standard and format | 
-Quality | These series of checks, help determine the quaility of the data in the SBOM|
-Sharing| These checks indicate if the sbom can be shared with someone else | 
-
-#### Features 
-Below is a listing of the various criteria we evaluate
-
-Name        | Description                               | 
------------ | ----------------------------------------- | 
-SBOM Specification | This criteria checks if the sbom file supports SPDX or CycloneDX | 
-SBOM Spec Version | This criteria checks if the sbom file is using the correct spec versions of the detected spec | 
-SBOM Spec file format | checks if the sbom file is in a spec compatible format e.g json, xml, rdf | 
-File is parsable | checks if the file can be parsed | 
-Components have Supplier Name | checks if the sbom components have supplier names | 
-Components have names | checks if the sbom components have names |
-Components have versions | checks if the sbom components have versions | 
-Components have uniq lookup ids | checks if the sbom components have either cpe or purl | 
-Components have licenses | checks if the sbom components have licenses |
-Components have checksums | checks if the sbom components have checksums | 
-Components have valid spdx licenses | checks if the sbom components have licenses which match the spdx license list |
-Components dont have deprecated licenses| checks if the sbom components dont have licenses that are deprecated |
-Components have all uniq lookup ids| checks if the sbom components have both purl and cpe | 
-Components have restricted licenses | checks if the sbom components have restricted licenses which match the restricted license list |
-Components have primary purpose defined | checks if the sbom components have a primary purpose defined e.g application/library|
-Doc has Relations | checks if sbom has specified relations between its components | 
-Doc has Authors | checks if sbom has authors i.e  person/ org or tool | 
-Doc has creation timestamp | check if the sbom has a creation timestamp | 
-Doc has require fields | check if the sbom has all the required fields as specified by the (spdx/cdx) spec | 
-Doc has sharable license | check if the sbom doc has an unemcumbered license which can aid in sharing | 
-
-
-## Contributions
+# Contributions
 We look forward to your contributions, below are a few guidelines on how to submit them 
 
 - Fork the repo
@@ -231,13 +190,6 @@ We look forward to your contributions, below are a few guidelines on how to subm
 - Push your changes (`git push origin feature/new-feature`)
 - Create a new pull-request
 
-## Stargazers over time
+# Stargazers
 
-[![Stargazers over time](https://starchart.cc/interlynk-io/sbomqs.svg)](https://starchart.cc/interlynk-io/sbomqs)
-
-
-
-
-
-
-
+[![Stargazers](https://starchart.cc/interlynk-io/sbomqs.svg)](https://starchart.cc/interlynk-io/sbomqs)
