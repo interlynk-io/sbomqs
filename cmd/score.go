@@ -51,8 +51,8 @@ func init() {
 	scoreCmd.Flags().StringVarP(&inFile, "filepath", "f", "", "sbom file path")
 	scoreCmd.Flags().StringVarP(&inDirPath, "dirpath", "d", "", "sbom dir path")
 	scoreCmd.MarkFlagsMutuallyExclusive("filepath", "dirpath")
-	scoreCmd.Flags().StringVarP(&category, "category", "c", "", "scoring category")
-	scoreCmd.Flags().StringVarP(&reportFormat, "reportFormat", "r", "", "reporting format basic or detailed")
+	scoreCmd.Flags().StringVarP(&category, "category", "c", "", "scoring category, options: ['NTIA-minimum-elements'|'Quality'|'Semantic'|'Sharing'|'Structural'|'All'] (default 'All')")
+	scoreCmd.Flags().StringVarP(&reportFormat, "reportFormat", "r", "", "reporting format basic or detailed, options:['basic'|'detailed'] (default 'detailed')")
 }
 
 func processFile(ctx context.Context, filePath string, basic bool) error {
