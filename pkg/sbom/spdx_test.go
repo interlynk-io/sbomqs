@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//     http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,7 +19,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/spdx/tools-golang/spdx/common"
 	spdx_common "github.com/spdx/tools-golang/spdx/common"
 	spdx "github.com/spdx/tools-golang/spdx/v2_3"
 )
@@ -33,7 +32,7 @@ func testSpdxDoc() *spdx.Document {
 		DocumentNamespace: "http://spdx.org/spdxdocs/spdx-example-444504E0-4F89-41D3-9A0C-0305E82C4401",
 		CreationInfo: &spdx.CreationInfo{
 			LicenseListVersion: "3.9",
-			Creators: []common.Creator{
+			Creators: []spdx_common.Creator{
 				{CreatorType: "Organization", Creator: "Interlynk.io ()"},
 				{CreatorType: "Person", Creator: "Ritesh Noronha ()"},
 			},
@@ -48,12 +47,32 @@ func testSpdxDoc() *spdx.Document {
 				PackageSupplier: &spdx_common.Supplier{
 					Supplier: "OWASP",
 				},
+				PackageExternalReferences: []*spdx.PackageExternalReference{
+					{
+						Locator: "pkg:golang/github.com/dummy/dummyArrayLib@v2.4.1",
+						RefType: spdx_common.TypePackageManagerPURL,
+					},
+					{
+						Locator: "cpe:2:a:golang:go-testlib:v0.0.3:*:*:*:*:*:*:*",
+						RefType: spdx_common.TypeSecurityCPE23Type,
+					},
+				},
 			},
 			{
 				PackageName:             "github.com/inconshreveable/mousetrap",
 				PackageSPDXIdentifier:   spdx_common.ElementID("go-module-github.com-inconshreveable-mousetrap-9434bd3d0b12ac21"),
 				PackageVersion:          "v1.0.1",
 				PackageDownloadLocation: "NOASSERTION",
+				PackageExternalReferences: []*spdx.PackageExternalReference{
+					{
+						Locator: "dummy:golang/github.com/dummy/dummyArrayLib@v2.4.1",
+						RefType: spdx_common.TypePackageManagerPURL,
+					},
+					{
+						Locator: "cpe:2.3:a:golang:dummyLib:v3.0.0:*:*:*:*:*:*:*",
+						RefType: spdx_common.TypeSecurityCPE23Type,
+					},
+				},
 			},
 			{
 				PackageName:             "github.com/jessevdk/go-flags",
@@ -62,6 +81,16 @@ func testSpdxDoc() *spdx.Document {
 				PackageDownloadLocation: "NOASSERTION",
 				PackageSupplier: &spdx_common.Supplier{
 					Supplier: "",
+				},
+				PackageExternalReferences: []*spdx.PackageExternalReference{
+					{
+						Locator: "",
+						RefType: spdx_common.TypePackageManagerPURL,
+					},
+					{
+						Locator: "cpe:/a:inkthemes:colorway:3.2.7::~~~wordpress~~",
+						RefType: spdx_common.TypeSecurityCPE22Type,
+					},
 				},
 			},
 			{
@@ -118,6 +147,100 @@ func Test_spdxDoc_addSupplierName(t *testing.T) {
 			}
 			if got := s.addSupplierName(tt.args.index); got != tt.want {
 				t.Errorf("spdxDoc.addSupplierName() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_spdxDoc_purls(t *testing.T) {
+	type fields struct {
+		doc     *spdx.Document
+		format  FileFormat
+		ctx     context.Context
+		spec    *spec
+		comps   []Component
+		authors []Author
+		tools   []Tool
+		rels    []Relation
+		logs    []string
+	}
+	type args struct {
+		index int
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+		want   int
+	}{
+		{"Valid PURL", fields{doc: testSpdxDoc()}, args{index: 0}, 1},
+		{"Invalid PURL", fields{doc: testSpdxDoc()}, args{index: 1}, 0},
+		{"Invalid PURL", fields{doc: testSpdxDoc()}, args{index: 2}, 0},
+		{"No PURL present", fields{doc: testSpdxDoc()}, args{index: 3}, 0},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := &spdxDoc{
+				doc:     tt.fields.doc,
+				format:  tt.fields.format,
+				ctx:     tt.fields.ctx,
+				spec:    tt.fields.spec,
+				comps:   tt.fields.comps,
+				authors: tt.fields.authors,
+				tools:   tt.fields.tools,
+				rels:    tt.fields.rels,
+				logs:    tt.fields.logs,
+			}
+			if got := s.purls(tt.args.index); len(got) != tt.want {
+				t.Errorf("s.purls() = %v, want %v", len(got), tt.want)
+			}
+		})
+	}
+}
+
+
+func Test_spdxDoc_cpes(t *testing.T) {
+	type fields struct {
+		doc     *spdx.Document
+		format  FileFormat
+		ctx     context.Context
+		spec    *spec
+		comps   []Component
+		authors []Author
+		tools   []Tool
+		rels    []Relation
+		logs    []string
+	}
+	type args struct {
+		index int
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+		want   int
+	}{
+		{"Invalid CPE", fields{doc: testSpdxDoc()}, args{index: 0}, 0},
+		{"Valid CPE 2.3", fields{doc: testSpdxDoc()}, args{index: 1}, 1},
+		{"Valid CPE 2.2", fields{doc: testSpdxDoc()}, args{index: 2}, 1},
+		{"No CPE", fields{doc: testSpdxDoc()}, args{index: 3}, 0},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := &spdxDoc{
+				doc:     tt.fields.doc,
+				format:  tt.fields.format,
+				ctx:     tt.fields.ctx,
+				spec:    tt.fields.spec,
+				comps:   tt.fields.comps,
+				authors: tt.fields.authors,
+				tools:   tt.fields.tools,
+				rels:    tt.fields.rels,
+				logs:    tt.fields.logs,
+			}
+			s.parse()
+			if got := s.cpes(tt.args.index); len(got) != tt.want {
+				t.Errorf("s.cpes() = %v, want %v", len(got), tt.want)
 			}
 		})
 	}

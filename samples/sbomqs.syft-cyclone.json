@@ -25,7 +25,7 @@
       "name": "github.com/CycloneDX/cyclonedx-go",
       "version": "v0.7.0",
       "cpe": "cpe:2.3:a:CycloneDX:cyclonedx-go:v0.7.0:*:*:*:*:*:*:*",
-      "purl": "pkg:golang/github.com/CycloneDX/cyclonedx-go@v0.7.0",
+      "purl": "pkg-:golang/github.com/CycloneDX/cyclonedx-go@v0.7.0",
       "properties": [
         {
           "name": "syft:package:foundBy",

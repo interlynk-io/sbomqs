@@ -15,14 +15,17 @@
 package sbom
 
 //counterfeiter:generate . Component
+import "github.com/interlynk-io/sbomqs/pkg/cpe"
+import "github.com/interlynk-io/sbomqs/pkg/purl"
+
 type Component interface {
 	ID() string
 	SupplierName() string
 	Name() string
 	Version() string
 
-	Purls() []string
-	Cpes() []string
+	Cpes() []cpe.CPE
+	Purls() []purl.PURL
 
 	Licenses() []License
 	Checksums() []Checksum
@@ -36,8 +39,8 @@ type component struct {
 	name         string
 	version      string
 
-	purls []string
-	cpes  []string
+	cpes  []cpe.CPE
+	purls []purl.PURL
 
 	licenses  []License
 	checksums []Checksum
@@ -60,10 +63,10 @@ func (c component) Name() string {
 func (c component) Version() string {
 	return c.version
 }
-func (c component) Purls() []string {
+func (c component) Purls() []purl.PURL {
 	return c.purls
 }
-func (c component) Cpes() []string {
+func (c component) Cpes() []cpe.CPE {
 	return c.cpes
 }
 func (c component) Licenses() []License {

@@ -4,6 +4,8 @@ package sbomfakes
 import (
 	"sync"
 
+	"github.com/interlynk-io/sbomqs/pkg/cpe"
+	"github.com/interlynk-io/sbomqs/pkg/purl"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 )
 
@@ -18,15 +20,15 @@ type FakeComponent struct {
 	checksumsReturnsOnCall map[int]struct {
 		result1 []sbom.Checksum
 	}
-	CpesStub        func() []string
+	CpesStub        func() []cpe.CPE
 	cpesMutex       sync.RWMutex
 	cpesArgsForCall []struct {
 	}
 	cpesReturns struct {
-		result1 []string
+		result1 []cpe.CPE
 	}
 	cpesReturnsOnCall map[int]struct {
-		result1 []string
+		result1 []cpe.CPE
 	}
 	IDStub        func() string
 	iDMutex       sync.RWMutex
@@ -68,15 +70,15 @@ type FakeComponent struct {
 	primaryPurposeReturnsOnCall map[int]struct {
 		result1 string
 	}
-	PurlsStub        func() []string
+	PurlsStub        func() []purl.PURL
 	purlsMutex       sync.RWMutex
 	purlsArgsForCall []struct {
 	}
 	purlsReturns struct {
-		result1 []string
+		result1 []purl.PURL
 	}
 	purlsReturnsOnCall map[int]struct {
-		result1 []string
+		result1 []purl.PURL
 	}
 	RequiredFieldsStub        func() bool
 	requiredFieldsMutex       sync.RWMutex
@@ -165,7 +167,7 @@ func (fake *FakeComponent) ChecksumsReturnsOnCall(i int, result1 []sbom.Checksum
 	}{result1}
 }
 
-func (fake *FakeComponent) Cpes() []string {
+func (fake *FakeComponent) Cpes() []cpe.CPE {
 	fake.cpesMutex.Lock()
 	ret, specificReturn := fake.cpesReturnsOnCall[len(fake.cpesArgsForCall)]
 	fake.cpesArgsForCall = append(fake.cpesArgsForCall, struct {
@@ -189,32 +191,32 @@ func (fake *FakeComponent) CpesCallCount() int {
 	return len(fake.cpesArgsForCall)
 }
 
-func (fake *FakeComponent) CpesCalls(stub func() []string) {
+func (fake *FakeComponent) CpesCalls(stub func() []cpe.CPE) {
 	fake.cpesMutex.Lock()
 	defer fake.cpesMutex.Unlock()
 	fake.CpesStub = stub
 }
 
-func (fake *FakeComponent) CpesReturns(result1 []string) {
+func (fake *FakeComponent) CpesReturns(result1 []cpe.CPE) {
 	fake.cpesMutex.Lock()
 	defer fake.cpesMutex.Unlock()
 	fake.CpesStub = nil
 	fake.cpesReturns = struct {
-		result1 []string
+		result1 []cpe.CPE
 	}{result1}
 }
 
-func (fake *FakeComponent) CpesReturnsOnCall(i int, result1 []string) {
+func (fake *FakeComponent) CpesReturnsOnCall(i int, result1 []cpe.CPE) {
 	fake.cpesMutex.Lock()
 	defer fake.cpesMutex.Unlock()
 	fake.CpesStub = nil
 	if fake.cpesReturnsOnCall == nil {
 		fake.cpesReturnsOnCall = make(map[int]struct {
-			result1 []string
+			result1 []cpe.CPE
 		})
 	}
 	fake.cpesReturnsOnCall[i] = struct {
-		result1 []string
+		result1 []cpe.CPE
 	}{result1}
 }
 
@@ -430,7 +432,7 @@ func (fake *FakeComponent) PrimaryPurposeReturnsOnCall(i int, result1 string) {
 	}{result1}
 }
 
-func (fake *FakeComponent) Purls() []string {
+func (fake *FakeComponent) Purls() []purl.PURL {
 	fake.purlsMutex.Lock()
 	ret, specificReturn := fake.purlsReturnsOnCall[len(fake.purlsArgsForCall)]
 	fake.purlsArgsForCall = append(fake.purlsArgsForCall, struct {
@@ -454,32 +456,32 @@ func (fake *FakeComponent) PurlsCallCount() int {
 	return len(fake.purlsArgsForCall)
 }
 
-func (fake *FakeComponent) PurlsCalls(stub func() []string) {
+func (fake *FakeComponent) PurlsCalls(stub func() []purl.PURL) {
 	fake.purlsMutex.Lock()
 	defer fake.purlsMutex.Unlock()
 	fake.PurlsStub = stub
 }
 
-func (fake *FakeComponent) PurlsReturns(result1 []string) {
+func (fake *FakeComponent) PurlsReturns(result1 []purl.PURL) {
 	fake.purlsMutex.Lock()
 	defer fake.purlsMutex.Unlock()
 	fake.PurlsStub = nil
 	fake.purlsReturns = struct {
-		result1 []string
+		result1 []purl.PURL
 	}{result1}
 }
 
-func (fake *FakeComponent) PurlsReturnsOnCall(i int, result1 []string) {
+func (fake *FakeComponent) PurlsReturnsOnCall(i int, result1 []purl.PURL) {
 	fake.purlsMutex.Lock()
 	defer fake.purlsMutex.Unlock()
 	fake.PurlsStub = nil
 	if fake.purlsReturnsOnCall == nil {
 		fake.purlsReturnsOnCall = make(map[int]struct {
-			result1 []string
+			result1 []purl.PURL
 		})
 	}
 	fake.purlsReturnsOnCall[i] = struct {
-		result1 []string
+		result1 []purl.PURL
 	}{result1}
 }
 
