@@ -126,6 +126,9 @@ func (s *spdxDoc) parseSpec() {
 	for _, l := range newLicenseFromID(s.doc.DataLicense) {
 		sp.licenses = append(sp.licenses, l)
 	}
+
+	sp.namespace = s.doc.DocumentNamespace
+
 	s.spec = sp
 }
 
