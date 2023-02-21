@@ -22,6 +22,7 @@ type Spec interface {
 	RequiredFields() bool
 	CreationTimestamp() string
 	Licenses() []License
+	Namespace() string
 }
 
 type spec struct {
@@ -31,6 +32,7 @@ type spec struct {
 	isReqFieldsPresent bool
 	licenses           []License
 	creationTimestamp  string
+	namespace          string
 }
 
 func newSpec() *spec {
@@ -63,4 +65,8 @@ func (s spec) CreationTimestamp() string {
 
 func (s spec) Licenses() []License {
 	return s.licenses
+}
+
+func (s spec) Namespace() string {
+	return s.namespace
 }

@@ -16,6 +16,7 @@ package scorer
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 	"github.com/samber/lo"
@@ -71,24 +72,14 @@ func compWithUniqIDScore(d sbom.Document) score {
 	s := newScore(CategoryNTIAMiniumElements, string(compWithUniqID))
 	totalComponents := len(d.Components())
 
-	withCpe := lo.FilterMap(d.Components(), func(c sbom.Component, _ int) (string, bool) {
-		if len(c.Cpes()) > 0 {
-			return c.ID(), true
-		}
-		return c.ID(), false
-	})
-	withPurl := lo.FilterMap(d.Components(), func(c sbom.Component, _ int) (string, bool) {
-		if len(c.Purls()) > 0 {
-			return c.ID(), true
-		}
-		return c.ID(), false
+	compIDs := lo.Map(d.Components(), func(c sbom.Component, i int) string {
+		return strings.Join([]string{d.Spec().Namespace(), c.ID()}, "")
 	})
 
-	compWithIDs := append(withCpe, withPurl...)
-
-	uniqComps := lo.Uniq(compWithIDs)
+	uniqComps := lo.Uniq(compIDs)
 
 	if totalComponents > 0 {
+
 		s.setScore((float64(len(uniqComps)) / float64(totalComponents)) * 10.0)
 	}
 	s.setDesc(fmt.Sprintf("%d/%d have unique ID's", len(uniqComps), totalComponents))

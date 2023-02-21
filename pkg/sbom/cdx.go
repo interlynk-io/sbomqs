@@ -138,6 +138,8 @@ func (c *cdxDoc) parseSpec() {
 
 		sp.licenses = lics
 	}
+
+	sp.namespace = c.doc.SerialNumber
 	c.spec = sp
 }
 
