@@ -22,7 +22,10 @@ type Score interface {
 	Ignore() bool
 	Score() float64
 	Descr() string
+	MaxScore() float64
 }
+
+const MAX_SCORE float64 = 10.0
 
 type score struct {
 	category string
@@ -70,4 +73,8 @@ func (s score) Ignore() bool {
 
 func (s score) Descr() string {
 	return s.descr
+}
+
+func (s score) MaxScore() float64 {
+	return MAX_SCORE
 }

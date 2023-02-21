@@ -16,46 +16,38 @@ package reporter
 
 import (
 	"context"
-	"fmt"
-	"os"
-	"sort"
 
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/pkg/scorer"
-	"github.com/olekukonko/tablewriter"
 )
 
 type Reporter struct {
-	ctx    context.Context
-	doc    sbom.Document
-	scores scorer.Scores
+	Ctx context.Context
+
+	Docs   []sbom.Document
+	Scores []scorer.Scores
+	Paths  []string
 
 	//optional params
-	format   string
-	filePath string
+	Format string
 }
 
-var ReportFormats = []string{"basic", "detailed"}
+var ReportFormats = []string{"basic", "detailed", "json"}
 
 type Option func(r *Reporter)
 
 func WithFormat(c string) Option {
 	return func(r *Reporter) {
-		r.format = c
+		r.Format = c
 	}
 }
 
-func WithFilePath(c string) Option {
-	return func(r *Reporter) {
-		r.filePath = c
-	}
-}
-
-func NewReport(ctx context.Context, doc sbom.Document, scores scorer.Scores, opts ...Option) *Reporter {
+func NewReport(ctx context.Context, doc []sbom.Document, scores []scorer.Scores, paths []string, opts ...Option) *Reporter {
 	r := &Reporter{
-		ctx:    ctx,
-		doc:    doc,
-		scores: scores,
+		Ctx:    ctx,
+		Docs:   doc,
+		Scores: scores,
+		Paths:  paths,
 	}
 
 	for _, opt := range opts {
@@ -65,39 +57,13 @@ func NewReport(ctx context.Context, doc sbom.Document, scores scorer.Scores, opt
 }
 
 func (r *Reporter) Report() {
-	if r.format == "basic" {
+	if r.Format == "basic" {
 		r.simpleReport()
-	} else if r.format == "detailed" {
+	} else if r.Format == "detailed" {
 		r.detailedReport()
+	} else if r.Format == "json" {
+		r.jsonReport()
 	} else {
 		r.detailedReport()
 	}
-
-}
-
-func (r *Reporter) simpleReport() {
-	fmt.Printf("%0.1f\t%s\n", r.scores.AvgScore(), r.filePath)
-}
-
-func (r *Reporter) detailedReport() {
-
-	outDoc := [][]string{}
-
-	for _, score := range r.scores.ScoreList() {
-		l := []string{score.Category(), score.Feature(), fmt.Sprintf("%0.1f/10.0", score.Score()), score.Descr()}
-		outDoc = append(outDoc, l)
-	}
-
-	sort.Slice(outDoc, func(i, j int) bool {
-		return outDoc[i][0] < outDoc[j][0]
-	})
-
-	fmt.Printf("SBOM Quality Score: %0.1f\t%s\n", r.scores.AvgScore(), r.filePath)
-	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Category", "Feature", "Score", "Desc"})
-	table.SetRowLine(true)
-	table.SetAutoMergeCellsByColumnIndex([]int{0})
-	table.AppendBulk(outDoc)
-	table.Render()
-
 }

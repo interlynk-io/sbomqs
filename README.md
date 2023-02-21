@@ -155,6 +155,35 @@ You can evaluate your SBOM's based on specific categories, as described [here](#
 8.5	../sbom-samples/repos/trivy-trivy-ci-test.cdx.json
 ```
 
+#### Using json output format
+We can output the quality score results as json
+```console
+➜  sbomqs ./build/sbomqs score --filepath samples/sbomqs.syft-spdx.json --reportFormat json
+{
+  "run_id": "b6c9b850-8f66-4b70-8d62-d8f29087e68a",
+  "timestamp": "2023-02-18T07:41:58Z",
+  "creation_info": {
+    "name": "sbomqs",
+    "version": "v0.0.6-2-g20e141c",
+    "scoring_engine_version": "1"
+  },
+  "files": [
+    {
+      "file_name": "samples/sbomqs.syft-spdx.json",
+      "spec": "spdx",
+      "spec_version": "SPDX-2.3",
+      "file_format": "json",
+      "avg_score": 6.15,
+      "scores": [
+        {
+          "category": "Quality",
+          "feature": "Components have no deprecated licenses",
+          "score": 0,
+          "max_score": 10,
+          "description": "no licenses found"
+        },
+```
+
 #### Categories 
 We have catergorizes scoring into 5 categories
 
