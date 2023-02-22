@@ -41,3 +41,15 @@ snapshot:
 release:
   prerelease: allow 
   draft: true 
+
+brews:
+  -
+    name: sbomqs@{{ .Major }}.{{ .Minor }}.{{ .Patch }}
+    homepage: "https://github.com/interlynk-io/sbomqs"
+    description: "Quality score for your SBOM" 
+    license: "Apache 2.0"
+    folder: Formula
+    tap:
+      owner: riteshnoronha
+      name: homebrew-interlynk
+
