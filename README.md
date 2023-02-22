@@ -14,7 +14,7 @@
  limitations under the License.
 -->
 
-# `sbomqs`: Quality metrics for sbom's 
+# `sbomqs`: Quality metrics for SBOMs 
 ---
 [![Go Reference](https://pkg.go.dev/badge/github.com/interlynk-io/sbomqs.svg)](https://pkg.go.dev/github.com/interlynk-io/sbomqs)
 [![Go Report Card](https://goreportcard.com/badge/github.com/interlynk-io/sbomqs)](https://goreportcard.com/report/github.com/interlynk-io/sbomqs)
@@ -29,11 +29,11 @@ other installation [options](#installation).
 # What is a high quality SBOM
 A high quailty SBOM should allow for managements of assets, license, vulnerabilities, Intellectual Property, configuration management and incidence response. 
 
-A quality SBOM is one that is accurate, complete, and up-to-date.There are many factors that go into constructing a good high quality sbom
+A quality SBOM is one that is accurate, complete, and up-to-date. There are many factors that go into constructing a high quality sbom
 1. Identify & list all components of your product along with their transitive dependencies. 
 2. List all your components along with their versions & content checksums. 
 3. Include accurate component licenses. 
-4. Include accurate lookup identifiers i.e Purls/CPE. 
+4. Include accurate lookup identifiers e.g. [purls](https://github.com/package-url/purl-spec) or [CPEs](https://csrc.nist.gov/publications/detail/nistir/7698/final). 
 5. Quality SBOM depends a lot upon which stage of the lifecycle it has been generated at, we believe closer to the build time is ideal. 
 6. Signed sboms.
 7. Should layout information based on industry standard specs like CycloneDX, SPDX and SWID. 
@@ -79,7 +79,7 @@ In additon to supporting the sbom formats, we support various file formats
 #### Category Scoring
 We have categorized our current features into the following categories 
 - **NTIA-minimum-elements**: Includes features, which help you quickly understand if your sboms comply with NTIA minimum element guidelines. 
-- **Structural**: We check if the SBOM complies with basic SPEC guides, be it SPDX or CycloneDX
+- **Structural**: We check if the SBOM complies with the underlying specifications, be it [SPDX](https://spdx.dev/specifications/) or [CycloneDX](https://cyclonedx.org/specification/overview/)
 - **Semantic**: We check meaning of sbom fields specific to their standard. 
 - **Quality**: Help determine the quality of the data present in the sbom.
 - **Sharing**: Helps determine if the sbom can be shared. 
