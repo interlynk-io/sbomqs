@@ -165,6 +165,12 @@ json format
 https://github.com/interlynk-io/sbomqs/releases
 ```
 
+## Using Homebrew
+```console
+brew tap interlynk-io/interlynk
+brew install sbomqs
+```
+
 ## Using Go install
 
 ```console
