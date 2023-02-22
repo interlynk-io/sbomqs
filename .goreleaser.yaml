@@ -50,6 +50,6 @@ brews:
     license: "Apache 2.0"
     folder: Formula
     tap:
-      owner: riteshnoronha
+      owner: interlynk-io
       name: homebrew-interlynk
 
