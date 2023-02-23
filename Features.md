@@ -23,7 +23,7 @@ File is parsable | checks if the file can be parsed |
 Components have Supplier Name | checks if the sbom components have supplier names | 
 Components have names | checks if the sbom components have names |
 Components have versions | checks if the sbom components have versions | 
-Components have uniq lookup ids | checks if the sbom components have either cpe or purl | 
+Components have uniq ids | checks if the sbom components have unique identifiers (See [Table 1](https://www.ntia.gov/files/ntia/publications/sbom_formats_survey-version-2021.pdf)) | 
 Components have licenses | checks if the sbom components have licenses |
 Components have checksums | checks if the sbom components have checksums | 
 Components have valid spdx licenses | checks if the sbom components have licenses which match the spdx license list |
