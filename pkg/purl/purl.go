@@ -20,11 +20,6 @@ import (
 
 type PURL string
 
-type PURLMeta interface {
-	Valid() bool
-	String() string
-}
-
 func NewPURL(prl string) PURL {
 	return PURL(prl)
 }

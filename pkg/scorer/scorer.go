@@ -21,7 +21,7 @@ import (
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 )
 
-const EngineVersion = "2"
+const EngineVersion = "3"
 
 type Scorer struct {
 	ctx context.Context

@@ -55,7 +55,8 @@ const (
 
 	compWithValidLicenses      criteria = "Components have valid spdx licenses"
 	compWithNoDepLicenses      criteria = "Components have no deprecated licenses"
-	compWithAllId              criteria = "Components have multiple formats of uniq ids"
+	compWithMultipleLookupId   criteria = "Components have multiple vulnerability lookup ids"
+	compWithAnyLookupId        criteria = "Components have any vulnerability lookup id"
 	compWithPrimaryPackages    criteria = "Components have primary purpose defined"
 	compWithRestrictedLicenses criteria = "Components have no restricted licenses"
 
@@ -89,9 +90,10 @@ func init() {
 	//quality
 	_ = registerCriteria(compWithValidLicenses, compWithValidLicensesScore)
 	_ = registerCriteria(compWithNoDepLicenses, compWithNoDepLicensesScore)
-	_ = registerCriteria(compWithAllId, compWithAllIdScore)
 	_ = registerCriteria(compWithPrimaryPackages, compWithPrimaryPackageScore)
 	_ = registerCriteria(compWithRestrictedLicenses, compWithRestrictedLicensesScore)
+	_ = registerCriteria(compWithAnyLookupId, compWithAnyLookupIdScore)
+	_ = registerCriteria(compWithMultipleLookupId, compWithMultipleIdScore)
 
 	//sharing
 	_ = registerCriteria(docShareLicense, sharableLicenseScore)
