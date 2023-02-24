@@ -1,5 +1,6 @@
 ## Overview
 
+
 ### What is SBOM quality score
 A quality SBOM is one that is accurate, complete, and up-to-date. It should accurately reflect the components and dependencies used in the software application, including their version and optionally any known vulnerabilities. In addition, it should be easily accessible to and understandable by stakeholders, such as developers, security teams, and compliance officers.
 
