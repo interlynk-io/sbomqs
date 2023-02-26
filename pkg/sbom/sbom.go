@@ -158,7 +158,6 @@ func NewSBOMDocument(ctx context.Context, f io.ReadSeeker) (Document, error) {
 	case SBOMSpecCDX:
 		doc, err = newCDXDoc(ctx, f, format)
 	default:
-		log.Debugf("SBOM detect unknwon spec detected")
 		return nil, errors.New("unsupported sbom format")
 	}
 

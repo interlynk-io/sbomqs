@@ -66,8 +66,8 @@ func (s *Scorer) Score() Scores {
 	}
 	scores := newScores()
 
-	for _, criteria := range criterias {
-		score := criteria(s.doc)
+	for _, cr := range criteria {
+		score := cr(s.doc)
 		if s.category != "" && s.category == score.Category() {
 			scores.addScore(score)
 		} else if s.category == "" {

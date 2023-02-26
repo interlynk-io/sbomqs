@@ -32,38 +32,38 @@ const (
 
 var Categories = []string{string(CategoryNTIAMiniumElements), string(CategoryQuality), string(CategorySemantic), string(CategorySharing), string(CategoryStrucutral)}
 
-type criteria string
+type criterion string
 
 const (
-	spec           criteria = "SBOM Specification"
-	specVersion    criteria = "Spec Version"
-	specFileFormat criteria = "Spec File Format"
-	specIsParsable criteria = "Spec is parsable"
+	spec           criterion = "SBOM Specification"
+	specVersion    criterion = "Spec Version"
+	specFileFormat criterion = "Spec File Format"
+	specIsParsable criterion = "Spec is parsable"
 
-	compSupplierName criteria = "Components have supplier names"
-	compWithNames    criteria = "Components have names"
-	compWithVersion  criteria = "Components have versions"
-	compWithUniqID   criteria = "Components have uniq ids"
+	compSupplierName criterion = "Components have supplier names"
+	compWithNames    criterion = "Components have names"
+	compWithVersion  criterion = "Components have versions"
+	compWithUniqID   criterion = "Components have uniq ids"
 
-	docWithRelations criteria = "Doc has relationships"
-	docWithAuthors   criteria = "Doc has authors"
-	docWithTimestamp criteria = "Doc has creation timestamp"
+	docWithRelations criterion = "Doc has relationships"
+	docWithAuthors   criterion = "Doc has authors"
+	docWithTimestamp criterion = "Doc has creation timestamp"
 
-	docWithAllRequiredFields criteria = "Doc has all required fields"
-	compWithLicenses         criteria = "Components have licenses"
-	compWithChecksums        criteria = "Components have checksums"
+	docWithAllRequiredFields criterion = "Doc has all required fields"
+	compWithLicenses         criterion = "Components have licenses"
+	compWithChecksums        criterion = "Components have checksums"
 
-	compWithValidLicenses      criteria = "Components have valid spdx licenses"
-	compWithNoDepLicenses      criteria = "Components have no deprecated licenses"
-	compWithMultipleLookupId   criteria = "Components have multiple vulnerability lookup ids"
-	compWithAnyLookupId        criteria = "Components have any vulnerability lookup id"
-	compWithPrimaryPackages    criteria = "Components have primary purpose defined"
-	compWithRestrictedLicenses criteria = "Components have no restricted licenses"
+	compWithValidLicenses      criterion = "Components have valid spdx licenses"
+	compWithNoDepLicenses      criterion = "Components have no deprecated licenses"
+	compWithMultipleLookupId   criterion = "Components have multiple vulnerability lookup ids"
+	compWithAnyLookupId        criterion = "Components have any vulnerability lookup id"
+	compWithPrimaryPackages    criterion = "Components have primary purpose defined"
+	compWithRestrictedLicenses criterion = "Components have no restricted licenses"
 
-	docShareLicense criteria = "Doc sharable license"
+	docShareLicense criterion = "Doc sharable license"
 )
 
-var criterias = map[criteria]func(d sbom.Document) score{}
+var criteria = map[criterion]func(d sbom.Document) score{}
 
 func init() {
 	//structural
@@ -100,10 +100,10 @@ func init() {
 
 }
 
-func registerCriteria(name criteria, f func(sbom.Document) score) error {
-	if _, ok := criterias[name]; ok {
+func registerCriteria(name criterion, f func(sbom.Document) score) error {
+	if _, ok := criteria[name]; ok {
 		return fmt.Errorf("the criteria is being overwritten %s", name)
 	}
-	criterias[name] = f
+	criteria[name] = f
 	return nil
 }
