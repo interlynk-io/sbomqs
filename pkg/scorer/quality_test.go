@@ -17,6 +17,8 @@ package scorer
 import (
 	"testing"
 
+	"github.com/interlynk-io/sbomqs/pkg/cpe"
+	"github.com/interlynk-io/sbomqs/pkg/purl"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/pkg/sbom/sbomfakes"
 )
@@ -93,6 +95,109 @@ func Test_compWithNoDepLicensesScore(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := compWithNoDepLicensesScore(tt.args.d); got.score != tt.want {
 				t.Errorf("compWithNoDepLicensesScore() = %v, want %v", got.score, tt.want)
+			}
+		})
+	}
+}
+
+func Test_compWithAnyLookupIdScore(t *testing.T) {
+	testDocs := func() []sbom.Document {
+		doc := &sbomfakes.FakeDocument{}
+		comp := &sbomfakes.FakeComponent{}
+		comp.CpesReturns([]cpe.CPE{})
+		comp.PurlsReturns([]purl.PURL{})
+		doc.ComponentsReturns([]sbom.Component{comp})
+
+		docWithCPE := &sbomfakes.FakeDocument{}
+		comp2 := &sbomfakes.FakeComponent{}
+		comp2.CpesReturns([]cpe.CPE{cpe.NewCPE("cpe:2.3:a:spdx:tools-golang:v0.4.0:*:*:*:*:*:*:*")})
+		comp2.PurlsReturns([]purl.PURL{})
+		docWithCPE.ComponentsReturns([]sbom.Component{comp2})
+
+		docWithPURL := &sbomfakes.FakeDocument{}
+		comp3 := &sbomfakes.FakeComponent{}
+		comp3.CpesReturns([]cpe.CPE{})
+		comp3.PurlsReturns([]purl.PURL{purl.NewPURL("pkg:golang/github.com/spf13/pflag@1.0.5")})
+		docWithPURL.ComponentsReturns([]sbom.Component{comp3})
+
+		docWithBoth := &sbomfakes.FakeDocument{}
+		comp5 := &sbomfakes.FakeComponent{}
+		comp5.CpesReturns([]cpe.CPE{cpe.NewCPE("cpe:2.3:a:spdx:tools-golang:v0.4.0:*:*:*:*:*:*:*")})
+		comp5.PurlsReturns([]purl.PURL{purl.NewPURL("pkg:golang/github.com/spf13/pflag@1.0.5")})
+		docWithBoth.ComponentsReturns([]sbom.Component{comp5})
+
+		return []sbom.Document{doc, docWithCPE, docWithPURL, docWithBoth}
+
+	}()
+
+	type args struct {
+		d sbom.Document
+	}
+	tests := []struct {
+		name string
+		args args
+		want float64
+	}{
+		{"Doc with no vuln lookup ids", args{d: testDocs[0]}, 0.0},
+		{"Doc with cpe only vuln lookup ids", args{d: testDocs[1]}, 10.0},
+		{"Doc with purl only vuln lookup ids", args{d: testDocs[2]}, 10.0},
+		{"Doc with both cpe & purl vuln lookup ids", args{d: testDocs[3]}, 10.0},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := compWithAnyLookupIdScore(tt.args.d); got.score != tt.want {
+				t.Errorf("compWithAnyLookupIdScore() = %v, want %v", got.score, tt.want)
+			}
+		})
+	}
+}
+
+func Test_compWithMultipleIdScore(t *testing.T) {
+	testDocs := func() []sbom.Document {
+		doc := &sbomfakes.FakeDocument{}
+		comp := &sbomfakes.FakeComponent{}
+		comp.CpesReturns([]cpe.CPE{})
+		comp.PurlsReturns([]purl.PURL{})
+		doc.ComponentsReturns([]sbom.Component{comp})
+
+		docWithCPE := &sbomfakes.FakeDocument{}
+		comp2 := &sbomfakes.FakeComponent{}
+		comp2.CpesReturns([]cpe.CPE{cpe.NewCPE("cpe:2.3:a:spdx:tools-golang:v0.4.0:*:*:*:*:*:*:*")})
+		comp2.PurlsReturns([]purl.PURL{})
+		docWithCPE.ComponentsReturns([]sbom.Component{comp2})
+
+		docWithPURL := &sbomfakes.FakeDocument{}
+		comp3 := &sbomfakes.FakeComponent{}
+		comp3.CpesReturns([]cpe.CPE{})
+		comp3.PurlsReturns([]purl.PURL{purl.NewPURL("pkg:golang/github.com/spf13/pflag@1.0.5")})
+		docWithPURL.ComponentsReturns([]sbom.Component{comp3})
+
+		docWithBoth := &sbomfakes.FakeDocument{}
+		comp5 := &sbomfakes.FakeComponent{}
+		comp5.CpesReturns([]cpe.CPE{cpe.NewCPE("cpe:2.3:a:spdx:tools-golang:v0.4.0:*:*:*:*:*:*:*")})
+		comp5.PurlsReturns([]purl.PURL{purl.NewPURL("pkg:golang/github.com/spf13/pflag@1.0.5")})
+		docWithBoth.ComponentsReturns([]sbom.Component{comp5})
+
+		return []sbom.Document{doc, docWithCPE, docWithPURL, docWithBoth}
+
+	}()
+	type args struct {
+		d sbom.Document
+	}
+	tests := []struct {
+		name string
+		args args
+		want float64
+	}{
+		{"Doc with no vuln lookup ids", args{d: testDocs[0]}, 0.0},
+		{"Doc with cpe only vuln lookup ids", args{d: testDocs[1]}, 0.0},
+		{"Doc with purl only vuln lookup ids", args{d: testDocs[2]}, 0.0},
+		{"Doc with both cpe & purl vuln lookup ids", args{d: testDocs[3]}, 10.0},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := compWithMultipleIdScore(tt.args.d); got.score != tt.want {
+				t.Errorf("compWithMultipleIdScore() = %v, want %v", got.score, tt.want)
 			}
 		})
 	}

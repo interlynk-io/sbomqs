@@ -59,40 +59,6 @@ func compWithValidLicensesScore(d sbom.Document) score {
 	return *s
 }
 
-func compWithAllIdScore(d sbom.Document) score {
-	s := newScore(CategoryQuality, string(compWithAllId))
-
-	totalComponents := len(d.Components())
-
-	withCpe := lo.FilterMap(d.Components(), func(c sbom.Component, _ int) (string, bool) {
-		if len(c.Cpes()) > 0 {
-			return c.ID(), true
-		}
-		return c.ID(), false
-	})
-	withPurl := lo.FilterMap(d.Components(), func(c sbom.Component, _ int) (string, bool) {
-		if len(c.Purls()) > 0 {
-			return c.ID(), true
-		}
-		return c.ID(), false
-	})
-
-	compsWithCPE := len(withCpe)
-	compsWithPURL := len(withPurl)
-
-	cpeScore := (float64(compsWithCPE) / float64(totalComponents)) * 10.0
-	purlScore := (float64(compsWithPURL) / float64(totalComponents)) * 10.0
-
-	avg_score := ((float64(cpeScore) + float64(purlScore)) / 2.0)
-
-	s.setScore(avg_score)
-
-	s.setDesc(fmt.Sprintf("comp with uniq ids: cpe:%d, purl:%d, total:%d", compsWithCPE, compsWithPURL, totalComponents))
-
-	return *s
-
-}
-
 func compWithPrimaryPackageScore(d sbom.Document) score {
 	s := newScore(CategoryQuality, string(compWithPrimaryPackages))
 
@@ -158,5 +124,47 @@ func compWithRestrictedLicensesScore(d sbom.Document) score {
 		s.setScore(finalScore)
 		s.setDesc(fmt.Sprintf("%d/%d components have restricted licenses", withRestrictLicense, totalComponents))
 	}
+	return *s
+}
+
+func compWithAnyLookupIdScore(d sbom.Document) score {
+	s := newScore(CategoryQuality, string(compWithAnyLookupId))
+
+	totalComponents := len(d.Components())
+
+	withAnyLookupId := lo.CountBy(d.Components(), func(c sbom.Component) bool {
+		if len(c.Cpes()) > 0 || len(c.Purls()) > 0 {
+			return true
+		}
+		return false
+	})
+
+	finalScore := (float64(withAnyLookupId) / float64(totalComponents)) * 10.0
+
+	s.setScore(finalScore)
+
+	s.setDesc(fmt.Sprintf("%d/%d components have any lookup id", withAnyLookupId, totalComponents))
+
+	return *s
+}
+
+func compWithMultipleIdScore(d sbom.Document) score {
+	s := newScore(CategoryQuality, string(compWithMultipleLookupId))
+
+	totalComponents := len(d.Components())
+
+	withMultipleId := lo.CountBy(d.Components(), func(c sbom.Component) bool {
+		if len(c.Cpes()) > 0 && len(c.Purls()) > 0 {
+			return true
+		}
+		return false
+	})
+
+	finalScore := (float64(withMultipleId) / float64(totalComponents)) * 10.0
+
+	s.setScore(finalScore)
+
+	s.setDesc(fmt.Sprintf("%d/%d components have multiple lookup id", withMultipleId, totalComponents))
+
 	return *s
 }

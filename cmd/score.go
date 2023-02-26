@@ -100,7 +100,7 @@ func processFile(ctx context.Context, filePath string) (sbom.Document, scorer.Sc
 	if err != nil {
 		log.Debugf("failed to create sbom document for  :%s\n", filePath)
 		log.Debugf("%s\n", err)
-		fmt.Printf("failed to parse %s\n", filePath)
+		fmt.Printf("failed to parse %s : %s\n", filePath, err)
 		return nil, nil, err
 	}
 
