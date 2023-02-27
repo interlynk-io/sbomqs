@@ -198,7 +198,6 @@ func Test_spdxDoc_purls(t *testing.T) {
 	}
 }
 
-
 func Test_spdxDoc_cpes(t *testing.T) {
 	type fields struct {
 		doc     *spdx.Document
