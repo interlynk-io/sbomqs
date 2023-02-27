@@ -1,0 +1,73 @@
+category:
+    - name: NTIA-minimum-elements
+      enabled: true
+      criteria:
+        - shortName: comp-supplier-name
+          description: Components have supplier names
+          enabled: true
+        - shortName: comp-name
+          description: Components have names
+          enabled: true
+        - shortName: comp-version
+          description: Components have versions
+          enabled: true
+        - shortName: comp-uniq-ids
+          description: Components have uniq ids
+          enabled: true
+        - shortName: doc-relationship
+          description: Doc has relationships
+          enabled: true
+        - shortName: doc-author
+          description: Doc has authors
+          enabled: true
+        - shortName: doc-timestamp
+          description: Doc has creation timestamp
+          enabled: true
+    - name: Quality
+      enabled: true
+      criteria:
+        - shortName: comp-valid-licence
+          description: Components have valid spdx licenses
+          enabled: true
+        - shortName: comp-primary-purpose
+          description: Components have primary purpose defined
+          enabled: true
+        - shortName: comp-no-deprecat-licence
+          description: Components have no deprecated licenses
+          enabled: true
+        - shortName: comp-no-restric-licence
+          description: Components have no restricted licenses
+          enabled: true
+    - name: Semantic
+      enabled: true
+      criteria:
+        - shortName: doc-all-req-fileds
+          description: Doc has all required fields
+          enabled: true
+        - shortName: comp-licence
+          description: Components have licenses
+          enabled: true
+        - shortName: comp-checksums
+          description: Components have checksums
+          enabled: true
+    - name: Sharing
+      enabled: true
+      criteria:
+        - shortName: doc-licence
+          description: Doc sharable license
+          enabled: true
+    - name: Structural
+      enabled: true
+      criteria:
+        - shortName: sbom-spec
+          description: SBOM Specification
+          enabled: true
+        - shortName: spec-version
+          description: Spec Version
+          enabled: true
+        - shortName: spec-file-format
+          description: Spec File Format
+          enabled: true
+        - shortName: spec-parsable
+          description: Spec is parsable
+          enabled: true

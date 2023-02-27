@@ -19,6 +19,7 @@ import (
 
 	"github.com/interlynk-io/sbomqs/pkg/logger"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
+	"github.com/samber/lo"
 )
 
 const EngineVersion = "3"
@@ -29,7 +30,7 @@ type Scorer struct {
 
 	//optional params
 	category string
-	feature  string
+	feature  []string
 }
 
 type Option func(s *Scorer)
@@ -40,7 +41,7 @@ func WithCategory(c string) Option {
 	}
 }
 
-func WithFeature(f string) Option {
+func WithFeature(f []string) Option {
 	return func(s *Scorer) {
 		s.feature = f
 	}
@@ -66,13 +67,25 @@ func (s *Scorer) Score() Scores {
 	}
 	scores := newScores()
 
-	for _, cr := range criteria {
-		score := cr(s.doc)
-		if s.category != "" && s.category == score.Category() {
-			scores.addScore(score)
-		} else if s.category == "" {
-			scores.addScore(score)
+	for key, cr := range criteria {
+		if len(s.feature) > 0 {
+			if lo.Contains(s.feature, string(key)) {
+				score := cr(s.doc)
+				if s.category != "" && s.category == score.Category() {
+					scores.addScore(score)
+				} else if s.category == "" {
+					scores.addScore(score)
+				}
+			}
+		} else {
+			score := cr(s.doc)
+			if s.category != "" && s.category == score.Category() {
+				scores.addScore(score)
+			} else if s.category == "" {
+				scores.addScore(score)
+			}
 		}
+
 	}
 	return scores
 }
