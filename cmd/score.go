@@ -15,6 +15,7 @@ import (
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/pkg/scorer"
 	"github.com/samber/lo"
+	"sigs.k8s.io/yaml"
 
 	"github.com/spf13/cobra"
 )
@@ -25,7 +26,9 @@ var (
 	category     string
 	feature      string
 	reportFormat string
+	configPath   string
 )
+var criterias []string
 
 // scoreCmd represents the score command
 var scoreCmd = &cobra.Command{
@@ -38,16 +41,56 @@ var scoreCmd = &cobra.Command{
 			return fmt.Errorf(fmt.Sprintf("Category not found %s in %s", category, strings.Join(scorer.Categories, ",")))
 		}
 
-		if len(reportFormat) > 0 && !lo.Contains(reporter.ReportFormats, strings.ToLower(reportFormat)) {
+		if len(reportFormat) > 0 && !lo.Contains(reporter.ReportFormats, reportFormat) {
 			return fmt.Errorf("report format options are basic or detailed")
+		}
+
+		if len(feature) > 0 {
+			features := strings.Split(feature, ",")
+			if len(features) > 0 {
+				for _, f := range features {
+					if lo.Contains(scorer.CriteriaArgs, f) {
+						criterias = append(criterias, string(scorer.CriteriaArgMap[scorer.CriteriaArg(f)]))
+					}
+				}
+			}
+		}
+
+		if len(configPath) > 0 {
+			err := processConfigFile(ctx, configPath)
+			if err != nil {
+				return err
+			}
 		}
 
 		var docs []sbom.Document
 		var scores []scorer.Scores
 		var paths []string
 
+		if len(reportFormat) > 0 && !lo.Contains(reporter.ReportFormats, reportFormat) {
+			return fmt.Errorf("report format options are basic or detailed")
+		}
+
+		if len(feature) > 0 {
+			features := strings.Split(feature, ",")
+			if len(features) > 0 {
+				for _, f := range features {
+					if lo.Contains(scorer.CriteriaArgs, f) {
+						criterias = append(criterias, string(scorer.CriteriaArgMap[scorer.CriteriaArg(f)]))
+					}
+				}
+			}
+		}
+
+		if len(configPath) > 0 {
+			err := processConfigFile(ctx, configPath)
+			if err != nil {
+				return err
+			}
+		}
+
 		if len(inFile) > 0 {
-			d, s, e := processFile(ctx, inFile)
+			d, s, e := processFile(ctx, inFile, criterias)
 			if e != nil {
 				return fmt.Errorf("error processing file")
 			}
@@ -76,9 +119,44 @@ func init() {
 	scoreCmd.MarkFlagsMutuallyExclusive("filepath", "dirpath")
 	scoreCmd.Flags().StringVar(&category, "category", "", "scoring category")
 	scoreCmd.Flags().StringVar(&reportFormat, "reportFormat", "", "reporting format basic/detailed/json")
+	scoreCmd.Flags().StringVar(&feature, "feature", "", "scoring features format doc-licence,comp-no-restric-licence,comp-primary-purpose,comp-no-deprecat-licence,comp-valid-licence,comp-checksums,comp-licence,doc-all-req-fileds,doc-timestamp,doc-author,doc-relationship,comp-uniq-ids,comp-version,comp-name,comp-supplier-name,spec-parsable,spec-file-format,spec-version,sbom-spec")
+	scoreCmd.Flags().StringVar(&configPath, "configpath", "", "scoring based on config path")
 }
 
-func processFile(ctx context.Context, filePath string) (sbom.Document, scorer.Scores, error) {
+func processConfigFile(ctx context.Context, filePath string) error {
+	log := logger.FromContext(ctx)
+	cnf := Config{}
+	log.Debugf("Processing file :%s\n", filePath)
+	if _, err := os.Stat(filePath); err != nil {
+		log.Debugf("os.Stat failed for file :%s\n", filePath)
+		fmt.Printf("failed to stat %s\n", filePath)
+		return err
+	}
+	f, err := os.ReadFile(filePath)
+	if err != nil {
+		log.Debugf("os.Open failed for file :%s\n", filePath)
+		fmt.Printf("failed to open %s\n", filePath)
+		return err
+	}
+	err = yaml.Unmarshal(f, &cnf)
+	if err != nil {
+		return err
+	}
+
+	for _, r := range cnf.Record {
+		if r.Enabled {
+			for _, c := range r.Criteria {
+				if c.Enabled {
+					criterias = append(criterias, c.Description)
+				}
+			}
+		}
+	}
+
+	return nil
+}
+
+func processFile(ctx context.Context, filePath string, criterias []string) (sbom.Document, scorer.Scores, error) {
 	log := logger.FromContext(ctx)
 	log.Debugf("Processing file :%s\n", filePath)
 
@@ -107,10 +185,9 @@ func processFile(ctx context.Context, filePath string) (sbom.Document, scorer.Sc
 	sr := scorer.NewScorer(ctx,
 		doc,
 		scorer.WithCategory(category),
-		scorer.WithFeature(feature))
+		scorer.WithFeature(criterias))
 
 	scores := sr.Score()
-
 	return doc, scores, nil
 }
 
@@ -133,7 +210,7 @@ func processDir(ctx context.Context, dirPath string) ([]sbom.Document, []scorer.
 			continue
 		}
 		path := filepath.Join(dirPath, file.Name())
-		doc, scs, err := processFile(ctx, path)
+		doc, scs, err := processFile(ctx, path, criterias)
 		if err != nil {
 			continue
 		}

@@ -32,6 +32,24 @@ const (
 
 var Categories = []string{string(CategoryNTIAMiniumElements), string(CategoryQuality), string(CategorySemantic), string(CategorySharing), string(CategoryStrucutral)}
 
+func CategorieMapWithCriteria(categorie string) []string {
+	switch categorie {
+	case string(CategoryNTIAMiniumElements):
+		return []string{string(compSupplierName), string(compWithNames), string(compWithVersion), string(compWithUniqID), string(docWithRelations), string(docWithAuthors), string(docWithTimestamp)}
+	case string(CategoryQuality):
+		return []string{string(compWithValidLicenses), string(compWithPrimaryPackages), string(compWithNoDepLicenses), string(compWithRestrictedLicenses)}
+	case string(CategorySemantic):
+		return []string{string(docWithAllRequiredFields), string(compWithLicenses), string(compWithChecksums)}
+	case string(CategorySharing):
+		return []string{string(docShareLicense)}
+	case string(CategoryStrucutral):
+		return []string{string(spec), string(specVersion), string(specFileFormat), string(specIsParsable)}
+	default:
+		return []string{}
+
+	}
+}
+
 type criterion string
 
 const (
@@ -107,3 +125,72 @@ func registerCriteria(name criterion, f func(sbom.Document) score) error {
 	criteria[name] = f
 	return nil
 }
+
+type CriteriaArg string
+
+const (
+	DOCLICENCE             CriteriaArg = "doc-licence"
+	COMPNORESTRICLICENCE   CriteriaArg = "comp-no-restric-licence"
+	COMPPRIMARYPURPOSE     CriteriaArg = "comp-primary-purpose"
+	COMPNODEPRECATLICENCE  CriteriaArg = "comp-no-deprecat-licence"
+	COMPVALIDLICENCE       CriteriaArg = "comp-valid-licence"
+	COMPCHECKSUMS          CriteriaArg = "comp-checksums"
+	COMPLICENCE            CriteriaArg = "comp-licence"
+	DOCALLREQFILEDS        CriteriaArg = "doc-all-req-fileds"
+	DOCTIMESTAMP           CriteriaArg = "doc-timestamp"
+	DOCAUTHOR              CriteriaArg = "doc-author"
+	DOCRELATIONSHIP        CriteriaArg = "doc-relationship"
+	COMPUNIQIDS            CriteriaArg = "comp-uniq-ids"
+	COMPVERSION            CriteriaArg = "comp-version"
+	COMPNAME               CriteriaArg = "comp-name"
+	COMPSUPPLIERNAME       CriteriaArg = "comp-supplier-name"
+	SPECPARSABLE           CriteriaArg = "spec-parsable"
+	SPECFILEFORMAT         CriteriaArg = "spec-file-format"
+	SPECVERSION            CriteriaArg = "spec-version"
+	SBOMSPEC               CriteriaArg = "sbom-spec"
+)
+
+var CriteriaArgs = []string{
+	string(DOCLICENCE),
+	string(COMPNORESTRICLICENCE),
+	string(COMPPRIMARYPURPOSE),
+	string(COMPNODEPRECATLICENCE),
+	string(COMPVALIDLICENCE),
+	string(COMPCHECKSUMS),
+	string(COMPLICENCE),
+	string(DOCALLREQFILEDS),
+	string(DOCTIMESTAMP),
+	string(DOCAUTHOR),
+	string(DOCRELATIONSHIP),
+	string(COMPUNIQIDS),
+	string(COMPVERSION),
+	string(COMPNAME),
+	string(COMPSUPPLIERNAME),
+	string(SPECPARSABLE),
+	string(SPECFILEFORMAT),
+	string(SPECVERSION),
+	string(SBOMSPEC),
+}
+
+var CriteriaArgMap = map[CriteriaArg]string{
+	DOCLICENCE:             string(docShareLicense),
+	COMPNORESTRICLICENCE:   string(compWithRestrictedLicenses),
+	COMPPRIMARYPURPOSE:     string(compWithPrimaryPackages),
+	COMPNODEPRECATLICENCE:  string(compWithNoDepLicenses),
+	COMPVALIDLICENCE:       string(compWithValidLicenses),
+	COMPCHECKSUMS:          string(compWithChecksums),
+	COMPLICENCE:            string(compWithLicenses),
+	DOCALLREQFILEDS:        string(docWithAllRequiredFields),
+	DOCTIMESTAMP:           string(docWithTimestamp),
+	DOCAUTHOR:              string(docWithAuthors),
+	DOCRELATIONSHIP:        string(docWithRelations),
+	COMPUNIQIDS:            string(compWithUniqID),
+	COMPVERSION:            string(compWithVersion),
+	COMPNAME:               string(compWithNames),
+	COMPSUPPLIERNAME:       string(compSupplierName),
+	SPECPARSABLE:           string(specIsParsable),
+	SPECFILEFORMAT:         string(specFileFormat),
+	SPECVERSION:            string(specVersion),
+	SBOMSPEC:               string(spec),
+}
+
