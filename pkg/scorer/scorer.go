@@ -68,24 +68,22 @@ func (s *Scorer) Score() Scores {
 	scores := newScores()
 
 	for key, cr := range criteria {
+		score := cr(s.doc)
 		if len(s.feature) > 0 {
 			if lo.Contains(s.feature, string(key)) {
-				score := cr(s.doc)
-				if s.category != "" && s.category == score.Category() {
-					scores.addScore(score)
-				} else if s.category == "" {
-					scores.addScore(score)
-				}
+				scoreFilterWithCategory(score, scores)
 			}
 		} else {
-			score := cr(s.doc)
-			if s.category != "" && s.category == score.Category() {
-				scores.addScore(score)
-			} else if s.category == "" {
-				scores.addScore(score)
-			}
+			scoreFilterWithCategory(score, scores)
 		}
-
 	}
 	return scores
 }
+
+func scoreFilterWithCategory(s score, ss *scores) {
+	if s.category != "" && s.category == s.Category() {
+		ss.addScore(s)
+	} else if s.category == "" {
+		ss.addScore(s)
+	}
+}			
