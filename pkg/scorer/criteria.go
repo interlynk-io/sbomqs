@@ -37,7 +37,7 @@ func CategorieMapWithCriteria(categorie string) []string {
 	case string(CategoryNTIAMiniumElements):
 		return []string{string(compSupplierName), string(compWithNames), string(compWithVersion), string(compWithUniqID), string(docWithRelations), string(docWithAuthors), string(docWithTimestamp)}
 	case string(CategoryQuality):
-		return []string{string(compWithValidLicenses), string(compWithPrimaryPackages), string(compWithNoDepLicenses), string(compWithRestrictedLicenses)}
+		return []string{string(compWithValidLicenses), string(compWithPrimaryPackages), string(compWithNoDepLicenses), string(compWithRestrictedLicenses), string(compWithMultipleLookupId), string(compWithAnyLookupId)}
 	case string(CategorySemantic):
 		return []string{string(docWithAllRequiredFields), string(compWithLicenses), string(compWithChecksums)}
 	case string(CategorySharing):
@@ -129,25 +129,27 @@ func registerCriteria(name criterion, f func(sbom.Document) score) error {
 type CriteriaArg string
 
 const (
-	DOCLICENCE             CriteriaArg = "doc-licence"
-	COMPNORESTRICLICENCE   CriteriaArg = "comp-no-restric-licence"
-	COMPPRIMARYPURPOSE     CriteriaArg = "comp-primary-purpose"
-	COMPNODEPRECATLICENCE  CriteriaArg = "comp-no-deprecat-licence"
-	COMPVALIDLICENCE       CriteriaArg = "comp-valid-licence"
-	COMPCHECKSUMS          CriteriaArg = "comp-checksums"
-	COMPLICENCE            CriteriaArg = "comp-licence"
-	DOCALLREQFILEDS        CriteriaArg = "doc-all-req-fileds"
-	DOCTIMESTAMP           CriteriaArg = "doc-timestamp"
-	DOCAUTHOR              CriteriaArg = "doc-author"
-	DOCRELATIONSHIP        CriteriaArg = "doc-relationship"
-	COMPUNIQIDS            CriteriaArg = "comp-uniq-ids"
-	COMPVERSION            CriteriaArg = "comp-version"
-	COMPNAME               CriteriaArg = "comp-name"
-	COMPSUPPLIERNAME       CriteriaArg = "comp-supplier-name"
-	SPECPARSABLE           CriteriaArg = "spec-parsable"
-	SPECFILEFORMAT         CriteriaArg = "spec-file-format"
-	SPECVERSION            CriteriaArg = "spec-version"
-	SBOMSPEC               CriteriaArg = "sbom-spec"
+	DOCLICENCE               CriteriaArg = "doc-licence"
+	COMPNORESTRICLICENCE     CriteriaArg = "comp-no-restric-licence"
+	COMPPRIMARYPURPOSE       CriteriaArg = "comp-primary-purpose"
+	COMPNODEPRECATLICENCE    CriteriaArg = "comp-no-deprecat-licence"
+	COMPVALIDLICENCE         CriteriaArg = "comp-valid-licence"
+	COMPCHECKSUMS            CriteriaArg = "comp-checksums"
+	COMPLICENCE              CriteriaArg = "comp-licence"
+	DOCALLREQFILEDS          CriteriaArg = "doc-all-req-fileds"
+	DOCTIMESTAMP             CriteriaArg = "doc-timestamp"
+	DOCAUTHOR                CriteriaArg = "doc-author"
+	DOCRELATIONSHIP          CriteriaArg = "doc-relationship"
+	COMPUNIQIDS              CriteriaArg = "comp-uniq-ids"
+	COMPVERSION              CriteriaArg = "comp-version"
+	COMPNAME                 CriteriaArg = "comp-name"
+	COMPSUPPLIERNAME         CriteriaArg = "comp-supplier-name"
+	SPECPARSABLE             CriteriaArg = "spec-parsable"
+	SPECFILEFORMAT           CriteriaArg = "spec-file-format"
+	SPECVERSION              CriteriaArg = "spec-version"
+	SBOMSPEC                 CriteriaArg = "sbom-spec"
+	COMPANYVULNERABILITYID   CriteriaArg = "comp-any-vulnerability-id"
+	COMPMULTIVULNERABILITYID CriteriaArg = "comp-multi-vulnerability-id"
 )
 
 var CriteriaArgs = []string{
@@ -170,27 +172,30 @@ var CriteriaArgs = []string{
 	string(SPECFILEFORMAT),
 	string(SPECVERSION),
 	string(SBOMSPEC),
+	string(COMPANYVULNERABILITYID),
+	string(COMPMULTIVULNERABILITYID),
 }
 
 var CriteriaArgMap = map[CriteriaArg]string{
-	DOCLICENCE:             string(docShareLicense),
-	COMPNORESTRICLICENCE:   string(compWithRestrictedLicenses),
-	COMPPRIMARYPURPOSE:     string(compWithPrimaryPackages),
-	COMPNODEPRECATLICENCE:  string(compWithNoDepLicenses),
-	COMPVALIDLICENCE:       string(compWithValidLicenses),
-	COMPCHECKSUMS:          string(compWithChecksums),
-	COMPLICENCE:            string(compWithLicenses),
-	DOCALLREQFILEDS:        string(docWithAllRequiredFields),
-	DOCTIMESTAMP:           string(docWithTimestamp),
-	DOCAUTHOR:              string(docWithAuthors),
-	DOCRELATIONSHIP:        string(docWithRelations),
-	COMPUNIQIDS:            string(compWithUniqID),
-	COMPVERSION:            string(compWithVersion),
-	COMPNAME:               string(compWithNames),
-	COMPSUPPLIERNAME:       string(compSupplierName),
-	SPECPARSABLE:           string(specIsParsable),
-	SPECFILEFORMAT:         string(specFileFormat),
-	SPECVERSION:            string(specVersion),
-	SBOMSPEC:               string(spec),
+	DOCLICENCE:               string(docShareLicense),
+	COMPNORESTRICLICENCE:     string(compWithRestrictedLicenses),
+	COMPPRIMARYPURPOSE:       string(compWithPrimaryPackages),
+	COMPNODEPRECATLICENCE:    string(compWithNoDepLicenses),
+	COMPVALIDLICENCE:         string(compWithValidLicenses),
+	COMPCHECKSUMS:            string(compWithChecksums),
+	COMPLICENCE:              string(compWithLicenses),
+	DOCALLREQFILEDS:          string(docWithAllRequiredFields),
+	DOCTIMESTAMP:             string(docWithTimestamp),
+	DOCAUTHOR:                string(docWithAuthors),
+	DOCRELATIONSHIP:          string(docWithRelations),
+	COMPUNIQIDS:              string(compWithUniqID),
+	COMPVERSION:              string(compWithVersion),
+	COMPNAME:                 string(compWithNames),
+	COMPSUPPLIERNAME:         string(compSupplierName),
+	SPECPARSABLE:             string(specIsParsable),
+	SPECFILEFORMAT:           string(specFileFormat),
+	SPECVERSION:              string(specVersion),
+	SBOMSPEC:                 string(spec),
+	COMPANYVULNERABILITYID:   string(compWithAnyLookupId),
+	COMPMULTIVULNERABILITYID: string(compWithMultipleLookupId),
 }
-
