@@ -37,7 +37,7 @@ type file struct {
 	SpecVersion string   `json:"spec_version"`
 	Format      string   `json:"file_format"`
 	AvgScore    float64  `json:"avg_score"`
-	Components  int      `json:"no_components"`
+	Components  int      `json:"num_components"`
 	Scores      []*score `json:"scores"`
 }
 
