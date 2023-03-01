@@ -119,7 +119,7 @@ func init() {
 	scoreCmd.MarkFlagsMutuallyExclusive("filepath", "dirpath")
 	scoreCmd.Flags().StringVar(&category, "category", "", "scoring category")
 	scoreCmd.Flags().StringVar(&reportFormat, "reportFormat", "", "reporting format basic/detailed/json")
-	scoreCmd.Flags().StringVar(&feature, "feature", "", "scoring features format doc-licence,comp-no-restric-licence,comp-primary-purpose,comp-no-deprecat-licence,comp-valid-licence,comp-checksums,comp-licence,doc-all-req-fileds,doc-timestamp,doc-author,doc-relationship,comp-uniq-ids,comp-version,comp-name,comp-supplier-name,spec-parsable,spec-file-format,spec-version,sbom-spec")
+	scoreCmd.Flags().StringVar(&feature, "features", "", "scoring features format doc-licence,comp-no-restric-licence,comp-primary-purpose,comp-no-deprecat-licence,comp-valid-licence,comp-checksums,comp-licence,doc-all-req-fileds,doc-timestamp,doc-author,doc-relationship,comp-uniq-ids,comp-version,comp-name,comp-supplier-name,spec-parsable,spec-file-format,spec-version,sbom-spec,comp-any-vulnerability-id,comp-multi-vulnerability-id")
 	scoreCmd.Flags().StringVar(&configPath, "configpath", "", "scoring based on config path")
 }
 
@@ -142,7 +142,6 @@ func processConfigFile(ctx context.Context, filePath string) error {
 	if err != nil {
 		return err
 	}
-
 	for _, r := range cnf.Record {
 		if r.Enabled {
 			for _, c := range r.Criteria {
@@ -152,7 +151,6 @@ func processConfigFile(ctx context.Context, filePath string) error {
 			}
 		}
 	}
-
 	return nil
 }
 

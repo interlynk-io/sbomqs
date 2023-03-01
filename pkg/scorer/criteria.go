@@ -37,7 +37,7 @@ func CategorieMapWithCriteria(categorie string) []string {
 	case string(CategoryNTIAMiniumElements):
 		return []string{string(compSupplierName), string(compWithNames), string(compWithVersion), string(compWithUniqID), string(docWithRelations), string(docWithAuthors), string(docWithTimestamp)}
 	case string(CategoryQuality):
-		return []string{string(compWithValidLicenses), string(compWithPrimaryPackages), string(compWithNoDepLicenses), string(compWithRestrictedLicenses)}
+		return []string{string(compWithValidLicenses), string(compWithPrimaryPackages), string(compWithNoDepLicenses), string(compWithRestrictedLicenses),string(compWithMultipleLookupId),string(compWithAnyLookupId)}
 	case string(CategorySemantic):
 		return []string{string(docWithAllRequiredFields), string(compWithLicenses), string(compWithChecksums)}
 	case string(CategorySharing):
@@ -62,15 +62,8 @@ const (
 	compWithNames    criterion = "Components have names"
 	compWithVersion  criterion = "Components have versions"
 	compWithUniqID   criterion = "Components have uniq ids"
-
-	docWithRelations criterion = "Doc has relationships"
-	docWithAuthors   criterion = "Doc has authors"
-	docWithTimestamp criterion = "Doc has creation timestamp"
-
-	docWithAllRequiredFields criterion = "Doc has all required fields"
 	compWithLicenses         criterion = "Components have licenses"
 	compWithChecksums        criterion = "Components have checksums"
-
 	compWithValidLicenses      criterion = "Components have valid spdx licenses"
 	compWithNoDepLicenses      criterion = "Components have no deprecated licenses"
 	compWithMultipleLookupId   criterion = "Components have multiple vulnerability lookup ids"
@@ -78,7 +71,14 @@ const (
 	compWithPrimaryPackages    criterion = "Components have primary purpose defined"
 	compWithRestrictedLicenses criterion = "Components have no restricted licenses"
 
+	docWithRelations criterion = "Doc has relationships"
+	docWithAuthors   criterion = "Doc has authors"
+	docWithTimestamp criterion = "Doc has creation timestamp"
+	docWithAllRequiredFields criterion = "Doc has all required fields"
 	docShareLicense criterion = "Doc sharable license"
+
+	
+
 )
 
 var criteria = map[criterion]func(d sbom.Document) score{}
@@ -129,43 +129,52 @@ func registerCriteria(name criterion, f func(sbom.Document) score) error {
 type CriteriaArg string
 
 const (
-	DOCLICENCE             CriteriaArg = "doc-licence"
+		
+	SPECPARSABLE           CriteriaArg = "spec-parsable"
+	SPECFILEFORMAT         CriteriaArg = "spec-file-format"
+	SPECVERSION            CriteriaArg = "spec-version"
+	SBOMSPEC               CriteriaArg = "sbom-spec"
+	
 	COMPNORESTRICLICENCE   CriteriaArg = "comp-no-restric-licence"
 	COMPPRIMARYPURPOSE     CriteriaArg = "comp-primary-purpose"
 	COMPNODEPRECATLICENCE  CriteriaArg = "comp-no-deprecat-licence"
 	COMPVALIDLICENCE       CriteriaArg = "comp-valid-licence"
 	COMPCHECKSUMS          CriteriaArg = "comp-checksums"
 	COMPLICENCE            CriteriaArg = "comp-licence"
+	COMPUNIQIDS            CriteriaArg = "comp-uniq-ids"
+	COMPVERSION            CriteriaArg = "comp-version"
+	COMPNAME               CriteriaArg = "comp-name"
+	COMPSUPPLIERNAME         CriteriaArg = "comp-supplier-name"
+	COMPANYVULNERABILITYID      CriteriaArg = "comp-any-vulnerability-id"
+	COMPMULTIVULNERABILITYID CriteriaArg = "comp-multi-vulnerability-id"
+	
+	DOCLICENCE             CriteriaArg = "doc-licence"
 	DOCALLREQFILEDS        CriteriaArg = "doc-all-req-fileds"
 	DOCTIMESTAMP           CriteriaArg = "doc-timestamp"
 	DOCAUTHOR              CriteriaArg = "doc-author"
 	DOCRELATIONSHIP        CriteriaArg = "doc-relationship"
-	COMPUNIQIDS            CriteriaArg = "comp-uniq-ids"
-	COMPVERSION            CriteriaArg = "comp-version"
-	COMPNAME               CriteriaArg = "comp-name"
-	COMPSUPPLIERNAME       CriteriaArg = "comp-supplier-name"
-	SPECPARSABLE           CriteriaArg = "spec-parsable"
-	SPECFILEFORMAT         CriteriaArg = "spec-file-format"
-	SPECVERSION            CriteriaArg = "spec-version"
-	SBOMSPEC               CriteriaArg = "sbom-spec"
+
 )
 
 var CriteriaArgs = []string{
 	string(DOCLICENCE),
+	string(DOCALLREQFILEDS),
+	string(DOCTIMESTAMP),
+	string(DOCAUTHOR),
+	string(DOCRELATIONSHIP),
+
 	string(COMPNORESTRICLICENCE),
 	string(COMPPRIMARYPURPOSE),
 	string(COMPNODEPRECATLICENCE),
 	string(COMPVALIDLICENCE),
 	string(COMPCHECKSUMS),
 	string(COMPLICENCE),
-	string(DOCALLREQFILEDS),
-	string(DOCTIMESTAMP),
-	string(DOCAUTHOR),
-	string(DOCRELATIONSHIP),
 	string(COMPUNIQIDS),
 	string(COMPVERSION),
 	string(COMPNAME),
 	string(COMPSUPPLIERNAME),
+	string(COMPANYVULNERABILITYID),
+	string(COMPMULTIVULNERABILITYID),
 	string(SPECPARSABLE),
 	string(SPECFILEFORMAT),
 	string(SPECVERSION),
@@ -174,20 +183,25 @@ var CriteriaArgs = []string{
 
 var CriteriaArgMap = map[CriteriaArg]string{
 	DOCLICENCE:             string(docShareLicense),
+	DOCALLREQFILEDS:        string(docWithAllRequiredFields),
+	DOCTIMESTAMP:           string(docWithTimestamp),
+	DOCAUTHOR:              string(docWithAuthors),
+	DOCRELATIONSHIP:        string(docWithRelations),
+	
 	COMPNORESTRICLICENCE:   string(compWithRestrictedLicenses),
 	COMPPRIMARYPURPOSE:     string(compWithPrimaryPackages),
 	COMPNODEPRECATLICENCE:  string(compWithNoDepLicenses),
 	COMPVALIDLICENCE:       string(compWithValidLicenses),
 	COMPCHECKSUMS:          string(compWithChecksums),
 	COMPLICENCE:            string(compWithLicenses),
-	DOCALLREQFILEDS:        string(docWithAllRequiredFields),
-	DOCTIMESTAMP:           string(docWithTimestamp),
-	DOCAUTHOR:              string(docWithAuthors),
-	DOCRELATIONSHIP:        string(docWithRelations),
 	COMPUNIQIDS:            string(compWithUniqID),
 	COMPVERSION:            string(compWithVersion),
 	COMPNAME:               string(compWithNames),
 	COMPSUPPLIERNAME:       string(compSupplierName),
+	COMPANYVULNERABILITYID: string(compWithAnyLookupId),
+	COMPMULTIVULNERABILITYID: string(compWithMultipleLookupId),
+
+
 	SPECPARSABLE:           string(specIsParsable),
 	SPECFILEFORMAT:         string(specFileFormat),
 	SPECVERSION:            string(specVersion),
