@@ -37,6 +37,7 @@ type file struct {
 	SpecVersion string   `json:"spec_version"`
 	Format      string   `json:"file_format"`
 	AvgScore    float64  `json:"avg_score"`
+	Components  int      `json:"no_components"`
 	Scores      []*score `json:"scores"`
 }
 
@@ -74,6 +75,7 @@ func (r *Reporter) jsonReport() {
 
 		f := file{}
 		f.AvgScore = scores.AvgScore()
+		f.Components = len(doc.Components())
 		f.Format = doc.Spec().FileFormat()
 		f.Name = path
 		f.Spec = doc.Spec().Name()
