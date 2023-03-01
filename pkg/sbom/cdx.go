@@ -149,7 +149,8 @@ func (c *cdxDoc) requiredFields() bool {
 		return false
 	}
 
-	if c.doc.BOMFormat == "" {
+	// This field is only required for JSON not for XML.
+	if c.format == FileFormatJSON && c.doc.BOMFormat == "" {
 		c.addToLogs("cdx doc is missing BOMFormat")
 		return false
 	}
