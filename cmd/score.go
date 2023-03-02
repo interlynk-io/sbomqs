@@ -117,9 +117,9 @@ func init() {
 	scoreCmd.Flags().StringVar(&inFile, "filepath", "", "sbom file path")
 	scoreCmd.Flags().StringVar(&inDirPath, "dirpath", "", "sbom dir path")
 	scoreCmd.MarkFlagsMutuallyExclusive("filepath", "dirpath")
-	scoreCmd.Flags().StringVar(&category, "category", "", "scoring category")
 	scoreCmd.Flags().StringVar(&reportFormat, "reportFormat", "", "reporting format basic/detailed/json")
-	scoreCmd.Flags().StringVar(&feature, "feature", "", "scoring features format doc-licence,comp-no-restric-licence,comp-primary-purpose,comp-no-deprecat-licence,comp-valid-licence,comp-checksums,comp-licence,doc-all-req-fileds,doc-timestamp,doc-author,doc-relationship,comp-uniq-ids,comp-version,comp-name,comp-supplier-name,spec-parsable,spec-file-format,spec-version,sbom-spec")
+	scoreCmd.Flags().StringVar(&category, "category", "", "pick category to score")
+	scoreCmd.Flags().StringVar(&feature, "feature", "", "pick features to score")
 	scoreCmd.Flags().StringVar(&configPath, "configpath", "", "scoring based on config path")
 }
 
