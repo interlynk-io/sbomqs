@@ -87,8 +87,12 @@ We have categorized our current features into the following categories
 
 
 #### Feature Scoring
-At present individual features cannot be selected. We are working on adding this 
-[here](https://github.com/interlynk-io/sbomqs/issues/19)
+We allow running any single feature to be tested against an SBOM.
+
+1. `sbomqs generate features`, this generated a features.yaml file 
+2. Open the features.yaml file and select the categories or features that you would like enabled 
+3. Save & close the file.
+4. `sbomqs score  --filepath ~/data/chainguard-sbom/apko.spdx.json  --configpath features.yaml` use the yaml file to apply the changes. 
 
 For the list of features currently supported, visit [features.md](./Features.md). 
 
@@ -142,6 +146,7 @@ json format
       "spec_version": "1.4",
       "file_format": "json",
       "avg_score": 6,
+      "num_components" : 3,
       "scores": [
         {
           "category": "Structural",
