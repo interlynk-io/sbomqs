@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"os"
 	"sort"
+	"strings"
 
 	"github.com/olekukonko/tablewriter"
 )
@@ -36,7 +37,13 @@ func (r *Reporter) detailedReport() {
 		}
 
 		sort.Slice(outDoc, func(i, j int) bool {
-			return outDoc[i][0] < outDoc[j][0]
+			switch strings.Compare(outDoc[i][0], outDoc[j][0]) {
+			case -1:
+				return true
+			case 1:
+				return false
+			}
+			return outDoc[i][1] < outDoc[j][1]
 		})
 
 		fmt.Printf("SBOM Quality Score:%0.1f\tcomponents:%d\t%s\n", scores.AvgScore(), len(doc.Components()), path)
