@@ -121,7 +121,9 @@ func (s *spdxDoc) parseSpec() {
 	sp.version = s.doc.SPDXVersion
 	sp.name = string(SBOMSpecSPDX)
 	sp.isReqFieldsPresent = s.requiredFields()
-	sp.creationTimestamp = s.doc.CreationInfo.Created
+	if s.doc.CreationInfo != nil {
+		sp.creationTimestamp = s.doc.CreationInfo.Created
+	}
 
 	for _, l := range newLicenseFromID(s.doc.DataLicense) {
 		sp.licenses = append(sp.licenses, l)
@@ -155,6 +157,10 @@ func (s *spdxDoc) parseComps() {
 
 func (s *spdxDoc) parseAuthors() {
 	s.authors = []Author{}
+
+	if s.doc.CreationInfo == nil {
+		return
+	}
 
 	for _, c := range s.doc.CreationInfo.Creators {
 		ctType := strings.ToLower(c.CreatorType)
@@ -199,6 +205,11 @@ func (s *spdxDoc) parseRels() {
 
 func (s *spdxDoc) parseTool() {
 	s.tools = []Tool{}
+
+	if s.doc.CreationInfo == nil {
+		return
+	}
+
 	for _, c := range s.doc.CreationInfo.Creators {
 		ctType := strings.ToLower(c.CreatorType)
 		if ctType != "tool" {
