@@ -42,7 +42,9 @@ func (s scores) Count() int {
 func (s scores) AvgScore() float64 {
 	score := 0.0
 	for _, s := range s.scs {
-		score += s.Score()
+		if !s.Ignore() {
+			score += s.Score()
+		}
 	}
 	return score / float64(s.Count())
 }

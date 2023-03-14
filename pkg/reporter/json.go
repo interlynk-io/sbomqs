@@ -30,6 +30,7 @@ type score struct {
 	Score    float64 `json:"score"`
 	MaxScore float64 `json:"max_score"`
 	Desc     string  `json:"description"`
+	Ignored  bool    `json:"ignored"`
 }
 type file struct {
 	Name        string   `json:"file_name"`
@@ -88,6 +89,7 @@ func (r *Reporter) jsonReport() {
 			ns.Score = ss.Score()
 			ns.MaxScore = ss.MaxScore()
 			ns.Desc = ss.Descr()
+			ns.Ignored = ss.Ignore()
 
 			f.Scores = append(f.Scores, ns)
 		}

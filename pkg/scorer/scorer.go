@@ -22,7 +22,7 @@ import (
 	"github.com/samber/lo"
 )
 
-const EngineVersion = "3"
+const EngineVersion = "4"
 
 type Scorer struct {
 	ctx context.Context
@@ -86,4 +86,4 @@ func scoreFilterWithCategory(s score, ss *scores) {
 	} else if s.category == "" {
 		ss.addScore(s)
 	}
-}			
+}

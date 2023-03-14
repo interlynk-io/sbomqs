@@ -18,9 +18,7 @@ import "fmt"
 
 func (r *Reporter) simpleReport() {
 	for index, path := range r.Paths {
-		//doc := r.Docs[index]
 		scores := r.Scores[index]
-
 		fmt.Printf("%0.1f\t%s\n", scores.AvgScore(), path)
 	}
 }

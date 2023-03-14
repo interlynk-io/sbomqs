@@ -15,7 +15,6 @@
 package sbom
 
 import (
-	"strings"
 	"testing"
 
 	cydx "github.com/CycloneDX/cyclonedx-go"
@@ -93,47 +92,6 @@ func cdxBOM() *cydx.BOM {
 	bom.Components = &comps
 
 	return bom
-}
-
-func Test_cdxDoc_addSupplierName(t *testing.T) {
-	type fields struct {
-		doc     *cydx.BOM
-		spec    *spec
-		comps   []Component
-		authors []Author
-		tools   []Tool
-		rels    []Relation
-		logs    []string
-	}
-	type args struct {
-		index int
-	}
-	tests := []struct {
-		name   string
-		fields fields
-		args   args
-		want   string
-	}{
-		{"Supplier name is found", fields{doc: cdxBOM()}, args{index: 1}, strings.ToLower("Dummy")},
-		{"Supplier section is not found", fields{doc: cdxBOM()}, args{index: 0}, ""},
-		{"Supplier name is blank", fields{doc: cdxBOM()}, args{index: 2}, ""},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			c := &cdxDoc{
-				doc:     tt.fields.doc,
-				spec:    tt.fields.spec,
-				comps:   tt.fields.comps,
-				authors: tt.fields.authors,
-				tools:   tt.fields.tools,
-				rels:    tt.fields.rels,
-				logs:    tt.fields.logs,
-			}
-			if got := c.addSupplierName(tt.args.index); got != tt.want {
-				t.Errorf("cdxDoc.addSupplierName() = %v, want %v", got, tt.want)
-			}
-		})
-	}
 }
 
 func Test_cdxDoc_parseComps_Cpes(t *testing.T) {

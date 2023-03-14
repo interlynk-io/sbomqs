@@ -26,6 +26,13 @@ func compSupplierScore(d sbom.Document) score {
 	s := newScore(CategoryNTIAMiniumElements, string(compSupplierName))
 
 	totalComponents := len(d.Components())
+	if totalComponents == 0 {
+		s.setScore(0.0)
+		s.setDesc("N/A (no components)")
+		s.setIgnore(true)
+		return *s
+	}
+
 	withNames := lo.CountBy(d.Components(), func(c sbom.Component) bool {
 		return c.SupplierName() != ""
 	})
@@ -42,6 +49,12 @@ func compSupplierScore(d sbom.Document) score {
 func compWithNameScore(d sbom.Document) score {
 	s := newScore(CategoryNTIAMiniumElements, string(compWithNames))
 	totalComponents := len(d.Components())
+	if totalComponents == 0 {
+		s.setScore(0.0)
+		s.setDesc("N/A (no components)")
+		s.setIgnore(true)
+		return *s
+	}
 	withNames := lo.CountBy(d.Components(), func(c sbom.Component) bool {
 		return c.Name() != ""
 	})
@@ -56,7 +69,12 @@ func compWithNameScore(d sbom.Document) score {
 func compWithVersionScore(d sbom.Document) score {
 	s := newScore(CategoryNTIAMiniumElements, string(compWithVersion))
 	totalComponents := len(d.Components())
-
+	if totalComponents == 0 {
+		s.setScore(0.0)
+		s.setDesc("N/A (no components)")
+		s.setIgnore(true)
+		return *s
+	}
 	withVersions := lo.CountBy(d.Components(), func(c sbom.Component) bool {
 		return c.Version() != ""
 	})
@@ -71,6 +89,12 @@ func compWithVersionScore(d sbom.Document) score {
 func compWithUniqIDScore(d sbom.Document) score {
 	s := newScore(CategoryNTIAMiniumElements, string(compWithUniqID))
 	totalComponents := len(d.Components())
+	if totalComponents == 0 {
+		s.setScore(0.0)
+		s.setDesc("N/A (no components)")
+		s.setIgnore(true)
+		return *s
+	}
 
 	compIDs := lo.Map(d.Components(), func(c sbom.Component, i int) string {
 		return strings.Join([]string{d.Spec().Namespace(), c.ID()}, "")
