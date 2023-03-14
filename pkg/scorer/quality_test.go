@@ -202,3 +202,52 @@ func Test_compWithMultipleIdScore(t *testing.T) {
 		})
 	}
 }
+
+type tool struct {
+	name    string
+	version string
+}
+
+func (t tool) Name() string {
+	return t.name
+}
+func (t tool) Version() string {
+	return t.version
+}
+
+func Test_docWithCreatorScore(t *testing.T) {
+	testDocs := func() []sbom.Document {
+		doc := &sbomfakes.FakeDocument{}
+		doc.ToolsReturns([]sbom.Tool{})
+
+		docWithCreator := &sbomfakes.FakeDocument{}
+		docWithCreator.ToolsReturns([]sbom.Tool{tool{name: "cyclonedx-gomod", version: "v0.1.0"}})
+
+		docWithTool := &sbomfakes.FakeDocument{}
+		docWithTool.ToolsReturns([]sbom.Tool{tool{name: "cyclonedx-gomod", version: ""}})
+
+		docWithVer := &sbomfakes.FakeDocument{}
+		docWithVer.ToolsReturns([]sbom.Tool{tool{name: "", version: "v0.1.0"}})
+		return []sbom.Document{doc, docWithCreator, docWithTool, docWithVer}
+	}
+	type args struct {
+		d sbom.Document
+	}
+	tests := []struct {
+		name string
+		args args
+		want float64
+	}{
+		{"doc with no tool info", args{d: testDocs()[0]}, 0.0},
+		{"doc with tool info", args{d: testDocs()[1]}, 10.0},
+		{"doc with tool and no version", args{d: testDocs()[2]}, 0.0},
+		{"doc with no tool has version", args{d: testDocs()[3]}, 0.0},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := docWithCreatorScore(tt.args.d); got.score != tt.want {
+				t.Errorf("docWithCreatorScore() = %v, want %v", got.score, tt.want)
+			}
+		})
+	}
+}

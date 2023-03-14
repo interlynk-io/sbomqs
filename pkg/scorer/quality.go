@@ -168,3 +168,19 @@ func compWithMultipleIdScore(d sbom.Document) score {
 
 	return *s
 }
+
+func docWithCreatorScore(d sbom.Document) score {
+	s := newScore(CategoryQuality, string(docWithCreator))
+
+	totalTools := len(d.Tools())
+
+	withCreatorAndVersion := lo.CountBy(d.Tools(), func(t sbom.Tool) bool {
+		return t.Name() != "" && t.Version() != ""
+	})
+
+	finalScore := (float64(withCreatorAndVersion) / float64(totalTools)) * 10.0
+
+	s.setScore(finalScore)
+	s.setDesc(fmt.Sprintf("%d/%d tools have creator and version", withCreatorAndVersion, totalTools))
+	return *s
+}
