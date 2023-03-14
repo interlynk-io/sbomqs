@@ -163,7 +163,7 @@ json format
 
 
 # SBOM Samples
-- A sample set of SBOM is present in the [samples](https://github.com/interlynk-io/sbomqs/tree/main/samples) directory above. 
+- A sample set of SBOM is present in the [samples](https://github.com/interlynk-io/sbomqs/tree/main/samples) directory above
 - [SBOM Benchmark](https://www.sbombenchmark.dev) is a repository of SBOM and quality score for most popular containers and repositories
 - [SBOM Explorer](https://github.com/interlynk-io/sbomex) is a command line utility to search and pull SBOMs
 
