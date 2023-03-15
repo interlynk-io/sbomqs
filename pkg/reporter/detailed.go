@@ -32,7 +32,12 @@ func (r *Reporter) detailedReport() {
 		outDoc := [][]string{}
 
 		for _, score := range scores.ScoreList() {
-			l := []string{score.Category(), score.Feature(), fmt.Sprintf("%0.1f/10.0", score.Score()), score.Descr()}
+			var l []string
+			if score.Ignore() {
+				l = []string{score.Category(), score.Feature(), " - ", score.Descr()}
+			} else {
+				l = []string{score.Category(), score.Feature(), fmt.Sprintf("%0.1f/10.0", score.Score()), score.Descr()}
+			}
 			outDoc = append(outDoc, l)
 		}
 
@@ -53,6 +58,5 @@ func (r *Reporter) detailedReport() {
 		table.SetAutoMergeCellsByColumnIndex([]int{0})
 		table.AppendBulk(outDoc)
 		table.Render()
-
 	}
 }

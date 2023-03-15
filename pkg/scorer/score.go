@@ -55,6 +55,10 @@ func (s *score) setDesc(d string) {
 	s.descr = d
 }
 
+func (s *score) setIgnore(i bool) {
+	s.ignore = i
+}
+
 func (s score) Category() string {
 	return s.category
 }

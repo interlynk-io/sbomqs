@@ -66,7 +66,12 @@ func compWithLicenseScore(d sbom.Document) score {
 	s := newScore(CategorySemantic, string(compWithLicenses))
 
 	totalComponents := len(d.Components())
-
+	if totalComponents == 0 {
+		s.setScore(0.0)
+		s.setDesc("N/A (no components)")
+		s.setIgnore(true)
+		return *s
+	}
 	withLicenses := lo.CountBy(d.Components(), func(c sbom.Component) bool {
 		return len(c.Licenses()) > 0
 	})
@@ -84,6 +89,12 @@ func compWithChecksumsScore(d sbom.Document) score {
 	s := newScore(CategorySemantic, string(compWithChecksums))
 
 	totalComponents := len(d.Components())
+	if totalComponents == 0 {
+		s.setScore(0.0)
+		s.setDesc("N/A (no components)")
+		s.setIgnore(true)
+		return *s
+	}
 
 	withChecksums := lo.CountBy(d.Components(), func(c sbom.Component) bool {
 		return len(c.Checksums()) > 0

@@ -181,14 +181,41 @@ func (c *cdxDoc) requiredFields() bool {
 func (c *cdxDoc) parseComps() {
 	c.comps = []Component{}
 
+	if c.doc.Metadata != nil && c.doc.Metadata.Component != nil {
+		nc := newComponent()
+		basec := c.doc.Metadata.Component
+
+		nc.version = basec.Version
+		nc.name = basec.Name
+		nc.supplierName = c.addSupplierName(basec)
+		nc.purpose = string(basec.Type)
+		nc.isReqFieldsPresent = c.pkgRequiredFields(basec)
+		ncpe := cpe.NewCPE(basec.CPE)
+		if ncpe.Valid() {
+			nc.cpes = []cpe.CPE{ncpe}
+		} else {
+			c.addToLogs(fmt.Sprintf("cdx base doc component %s at index %d invalid cpes found", basec.Name, -1))
+		}
+		npurl := purl.NewPURL(basec.PackageURL)
+		if npurl.Valid() {
+			nc.purls = []purl.PURL{npurl}
+		} else {
+			c.addToLogs(fmt.Sprintf("cdx base doc component %s at index %d invalid purl found", basec.Name, -1))
+		}
+		nc.checksums = c.checksums(basec)
+		nc.licenses = c.licenses(basec)
+		nc.id = basec.BOMRef
+		c.comps = append(c.comps, nc)
+	}
+
 	for index, sc := range lo.FromPtr(c.doc.Components) {
 		nc := newComponent()
 
 		nc.version = sc.Version
 		nc.name = sc.Name
-		nc.supplierName = c.addSupplierName(index)
+		nc.supplierName = c.addSupplierName(&sc)
 		nc.purpose = string(sc.Type)
-		nc.isReqFieldsPresent = c.pkgRequiredFields(index)
+		nc.isReqFieldsPresent = c.pkgRequiredFields(&sc)
 		ncpe := cpe.NewCPE(sc.CPE)
 		if ncpe.Valid() {
 			nc.cpes = []cpe.CPE{ncpe}
@@ -202,37 +229,34 @@ func (c *cdxDoc) parseComps() {
 		} else {
 			c.addToLogs(fmt.Sprintf("cdx doc component %s at index %d invalid purl found", sc.Name, index))
 		}
-		nc.checksums = c.checksums(index)
-		nc.licenses = c.licenses(index)
+		nc.checksums = c.checksums(&sc)
+		nc.licenses = c.licenses(&sc)
 		nc.id = sc.BOMRef
 
 		c.comps = append(c.comps, nc)
 	}
 }
 
-func (c *cdxDoc) pkgRequiredFields(index int) bool {
-
-	comp := lo.FromPtr(c.doc.Components)[index]
+func (c *cdxDoc) pkgRequiredFields(comp *cydx.Component) bool {
 
 	if string(comp.Type) == "" {
-		c.addToLogs(fmt.Sprintf("cdx doc comp %s at index %d missing type field", comp.Name, index))
+		c.addToLogs(fmt.Sprintf("cdx doc comp %s missing type field", comp.Name))
 		return false
 	}
 
 	if comp.Name == "" {
-		c.addToLogs(fmt.Sprintf("cdx doc comp %s at index %d missing type field", comp.BOMRef, index))
+		c.addToLogs(fmt.Sprintf("cdx doc comp %s missing type field", comp.BOMRef))
 		return false
 	}
 
 	return true
 }
 
-func (c *cdxDoc) checksums(index int) []Checksum {
+func (c *cdxDoc) checksums(comp *cydx.Component) []Checksum {
 	chks := []Checksum{}
-	comp := lo.FromPtr(c.doc.Components)[index]
 
 	if len(lo.FromPtr(comp.Hashes)) == 0 {
-		c.addToLogs(fmt.Sprintf("cdx doc comp %s at index %d no checksum found", comp.Name, index))
+		c.addToLogs(fmt.Sprintf("cdx doc comp %s no checksum found", comp.Name))
 		return chks
 	}
 
@@ -245,9 +269,8 @@ func (c *cdxDoc) checksums(index int) []Checksum {
 	return chks
 }
 
-func (c *cdxDoc) licenses(index int) []License {
+func (c *cdxDoc) licenses(comp *cydx.Component) []License {
 	lics := []License{}
-	comp := lo.FromPtr(c.doc.Components)[index]
 
 	addLicense := func(agg *[]License, n []license) {
 		for _, l := range n {
@@ -277,7 +300,7 @@ func (c *cdxDoc) licenses(index int) []License {
 	}
 	finalLics := removeDups(lics)
 	if len(finalLics) == 0 {
-		c.addToLogs(fmt.Sprintf("cdx doc comp %s at index %d no licenses found", comp.Name, index))
+		c.addToLogs(fmt.Sprintf("cdx doc comp %s no licenses found", comp.Name))
 	}
 
 	return finalLics
@@ -326,18 +349,16 @@ func (c *cdxDoc) parseRels() {
 	}
 
 }
-func (c *cdxDoc) addSupplierName(index int) string {
-	comp := lo.FromPtr(c.doc.Components)[index]
-
+func (c *cdxDoc) addSupplierName(comp *cydx.Component) string {
 	if comp.Supplier == nil {
-		c.addToLogs(fmt.Sprintf("cdx doc comp %s at index %d no supplier found", comp.Name, index))
+		c.addToLogs(fmt.Sprintf("cdx doc comp %s no supplier found", comp.Name))
 		return ""
 	}
 
 	name := strings.ToLower(comp.Supplier.Name)
 
 	if name == "" {
-		c.addToLogs(fmt.Sprintf("cdx doc comp %s at index %d no supplier found", comp.Name, index))
+		c.addToLogs(fmt.Sprintf("cdx doc comp %s no supplier found", comp.Name))
 		return ""
 	}
 	return name

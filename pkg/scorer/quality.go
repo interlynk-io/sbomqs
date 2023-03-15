@@ -28,6 +28,12 @@ func compWithValidLicensesScore(d sbom.Document) score {
 	s := newScore(CategoryQuality, string(compWithValidLicenses))
 
 	totalComponents := len(d.Components())
+	if totalComponents == 0 {
+		s.setScore(0.0)
+		s.setDesc("N/A (no components)")
+		s.setIgnore(true)
+		return *s
+	}
 
 	compScores := lo.Map(d.Components(), func(c sbom.Component, _ int) float64 {
 		tl := len(c.Licenses())
@@ -63,7 +69,12 @@ func compWithPrimaryPackageScore(d sbom.Document) score {
 	s := newScore(CategoryQuality, string(compWithPrimaryPackages))
 
 	totalComponents := len(d.Components())
-
+	if totalComponents == 0 {
+		s.setScore(0.0)
+		s.setDesc("N/A (no components)")
+		s.setIgnore(true)
+		return *s
+	}
 	withPurpose := lo.CountBy(d.Components(), func(c sbom.Component) bool {
 		return c.PrimaryPurpose() != "" && lo.Contains(sbom.SupportedPrimaryPurpose(d.Spec().Name()), strings.ToLower(c.PrimaryPurpose()))
 	})
@@ -78,6 +89,12 @@ func compWithPrimaryPackageScore(d sbom.Document) score {
 func compWithNoDepLicensesScore(d sbom.Document) score {
 	s := newScore(CategoryQuality, string(compWithNoDepLicenses))
 	totalComponents := len(d.Components())
+	if totalComponents == 0 {
+		s.setScore(0.0)
+		s.setDesc("N/A (no components)")
+		s.setIgnore(true)
+		return *s
+	}
 
 	totalLicenses := lo.Reduce(d.Components(), func(agg int, c sbom.Component, _ int) int {
 		return agg + len(c.Licenses())
@@ -104,6 +121,12 @@ func compWithNoDepLicensesScore(d sbom.Document) score {
 func compWithRestrictedLicensesScore(d sbom.Document) score {
 	s := newScore(CategoryQuality, string(compWithRestrictedLicenses))
 	totalComponents := len(d.Components())
+	if totalComponents == 0 {
+		s.setScore(0.0)
+		s.setDesc("N/A (no components)")
+		s.setIgnore(true)
+		return *s
+	}
 
 	totalLicenses := lo.Reduce(d.Components(), func(agg int, c sbom.Component, _ int) int {
 		return agg + len(c.Licenses())
@@ -131,6 +154,12 @@ func compWithAnyLookupIdScore(d sbom.Document) score {
 	s := newScore(CategoryQuality, string(compWithAnyLookupId))
 
 	totalComponents := len(d.Components())
+	if totalComponents == 0 {
+		s.setScore(0.0)
+		s.setDesc("N/A (no components)")
+		s.setIgnore(true)
+		return *s
+	}
 
 	withAnyLookupId := lo.CountBy(d.Components(), func(c sbom.Component) bool {
 		if len(c.Cpes()) > 0 || len(c.Purls()) > 0 {
@@ -152,6 +181,12 @@ func compWithMultipleIdScore(d sbom.Document) score {
 	s := newScore(CategoryQuality, string(compWithMultipleLookupId))
 
 	totalComponents := len(d.Components())
+	if totalComponents == 0 {
+		s.setScore(0.0)
+		s.setDesc("N/A (no components)")
+		s.setIgnore(true)
+		return *s
+	}
 
 	withMultipleId := lo.CountBy(d.Components(), func(c sbom.Component) bool {
 		if len(c.Cpes()) > 0 && len(c.Purls()) > 0 {
