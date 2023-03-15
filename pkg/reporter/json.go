@@ -33,13 +33,16 @@ type score struct {
 	Ignored  bool    `json:"ignored"`
 }
 type file struct {
-	Name        string   `json:"file_name"`
-	Spec        string   `json:"spec"`
-	SpecVersion string   `json:"spec_version"`
-	Format      string   `json:"file_format"`
-	AvgScore    float64  `json:"avg_score"`
-	Components  int      `json:"num_components"`
-	Scores      []*score `json:"scores"`
+	Name         string   `json:"file_name"`
+	Spec         string   `json:"spec"`
+	SpecVersion  string   `json:"spec_version"`
+	Format       string   `json:"file_format"`
+	AvgScore     float64  `json:"avg_score"`
+	Components   int      `json:"num_components"`
+	CreationTime string   `json:"creation_time"`
+	ToolName     string   `json:"gen_tool_name"`
+	ToolVersion  string   `json:"gen_tool_version"`
+	Scores       []*score `json:"scores"`
 }
 
 type creation struct {
@@ -68,7 +71,7 @@ func newJsonReport() *jsonReport {
 	}
 }
 
-func (r *Reporter) jsonReport() {
+func (r *Reporter) jsonReport(onlyResponse bool) (string, error) {
 	jr := newJsonReport()
 	for index, path := range r.Paths {
 		doc := r.Docs[index]
@@ -81,6 +84,14 @@ func (r *Reporter) jsonReport() {
 		f.Name = path
 		f.Spec = doc.Spec().Name()
 		f.SpecVersion = doc.Spec().Version()
+		tools := doc.Tools()
+
+		if len(tools) > 0 {
+			//Use the first tool for now
+			f.ToolName = tools[0].Name()
+			f.ToolVersion = tools[0].Version()
+		}
+		f.CreationTime = doc.Spec().CreationTimestamp()
 
 		for _, ss := range scores.ScoreList() {
 			ns := new(score)
@@ -96,6 +107,12 @@ func (r *Reporter) jsonReport() {
 
 		jr.Files = append(jr.Files, f)
 	}
-	o, _ := json.MarshalIndent(jr, "", "  ")
-	fmt.Println(string(o))
+	o, err := json.MarshalIndent(jr, "", "  ")
+	if err != nil {
+		return "", err
+	}
+	if !onlyResponse {
+		fmt.Println(string(o))
+	}
+	return string(o), nil
 }

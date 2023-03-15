@@ -62,8 +62,12 @@ func (r *Reporter) Report() {
 	} else if r.Format == "detailed" {
 		r.detailedReport()
 	} else if r.Format == "json" {
-		r.jsonReport()
+		r.jsonReport(false)
 	} else {
 		r.detailedReport()
 	}
+}
+
+func (r *Reporter) ShareReport() (string, error) {
+	return r.jsonReport(true)
 }
