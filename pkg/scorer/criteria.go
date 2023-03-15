@@ -77,6 +77,7 @@ const (
 	compWithAnyLookupId        criterion = "Components have any vulnerability lookup id"
 	compWithPrimaryPackages    criterion = "Components have primary purpose defined"
 	compWithRestrictedLicenses criterion = "Components have no restricted licenses"
+	docWithCreator             criterion = "Doc has creator tool and version"
 
 	docShareLicense criterion = "Doc sharable license"
 )
@@ -112,6 +113,7 @@ func init() {
 	_ = registerCriteria(compWithRestrictedLicenses, compWithRestrictedLicensesScore)
 	_ = registerCriteria(compWithAnyLookupId, compWithAnyLookupIdScore)
 	_ = registerCriteria(compWithMultipleLookupId, compWithMultipleIdScore)
+	_ = registerCriteria(docWithCreator, docWithCreatorScore)
 
 	//sharing
 	_ = registerCriteria(docShareLicense, sharableLicenseScore)
@@ -150,6 +152,7 @@ const (
 	SBOMSPEC                 CriteriaArg = "sbom-spec"
 	COMPANYVULNERABILITYID   CriteriaArg = "comp-any-vulnerability-id"
 	COMPMULTIVULNERABILITYID CriteriaArg = "comp-multi-vulnerability-id"
+	DOCCREATORTOOL           CriteriaArg = "doc-creator-tool"
 )
 
 var CriteriaArgs = []string{
@@ -174,6 +177,7 @@ var CriteriaArgs = []string{
 	string(SBOMSPEC),
 	string(COMPANYVULNERABILITYID),
 	string(COMPMULTIVULNERABILITYID),
+	string(DOCCREATORTOOL),
 }
 
 var CriteriaArgMap = map[CriteriaArg]string{
@@ -198,4 +202,5 @@ var CriteriaArgMap = map[CriteriaArg]string{
 	SBOMSPEC:                 string(spec),
 	COMPANYVULNERABILITYID:   string(compWithAnyLookupId),
 	COMPMULTIVULNERABILITYID: string(compWithMultipleLookupId),
+	DOCCREATORTOOL:           string(docWithCreator),
 }
