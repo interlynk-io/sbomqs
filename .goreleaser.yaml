@@ -41,3 +41,15 @@ snapshot:
 release:
   prerelease: allow 
   draft: true 
+
+brews:
+  - name: sbomqs
+    goarm: 6
+    goamd64: v3
+    tap:
+      owner: Interlynk.io
+      name: sbomqs
+      branch: main
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    install: |
+      bin.install "sbomqs"
