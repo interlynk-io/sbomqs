@@ -181,7 +181,7 @@ func (s *spdxDoc) parseRels() {
 	var d []byte
 	for _, r := range s.doc.Relationships {
 		nr := relation{}
-		switch r.Relationship {
+		switch strings.ToUpper(r.Relationship) {
 		case spdx_common.TypeRelationshipDescribe, spdx_common.TypeRelationshipDescribeBy:
 			fallthrough
 		case spdx_common.TypeRelationshipContains, spdx_common.TypeRelationshipContainedBy:
