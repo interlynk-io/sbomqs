@@ -19,15 +19,26 @@
 [![Go Reference](https://pkg.go.dev/badge/github.com/interlynk-io/sbomqs.svg)](https://pkg.go.dev/github.com/interlynk-io/sbomqs)
 [![Go Report Card](https://goreportcard.com/badge/github.com/interlynk-io/sbomqs)](https://goreportcard.com/report/github.com/interlynk-io/sbomqs)
 
-`sbomqs` is your primary tool to assess the quality of sboms. The higher the score the more consumable your sboms are. 
+`sbomqs` is your primary tool to assess the quality of sbom's. The higher the score the more consumable your sboms are. 
 
 ```sh
 go install github.com/interlynk-io/sbomqs@latest
 ```
 other installation [options](#installation).
 
+# Usage
+Quality score for a single sbom file
+```sh
+sbomqs score --filepath <sbom-file>
+```
+
+Sharable quality score 
+```sh
+sbomqs share <sbom-file>
+```
+
 # What is a high quality SBOM
-A high quailty SBOM should allow for managements of assets, license, vulnerabilities, Intellectual Property, configuration management and incidence response. 
+A high quality SBOM should allow for managements of assets, license, vulnerabilities, Intellectual Property, configuration management and incident response. 
 
 A quality SBOM is one that is accurate, complete, and up-to-date. There are many factors that go into constructing a high quality sbom
 1. Identify & list all components of your product along with their transitive dependencies. 
@@ -42,16 +53,16 @@ A quality SBOM is one that is accurate, complete, and up-to-date. There are many
 # Goals
 
 The main goals of the utility are
-1. Make it easy and fast to asses the quality of your sboms, generated or acquired. 
-2. Support all well known sbom standards. 
+1. Make it easy and fast to assess the quality of your sbom's, generated or acquired. 
+2. Support all well known SBOM standards. 
 3. Scoring output should be customizable.
 4. Scoring output should be consumable. 
 
 ## Goal #1: Easy & Fast 
 
-SBOM can be generated using both commercial and open-source tooling. As consumers of SBOM we wanted a fast & easy way to assess the quality of an SBOM. An sbom with a low score, needs to be re-evaluated or rejected. 
+SBOM can be generated using both commercial and open-source tooling. As consumers of SBOM we wanted a fast & easy way to assess the quality of an SBOM. An SBOM with a low score, needs to be re-evaluated or rejected. 
 
-`sbomqs` makes getting a quick assesment, relatively painless. Just point. 
+`sbomqs` makes getting a quick assessment, relatively painless. Just point. 
 
 ```sh
 sbomqs score --filepath samples/julia.spdx.tv --reportFormat basic 
@@ -67,22 +78,22 @@ NTIA recommends the following standards for SBOM's
 
 `sbomqs` supports SPDX and CycloneDX formats. Support for SWID is incoming. 
 
-In additon to supporting the sbom formats, we support various file formats 
+In addition to supporting the SBOM formats, we support various file formats 
 
 - **SPDX**: json, yaml, rdf and tag-value
 - **CycloneDX**: json and xml
 
-## Goal #3: Customizable ouptut 
+## Goal #3: Customizable output 
 
 `sbomqs` scoring output can be customized by category or by feature. We understand everyone needs for scoring would not match ours, we have added customizability around which categories or features should or should not be included for scoring. 
 
 #### Category Scoring
 We have categorized our current features into the following categories 
-- **NTIA-minimum-elements**: Includes features, which help you quickly understand if your sboms comply with NTIA minimum element guidelines. 
+- **NTIA-minimum-elements**: Includes features, which help you quickly understand if your sbom's comply with NTIA minimum element guidelines. 
 - **Structural**: We check if the SBOM complies with the underlying specifications, be it [SPDX](https://spdx.dev/specifications/) or [CycloneDX](https://cyclonedx.org/specification/overview/)
-- **Semantic**: We check meaning of sbom fields specific to their standard. 
+- **Semantic**: We check meaning of SBOM fields specific to their standard. 
 - **Quality**: Help determine the quality of the data present in the sbom.
-- **Sharing**: Helps determine if the sbom can be shared. 
+- **Sharing**: Helps determine if the SBOM can be shared. 
 - [OWASP BOM Maturity Model](https://docs.google.com/spreadsheets/d/1wu6KbgwuokC5357ikrhFN-QkwQ7Pyb6z0zE80sTNNus/edit#gid=0): Work in progress
 
 
@@ -96,7 +107,7 @@ We allow running any single feature to be tested against an SBOM.
 
 For the list of features currently supported, visit [features.md](./Features.md). 
 
-## Goal #4: Consumable ouptut 
+## Goal #4: Consumable output 
 
 `sbomqs` provides its scoring output in basic and detailed forms. 
 
@@ -189,7 +200,7 @@ go install github.com/interlynk-io/sbomqs@latest
 
 ## Using repo
 
-This approach invovles cloning the repo and building it. 
+This approach involves cloning the repo and building it. 
 
 1. Clone the repo `git clone git@github.com:interlynk-io/sbomqs.git`
 2. `cd` into `sbomqs` folder 
@@ -206,6 +217,15 @@ We look forward to your contributions, below are a few guidelines on how to subm
 - Push your changes (`git push origin feature/new-feature`)
 - Create a new pull-request
 
+# Contact 
+We appreciate all feedback, the best way to get in touch with us
+- hello@interlynk.io
+- github.com/interlynk-io/sbomqs/issues 
+- https://twitter.com/InterlynkIo
+
+
 # Stargazers
+
+If you like this project, please support us by starring it. 
 
 [![Stargazers](https://starchart.cc/interlynk-io/sbomqs.svg)](https://starchart.cc/interlynk-io/sbomqs)
