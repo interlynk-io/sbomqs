@@ -42,3 +42,8 @@ snapshot:
 release:
   prerelease: allow 
   draft: true 
+
+sboms:
+  - artifacts: archive
+    cmd: syft
+    args: ["app",  "-json", "-output", "$document", "$artifact"]

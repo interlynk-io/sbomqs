@@ -21,6 +21,14 @@ jobs:
           go-version: '>=1.20'
           check-latest: true
           cache: true
+      - uses: anchore/sbom-action@v0
+        with:
+          format: cyclonedx-json
+          artifact-name: cyclonedx-json
+      - uses: anchore/sbom-action@v0
+        with:
+          format: spdx-json
+          artifact-name: spdx-json
       - name: Goreleaser
         uses: goreleaser/goreleaser-action@v4
         with:
