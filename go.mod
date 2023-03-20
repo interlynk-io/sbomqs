@@ -8,7 +8,7 @@ require (
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.6.1
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/package-url/packageurl-go v0.1.0
-	github.com/samber/lo v1.37.0
+	github.com/samber/lo v1.38.0
 	github.com/spdx/tools-golang v0.4.0
 	github.com/spf13/cobra v1.6.1
 	go.uber.org/zap v1.24.0
@@ -21,7 +21,6 @@ require (
 require (
 	github.com/common-nighthawk/go-figure v0.0.0-20210622060536-734e95fb86be // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
-	github.com/kr/text v0.2.0 // indirect
 	github.com/mattn/go-runewidth v0.0.14 // indirect
 	github.com/rivo/uniseg v0.4.4 // indirect
 	github.com/rogpeppe/go-internal v1.9.0 // indirect
