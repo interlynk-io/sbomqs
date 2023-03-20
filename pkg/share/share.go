@@ -51,7 +51,7 @@ type shareResonse struct {
 func sentToBenchmark(js string) (string, error) {
 	req := &http.Request{
 		Method: "POST",
-		URL:    &url.URL{Scheme: "https", Host: "sbom-benchmark.fly.dev", Path: "/user/score"},
+		URL:    &url.URL{Scheme: "https", Host: "sbombenchmark.dev", Path: "/user/score"},
 		Header: http.Header{
 			"Content-Type": []string{"application/json"},
 		},
