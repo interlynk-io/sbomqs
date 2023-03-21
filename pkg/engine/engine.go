@@ -74,7 +74,7 @@ func ShareRun(ctx context.Context, ep *Params) error {
 		log.Fatal("path is required")
 	}
 
-	doc, scores, err := processFile(ctx, ep, nil)
+	doc, scores, err := processFile(ctx, ep.Path, "", nil)
 	if err != nil {
 		return err
 	}
@@ -151,7 +151,7 @@ func handlePath(ctx context.Context, ep *Params, criterias []string) error {
 				continue
 			}
 			path := filepath.Join(ep.Path, file.Name())
-			doc, scs, err := processFile(ctx, ep, criterias)
+			doc, scs, err := processFile(ctx, path, ep.Category, criterias)
 			if err != nil {
 				continue
 			}
@@ -160,7 +160,7 @@ func handlePath(ctx context.Context, ep *Params, criterias []string) error {
 			paths = append(paths, path)
 		}
 	} else {
-		doc, scs, err := processFile(ctx, ep, criterias)
+		doc, scs, err := processFile(ctx, ep.Path, ep.Category, criterias)
 		if err != nil {
 			return err
 		}
@@ -187,35 +187,35 @@ func handlePath(ctx context.Context, ep *Params, criterias []string) error {
 	return nil
 }
 
-func processFile(ctx context.Context, ep *Params, criterias []string) (sbom.Document, scorer.Scores, error) {
+func processFile(ctx context.Context, path, category string, criterias []string) (sbom.Document, scorer.Scores, error) {
 	log := logger.FromContext(ctx)
-	log.Debugf("Processing file :%s\n", ep.Path)
+	log.Debugf("Processing file :%s\n", path)
 
-	if _, err := os.Stat(ep.Path); err != nil {
-		log.Debugf("os.Stat failed for file :%s\n", ep.Path)
-		fmt.Printf("failed to stat %s\n", ep.Path)
+	if _, err := os.Stat(path); err != nil {
+		log.Debugf("os.Stat failed for file :%s\n", path)
+		fmt.Printf("failed to stat %s\n", path)
 		return nil, nil, err
 	}
 
-	f, err := os.Open(ep.Path)
+	f, err := os.Open(path)
 	if err != nil {
-		log.Debugf("os.Open failed for file :%s\n", ep.Path)
-		fmt.Printf("failed to open %s\n", ep.Path)
+		log.Debugf("os.Open failed for file :%s\n", path)
+		fmt.Printf("failed to open %s\n", path)
 		return nil, nil, err
 	}
 	defer f.Close()
 
 	doc, err := sbom.NewSBOMDocument(ctx, f)
 	if err != nil {
-		log.Debugf("failed to create sbom document for  :%s\n", ep.Path)
+		log.Debugf("failed to create sbom document for  :%s\n", path)
 		log.Debugf("%s\n", err)
-		fmt.Printf("failed to parse %s : %s\n", ep.Path, err)
+		fmt.Printf("failed to parse %s : %s\n", path, err)
 		return nil, nil, err
 	}
 
 	sr := scorer.NewScorer(ctx,
 		doc,
-		scorer.WithCategory(ep.Category),
+		scorer.WithCategory(category),
 		scorer.WithFeature(criterias))
 
 	scores := sr.Score()
