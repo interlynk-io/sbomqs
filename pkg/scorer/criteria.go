@@ -79,7 +79,7 @@ const (
 	compWithRestrictedLicenses criterion = "Components have no restricted licenses"
 	docWithCreator             criterion = "Doc has creator tool and version"
 
-	docShareLicense criterion = "Doc sharable license"
+	docShareLicense criterion = "Doc shareable license"
 )
 
 var criteria = map[criterion]func(d sbom.Document) score{}
