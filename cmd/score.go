@@ -115,19 +115,17 @@ func toUserCmd(cmd *cobra.Command, args []string) *userCmd {
 	}
 
 	//output control
-	var err error
-	uCmd.json, err = cmd.Flags().GetBool("json")
-	if err != nil {
+	uCmd.json, _ = cmd.Flags().GetBool("json")
+	uCmd.basic, _ = cmd.Flags().GetBool("basic")
+	uCmd.detailed, _ = cmd.Flags().GetBool("detailed")
+
+	if reportFormat != "" {
 		uCmd.json = strings.ToLower(reportFormat) == "json"
-	}
-	uCmd.basic, err = cmd.Flags().GetBool("basic")
-	if err != nil {
 		uCmd.basic = strings.ToLower(reportFormat) == "basic"
-	}
-	uCmd.detailed, err = cmd.Flags().GetBool("detailed")
-	if err != nil {
 		uCmd.detailed = strings.ToLower(reportFormat) == "detailed"
 	}
+
+	fmt.Printf("json: %v, basic: %v, detailed: %v, reportFormat: %s\n", uCmd.json, uCmd.basic, uCmd.detailed, reportFormat)
 
 	//spec control
 	// uCmd.spdx, _ = cmd.Flags().GetBool("spdx")
