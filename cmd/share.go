@@ -16,13 +16,9 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"strings"
 
+	"github.com/interlynk-io/sbomqs/pkg/engine"
 	"github.com/interlynk-io/sbomqs/pkg/logger"
-	"github.com/interlynk-io/sbomqs/pkg/reporter"
-	"github.com/interlynk-io/sbomqs/pkg/sbom"
-	"github.com/interlynk-io/sbomqs/pkg/scorer"
-	"github.com/interlynk-io/sbomqs/pkg/share"
 	"github.com/spf13/cobra"
 )
 
@@ -48,27 +44,14 @@ For more information, please visit https://sbombenchmark.dev
 
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := logger.WithLogger(context.Background())
-
 		sbomFileName := args[0]
-		doc, scores, err := processFile(ctx, sbomFileName, nil)
 
-		if err != nil {
-			fmt.Printf("Error processing file %s: %s", sbomFileName, err)
-			return err
+		engParams := &engine.Params{
+			Path:  sbomFileName,
+			Basic: true,
+			Debug: false,
 		}
-		url, err := share.Share(ctx, doc, scores, sbomFileName)
-		if err != nil {
-			fmt.Printf("Error sharing file %s: %s", sbomFileName, err)
-			return err
-		}
-		nr := reporter.NewReport(ctx,
-			[]sbom.Document{doc},
-			[]scorer.Scores{scores},
-			[]string{sbomFileName},
-			reporter.WithFormat(strings.ToLower("basic")))
-		nr.Report()
-		fmt.Printf("ShareLink: %s\n", url)
-		return nil
+		return engine.ShareRun(ctx, engParams)
 	},
 }
 
