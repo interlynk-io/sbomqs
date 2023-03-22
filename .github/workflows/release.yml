@@ -22,10 +22,7 @@ jobs:
           check-latest: true
           cache: true
       - name: Download syft binary
-        run: |
-          curl -LO https://github.com/anchore/syft/releases/download/vX.Y.Z/syft_linux_amd64.tar.gz
-          tar xf syft_linux_amd64.tar.gz
-          sudo mv syft /usr/local/bin/
+        run: curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
       - name: Run syft
         run: syft version
       - name: Goreleaser
