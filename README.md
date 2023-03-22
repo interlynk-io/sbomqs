@@ -27,16 +27,22 @@ go install github.com/interlynk-io/sbomqs@latest
 other installation [options](#installation).
 
 # Usage
-Quality score for a single sbom file
+Creating Quality Score for a single sbom file
 ```sh
 sbomqs score --filepath <sbom-file>
 ```
 
-Sharable quality score 
+Creating a shareable link to the SBOM Quality Report at [sbombenchmark.dev](sbombenchmark.dev)  
 ```sh
 sbomqs share <sbom-file>
 ```
 
+Example:
+```
+$sbomqs share cdxgen-9.5.1_alpine-latest.cdx.json
+5.9	cdxgen-9.5.1_alpine-latest.cdx.json
+ShareLink: https://sbombenchmark.dev/user/score?id=a97af1bf-4c9d-4a55-8524-3d4bcee0b9a4
+```
 # What is a high quality SBOM
 A high quality SBOM should allow for managements of assets, license, vulnerabilities, Intellectual Property, configuration management and incident response. 
 
