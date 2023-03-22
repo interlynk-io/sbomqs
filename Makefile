@@ -69,7 +69,7 @@ clean:
 
 .PHONY: snapshot
 snapshot:
-	LDFLAGS="$(LDFLAGS)" \goreleaser release --clean --snapshot --skip-sign --skip-publish --timeout 120m
+	LDFLAGS="$(LDFLAGS)" \goreleaser release --clean --snapshot --timeout 120m
 	
 .PHONY: release
 release:
