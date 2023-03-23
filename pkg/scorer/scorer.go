@@ -71,19 +71,19 @@ func (s *Scorer) Score() Scores {
 		score := cr(s.doc)
 		if len(s.feature) > 0 {
 			if lo.Contains(s.feature, string(key)) {
-				scoreFilterWithCategory(score, scores)
+				s.scoreFilterWithCategory(score, scores)
 			}
 		} else {
-			scoreFilterWithCategory(score, scores)
+			s.scoreFilterWithCategory(score, scores)
 		}
 	}
 	return scores
 }
 
-func scoreFilterWithCategory(s score, ss *scores) {
-	if s.category != "" && s.category == s.Category() {
-		ss.addScore(s)
+func (s *Scorer) scoreFilterWithCategory(cs score, ss *scores) {
+	if s.category != "" && cs.category == s.category {
+		ss.addScore(cs)
 	} else if s.category == "" {
-		ss.addScore(s)
+		ss.addScore(cs)
 	}
 }

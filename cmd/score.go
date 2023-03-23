@@ -7,15 +7,13 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"path/filepath"
 	"strings"
 
+	"github.com/interlynk-io/sbomqs/pkg/engine"
 	"github.com/interlynk-io/sbomqs/pkg/logger"
 	"github.com/interlynk-io/sbomqs/pkg/reporter"
-	"github.com/interlynk-io/sbomqs/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/pkg/scorer"
 	"github.com/samber/lo"
-	"sigs.k8s.io/yaml"
 
 	"github.com/spf13/cobra"
 )
@@ -28,195 +26,210 @@ var (
 	reportFormat string
 	configPath   string
 )
-var criterias []string
+
+type userCmd struct {
+	//input control
+	path string
+
+	//filter control
+	category string
+	features []string
+
+	//output control
+	json     bool
+	basic    bool
+	detailed bool
+
+	//spec control
+	spdx bool
+	cdx  bool
+
+	//directory control
+	recurse bool
+
+	//debug control
+	debug bool
+
+	//config control
+	configPath string
+}
 
 // scoreCmd represents the score command
 var scoreCmd = &cobra.Command{
-	Use:   "score",
-	Short: "provides a comprehensive quality score for your sbom",
-	RunE: func(cmd *cobra.Command, args []string) error {
-		ctx := logger.WithLogger(context.Background())
-		var err error
-		if len(category) > 0 && !lo.Contains(scorer.Categories, category) {
-			return fmt.Errorf(fmt.Sprintf("Category not found %s in %s", category, strings.Join(scorer.Categories, ",")))
-		}
-
-		if len(reportFormat) > 0 && !lo.Contains(reporter.ReportFormats, reportFormat) {
-			return fmt.Errorf("report format options are basic or detailed")
-		}
-
-		if len(feature) > 0 {
-			features := strings.Split(feature, ",")
-			if len(features) > 0 {
-				for _, f := range features {
-					if lo.Contains(scorer.CriteriaArgs, f) {
-						criterias = append(criterias, string(scorer.CriteriaArgMap[scorer.CriteriaArg(f)]))
-					}
-				}
+	Use:          "score",
+	Short:        "comprehensive quality score for your sbom",
+	SilenceUsage: true,
+	Args: func(cmd *cobra.Command, args []string) error {
+		if len(args) <= 0 {
+			if len(inFile) <= 0 && len(inDirPath) <= 0 {
+				return fmt.Errorf("provide a path to an sbom file or directory of sbom files")
 			}
+
+		} else if len(args) > 1 {
+			return fmt.Errorf("too many arguments")
 		}
-
-		if len(configPath) > 0 {
-			err := processConfigFile(ctx, configPath)
-			if err != nil {
-				return err
-			}
-		}
-
-		var docs []sbom.Document
-		var scores []scorer.Scores
-		var paths []string
-
-		if len(reportFormat) > 0 && !lo.Contains(reporter.ReportFormats, reportFormat) {
-			return fmt.Errorf("report format options are basic or detailed")
-		}
-
-		if len(feature) > 0 {
-			features := strings.Split(feature, ",")
-			if len(features) > 0 {
-				for _, f := range features {
-					if lo.Contains(scorer.CriteriaArgs, f) {
-						criterias = append(criterias, string(scorer.CriteriaArgMap[scorer.CriteriaArg(f)]))
-					}
-				}
-			}
-		}
-
-		if len(configPath) > 0 {
-			err := processConfigFile(ctx, configPath)
-			if err != nil {
-				return err
-			}
-		}
-
-		if len(inFile) > 0 {
-			d, s, e := processFile(ctx, inFile, criterias)
-			if e != nil {
-				return fmt.Errorf("error processing file")
-			}
-			docs = append(docs, d)
-			scores = append(scores, s)
-			paths = append(paths, inFile)
-		} else if len(inDirPath) > 0 {
-			docs, scores, paths, err = processDir(ctx, inDirPath)
-		}
-
-		nr := reporter.NewReport(ctx,
-			docs,
-			scores,
-			paths,
-			reporter.WithFormat(strings.ToLower(reportFormat)))
-		nr.Report()
-
-		return err
+		return nil
 	},
+	RunE: processScore,
 }
 
-func init() {
-	rootCmd.AddCommand(scoreCmd)
-	scoreCmd.Flags().StringVar(&inFile, "filepath", "", "sbom file path")
-	scoreCmd.Flags().StringVar(&inDirPath, "dirpath", "", "sbom dir path")
-	scoreCmd.MarkFlagsMutuallyExclusive("filepath", "dirpath")
-	scoreCmd.Flags().StringVar(&reportFormat, "reportFormat", "", "reporting format basic/detailed/json")
-	scoreCmd.Flags().StringVar(&category, "category", "", "pick category to score")
-	scoreCmd.Flags().StringVar(&feature, "feature", "", "pick features to score")
-	scoreCmd.Flags().StringVar(&configPath, "configpath", "", "scoring based on config path")
+func processScore(cmd *cobra.Command, args []string) error {
+	ctx := logger.WithLogger(context.Background())
+
+	uCmd := toUserCmd(cmd, args)
+
+	if err := validateFlags(uCmd); err != nil {
+		return err
+	}
+
+	engParams := toEngineParams(uCmd)
+	return engine.Run(ctx, engParams)
+}
+func toUserCmd(cmd *cobra.Command, args []string) *userCmd {
+	uCmd := &userCmd{}
+
+	//input control
+	if len(args) <= 0 {
+		if len(inFile) > 0 {
+			uCmd.path = inFile
+		}
+
+		if len(inDirPath) > 0 {
+			uCmd.path = inDirPath
+		}
+	} else {
+		uCmd.path = args[0]
+	}
+
+	//filter control
+	if category == "" {
+		uCmd.category, _ = cmd.Flags().GetString("category")
+	} else {
+		uCmd.category = category
+	}
+
+	if feature == "" {
+		uCmd.features, _ = cmd.Flags().GetStringSlice("feature")
+	} else {
+		uCmd.features = strings.Split(feature, ",")
+	}
+
+	//output control
+	var err error
+	uCmd.json, err = cmd.Flags().GetBool("json")
+	if err != nil {
+		uCmd.json = strings.ToLower(reportFormat) == "json"
+	}
+	uCmd.basic, err = cmd.Flags().GetBool("basic")
+	if err != nil {
+		uCmd.basic = strings.ToLower(reportFormat) == "basic"
+	}
+	uCmd.detailed, err = cmd.Flags().GetBool("detailed")
+	if err != nil {
+		uCmd.detailed = strings.ToLower(reportFormat) == "detailed"
+	}
+
+	//spec control
+	// uCmd.spdx, _ = cmd.Flags().GetBool("spdx")
+	// uCmd.cdx, _ = cmd.Flags().GetBool("cdx")
+
+	//directory control
+	//uCmd.recurse, _ = cmd.Flags().GetBool("recurse")
+
+	//debug control
+	uCmd.debug, _ = cmd.Flags().GetBool("debug")
+
+	//config control
+	uCmd.configPath = configPath
+
+	return uCmd
 }
 
-func processConfigFile(ctx context.Context, filePath string) error {
-	log := logger.FromContext(ctx)
-	cnf := Config{}
-	log.Debugf("Processing file :%s\n", filePath)
-	if _, err := os.Stat(filePath); err != nil {
-		log.Debugf("os.Stat failed for file :%s\n", filePath)
-		fmt.Printf("failed to stat %s\n", filePath)
+func toEngineParams(uCmd *userCmd) *engine.Params {
+	return &engine.Params{
+		Path:       uCmd.path,
+		Category:   uCmd.category,
+		Features:   uCmd.features,
+		Json:       uCmd.json,
+		Basic:      uCmd.basic,
+		Detailed:   uCmd.detailed,
+		Recurse:    uCmd.recurse,
+		Debug:      uCmd.debug,
+		ConfigPath: uCmd.configPath,
+	}
+}
+
+func validatePath(path string) error {
+	if _, err := os.Stat(path); err != nil {
 		return err
 	}
-	f, err := os.ReadFile(filePath)
-	if err != nil {
-		log.Debugf("os.Open failed for file :%s\n", filePath)
-		fmt.Printf("failed to open %s\n", filePath)
-		return err
-	}
-	err = yaml.Unmarshal(f, &cnf)
-	if err != nil {
-		return err
+	return nil
+}
+func validateFlags(cmd *userCmd) error {
+	if err := validatePath(cmd.path); err != nil {
+		return fmt.Errorf("invalid path: %w", err)
 	}
 
-	for _, r := range cnf.Record {
-		if r.Enabled {
-			for _, c := range r.Criteria {
-				if c.Enabled {
-					criterias = append(criterias, c.Description)
-				}
+	if len(cmd.category) > 0 && !lo.Contains(scorer.Categories, cmd.category) {
+		return fmt.Errorf("invalid category: %s", cmd.category)
+	}
+
+	if cmd.features != nil {
+		for _, f := range cmd.features {
+			if !lo.Contains(scorer.CriteriaArgs, f) {
+				return fmt.Errorf("invalid feature: %s", f)
 			}
 		}
+	}
+
+	if cmd.configPath != "" {
+		if err := validatePath(cmd.configPath); err != nil {
+			return fmt.Errorf("invalid config path: %w", err)
+		}
+	}
+
+	if len(reportFormat) > 0 && !lo.Contains(reporter.ReportFormats, reportFormat) {
+		return fmt.Errorf("invalid report format: %s", reportFormat)
 	}
 
 	return nil
 }
+func init() {
+	rootCmd.AddCommand(scoreCmd)
 
-func processFile(ctx context.Context, filePath string, criterias []string) (sbom.Document, scorer.Scores, error) {
-	log := logger.FromContext(ctx)
-	log.Debugf("Processing file :%s\n", filePath)
+	//Config Control
+	scoreCmd.Flags().StringP("configpath", "", "", "scoring based on config path")
 
-	if _, err := os.Stat(filePath); err != nil {
-		log.Debugf("os.Stat failed for file :%s\n", filePath)
-		fmt.Printf("failed to stat %s\n", filePath)
-		return nil, nil, err
-	}
+	//Filter Control
+	scoreCmd.Flags().StringP("category", "c", "", "filter by category")
+	scoreCmd.Flags().StringP("feature", "f", "", "filter by feature")
 
-	f, err := os.Open(filePath)
-	if err != nil {
-		log.Debugf("os.Open failed for file :%s\n", filePath)
-		fmt.Printf("failed to open %s\n", filePath)
-		return nil, nil, err
-	}
-	defer f.Close()
+	//Spec Control
+	scoreCmd.Flags().BoolP("spdx", "", false, "limit scoring to spdx sboms")
+	scoreCmd.Flags().BoolP("cdx", "", false, "limit scoring to cdx sboms")
+	scoreCmd.MarkFlagsMutuallyExclusive("spdx", "cdx")
+	scoreCmd.Flags().MarkHidden("spdx")
+	scoreCmd.Flags().MarkHidden("cdx")
 
-	doc, err := sbom.NewSBOMDocument(ctx, f)
-	if err != nil {
-		log.Debugf("failed to create sbom document for  :%s\n", filePath)
-		log.Debugf("%s\n", err)
-		fmt.Printf("failed to parse %s : %s\n", filePath, err)
-		return nil, nil, err
-	}
+	//Directory Control
+	scoreCmd.Flags().BoolP("recurse", "r", false, "recurse into subdirectories")
+	scoreCmd.Flags().MarkHidden("recurse")
 
-	sr := scorer.NewScorer(ctx,
-		doc,
-		scorer.WithCategory(category),
-		scorer.WithFeature(criterias))
+	//Output Control
+	scoreCmd.Flags().BoolP("json", "j", false, "results in json")
+	scoreCmd.Flags().BoolP("detailed", "d", false, "results in table format, default")
+	scoreCmd.Flags().BoolP("basic", "b", false, "results in single line format")
 
-	scores := sr.Score()
-	return doc, scores, nil
-}
+	//Debug Control
+	scoreCmd.Flags().BoolP("debug", "D", false, "enable debug logging")
+	scoreCmd.Flags().MarkHidden("debug")
 
-func processDir(ctx context.Context, dirPath string) ([]sbom.Document, []scorer.Scores, []string, error) {
-	log := logger.FromContext(ctx)
-	log.Debugf("processing dirpath: %s\n", dirPath)
-	files, err := os.ReadDir(dirPath)
-	if err != nil {
-		log.Debugf("os.ReadDir failed for path:%s\n", dirPath)
-		log.Debugf("%s\n", err)
-		return nil, nil, nil, err
-	}
-
-	var docs []sbom.Document
-	var paths []string
-	var scores []scorer.Scores
-
-	for _, file := range files {
-		if file.IsDir() {
-			continue
-		}
-		path := filepath.Join(dirPath, file.Name())
-		doc, scs, err := processFile(ctx, path, criterias)
-		if err != nil {
-			continue
-		}
-		docs = append(docs, doc)
-		scores = append(scores, scs)
-		paths = append(paths, path)
-	}
-	return docs, scores, paths, nil
+	//Deprecated
+	scoreCmd.Flags().StringVar(&inFile, "filepath", "", "sbom file path")
+	scoreCmd.Flags().StringVar(&inDirPath, "dirpath", "", "sbom dir path")
+	scoreCmd.MarkFlagsMutuallyExclusive("filepath", "dirpath")
+	scoreCmd.Flags().StringVar(&reportFormat, "reportFormat", "", "reporting format basic/detailed/json")
+	scoreCmd.Flags().MarkDeprecated("reportFormat", "use --json, --detailed, or --basic instead")
+	scoreCmd.Flags().MarkDeprecated("filepath", "use positional argument instead")
+	scoreCmd.Flags().MarkDeprecated("dirpath", "use positional argument instead")
 }
