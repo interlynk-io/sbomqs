@@ -125,8 +125,6 @@ func toUserCmd(cmd *cobra.Command, args []string) *userCmd {
 		uCmd.detailed = strings.ToLower(reportFormat) == "detailed"
 	}
 
-	fmt.Printf("json: %v, basic: %v, detailed: %v, reportFormat: %s\n", uCmd.json, uCmd.basic, uCmd.detailed, reportFormat)
-
 	//spec control
 	// uCmd.spdx, _ = cmd.Flags().GetBool("spdx")
 	// uCmd.cdx, _ = cmd.Flags().GetBool("cdx")
