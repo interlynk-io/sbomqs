@@ -14,6 +14,57 @@
  limitations under the License.
 -->
 
+
+# SBOM Quality Checks Documentation
+
+This page describes each SBOM Quality check in detail, including scoring criteria,
+remediation steps, and an explanation of the potential impact on SBOM use
+associated with a low score. The checks are continually changing and we welcome
+community feedback. If you have ideas for additions or new detection techniques,
+please [contribute](../CONTRIBUTING.md)!
+
+## Taxonomy
+- A `Quality Check` is a test that can be performed on SBOM to return a binary result (e.g. A check for specification)
+- A `Quality Check Category` is a logical grouping of Quality Checks (e.g. "NTIA-Minimum-Elements" Checks)
+- A `Quality Check Set` is a collection of Quality Checks
+
+## Scoring Methodolgy
+- Each Quality Check has a score range of 0.0 to 10.0 and equal weight.
+- A Quality Check applied over an array (e.g. licenses) averages its score from the Check applied to each element.
+- Quality Check Set Score is an average of scores over all Quality Checks present in the collection.
+
+## Default Quality Checks
+
+### SBOM Specification 
+
+This check determines whether the given SBOM is in one of the SBOM specifications (CycloneDX, SPDX, SWID) recommended in [CISA reference document](https://ntia.gov/sites/default/files/publications/ntia_sbom_framing_2nd_edition_20211021_0.pdf).
+
+SBOM can be produced in a variety of data formats. However, CISA reference documents suggests limiting 
+the document into three commonly used formats to facilitate widespread adoption. 
+
+
+**Remediation steps**
+- Re-create the document in CycloneDX, SPDX or SWID.
+
+## SBOM Specification Version 
+
+This check determines whether the given SBOM is in the specification version that can support fields necessary for common SBOM operations. The current check tests for 
+- CycloneDX Versions: 1.0, 1.1, 1.2, 1.3, 1.4
+- SPDX Versions: 2.1, 2.2, 2.3
+
+While the earlier versions of specifications may exist, a document in earlier version of the specification will not be useable in all circumstances due to lack of necessary fields in the specification.
+
+**Remediation steps**
+- Re-create the document in one of the versions listed above.
+
+## SBOM Specification File Format 
+
+This checks determines whether the given SBOM can be easily consumed by testing for the most commonly file format associated with the specification.
+- CycloneDX: XML, JSON
+- SPDX: JSON, YAML, RDF, tag/value
+
+Building and sharing SBOM in most commonly used file format enables use of SBOM in a variety of conditions
+
 Name        | Description                               | 
 ----------- | ----------------------------------------- | 
 SBOM Specification | Checks if the sbom is in one of the currently supported formats : <br>- [**CycloneDX**](https://cyclonedx.org/),<br>- [**SPDX**](https://spdx.dev/) | 
