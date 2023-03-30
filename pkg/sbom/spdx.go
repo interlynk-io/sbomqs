@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"io"
 	"strings"
+	"unicode"
 
 	"github.com/interlynk-io/sbomqs/pkg/cpe"
 	"github.com/interlynk-io/sbomqs/pkg/logger"
@@ -224,7 +225,16 @@ func (s *spdxDoc) parseTool() {
 		if !ok {
 			return name, ""
 		}
-		return tool, ver
+
+		//check if version has atleast one-digit
+		//if not, then it is not a version
+		for _, r := range ver {
+			if unicode.IsDigit(r) {
+				return tool, ver
+			}
+		}
+
+		return name, ""
 	}
 
 	for _, c := range s.doc.CreationInfo.Creators {
