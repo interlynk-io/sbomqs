@@ -30,7 +30,7 @@ please [contribute](https://github.com/interlynk-io/sbomqs#contributions)!
 - A `Quality Check Set` is a collection of Quality Checks (e.g., "Default Check Set", "IoT Quality Set")
 
 ## Scoring Methodology
-- Each Quality Check has an equal weight and a score range of 0.0 - 10.0.
+- Each Quality Check has an equal weight and a score range of 0.0 - 10.0. (Coming soon: Customization of weight per Quality Check)
 - A Quality Check applied over a list of items (e.g., licenses) averages its score from the Check applied to each element.
 - Quality Check Set Score is an average of scores over all Quality Checks in that Set.
 
@@ -40,7 +40,7 @@ Such a breaking change is marked by incrementing `scoring_engine_version` in the
 
 Therefore comparing Quality Scores across `scoring_engine_version` is not recommended.
 
-## Default Quality Checks
+## Quality Check Sets - Interlynk (Default)
 
 ### Check Category: Structural
 ---
@@ -89,19 +89,6 @@ A syntactic error in the SBOM will prevent it from being usable.
 - Check the SBOM generator tool's known issues and get the most recent version of the tool.
 - Check options/setup of the environment variables required to use the tool.
 - Build SBOM with a different tool.
-
----
-#### SBOM Specification Syntax 
-
-This check determines whether the given SBOM meets all the requirements of the underlying specification and file format to be parsed.
-
-A syntactic error in the SBOM will prevent it from being usable.
-
-***Remediation***
-- Check the SBOM generator tool's known issues and get the most recent version of the tool.
-- Check options/setup of the environment variables required to use the tool.
-- Build SBOM with a different tool.
-
 ---
 ### Category: NTIA-Minimum-Elements
 ---
@@ -120,7 +107,8 @@ Identify the component with a missing name and check its product page to get its
 ---
 #### Supplier Name 
 
-This check determines whether each component in the SBOM includes a supplier name.
+This check determines whether each component in the SBOM includes a supplier name. Supplier name is not a well defined term
+especially in the context of Open Source projects and we will update the recommendation here once a consensus emerges.
 
 ***Remediation***
 
@@ -200,7 +188,7 @@ A valid checksum can be used to independently identify the contents of the packa
 
 - Check and populate the following fields with the relationship of components in the SBOM.
 - CycloneDX field: [dependencies](https://cyclonedx.org/docs/1.4/json/#dependencies)
-- SPDX fields: [PackageChecksum](https://spdx.github.io/spdx-spec/v2.3/package-information/#710-package-checksum-field), [FileChecksum](https://spdx.github.io/spdx-spec/v2.3/file-information/#84-file-checksum-field)
+- SPDX fields: [PackageChecksum](https://spdx.github.io/spdx-spec/v2.3/package-information/#710-package-checksum-field), (Coming Soon) [FileChecksum](https://spdx.github.io/spdx-spec/v2.3/file-information/#84-file-checksum-field)
 
 
 ---
@@ -214,7 +202,7 @@ A declared valid SPDX license is the key to evaluating any compliance risks.
 
 Check and populate the following fields with the relationship of components in the SBOM.
 - CycloneDX field: [component:licenses](https://cyclonedx.org/docs/1.4/json/#components_items_licenses)
-- SPDX fields: [PackageLicenseConcluded](https://spdx.github.io/spdx-spec/v2.3/package-information/#713-concluded-license-field), [LicenseConcluded](https://spdx.github.io/spdx-spec/v2.3/file-information/#85-concluded-license-field)
+- SPDX fields: [PackageLicenseConcluded](https://spdx.github.io/spdx-spec/v2.3/package-information/#713-concluded-license-field), (Coming Soon) [LicenseConcluded](https://spdx.github.io/spdx-spec/v2.3/file-information/#85-concluded-license-field)
 
 ---
 #### Required Fields
@@ -269,7 +257,7 @@ Any license expression not found on the SPDX list is a commercial license and mu
 
 - Check the following fields to confirm none of the licenses belong to the [SPDX license list](https://spdx.org/licenses/):
 - CycloneDX field: [component:licenses](https://cyclonedx.org/docs/1.4/json/#components_items_licenses)
-- SPDX fields: [PackageLicenseConcluded](https://spdx.github.io/spdx-spec/v2.3/package-information/#713-concluded-license-field), [LicenseConcluded](https://spdx.github.io/spdx-spec/v2.3/file-information/#85-concluded-license-field)
+- SPDX fields: [PackageLicenseConcluded](https://spdx.github.io/spdx-spec/v2.3/package-information/#713-concluded-license-field), (Coming Soon) [LicenseConcluded](https://spdx.github.io/spdx-spec/v2.3/file-information/#85-concluded-license-field)
 
 ---
 #### Deprecated License
@@ -282,7 +270,7 @@ A deprecated license declaration can be considered a compliance risk.
 
 - Check the following fields to confirm none of the licenses belong to the [deprecated licenses](https://spdx.org/licenses/):
 - CycloneDX field: [component:licenses](https://cyclonedx.org/docs/1.4/json/#components_items_licenses)
-- SPDX fields: [PackageLicenseConcluded](https://spdx.github.io/spdx-spec/v2.3/package-information/#713-concluded-license-field), [LicenseConcluded](https://spdx.github.io/spdx-spec/v2.3/file-information/#85-concluded-license-field)
+- SPDX fields: [PackageLicenseConcluded](https://spdx.github.io/spdx-spec/v2.3/package-information/#713-concluded-license-field), (Coming Soon) [LicenseConcluded](https://spdx.github.io/spdx-spec/v2.3/file-information/#85-concluded-license-field)
 ---
 #### Restricted License
 
@@ -294,7 +282,7 @@ A restricted license declaration can be considered a compliance risk.
 
 - Check the following fields to confirm none of the licenses belong to the [restricted license list](https://opensource.google/documentation/reference/thirdparty/licenses):
 - CycloneDX field: [component:licenses](https://cyclonedx.org/docs/1.4/json/#components_items_licenses)
-- SPDX fields: [PackageLicenseConcluded](https://spdx.github.io/spdx-spec/v2.3/package-information/#713-concluded-license-field), [LicenseConcluded](https://spdx.github.io/spdx-spec/v2.3/file-information/#85-concluded-license-field)
+- SPDX fields: [PackageLicenseConcluded](https://spdx.github.io/spdx-spec/v2.3/package-information/#713-concluded-license-field), (Coming Soon) [LicenseConcluded](https://spdx.github.io/spdx-spec/v2.3/file-information/#85-concluded-license-field)
 
 ---
 #### Primary Purpose
