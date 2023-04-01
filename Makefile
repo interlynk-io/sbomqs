@@ -74,3 +74,7 @@ snapshot:
 .PHONY: release
 release:
 	LDFLAGS="$(LDFLAGS)" \goreleaser release --clean --timeout 120m
+
+.PHONY: updatedeps
+updatedeps:
+	go get -u all

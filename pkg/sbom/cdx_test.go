@@ -108,9 +108,9 @@ func Test_cdxDoc_parseComps_Cpes(t *testing.T) {
 		args   args
 		want   int
 	}{
-		{"CPE is present but invalid", fields{doc: cdxBOM()}, args{index: 0}, 0},
-		{"CPE is present with valid", fields{doc: cdxBOM()}, args{index: 1}, 1},
-		{"CPE 2.2 is present with valid", fields{doc: cdxBOM()}, args{index: 2}, 1},
+		{"CPE is present but invalid", fields{doc: cdxBOM()}, args{index: 1}, 0},
+		{"CPE is present with valid", fields{doc: cdxBOM()}, args{index: 2}, 1},
+		{"CPE 2.2 is present with valid", fields{doc: cdxBOM()}, args{index: 3}, 1},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -141,9 +141,9 @@ func Test_cdxDoc_parseComps_purl(t *testing.T) {
 		args   args
 		want   int
 	}{
-		{"PURL is present but invalid", fields{doc: cdxBOM()}, args{index: 4}, 0},
-		{"Empty PURL", fields{doc: cdxBOM()}, args{index: 3}, 0},
-		{"Valid Purl", fields{doc: cdxBOM()}, args{index: 2}, 1},
+		{"PURL is present but invalid", fields{doc: cdxBOM()}, args{index: 5}, 0},
+		{"Empty PURL", fields{doc: cdxBOM()}, args{index: 4}, 0},
+		{"Valid Purl", fields{doc: cdxBOM()}, args{index: 3}, 1},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
