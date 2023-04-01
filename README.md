@@ -111,7 +111,7 @@ We allow running any single feature to be tested against an SBOM.
 3. Save & close the file.
 4. `sbomqs score  --filepath ~/data/chainguard-sbom/apko.spdx.json  --configpath features.yaml` use the yaml file to apply the changes. 
 
-For the list of features currently supported, visit [features.md](./Features.md). 
+For the list of features currently supported, visit [features.md](./Checks.md). 
 
 ## Goal #4: Consumable output 
 
