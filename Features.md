@@ -42,7 +42,7 @@ Therefore comparing Quality Scores across `scoring_engine_version` is not recomm
 
 ## Quality Check Sets - Interlynk (Default)
 
-### Check Category: Structural
+### Category: Structural
 ---
 #### Specification 
 
@@ -297,7 +297,7 @@ Check the following fields to confirm none of the licenses belong to the [restri
 - CycloneDX field: [component:type](https://cyclonedx.org/docs/1.4/json/#components_items_type)
 - SPDX fields: [PrimaryPackagePurpose](https://spdx.github.io/spdx-spec/v2.3/package-information/#724-primary-package-purpose-field)
 ---
-### Sharing
+### Category: Sharing
 ---
 #### Unencumbered License
 
