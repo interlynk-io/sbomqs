@@ -32,7 +32,7 @@ Creating Quality Score for a single sbom file
 sbomqs score --filepath <sbom-file>
 ```
 
-Creating a shareable link to the SBOM Quality Report at [sbombenchmark.dev](sbombenchmark.dev)  
+Creating a shareable link to the SBOM Quality Report at [sbombenchmark.dev](https://sbombenchmark.dev/)  
 ```sh
 sbomqs share <sbom-file>
 ```
