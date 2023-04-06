@@ -1,0 +1,105 @@
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.4.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.4",
+  "serialNumber": "urn:uuid:282ec6f4-455e-4b07-b4b8-561bad2010c5",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2023-01-07T13:52:30.247202+00:00",
+    "tools": [
+      {
+        "vendor": "CycloneDX",
+        "name": "cyclonedx-python-lib",
+        "version": "TESTING",
+        "externalReferences": [
+          {
+            "url": "https://github.com/CycloneDX/cyclonedx-python-lib/actions",
+            "type": "build-system"
+          },
+          {
+            "url": "https://pypi.org/project/cyclonedx-python-lib/",
+            "type": "distribution"
+          },
+          {
+            "url": "https://cyclonedx.github.io/cyclonedx-python-lib/",
+            "type": "documentation"
+          },
+          {
+            "url": "https://github.com/CycloneDX/cyclonedx-python-lib/issues",
+            "type": "issue-tracker"
+          },
+          {
+            "url": "https://github.com/CycloneDX/cyclonedx-python-lib/blob/main/LICENSE",
+            "type": "license"
+          },
+          {
+            "url": "https://github.com/CycloneDX/cyclonedx-python-lib/blob/main/CHANGELOG.md",
+            "type": "release-notes"
+          },
+          {
+            "url": "https://github.com/CycloneDX/cyclonedx-python-lib",
+            "type": "vcs"
+          },
+          {
+            "url": "https://cyclonedx.org",
+            "type": "website"
+          }
+        ]
+      }
+    ],
+    "component": {
+      "type": "application",
+      "bom-ref": "my-project",
+      "name": "my-project",
+      "version": "1"
+    }
+  },
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "component-A",
+      "name": "A",
+      "version": "0.1",
+      "components": [
+        {
+          "type": "library",
+          "bom-ref": "component-B",
+          "name": "B",
+          "version": "1.0",
+          "components": [
+            {
+              "type": "library",
+              "bom-ref": "component-C",
+              "name": "C",
+              "version": "1.0"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "my-project",
+      "dependsOn": [
+        "component-A"
+      ]
+    },
+    {
+      "ref": "component-A",
+      "dependsOn": [
+        "component-B"
+      ]
+    },
+    {
+      "ref": "component-B",
+      "dependsOn": [
+        "component-C"
+      ]
+    },
+    {
+      "ref": "component-C",
+      "dependsOn": []
+    }
+  ]
+}

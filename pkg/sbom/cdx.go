@@ -21,6 +21,7 @@ import (
 	"strings"
 
 	cydx "github.com/CycloneDX/cyclonedx-go"
+	"github.com/google/uuid"
 	"github.com/interlynk-io/sbomqs/pkg/cpe"
 	"github.com/interlynk-io/sbomqs/pkg/purl"
 	"github.com/samber/lo"
@@ -178,63 +179,81 @@ func (c *cdxDoc) requiredFields() bool {
 	return true
 }
 
+func copyC(cdxc *cydx.Component, c *cdxDoc) *component {
+	if cdxc == nil {
+		return nil
+	}
+
+	nc := newComponent()
+	nc.version = cdxc.Version
+	nc.name = cdxc.Name
+	nc.supplierName = c.addSupplierName(cdxc)
+	nc.purpose = string(cdxc.Type)
+	nc.isReqFieldsPresent = c.pkgRequiredFields(cdxc)
+	ncpe := cpe.NewCPE(cdxc.CPE)
+	if ncpe.Valid() {
+		nc.cpes = []cpe.CPE{ncpe}
+	} else {
+		c.addToLogs(fmt.Sprintf("cdx base doc component %s at index %d invalid cpes found", cdxc.Name, -1))
+	}
+	npurl := purl.NewPURL(cdxc.PackageURL)
+	if npurl.Valid() {
+		nc.purls = []purl.PURL{npurl}
+	} else {
+		c.addToLogs(fmt.Sprintf("cdx base doc component %s at index %d invalid purl found", cdxc.Name, -1))
+	}
+	nc.checksums = c.checksums(cdxc)
+	nc.licenses = c.licenses(cdxc)
+	nc.id = cdxc.BOMRef
+
+	return nc
+}
+
 func (c *cdxDoc) parseComps() {
 	c.comps = []Component{}
-
+	comps := map[string]*component{}
 	if c.doc.Metadata != nil && c.doc.Metadata.Component != nil {
-		nc := newComponent()
-		basec := c.doc.Metadata.Component
-
-		nc.version = basec.Version
-		nc.name = basec.Name
-		nc.supplierName = c.addSupplierName(basec)
-		nc.purpose = string(basec.Type)
-		nc.isReqFieldsPresent = c.pkgRequiredFields(basec)
-		ncpe := cpe.NewCPE(basec.CPE)
-		if ncpe.Valid() {
-			nc.cpes = []cpe.CPE{ncpe}
-		} else {
-			c.addToLogs(fmt.Sprintf("cdx base doc component %s at index %d invalid cpes found", basec.Name, -1))
-		}
-		npurl := purl.NewPURL(basec.PackageURL)
-		if npurl.Valid() {
-			nc.purls = []purl.PURL{npurl}
-		} else {
-			c.addToLogs(fmt.Sprintf("cdx base doc component %s at index %d invalid purl found", basec.Name, -1))
-		}
-		nc.checksums = c.checksums(basec)
-		nc.licenses = c.licenses(basec)
-		nc.id = basec.BOMRef
-		c.comps = append(c.comps, nc)
+		walkComponents(&[]cydx.Component{*c.doc.Metadata.Component}, c, comps)
 	}
 
-	for index, sc := range lo.FromPtr(c.doc.Components) {
-		nc := newComponent()
-
-		nc.version = sc.Version
-		nc.name = sc.Name
-		nc.supplierName = c.addSupplierName(&sc)
-		nc.purpose = string(sc.Type)
-		nc.isReqFieldsPresent = c.pkgRequiredFields(&sc)
-		ncpe := cpe.NewCPE(sc.CPE)
-		if ncpe.Valid() {
-			nc.cpes = []cpe.CPE{ncpe}
-		} else {
-			c.addToLogs(fmt.Sprintf("cdx doc component %s at index %d invalid cpes found", sc.Name, index))
-		}
-
-		npurl := purl.NewPURL(sc.PackageURL)
-		if npurl.Valid() {
-			nc.purls = []purl.PURL{npurl}
-		} else {
-			c.addToLogs(fmt.Sprintf("cdx doc component %s at index %d invalid purl found", sc.Name, index))
-		}
-		nc.checksums = c.checksums(&sc)
-		nc.licenses = c.licenses(&sc)
-		nc.id = sc.BOMRef
-
-		c.comps = append(c.comps, nc)
+	if c.doc.Components != nil {
+		walkComponents(c.doc.Components, c, comps)
 	}
+
+	for _, v := range comps {
+		c.comps = append(c.comps, v)
+	}
+}
+
+func walkComponents(comps *[]cydx.Component, doc *cdxDoc, store map[string]*component) {
+	if comps == nil {
+		return
+	}
+	for _, c := range *comps {
+		if c.Components != nil {
+			walkComponents(c.Components, doc, store)
+		}
+		if _, ok := store[compID(&c)]; ok {
+			//already present no need to re add it.
+			continue
+		}
+		store[compID(&c)] = copyC(&c, doc)
+	}
+}
+
+func compID(comp *cydx.Component) string {
+	if comp.BOMRef != "" {
+		return comp.BOMRef
+	}
+
+	if comp.PackageURL != "" {
+		return comp.PackageURL
+	}
+
+	// A component with no BOMREF or PackageURL is a bad component, so we generate a UUID for it.
+	// This is a temporary solution until we can figure out how to handle this case.
+	id := uuid.New()
+	return id.String()
 }
 
 func (c *cdxDoc) pkgRequiredFields(comp *cydx.Component) bool {

@@ -190,6 +190,7 @@ func handlePath(ctx context.Context, ep *Params, criterias []string) error {
 func processFile(ctx context.Context, path, category string, criterias []string) (sbom.Document, scorer.Scores, error) {
 	log := logger.FromContext(ctx)
 	log.Debugf("Processing file :%s\n", path)
+	//fmt.Printf("Processing file :%s\n", path)
 
 	if _, err := os.Stat(path); err != nil {
 		log.Debugf("os.Stat failed for file :%s\n", path)
