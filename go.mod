@@ -10,7 +10,7 @@ require (
 	github.com/package-url/packageurl-go v0.1.0
 	github.com/samber/lo v1.38.1
 	github.com/spdx/tools-golang v0.4.0
-	github.com/spf13/cobra v1.6.1
+	github.com/spf13/cobra v1.7.0
 	go.uber.org/zap v1.24.0
 	gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 v3.0.1
