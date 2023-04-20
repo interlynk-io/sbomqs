@@ -117,8 +117,6 @@ func toUserCmd(cmd *cobra.Command, args []string) *userCmd {
 	if feature == "" {
 		f, _ := cmd.Flags().GetString("feature")
 		uCmd.features = strings.Split(f, ",")
-	} else {
-		uCmd.features = strings.Split(feature, ",")
 	}
 
 	//output control
@@ -174,8 +172,12 @@ func validateFlags(cmd *userCmd) error {
 		return fmt.Errorf("invalid category: %s", cmd.category)
 	}
 
-	if cmd.features != nil {
+	if cmd.features != nil && len(cmd.features) > 0 {
 		for _, f := range cmd.features {
+			if f == "" {
+				continue
+			}
+
 			if !lo.Contains(scorer.CriteriaArgs, f) {
 				return fmt.Errorf("invalid feature: %s", f)
 			}
