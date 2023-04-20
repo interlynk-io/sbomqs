@@ -35,15 +35,37 @@ var Categories = []string{string(CategoryNTIAMiniumElements), string(CategoryQua
 func CategorieMapWithCriteria(categorie string) []string {
 	switch categorie {
 	case string(CategoryNTIAMiniumElements):
-		return []string{string(compSupplierName), string(compWithNames), string(compWithVersion), string(compWithUniqID), string(docWithRelations), string(docWithAuthors), string(docWithTimestamp)}
+		return []string{
+			string(compSupplierName),
+			string(compWithNames),
+			string(compWithVersion),
+			string(compWithUniqID),
+			string(docWithRelations),
+			string(docWithAuthors),
+			string(docWithTimestamp)}
 	case string(CategoryQuality):
-		return []string{string(compWithValidLicenses), string(compWithPrimaryPackages), string(compWithNoDepLicenses), string(compWithRestrictedLicenses), string(compWithMultipleLookupId), string(compWithAnyLookupId)}
+		return []string{
+			string(compWithValidLicenses),
+			string(compWithPrimaryPackages),
+			string(compWithNoDepLicenses),
+			string(compWithRestrictedLicenses),
+			string(compWithMultipleLookupId),
+			string(compWithAnyLookupId),
+			string(docWithCreator)}
 	case string(CategorySemantic):
-		return []string{string(docWithAllRequiredFields), string(compWithLicenses), string(compWithChecksums)}
+		return []string{
+			string(docWithAllRequiredFields),
+			string(compWithLicenses),
+			string(compWithChecksums)}
 	case string(CategorySharing):
-		return []string{string(docShareLicense)}
+		return []string{
+			string(docShareLicense)}
 	case string(CategoryStrucutral):
-		return []string{string(spec), string(specVersion), string(specFileFormat), string(specIsParsable)}
+		return []string{
+			string(spec),
+			string(specVersion),
+			string(specFileFormat),
+			string(specIsParsable)}
 	default:
 		return []string{}
 
@@ -131,7 +153,7 @@ func registerCriteria(name criterion, f func(sbom.Document) score) error {
 type CriteriaArg string
 
 const (
-	DOCLICENCE               CriteriaArg = "doc-licence"
+	DOCLICENCE               CriteriaArg = "doc-license"
 	COMPNORESTRICLICENCE     CriteriaArg = "comp-no-restric-licence"
 	COMPPRIMARYPURPOSE       CriteriaArg = "comp-primary-purpose"
 	COMPNODEPRECATLICENCE    CriteriaArg = "comp-no-deprecat-licence"

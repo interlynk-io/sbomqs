@@ -105,6 +105,7 @@ func Run(ctx context.Context, ep *Params) error {
 	}
 
 	var criterias []string
+	var err error
 	if ep.Features != nil {
 		for _, f := range ep.Features {
 			if lo.Contains(scorer.CriteriaArgs, f) {
@@ -114,7 +115,7 @@ func Run(ctx context.Context, ep *Params) error {
 	}
 
 	if ep.ConfigPath != "" {
-		err := processConfigFile(ctx, ep.ConfigPath, criterias)
+		criterias, err = processConfigFile(ctx, ep.ConfigPath)
 		if err != nil {
 			return err
 		}
@@ -222,24 +223,27 @@ func processFile(ctx context.Context, path, category string, criterias []string)
 	return doc, scores, nil
 }
 
-func processConfigFile(ctx context.Context, filePath string, criterias []string) error {
+func processConfigFile(ctx context.Context, filePath string) ([]string, error) {
 	log := logger.FromContext(ctx)
 	cnf := Config{}
+
+	var criterias []string
+
 	log.Debugf("Processing file :%s\n", filePath)
 	if _, err := os.Stat(filePath); err != nil {
 		log.Debugf("os.Stat failed for file :%s\n", filePath)
 		fmt.Printf("failed to stat %s\n", filePath)
-		return err
+		return []string{}, err
 	}
 	f, err := os.ReadFile(filePath)
 	if err != nil {
 		log.Debugf("os.Open failed for file :%s\n", filePath)
 		fmt.Printf("failed to open %s\n", filePath)
-		return err
+		return []string{}, err
 	}
 	err = yaml.Unmarshal(f, &cnf)
 	if err != nil {
-		return err
+		return []string{}, err
 	}
 
 	for _, r := range cnf.Record {
@@ -252,5 +256,5 @@ func processConfigFile(ctx context.Context, filePath string, criterias []string)
 		}
 	}
 
-	return nil
+	return criterias, nil
 }

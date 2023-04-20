@@ -101,6 +101,12 @@ func toUserCmd(cmd *cobra.Command, args []string) *userCmd {
 		uCmd.path = args[0]
 	}
 
+	//config control
+	if configPath == "" {
+		uCmd.configPath, _ = cmd.Flags().GetString("configpath")
+	} else {
+		uCmd.configPath = configPath
+	}
 	//filter control
 	if category == "" {
 		uCmd.category, _ = cmd.Flags().GetString("category")
@@ -109,7 +115,8 @@ func toUserCmd(cmd *cobra.Command, args []string) *userCmd {
 	}
 
 	if feature == "" {
-		uCmd.features, _ = cmd.Flags().GetStringSlice("feature")
+		f, _ := cmd.Flags().GetString("feature")
+		uCmd.features = strings.Split(f, ",")
 	} else {
 		uCmd.features = strings.Split(feature, ",")
 	}
@@ -134,9 +141,6 @@ func toUserCmd(cmd *cobra.Command, args []string) *userCmd {
 
 	//debug control
 	uCmd.debug, _ = cmd.Flags().GetBool("debug")
-
-	//config control
-	uCmd.configPath = configPath
 
 	return uCmd
 }
