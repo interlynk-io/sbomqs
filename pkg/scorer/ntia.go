@@ -22,8 +22,8 @@ import (
 	"github.com/samber/lo"
 )
 
-func compSupplierScore(d sbom.Document) score {
-	s := newScore(CategoryNTIAMiniumElements, string(compSupplierName))
+func compSupplierCheck(d sbom.Document, c *check) score {
+	s := newScoreFromCheck(c)
 
 	totalComponents := len(d.Components())
 	if totalComponents == 0 {
@@ -46,8 +46,8 @@ func compSupplierScore(d sbom.Document) score {
 	return *s
 }
 
-func compWithNameScore(d sbom.Document) score {
-	s := newScore(CategoryNTIAMiniumElements, string(compWithNames))
+func compWithNameCheck(d sbom.Document, c *check) score {
+	s := newScoreFromCheck(c)
 	totalComponents := len(d.Components())
 	if totalComponents == 0 {
 		s.setScore(0.0)
@@ -66,8 +66,9 @@ func compWithNameScore(d sbom.Document) score {
 	return *s
 }
 
-func compWithVersionScore(d sbom.Document) score {
-	s := newScore(CategoryNTIAMiniumElements, string(compWithVersion))
+func compWithVersionCheck(d sbom.Document, c *check) score {
+	s := newScoreFromCheck(c)
+
 	totalComponents := len(d.Components())
 	if totalComponents == 0 {
 		s.setScore(0.0)
@@ -86,8 +87,9 @@ func compWithVersionScore(d sbom.Document) score {
 	return *s
 }
 
-func compWithUniqIDScore(d sbom.Document) score {
-	s := newScore(CategoryNTIAMiniumElements, string(compWithUniqID))
+func compWithUniqIDCheck(d sbom.Document, c *check) score {
+	s := newScoreFromCheck(c)
+
 	totalComponents := len(d.Components())
 	if totalComponents == 0 {
 		s.setScore(0.0)
@@ -110,8 +112,8 @@ func compWithUniqIDScore(d sbom.Document) score {
 	return *s
 }
 
-func docWithDepedenciesScore(d sbom.Document) score {
-	s := newScore(CategoryNTIAMiniumElements, string(docWithRelations))
+func docWithDepedenciesCheck(d sbom.Document, c *check) score {
+	s := newScoreFromCheck(c)
 	withRelations := len(d.Relations())
 	if withRelations > 0 {
 		s.setScore(10.0)
@@ -120,8 +122,8 @@ func docWithDepedenciesScore(d sbom.Document) score {
 	return *s
 }
 
-func docWithAuthorsScore(d sbom.Document) score {
-	s := newScore(CategoryNTIAMiniumElements, string(docWithAuthors))
+func docWithAuthorsCheck(d sbom.Document, c *check) score {
+	s := newScoreFromCheck(c)
 
 	noOfAuthors := len(d.Authors())
 	noOfTools := len(d.Tools())
@@ -137,8 +139,8 @@ func docWithAuthorsScore(d sbom.Document) score {
 
 }
 
-func docWithTimeStampScore(d sbom.Document) score {
-	s := newScore(CategoryNTIAMiniumElements, string(docWithTimestamp))
+func docWithTimeStampCheck(d sbom.Document, c *check) score {
+	s := newScoreFromCheck(c)
 
 	if d.Spec().CreationTimestamp() != "" {
 		s.setScore(10.0)

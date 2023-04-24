@@ -21,8 +21,8 @@ import (
 	"github.com/samber/lo"
 )
 
-func docWithRequiredFieldScore(d sbom.Document) score {
-	s := newScore(CategorySemantic, string(docWithAllRequiredFields))
+func docWithRequiredFieldCheck(d sbom.Document, c *check) score {
+	s := newScoreFromCheck(c)
 
 	totalComponents := len(d.Components())
 
@@ -62,8 +62,8 @@ func docWithRequiredFieldScore(d sbom.Document) score {
 	return *s
 }
 
-func compWithLicenseScore(d sbom.Document) score {
-	s := newScore(CategorySemantic, string(compWithLicenses))
+func compWithLicensesCheck(d sbom.Document, c *check) score {
+	s := newScoreFromCheck(c)
 
 	totalComponents := len(d.Components())
 	if totalComponents == 0 {
@@ -85,8 +85,8 @@ func compWithLicenseScore(d sbom.Document) score {
 	return *s
 }
 
-func compWithChecksumsScore(d sbom.Document) score {
-	s := newScore(CategorySemantic, string(compWithChecksums))
+func compWithChecksumsCheck(d sbom.Document, c *check) score {
+	s := newScoreFromCheck(c)
 
 	totalComponents := len(d.Components())
 	if totalComponents == 0 {

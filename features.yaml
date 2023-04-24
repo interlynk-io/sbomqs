@@ -1,0 +1,88 @@
+- category: Structural
+  feature: sbom_spec
+  disabled: true
+  descrption: SBOM Specification
+- category: Structural
+  feature: sbom_spec_version
+  disabled: false
+  descrption: Spec Version
+- category: Structural
+  feature: sbom_spec_file_format
+  disabled: false
+  descrption: Spec File Format
+- category: Structural
+  feature: sbom_parsable
+  disabled: false
+  descrption: Spec is parsable
+- category: NTIA-minimum-elements
+  feature: comp_with_supplier
+  disabled: false
+  descrption: components have suppliers
+- category: NTIA-minimum-elements
+  feature: comp_with_name
+  disabled: false
+  descrption: components have a name
+- category: NTIA-minimum-elements
+  feature: comp_with_version
+  disabled: false
+  descrption: components have a version
+- category: NTIA-minimum-elements
+  feature: comp_with_uniq_ids
+  disabled: false
+  descrption: components have uniq ids
+- category: NTIA-minimum-elements
+  feature: sbom_dependencies
+  disabled: false
+  descrption: sbom has dependencies
+- category: NTIA-minimum-elements
+  feature: sbom_authors
+  disabled: false
+  descrption: sbom has authors
+- category: NTIA-minimum-elements
+  feature: sbom_creation_timestamp
+  disabled: false
+  descrption: sbom has creation timestamp
+- category: Semantic
+  feature: sbom_required_fields
+  disabled: false
+  descrption: sbom has all required fields
+- category: Semantic
+  feature: comp_with_licenses
+  disabled: false
+  descrption: components have licenses
+- category: Semantic
+  feature: comp_with_checksums
+  disabled: false
+  descrption: components have checksums
+- category: Quality
+  feature: comp_valid_licenses
+  disabled: false
+  descrption: components with valid licenses
+- category: Quality
+  feature: comp_with_primary_purpose
+  disabled: false
+  descrption: components with primary purpose
+- category: Quality
+  feature: comp_with_deprecated_licenses
+  disabled: false
+  descrption: components with deprecated licenses
+- category: Quality
+  feature: comp_with_restrictive_licenses
+  disabled: false
+  descrption: components with restrictive_licenses
+- category: Quality
+  feature: comp_with_any_vuln_lookup_id
+  disabled: false
+  descrption: components with any vulnerability lookup id
+- category: Quality
+  feature: comp_with_multi_vuln_lookup_id
+  disabled: false
+  descrption: components with multiple vulnerability lookup id
+- category: Quality
+  feature: sbom_with_creator_and_version
+  disabled: false
+  descrption: sbom has creator and version
+- category: Sharing
+  feature: sbom_sharable
+  disabled: false
+  descrption: sbom document has a sharable license

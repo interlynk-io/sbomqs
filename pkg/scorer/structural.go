@@ -21,8 +21,8 @@ import (
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 )
 
-func specScore(d sbom.Document) score {
-	s := newScore(CategoryStrucutral, string(spec))
+func specCheck(d sbom.Document, c *check) score {
+	s := newScoreFromCheck(c)
 
 	specs := sbom.SupportedSBOMSpecs()
 	s.setDesc(fmt.Sprintf("provided sbom is in a supported sbom format of %s", strings.Join(specs, ",")))
@@ -35,8 +35,8 @@ func specScore(d sbom.Document) score {
 	return *s
 }
 
-func specVersionScore(d sbom.Document) score {
-	s := newScore(CategoryStrucutral, string(specVersion))
+func specVersionCheck(d sbom.Document, c *check) score {
+	s := newScoreFromCheck(c)
 
 	versions := sbom.SupportedSBOMSpecVersions(d.Spec().Name())
 	s.setDesc(fmt.Sprintf("provided sbom should be in supported spec version for spec:%s and versions: %s", d.Spec().Version(), strings.Join(versions, ",")))
@@ -50,8 +50,8 @@ func specVersionScore(d sbom.Document) score {
 	return *s
 }
 
-func specFileFormatScore(d sbom.Document) score {
-	s := newScore(CategoryStrucutral, string(specFileFormat))
+func specFileFormatCheck(d sbom.Document, c *check) score {
+	s := newScoreFromCheck(c)
 
 	formats := sbom.SupportedSBOMFileFormats(d.Spec().Name())
 	s.setDesc(fmt.Sprintf("provided sbom should be in supported file format for spec: %s and version: %s", d.Spec().FileFormat(), strings.Join(formats, ",")))
@@ -64,8 +64,8 @@ func specFileFormatScore(d sbom.Document) score {
 	return *s
 }
 
-func specParsableScore(d sbom.Document) score {
-	s := newScore(CategoryStrucutral, string(specIsParsable))
+func specParsableCheck(d sbom.Document, c *check) score {
+	s := newScoreFromCheck(c)
 	s.setDesc("provided sbom is parsable")
 	if d.Spec().Parsable() {
 		s.setScore(10.0)

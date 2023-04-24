@@ -12,7 +12,6 @@ import (
 	"github.com/interlynk-io/sbomqs/pkg/engine"
 	"github.com/interlynk-io/sbomqs/pkg/logger"
 	"github.com/interlynk-io/sbomqs/pkg/reporter"
-	"github.com/interlynk-io/sbomqs/pkg/scorer"
 	"github.com/samber/lo"
 
 	"github.com/spf13/cobra"
@@ -166,22 +165,6 @@ func validatePath(path string) error {
 func validateFlags(cmd *userCmd) error {
 	if err := validatePath(cmd.path); err != nil {
 		return fmt.Errorf("invalid path: %w", err)
-	}
-
-	if len(cmd.category) > 0 && !lo.Contains(scorer.Categories, cmd.category) {
-		return fmt.Errorf("invalid category: %s", cmd.category)
-	}
-
-	if cmd.features != nil && len(cmd.features) > 0 {
-		for _, f := range cmd.features {
-			if f == "" {
-				continue
-			}
-
-			if !lo.Contains(scorer.CriteriaArgs, f) {
-				return fmt.Errorf("invalid feature: %s", f)
-			}
-		}
 	}
 
 	if cmd.configPath != "" {

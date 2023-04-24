@@ -24,8 +24,8 @@ import (
 	"github.com/samber/lo"
 )
 
-func compWithValidLicensesScore(d sbom.Document) score {
-	s := newScore(CategoryQuality, string(compWithValidLicenses))
+func compWithValidLicensesCheck(d sbom.Document, c *check) score {
+	s := newScoreFromCheck(c)
 
 	totalComponents := len(d.Components())
 	if totalComponents == 0 {
@@ -65,8 +65,8 @@ func compWithValidLicensesScore(d sbom.Document) score {
 	return *s
 }
 
-func compWithPrimaryPackageScore(d sbom.Document) score {
-	s := newScore(CategoryQuality, string(compWithPrimaryPackages))
+func compWithPrimaryPackageCheck(d sbom.Document, c *check) score {
+	s := newScoreFromCheck(c)
 
 	totalComponents := len(d.Components())
 	if totalComponents == 0 {
@@ -86,8 +86,8 @@ func compWithPrimaryPackageScore(d sbom.Document) score {
 	return *s
 }
 
-func compWithNoDepLicensesScore(d sbom.Document) score {
-	s := newScore(CategoryQuality, string(compWithNoDepLicenses))
+func compWithNoDepLicensesCheck(d sbom.Document, c *check) score {
+	s := newScoreFromCheck(c)
 	totalComponents := len(d.Components())
 	if totalComponents == 0 {
 		s.setScore(0.0)
@@ -118,8 +118,8 @@ func compWithNoDepLicensesScore(d sbom.Document) score {
 	return *s
 }
 
-func compWithRestrictedLicensesScore(d sbom.Document) score {
-	s := newScore(CategoryQuality, string(compWithRestrictedLicenses))
+func compWithRestrictedLicensesCheck(d sbom.Document, c *check) score {
+	s := newScoreFromCheck(c)
 	totalComponents := len(d.Components())
 	if totalComponents == 0 {
 		s.setScore(0.0)
@@ -150,8 +150,8 @@ func compWithRestrictedLicensesScore(d sbom.Document) score {
 	return *s
 }
 
-func compWithAnyLookupIdScore(d sbom.Document) score {
-	s := newScore(CategoryQuality, string(compWithAnyLookupId))
+func compWithAnyLookupIdCheck(d sbom.Document, c *check) score {
+	s := newScoreFromCheck(c)
 
 	totalComponents := len(d.Components())
 	if totalComponents == 0 {
@@ -177,8 +177,8 @@ func compWithAnyLookupIdScore(d sbom.Document) score {
 	return *s
 }
 
-func compWithMultipleIdScore(d sbom.Document) score {
-	s := newScore(CategoryQuality, string(compWithMultipleLookupId))
+func compWithMultipleIdCheck(d sbom.Document, c *check) score {
+	s := newScoreFromCheck(c)
 
 	totalComponents := len(d.Components())
 	if totalComponents == 0 {
@@ -204,8 +204,8 @@ func compWithMultipleIdScore(d sbom.Document) score {
 	return *s
 }
 
-func docWithCreatorScore(d sbom.Document) score {
-	s := newScore(CategoryQuality, string(docWithCreator))
+func docWithCreatorCheck(d sbom.Document, c *check) score {
+	s := newScoreFromCheck(c)
 
 	totalTools := len(d.Tools())
 
