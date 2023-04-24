@@ -22,8 +22,8 @@ import (
 	"github.com/samber/lo"
 )
 
-func sharableLicenseScore(d sbom.Document) score {
-	s := newScore(CategorySharing, string(docShareLicense))
+func sharableLicenseCheck(d sbom.Document, c *check) score {
+	s := newScoreFromCheck(c)
 
 	lics := d.Spec().Licenses()
 

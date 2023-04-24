@@ -35,10 +35,10 @@ type score struct {
 	ignore   bool
 }
 
-func newScore(c category, feature string) *score {
+func newScoreFromCheck(c *check) *score {
 	return &score{
-		category: string(c),
-		feature:  feature,
+		category: c.Category,
+		feature:  c.Key,
 		ignore:   false,
 	}
 }

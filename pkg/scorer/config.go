@@ -14,40 +14,41 @@
 
 package scorer
 
-type Scores interface {
-	Count() int
-	AvgScore() float64
-	ScoreList() []Score
-}
+import (
+	"log"
+	"os"
 
-type scores struct {
-	scs []Score
-}
+	"gopkg.in/yaml.v2"
+)
 
-func newScores() *scores {
-	return &scores{
-		scs: []Score{},
+func DefaultConfig() string {
+	d, err := yaml.Marshal(checks)
+	if err != nil {
+		log.Fatal(err)
 	}
+
+	return string(d)
 }
 
-func (s *scores) addScore(ss score) {
-	s.scs = append(s.scs, ss)
-}
+func ReadConfigFile(path string) ([]Filter, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
 
-func (s scores) Count() int {
-	return len(s.scs)
-}
+	var cks []check
+	err = yaml.NewDecoder(f).Decode(&cks)
+	if err != nil {
+		return nil, err
+	}
 
-func (s scores) AvgScore() float64 {
-	score := 0.0
-	for _, s := range s.scs {
-		if !s.Ignore() {
-			score += s.Score()
+	filters := []Filter{}
+	for _, ck := range cks {
+		if ck.Ignore {
+			filters = append(filters, Filter{ck.Key, Feature})
 		}
 	}
-	return score / float64(s.Count())
-}
 
-func (s scores) ScoreList() []Score {
-	return s.scs
+	return filters, nil
 }

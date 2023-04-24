@@ -16,74 +16,102 @@ package scorer
 
 import (
 	"context"
+	"fmt"
 
-	"github.com/interlynk-io/sbomqs/pkg/logger"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
-	"github.com/samber/lo"
 )
 
 const EngineVersion = "4"
+
+type FilterType int
+
+const (
+	Feature FilterType = iota
+	Category
+)
+
+type Filter struct {
+	Name  string
+	Ftype FilterType
+}
 
 type Scorer struct {
 	ctx context.Context
 	doc sbom.Document
 
 	//optional params
-	category string
-	feature  []string
+	featFilter map[string]bool
+	catFilter  map[string]bool
 }
 
-type Option func(s *Scorer)
-
-func WithCategory(c string) Option {
-	return func(s *Scorer) {
-		s.category = c
-	}
-}
-
-func WithFeature(f []string) Option {
-	return func(s *Scorer) {
-		s.feature = f
-	}
-}
-
-func NewScorer(ctx context.Context, doc sbom.Document, opts ...Option) *Scorer {
+func NewScorer(ctx context.Context, doc sbom.Document) *Scorer {
 	scorer := &Scorer{
-		ctx: ctx,
-		doc: doc,
+		ctx:        ctx,
+		doc:        doc,
+		featFilter: make(map[string]bool),
+		catFilter:  make(map[string]bool),
 	}
 
-	for _, opt := range opts {
-		opt(scorer)
-	}
 	return scorer
 }
 
-func (s *Scorer) Score() Scores {
-	_ = logger.FromContext(s.ctx)
+func (s *Scorer) AddFilter(nm string, ftype FilterType) {
+	switch ftype {
+	case Feature:
+		s.featFilter[nm] = true
+	case Category:
+		s.catFilter[nm] = true
+	}
+}
 
+func (s *Scorer) Score() Scores {
 	if s.doc == nil {
 		return newScores()
 	}
+
+	if len(s.featFilter) > 0 {
+		fmt.Println("featureScores()")
+		return s.featureScores()
+	}
+
+	if len(s.catFilter) > 0 {
+		fmt.Println("catScores()")
+		return s.catScores()
+	}
+
+	return s.AllScores()
+}
+
+func (s *Scorer) catScores() Scores {
 	scores := newScores()
 
-	for key, cr := range criteria {
-		score := cr(s.doc)
-		if len(s.feature) > 0 {
-			if lo.Contains(s.feature, string(key)) {
-				s.scoreFilterWithCategory(score, scores)
-			}
-		} else {
-			s.scoreFilterWithCategory(score, scores)
+	for _, c := range checks {
+		if s.catFilter[c.Category] {
+			scores.addScore(c.evaluate(s.doc, &c))
 		}
 	}
+
 	return scores
 }
 
-func (s *Scorer) scoreFilterWithCategory(cs score, ss *scores) {
-	if s.category != "" && cs.category == s.category {
-		ss.addScore(cs)
-	} else if s.category == "" {
-		ss.addScore(cs)
+func (s *Scorer) featureScores() Scores {
+	scores := newScores()
+
+	for _, c := range checks {
+		if s.featFilter[c.Key] {
+			scores.addScore(c.evaluate(s.doc, &c))
+		}
 	}
+
+	return scores
+}
+
+func (s *Scorer) AllScores() Scores {
+	scores := newScores()
+
+	for _, c := range checks {
+		scores.addScore(c.evaluate(s.doc, &c))
+	}
+
+	return scores
 }

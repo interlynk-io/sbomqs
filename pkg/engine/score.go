@@ -25,9 +25,6 @@ import (
 	"github.com/interlynk-io/sbomqs/pkg/reporter"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/pkg/scorer"
-	"github.com/interlynk-io/sbomqs/pkg/share"
-	"github.com/samber/lo"
-	"gopkg.in/yaml.v2"
 )
 
 type Params struct {
@@ -50,52 +47,6 @@ type Params struct {
 	ConfigPath string
 }
 
-type Record struct {
-	Name     string     `yaml:"name" json:"name"`
-	Enabled  bool       `yaml:"enabled" json:"enabled"`
-	Criteria []criteria `yaml:"criteria" json:"criteria"`
-}
-
-type criteria struct {
-	Name        string `yaml:"shortName" json:"shortName"`
-	Description string `yaml:"description" json:"description"`
-	Enabled     bool   `yaml:"enabled" json:"enabled"`
-}
-
-type Config struct {
-	Record []Record `yaml:"category" json:"category"`
-}
-
-func ShareRun(ctx context.Context, ep *Params) error {
-	log := logger.FromContext(ctx)
-	log.Debug("engine.ShareRun()")
-
-	if ep.Path == "" {
-		log.Fatal("path is required")
-	}
-
-	doc, scores, err := processFile(ctx, ep.Path, "", nil)
-	if err != nil {
-		return err
-	}
-
-	url, err := share.Share(ctx, doc, scores, ep.Path)
-
-	if err != nil {
-		fmt.Printf("Error sharing file %s: %s", ep.Path, err)
-		return err
-	}
-	nr := reporter.NewReport(ctx,
-		[]sbom.Document{doc},
-		[]scorer.Scores{scores},
-		[]string{ep.Path},
-		reporter.WithFormat(strings.ToLower("basic")))
-	nr.Report()
-	fmt.Printf("ShareLink: %s\n", url)
-
-	return nil
-}
-
 func Run(ctx context.Context, ep *Params) error {
 	log := logger.FromContext(ctx)
 	log.Debug("engine.Run()")
@@ -104,28 +55,10 @@ func Run(ctx context.Context, ep *Params) error {
 		log.Fatal("path is required")
 	}
 
-	var criterias []string
-	var err error
-	if ep.Features != nil {
-		for _, f := range ep.Features {
-			if lo.Contains(scorer.CriteriaArgs, f) {
-				criterias = append(criterias, string(scorer.CriteriaArgMap[scorer.CriteriaArg(f)]))
-			}
-		}
-	}
-
-	if ep.ConfigPath != "" {
-		criterias, err = processConfigFile(ctx, ep.ConfigPath)
-		if err != nil {
-			return err
-		}
-
-	}
-
-	return handlePath(ctx, ep, criterias)
+	return handlePath(ctx, ep)
 }
 
-func handlePath(ctx context.Context, ep *Params, criterias []string) error {
+func handlePath(ctx context.Context, ep *Params) error {
 	log := logger.FromContext(ctx)
 	log.Debugf("processing path: %s\n", ep.Path)
 	var err error
@@ -152,7 +85,7 @@ func handlePath(ctx context.Context, ep *Params, criterias []string) error {
 				continue
 			}
 			path := filepath.Join(ep.Path, file.Name())
-			doc, scs, err := processFile(ctx, path, ep.Category, criterias)
+			doc, scs, err := processFile(ctx, ep, path)
 			if err != nil {
 				continue
 			}
@@ -161,7 +94,7 @@ func handlePath(ctx context.Context, ep *Params, criterias []string) error {
 			paths = append(paths, path)
 		}
 	} else {
-		doc, scs, err := processFile(ctx, ep.Path, ep.Category, criterias)
+		doc, scs, err := processFile(ctx, ep, "")
 		if err != nil {
 			return err
 		}
@@ -188,8 +121,16 @@ func handlePath(ctx context.Context, ep *Params, criterias []string) error {
 	return nil
 }
 
-func processFile(ctx context.Context, path, category string, criterias []string) (sbom.Document, scorer.Scores, error) {
+func processFile(ctx context.Context, ep *Params, overidePath string) (sbom.Document, scorer.Scores, error) {
 	log := logger.FromContext(ctx)
+	var path string
+
+	if overidePath == "" {
+		path = ep.Path
+	} else {
+		path = overidePath
+	}
+
 	log.Debugf("Processing file :%s\n", path)
 
 	if _, err := os.Stat(path); err != nil {
@@ -214,47 +155,36 @@ func processFile(ctx context.Context, path, category string, criterias []string)
 		return nil, nil, err
 	}
 
-	sr := scorer.NewScorer(ctx,
-		doc,
-		scorer.WithCategory(category),
-		scorer.WithFeature(criterias))
+	sr := scorer.NewScorer(ctx, doc)
 
-	scores := sr.Score()
-	return doc, scores, nil
-}
-
-func processConfigFile(ctx context.Context, filePath string) ([]string, error) {
-	log := logger.FromContext(ctx)
-	cnf := Config{}
-
-	var criterias []string
-
-	log.Debugf("Processing file :%s\n", filePath)
-	if _, err := os.Stat(filePath); err != nil {
-		log.Debugf("os.Stat failed for file :%s\n", filePath)
-		fmt.Printf("failed to stat %s\n", filePath)
-		return []string{}, err
-	}
-	f, err := os.ReadFile(filePath)
-	if err != nil {
-		log.Debugf("os.Open failed for file :%s\n", filePath)
-		fmt.Printf("failed to open %s\n", filePath)
-		return []string{}, err
-	}
-	err = yaml.Unmarshal(f, &cnf)
-	if err != nil {
-		return []string{}, err
+	if ep.Category != "" {
+		sr.AddFilter(ep.Category, scorer.Category)
 	}
 
-	for _, r := range cnf.Record {
-		if r.Enabled {
-			for _, c := range r.Criteria {
-				if c.Enabled {
-					criterias = append(criterias, c.Description)
-				}
+	if len(ep.Features) > 0 {
+		for _, feature := range ep.Features {
+			if len(feature) <= 0 {
+				continue
 			}
+			sr.AddFilter(feature, scorer.Feature)
 		}
 	}
 
-	return criterias, nil
+	if ep.ConfigPath != "" {
+		filters, er := scorer.ReadConfigFile(ep.ConfigPath)
+		if er != nil {
+			log.Fatalf("failed to read config file %s : %s", ep.ConfigPath, er)
+		}
+
+		if len(filters) <= 0 {
+			log.Fatalf("no enabled filters found in config file %s", ep.ConfigPath)
+		}
+
+		for _, filter := range filters {
+			sr.AddFilter(filter.Name, filter.Ftype)
+		}
+	}
+
+	scores := sr.Score()
+	return doc, scores, nil
 }
