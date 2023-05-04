@@ -73,6 +73,8 @@ func extractArgs(cmd *cobra.Command, args []string) (*engine.DtParams, error) {
 	params.Basic = basic
 	params.Detailed = detailed
 
+	params.TagProjectWithScore, _ = cmd.Flags().GetBool("tag-project-with-score")
+
 	for _, arg := range args {
 		argID, err := uuid.Parse(arg)
 		if err != nil {
@@ -87,12 +89,15 @@ func extractArgs(cmd *cobra.Command, args []string) (*engine.DtParams, error) {
 func init() {
 	rootCmd.AddCommand(dtrackScoreCmd)
 	dtrackScoreCmd.Flags().StringP("url", "u", "", "dependency track url https://localhost:8080/")
-	dtrackScoreCmd.Flags().StringP("api-key", "k", "", "dependency track api key")
+	dtrackScoreCmd.Flags().StringP("api-key", "k", "", "dependency track api key, requires VIEW_PORTFOLIO for scoring and PORTFOLIO_MANAGEMENT for tagging")
 	dtrackScoreCmd.MarkFlagRequired("url")
 	dtrackScoreCmd.MarkFlagRequired("api-key")
+
 	dtrackScoreCmd.Flags().BoolP("debug", "D", false, "enable debug logging")
 
 	dtrackScoreCmd.Flags().BoolP("json", "j", false, "results in json")
 	dtrackScoreCmd.Flags().BoolP("detailed", "d", false, "results in table format, default")
 	dtrackScoreCmd.Flags().BoolP("basic", "b", false, "results in single line format")
+
+	dtrackScoreCmd.Flags().BoolP("tag-project-with-score", "t", false, "tag project with sbomqs score")
 }

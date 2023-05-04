@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 
 	dtrack "github.com/DependencyTrack/client-go"
 	"github.com/google/uuid"
@@ -25,6 +26,7 @@ import (
 	"github.com/interlynk-io/sbomqs/pkg/reporter"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/pkg/scorer"
+	"github.com/samber/lo"
 )
 
 type DtParams struct {
@@ -35,6 +37,8 @@ type DtParams struct {
 	Json     bool
 	Basic    bool
 	Detailed bool
+
+	TagProjectWithScore bool
 }
 
 func DtrackScore(ctx context.Context, dtP *DtParams) error {
@@ -83,6 +87,26 @@ func DtrackScore(ctx context.Context, dtP *DtParams) error {
 				return err
 			}
 
+			if dtP.TagProjectWithScore {
+
+				log.Debugf("Project: %+v", prj.Tags)
+				//remove old score
+				prj.Tags = lo.Filter(prj.Tags, func(t dtrack.Tag, _ int) bool {
+					return !strings.HasPrefix(t.Name, "sbomqs=")
+				})
+
+				tag := fmt.Sprintf("sbomqs=%0.1f", scores.AvgScore())
+				prj.Tags = append(prj.Tags, dtrack.Tag{Name: tag})
+
+				log.Debugf("Tagging project with %s", tag)
+				log.Debugf("Project: %+v", prj.Tags)
+
+				_, err = dTrackClient.Project.Update(ctx, prj)
+				if err != nil {
+					log.Fatalf("Failed to tag project: %s", err)
+				}
+			}
+
 			path := fmt.Sprintf("ID: %s, Name: %s, Version: %s", prj.UUID, prj.Name, prj.Version)
 
 			reportFormat := "detailed"
@@ -98,6 +122,7 @@ func DtrackScore(ctx context.Context, dtP *DtParams) error {
 				[]string{path},
 				reporter.WithFormat(reportFormat))
 			nr.Report()
+
 		}
 	}
 
