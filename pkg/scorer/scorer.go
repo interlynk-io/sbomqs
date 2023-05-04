@@ -21,7 +21,7 @@ import (
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 )
 
-const EngineVersion = "4"
+const EngineVersion = "5"
 
 type FilterType int
 
