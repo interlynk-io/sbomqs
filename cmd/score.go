@@ -73,8 +73,14 @@ var scoreCmd = &cobra.Command{
 }
 
 func processScore(cmd *cobra.Command, args []string) error {
-	ctx := logger.WithLogger(context.Background())
+	debug, _ := cmd.Flags().GetBool("debug")
+	if debug {
+		logger.InitDebugLogger()
+	} else {
+		logger.InitProdLogger()
+	}
 
+	ctx := logger.WithLogger(context.Background())
 	uCmd := toUserCmd(cmd, args)
 
 	if err := validateFlags(uCmd); err != nil {
@@ -207,7 +213,6 @@ func init() {
 
 	//Debug Control
 	scoreCmd.Flags().BoolP("debug", "D", false, "enable debug logging")
-	scoreCmd.Flags().MarkHidden("debug")
 
 	//Deprecated
 	scoreCmd.Flags().StringVar(&inFile, "filepath", "", "sbom file path")

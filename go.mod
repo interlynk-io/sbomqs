@@ -4,6 +4,7 @@ go 1.19
 
 require (
 	github.com/CycloneDX/cyclonedx-go v0.7.1
+	github.com/DependencyTrack/client-go v0.9.0
 	github.com/google/uuid v1.3.0
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.6.1
 	github.com/olekukonko/tablewriter v0.0.5

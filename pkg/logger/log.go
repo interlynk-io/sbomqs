@@ -24,16 +24,31 @@ var logger *zap.SugaredLogger
 
 type logKey struct{}
 
-func init() {
+func InitProdLogger() {
 	l, _ := zap.NewProduction()
 	//l, _ := zap.NewDevelopment()
 	defer l.Sync()
+	if logger != nil {
+		panic("logger already initialized")
+	}
+	logger = l.Sugar()
+}
 
+func InitDebugLogger() {
+	l, _ := zap.NewDevelopment()
+	defer l.Sync()
+	if logger != nil {
+		panic("logger already initialized")
+	}
 	logger = l.Sugar()
 }
 
 func WithLogger(ctx context.Context) context.Context {
 	return context.WithValue(ctx, logKey{}, logger)
+}
+
+func WithLoggerAndCancel(ctx context.Context) (context.Context, context.CancelFunc) {
+	return context.WithCancel(context.WithValue(ctx, logKey{}, logger))
 }
 
 func FromContext(ctx context.Context) *zap.SugaredLogger {
