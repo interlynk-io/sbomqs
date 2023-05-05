@@ -463,19 +463,43 @@ func (s *spdxDoc) licenses(index int) []License {
 	return finalLics
 }
 
+// https://github.com/spdx/ntia-conformance-checker/issues/100
+// Add spdx support to check both supplier and originator
 func (s *spdxDoc) addSupplierName(index int) string {
 	pkg := s.doc.Packages[index]
 
-	if pkg.PackageSupplier == nil {
-		s.addToLogs(fmt.Sprintf("spdx doc pkg %s at index %d no supplier found", pkg.PackageName, index))
+	if pkg.PackageSupplier == nil && pkg.PackageOriginator == nil {
+		s.addToLogs(fmt.Sprintf("spdx doc pkg %s at index %d no supplier/originator found", pkg.PackageName, index))
 		return ""
 	}
 
-	name := strings.ToLower(pkg.PackageSupplier.Supplier)
+	var supplierName, orignatorName string
 
-	if name == "" || name == "noassertion" {
-		s.addToLogs(fmt.Sprintf("spdx doc pkg %s at index %d no supplier found", pkg.PackageName, index))
+	if pkg.PackageSupplier != nil {
+		supplierName = strings.ToLower(pkg.PackageSupplier.Supplier)
+	}
+
+	if pkg.PackageOriginator != nil {
+		orignatorName = strings.ToLower(pkg.PackageOriginator.Originator)
+	}
+
+	if supplierName == "" && orignatorName == "" {
+		s.addToLogs(fmt.Sprintf("spdx doc pkg %s at index %d no supplier/originator found", pkg.PackageName, index))
 		return ""
 	}
-	return name
+
+	if supplierName == "noassertion" && orignatorName == "noassertion" {
+		s.addToLogs(fmt.Sprintf("spdx doc pkg %s at index %d no supplier/originator found", pkg.PackageName, index))
+		return ""
+	}
+
+	if supplierName != "" && supplierName != "noassertion" {
+		return supplierName
+	}
+
+	if orignatorName != "" && orignatorName != "noassertion" {
+		return orignatorName
+	}
+
+	return ""
 }
