@@ -179,7 +179,8 @@ func (s *spdxDoc) parseRels() {
 	s.rels = []Relation{}
 
 	var err error
-	var d []byte
+	var aBytes, bBytes []byte
+
 	for _, r := range s.doc.Relationships {
 		nr := relation{}
 		switch strings.ToUpper(r.Relationship) {
@@ -190,14 +191,18 @@ func (s *spdxDoc) parseRels() {
 		case spdx_common.TypeRelationshipDependsOn, spdx_common.TypeRelationshipDependencyOf:
 			fallthrough
 		case spdx_common.TypeRelationshipPrerequisiteFor, spdx_common.TypeRelationshipHasPrerequisite:
-			d, err = r.RefA.MarshalJSON()
+			aBytes, err = r.RefA.MarshalJSON()
 			if err != nil {
-				nr.from = string(d)
+				continue
 			}
-			d, err = r.RefB.MarshalJSON()
+
+			bBytes, err = r.RefB.MarshalJSON()
 			if err != nil {
-				nr.to = string(d)
+				continue
 			}
+
+			nr.from = string(aBytes)
+			nr.to = string(bBytes)
 			s.rels = append(s.rels, nr)
 		}
 	}
