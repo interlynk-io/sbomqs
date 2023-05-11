@@ -32,7 +32,7 @@ Quality Score for a single SBOM.
 sbomqs score <sbom-file>
 ```
 
-Quality Score with a sharable link at [sbombenchmark.dev](https://sbombenchmark.dev/).  
+Quality Score with a shareable link at [sbombenchmark.dev](https://sbombenchmark.dev/).  
 ```sh
 sbomqs share <sbom-file>
 ```
