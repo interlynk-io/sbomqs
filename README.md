@@ -29,7 +29,7 @@ other installation [options](#installation).
 # Usage
 Creating Quality Score for a single sbom file
 ```sh
-sbomqs score --filepath <sbom-file>
+sbomqs score <sbom-file>
 ```
 
 Creating a shareable link to the SBOM Quality Report at [sbombenchmark.dev](https://sbombenchmark.dev/)  
@@ -38,11 +38,22 @@ sbomqs share <sbom-file>
 ```
 
 Example:
-```
+```sh
 $sbomqs share cdxgen-9.5.1_alpine-latest.cdx.json
 5.9	cdxgen-9.5.1_alpine-latest.cdx.json
 ShareLink: https://sbombenchmark.dev/user/score?id=a97af1bf-4c9d-4a55-8524-3d4bcee0b9a4
 ```
+
+Tag dependency track projects with its sboms score 
+```sh
+sbomqs dtrackScore  -u <dt-host-url> -k <dt-api-key> <project-uuid>
+```
+
+Example:
+```sh
+sbomqs dtrackScore  -u "http://localhost:8080/" -k "IIcfPA9qc1F4IkQFa2FqQJoTwcfQI" bbd4434d-8062-4e59-a323-3b416701c948
+```
+
 # What is a high quality SBOM
 A high quality SBOM should allow for managements of assets, license, vulnerabilities, Intellectual Property, configuration management and incident response. 
 
