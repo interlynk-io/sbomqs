@@ -27,12 +27,12 @@ go install github.com/interlynk-io/sbomqs@latest
 other installation [options](#installation).
 
 # Usage
-Creating Quality Score for a single sbom file
+Quality Score for a single SBOM.
 ```sh
 sbomqs score <sbom-file>
 ```
 
-Creating a shareable link to the SBOM Quality Report at [sbombenchmark.dev](https://sbombenchmark.dev/)  
+Quality Score with a shareable link at [sbombenchmark.dev](https://sbombenchmark.dev/).  
 ```sh
 sbomqs share <sbom-file>
 ```
@@ -44,7 +44,7 @@ $sbomqs share cdxgen-9.5.1_alpine-latest.cdx.json
 ShareLink: https://sbombenchmark.dev/user/score?id=a97af1bf-4c9d-4a55-8524-3d4bcee0b9a4
 ```
 
-Tag dependency track projects with its sboms score 
+Quality Score for your dependency track projects.
 ```sh
 sbomqs dtrackScore  -u <dt-host-url> -k <dt-api-key> <project-uuid>
 ```
@@ -53,6 +53,7 @@ Example:
 ```sh
 sbomqs dtrackScore  -u "http://localhost:8080/" -k "IIcfPA9qc1F4IkQFa2FqQJoTwcfQI" bbd4434d-8062-4e59-a323-3b416701c948
 ```
+![alt text](./images/dt.png "Depedency Track with sbomqs score")
 
 # What is a high quality SBOM
 A high quality SBOM should allow for managements of assets, license, vulnerabilities, Intellectual Property, configuration management and incident response. 
@@ -82,7 +83,7 @@ SBOM can be generated using both commercial and open-source tooling. As consumer
 `sbomqs` makes getting a quick assessment, relatively painless. Just point. 
 
 ```sh
-sbomqs score --filepath samples/julia.spdx.tv --reportFormat basic 
+sbomqs score samples/julia.spdx.tv -b 
 6.9     samples/julia.spdx.json
 ```
 
@@ -120,7 +121,7 @@ We allow running any single feature to be tested against an SBOM.
 1. `sbomqs generate features`, this generated a features.yaml file 
 2. Open the features.yaml file and select the categories or features that you would like enabled 
 3. Save & close the file.
-4. `sbomqs score  --filepath ~/data/chainguard-sbom/apko.spdx.json  --configpath features.yaml` use the yaml file to apply the changes. 
+4. `sbomqs score  ~/data/app.spdx.json  --configpath features.yaml` use the yaml file to apply the changes. 
 
 For the list of features currently supported, visit [features.md](./Features.md). 
 
