@@ -28,7 +28,7 @@ import (
 )
 
 type Params struct {
-	Path string
+	Path []string
 
 	Category string
 	Features []string
@@ -50,57 +50,57 @@ type Params struct {
 func Run(ctx context.Context, ep *Params) error {
 	log := logger.FromContext(ctx)
 	log.Debug("engine.Run()")
+	log.Debug(ep)
 
-	if ep.Path == "" {
+	if len(ep.Path) <= 0 {
 		log.Fatal("path is required")
 	}
 
-	return handlePath(ctx, ep)
+	return handlePaths(ctx, ep)
 }
 
-func handlePath(ctx context.Context, ep *Params) error {
+func handlePaths(ctx context.Context, ep *Params) error {
 	log := logger.FromContext(ctx)
-	log.Debugf("processing path: %s\n", ep.Path)
-	var err error
-
-	pInfo, err := os.Stat(ep.Path)
-	if err != nil {
-		return err
-	}
+	log.Debug("engine.handlePaths()")
 
 	var docs []sbom.Document
 	var paths []string
 	var scores []scorer.Scores
 
-	if pInfo.IsDir() {
-		files, err := os.ReadDir(ep.Path)
-		if err != nil {
-			log.Debugf("os.ReadDir failed for path:%s\n", ep.Path)
-			log.Debugf("%s\n", err)
-			return err
+	for _, path := range ep.Path {
+		log.Debugf("Processing path :%s\n", path)
+		pathInfo, _ := os.Stat(path)
+		if pathInfo.IsDir() {
+			files, err := os.ReadDir(path)
+			if err != nil {
+				log.Debugf("os.ReadDir failed for path:%s\n", path)
+				log.Debugf("%s\n", err)
+				continue
+			}
+			for _, file := range files {
+				log.Debugf("Processing file :%s\n", file.Name())
+				if file.IsDir() {
+					continue
+				}
+				path := filepath.Join(path, file.Name())
+				doc, scs, err := processFile(ctx, ep, path)
+				if err != nil {
+					continue
+				}
+				docs = append(docs, doc)
+				scores = append(scores, scs)
+				paths = append(paths, path)
+			}
+			continue
 		}
 
-		for _, file := range files {
-			if file.IsDir() {
-				continue
-			}
-			path := filepath.Join(ep.Path, file.Name())
-			doc, scs, err := processFile(ctx, ep, path)
-			if err != nil {
-				continue
-			}
-			docs = append(docs, doc)
-			scores = append(scores, scs)
-			paths = append(paths, path)
-		}
-	} else {
-		doc, scs, err := processFile(ctx, ep, "")
+		doc, scs, err := processFile(ctx, ep, path)
 		if err != nil {
-			return err
+			continue
 		}
 		docs = append(docs, doc)
 		scores = append(scores, scs)
-		paths = append(paths, ep.Path)
+		paths = append(paths, path)
 	}
 
 	reportFormat := "detailed"
@@ -121,16 +121,8 @@ func handlePath(ctx context.Context, ep *Params) error {
 	return nil
 }
 
-func processFile(ctx context.Context, ep *Params, overidePath string) (sbom.Document, scorer.Scores, error) {
+func processFile(ctx context.Context, ep *Params, path string) (sbom.Document, scorer.Scores, error) {
 	log := logger.FromContext(ctx)
-	var path string
-
-	if overidePath == "" {
-		path = ep.Path
-	} else {
-		path = overidePath
-	}
-
 	log.Debugf("Processing file :%s\n", path)
 
 	if _, err := os.Stat(path); err != nil {

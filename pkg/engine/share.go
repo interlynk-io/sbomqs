@@ -30,16 +30,16 @@ func ShareRun(ctx context.Context, ep *Params) error {
 	log := logger.FromContext(ctx)
 	log.Debug("engine.ShareRun()")
 
-	if ep.Path == "" {
+	if len(ep.Path) <= 0 {
 		log.Fatal("path is required")
 	}
 
-	doc, scores, err := processFile(ctx, ep, "")
+	doc, scores, err := processFile(ctx, ep, ep.Path[0])
 	if err != nil {
 		return err
 	}
 
-	url, err := share.Share(ctx, doc, scores, ep.Path)
+	url, err := share.Share(ctx, doc, scores, ep.Path[0])
 
 	if err != nil {
 		fmt.Printf("Error sharing file %s: %s", ep.Path, err)
@@ -48,7 +48,7 @@ func ShareRun(ctx context.Context, ep *Params) error {
 	nr := reporter.NewReport(ctx,
 		[]sbom.Document{doc},
 		[]scorer.Scores{scores},
-		[]string{ep.Path},
+		[]string{ep.Path[0]},
 		reporter.WithFormat(strings.ToLower("basic")))
 	nr.Report()
 	fmt.Printf("ShareLink: %s\n", url)

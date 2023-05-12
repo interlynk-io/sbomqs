@@ -79,9 +79,8 @@ func DtrackScore(ctx context.Context, dtP *DtParams) error {
 
 			f.WriteString(bom)
 
-			ep := &Params{
-				Path: f.Name(),
-			}
+			ep := &Params{}
+			ep.Path = append(ep.Path, f.Name())
 			doc, scores, err := processFile(ctx, ep, "")
 			if err != nil {
 				return err
