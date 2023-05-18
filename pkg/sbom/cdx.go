@@ -305,6 +305,10 @@ func (c *cdxDoc) licenses(comp *cydx.Component) []License {
 		}
 	}
 
+	if comp.Evidence != nil {
+
+	}
+
 	removeDups := func(lics []License) []License {
 		uniqs := []License{}
 		dedup := map[string]bool{}

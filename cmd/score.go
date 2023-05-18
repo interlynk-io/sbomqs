@@ -38,7 +38,7 @@ var (
 
 type userCmd struct {
 	//input control
-	path string
+	path []string
 
 	//filter control
 	category string
@@ -74,8 +74,6 @@ var scoreCmd = &cobra.Command{
 				return fmt.Errorf("provide a path to an sbom file or directory of sbom files")
 			}
 
-		} else if len(args) > 1 {
-			return fmt.Errorf("too many arguments")
 		}
 		return nil
 	},
@@ -106,14 +104,14 @@ func toUserCmd(cmd *cobra.Command, args []string) *userCmd {
 	//input control
 	if len(args) <= 0 {
 		if len(inFile) > 0 {
-			uCmd.path = inFile
+			uCmd.path = append(uCmd.path, inFile)
 		}
 
 		if len(inDirPath) > 0 {
-			uCmd.path = inDirPath
+			uCmd.path = append(uCmd.path, inDirPath)
 		}
 	} else {
-		uCmd.path = args[0]
+		uCmd.path = append(uCmd.path, args[0:]...)
 	}
 
 	//config control
@@ -179,8 +177,11 @@ func validatePath(path string) error {
 	return nil
 }
 func validateFlags(cmd *userCmd) error {
-	if err := validatePath(cmd.path); err != nil {
-		return fmt.Errorf("invalid path: %w", err)
+
+	for _, path := range cmd.path {
+		if err := validatePath(path); err != nil {
+			return fmt.Errorf("invalid path: %w", err)
+		}
 	}
 
 	if cmd.configPath != "" {

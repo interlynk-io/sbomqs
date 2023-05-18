@@ -43,18 +43,26 @@ For more information, please visit https://sbombenchmark.dev
 	},
 
 	RunE: func(cmd *cobra.Command, args []string) error {
+		debug, _ := cmd.Flags().GetBool("debug")
+		if debug {
+			logger.InitDebugLogger()
+		} else {
+			logger.InitProdLogger()
+		}
+
 		ctx := logger.WithLogger(context.Background())
 		sbomFileName := args[0]
 
-		engParams := &engine.Params{
-			Path:  sbomFileName,
-			Basic: true,
-			Debug: false,
-		}
+		engParams := &engine.Params{Basic: true}
+		engParams.Path = append(engParams.Path, sbomFileName)
 		return engine.ShareRun(ctx, engParams)
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(shareCmd)
+
+	//Debug Control
+	shareCmd.Flags().BoolP("debug", "D", false, "enable debug logging")
+
 }
