@@ -27,12 +27,12 @@ go install github.com/interlynk-io/sbomqs@latest
 other installation [options](#installation).
 
 # Usage
-Quality Score for a single SBOM.
+#### Quality Score for a single SBOM.
 ```sh
 sbomqs score <sbom-file>
 ```
 
-Quality Score with a shareable link at [sbombenchmark.dev](https://sbombenchmark.dev/).  
+#### Quality Score with a shareable link at [sbombenchmark.dev](https://sbombenchmark.dev/).  
 ```sh
 sbomqs share <sbom-file>
 ```
@@ -44,7 +44,7 @@ $sbomqs share cdxgen-9.5.1_alpine-latest.cdx.json
 ShareLink: https://sbombenchmark.dev/user/score?id=a97af1bf-4c9d-4a55-8524-3d4bcee0b9a4
 ```
 
-Quality Score for your dependency track projects.
+#### Quality Score for your dependency track projects.
 ```sh
 sbomqs dtrackScore  -u <dt-host-url> -k <dt-api-key> <project-uuid>
 ```
@@ -54,6 +54,11 @@ Example:
 sbomqs dtrackScore  -u "http://localhost:8080/" -k "IIcfPA9qc1F4IkQFa2FqQJoTwcfQI" bbd4434d-8062-4e59-a323-3b416701c948
 ```
 ![alt text](./images/dt.png "Depedency Track with sbomqs score")
+
+#### Quality Score in an AirGapped Environment
+```sh
+INTERLYNK_DISABLE_VERSION_CHECK=true ./build/sbomqs score ~/wrk/sbom*/samples/*.json  -b
+```
 
 # What is a high quality SBOM
 A high quality SBOM should allow for managements of assets, license, vulnerabilities, Intellectual Property, configuration management and incident response. 
