@@ -29,7 +29,7 @@ other installation [options](#installation).
 # Usage
 #### Quality Score for a single SBOM.
 ```sh
-sbomqs score <sbom-file>
+$sbomqs score <sbom-file>
 ```
 
 #### Quality Score with a shareable link at [sbombenchmark.dev](https://sbombenchmark.dev/).  
@@ -46,18 +46,40 @@ ShareLink: https://sbombenchmark.dev/user/score?id=a97af1bf-4c9d-4a55-8524-3d4bc
 
 #### Quality Score for your dependency track projects.
 ```sh
-sbomqs dtrackScore  -u <dt-host-url> -k <dt-api-key> <project-uuid>
+$sbomqs dtrackScore  -u <dt-host-url> -k <dt-api-key> <project-uuid>
 ```
 
 Example:
 ```sh
-sbomqs dtrackScore  -u "http://localhost:8080/" -k "IIcfPA9qc1F4IkQFa2FqQJoTwcfQI" bbd4434d-8062-4e59-a323-3b416701c948
+$sbomqs dtrackScore  -u "http://localhost:8080/" -k "IIcfPA9qc1F4IkQFa2FqQJoTwcfQI" bbd4434d-8062-4e59-a323-3b416701c948
 ```
 ![alt text](./images/dt.png "Depedency Track with sbomqs score")
 
 #### Quality Score in an AirGapped Environment
 ```sh
-INTERLYNK_DISABLE_VERSION_CHECK=true ./build/sbomqs score ~/wrk/sbom*/samples/*.json  -b
+$INTERLYNK_DISABLE_VERSION_CHECK=true ./build/sbomqs score ~/wrk/sbom*/samples/*.json  -b
+```
+
+#### Quality Score using containers
+```sh
+$docker run -v <path of sbom file or folder>:/app/inputfile ghcr.io/interlynk-io/sbomqs
+```
+Example
+```sh
+$docker run -v $(pwd)/samples/sbomqs-cdx-cgomod.json:/app/inputfile ghcr.io/interlynk-io/sbomqs
+Unable to find image 'ghcr.io/interlynk-io/sbomqs:latest' locally
+latest: Pulling from interlynk-io/sbomqs
+708d61464c72: Already exists
+Digest: sha256:d47e3e936b3ef61c01fcf5cfd00d053c06bf1ded8c9ac3c0d148412126da3b3f
+Status: Downloaded newer image for ghcr.io/interlynk-io/sbomqs:latest
+{
+  "run_id": "d1ccac27-323e-478a-afd2-7d33501997ea",
+  "timestamp": "2023-05-23T06:11:25Z",
+  "creation_info": {
+    "name": "sbomqs",
+    "version": "",
+    "scoring_engine_version": "5"
+  },
 ```
 
 # What is a high quality SBOM
