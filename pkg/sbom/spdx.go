@@ -25,10 +25,10 @@ import (
 	"github.com/interlynk-io/sbomqs/pkg/logger"
 	"github.com/interlynk-io/sbomqs/pkg/purl"
 	spdx_json "github.com/spdx/tools-golang/json"
-	spdx_rdf "github.com/spdx/tools-golang/rdfloader"
+	spdx_rdf "github.com/spdx/tools-golang/rdf"
 	spdx_common "github.com/spdx/tools-golang/spdx/common"
-	"github.com/spdx/tools-golang/spdx/v2_3"
-	spdx_tv "github.com/spdx/tools-golang/tvloader"
+	"github.com/spdx/tools-golang/spdx/v2/v2_3"
+	spdx_tv "github.com/spdx/tools-golang/tagvalue"
 	spdx_yaml "github.com/spdx/tools-golang/yaml"
 )
 
