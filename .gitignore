@@ -18,3 +18,5 @@ build/
 version.txt 
 
 dist/
+
+.vscode/
