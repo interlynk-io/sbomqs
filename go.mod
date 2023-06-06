@@ -11,7 +11,7 @@ require (
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/package-url/packageurl-go v0.1.0
 	github.com/samber/lo v1.38.1
-	github.com/spdx/tools-golang v0.5.1
+	github.com/spdx/tools-golang v0.5.2
 	github.com/spf13/cobra v1.7.0
 	go.uber.org/zap v1.24.0
 	gopkg.in/yaml.v2 v2.4.0
@@ -40,7 +40,7 @@ require (
 	golang.org/x/net v0.10.0 // indirect
 	golang.org/x/oauth2 v0.8.0 // indirect
 	golang.org/x/sys v0.8.0 // indirect
-	golang.org/x/tools v0.9.1 // indirect
+	golang.org/x/tools v0.9.3 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.30.0 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
