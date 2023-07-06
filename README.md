@@ -67,6 +67,8 @@ $docker run -v <path of sbom file or folder>:/app/inputfile ghcr.io/interlynk-io
 Example
 ```sh
 $docker run -v $(pwd)/samples/sbomqs-cdx-cgomod.json:/app/inputfile ghcr.io/interlynk-io/sbomqs score -j /app/inputfile
+```
+```
 Unable to find image 'ghcr.io/interlynk-io/sbomqs:latest' locally
 latest: Pulling from interlynk-io/sbomqs
 708d61464c72: Already exists
