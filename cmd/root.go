@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/Masterminds/semver/v3"
 	"github.com/google/go-github/v52/github"
 	"github.com/spf13/cobra"
 	version "sigs.k8s.io/release-utils/version"
@@ -27,10 +28,10 @@ import (
 var rootCmd = &cobra.Command{
 	Use:   "sbomqs",
 	Short: "sbomqs application provides sbom quality scores.",
-	Long: `SBOM Quality Score (sbomqs) is a standardized metric to 
-produce a calculated score that represents a level of “quality” 
-when using an SBOM. The sbomqs is intended to help customers make 
-an assessment of a SBOM acceptance risk based on their personal risk tolerance.  
+	Long: `SBOM Quality Score (sbomqs) is a standardized metric to
+produce a calculated score that represents a level of “quality”
+when using an SBOM. The sbomqs is intended to help customers make
+an assessment of a SBOM acceptance risk based on their personal risk tolerance.
 `,
 }
 
@@ -63,7 +64,18 @@ func checkIfLatestRelease() {
 		return
 	}
 
-	if rr.GetTagName() != version.GetVersionInfo().GitVersion {
+	verLatest, err := semver.NewVersion(version.GetVersionInfo().GitVersion)
+	if err != nil {
+		return
+	}
+
+	verInstalled, err := semver.NewVersion(rr.GetTagName())
+	if err != nil {
+		return
+	}
+
+	result := verInstalled.Compare(verLatest)
+	if result < 0 {
 		fmt.Printf("\nA new version of sbomqs is available %s.\n\n", rr.GetTagName())
 	}
 }

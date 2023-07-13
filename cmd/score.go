@@ -49,10 +49,6 @@ type userCmd struct {
 	basic    bool
 	detailed bool
 
-	//spec control
-	spdx bool
-	cdx  bool
-
 	//directory control
 	recurse bool
 
@@ -142,13 +138,6 @@ func toUserCmd(cmd *cobra.Command, args []string) *userCmd {
 		uCmd.basic = strings.ToLower(reportFormat) == "basic"
 		uCmd.detailed = strings.ToLower(reportFormat) == "detailed"
 	}
-
-	//spec control
-	// uCmd.spdx, _ = cmd.Flags().GetBool("spdx")
-	// uCmd.cdx, _ = cmd.Flags().GetBool("cdx")
-
-	//directory control
-	//uCmd.recurse, _ = cmd.Flags().GetBool("recurse")
 
 	//debug control
 	uCmd.debug, _ = cmd.Flags().GetBool("debug")
