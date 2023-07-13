@@ -2,6 +2,8 @@ github.com/CycloneDX/cyclonedx-go v0.7.1 h1:5w1SxjGm9MTMNTuRbEPyw21ObdbaagTWF/Kf
 github.com/CycloneDX/cyclonedx-go v0.7.1/go.mod h1:N/nrdWQI2SIjaACyyDs/u7+ddCkyl/zkNs8xFsHF2Ps=
 github.com/DependencyTrack/client-go v0.11.0 h1:1g+eHC8nJyIzi68zcs+dr3OHRvS1aC+4Uy3YKA0JJhc=
 github.com/DependencyTrack/client-go v0.11.0/go.mod h1:XLZnOksOs56Svq+K4xmBkN8U97gpP7r1BkhCc/xA8Iw=
+github.com/Masterminds/semver/v3 v3.2.1 h1:RN9w6+7QoMeJVGyfmbcgs28Br8cvmnucEXnY0rYXWg0=
+github.com/Masterminds/semver/v3 v3.2.1/go.mod h1:qvl/7zhW3nngYb5+80sSMF+FG2BjYrf8m9wsX0PNOMQ=
 github.com/ProtonMail/go-crypto v0.0.0-20230528122434-6f98819771a1 h1:JMDGhoQvXNTqH6Y3MC0IUw6tcZvaUdujNqzK2HYWZc8=
 github.com/ProtonMail/go-crypto v0.0.0-20230528122434-6f98819771a1/go.mod h1:EjAoLdwvbIOoOQr3ihjnSoLZRtE8azugULFRteWMNc0=
 github.com/anchore/go-struct-converter v0.0.0-20221118182256-c68fdcfa2092/go.mod h1:rYqSE9HbjzpHTI74vwPvae4ZVYZd1lue2ta6xHPdblA=
