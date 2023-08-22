@@ -7,7 +7,7 @@ require (
 	github.com/DependencyTrack/client-go v0.11.0
 	github.com/Masterminds/semver/v3 v3.2.1
 	github.com/google/go-github/v52 v52.0.0
-	github.com/google/uuid v1.3.0
+	github.com/google/uuid v1.3.1
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.7.0
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/package-url/packageurl-go v0.1.1
