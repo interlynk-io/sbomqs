@@ -268,7 +268,7 @@ We look forward to your contributions, below are a few guidelines on how to subm
 # Contact 
 We appreciate all feedback, the best way to get in touch with us
 - hello@interlynk.io
-- github.com/interlynk-io/sbomqs/issues 
+- https://github.com/interlynk-io/sbomqs/issues 
 - https://twitter.com/InterlynkIo
 
 
