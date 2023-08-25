@@ -219,27 +219,30 @@ func (s *spdxDoc) parseTool() {
 	//https://spdx.github.io/spdx-spec/v2.3/document-creation-information/#68-creator-field
 	//spdx2.3 spec says If the SPDX document was created using a software tool,
 	//indicate the name and version for that tool
-	extractVersion := func(name string) (string, string) {
-		//check if the version is a single word, i.e no spaces
-		if strings.Contains(name, " ") {
-			return name, ""
-		}
-		//check if name has - in it
-		tool, ver, ok := strings.Cut(name, "-")
+	extractVersion := func(inputName string) (string, string) {
+		// Split the input string by "-"
+		parts := strings.Split(inputName, "-")
 
-		if !ok {
-			return name, ""
+		// if there are no "-" its a bad string
+		if len(parts) == 1 {
+			return inputName, ""
 		}
+		// The last element after splitting is the version
+		version := parts[len(parts)-1]
+
+		// The name is everything before the last element
+		name := strings.Join(parts[:len(parts)-1], "-")
 
 		//check if version has atleast one-digit
 		//if not, then it is not a version
-		for _, r := range ver {
+		for _, r := range version {
 			if unicode.IsDigit(r) {
-				return tool, ver
+				return name, version
 			}
 		}
 
-		return name, ""
+		//This is a bad case
+		return inputName, ""
 	}
 
 	for _, c := range s.doc.CreationInfo.Creators {
