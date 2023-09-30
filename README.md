@@ -29,7 +29,7 @@ other installation [options](#installation).
 # Usage
 #### Quality Score for a single SBOM.
 ```sh
-$sbomqs score <sbom-file>
+sbomqs score <sbom-file>
 ```
 
 #### Quality Score with a shareable link at [sbombenchmark.dev](https://sbombenchmark.dev/).  
@@ -39,34 +39,37 @@ sbomqs share <sbom-file>
 
 Example:
 ```sh
-$sbomqs share cdxgen-9.5.1_alpine-latest.cdx.json
+sbomqs share cdxgen-9.5.1_alpine-latest.cdx.json
+```
+
+```
 5.9	cdxgen-9.5.1_alpine-latest.cdx.json
 ShareLink: https://sbombenchmark.dev/user/score?id=a97af1bf-4c9d-4a55-8524-3d4bcee0b9a4
 ```
 
 #### Quality Score for your dependency track projects.
 ```sh
-$sbomqs dtrackScore  -u <dt-host-url> -k <dt-api-key> <project-uuid>
+sbomqs dtrackScore  -u <dt-host-url> -k <dt-api-key> <project-uuid>
 ```
 
 Example:
 ```sh
-$sbomqs dtrackScore  -u "http://localhost:8080/" -k "IIcfPA9qc1F4IkQFa2FqQJoTwcfQI" bbd4434d-8062-4e59-a323-3b416701c948
+sbomqs dtrackScore  -u "http://localhost:8080/" -k "IIcfPA9qc1F4IkQFa2FqQJoTwcfQI" bbd4434d-8062-4e59-a323-3b416701c948
 ```
 ![alt text](./images/dt.png "Depedency Track with sbomqs score")
 
 #### Quality Score in an AirGapped Environment
 ```sh
-$INTERLYNK_DISABLE_VERSION_CHECK=true ./build/sbomqs score ~/wrk/sbom*/samples/*.json  -b
+INTERLYNK_DISABLE_VERSION_CHECK=true ./build/sbomqs score ~/wrk/sbom*/samples/*.json  -b
 ```
 
 #### Quality Score using containers
 ```sh
-$docker run -v <path of sbom file or folder>:/app/inputfile ghcr.io/interlynk-io/sbomqs score /app/inputfile
+docker run -v <path of sbom file or folder>:/app/inputfile ghcr.io/interlynk-io/sbomqs score /app/inputfile
 ```
 Example
 ```sh
-$docker run -v $(pwd)/samples/sbomqs-cdx-cgomod.json:/app/inputfile ghcr.io/interlynk-io/sbomqs score -j /app/inputfile
+docker run -v $(pwd)/samples/sbomqs-cdx-cgomod.json:/app/inputfile ghcr.io/interlynk-io/sbomqs score -j /app/inputfile
 ```
 ```
 Unable to find image 'ghcr.io/interlynk-io/sbomqs:latest' locally
@@ -101,7 +104,7 @@ A quality SBOM is one that is accurate, complete, and up-to-date. There are many
 
 The main goals of the utility are
 1. Make it easy and fast to assess the quality of your sbom's, generated or acquired. 
-2. Support all well known SBOM standards. 
+2. Support all well-known SBOM standards. 
 3. Scoring output should be customizable.
 4. Scoring output should be consumable. 
 
@@ -109,10 +112,12 @@ The main goals of the utility are
 
 SBOM can be generated using both commercial and open-source tooling. As consumers of SBOM we wanted a fast & easy way to assess the quality of an SBOM. An SBOM with a low score, needs to be re-evaluated or rejected. 
 
-`sbomqs` makes getting a quick assessment, relatively painless. Just point. 
+`sbomqs` makes getting a quick assessment effortless. Just point. 
 
 ```sh
-sbomqs score samples/julia.spdx.tv -b 
+sbomqs score samples/julia.spdx.tv -b
+```
+```
 6.9     samples/julia.spdx.json
 ```
 
@@ -265,12 +270,18 @@ We look forward to your contributions, below are a few guidelines on how to subm
 - Push your changes (`git push origin feature/new-feature`)
 - Create a new pull-request
 
-# Contact 
-We appreciate all feedback, the best way to get in touch with us
-- hello@interlynk.io
-- https://github.com/interlynk-io/sbomqs/issues 
-- https://twitter.com/InterlynkIo
+# Other SBOM Open Source tools
+- [SBOM Assembler](https://github.com/interlynk-io/sbomasm) - A tool to compose a single SBOM by combining other (part) SBOMs
+- [SBOM Quality Score](https://github.com/interlynk-io/sbomqs) - A tool for evaluating the quality and completeness of SBOMs
+- [SBOM Search Tool](https://github.com/interlynk-io/sbomagr) - A tool to grep style semantic search in SBOMs
+- [SBOM Explorer](https://github.com/interlynk-io/sbomex) - A tool for discovering and downloading SBOM from a public repository
 
+# Contact 
+We appreciate all feedback. The best ways to get in touch with us:
+- :phone: [Live Chat](https://www.interlynk.io/#hs-chat-open)
+- 📫 [Email Us](mailto:hello@interlynk.io)
+- 🐛 [Report a bug or enhancement](https://github.com/interlynk-io/sbomex/issues) 
+- :x: [Follow us on X](https://twitter.com/InterlynkIo)
 
 # Stargazers
 
