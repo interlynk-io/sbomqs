@@ -19,6 +19,7 @@
 [![Go Reference](https://pkg.go.dev/badge/github.com/interlynk-io/sbomqs.svg)](https://pkg.go.dev/github.com/interlynk-io/sbomqs)
 [![Go Report Card](https://goreportcard.com/badge/github.com/interlynk-io/sbomqs)](https://goreportcard.com/report/github.com/interlynk-io/sbomqs)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/interlynk-io/sbomqs/badge)](https://securityscorecards.dev/viewer/?uri=github.com/interlynk-io/sbomqs)
+![GitHub all releases](https://img.shields.io/github/downloads/interlynk-io/sbomqs/total)
 
 `sbomqs` is your primary tool to assess the quality of sbom's. The higher the score the more consumable your sboms are. 
 
