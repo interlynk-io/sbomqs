@@ -3,7 +3,7 @@ module github.com/interlynk-io/sbomqs
 go 1.19
 
 require (
-	github.com/CycloneDX/cyclonedx-go v0.7.2
+	github.com/CycloneDX/cyclonedx-go v0.8.0
 	github.com/DependencyTrack/client-go v0.12.0
 	github.com/Masterminds/semver/v3 v3.2.1
 	github.com/google/go-github/v52 v52.0.0
