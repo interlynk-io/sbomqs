@@ -1,7 +1,7 @@
 github.com/CycloneDX/cyclonedx-go v0.8.0 h1:FyWVj6x6hoJrui5uRQdYZcSievw3Z32Z88uYzG/0D6M=
 github.com/CycloneDX/cyclonedx-go v0.8.0/go.mod h1:K2bA+324+Og0X84fA8HhN2X066K7Bxz4rpMQ4ZhjtSk=
-github.com/DependencyTrack/client-go v0.12.0 h1:dcvYeP9BP3ZPuE3M/xdCjuqoiu/eflxSmlgkjWckmIU=
-github.com/DependencyTrack/client-go v0.12.0/go.mod h1:XLZnOksOs56Svq+K4xmBkN8U97gpP7r1BkhCc/xA8Iw=
+github.com/DependencyTrack/client-go v0.13.0 h1:w2TvudrBbgBtS2oMbisfo9Av4rJnS1g9VsdCpZ6PU/8=
+github.com/DependencyTrack/client-go v0.13.0/go.mod h1:XLZnOksOs56Svq+K4xmBkN8U97gpP7r1BkhCc/xA8Iw=
 github.com/Masterminds/semver/v3 v3.2.1 h1:RN9w6+7QoMeJVGyfmbcgs28Br8cvmnucEXnY0rYXWg0=
 github.com/Masterminds/semver/v3 v3.2.1/go.mod h1:qvl/7zhW3nngYb5+80sSMF+FG2BjYrf8m9wsX0PNOMQ=
 github.com/ProtonMail/go-crypto v0.0.0-20230717121422-5aa5874ade95 h1:KLq8BE0KwCL+mmXnjLWEAOYO+2l2AE4YMmqG1ZpZHBs=
