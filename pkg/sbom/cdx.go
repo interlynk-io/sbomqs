@@ -305,9 +305,10 @@ func (c *cdxDoc) licenses(comp *cydx.Component) []License {
 		}
 	}
 
-	if comp.Evidence != nil {
+	// Remove the empty if statement
+	// if comp.Evidence != nil {
 
-	}
+	// }
 
 	removeDups := func(lics []License) []License {
 		uniqs := []License{}
@@ -336,7 +337,7 @@ func (c *cdxDoc) parseTool() {
 		return
 	}
 
-	for _, tt := range lo.FromPtr(c.doc.Metadata.Tools) {
+	for _, tt := range lo.FromPtr(c.doc.Metadata.Tools.Tools) {
 		t := tool{}
 		t.name = tt.Name
 		t.version = tt.Version
