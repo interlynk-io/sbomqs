@@ -32,15 +32,16 @@ var cdx_file_formats = []string{"json", "xml"}
 var cdx_primary_purpose = []string{"application", "framework", "library", "container", "operating-system", "device", "firmware", "file"}
 
 type cdxDoc struct {
-	doc     *cydx.BOM
-	format  FileFormat
-	ctx     context.Context
-	spec    *spec
-	comps   []Component
-	authors []Author
-	tools   []Tool
-	rels    []Relation
-	logs    []string
+	doc              *cydx.BOM
+	format           FileFormat
+	ctx              context.Context
+	spec             *spec
+	comps            []Component
+	authors          []Author
+	tools            []Tool
+	rels             []Relation
+	logs             []string
+	primaryComponent bool
 }
 
 func newCDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat) (Document, error) {
@@ -100,12 +101,17 @@ func (c cdxDoc) Logs() []string {
 	return c.logs
 }
 
+func (c cdxDoc) PrimaryComponent() bool {
+	return c.primaryComponent
+}
+
 func (c *cdxDoc) parse() {
 	c.parseSpec()
 	c.parseComps()
 	c.parseAuthors()
 	c.parseTool()
 	c.parseRels()
+	c.parsePrimaryComponent()
 }
 
 func (c *cdxDoc) addToLogs(log string) {
@@ -392,4 +398,16 @@ func (c *cdxDoc) addSupplierName(comp *cydx.Component) string {
 		return ""
 	}
 	return name
+}
+
+func (c *cdxDoc) parsePrimaryComponent() {
+	if c.doc.Metadata == nil {
+		return
+	}
+
+	if c.doc.Metadata.Component == nil {
+		return
+	}
+
+	c.primaryComponent = true
 }
