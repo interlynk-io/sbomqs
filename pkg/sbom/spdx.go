@@ -37,15 +37,16 @@ var spdx_spec_versions = []string{"SPDX-2.1", "SPDX-2.2", "SPDX-2.3"}
 var spdx_primary_purpose = []string{"application", "framework", "library", "container", "operating-system", "device", "firmware", "source", "archive", "file", "install", "other"}
 
 type spdxDoc struct {
-	doc     *v2_3.Document
-	format  FileFormat
-	ctx     context.Context
-	spec    *spec
-	comps   []Component
-	authors []Author
-	tools   []Tool
-	rels    []Relation
-	logs    []string
+	doc              *v2_3.Document
+	format           FileFormat
+	ctx              context.Context
+	spec             *spec
+	comps            []Component
+	authors          []Author
+	tools            []Tool
+	rels             []Relation
+	logs             []string
+	primaryComponent bool
 }
 
 func newSPDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat) (Document, error) {
@@ -108,12 +109,17 @@ func (s spdxDoc) Logs() []string {
 	return s.logs
 }
 
+func (s spdxDoc) PrimaryComponent() bool {
+	return s.primaryComponent
+}
+
 func (s *spdxDoc) parse() {
 	s.parseSpec()
 	s.parseComps()
 	s.parseAuthors()
 	s.parseTool()
 	s.parseRels()
+	s.parsePrimaryComponent()
 }
 
 func (s *spdxDoc) parseSpec() {
@@ -184,13 +190,11 @@ func (s *spdxDoc) parseRels() {
 	for _, r := range s.doc.Relationships {
 		nr := relation{}
 		switch strings.ToUpper(r.Relationship) {
-		case spdx_common.TypeRelationshipDescribe, spdx_common.TypeRelationshipDescribeBy:
+		case spdx_common.TypeRelationshipDescribe:
 			fallthrough
-		case spdx_common.TypeRelationshipContains, spdx_common.TypeRelationshipContainedBy:
+		case spdx_common.TypeRelationshipContains:
 			fallthrough
-		case spdx_common.TypeRelationshipDependsOn, spdx_common.TypeRelationshipDependencyOf:
-			fallthrough
-		case spdx_common.TypeRelationshipPrerequisiteFor, spdx_common.TypeRelationshipHasPrerequisite:
+		case spdx_common.TypeRelationshipDependsOn:
 			aBytes, err = r.RefA.MarshalJSON()
 			if err != nil {
 				continue
@@ -510,4 +514,22 @@ func (s *spdxDoc) addSupplierName(index int) string {
 	}
 
 	return ""
+}
+
+func (s *spdxDoc) parsePrimaryComponent() {
+	pkgIds := make(map[string]bool)
+
+	for _, pkg := range s.doc.Packages {
+		pkgIds[string(pkg.PackageSPDXIdentifier)] = true
+	}
+
+	for _, r := range s.doc.Relationships {
+		if strings.ToUpper(r.Relationship) == spdx_common.TypeRelationshipDescribe {
+			_, ok := pkgIds[string(r.RefB.ElementRefID)]
+			if ok {
+				s.primaryComponent = true
+				return
+			}
+		}
+	}
 }

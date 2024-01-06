@@ -38,6 +38,16 @@ type FakeDocument struct {
 	logsReturnsOnCall map[int]struct {
 		result1 []string
 	}
+	PrimaryComponentStub        func() bool
+	primaryComponentMutex       sync.RWMutex
+	primaryComponentArgsForCall []struct {
+	}
+	primaryComponentReturns struct {
+		result1 bool
+	}
+	primaryComponentReturnsOnCall map[int]struct {
+		result1 bool
+	}
 	RelationsStub        func() []sbom.Relation
 	relationsMutex       sync.RWMutex
 	relationsArgsForCall []struct {
@@ -231,6 +241,59 @@ func (fake *FakeDocument) LogsReturnsOnCall(i int, result1 []string) {
 	}{result1}
 }
 
+func (fake *FakeDocument) PrimaryComponent() bool {
+	fake.primaryComponentMutex.Lock()
+	ret, specificReturn := fake.primaryComponentReturnsOnCall[len(fake.primaryComponentArgsForCall)]
+	fake.primaryComponentArgsForCall = append(fake.primaryComponentArgsForCall, struct {
+	}{})
+	stub := fake.PrimaryComponentStub
+	fakeReturns := fake.primaryComponentReturns
+	fake.recordInvocation("PrimaryComponent", []interface{}{})
+	fake.primaryComponentMutex.Unlock()
+	if stub != nil {
+		return stub()
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeDocument) PrimaryComponentCallCount() int {
+	fake.primaryComponentMutex.RLock()
+	defer fake.primaryComponentMutex.RUnlock()
+	return len(fake.primaryComponentArgsForCall)
+}
+
+func (fake *FakeDocument) PrimaryComponentCalls(stub func() bool) {
+	fake.primaryComponentMutex.Lock()
+	defer fake.primaryComponentMutex.Unlock()
+	fake.PrimaryComponentStub = stub
+}
+
+func (fake *FakeDocument) PrimaryComponentReturns(result1 bool) {
+	fake.primaryComponentMutex.Lock()
+	defer fake.primaryComponentMutex.Unlock()
+	fake.PrimaryComponentStub = nil
+	fake.primaryComponentReturns = struct {
+		result1 bool
+	}{result1}
+}
+
+func (fake *FakeDocument) PrimaryComponentReturnsOnCall(i int, result1 bool) {
+	fake.primaryComponentMutex.Lock()
+	defer fake.primaryComponentMutex.Unlock()
+	fake.PrimaryComponentStub = nil
+	if fake.primaryComponentReturnsOnCall == nil {
+		fake.primaryComponentReturnsOnCall = make(map[int]struct {
+			result1 bool
+		})
+	}
+	fake.primaryComponentReturnsOnCall[i] = struct {
+		result1 bool
+	}{result1}
+}
+
 func (fake *FakeDocument) Relations() []sbom.Relation {
 	fake.relationsMutex.Lock()
 	ret, specificReturn := fake.relationsReturnsOnCall[len(fake.relationsArgsForCall)]
@@ -399,6 +462,8 @@ func (fake *FakeDocument) Invocations() map[string][][]interface{} {
 	defer fake.componentsMutex.RUnlock()
 	fake.logsMutex.RLock()
 	defer fake.logsMutex.RUnlock()
+	fake.primaryComponentMutex.RLock()
+	defer fake.primaryComponentMutex.RUnlock()
 	fake.relationsMutex.RLock()
 	defer fake.relationsMutex.RUnlock()
 	fake.specMutex.RLock()

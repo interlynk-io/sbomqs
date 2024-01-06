@@ -24,4 +24,6 @@ type Document interface {
 	Authors() []Author
 	Tools() []Tool
 	Logs() []string
+
+	PrimaryComponent() bool
 }

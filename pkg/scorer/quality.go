@@ -219,3 +219,18 @@ func docWithCreatorCheck(d sbom.Document, c *check) score {
 	s.setDesc(fmt.Sprintf("%d/%d tools have creator and version", withCreatorAndVersion, totalTools))
 	return *s
 }
+
+func docWithPrimaryComponentCheck(d sbom.Document, c *check) score {
+	s := newScoreFromCheck(c)
+
+	if d.PrimaryComponent() {
+		s.setScore(10.0)
+		s.setDesc("primary component found")
+		return *s
+	} else {
+		s.setScore(0.0)
+		s.setDesc("no primary component found")
+		return *s
+	}
+	return *s
+}
