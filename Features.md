@@ -296,6 +296,19 @@ The primary purpose (or type) indicates the use of the component inside the appl
 Check the following fields to confirm none of the licenses belong to the [restricted license list](https://opensource.google/documentation/reference/thirdparty/licenses):
 - CycloneDX field: [component:type](https://cyclonedx.org/docs/1.4/json/#components_items_type)
 - SPDX fields: [PrimaryPackagePurpose](https://spdx.github.io/spdx-spec/v2.3/package-information/#724-primary-package-purpose-field)
+
+---
+#### Primary Component Present
+
+An sbom is expected to describe a primary component. This check determines if the sbom has
+a primary component or not. 
+
+***Remediation steps***
+
+- CycloneDX: ensure the metadata section has the primary [component](https://cyclonedx.org/docs/1.5/json/#metadata_component) defined
+- SPDX: Should have a [DESCRIBES](https://spdx.github.io/spdx-spec/v2.3/relationships-between-SPDX-elements/) relationship which points to a package, or have a documentDescribes field present. 
+
+
 ---
 ### Category: Sharing
 ---
