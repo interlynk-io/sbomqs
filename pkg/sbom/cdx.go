@@ -27,7 +27,7 @@ import (
 	"github.com/samber/lo"
 )
 
-var cdx_spec_versions = []string{"1.0", "1.1", "1.2", "1.3", "1.4"}
+var cdx_spec_versions = []string{"1.0", "1.1", "1.2", "1.3", "1.4", "1.5"}
 var cdx_file_formats = []string{"json", "xml"}
 var cdx_primary_purpose = []string{"application", "framework", "library", "container", "operating-system", "device", "firmware", "file"}
 
