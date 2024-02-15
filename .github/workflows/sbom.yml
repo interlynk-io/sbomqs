@@ -26,7 +26,7 @@ jobs:
         run: echo "tag=$(git describe --tags HEAD)" > $GITHUB_ENV
       - name: Build SBOM
         run: |
-          syft --source-name 'sbomqs' --source-version ${{ env.tag }} --exclude ./public -o cyclonedx-json --file sbomqs.cdx.json .
+          syft --source-name 'sbomqs' --source-version ${{ env.tag }} --exclude ./public --exclude ./.github -o cyclonedx-json --file sbomqs.cdx.json .
       - name: Upload SBOM
         run: |
           curl -v "https://api.interlynk.io/lynkapi" \
