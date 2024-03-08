@@ -14,7 +14,7 @@ require (
 	github.com/samber/lo v1.39.0
 	github.com/spdx/tools-golang v0.5.3
 	github.com/spf13/cobra v1.8.0
-	go.uber.org/zap v1.26.0
+	go.uber.org/zap v1.27.0
 	gopkg.in/yaml.v2 v2.4.0
 	sigs.k8s.io/release-utils v0.7.7
 )
