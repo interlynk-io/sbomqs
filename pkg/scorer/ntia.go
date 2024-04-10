@@ -98,8 +98,11 @@ func compWithUniqIDCheck(d sbom.Document, c *check) score {
 		return *s
 	}
 
-	compIDs := lo.Map(d.Components(), func(c sbom.Component, i int) string {
-		return strings.Join([]string{d.Spec().Namespace(), c.ID()}, "")
+	compIDs := lo.FilterMap(d.Components(), func(c sbom.Component, i int) (string, bool) {
+		if c.ID() == "" {
+			return "", false
+		}
+		return strings.Join([]string{d.Spec().Namespace(), c.ID()}, ""), true
 	})
 
 	uniqComps := lo.Uniq(compIDs)
