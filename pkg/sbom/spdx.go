@@ -18,12 +18,15 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"regexp"
 	"strings"
 	"unicode"
 
 	"github.com/interlynk-io/sbomqs/pkg/cpe"
+	"github.com/interlynk-io/sbomqs/pkg/licenses"
 	"github.com/interlynk-io/sbomqs/pkg/logger"
 	"github.com/interlynk-io/sbomqs/pkg/purl"
+	"github.com/samber/lo"
 	spdx_json "github.com/spdx/tools-golang/json"
 	spdx_rdf "github.com/spdx/tools-golang/rdf"
 	spdx_common "github.com/spdx/tools-golang/spdx/v2/common"
@@ -37,16 +40,18 @@ var spdx_spec_versions = []string{"SPDX-2.1", "SPDX-2.2", "SPDX-2.3"}
 var spdx_primary_purpose = []string{"application", "framework", "library", "container", "operating-system", "device", "firmware", "source", "archive", "file", "install", "other"}
 
 type spdxDoc struct {
-	doc              *v2_3.Document
-	format           FileFormat
-	ctx              context.Context
-	spec             *spec
-	comps            []Component
-	authors          []Author
-	tools            []Tool
-	rels             []Relation
-	logs             []string
-	primaryComponent bool
+	doc                *v2_3.Document
+	format             FileFormat
+	ctx                context.Context
+	spec               *spec
+	comps              []Component
+	authors            []Author
+	tools              []Tool
+	rels               []Relation
+	logs               []string
+	primaryComponent   bool
+	primaryComponentId string
+	lifecycles         string
 }
 
 func newSPDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat) (Document, error) {
@@ -113,13 +118,25 @@ func (s spdxDoc) PrimaryComponent() bool {
 	return s.primaryComponent
 }
 
+func (s spdxDoc) Lifecycles() []string {
+	return []string{s.lifecycles}
+}
+
+func (s spdxDoc) Manufacturer() Manufacturer {
+	return nil
+}
+
+func (s spdxDoc) Supplier() Supplier {
+	return nil
+}
+
 func (s *spdxDoc) parse() {
 	s.parseSpec()
-	s.parseComps()
 	s.parseAuthors()
 	s.parseTool()
 	s.parseRels()
 	s.parsePrimaryComponent()
+	s.parseComps()
 }
 
 func (s *spdxDoc) parseSpec() {
@@ -132,11 +149,15 @@ func (s *spdxDoc) parseSpec() {
 		sp.creationTimestamp = s.doc.CreationInfo.Created
 	}
 
-	for _, l := range newLicenseFromID(s.doc.DataLicense) {
-		sp.licenses = append(sp.licenses, l)
-	}
+	lics := licenses.LookupExpression(s.doc.DataLicense, nil)
+
+	sp.licenses = append(sp.licenses, lics...)
 
 	sp.namespace = s.doc.DocumentNamespace
+
+	if s.doc.DocumentNamespace != "" {
+		sp.uri = s.doc.DocumentNamespace
+	}
 
 	s.spec = sp
 }
@@ -149,7 +170,6 @@ func (s *spdxDoc) parseComps() {
 
 		nc.version = sc.PackageVersion
 		nc.name = sc.PackageName
-		nc.supplierName = s.addSupplierName(index)
 		nc.purpose = sc.PrimaryPackagePurpose
 		nc.isReqFieldsPresent = s.pkgRequiredFields(index)
 		nc.purls = s.purls(index)
@@ -157,6 +177,35 @@ func (s *spdxDoc) parseComps() {
 		nc.checksums = s.checksums(index)
 		nc.licenses = s.licenses(index)
 		nc.id = string(sc.PackageSPDXIdentifier)
+
+		manu := s.getManufacturer(index)
+		if manu != nil {
+			nc.manufacturer = *manu
+		}
+
+		supp := s.getSupplier(index)
+		if supp != nil {
+			nc.supplier = *supp
+		}
+		nc.supplierName = s.addSupplierName(index)
+		nc.sourceCodeHash = sc.PackageVerificationCode.Value
+
+		//nc.sourceCodeUrl //no conlusive way to get this from SPDX
+		nc.downloadLocation = sc.PackageDownloadLocation
+
+		nc.isPrimary = s.primaryComponentId == string(sc.PackageSPDXIdentifier)
+
+		fromRelsPresent := func(rels []Relation, id string) bool {
+			for _, r := range rels {
+				if r.From() == id {
+					return true
+				}
+			}
+			return false
+		}
+
+		nc.hasRelationships = fromRelsPresent(s.rels, string(sc.PackageSPDXIdentifier))
+		nc.relationshipState = "not-specified"
 
 		s.comps = append(s.comps, nc)
 	}
@@ -175,9 +224,14 @@ func (s *spdxDoc) parseAuthors() {
 			continue
 		}
 		a := author{}
-		a.name = c.Creator
-		a.authorType = ctType
-		s.authors = append(s.authors, a)
+
+		entity := parseEntity(fmt.Sprintf("%s: %s", c.CreatorType, c.Creator))
+		if entity != nil {
+			a.name = entity.name
+			a.email = entity.email
+			a.authorType = ctType
+			s.authors = append(s.authors, a)
+		}
 	}
 }
 
@@ -419,117 +473,141 @@ func (s *spdxDoc) checksums(index int) []Checksum {
 	return chks
 }
 
-func (s *spdxDoc) licenses(index int) []License {
-	lics := []License{}
+func (s *spdxDoc) licenses(index int) []licenses.License {
+	lics := []licenses.License{}
+
 	pkg := s.doc.Packages[index]
-	checkOtherLics := func(id string) (bool, string) {
-		if s.doc.OtherLicenses == nil || len(s.doc.OtherLicenses) <= 0 {
-			return false, ""
-		}
-		for _, l := range s.doc.OtherLicenses {
-			if id == l.LicenseIdentifier {
-				return true, l.ExtractedText
-			}
-		}
-		return false, ""
-	}
 
-	addLicense := func(agg *[]License, n []license) {
-		for _, l := range n {
-			*agg = append(*agg, l)
+	otherLicenses := lo.Map(s.doc.OtherLicenses, func(l *v2_3.OtherLicense, _ int) licenses.License {
+		return licenses.CreateCustomLicense(l.LicenseIdentifier, l.LicenseName)
+	})
+
+	if pkg.PackageLicenseConcluded != "" && strings.ToLower(pkg.PackageLicenseConcluded) != "noassertion" && strings.ToLower(pkg.PackageLicenseConcluded) != "none" {
+		conLics := licenses.LookupExpression(pkg.PackageLicenseConcluded, otherLicenses)
+		lics = append(lics, conLics...)
+		if len(conLics) > 0 {
+			return lics
 		}
 	}
 
-	present, otherLic := checkOtherLics(pkg.PackageLicenseDeclared)
-
-	if present {
-		addLicense(&lics, newLicenseFromID(otherLic))
-	} else {
-		addLicense(&lics, newLicenseFromID(pkg.PackageLicenseDeclared))
+	if pkg.PackageLicenseDeclared != "" && strings.ToLower(pkg.PackageLicenseDeclared) != "noassertion" && strings.ToLower(pkg.PackageLicenseDeclared) != "none" {
+		decLics := licenses.LookupExpression(pkg.PackageLicenseDeclared, otherLicenses)
+		lics = append(lics, decLics...)
+		return lics
 	}
 
-	present, otherLic = checkOtherLics(pkg.PackageLicenseConcluded)
-	if present {
-		addLicense(&lics, newLicenseFromID(otherLic))
-	} else {
-		addLicense(&lics, newLicenseFromID(pkg.PackageLicenseConcluded))
+	return lics
+}
+
+func (s *spdxDoc) getManufacturer(index int) *manufacturer {
+	pkg := s.doc.Packages[index]
+
+	if pkg.PackageOriginator == nil {
+		return nil
 	}
 
-	removeDups := func(lics []License) []License {
-		uniqs := []License{}
-		dedup := map[string]bool{}
-		for _, l := range lics {
-			if _, ok := dedup[l.Short()]; !ok {
-				uniqs = append(uniqs, l)
-				dedup[l.Short()] = true
-			}
-		}
-		return uniqs
-
-	}
-	finalLics := removeDups(lics)
-	if len(finalLics) == 0 {
-		s.addToLogs(fmt.Sprintf("spdx doc pkg %s at index %d no licenses found", pkg.PackageName, index))
+	if strings.ToLower(pkg.PackageOriginator.Originator) == "noassertion" {
+		return nil
 	}
 
-	return finalLics
+	entity := parseEntity(fmt.Sprintf("%s: %s", pkg.PackageOriginator.OriginatorType, pkg.PackageOriginator.Originator))
+	if entity == nil {
+		return nil
+	}
+
+	return &manufacturer{
+		name:  entity.name,
+		email: entity.email,
+	}
+}
+
+func (s *spdxDoc) getSupplier(index int) *supplier {
+	pkg := s.doc.Packages[index]
+
+	if pkg.PackageSupplier == nil {
+		return nil
+	}
+
+	if strings.ToLower(pkg.PackageSupplier.Supplier) == "noassertion" {
+		return nil
+	}
+
+	entity := parseEntity(fmt.Sprintf("%s: %s", pkg.PackageSupplier.SupplierType, pkg.PackageSupplier.Supplier))
+	if entity == nil {
+		return nil
+	}
+
+	return &supplier{
+		name:  entity.name,
+		email: entity.email,
+	}
 }
 
 // https://github.com/spdx/ntia-conformance-checker/issues/100
 // Add spdx support to check both supplier and originator
 func (s *spdxDoc) addSupplierName(index int) string {
-	pkg := s.doc.Packages[index]
+	supplier := s.getSupplier(index)
+	manufacturer := s.getManufacturer(index)
 
-	if pkg.PackageSupplier == nil && pkg.PackageOriginator == nil {
-		s.addToLogs(fmt.Sprintf("spdx doc pkg %s at index %d no supplier/originator found", pkg.PackageName, index))
+	if supplier == nil && manufacturer == nil {
+		s.addToLogs(fmt.Sprintf("spdx doc pkg %s at index %d no supplier/originator found", s.doc.Packages[index].PackageName, index))
 		return ""
 	}
 
-	var supplierName, orignatorName string
-
-	if pkg.PackageSupplier != nil {
-		supplierName = strings.ToLower(pkg.PackageSupplier.Supplier)
+	if supplier != nil {
+		return supplier.name
 	}
 
-	if pkg.PackageOriginator != nil {
-		orignatorName = strings.ToLower(pkg.PackageOriginator.Originator)
-	}
-
-	if supplierName == "" && orignatorName == "" {
-		s.addToLogs(fmt.Sprintf("spdx doc pkg %s at index %d no supplier/originator found", pkg.PackageName, index))
-		return ""
-	}
-
-	if supplierName == "noassertion" && orignatorName == "noassertion" {
-		s.addToLogs(fmt.Sprintf("spdx doc pkg %s at index %d no supplier/originator found", pkg.PackageName, index))
-		return ""
-	}
-
-	if supplierName != "" && supplierName != "noassertion" {
-		return supplierName
-	}
-
-	if orignatorName != "" && orignatorName != "noassertion" {
-		return orignatorName
+	if manufacturer != nil {
+		return manufacturer.name
 	}
 
 	return ""
 }
 
 func (s *spdxDoc) parsePrimaryComponent() {
-	pkgIds := make(map[string]bool)
+	pkgIds := make(map[string]*v2_3.Package)
 
 	for _, pkg := range s.doc.Packages {
-		pkgIds[string(pkg.PackageSPDXIdentifier)] = true
+		pkgIds[string(pkg.PackageSPDXIdentifier)] = pkg
 	}
 
 	for _, r := range s.doc.Relationships {
 		if strings.ToUpper(r.Relationship) == spdx_common.TypeRelationshipDescribe {
 			_, ok := pkgIds[string(r.RefB.ElementRefID)]
 			if ok {
+				s.primaryComponentId = string(r.RefB.ElementRefID)
 				s.primaryComponent = true
 				return
 			}
 		}
 	}
+}
+
+type entity struct {
+	name  string
+	email string
+}
+
+func parseEntity(input string) *entity {
+	if strings.TrimSpace(input) == "" {
+		return nil
+	}
+
+	// Regex pattern to match organization or person and email
+	pattern := `(Organization|Person)\s*:\s*([^(]+)\s*(?:\(\s*([^)]+)\s*\))?`
+	regex := regexp.MustCompile(pattern)
+	match := regex.FindStringSubmatch(input)
+	if len(match) == 0 {
+		return nil
+	}
+
+	name := strings.TrimSpace(match[2])
+	var email string
+	if len(match) > 3 {
+		email = strings.TrimSpace(match[3])
+	}
+
+	entity := &entity{name: name, email: email}
+	return entity
 }

@@ -26,4 +26,8 @@ type Document interface {
 	Logs() []string
 
 	PrimaryComponent() bool
+
+	Lifecycles() []string
+	Manufacturer() Manufacturer
+	Supplier() Supplier
 }

@@ -40,6 +40,11 @@ other installation [options](#installation).
 sbomqs score <sbom-file>
 ```
 
+#### Compliance Report: CRA TR-03183 for an sbom
+```sh
+sbomqs compliance -c samples/photon.spdx.json
+```
+
 #### Quality Score with a shareable link at [sbombenchmark.dev](https://sbombenchmark.dev/).  
 ```sh
 sbomqs share <sbom-file>
@@ -230,6 +235,50 @@ json format
     }
   ]
 }
+```
+
+# Compliance Reports
+sbomqs can now produce compliance reports for industry standard requirements. Currently we support [BSI CRA TR-03183 v1.1](https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/Publications/TechGuidelines/TR03183/BSI-TR-03183-2.pdf?__blob=publicationFile&v=5). More details about the CRA
+requirements are avaliable [here](./Compliance.md). 
+
+## Reports 
+- [BSI CRA TR-03183 v1.1](https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/Publications/TechGuidelines/TR03183/BSI-TR-03183-2.pdf?__blob=publicationFile&v=5)
+- [NTIA minimum element](https://www.ntia.doc.gov/files/ntia/publications/sbom_minimum_elements_report.pdf) - Coming soon.
+- [OWASP SCVS](https://scvs.owasp.org/bom-maturity-model/) - Coming soon.
+
+Example of a BSI CRA report
+```
+{
+  "report_name": "Cyber Resilience Requirements for Manufacturers and Products Report",
+  "subtitle": "Part 2: Software Bill of Materials (SBOM)",
+  "revision": "TR-03183-2 (1.1)",
+  "run": {
+    "id": "375c288b-0928-4066-9e3a-b8655ac29f91",
+    "generated_at": "2024-04-18T03:22:56Z",
+    "file_name": "samples/photon.spdx.json"
+  },
+  "tool": {
+    "name": "sbomqs",
+    "version": "v0.0.30-23-g344a584-dirty",
+    "vendor": "Interlynk (https://interlynk.io)"
+  },
+  "summary": {
+    "total_score": 4.20,
+    "max_score": 10,
+    "required_elements_score": 5.91,
+    "optional_elements_score": 2.50
+  },
+"sections": [
+    {
+      "section_title": "SBOM formats",
+      "section_id": "4",
+      "section_data_field": "specification",
+      "required": true,
+      "element_id": "sbom",
+      "element_result": "spdx",
+      "score": 10
+    },
+...
 ```
 
 

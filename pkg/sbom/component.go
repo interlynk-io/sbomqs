@@ -17,6 +17,7 @@ package sbom
 //counterfeiter:generate . Component
 import (
 	"github.com/interlynk-io/sbomqs/pkg/cpe"
+	"github.com/interlynk-io/sbomqs/pkg/licenses"
 	"github.com/interlynk-io/sbomqs/pkg/purl"
 )
 
@@ -25,31 +26,43 @@ type Component interface {
 	SupplierName() string
 	Name() string
 	Version() string
-
 	Cpes() []cpe.CPE
 	Purls() []purl.PURL
-
-	Licenses() []License
+	Licenses() []licenses.License
 	Checksums() []Checksum
-
 	PrimaryPurpose() string
 	RequiredFields() bool
+	Supplier() Supplier
+	Manufacturer() Manufacturer
+	CountOfDependencies() int
+	SourceCodeUrl() string
+	DownloadLocationUrl() string
+	SourceCodeHash() string
+	IsPrimaryComponent() bool
+	HasRelationShips() bool
+	RelationShipState() string
 }
 
 type component struct {
-	supplierName string
-	name         string
-	version      string
-
-	cpes  []cpe.CPE
-	purls []purl.PURL
-
-	licenses  []License
-	checksums []Checksum
-
+	supplierName       string
+	name               string
+	version            string
+	cpes               []cpe.CPE
+	purls              []purl.PURL
+	licenses           []licenses.License
+	checksums          []Checksum
 	purpose            string
 	isReqFieldsPresent bool
 	id                 string
+	supplier           supplier
+	manufacturer       manufacturer
+	dependenciesCount  int
+	sourceCodeUrl      string
+	downloadLocation   string
+	sourceCodeHash     string
+	isPrimary          bool
+	hasRelationships   bool
+	relationshipState  string
 }
 
 func newComponent() *component {
@@ -71,7 +84,7 @@ func (c component) Purls() []purl.PURL {
 func (c component) Cpes() []cpe.CPE {
 	return c.cpes
 }
-func (c component) Licenses() []License {
+func (c component) Licenses() []licenses.License {
 	return c.licenses
 }
 func (c component) Checksums() []Checksum {
@@ -86,4 +99,40 @@ func (c component) RequiredFields() bool {
 
 func (c component) ID() string {
 	return c.id
+}
+
+func (c component) Manufacturer() Manufacturer {
+	return c.manufacturer
+}
+
+func (c component) Supplier() Supplier {
+	return c.supplier
+}
+
+func (c component) CountOfDependencies() int {
+	return c.dependenciesCount
+}
+
+func (c component) SourceCodeUrl() string {
+	return c.sourceCodeUrl
+}
+
+func (c component) DownloadLocationUrl() string {
+	return c.downloadLocation
+}
+
+func (c component) SourceCodeHash() string {
+	return c.sourceCodeHash
+}
+
+func (c component) IsPrimaryComponent() bool {
+	return c.isPrimary
+}
+
+func (c component) HasRelationShips() bool {
+	return c.hasRelationships
+}
+
+func (c component) RelationShipState() string {
+	return c.relationshipState
 }

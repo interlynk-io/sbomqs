@@ -38,8 +38,8 @@ func compWithValidLicensesCheck(d sbom.Document, c *check) score {
 	compScores := lo.Map(d.Components(), func(c sbom.Component, _ int) float64 {
 		tl := len(c.Licenses())
 
-		validLic := lo.CountBy(c.Licenses(), func(l sbom.License) bool {
-			return l.ValidSpdxLicense()
+		validLic := lo.CountBy(c.Licenses(), func(l licenses.License) bool {
+			return l.Deprecated() || l.Source() == "custom"
 		})
 
 		return (float64(validLic) / float64(tl)) * 10.0
@@ -101,7 +101,7 @@ func compWithNoDepLicensesCheck(d sbom.Document, c *check) score {
 	}, 0)
 
 	withDepLicense := lo.CountBy(d.Components(), func(c sbom.Component) bool {
-		deps := lo.CountBy(c.Licenses(), func(l sbom.License) bool {
+		deps := lo.CountBy(c.Licenses(), func(l licenses.License) bool {
 			return l.Deprecated()
 		})
 		return deps > 0
@@ -133,8 +133,8 @@ func compWithRestrictedLicensesCheck(d sbom.Document, c *check) score {
 	}, 0)
 
 	withRestrictLicense := lo.CountBy(d.Components(), func(c sbom.Component) bool {
-		rest := lo.CountBy(c.Licenses(), func(l sbom.License) bool {
-			return licenses.RestrictedLicense(l.Name())
+		rest := lo.CountBy(c.Licenses(), func(l licenses.License) bool {
+			return l.Restrictive()
 		})
 		return rest > 0
 	})
@@ -227,10 +227,8 @@ func docWithPrimaryComponentCheck(d sbom.Document, c *check) score {
 		s.setScore(10.0)
 		s.setDesc("primary component found")
 		return *s
-	} else {
-		s.setScore(0.0)
-		s.setDesc("no primary component found")
-		return *s
 	}
+	s.setScore(0.0)
+	s.setDesc("no primary component found")
 	return *s
 }

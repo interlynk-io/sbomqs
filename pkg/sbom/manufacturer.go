@@ -1,10 +1,10 @@
-// Copyright 2023 Interlynk.io
+// Copyright 2024 Interlynk.io
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//     http://www.apache.org/licenses/LICENSE-2.0
+//     https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,26 +14,34 @@
 
 package sbom
 
-//counterfeiter:generate . Author
-type Author interface {
+//counterfeiter:generate . Manufacturer
+
+type Manufacturer interface {
 	Name() string
-	Type() string
+	Url() string
 	Email() string
+	Contacts() []Contact
 }
 
-type author struct {
-	name       string
-	email      string
-	authorType string //person or org
+type manufacturer struct {
+	name     string
+	url      string
+	email    string
+	contacts []Contact
 }
 
-func (a author) Name() string {
-	return a.name
-}
-func (a author) Type() string {
-	return a.authorType
+func (m manufacturer) Name() string {
+	return m.name
 }
 
-func (a author) Email() string {
-	return a.email
+func (m manufacturer) Url() string {
+	return m.url
+}
+
+func (m manufacturer) Email() string {
+	return m.email
+}
+
+func (m manufacturer) Contacts() []Contact {
+	return m.contacts
 }
