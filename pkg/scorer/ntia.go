@@ -105,13 +105,13 @@ func compWithUniqIDCheck(d sbom.Document, c *check) score {
 		return strings.Join([]string{d.Spec().Namespace(), c.ID()}, ""), true
 	})
 
-	uniqComps := lo.Uniq(compIDs)
+	//uniqComps := lo.Uniq(compIDs)
 
 	if totalComponents > 0 {
 
-		s.setScore((float64(len(uniqComps)) / float64(totalComponents)) * 10.0)
+		s.setScore((float64(len(compIDs)) / float64(totalComponents)) * 10.0)
 	}
-	s.setDesc(fmt.Sprintf("%d/%d have unique ID's", len(uniqComps), totalComponents))
+	s.setDesc(fmt.Sprintf("%d/%d have unique ID's", len(compID), totalComponents))
 	return *s
 }
 
