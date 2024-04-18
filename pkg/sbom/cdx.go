@@ -18,11 +18,11 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"strings"
 
 	cydx "github.com/CycloneDX/cyclonedx-go"
 	"github.com/google/uuid"
 	"github.com/interlynk-io/sbomqs/pkg/cpe"
+	"github.com/interlynk-io/sbomqs/pkg/licenses"
 	"github.com/interlynk-io/sbomqs/pkg/purl"
 	"github.com/samber/lo"
 )
@@ -32,16 +32,21 @@ var cdx_file_formats = []string{"json", "xml"}
 var cdx_primary_purpose = []string{"application", "framework", "library", "container", "operating-system", "device", "firmware", "file"}
 
 type cdxDoc struct {
-	doc              *cydx.BOM
-	format           FileFormat
-	ctx              context.Context
-	spec             *spec
-	comps            []Component
-	authors          []Author
-	tools            []Tool
-	rels             []Relation
-	logs             []string
-	primaryComponent bool
+	doc                *cydx.BOM
+	format             FileFormat
+	ctx                context.Context
+	spec               *spec
+	comps              []Component
+	authors            []Author
+	tools              []Tool
+	rels               []Relation
+	logs               []string
+	primaryComponent   bool
+	lifecycles         []string
+	supplier           Supplier
+	manufacturer       Manufacturer
+	primaryComponentId string
+	compositions       map[string]string
 }
 
 func newCDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat) (Document, error) {
@@ -105,17 +110,62 @@ func (c cdxDoc) PrimaryComponent() bool {
 	return c.primaryComponent
 }
 
+func (c cdxDoc) Lifecycles() []string {
+	return c.lifecycles
+}
+
+func (c cdxDoc) Supplier() Supplier {
+	return c.supplier
+}
+
+func (c cdxDoc) Manufacturer() Manufacturer {
+	return c.manufacturer
+}
+
 func (c *cdxDoc) parse() {
+	c.parseDoc()
 	c.parseSpec()
-	c.parseComps()
 	c.parseAuthors()
+	c.parseSupplier()
+	c.parseManufacturer()
 	c.parseTool()
-	c.parseRels()
 	c.parsePrimaryComponent()
+	c.parseCompositions()
+	c.parseRels()
+	c.parseComps()
 }
 
 func (c *cdxDoc) addToLogs(log string) {
 	c.logs = append(c.logs, log)
+}
+
+func (c *cdxDoc) parseDoc() {
+	if c.doc == nil {
+		c.addToLogs("cdx doc is not parsable")
+		return
+	}
+
+	if c.doc.Metadata == nil {
+		c.addToLogs("cdx doc is missing metadata")
+		return
+	}
+
+	if c.doc.Metadata.Lifecycles == nil {
+		c.addToLogs("cdx doc is missing lifecycles")
+		return
+	}
+
+	c.lifecycles = lo.Map(lo.FromPtr(c.doc.Metadata.Lifecycles), func(l cydx.Lifecycle, _ int) string {
+		if l.Phase != "" {
+			return string(l.Phase)
+		}
+
+		if l.Name != "" {
+			return string(l.Name)
+		}
+
+		return ""
+	})
 }
 
 func (c *cdxDoc) parseSpec() {
@@ -125,28 +175,18 @@ func (c *cdxDoc) parseSpec() {
 	sp.name = string(SBOMSpecCDX)
 	sp.isReqFieldsPresent = c.requiredFields()
 
-	addLicense := func(agg *[]License, n []license) {
-		for _, l := range n {
-			*agg = append(*agg, l)
-		}
-	}
-
 	if c.doc.Metadata != nil {
 		sp.creationTimestamp = c.doc.Metadata.Timestamp
-
-		lics := []License{}
-		for _, l := range lo.FromPtr(c.doc.Metadata.Licenses) {
-			if l.Expression != "" {
-				addLicense(&lics, newLicenseFromID(l.Expression))
-			} else if l.License != nil {
-				addLicense(&lics, newLicenseFromID(l.License.ID))
-			}
+		if c.doc.Metadata.Licenses != nil {
+			sp.licenses = aggregate_licenses(*c.doc.Metadata.Licenses)
 		}
+	}
+	sp.namespace = c.doc.SerialNumber
 
-		sp.licenses = lics
+	if sp.namespace != "" && sp.version != "" {
+		sp.uri = fmt.Sprintf("urn:cdx:%s:%s", sp.version, sp.namespace)
 	}
 
-	sp.namespace = c.doc.SerialNumber
 	c.spec = sp
 }
 
@@ -193,25 +233,98 @@ func copyC(cdxc *cydx.Component, c *cdxDoc) *component {
 	nc := newComponent()
 	nc.version = cdxc.Version
 	nc.name = cdxc.Name
-	nc.supplierName = c.addSupplierName(cdxc)
 	nc.purpose = string(cdxc.Type)
 	nc.isReqFieldsPresent = c.pkgRequiredFields(cdxc)
+
 	ncpe := cpe.NewCPE(cdxc.CPE)
 	if ncpe.Valid() {
 		nc.cpes = []cpe.CPE{ncpe}
 	} else {
 		c.addToLogs(fmt.Sprintf("cdx base doc component %s at index %d invalid cpes found", cdxc.Name, -1))
 	}
+
 	npurl := purl.NewPURL(cdxc.PackageURL)
 	if npurl.Valid() {
 		nc.purls = []purl.PURL{npurl}
 	} else {
 		c.addToLogs(fmt.Sprintf("cdx base doc component %s at index %d invalid purl found", cdxc.Name, -1))
 	}
+
 	nc.checksums = c.checksums(cdxc)
 	nc.licenses = c.licenses(cdxc)
-	nc.id = cdxc.BOMRef
 
+	supplier := c.assignSupplier(cdxc)
+	if supplier != nil {
+		nc.supplier = *supplier
+		nc.supplierName = supplier.name
+	}
+
+	if cdxc.ExternalReferences != nil {
+		sources := lo.Filter(*cdxc.ExternalReferences, func(er cydx.ExternalReference, _ int) bool {
+			return er.Type == cydx.ERTypeVCS
+		})
+
+		if len(sources) > 0 {
+			nc.sourceCodeUrl = sources[0].URL
+		}
+
+		downloads := lo.Filter(*cdxc.ExternalReferences, func(er cydx.ExternalReference, _ int) bool {
+			return er.Type == cydx.ERTypeDistribution || er.Type == cydx.ERTypeDistributionIntake
+		})
+
+		if len(downloads) > 0 {
+			nc.downloadLocation = downloads[0].URL
+		}
+	}
+
+	if cdxc.BOMRef == c.primaryComponentId {
+		nc.isPrimary = true
+	}
+
+	fromRelsPresent := func(rels []Relation, compID string) bool {
+		for _, r := range rels {
+			if r.From() == compID {
+				return true
+			}
+		}
+		return false
+	}
+
+	compNormalise := func(compID string) string {
+		switch cydx.CompositionAggregate(compID) {
+		case cydx.CompositionAggregateComplete:
+			return "complete"
+		case cydx.CompositionAggregateIncomplete:
+			return "incomplete"
+		case cydx.CompositionAggregateIncompleteFirstPartyOnly:
+			return "incomplete-first-party-only"
+		case cydx.CompositionAggregateIncompleteFirstPartyOpenSourceOnly:
+			return "incomplete-first-party-open-source-only"
+		case cydx.CompositionAggregateIncompleteFirstPartyProprietaryOnly:
+			return "incomplete-first-party-proprietary-only"
+		case cydx.CompositionAggregateIncompleteThirdPartyOnly:
+			return "incomplete-third-party-only"
+		case cydx.CompositionAggregateIncompleteThirdPartyOpenSourceOnly:
+			return "incomplete-third-party-open-source-only"
+		case cydx.CompositionAggregateIncompleteThirdPartyProprietaryOnly:
+			return "incomplete-third-party-proprietary-only"
+		case cydx.CompositionAggregateNotSpecified:
+			return "not-specified"
+		case cydx.CompositionAggregateUnknown:
+			return "unknown"
+		}
+
+		return "not-specified"
+	}
+
+	nc.hasRelationships = fromRelsPresent(c.rels, cdxc.BOMRef)
+	if c.compositions != nil {
+		if comp, ok := c.compositions[cdxc.BOMRef]; ok {
+			nc.relationshipState = compNormalise(comp)
+		}
+	}
+
+	nc.id = cdxc.BOMRef
 	return nc
 }
 
@@ -294,41 +407,33 @@ func (c *cdxDoc) checksums(comp *cydx.Component) []Checksum {
 	return chks
 }
 
-func (c *cdxDoc) licenses(comp *cydx.Component) []License {
-	lics := []License{}
+func (c *cdxDoc) licenses(comp *cydx.Component) []licenses.License {
+	return aggregate_licenses(lo.FromPtr(comp.Licenses))
+}
 
-	addLicense := func(agg *[]License, n []license) {
-		for _, l := range n {
-			*agg = append(*agg, l)
-		}
+func aggregate_licenses(clicenses cydx.Licenses) []licenses.License {
+	if clicenses == nil {
+		return []licenses.License{}
 	}
 
-	for _, cl := range lo.FromPtr(comp.Licenses) {
+	lics := []licenses.License{}
+
+	getLicenses := func(exp string) []licenses.License {
+		return licenses.LookupExpression(exp, []licenses.License{})
+	}
+
+	for _, cl := range clicenses {
 		if cl.Expression != "" {
-			addLicense(&lics, newLicenseFromID(cl.Expression))
+			lics = append(lics, getLicenses(cl.Expression)...)
 		} else if cl.License != nil {
-			addLicense(&lics, newLicenseFromID(cl.License.ID))
-		}
-	}
-
-	removeDups := func(lics []License) []License {
-		uniqs := []License{}
-		dedup := map[string]bool{}
-		for _, l := range lics {
-			if _, ok := dedup[l.Short()]; !ok {
-				uniqs = append(uniqs, l)
-				dedup[l.Short()] = true
+			if cl.License.ID != "" {
+				lics = append(lics, getLicenses(cl.License.ID)...)
+			} else if cl.License.Name != "" {
+				lics = append(lics, getLicenses(cl.License.Name)...)
 			}
 		}
-		return uniqs
-
 	}
-	finalLics := removeDups(lics)
-	if len(finalLics) == 0 {
-		c.addToLogs(fmt.Sprintf("cdx doc comp %s no licenses found", comp.Name))
-	}
-
-	return finalLics
+	return lics
 }
 
 func (c *cdxDoc) parseTool() {
@@ -367,9 +472,63 @@ func (c *cdxDoc) parseAuthors() {
 	for _, auth := range lo.FromPtr(c.doc.Metadata.Authors) {
 		a := author{}
 		a.name = auth.Name
+		a.email = auth.Email
 		a.authorType = "person"
 		c.authors = append(c.authors, a)
 	}
+}
+
+func (c *cdxDoc) parseSupplier() {
+	if c.doc.Metadata == nil {
+		return
+	}
+
+	if c.doc.Metadata.Supplier == nil {
+		return
+	}
+
+	supplier := supplier{}
+
+	supplier.name = c.doc.Metadata.Supplier.Name
+	supplier.url = lo.FromPtr(c.doc.Metadata.Supplier.URL)[0]
+
+	if c.doc.Metadata.Supplier.Contact != nil {
+		for _, cydxContact := range lo.FromPtr(c.doc.Metadata.Supplier.Contact) {
+			ctt := contact{}
+			ctt.name = cydxContact.Name
+			ctt.email = cydxContact.Email
+			supplier.contacts = append(supplier.contacts, ctt)
+		}
+	}
+
+	c.supplier = supplier
+}
+
+func (c *cdxDoc) parseManufacturer() {
+	if c.doc.Metadata == nil {
+		return
+	}
+
+	if c.doc.Metadata.Manufacture == nil {
+		return
+	}
+
+	m := manufacturer{}
+
+	m.name = c.doc.Metadata.Manufacture.Name
+	m.url = lo.FromPtr(c.doc.Metadata.Manufacture.URL)[0]
+
+	if c.doc.Metadata.Manufacture.Contact != nil {
+		for _, cydxContact := range lo.FromPtr(c.doc.Metadata.Manufacture.Contact) {
+			ctt := contact{}
+			ctt.name = cydxContact.Name
+			ctt.email = cydxContact.Email
+			m.contacts = append(m.contacts, ctt)
+		}
+	}
+
+	c.manufacturer = m
+
 }
 
 func (c *cdxDoc) parseRels() {
@@ -383,21 +542,29 @@ func (c *cdxDoc) parseRels() {
 			c.rels = append(c.rels, nr)
 		}
 	}
-
 }
-func (c *cdxDoc) addSupplierName(comp *cydx.Component) string {
+
+func (c *cdxDoc) assignSupplier(comp *cydx.Component) *supplier {
 	if comp.Supplier == nil {
 		c.addToLogs(fmt.Sprintf("cdx doc comp %s no supplier found", comp.Name))
-		return ""
+		return nil
 	}
 
-	name := strings.ToLower(comp.Supplier.Name)
+	supplier := supplier{}
 
-	if name == "" {
-		c.addToLogs(fmt.Sprintf("cdx doc comp %s no supplier found", comp.Name))
-		return ""
+	supplier.name = comp.Supplier.Name
+	supplier.url = lo.FromPtr(comp.Supplier.URL)[0]
+
+	if comp.Supplier.Contact != nil {
+		for _, cydxContact := range lo.FromPtr(comp.Supplier.Contact) {
+			ctt := contact{}
+			ctt.name = cydxContact.Name
+			ctt.email = cydxContact.Email
+			supplier.contacts = append(supplier.contacts, ctt)
+		}
 	}
-	return name
+
+	return &supplier
 }
 
 func (c *cdxDoc) parsePrimaryComponent() {
@@ -410,4 +577,21 @@ func (c *cdxDoc) parsePrimaryComponent() {
 	}
 
 	c.primaryComponent = true
+	c.primaryComponentId = c.doc.Metadata.Component.BOMRef
+}
+func (c *cdxDoc) parseCompositions() {
+	if c.doc.Compositions == nil {
+		c.compositions = map[string]string{}
+		return
+	}
+
+	for _, comp := range lo.FromPtr(c.doc.Compositions) {
+		if comp.Assemblies == nil {
+			continue
+		}
+
+		for _, assembly := range lo.FromPtr(comp.Assemblies) {
+			c.compositions[string(assembly)] = string(comp.Aggregate)
+		}
+	}
 }

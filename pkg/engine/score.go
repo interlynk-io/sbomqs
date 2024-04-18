@@ -36,6 +36,7 @@ type Params struct {
 	Json     bool
 	Basic    bool
 	Detailed bool
+	Pdf      bool
 
 	Spdx bool
 	Cdx  bool
@@ -45,6 +46,9 @@ type Params struct {
 	Debug bool
 
 	ConfigPath string
+
+	Ntia bool
+	Cra  bool
 }
 
 func Run(ctx context.Context, ep *Params) error {

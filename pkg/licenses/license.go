@@ -15,7 +15,10 @@
 package licenses
 
 import (
+	"errors"
 	"strings"
+
+	"github.com/github/go-spdx/v2/spdxexp"
 )
 
 type License interface {
@@ -24,6 +27,10 @@ type License interface {
 	Deprecated() bool
 	OsiApproved() bool
 	FsfLibre() bool
+	FreeAnyUse() bool
+	Restrictive() bool
+	Exception() bool
+	Source() string
 }
 
 type meta struct {
@@ -32,6 +39,10 @@ type meta struct {
 	deprecated  bool
 	osiApproved bool
 	fsfLibre    bool
+	freeAnyUse  bool
+	restrictive bool
+	exception   bool
+	source      string
 }
 
 func (m meta) Name() string {
@@ -45,6 +56,7 @@ func (m meta) ShortID() string {
 func (m meta) Deprecated() bool {
 	return m.deprecated
 }
+
 func (m meta) OsiApproved() bool {
 	return m.osiApproved
 }
@@ -53,584 +65,112 @@ func (m meta) FsfLibre() bool {
 	return m.fsfLibre
 }
 
-var freeAnyUser = map[string]bool{
-	"cc0-1.0":   true,
-	"unlicense": true,
-	"0bsd":      true,
+func (m meta) FreeAnyUse() bool {
+	return m.freeAnyUse
 }
 
-var spdxLicenseList = map[string]meta{
-	"0bsd":                                 {name: "BSD Zero Clause License", short: "0BSD", deprecated: false},
-	"aal":                                  {name: "Attribution Assurance License", short: "AAL", deprecated: false},
-	"abstyles":                             {name: "Abstyles License", short: "Abstyles", deprecated: false},
-	"adobe-2006":                           {name: "Adobe Systems Incorporated Source Code License Agreement", short: "Adobe-2006", deprecated: false},
-	"adobe-glyph":                          {name: "Adobe Glyph List License", short: "Adobe-Glyph", deprecated: false},
-	"adsl":                                 {name: "Amazon Digital Services License", short: "ADSL", deprecated: false},
-	"afl-1.1":                              {name: "Academic Free License v1.1", short: "AFL-1.1", deprecated: false},
-	"afl-1.2":                              {name: "Academic Free License v1.2", short: "AFL-1.2", deprecated: false},
-	"afl-2.0":                              {name: "Academic Free License v2.0", short: "AFL-2.0", deprecated: false},
-	"afl-2.1":                              {name: "Academic Free License v2.1", short: "AFL-2.1", deprecated: false},
-	"afl-3.0":                              {name: "Academic Free License v3.0", short: "AFL-3.0", deprecated: false},
-	"afmparse":                             {name: "Afmparse License", short: "Afmparse", deprecated: false},
-	"agpl-1.0":                             {name: "Affero General Public License v1.0", short: "AGPL-1.0", deprecated: true},
-	"agpl-1.0-only":                        {name: "Affero General Public License v1.0 only", short: "AGPL-1.0-only", deprecated: false},
-	"agpl-1.0-or-later":                    {name: "Affero General Public License v1.0 or later", short: "AGPL-1.0-or-later", deprecated: false},
-	"agpl-3.0":                             {name: "GNU Affero General Public License v3.0", short: "AGPL-3.0", deprecated: true},
-	"agpl-3.0-only":                        {name: "GNU Affero General Public License v3.0 only", short: "AGPL-3.0-only", deprecated: false},
-	"agpl-3.0-or-later":                    {name: "GNU Affero General Public License v3.0 or later", short: "AGPL-3.0-or-later", deprecated: false},
-	"aladdin":                              {name: "Aladdin Free Public License", short: "Aladdin", deprecated: false},
-	"amdplpa":                              {name: "AMD's plpa_map.c License", short: "AMDPLPA", deprecated: false},
-	"aml":                                  {name: "Apple MIT License", short: "AML", deprecated: false},
-	"ampas":                                {name: "Academy of Motion Picture Arts and Sciences BSD", short: "AMPAS", deprecated: false},
-	"antlr-pd":                             {name: "ANTLR Software Rights Notice", short: "ANTLR-PD", deprecated: false},
-	"antlr-pd-fallback":                    {name: "ANTLR Software Rights Notice with license fallback", short: "ANTLR-PD-fallback", deprecated: false},
-	"apache-1.0":                           {name: "Apache License 1.0", short: "Apache-1.0", deprecated: false},
-	"apache-1.1":                           {name: "Apache License 1.1", short: "Apache-1.1", deprecated: false},
-	"apache-2.0":                           {name: "Apache License 2.0", short: "Apache-2.0", deprecated: false},
-	"apafml":                               {name: "Adobe Postscript AFM License", short: "APAFML", deprecated: false},
-	"apl-1.0":                              {name: "Adaptive Public License 1.0", short: "APL-1.0", deprecated: false},
-	"app-s2p":                              {name: "App::s2p License", short: "App-s2p", deprecated: false},
-	"apsl-1.0":                             {name: "Apple Public Source License 1.0", short: "APSL-1.0", deprecated: false},
-	"apsl-1.1":                             {name: "Apple Public Source License 1.1", short: "APSL-1.1", deprecated: false},
-	"apsl-1.2":                             {name: "Apple Public Source License 1.2", short: "APSL-1.2", deprecated: false},
-	"apsl-2.0":                             {name: "Apple Public Source License 2.0", short: "APSL-2.0", deprecated: false},
-	"arphic-1999":                          {name: "Arphic Public License", short: "Arphic-1999", deprecated: false},
-	"artistic-1.0":                         {name: "Artistic License 1.0", short: "Artistic-1.0", deprecated: false},
-	"artistic-1.0-cl8":                     {name: "Artistic License 1.0 w/clause 8", short: "Artistic-1.0-cl8", deprecated: false},
-	"artistic-1.0-perl":                    {name: "Artistic License 1.0 (Perl)", short: "Artistic-1.0-Perl", deprecated: false},
-	"artistic-2.0":                         {name: "Artistic License 2.0", short: "Artistic-2.0", deprecated: false},
-	"baekmuk":                              {name: "Baekmuk License", short: "Baekmuk", deprecated: false},
-	"bahyph":                               {name: "Bahyph License", short: "Bahyph", deprecated: false},
-	"barr":                                 {name: "Barr License", short: "Barr", deprecated: false},
-	"beerware":                             {name: "Beerware License", short: "Beerware", deprecated: false},
-	"bitstream-charter":                    {name: "Bitstream Charter Font License", short: "Bitstream-Charter", deprecated: false},
-	"bitstream-vera":                       {name: "Bitstream Vera Font License", short: "Bitstream-Vera", deprecated: false},
-	"bittorrent-1.0":                       {name: "BitTorrent Open Source License v1.0", short: "BitTorrent-1.0", deprecated: false},
-	"bittorrent-1.1":                       {name: "BitTorrent Open Source License v1.1", short: "BitTorrent-1.1", deprecated: false},
-	"blessing":                             {name: "SQLite Blessing", short: "blessing", deprecated: false},
-	"blueoak-1.0.0":                        {name: "Blue Oak Model License 1.0.0", short: "BlueOak-1.0.0", deprecated: false},
-	"borceux":                              {name: "Borceux license", short: "Borceux", deprecated: false},
-	"bsd-1-clause":                         {name: "BSD 1-Clause License", short: "BSD-1-Clause", deprecated: false},
-	"bsd-2-clause":                         {name: "BSD 2-Clause Simplified License", short: "BSD-2-Clause", deprecated: false},
-	"bsd-2-clause-freebsd":                 {name: "BSD 2-Clause FreeBSD License", short: "BSD-2-Clause-FreeBSD", deprecated: true},
-	"bsd-2-clause-netbsd":                  {name: "BSD 2-Clause NetBSD License", short: "BSD-2-Clause-NetBSD", deprecated: true},
-	"bsd-2-clause-patent":                  {name: "BSD-2-Clause Plus Patent License", short: "BSD-2-Clause-Patent", deprecated: false},
-	"bsd-2-clause-views":                   {name: "BSD 2-Clause with views sentence", short: "BSD-2-Clause-Views", deprecated: false},
-	"bsd-3-clause":                         {name: "BSD 3-Clause New or Revised License", short: "BSD-3-Clause", deprecated: false},
-	"bsd-3-clause-attribution":             {name: "BSD with attribution", short: "BSD-3-Clause-Attribution", deprecated: false},
-	"bsd-3-clause-clear":                   {name: "BSD 3-Clause Clear License", short: "BSD-3-Clause-Clear", deprecated: false},
-	"bsd-3-clause-lbnl":                    {name: "Lawrence Berkeley National Labs BSD variant license", short: "BSD-3-Clause-LBNL", deprecated: false},
-	"bsd-3-clause-modification":            {name: "BSD 3-Clause Modification", short: "BSD-3-Clause-Modification", deprecated: false},
-	"bsd-3-clause-no-military-license":     {name: "BSD 3-Clause No Military License", short: "BSD-3-Clause-No-Military-License", deprecated: false},
-	"bsd-3-clause-no-nuclear-license":      {name: "BSD 3-Clause No Nuclear License", short: "BSD-3-Clause-No-Nuclear-License", deprecated: false},
-	"bsd-3-clause-no-nuclear-license-2014": {name: "BSD 3-Clause No Nuclear License 2014", short: "BSD-3-Clause-No-Nuclear-License-2014", deprecated: false},
-	"bsd-3-clause-no-nuclear-warranty":     {name: "BSD 3-Clause No Nuclear Warranty", short: "BSD-3-Clause-No-Nuclear-Warranty", deprecated: false},
-	"bsd-3-clause-open-mpi":                {name: "BSD 3-Clause Open MPI variant", short: "BSD-3-Clause-Open-MPI", deprecated: false},
-	"bsd-4-clause":                         {name: "BSD 4-Clause Original or Old License", short: "BSD-4-Clause", deprecated: false},
-	"bsd-4-clause-shortened":               {name: "BSD 4 Clause Shortened", short: "BSD-4-Clause-Shortened", deprecated: false},
-	"bsd-4-clause-uc":                      {name: "BSD-4-Clause (University of California-Specific)", short: "BSD-4-Clause-UC", deprecated: false},
-	"bsd-protection":                       {name: "BSD Protection License", short: "BSD-Protection", deprecated: false},
-	"bsd-source-code":                      {name: "BSD Source Code Attribution", short: "BSD-Source-Code", deprecated: false},
-	"bsl-1.0":                              {name: "Boost Software License 1.0", short: "BSL-1.0", deprecated: false},
-	"busl-1.1":                             {name: "Business Source License 1.1", short: "BUSL-1.1", deprecated: false},
-	"bzip2-1.0.5":                          {name: "bzip2 and libbzip2 License v1.0.5", short: "bzip2-1.0.5", deprecated: true},
-	"bzip2-1.0.6":                          {name: "bzip2 and libbzip2 License v1.0.6", short: "bzip2-1.0.6", deprecated: false},
-	"c-uda-1.0":                            {name: "Computational Use of Data Agreement v1.0", short: "C-UDA-1.0", deprecated: false},
-	"cal-1.0":                              {name: "Cryptographic Autonomy License 1.0", short: "CAL-1.0", deprecated: false},
-	"cal-1.0-combined-work-exception":      {name: "Cryptographic Autonomy License 1.0 (Combined Work Exception)", short: "CAL-1.0-Combined-Work-Exception", deprecated: false},
-	"caldera":                              {name: "Caldera License", short: "Caldera", deprecated: false},
-	"catosl-1.1":                           {name: "Computer Associates Trusted Open Source License 1.1", short: "CATOSL-1.1", deprecated: false},
-	"cc-by-1.0":                            {name: "Creative Commons Attribution 1.0 Generic", short: "CC-BY-1.0", deprecated: false},
-	"cc-by-2.0":                            {name: "Creative Commons Attribution 2.0 Generic", short: "CC-BY-2.0", deprecated: false},
-	"cc-by-2.5":                            {name: "Creative Commons Attribution 2.5 Generic", short: "CC-BY-2.5", deprecated: false},
-	"cc-by-2.5-au":                         {name: "Creative Commons Attribution 2.5 Australia", short: "CC-BY-2.5-AU", deprecated: false},
-	"cc-by-3.0":                            {name: "Creative Commons Attribution 3.0 Unported", short: "CC-BY-3.0", deprecated: false},
-	"cc-by-3.0-at":                         {name: "Creative Commons Attribution 3.0 Austria", short: "CC-BY-3.0-AT", deprecated: false},
-	"cc-by-3.0-de":                         {name: "Creative Commons Attribution 3.0 Germany", short: "CC-BY-3.0-DE", deprecated: false},
-	"cc-by-3.0-igo":                        {name: "Creative Commons Attribution 3.0 IGO", short: "CC-BY-3.0-IGO", deprecated: false},
-	"cc-by-3.0-nl":                         {name: "Creative Commons Attribution 3.0 Netherlands", short: "CC-BY-3.0-NL", deprecated: false},
-	"cc-by-3.0-us":                         {name: "Creative Commons Attribution 3.0 United States", short: "CC-BY-3.0-US", deprecated: false},
-	"cc-by-4.0":                            {name: "Creative Commons Attribution 4.0 International", short: "CC-BY-4.0", deprecated: false},
-	"cc-by-nc-1.0":                         {name: "Creative Commons Attribution Non Commercial 1.0 Generic", short: "CC-BY-NC-1.0", deprecated: false},
-	"cc-by-nc-2.0":                         {name: "Creative Commons Attribution Non Commercial 2.0 Generic", short: "CC-BY-NC-2.0", deprecated: false},
-	"cc-by-nc-2.5":                         {name: "Creative Commons Attribution Non Commercial 2.5 Generic", short: "CC-BY-NC-2.5", deprecated: false},
-	"cc-by-nc-3.0":                         {name: "Creative Commons Attribution Non Commercial 3.0 Unported", short: "CC-BY-NC-3.0", deprecated: false},
-	"cc-by-nc-3.0-de":                      {name: "Creative Commons Attribution Non Commercial 3.0 Germany", short: "CC-BY-NC-3.0-DE", deprecated: false},
-	"cc-by-nc-4.0":                         {name: "Creative Commons Attribution Non Commercial 4.0 International", short: "CC-BY-NC-4.0", deprecated: false},
-	"cc-by-nc-nd-1.0":                      {name: "Creative Commons Attribution Non Commercial No Derivatives 1.0 Generic", short: "CC-BY-NC-ND-1.0", deprecated: false},
-	"cc-by-nc-nd-2.0":                      {name: "Creative Commons Attribution Non Commercial No Derivatives 2.0 Generic", short: "CC-BY-NC-ND-2.0", deprecated: false},
-	"cc-by-nc-nd-2.5":                      {name: "Creative Commons Attribution Non Commercial No Derivatives 2.5 Generic", short: "CC-BY-NC-ND-2.5", deprecated: false},
-	"cc-by-nc-nd-3.0":                      {name: "Creative Commons Attribution Non Commercial No Derivatives 3.0 Unported", short: "CC-BY-NC-ND-3.0", deprecated: false},
-	"cc-by-nc-nd-3.0-de":                   {name: "Creative Commons Attribution Non Commercial No Derivatives 3.0 Germany", short: "CC-BY-NC-ND-3.0-DE", deprecated: false},
-	"cc-by-nc-nd-3.0-igo":                  {name: "Creative Commons Attribution Non Commercial No Derivatives 3.0 IGO", short: "CC-BY-NC-ND-3.0-IGO", deprecated: false},
-	"cc-by-nc-nd-4.0":                      {name: "Creative Commons Attribution Non Commercial No Derivatives 4.0 International", short: "CC-BY-NC-ND-4.0", deprecated: false},
-	"cc-by-nc-sa-1.0":                      {name: "Creative Commons Attribution Non Commercial Share Alike 1.0 Generic", short: "CC-BY-NC-SA-1.0", deprecated: false},
-	"cc-by-nc-sa-2.0":                      {name: "Creative Commons Attribution Non Commercial Share Alike 2.0 Generic", short: "CC-BY-NC-SA-2.0", deprecated: false},
-	"cc-by-nc-sa-2.0-de":                   {name: "Creative Commons Attribution Non Commercial Share Alike 2.0 Germany", short: "CC-BY-NC-SA-2.0-DE", deprecated: false},
-	"cc-by-nc-sa-2.0-fr":                   {name: "Creative Commons Attribution-NonCommercial-ShareAlike 2.0 France", short: "CC-BY-NC-SA-2.0-FR", deprecated: false},
-	"cc-by-nc-sa-2.0-uk":                   {name: "Creative Commons Attribution Non Commercial Share Alike 2.0 England and Wales", short: "CC-BY-NC-SA-2.0-UK", deprecated: false},
-	"cc-by-nc-sa-2.5":                      {name: "Creative Commons Attribution Non Commercial Share Alike 2.5 Generic", short: "CC-BY-NC-SA-2.5", deprecated: false},
-	"cc-by-nc-sa-3.0":                      {name: "Creative Commons Attribution Non Commercial Share Alike 3.0 Unported", short: "CC-BY-NC-SA-3.0", deprecated: false},
-	"cc-by-nc-sa-3.0-de":                   {name: "Creative Commons Attribution Non Commercial Share Alike 3.0 Germany", short: "CC-BY-NC-SA-3.0-DE", deprecated: false},
-	"cc-by-nc-sa-3.0-igo":                  {name: "Creative Commons Attribution Non Commercial Share Alike 3.0 IGO", short: "CC-BY-NC-SA-3.0-IGO", deprecated: false},
-	"cc-by-nc-sa-4.0":                      {name: "Creative Commons Attribution Non Commercial Share Alike 4.0 International", short: "CC-BY-NC-SA-4.0", deprecated: false},
-	"cc-by-nd-1.0":                         {name: "Creative Commons Attribution No Derivatives 1.0 Generic", short: "CC-BY-ND-1.0", deprecated: false},
-	"cc-by-nd-2.0":                         {name: "Creative Commons Attribution No Derivatives 2.0 Generic", short: "CC-BY-ND-2.0", deprecated: false},
-	"cc-by-nd-2.5":                         {name: "Creative Commons Attribution No Derivatives 2.5 Generic", short: "CC-BY-ND-2.5", deprecated: false},
-	"cc-by-nd-3.0":                         {name: "Creative Commons Attribution No Derivatives 3.0 Unported", short: "CC-BY-ND-3.0", deprecated: false},
-	"cc-by-nd-3.0-de":                      {name: "Creative Commons Attribution No Derivatives 3.0 Germany", short: "CC-BY-ND-3.0-DE", deprecated: false},
-	"cc-by-nd-4.0":                         {name: "Creative Commons Attribution No Derivatives 4.0 International", short: "CC-BY-ND-4.0", deprecated: false},
-	"cc-by-sa-1.0":                         {name: "Creative Commons Attribution Share Alike 1.0 Generic", short: "CC-BY-SA-1.0", deprecated: false},
-	"cc-by-sa-2.0":                         {name: "Creative Commons Attribution Share Alike 2.0 Generic", short: "CC-BY-SA-2.0", deprecated: false},
-	"cc-by-sa-2.0-uk":                      {name: "Creative Commons Attribution Share Alike 2.0 England and Wales", short: "CC-BY-SA-2.0-UK", deprecated: false},
-	"cc-by-sa-2.1-jp":                      {name: "Creative Commons Attribution Share Alike 2.1 Japan", short: "CC-BY-SA-2.1-JP", deprecated: false},
-	"cc-by-sa-2.5":                         {name: "Creative Commons Attribution Share Alike 2.5 Generic", short: "CC-BY-SA-2.5", deprecated: false},
-	"cc-by-sa-3.0":                         {name: "Creative Commons Attribution Share Alike 3.0 Unported", short: "CC-BY-SA-3.0", deprecated: false},
-	"cc-by-sa-3.0-at":                      {name: "Creative Commons Attribution Share Alike 3.0 Austria", short: "CC-BY-SA-3.0-AT", deprecated: false},
-	"cc-by-sa-3.0-de":                      {name: "Creative Commons Attribution Share Alike 3.0 Germany", short: "CC-BY-SA-3.0-DE", deprecated: false},
-	"cc-by-sa-4.0":                         {name: "Creative Commons Attribution Share Alike 4.0 International", short: "CC-BY-SA-4.0", deprecated: false},
-	"cc-pddc":                              {name: "Creative Commons Public Domain Dedication and Certification", short: "CC-PDDC", deprecated: false},
-	"cc0-1.0":                              {name: "Creative Commons Zero v1.0 Universal", short: "CC0-1.0", deprecated: false},
-	"cddl-1.0":                             {name: "Common Development and Distribution License 1.0", short: "CDDL-1.0", deprecated: false},
-	"cddl-1.1":                             {name: "Common Development and Distribution License 1.1", short: "CDDL-1.1", deprecated: false},
-	"cdl-1.0":                              {name: "Common Documentation License 1.0", short: "CDL-1.0", deprecated: false},
-	"cdla-permissive-1.0":                  {name: "Community Data License Agreement Permissive 1.0", short: "CDLA-Permissive-1.0", deprecated: false},
-	"cdla-permissive-2.0":                  {name: "Community Data License Agreement Permissive 2.0", short: "CDLA-Permissive-2.0", deprecated: false},
-	"cdla-sharing-1.0":                     {name: "Community Data License Agreement Sharing 1.0", short: "CDLA-Sharing-1.0", deprecated: false},
-	"cecill-1.0":                           {name: "CeCILL Free Software License Agreement v1.0", short: "CECILL-1.0", deprecated: false},
-	"cecill-1.1":                           {name: "CeCILL Free Software License Agreement v1.1", short: "CECILL-1.1", deprecated: false},
-	"cecill-2.0":                           {name: "CeCILL Free Software License Agreement v2.0", short: "CECILL-2.0", deprecated: false},
-	"cecill-2.1":                           {name: "CeCILL Free Software License Agreement v2.1", short: "CECILL-2.1", deprecated: false},
-	"cecill-b":                             {name: "CeCILL-B Free Software License Agreement", short: "CECILL-B", deprecated: false},
-	"cecill-c":                             {name: "CeCILL-C Free Software License Agreement", short: "CECILL-C", deprecated: false},
-	"cern-ohl-1.1":                         {name: "CERN Open Hardware Licence v1.1", short: "CERN-OHL-1.1", deprecated: false},
-	"cern-ohl-1.2":                         {name: "CERN Open Hardware Licence v1.2", short: "CERN-OHL-1.2", deprecated: false},
-	"cern-ohl-p-2.0":                       {name: "CERN Open Hardware Licence Version 2 - Permissive", short: "CERN-OHL-P-2.0", deprecated: false},
-	"cern-ohl-s-2.0":                       {name: "CERN Open Hardware Licence Version 2 - Strongly Reciprocal", short: "CERN-OHL-S-2.0", deprecated: false},
-	"cern-ohl-w-2.0":                       {name: "CERN Open Hardware Licence Version 2 - Weakly Reciprocal", short: "CERN-OHL-W-2.0", deprecated: false},
-	"checkmk":                              {name: "Checkmk License", short: "checkmk", deprecated: false},
-	"clartistic":                           {name: "Clarified Artistic License", short: "ClArtistic", deprecated: false},
-	"cnri-jython":                          {name: "CNRI Jython License", short: "CNRI-Jython", deprecated: false},
-	"cnri-python":                          {name: "CNRI Python License", short: "CNRI-Python", deprecated: false},
-	"cnri-python-gpl-compatible":           {name: "CNRI Python Open Source GPL Compatible License Agreement", short: "CNRI-Python-GPL-Compatible", deprecated: false},
-	"coil-1.0":                             {name: "Copyfree Open Innovation License", short: "COIL-1.0", deprecated: false},
-	"community-spec-1.0":                   {name: "Community Specification License 1.0", short: "Community-Spec-1.0", deprecated: false},
-	"condor-1.1":                           {name: "Condor Public License v1.1", short: "Condor-1.1", deprecated: false},
-	"copyleft-next-0.3.0":                  {name: "copyleft-next 0.3.0", short: "copyleft-next-0.3.0", deprecated: false},
-	"copyleft-next-0.3.1":                  {name: "copyleft-next 0.3.1", short: "copyleft-next-0.3.1", deprecated: false},
-	"cpal-1.0":                             {name: "Common Public Attribution License 1.0", short: "CPAL-1.0", deprecated: false},
-	"cpl-1.0":                              {name: "Common Public License 1.0", short: "CPL-1.0", deprecated: false},
-	"cpol-1.02":                            {name: "Code Project Open License 1.02", short: "CPOL-1.02", deprecated: false},
-	"crossword":                            {name: "Crossword License", short: "Crossword", deprecated: false},
-	"crystalstacker":                       {name: "CrystalStacker License", short: "CrystalStacker", deprecated: false},
-	"cua-opl-1.0":                          {name: "CUA Office Public License v1.0", short: "CUA-OPL-1.0", deprecated: false},
-	"cube":                                 {name: "Cube License", short: "Cube", deprecated: false},
-	"curl":                                 {name: "curl License", short: "curl", deprecated: false},
-	"d-fsl-1.0":                            {name: "Deutsche Freie Software Lizenz", short: "D-FSL-1.0", deprecated: false},
-	"diffmark":                             {name: "diffmark license", short: "diffmark", deprecated: false},
-	"dl-de-by-2.0":                         {name: "Data licence Germany – attribution – version 2.0", short: "DL-DE-BY-2.0", deprecated: false},
-	"doc":                                  {name: "DOC License", short: "DOC", deprecated: false},
-	"dotseqn":                              {name: "Dotseqn License", short: "Dotseqn", deprecated: false},
-	"drl-1.0":                              {name: "Detection Rule License 1.0", short: "DRL-1.0", deprecated: false},
-	"dsdp":                                 {name: "DSDP License", short: "DSDP", deprecated: false},
-	"dvipdfm":                              {name: "dvipdfm License", short: "dvipdfm", deprecated: false},
-	"ecl-1.0":                              {name: "Educational Community License v1.0", short: "ECL-1.0", deprecated: false},
-	"ecl-2.0":                              {name: "Educational Community License v2.0", short: "ECL-2.0", deprecated: false},
-	"ecos-2.0":                             {name: "eCos license version 2.0", short: "eCos-2.0", deprecated: true},
-	"efl-1.0":                              {name: "Eiffel Forum License v1.0", short: "EFL-1.0", deprecated: false},
-	"efl-2.0":                              {name: "Eiffel Forum License v2.0", short: "EFL-2.0", deprecated: false},
-	"egenix":                               {name: "eGenix.com Public License 1.1.0", short: "eGenix", deprecated: false},
-	"elastic-2.0":                          {name: "Elastic License 2.0", short: "Elastic-2.0", deprecated: false},
-	"entessa":                              {name: "Entessa Public License v1.0", short: "Entessa", deprecated: false},
-	"epics":                                {name: "EPICS Open License", short: "EPICS", deprecated: false},
-	"epl-1.0":                              {name: "Eclipse Public License 1.0", short: "EPL-1.0", deprecated: false},
-	"epl-2.0":                              {name: "Eclipse Public License 2.0", short: "EPL-2.0", deprecated: false},
-	"erlpl-1.1":                            {name: "Erlang Public License v1.1", short: "ErlPL-1.1", deprecated: false},
-	"etalab-2.0":                           {name: "Etalab Open License 2.0", short: "etalab-2.0", deprecated: false},
-	"eudatagrid":                           {name: "EU DataGrid Software License", short: "EUDatagrid", deprecated: false},
-	"eupl-1.0":                             {name: "European Union Public License 1.0", short: "EUPL-1.0", deprecated: false},
-	"eupl-1.1":                             {name: "European Union Public License 1.1", short: "EUPL-1.1", deprecated: false},
-	"eupl-1.2":                             {name: "European Union Public License 1.2", short: "EUPL-1.2", deprecated: false},
-	"eurosym":                              {name: "Eurosym License", short: "Eurosym", deprecated: false},
-	"fair":                                 {name: "Fair License", short: "Fair", deprecated: false},
-	"fdk-aac":                              {name: "Fraunhofer FDK AAC Codec Library", short: "FDK-AAC", deprecated: false},
-	"frameworx-1.0":                        {name: "Frameworx Open License 1.0", short: "Frameworx-1.0", deprecated: false},
-	"freebsd-doc":                          {name: "FreeBSD Documentation License", short: "FreeBSD-DOC", deprecated: false},
-	"freeimage":                            {name: "FreeImage Public License v1.0", short: "FreeImage", deprecated: false},
-	"fsfap":                                {name: "FSF All Permissive License", short: "FSFAP", deprecated: false},
-	"fsful":                                {name: "FSF Unlimited License", short: "FSFUL", deprecated: false},
-	"fsfullr":                              {name: "FSF Unlimited License (with License Retention)", short: "FSFULLR", deprecated: false},
-	"fsfullrwd":                            {name: "FSF Unlimited License (With License Retention    and Warranty Disclaimer)", short: "FSFULLRWD", deprecated: false},
-	"ftl":                                  {name: "Freetype Project License", short: "FTL", deprecated: false},
-	"gd":                                   {name: "GD License", short: "GD", deprecated: false},
-	"gfdl-1.1":                             {name: "GNU Free Documentation License v1.1", short: "GFDL-1.1", deprecated: true},
-	"gfdl-1.1-invariants-only":             {name: "GNU Free Documentation License v1.1 only - invariants", short: "GFDL-1.1-invariants-only", deprecated: false},
-	"gfdl-1.1-invariants-or-later":         {name: "GNU Free Documentation License v1.1 or later - invariants", short: "GFDL-1.1-invariants-or-later", deprecated: false},
-	"gfdl-1.1-no-invariants-only":          {name: "GNU Free Documentation License v1.1 only - no invariants", short: "GFDL-1.1-no-invariants-only", deprecated: false},
-	"gfdl-1.1-no-invariants-or-later":      {name: "GNU Free Documentation License v1.1 or later - no invariants", short: "GFDL-1.1-no-invariants-or-later", deprecated: false},
-	"gfdl-1.1-only":                        {name: "GNU Free Documentation License v1.1 only", short: "GFDL-1.1-only", deprecated: false},
-	"gfdl-1.1-or-later":                    {name: "GNU Free Documentation License v1.1 or later", short: "GFDL-1.1-or-later", deprecated: false},
-	"gfdl-1.2":                             {name: "GNU Free Documentation License v1.2", short: "GFDL-1.2", deprecated: true},
-	"gfdl-1.2-invariants-only":             {name: "GNU Free Documentation License v1.2 only - invariants", short: "GFDL-1.2-invariants-only", deprecated: false},
-	"gfdl-1.2-invariants-or-later":         {name: "GNU Free Documentation License v1.2 or later - invariants", short: "GFDL-1.2-invariants-or-later", deprecated: false},
-	"gfdl-1.2-no-invariants-only":          {name: "GNU Free Documentation License v1.2 only - no invariants", short: "GFDL-1.2-no-invariants-only", deprecated: false},
-	"gfdl-1.2-no-invariants-or-later":      {name: "GNU Free Documentation License v1.2 or later - no invariants", short: "GFDL-1.2-no-invariants-or-later", deprecated: false},
-	"gfdl-1.2-only":                        {name: "GNU Free Documentation License v1.2 only", short: "GFDL-1.2-only", deprecated: false},
-	"gfdl-1.2-or-later":                    {name: "GNU Free Documentation License v1.2 or later", short: "GFDL-1.2-or-later", deprecated: false},
-	"gfdl-1.3":                             {name: "GNU Free Documentation License v1.3", short: "GFDL-1.3", deprecated: true},
-	"gfdl-1.3-invariants-only":             {name: "GNU Free Documentation License v1.3 only - invariants", short: "GFDL-1.3-invariants-only", deprecated: false},
-	"gfdl-1.3-invariants-or-later":         {name: "GNU Free Documentation License v1.3 or later - invariants", short: "GFDL-1.3-invariants-or-later", deprecated: false},
-	"gfdl-1.3-no-invariants-only":          {name: "GNU Free Documentation License v1.3 only - no invariants", short: "GFDL-1.3-no-invariants-only", deprecated: false},
-	"gfdl-1.3-no-invariants-or-later":      {name: "GNU Free Documentation License v1.3 or later - no invariants", short: "GFDL-1.3-no-invariants-or-later", deprecated: false},
-	"gfdl-1.3-only":                        {name: "GNU Free Documentation License v1.3 only", short: "GFDL-1.3-only", deprecated: false},
-	"gfdl-1.3-or-later":                    {name: "GNU Free Documentation License v1.3 or later", short: "GFDL-1.3-or-later", deprecated: false},
-	"giftware":                             {name: "Giftware License", short: "Giftware", deprecated: false},
-	"gl2ps":                                {name: "GL2PS License", short: "GL2PS", deprecated: false},
-	"glide":                                {name: "3dfx Glide License", short: "Glide", deprecated: false},
-	"glulxe":                               {name: "Glulxe License", short: "Glulxe", deprecated: false},
-	"glwtpl":                               {name: "Good Luck With That Public License", short: "GLWTPL", deprecated: false},
-	"gnuplot":                              {name: "gnuplot License", short: "gnuplot", deprecated: false},
-	"gpl-1.0":                              {name: "GNU General Public License v1.0 only", short: "GPL-1.0", deprecated: true},
-	"gpl-1.0+":                             {name: "GNU General Public License v1.0 or later", short: "GPL-1.0+", deprecated: true},
-	"gpl-1.0-only":                         {name: "GNU General Public License v1.0 only", short: "GPL-1.0-only", deprecated: false},
-	"gpl-1.0-or-later":                     {name: "GNU General Public License v1.0 or later", short: "GPL-1.0-or-later", deprecated: false},
-	"gpl-2.0":                              {name: "GNU General Public License v2.0 only", short: "GPL-2.0", deprecated: true},
-	"gpl-2.0+":                             {name: "GNU General Public License v2.0 or later", short: "GPL-2.0+", deprecated: true},
-	"gpl-2.0-only":                         {name: "GNU General Public License v2.0 only", short: "GPL-2.0-only", deprecated: false},
-	"gpl-2.0-or-later":                     {name: "GNU General Public License v2.0 or later", short: "GPL-2.0-or-later", deprecated: false},
-	"gpl-2.0-with-autoconf-exception":      {name: "GNU General Public License v2.0 w/Autoconf exception", short: "GPL-2.0-with-autoconf-exception", deprecated: true},
-	"gpl-2.0-with-bison-exception":         {name: "GNU General Public License v2.0 w/Bison exception", short: "GPL-2.0-with-bison-exception", deprecated: true},
-	"gpl-2.0-with-classpath-exception":     {name: "GNU General Public License v2.0 w/Classpath exception", short: "GPL-2.0-with-classpath-exception", deprecated: true},
-	"gpl-2.0-with-font-exception":          {name: "GNU General Public License v2.0 w/Font exception", short: "GPL-2.0-with-font-exception", deprecated: true},
-	"gpl-2.0-with-gcc-exception":           {name: "GNU General Public License v2.0 w/GCC Runtime Library exception", short: "GPL-2.0-with-GCC-exception", deprecated: true},
-	"gpl-3.0":                              {name: "GNU General Public License v3.0 only", short: "GPL-3.0", deprecated: true},
-	"gpl-3.0+":                             {name: "GNU General Public License v3.0 or later", short: "GPL-3.0+", deprecated: true},
-	"gpl-3.0-only":                         {name: "GNU General Public License v3.0 only", short: "GPL-3.0-only", deprecated: false},
-	"gpl-3.0-or-later":                     {name: "GNU General Public License v3.0 or later", short: "GPL-3.0-or-later", deprecated: false},
-	"gpl-3.0-with-autoconf-exception":      {name: "GNU General Public License v3.0 w/Autoconf exception", short: "GPL-3.0-with-autoconf-exception", deprecated: true},
-	"gpl-3.0-with-gcc-exception":           {name: "GNU General Public License v3.0 w/GCC Runtime Library exception", short: "GPL-3.0-with-GCC-exception", deprecated: true},
-	"graphics-gems":                        {name: "Graphics Gems License", short: "Graphics-Gems", deprecated: false},
-	"gsoap-1.3b":                           {name: "gSOAP Public License v1.3b", short: "gSOAP-1.3b", deprecated: false},
-	"haskellreport":                        {name: "Haskell Language Report License", short: "HaskellReport", deprecated: false},
-	"hippocratic-2.1":                      {name: "Hippocratic License 2.1", short: "Hippocratic-2.1", deprecated: false},
-	"hpnd":                                 {name: "Historical Permission Notice and Disclaimer", short: "HPND", deprecated: false},
-	"hpnd-export-us":                       {name: "HPND with US Government export control warning", short: "HPND-export-US", deprecated: false},
-	"hpnd-sell-variant":                    {name: "Historical Permission Notice and Disclaimer - sell variant", short: "HPND-sell-variant", deprecated: false},
-	"htmltidy":                             {name: "HTML Tidy License", short: "HTMLTIDY", deprecated: false},
-	"ibm-pibs":                             {name: "IBM PowerPC Initialization and Boot Software", short: "IBM-pibs", deprecated: false},
-	"icu":                                  {name: "ICU License", short: "ICU", deprecated: false},
-	"ijg":                                  {name: "Independent JPEG Group License", short: "IJG", deprecated: false},
-	"ijg-short":                            {name: "Independent JPEG Group License - short", short: "IJG-short", deprecated: false},
-	"imagemagick":                          {name: "ImageMagick License", short: "ImageMagick", deprecated: false},
-	"imatix":                               {name: "iMatix Standard Function Library Agreement", short: "iMatix", deprecated: false},
-	"imlib2":                               {name: "Imlib2 License", short: "Imlib2", deprecated: false},
-	"info-zip":                             {name: "Info-ZIP License", short: "Info-ZIP", deprecated: false},
-	"intel":                                {name: "Intel Open Source License", short: "Intel", deprecated: false},
-	"intel-acpi":                           {name: "Intel ACPI Software License Agreement", short: "Intel-ACPI", deprecated: false},
-	"interbase-1.0":                        {name: "Interbase Public License v1.0", short: "Interbase-1.0", deprecated: false},
-	"ipa":                                  {name: "IPA Font License", short: "IPA", deprecated: false},
-	"ipl-1.0":                              {name: "IBM Public License v1.0", short: "IPL-1.0", deprecated: false},
-	"isc":                                  {name: "ISC License", short: "ISC", deprecated: false},
-	"jam":                                  {name: "Jam License", short: "Jam", deprecated: false},
-	"jasper-2.0":                           {name: "JasPer License", short: "JasPer-2.0", deprecated: false},
-	"jpnic":                                {name: "Japan Network Information Center License", short: "JPNIC", deprecated: false},
-	"json":                                 {name: "JSON License", short: "JSON", deprecated: false},
-	"knuth-ctan":                           {name: "Knuth CTAN License", short: "Knuth-CTAN", deprecated: false},
-	"lal-1.2":                              {name: "Licence Art Libre 1.2", short: "LAL-1.2", deprecated: false},
-	"lal-1.3":                              {name: "Licence Art Libre 1.3", short: "LAL-1.3", deprecated: false},
-	"latex2e":                              {name: "Latex2e License", short: "Latex2e", deprecated: false},
-	"leptonica":                            {name: "Leptonica License", short: "Leptonica", deprecated: false},
-	"lgpl-2.0":                             {name: "GNU Library General Public License v2 only", short: "LGPL-2.0", deprecated: true},
-	"lgpl-2.0+":                            {name: "GNU Library General Public License v2 or later", short: "LGPL-2.0+", deprecated: true},
-	"lgpl-2.0-only":                        {name: "GNU Library General Public License v2 only", short: "LGPL-2.0-only", deprecated: false},
-	"lgpl-2.0-or-later":                    {name: "GNU Library General Public License v2 or later", short: "LGPL-2.0-or-later", deprecated: false},
-	"lgpl-2.1":                             {name: "GNU Lesser General Public License v2.1 only", short: "LGPL-2.1", deprecated: true},
-	"lgpl-2.1+":                            {name: "GNU Lesser General Public License v2.1 or later", short: "LGPL-2.1+", deprecated: true},
-	"lgpl-2.1-only":                        {name: "GNU Lesser General Public License v2.1 only", short: "LGPL-2.1-only", deprecated: false},
-	"lgpl-2.1-or-later":                    {name: "GNU Lesser General Public License v2.1 or later", short: "LGPL-2.1-or-later", deprecated: false},
-	"lgpl-3.0":                             {name: "GNU Lesser General Public License v3.0 only", short: "LGPL-3.0", deprecated: true},
-	"lgpl-3.0+":                            {name: "GNU Lesser General Public License v3.0 or later", short: "LGPL-3.0+", deprecated: true},
-	"lgpl-3.0-only":                        {name: "GNU Lesser General Public License v3.0 only", short: "LGPL-3.0-only", deprecated: false},
-	"lgpl-3.0-or-later":                    {name: "GNU Lesser General Public License v3.0 or later", short: "LGPL-3.0-or-later", deprecated: false},
-	"lgpllr":                               {name: "Lesser General Public License For Linguistic Resources", short: "LGPLLR", deprecated: false},
-	"libpng":                               {name: "libpng License", short: "Libpng", deprecated: false},
-	"libpng-2.0":                           {name: "PNG Reference Library version 2", short: "libpng-2.0", deprecated: false},
-	"libselinux-1.0":                       {name: "libselinux public domain notice", short: "libselinux-1.0", deprecated: false},
-	"libtiff":                              {name: "libtiff License", short: "libtiff", deprecated: false},
-	"libutil-david-nugent":                 {name: "libutil David Nugent License", short: "libutil-David-Nugent", deprecated: false},
-	"liliq-p-1.1":                          {name: "Licence Libre du Québec – Permissive version 1.1", short: "LiLiQ-P-1.1", deprecated: false},
-	"liliq-r-1.1":                          {name: "Licence Libre du Québec – Réciprocité version 1.1", short: "LiLiQ-R-1.1", deprecated: false},
-	"liliq-rplus-1.1":                      {name: "Licence Libre du Québec – Réciprocité forte version 1.1", short: "LiLiQ-Rplus-1.1", deprecated: false},
-	"linux-man-pages-copyleft":             {name: "Linux man-pages Copyleft", short: "Linux-man-pages-copyleft", deprecated: false},
-	"linux-openib":                         {name: "Linux Kernel Variant of OpenIB.org license", short: "Linux-OpenIB", deprecated: false},
-	"loop":                                 {name: "Common Lisp LOOP License", short: "LOOP", deprecated: false},
-	"lpl-1.0":                              {name: "Lucent Public License Version 1.0", short: "LPL-1.0", deprecated: false},
-	"lpl-1.02":                             {name: "Lucent Public License v1.02", short: "LPL-1.02", deprecated: false},
-	"lppl-1.0":                             {name: "LaTeX Project Public License v1.0", short: "LPPL-1.0", deprecated: false},
-	"lppl-1.1":                             {name: "LaTeX Project Public License v1.1", short: "LPPL-1.1", deprecated: false},
-	"lppl-1.2":                             {name: "LaTeX Project Public License v1.2", short: "LPPL-1.2", deprecated: false},
-	"lppl-1.3a":                            {name: "LaTeX Project Public License v1.3a", short: "LPPL-1.3a", deprecated: false},
-	"lppl-1.3c":                            {name: "LaTeX Project Public License v1.3c", short: "LPPL-1.3c", deprecated: false},
-	"lzma-sdk-9.11-to-9.20":                {name: "LZMA SDK License (versions 9.11 to 9.20)", short: "LZMA-SDK-9.11-to-9.20", deprecated: false},
-	"lzma-sdk-9.22":                        {name: "LZMA SDK License (versions 9.22 and beyond)", short: "LZMA-SDK-9.22", deprecated: false},
-	"makeindex":                            {name: "MakeIndex License", short: "MakeIndex", deprecated: false},
-	"minpack":                              {name: "Minpack License", short: "Minpack", deprecated: false},
-	"miros":                                {name: "The MirOS Licence", short: "MirOS", deprecated: false},
-	"mit":                                  {name: "MIT License", short: "MIT", deprecated: false},
-	"mit-0":                                {name: "MIT No Attribution", short: "MIT-0", deprecated: false},
-	"mit-advertising":                      {name: "Enlightenment License (e16)", short: "MIT-advertising", deprecated: false},
-	"mit-cmu":                              {name: "CMU License", short: "MIT-CMU", deprecated: false},
-	"mit-enna":                             {name: "enna License", short: "MIT-enna", deprecated: false},
-	"mit-feh":                              {name: "feh License", short: "MIT-feh", deprecated: false},
-	"mit-modern-variant":                   {name: "MIT License Modern Variant", short: "MIT-Modern-Variant", deprecated: false},
-	"mit-open-group":                       {name: "MIT Open Group variant", short: "MIT-open-group", deprecated: false},
-	"mit-wu":                               {name: "MIT Tom Wu Variant", short: "MIT-Wu", deprecated: false},
-	"mitnfa":                               {name: "MIT +no-false-attribs license", short: "MITNFA", deprecated: false},
-	"motosoto":                             {name: "Motosoto License", short: "Motosoto", deprecated: false},
-	"mpi-permissive":                       {name: "mpi Permissive License", short: "mpi-permissive", deprecated: false},
-	"mpich2":                               {name: "mpich2 License", short: "mpich2", deprecated: false},
-	"mpl-1.0":                              {name: "Mozilla Public License 1.0", short: "MPL-1.0", deprecated: false},
-	"mpl-1.1":                              {name: "Mozilla Public License 1.1", short: "MPL-1.1", deprecated: false},
-	"mpl-2.0":                              {name: "Mozilla Public License 2.0", short: "MPL-2.0", deprecated: false},
-	"mpl-2.0-no-copyleft-exception":        {name: "Mozilla Public License 2.0 (no copyleft exception)", short: "MPL-2.0-no-copyleft-exception", deprecated: false},
-	"mplus":                                {name: "mplus Font License", short: "mplus", deprecated: false},
-	"ms-lpl":                               {name: "Microsoft Limited Public License", short: "MS-LPL", deprecated: false},
-	"ms-pl":                                {name: "Microsoft Public License", short: "MS-PL", deprecated: false},
-	"ms-rl":                                {name: "Microsoft Reciprocal License", short: "MS-RL", deprecated: false},
-	"mtll":                                 {name: "Matrix Template Library License", short: "MTLL", deprecated: false},
-	"mulanpsl-1.0":                         {name: "Mulan Permissive Software License, Version 1", short: "MulanPSL-1.0", deprecated: false},
-	"mulanpsl-2.0":                         {name: "Mulan Permissive Software License, Version 2", short: "MulanPSL-2.0", deprecated: false},
-	"multics":                              {name: "Multics License", short: "Multics", deprecated: false},
-	"mup":                                  {name: "Mup License", short: "Mup", deprecated: false},
-	"naist-2003":                           {name: "Nara Institute of Science and Technology License (2003)", short: "NAIST-2003", deprecated: false},
-	"nasa-1.3":                             {name: "NASA Open Source Agreement 1.3", short: "NASA-1.3", deprecated: false},
-	"naumen":                               {name: "Naumen Public License", short: "Naumen", deprecated: false},
-	"nbpl-1.0":                             {name: "Net Boolean Public License v1", short: "NBPL-1.0", deprecated: false},
-	"ncgl-uk-2.0":                          {name: "Non-Commercial Government Licence", short: "NCGL-UK-2.0", deprecated: false},
-	"ncsa":                                 {name: "University of Illinois/NCSA Open Source License", short: "NCSA", deprecated: false},
-	"net-snmp":                             {name: "Net-SNMP License", short: "Net-SNMP", deprecated: false},
-	"netcdf":                               {name: "NetCDF license", short: "NetCDF", deprecated: false},
-	"newsletr":                             {name: "Newsletr License", short: "Newsletr", deprecated: false},
-	"ngpl":                                 {name: "Nethack General Public License", short: "NGPL", deprecated: false},
-	"nicta-1.0":                            {name: "NICTA Public Software License, Version 1.0", short: "NICTA-1.0", deprecated: false},
-	"nist-pd":                              {name: "NIST Public Domain Notice", short: "NIST-PD", deprecated: false},
-	"nist-pd-fallback":                     {name: "NIST Public Domain Notice with license fallback", short: "NIST-PD-fallback", deprecated: false},
-	"nlod-1.0":                             {name: "Norwegian Licence for Open Government Data (NLOD) 1.0", short: "NLOD-1.0", deprecated: false},
-	"nlod-2.0":                             {name: "Norwegian Licence for Open Government Data (NLOD) 2.0", short: "NLOD-2.0", deprecated: false},
-	"nlpl":                                 {name: "No Limit Public License", short: "NLPL", deprecated: false},
-	"nokia":                                {name: "Nokia Open Source License", short: "Nokia", deprecated: false},
-	"nosl":                                 {name: "Netizen Open Source License", short: "NOSL", deprecated: false},
-	"noweb":                                {name: "Noweb License", short: "Noweb", deprecated: false},
-	"npl-1.0":                              {name: "Netscape Public License v1.0", short: "NPL-1.0", deprecated: false},
-	"npl-1.1":                              {name: "Netscape Public License v1.1", short: "NPL-1.1", deprecated: false},
-	"nposl-3.0":                            {name: "Non-Profit Open Software License 3.0", short: "NPOSL-3.0", deprecated: false},
-	"nrl":                                  {name: "NRL License", short: "NRL", deprecated: false},
-	"ntp":                                  {name: "NTP License", short: "NTP", deprecated: false},
-	"ntp-0":                                {name: "NTP No Attribution", short: "NTP-0", deprecated: false},
-	"nunit":                                {name: "Nunit License", short: "Nunit", deprecated: true},
-	"o-uda-1.0":                            {name: "Open Use of Data Agreement v1.0", short: "O-UDA-1.0", deprecated: false},
-	"occt-pl":                              {name: "Open CASCADE Technology Public License", short: "OCCT-PL", deprecated: false},
-	"oclc-2.0":                             {name: "OCLC Research Public License 2.0", short: "OCLC-2.0", deprecated: false},
-	"odbl-1.0":                             {name: "Open Data Commons Open Database License v1.0", short: "ODbL-1.0", deprecated: false},
-	"odc-by-1.0":                           {name: "Open Data Commons Attribution License v1.0", short: "ODC-By-1.0", deprecated: false},
-	"ofl-1.0":                              {name: "SIL Open Font License 1.0", short: "OFL-1.0", deprecated: false},
-	"ofl-1.0-no-rfn":                       {name: "SIL Open Font License 1.0 with no Reserved Font Name", short: "OFL-1.0-no-RFN", deprecated: false},
-	"ofl-1.0-rfn":                          {name: "SIL Open Font License 1.0 with Reserved Font Name", short: "OFL-1.0-RFN", deprecated: false},
-	"ofl-1.1":                              {name: "SIL Open Font License 1.1", short: "OFL-1.1", deprecated: false},
-	"ofl-1.1-no-rfn":                       {name: "SIL Open Font License 1.1 with no Reserved Font Name", short: "OFL-1.1-no-RFN", deprecated: false},
-	"ofl-1.1-rfn":                          {name: "SIL Open Font License 1.1 with Reserved Font Name", short: "OFL-1.1-RFN", deprecated: false},
-	"ogc-1.0":                              {name: "OGC Software License, Version 1.0", short: "OGC-1.0", deprecated: false},
-	"ogdl-taiwan-1.0":                      {name: "Taiwan Open Government Data License, version 1.0", short: "OGDL-Taiwan-1.0", deprecated: false},
-	"ogl-canada-2.0":                       {name: "Open Government Licence - Canada", short: "OGL-Canada-2.0", deprecated: false},
-	"ogl-uk-1.0":                           {name: "Open Government Licence v1.0", short: "OGL-UK-1.0", deprecated: false},
-	"ogl-uk-2.0":                           {name: "Open Government Licence v2.0", short: "OGL-UK-2.0", deprecated: false},
-	"ogl-uk-3.0":                           {name: "Open Government Licence v3.0", short: "OGL-UK-3.0", deprecated: false},
-	"ogtsl":                                {name: "Open Group Test Suite License", short: "OGTSL", deprecated: false},
-	"oldap-1.1":                            {name: "Open LDAP Public License v1.1", short: "OLDAP-1.1", deprecated: false},
-	"oldap-1.2":                            {name: "Open LDAP Public License v1.2", short: "OLDAP-1.2", deprecated: false},
-	"oldap-1.3":                            {name: "Open LDAP Public License v1.3", short: "OLDAP-1.3", deprecated: false},
-	"oldap-1.4":                            {name: "Open LDAP Public License v1.4", short: "OLDAP-1.4", deprecated: false},
-	"oldap-2.0":                            {name: "Open LDAP Public License v2.0 (or possibly 2.0A and 2.0B)", short: "OLDAP-2.0", deprecated: false},
-	"oldap-2.0.1":                          {name: "Open LDAP Public License v2.0.1", short: "OLDAP-2.0.1", deprecated: false},
-	"oldap-2.1":                            {name: "Open LDAP Public License v2.1", short: "OLDAP-2.1", deprecated: false},
-	"oldap-2.2":                            {name: "Open LDAP Public License v2.2", short: "OLDAP-2.2", deprecated: false},
-	"oldap-2.2.1":                          {name: "Open LDAP Public License v2.2.1", short: "OLDAP-2.2.1", deprecated: false},
-	"oldap-2.2.2":                          {name: "Open LDAP Public License 2.2.2", short: "OLDAP-2.2.2", deprecated: false},
-	"oldap-2.3":                            {name: "Open LDAP Public License v2.3", short: "OLDAP-2.3", deprecated: false},
-	"oldap-2.4":                            {name: "Open LDAP Public License v2.4", short: "OLDAP-2.4", deprecated: false},
-	"oldap-2.5":                            {name: "Open LDAP Public License v2.5", short: "OLDAP-2.5", deprecated: false},
-	"oldap-2.6":                            {name: "Open LDAP Public License v2.6", short: "OLDAP-2.6", deprecated: false},
-	"oldap-2.7":                            {name: "Open LDAP Public License v2.7", short: "OLDAP-2.7", deprecated: false},
-	"oldap-2.8":                            {name: "Open LDAP Public License v2.8", short: "OLDAP-2.8", deprecated: false},
-	"oml":                                  {name: "Open Market License", short: "OML", deprecated: false},
-	"openssl":                              {name: "OpenSSL License", short: "OpenSSL", deprecated: false},
-	"opl-1.0":                              {name: "Open Public License v1.0", short: "OPL-1.0", deprecated: false},
-	"opubl-1.0":                            {name: "Open Publication License v1.0", short: "OPUBL-1.0", deprecated: false},
-	"oset-pl-2.1":                          {name: "OSET Public License version 2.1", short: "OSET-PL-2.1", deprecated: false},
-	"osl-1.0":                              {name: "Open Software License 1.0", short: "OSL-1.0", deprecated: false},
-	"osl-1.1":                              {name: "Open Software License 1.1", short: "OSL-1.1", deprecated: false},
-	"osl-2.0":                              {name: "Open Software License 2.0", short: "OSL-2.0", deprecated: false},
-	"osl-2.1":                              {name: "Open Software License 2.1", short: "OSL-2.1", deprecated: false},
-	"osl-3.0":                              {name: "Open Software License 3.0", short: "OSL-3.0", deprecated: false},
-	"parity-6.0.0":                         {name: "The Parity Public License 6.0.0", short: "Parity-6.0.0", deprecated: false},
-	"parity-7.0.0":                         {name: "The Parity Public License 7.0.0", short: "Parity-7.0.0", deprecated: false},
-	"pddl-1.0":                             {name: "Open Data Commons Public Domain Dedication & License 1.0", short: "PDDL-1.0", deprecated: false},
-	"php-3.0":                              {name: "PHP License v3.0", short: "PHP-3.0", deprecated: false},
-	"php-3.01":                             {name: "PHP License v3.01", short: "PHP-3.01", deprecated: false},
-	"plexus":                               {name: "Plexus Classworlds License", short: "Plexus", deprecated: false},
-	"polyform-noncommercial-1.0.0":         {name: "PolyForm Noncommercial License 1.0.0", short: "PolyForm-Noncommercial-1.0.0", deprecated: false},
-	"polyform-small-business-1.0.0":        {name: "PolyForm Small Business License 1.0.0", short: "PolyForm-Small-Business-1.0.0", deprecated: false},
-	"postgresql":                           {name: "PostgreSQL License", short: "PostgreSQL", deprecated: false},
-	"psf-2.0":                              {name: "Python Software Foundation License 2.0", short: "PSF-2.0", deprecated: false},
-	"psfrag":                               {name: "psfrag License", short: "psfrag", deprecated: false},
-	"psutils":                              {name: "psutils License", short: "psutils", deprecated: false},
-	"python-2.0":                           {name: "Python License 2.0", short: "Python-2.0", deprecated: false},
-	"python-2.0.1":                         {name: "Python License 2.0.1", short: "Python-2.0.1", deprecated: false},
-	"qhull":                                {name: "Qhull License", short: "Qhull", deprecated: false},
-	"qpl-1.0":                              {name: "Q Public License 1.0", short: "QPL-1.0", deprecated: false},
-	"rdisc":                                {name: "Rdisc License", short: "Rdisc", deprecated: false},
-	"rhecos-1.1":                           {name: "Red Hat eCos Public License v1.1", short: "RHeCos-1.1", deprecated: false},
-	"rpl-1.1":                              {name: "Reciprocal Public License 1.1", short: "RPL-1.1", deprecated: false},
-	"rpl-1.5":                              {name: "Reciprocal Public License 1.5", short: "RPL-1.5", deprecated: false},
-	"rpsl-1.0":                             {name: "RealNetworks Public Source License v1.0", short: "RPSL-1.0", deprecated: false},
-	"rsa-md":                               {name: "RSA Message-Digest License", short: "RSA-MD", deprecated: false},
-	"rscpl":                                {name: "Ricoh Source Code Public License", short: "RSCPL", deprecated: false},
-	"ruby":                                 {name: "Ruby License", short: "Ruby", deprecated: false},
-	"sax-pd":                               {name: "Sax Public Domain Notice", short: "SAX-PD", deprecated: false},
-	"saxpath":                              {name: "Saxpath License", short: "Saxpath", deprecated: false},
-	"scea":                                 {name: "SCEA Shared Source License", short: "SCEA", deprecated: false},
-	"schemereport":                         {name: "Scheme Language Report License", short: "SchemeReport", deprecated: false},
-	"sendmail":                             {name: "Sendmail License", short: "Sendmail", deprecated: false},
-	"sendmail-8.23":                        {name: "Sendmail License 8.23", short: "Sendmail-8.23", deprecated: false},
-	"sgi-b-1.0":                            {name: "SGI Free Software License B v1.0", short: "SGI-B-1.0", deprecated: false},
-	"sgi-b-1.1":                            {name: "SGI Free Software License B v1.1", short: "SGI-B-1.1", deprecated: false},
-	"sgi-b-2.0":                            {name: "SGI Free Software License B v2.0", short: "SGI-B-2.0", deprecated: false},
-	"shl-0.5":                              {name: "Solderpad Hardware License v0.5", short: "SHL-0.5", deprecated: false},
-	"shl-0.51":                             {name: "Solderpad Hardware License, Version 0.51", short: "SHL-0.51", deprecated: false},
-	"simpl-2.0":                            {name: "Simple Public License 2.0", short: "SimPL-2.0", deprecated: false},
-	"sissl":                                {name: "Sun Industry Standards Source License v1.1", short: "SISSL", deprecated: false},
-	"sissl-1.2":                            {name: "Sun Industry Standards Source License v1.2", short: "SISSL-1.2", deprecated: false},
-	"sleepycat":                            {name: "Sleepycat License", short: "Sleepycat", deprecated: false},
-	"smlnj":                                {name: "Standard ML of New Jersey License", short: "SMLNJ", deprecated: false},
-	"smppl":                                {name: "Secure Messaging Protocol Public License", short: "SMPPL", deprecated: false},
-	"snia":                                 {name: "SNIA Public License 1.1", short: "SNIA", deprecated: false},
-	"spencer-86":                           {name: "Spencer License 86", short: "Spencer-86", deprecated: false},
-	"spencer-94":                           {name: "Spencer License 94", short: "Spencer-94", deprecated: false},
-	"spencer-99":                           {name: "Spencer License 99", short: "Spencer-99", deprecated: false},
-	"spl-1.0":                              {name: "Sun Public License v1.0", short: "SPL-1.0", deprecated: false},
-	"ssh-openssh":                          {name: "SSH OpenSSH license", short: "SSH-OpenSSH", deprecated: false},
-	"ssh-short":                            {name: "SSH short notice", short: "SSH-short", deprecated: false},
-	"sspl-1.0":                             {name: "Server Side Public License, v 1", short: "SSPL-1.0", deprecated: false},
-	"standardml-nj":                        {name: "Standard ML of New Jersey License", short: "StandardML-NJ", deprecated: true},
-	"sugarcrm-1.1.3":                       {name: "SugarCRM Public License v1.1.3", short: "SugarCRM-1.1.3", deprecated: false},
-	"swl":                                  {name: "Scheme Widget Library (SWL) Software License Agreement", short: "SWL", deprecated: false},
-	"symlinks":                             {name: "Symlinks License", short: "Symlinks", deprecated: false},
-	"tapr-ohl-1.0":                         {name: "TAPR Open Hardware License v1.0", short: "TAPR-OHL-1.0", deprecated: false},
-	"tcl":                                  {name: "TCL/TK License", short: "TCL", deprecated: false},
-	"tcp-wrappers":                         {name: "TCP Wrappers License", short: "TCP-wrappers", deprecated: false},
-	"tmate":                                {name: "TMate Open Source License", short: "TMate", deprecated: false},
-	"torque-1.1":                           {name: "TORQUE v2.5+ Software License v1.1", short: "TORQUE-1.1", deprecated: false},
-	"tosl":                                 {name: "Trusster Open Source License", short: "TOSL", deprecated: false},
-	"tpdl":                                 {name: "Time::ParseDate License", short: "TPDL", deprecated: false},
-	"ttwl":                                 {name: "Text-Tabs+Wrap License", short: "TTWL", deprecated: false},
-	"tu-berlin-1.0":                        {name: "Technische Universitaet Berlin License 1.0", short: "TU-Berlin-1.0", deprecated: false},
-	"tu-berlin-2.0":                        {name: "Technische Universitaet Berlin License 2.0", short: "TU-Berlin-2.0", deprecated: false},
-	"ucl-1.0":                              {name: "Upstream Compatibility License v1.0", short: "UCL-1.0", deprecated: false},
-	"unicode-dfs-2015":                     {name: "Unicode License Agreement - Data Files and Software (2015)", short: "Unicode-DFS-2015", deprecated: false},
-	"unicode-dfs-2016":                     {name: "Unicode License Agreement - Data Files and Software (2016)", short: "Unicode-DFS-2016", deprecated: false},
-	"unicode-tou":                          {name: "Unicode Terms of Use", short: "Unicode-TOU", deprecated: false},
-	"unlicense":                            {name: "The Unlicense", short: "Unlicense", deprecated: false},
-	"upl-1.0":                              {name: "Universal Permissive License v1.0", short: "UPL-1.0", deprecated: false},
-	"vim":                                  {name: "Vim License", short: "Vim", deprecated: false},
-	"vostrom":                              {name: "VOSTROM Public License for Open Source", short: "VOSTROM", deprecated: false},
-	"vsl-1.0":                              {name: "Vovida Software License v1.0", short: "VSL-1.0", deprecated: false},
-	"w3c":                                  {name: "W3C Software Notice and License (2002-12-31)", short: "W3C", deprecated: false},
-	"w3c-19980720":                         {name: "W3C Software Notice and License (1998-07-20)", short: "W3C-19980720", deprecated: false},
-	"w3c-20150513":                         {name: "W3C Software Notice and Document License (2015-05-13)", short: "W3C-20150513", deprecated: false},
-	"watcom-1.0":                           {name: "Sybase Open Watcom Public License 1.0", short: "Watcom-1.0", deprecated: false},
-	"wsuipa":                               {name: "Wsuipa License", short: "Wsuipa", deprecated: false},
-	"wtfpl":                                {name: "Do What The F*ck You Want To Public License", short: "WTFPL", deprecated: false},
-	"wxwindows":                            {name: "wxWindows Library License", short: "wxWindows", deprecated: true},
-	"x11":                                  {name: "X11 License", short: "X11", deprecated: false},
-	"x11-distribute-modifications-variant": {name: "X11 License Distribution Modification Variant", short: "X11-distribute-modifications-variant", deprecated: false},
-	"xerox":                                {name: "Xerox License", short: "Xerox", deprecated: false},
-	"xfree86-1.1":                          {name: "XFree86 License 1.1", short: "XFree86-1.1", deprecated: false},
-	"xinetd":                               {name: "xinetd License", short: "xinetd", deprecated: false},
-	"xnet":                                 {name: "X.Net License", short: "Xnet", deprecated: false},
-	"xpp":                                  {name: "XPP License", short: "xpp", deprecated: false},
-	"xskat":                                {name: "XSkat License", short: "XSkat", deprecated: false},
-	"ypl-1.0":                              {name: "Yahoo! Public License v1.0", short: "YPL-1.0", deprecated: false},
-	"ypl-1.1":                              {name: "Yahoo! Public License v1.1", short: "YPL-1.1", deprecated: false},
-	"zed":                                  {name: "Zed License", short: "Zed", deprecated: false},
-	"zend-2.0":                             {name: "Zend License v2.0", short: "Zend-2.0", deprecated: false},
-	"zimbra-1.3":                           {name: "Zimbra Public License v1.3", short: "Zimbra-1.3", deprecated: false},
-	"zimbra-1.4":                           {name: "Zimbra Public License v1.4", short: "Zimbra-1.4", deprecated: false},
-	"zlib":                                 {name: "zlib License", short: "Zlib", deprecated: false},
-	"zlib-acknowledgement":                 {name: "zlib/libpng License with Acknowledgement", short: "zlib-acknowledgement", deprecated: false},
-	"zpl-1.1":                              {name: "Zope Public License 1.1", short: "ZPL-1.1", deprecated: false},
-	"zpl-2.0":                              {name: "Zope Public License 2.0", short: "ZPL-2.0", deprecated: false},
-	"zpl-2.1":                              {name: "Zope Public License 2.1", short: "ZPL-2.1", deprecated: false},
+func (m meta) Restrictive() bool {
+	return m.restrictive
 }
 
-func LookUp(lic string) (License, bool) {
-	if m, ok := spdxLicenseList[strings.ToLower(lic)]; ok {
-		return m, true
+func (m meta) Exception() bool {
+	return m.exception
+}
+
+func (m meta) Source() string {
+	return m.source
+}
+
+func lookupLicense(licenseKey string) (License, error) {
+	if licenseKey == "" {
+		return nil, errors.New("license not found")
 	}
-	return meta{}, false
-}
 
-func FreeForAnyUse(lic string) bool {
-	if _, ok := freeAnyUser[strings.ToLower(lic)]; ok {
-		return true
+	lowerKey := strings.ToLower(licenseKey)
+
+	if lowerKey == "none" || lowerKey == "noassertion" {
+		return nil, errors.New("license not found")
 	}
-	return false
-}
 
-// Restricted Licenses
-var restrictedLicenses = []string{
-	"bcl",
-	"cc-by-nd-1.0",
-	"cc-by-nd-2.0",
-	"cc-by-nd-2.5",
-	"cc-by-nd-3.0",
-	"cc-by-nd-4.0",
-	"cc-by-sa-1.0",
-	"cc-by-sa-2.0",
-	"cc-by-sa-2.5",
-	"cc-by-sa-3.0",
-	"cc-by-sa-4.0",
-	"gpl-1.0",
-	"gpl-2.0",
-	"gpl-2.0-with-autoconf-exception",
-	"gpl-2.0-with-bison-exception",
-	"gpl-2.0-with-classpath-exception",
-	"gpl-2.0-with-font-exception",
-	"gpl-2.0-with-gcc-exception",
-	"gpl-3.0",
-	"gpl-3.0-with-autoconf-exception",
-	"gpl-3.0-with-gcc-exception",
-	"lgpl-2.0",
-	"lgpl-2.1",
-	"lgpl-3.0",
-	"NPL-1.0",
-	"NPL-1.1",
-	"osl-1.0",
-	"osl-1.1",
-	"osl-2.0",
-	"osl-2.1",
-	"osl-3.0",
-	"qpl-1.0",
-	"sleepycat",
-}
+	tLicKey := strings.TrimRight(licenseKey, "+")
 
-func RestrictedLicense(lic string) bool {
-	if lic == "" {
-		return true
+	//Lookup spdx & exception list
+	license, lok := licenseList[tLicKey]
+	abouLicense, aok := LicenseListAboutCode[tLicKey]
+
+	//fmt.Printf("lookupLicense: %s %v %v\n", tLicKey, lok, aok)
+
+	if lok && aok {
+		return abouLicense, nil
 	}
-	for _, rl := range restrictedLicenses {
-		if strings.Contains(strings.ToLower(lic), rl) {
-			return true
+
+	if lok {
+		return license, nil
+	}
+
+	if aok {
+		return abouLicense, nil
+	}
+	return nil, errors.New("license not found")
+}
+
+func LookupExpression(expression string, customLicense []License) []License {
+	customLookup := func(licenseKey string) (License, error) {
+		if len(customLicense) == 0 {
+			return nil, errors.New("license not found")
+		}
+
+		for _, l := range customLicense {
+			if l.ShortID() == licenseKey {
+				return l, nil
+			}
+		}
+		return nil, errors.New("license not found")
+	}
+
+	if expression == "" || strings.ToLower(expression) == "none" || strings.ToLower(expression) == "noassertion" {
+		return []License{}
+	}
+
+	licenses, err := spdxexp.ExtractLicenses(expression)
+	if err != nil {
+		return []License{CreateCustomLicense(expression, expression)}
+	}
+
+	ls := []License{}
+
+	for _, l := range licenses {
+		tLicKey := strings.TrimRight(l, "+")
+		lic, err := lookupLicense(tLicKey)
+
+		if err != nil {
+			custLic, err2 := customLookup(tLicKey)
+			if err2 != nil {
+				ls = append(ls, CreateCustomLicense(tLicKey, tLicKey))
+				continue
+			} else {
+				ls = append(ls, custLic)
+			}
+		}
+
+		if lic != nil {
+			ls = append(ls, lic)
 		}
 	}
-	return false
+
+	return ls
+}
+
+func CreateCustomLicense(id, name string) License {
+	return meta{
+		name:        name,
+		short:       id,
+		deprecated:  false,
+		osiApproved: false,
+		fsfLibre:    false,
+		freeAnyUse:  false,
+		restrictive: false,
+		exception:   false,
+		source:      "custom",
+	}
 }

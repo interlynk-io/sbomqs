@@ -14,6 +14,8 @@
 
 package sbom
 
+import "github.com/interlynk-io/sbomqs/pkg/licenses"
+
 type Spec interface {
 	Version() string
 	FileFormat() string
@@ -21,8 +23,9 @@ type Spec interface {
 	Name() string
 	RequiredFields() bool
 	CreationTimestamp() string
-	Licenses() []License
+	Licenses() []licenses.License
 	Namespace() string
+	URI() string
 }
 
 type spec struct {
@@ -30,9 +33,10 @@ type spec struct {
 	format             string
 	name               string
 	isReqFieldsPresent bool
-	licenses           []License
+	licenses           []licenses.License
 	creationTimestamp  string
 	namespace          string
+	uri                string
 }
 
 func newSpec() *spec {
@@ -63,10 +67,14 @@ func (s spec) CreationTimestamp() string {
 	return s.creationTimestamp
 }
 
-func (s spec) Licenses() []License {
+func (s spec) Licenses() []licenses.License {
 	return s.licenses
 }
 
 func (s spec) Namespace() string {
 	return s.namespace
+}
+
+func (s spec) URI() string {
+	return s.uri
 }
