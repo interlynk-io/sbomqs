@@ -144,8 +144,6 @@ func (s *spdxDoc) parseSpec() {
 	sp.format = string(s.format)
 	sp.version = s.doc.SPDXVersion
 
-	fmt.Printf("SPDX format: %s Version: %s\n", sp.format, sp.version)
-
 	sp.name = string(SBOMSpecSPDX)
 	sp.isReqFieldsPresent = s.requiredFields()
 	if s.doc.CreationInfo != nil {
