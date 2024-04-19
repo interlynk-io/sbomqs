@@ -1,4 +1,4 @@
-FROM golang:1.20-alpine AS builder
+FROM golang:1.22.2-alpine AS builder
 LABEL org.opencontainers.image.source="https://github.com/interlynk-io/sbomqs"
 
 RUN apk add --no-cache make git
@@ -6,6 +6,7 @@ WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
+
 RUN make ; make build
 
 FROM scratch
