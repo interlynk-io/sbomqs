@@ -17,9 +17,11 @@ package compliance
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/olekukonko/tablewriter"
 	"sigs.k8s.io/release-utils/version"
 )
 
@@ -48,7 +50,7 @@ type run struct {
 	Id            string `json:"id"`
 	GeneratedAt   string `json:"generated_at"`
 	FileName      string `json:"file_name"`
-	EngineVersion string `json:"engine_version"`
+	EngineVersion string `json:"compliance_engine_version"`
 }
 type tool struct {
 	Name    string `json:"name"`
@@ -94,18 +96,16 @@ func newJsonReport() *craComplianceReport {
 		Tool: tool{
 			Name:    "sbomqs",
 			Version: version.GetVersionInfo().GitVersion,
-			Vendor:  "Interlynk (https://interlynk.io)",
+			Vendor:  "Interlynk (support@interlynk.io)",
 		},
 	}
 }
 
-func cra_json_report(db *db, fileName string) {
-
+func craJsonReport(db *db, fileName string) {
 	jr := newJsonReport()
 	jr.Run.FileName = fileName
 
 	score := craAggregateScore(db)
-
 	summary := Summary{}
 	summary.MaxScore = 10.0
 	summary.TotalScore = score.totalScore()
@@ -113,7 +113,14 @@ func cra_json_report(db *db, fileName string) {
 	summary.TotalOptionalScore = score.totalOptionalScore()
 
 	jr.Summary = summary
+	jr.Sections = constructSections(db)
 
+	o, _ := json.MarshalIndent(jr, "", "  ")
+	fmt.Println(string(o))
+}
+
+func constructSections(db *db) []craSection {
+	var sections []craSection
 	allIds := db.getAllIds()
 	for _, id := range allIds {
 		records := db.getRecordsById(id)
@@ -136,11 +143,36 @@ func cra_json_report(db *db, fileName string) {
 
 			new_section.ElementResult = r.check_value
 
-			jr.Sections = append(jr.Sections, new_section)
+			sections = append(sections, new_section)
 		}
 	}
+	return sections
+}
 
-	o, _ := json.MarshalIndent(jr, "", "  ")
+func craDetailedReport(db *db, fileName string) {
+	table := tablewriter.NewWriter(os.Stdout)
+	score := craAggregateScore(db)
 
-	fmt.Println(string(o))
+	fmt.Printf("Cyber Resilience Requirements for Manufacturers and Products Report TR-03183-2 (1.1)\n")
+	fmt.Printf("Compliance score by Interlynk Score:%0.1f RequiredScore:%0.1f OptionalScore:%0.1f for %s\n", score.totalScore(), score.totalRequiredScore(), score.totalOptionalScore(), fileName)
+	fmt.Printf("* indicates optional fields\n")
+	table.SetHeader([]string{"ElementId", "Section", "Datafield", "Element Result", "Score"})
+	table.SetRowLine(true)
+	table.SetAutoMergeCellsByColumnIndex([]int{0})
+
+	sections := constructSections(db)
+	for _, section := range sections {
+		sectionId := section.Id
+		if !section.Required {
+			sectionId = sectionId + "*"
+		}
+		table.Append([]string{section.ElementId, sectionId, section.DataField, section.ElementResult, fmt.Sprintf("%0.1f", section.Score)})
+	}
+	table.Render()
+}
+
+func craBasicReport(db *db, fileName string) {
+	score := craAggregateScore(db)
+	fmt.Printf("Cyber Resilience Requirements for Manufacturers and Products Report TR-03183-2 (1.1)\n")
+	fmt.Printf("Score:%0.1f RequiredScore:%0.1f OptionalScore:%0.1f for %s\n", score.totalScore(), score.totalRequiredScore(), score.totalOptionalScore(), fileName)
 }

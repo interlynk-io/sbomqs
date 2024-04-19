@@ -47,7 +47,7 @@ const (
 	COMP_DEPTH
 )
 
-func craResult(ctx context.Context, doc sbom.Document, fileName string, outFormat string) *db {
+func craResult(ctx context.Context, doc sbom.Document, fileName string, outFormat string) {
 	log := logger.FromContext(ctx)
 	log.Debug("compliance.craResult()")
 
@@ -62,8 +62,17 @@ func craResult(ctx context.Context, doc sbom.Document, fileName string, outForma
 	db.addRecord(craSbomURI(doc))
 	db.addRecords(craComponents(doc))
 
-	cra_json_report(db, fileName)
-	return db
+	if outFormat == "json" {
+		craJsonReport(db, fileName)
+	}
+
+	if outFormat == "basic" {
+		craBasicReport(db, fileName)
+	}
+
+	if outFormat == "detailed" {
+		craDetailedReport(db, fileName)
+	}
 }
 
 func craSpec(doc sbom.Document) *record {

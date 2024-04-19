@@ -53,10 +53,9 @@ var complianceCmd = &cobra.Command{
 func setupEngineParams(cmd *cobra.Command, args []string) *engine.Params {
 	engParams := &engine.Params{}
 
-	// engParams.Basic, _ = cmd.Flags().GetBool("basic")
-	// engParams.Detailed, _ = cmd.Flags().GetBool("detailed")
+	engParams.Basic, _ = cmd.Flags().GetBool("basic")
+	engParams.Detailed, _ = cmd.Flags().GetBool("detailed")
 	engParams.Json, _ = cmd.Flags().GetBool("json")
-	//engParams.Pdf, _ = cmd.Flags().GetBool("pdf")
 
 	// engParams.Ntia, _ = cmd.Flags().GetBool("ntia")
 	engParams.Cra, _ = cmd.Flags().GetBool("cra")
@@ -76,10 +75,10 @@ func init() {
 
 	//Output control
 	complianceCmd.Flags().BoolP("json", "j", false, "output in json format")
-	// complianceCmd.Flags().BoolP("basic", "b", false, "output in basic format")
-	// complianceCmd.Flags().BoolP("detailed", "d", false, "output in detailed format")
+	complianceCmd.Flags().BoolP("basic", "b", false, "output in basic format")
+	complianceCmd.Flags().BoolP("detailed", "d", false, "output in detailed format")
 	//complianceCmd.Flags().BoolP("pdf", "p", false, "output in pdf format")
-	// complianceCmd.MarkFlagsMutuallyExclusive("json", "basic", "detailed")
+	complianceCmd.MarkFlagsMutuallyExclusive("json", "basic", "detailed")
 
 	//Standards control
 	// complianceCmd.Flags().BoolP("ntia", "n", false, "check for NTIA minimum elements compliance")
