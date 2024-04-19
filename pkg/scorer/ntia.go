@@ -111,7 +111,7 @@ func compWithUniqIDCheck(d sbom.Document, c *check) score {
 
 		s.setScore((float64(len(compIDs)) / float64(totalComponents)) * 10.0)
 	}
-	s.setDesc(fmt.Sprintf("%d/%d have unique ID's", len(compID), totalComponents))
+	s.setDesc(fmt.Sprintf("%d/%d have unique ID's", len(compIDs), totalComponents))
 	return *s
 }
 
