@@ -188,7 +188,9 @@ func (s *spdxDoc) parseComps() {
 			nc.supplier = *supp
 		}
 		nc.supplierName = s.addSupplierName(index)
-		nc.sourceCodeHash = sc.PackageVerificationCode.Value
+		if sc.PackageOriginator != nil {
+			nc.sourceCodeHash = sc.PackageVerificationCode.Value
+		}
 
 		//nc.sourceCodeUrl //no conlusive way to get this from SPDX
 		if strings.ToLower(sc.PackageDownloadLocation) == "noassertion" || strings.ToLower(sc.PackageDownloadLocation) == "none" {
