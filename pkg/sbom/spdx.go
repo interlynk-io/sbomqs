@@ -191,7 +191,11 @@ func (s *spdxDoc) parseComps() {
 		nc.sourceCodeHash = sc.PackageVerificationCode.Value
 
 		//nc.sourceCodeUrl //no conlusive way to get this from SPDX
-		nc.downloadLocation = sc.PackageDownloadLocation
+		if strings.ToLower(sc.PackageDownloadLocation) == "noassertion" || strings.ToLower(sc.PackageDownloadLocation) == "none" {
+			nc.downloadLocation = ""
+		} else {
+			nc.downloadLocation = sc.PackageDownloadLocation
+		}
 
 		nc.isPrimary = s.primaryComponentId == string(sc.PackageSPDXIdentifier)
 

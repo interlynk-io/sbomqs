@@ -49,6 +49,7 @@ type creation struct {
 	Name          string `json:"name"`
 	Version       string `json:"version"`
 	ScoringEngine string `json:"scoring_engine_version"`
+	Vendor        string `json:"vendor"`
 }
 
 type jsonReport struct {
@@ -66,6 +67,7 @@ func newJsonReport() *jsonReport {
 			Name:          "sbomqs",
 			Version:       version.GetVersionInfo().GitVersion,
 			ScoringEngine: scorer.EngineVersion,
+			Vendor:        "Interlynk (support@interlynk.io)",
 		},
 		Files: []file{},
 	}

@@ -48,12 +48,12 @@ func ComplianceRun(ctx context.Context, ep *Params) error {
 		reportType = "CRA"
 	}
 
-	outFormat := "json"
+	outFormat := "detailed"
 
 	if ep.Basic {
 		outFormat = "basic"
-	} else if ep.Pdf {
-		outFormat = "pdf"
+	} else if ep.Json {
+		outFormat = "json"
 	}
 
 	err := compliance.ComplianceResult(ctx, *doc, reportType, ep.Path[0], outFormat)

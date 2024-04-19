@@ -51,7 +51,7 @@ func (r *Reporter) detailedReport() {
 			return outDoc[i][1] < outDoc[j][1]
 		})
 
-		fmt.Printf("SBOM Quality Score:%0.1f\tcomponents:%d\t%s\n", scores.AvgScore(), len(doc.Components()), path)
+		fmt.Printf("SBOM Quality by Interlynk Score:%0.1f\tcomponents:%d\t%s\n", scores.AvgScore(), len(doc.Components()), path)
 		table := tablewriter.NewWriter(os.Stdout)
 		table.SetHeader([]string{"Category", "Feature", "Score", "Desc"})
 		table.SetRowLine(true)
