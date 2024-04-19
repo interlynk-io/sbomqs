@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"strings"
 
 	cydx "github.com/CycloneDX/cyclonedx-go"
 	"github.com/google/uuid"
@@ -183,8 +184,8 @@ func (c *cdxDoc) parseSpec() {
 	}
 	sp.namespace = c.doc.SerialNumber
 
-	if sp.namespace != "" && sp.version != "" {
-		sp.uri = fmt.Sprintf("urn:cdx:%s:%s", sp.version, sp.namespace)
+	if c.doc.SerialNumber != "" && strings.HasPrefix(sp.namespace, "urn:uuid:") {
+		sp.uri = fmt.Sprintf("%s/%d", c.doc.SerialNumber, c.doc.Version)
 	}
 
 	c.spec = sp
@@ -552,8 +553,13 @@ func (c *cdxDoc) assignSupplier(comp *cydx.Component) *supplier {
 
 	supplier := supplier{}
 
-	supplier.name = comp.Supplier.Name
-	supplier.url = lo.FromPtr(comp.Supplier.URL)[0]
+	if comp.Supplier.Name == "" {
+		supplier.name = comp.Supplier.Name
+	}
+
+	if comp.Supplier.URL != nil && len(lo.FromPtr(comp.Supplier.URL)) > 0 {
+		supplier.url = lo.FromPtr(comp.Supplier.URL)[0]
+	}
 
 	if comp.Supplier.Contact != nil {
 		for _, cydxContact := range lo.FromPtr(comp.Supplier.Contact) {

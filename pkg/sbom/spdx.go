@@ -29,8 +29,8 @@ import (
 	"github.com/samber/lo"
 	spdx_json "github.com/spdx/tools-golang/json"
 	spdx_rdf "github.com/spdx/tools-golang/rdf"
+	"github.com/spdx/tools-golang/spdx"
 	spdx_common "github.com/spdx/tools-golang/spdx/v2/common"
-	"github.com/spdx/tools-golang/spdx/v2/v2_3"
 	spdx_tv "github.com/spdx/tools-golang/tagvalue"
 	spdx_yaml "github.com/spdx/tools-golang/yaml"
 )
@@ -40,7 +40,7 @@ var spdx_spec_versions = []string{"SPDX-2.1", "SPDX-2.2", "SPDX-2.3"}
 var spdx_primary_purpose = []string{"application", "framework", "library", "container", "operating-system", "device", "firmware", "source", "archive", "file", "install", "other"}
 
 type spdxDoc struct {
-	doc                *v2_3.Document
+	doc                *spdx.Document
 	format             FileFormat
 	ctx                context.Context
 	spec               *spec
@@ -59,7 +59,7 @@ func newSPDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat) (Docume
 
 	f.Seek(0, io.SeekStart)
 
-	var d *v2_3.Document
+	var d *spdx.Document
 	var err error
 
 	switch format {
@@ -143,6 +143,7 @@ func (s *spdxDoc) parseSpec() {
 	sp := newSpec()
 	sp.format = string(s.format)
 	sp.version = s.doc.SPDXVersion
+
 	sp.name = string(SBOMSpecSPDX)
 	sp.isReqFieldsPresent = s.requiredFields()
 	if s.doc.CreationInfo != nil {
@@ -484,7 +485,7 @@ func (s *spdxDoc) licenses(index int) []licenses.License {
 
 	pkg := s.doc.Packages[index]
 
-	otherLicenses := lo.Map(s.doc.OtherLicenses, func(l *v2_3.OtherLicense, _ int) licenses.License {
+	otherLicenses := lo.Map(s.doc.OtherLicenses, func(l *spdx.OtherLicense, _ int) licenses.License {
 		return licenses.CreateCustomLicense(l.LicenseIdentifier, l.LicenseName)
 	})
 
@@ -572,7 +573,7 @@ func (s *spdxDoc) addSupplierName(index int) string {
 }
 
 func (s *spdxDoc) parsePrimaryComponent() {
-	pkgIds := make(map[string]*v2_3.Package)
+	pkgIds := make(map[string]*spdx.Package)
 
 	for _, pkg := range s.doc.Packages {
 		pkgIds[string(pkg.PackageSPDXIdentifier)] = pkg
