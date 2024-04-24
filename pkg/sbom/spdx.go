@@ -189,7 +189,8 @@ func (s *spdxDoc) parseComps() {
 			nc.supplier = *supp
 		}
 		nc.supplierName = s.addSupplierName(index)
-		if sc.PackageOriginator != nil {
+
+		if sc.PackageVerificationCode != nil {
 			nc.sourceCodeHash = sc.PackageVerificationCode.Value
 		}
 
