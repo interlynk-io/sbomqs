@@ -238,15 +238,15 @@ json format
 ```
 
 # Compliance Reports
-sbomqs can now produce compliance reports for industry standard requirements. Currently we support [BSI CRA TR-03183 v1.1](https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/Publications/TechGuidelines/TR03183/BSI-TR-03183-2.pdf?__blob=publicationFile&v=5). More details about the CRA
+sbomqs can now produce compliance reports for industry standard requirements. Currently we support [BSI TR-03183 v1.1](https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/Publications/TechGuidelines/TR03183/BSI-TR-03183-2.pdf?__blob=publicationFile&v=5). More details about the CRA
 requirements are avaliable [here](./Compliance.md). 
 
 ## Reports 
-- [BSI CRA TR-03183 v1.1](https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/Publications/TechGuidelines/TR03183/BSI-TR-03183-2.pdf?__blob=publicationFile&v=5)
+- [BSI TR-03183 v1.1](https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/Publications/TechGuidelines/TR03183/BSI-TR-03183-2.pdf?__blob=publicationFile&v=5)
 - [NTIA minimum element](https://www.ntia.doc.gov/files/ntia/publications/sbom_minimum_elements_report.pdf) - Coming soon.
 - [OWASP SCVS](https://scvs.owasp.org/bom-maturity-model/) - Coming soon.
 
-Example of a BSI CRA report
+Example of a BSI report
 ```
 {
   "report_name": "Cyber Resilience Requirements for Manufacturers and Products Report",
