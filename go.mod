@@ -13,7 +13,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.8.1
 	github.com/olekukonko/tablewriter v0.0.5
-	github.com/package-url/packageurl-go v0.1.2
+	github.com/package-url/packageurl-go v0.1.3
 	github.com/samber/lo v1.39.0
 	github.com/spdx/tools-golang v0.5.4
 	github.com/spf13/cobra v1.8.0
