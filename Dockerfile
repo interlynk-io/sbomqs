@@ -14,12 +14,7 @@ LABEL org.opencontainers.image.source="https://github.com/interlynk-io/sbomqs"
 LABEL org.opencontainers.image.description="Quality metrics for your sboms"
 LABEL org.opencontainers.image.licenses=Apache-2.0
 
-# Copy the certs from the builder image
-COPY --from=builder /bin/bash /bin/bash
-COPY --from=builder /bin/grep /bin/grep
-COPY --from=builder /lib /lib
-COPY --from=builder /usr /usr
-
+COPY --from=builder /bin/sh /bin/grep /bin/busybox /bin/touch /bin/chmod /bin/mkdir /bin/date /bin/
 
 # Copy our static executable
 COPY --from=builder /app/build/sbomqs /app/sbomqs
