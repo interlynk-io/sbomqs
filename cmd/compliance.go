@@ -82,6 +82,7 @@ func init() {
 
 	//Standards control
 	// complianceCmd.Flags().BoolP("ntia", "n", false, "check for NTIA minimum elements compliance")
-	complianceCmd.Flags().BoolP("cra", "c", false, "CRA TR-03183 v1.1 compliance")
-	// complianceCmd.MarkFlagsMutuallyExclusive("ntia", "cra")
+	complianceCmd.Flags().BoolP("cra", "c", false, "BSI TR-03183 v1.1 compliance")
+	complianceCmd.Flags().BoolP("oct", "o", false, "OpenChain Telco SBOM v1.0 compliance")
+	complianceCmd.MarkFlagsMutuallyExclusive("oct", "cra")
 }

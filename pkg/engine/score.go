@@ -47,8 +47,9 @@ type Params struct {
 
 	ConfigPath string
 
-	Ntia bool
-	Cra  bool
+	Ntia           bool
+	Cra            bool
+	OpenChainTelco bool
 }
 
 func Run(ctx context.Context, ep *Params) error {

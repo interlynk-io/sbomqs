@@ -48,6 +48,10 @@ func ComplianceRun(ctx context.Context, ep *Params) error {
 		reportType = "CRA"
 	}
 
+	if ep.OpenChainTelco {
+		reportType = "OPEN_CHAIN_TELCO"
+	}
+
 	outFormat := "detailed"
 
 	if ep.Basic {

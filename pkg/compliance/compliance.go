@@ -24,15 +24,11 @@ import (
 
 const CRA_REPORT = "CRA"
 const NTIA_REPORT = "NTIA"
+const OPEN_CHAIN_TELCO_REPORT = "OPEN_CHAIN_TELCO"
 
 func ComplianceResult(ctx context.Context, doc sbom.Document, reportType, fileName, outFormat string) error {
 	log := logger.FromContext(ctx)
 	log.Debug("compliance.ComplianceResult()")
-
-	if reportType != CRA_REPORT && reportType != NTIA_REPORT {
-		log.Debugf("Invalid report type: %s\n", reportType)
-		return errors.New("invalid report type")
-	}
 
 	if doc == nil {
 		log.Debugf("sbom document is nil\n")
@@ -55,6 +51,10 @@ func ComplianceResult(ctx context.Context, doc sbom.Document, reportType, fileNa
 
 	if reportType == NTIA_REPORT {
 		ntiaResult(ctx, doc, fileName, outFormat)
+	}
+
+	if reportType == OPEN_CHAIN_TELCO_REPORT {
+		openChainTelcoResult(ctx, doc, fileName, outFormat)
 	}
 
 	return nil
