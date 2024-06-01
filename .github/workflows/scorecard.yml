@@ -3,8 +3,16 @@
 # policy, and support documentation.
 
 name: Scorecard supply-chain security
-on: 
-  workflow_dispatch
+on:
+  # For Branch-Protection check. Only the default branch is supported. See
+  # https://github.com/ossf/scorecard/blob/main/docs/checks.md#branch-protection
+  branch_protection_rule:
+  # To guarantee Maintained check is occasionally updated. See
+  # https://github.com/ossf/scorecard/blob/main/docs/checks.md#maintained
+  schedule:
+    - cron: '24 17 * * 0'
+  push:
+    branches: [ "main" ]
 
 # Declare default permissions as read only.
 permissions: read-all
