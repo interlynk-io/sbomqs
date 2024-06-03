@@ -335,6 +335,7 @@ We look forward to your contributions, below are a few guidelines on how to subm
 
 # Contact 
 We appreciate all feedback. The best ways to get in touch with us:
+- ❓& 🅰️ [Slack](https://join.slack.com/t/sbomqa/shared_invite/zt-2jzq1ttgy-4IGzOYBEtHwJdMyYj~BACA)
 - :phone: [Live Chat](https://www.interlynk.io/#hs-chat-open)
 - 📫 [Email Us](mailto:hello@interlynk.io)
 - 🐛 [Report a bug or enhancement](https://github.com/interlynk-io/sbomex/issues) 
