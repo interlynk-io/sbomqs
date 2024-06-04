@@ -40,7 +40,7 @@ other installation [options](#installation).
 sbomqs score <sbom-file>
 ```
 
-#### Compliance Report: CRA TR-03183-2 for an sbom
+#### Compliance Report: BSI TR-03183-2
 ```sh
 sbomqs compliance -c samples/photon.spdx.json
 ```
@@ -238,8 +238,8 @@ json format
 ```
 
 # Compliance Reports
-sbomqs can now produce compliance reports for industry standard requirements. Currently we support [BSI TR-03183-2 v1.1](https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/Publications/TechGuidelines/TR03183/BSI-TR-03183-2.pdf). More details about the CRA
-requirements are avaliable [here](./Compliance.md). 
+sbomqs can now produce compliance reports for industry standard requirements. Currently we support [BSI TR-03183-2 v1.1](https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/Publications/TechGuidelines/TR03183/BSI-TR-03183-2.pdf). More details about its
+requirements are [avaliable here](./Compliance.md). 
 
 ## Reports 
 - [BSI TR-03183-2 v1.1](https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/Publications/TechGuidelines/TR03183/BSI-TR-03183-2.pdf)
