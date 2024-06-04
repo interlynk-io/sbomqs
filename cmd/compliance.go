@@ -24,13 +24,13 @@ import (
 
 var complianceCmd = &cobra.Command{
 	Use:   "compliance <sbom file>",
-	Short: "compliance command checks the sbom for compliance with sbom standards",
-	Long: `Check if you sbom complies with various sbom standards like NTIA minimum elements, CRA TR-03183.
-	Generate a compliance report for the sbom file.
+	Short: "compliance command checks an SBOM for compliance with SBOM standards",
+	Long: `Check if your SBOM complies with various SBOM standards like NTIA minimum elements, BSI TR-03183-2.
+	Generate a compliance report for an SBOM file.
 	`,
 	Args: func(cmd *cobra.Command, args []string) error {
 		if err := cobra.ExactArgs(1)(cmd, args); err != nil {
-			return fmt.Errorf("compliance requires a single argument, the path to the sbom file")
+			return fmt.Errorf("compliance requires a single argument, the path to an SBOM file")
 		}
 
 		return nil
@@ -82,6 +82,6 @@ func init() {
 
 	//Standards control
 	// complianceCmd.Flags().BoolP("ntia", "n", false, "check for NTIA minimum elements compliance")
-	complianceCmd.Flags().BoolP("cra", "c", false, "CRA TR-03183 v1.1 compliance")
+	complianceCmd.Flags().BoolP("cra", "c", false, "BSI TR-03183-2 v1.1 compliance")
 	// complianceCmd.MarkFlagsMutuallyExclusive("ntia", "cra")
 }
