@@ -63,17 +63,19 @@ func Run(ctx context.Context, ep *Params) error {
 	return handlePaths(ctx, ep)
 }
 
-func handlePaths(ctx context.Context, ep *Params) error {
+// retrieveFiles: retrieve all files from provided path
+func retrieveFiles(ctx context.Context, paths []string) ([]string, []string, error) {
+	var allFiles []string
+	var allPaths []string
 	log := logger.FromContext(ctx)
-	log.Debug("engine.handlePaths()")
-
-	var docs []sbom.Document
-	var paths []string
-	var scores []scorer.Scores
-
-	for _, path := range ep.Path {
+	log.Debug("engine.retrieveFiles()")
+	var err error
+	for _, path := range paths {
 		log.Debugf("Processing path :%s\n", path)
-		pathInfo, _ := os.Stat(path)
+		pathInfo, err := os.Stat(path)
+		if err != nil {
+			return nil, nil, err
+		}
 		if pathInfo.IsDir() {
 			files, err := os.ReadDir(path)
 			if err != nil {
@@ -86,25 +88,33 @@ func handlePaths(ctx context.Context, ep *Params) error {
 				if file.IsDir() {
 					continue
 				}
-				path := filepath.Join(path, file.Name())
-				doc, scs, err := processFile(ctx, ep, path)
-				if err != nil {
-					continue
-				}
-				docs = append(docs, doc)
-				scores = append(scores, scs)
-				paths = append(paths, path)
+				filePath := filepath.Join(path, file.Name())
+				allFiles = append(allFiles, filePath)
 			}
-			continue
+			allPaths = append(allPaths, path)
 		}
+		allFiles = append(allFiles, path)
+		allPaths = append(allPaths, path)
+	}
+	return allFiles, allPaths, err
+}
 
-		doc, scs, err := processFile(ctx, ep, path)
+func handlePaths(ctx context.Context, ep *Params) error {
+	var docs []sbom.Document
+	var paths []string
+	var scores []scorer.Scores
+
+	files, paths, err := retrieveFiles(ctx, ep.Path)
+	if err != nil {
+		return err
+	}
+	for _, file := range files {
+		doc, scs, err := processFile(ctx, ep, file)
 		if err != nil {
 			continue
 		}
 		docs = append(docs, doc)
 		scores = append(scores, scs)
-		paths = append(paths, path)
 	}
 
 	reportFormat := "detailed"
