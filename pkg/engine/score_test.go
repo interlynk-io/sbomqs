@@ -4,7 +4,106 @@ import (
 	"context"
 	"errors"
 	"testing"
+	"time"
 )
+
+type Relationships struct {
+	SpdxElementID      string `json:"spdxElementId"`
+	RelationshipType   string `json:"relationshipType"`
+	RelatedSpdxElement string `json:"relatedSpdxElement"`
+}
+
+type CreationInfo struct {
+	Creators           []string  `json:"creators"`
+	Created            time.Time `json:"created"`
+	LicenseListVersion string    `json:"licenseListVersion"`
+}
+
+type Package struct {
+	SPDXID                  string                  `json:"SPDXID"`
+	Name                    string                  `json:"name"`
+	VersionInfo             string                  `json:"versionInfo"`
+	FilesAnalyzed           bool                    `json:"filesAnalyzed"`
+	DataLicense             string                  `json:"dataLicense"`
+	LicenseDeclared         string                  `json:"licenseDeclared"`
+	LicenseConcluded        string                  `json:"licenseConcluded"`
+	DownloadLocation        string                  `json:"downloadLocation"`
+	CopyrightText           string                  `json:"copyrightText"`
+	Checksums               []Checksums             `json:"checksums"`
+	ExternalRefs            []ExternalRef           `json:"externalRefs"`
+	PackageVerificationCode PackageVerificationCode `json:"packageVerificationCode"`
+}
+
+type Checksums struct {
+	Algorithm     string `json:"algorithm"`
+	ChecksumValue string `json:"checksumValue"`
+}
+type PackageVerificationCode struct {
+	PackageVerificationCodeValue string `json:"packageVerificationCodeValue"`
+}
+
+type ExternalRef struct {
+	ReferenceCategory string `json:"referenceCategory"`
+	ReferenceType     string `json:"referenceType"`
+	ReferenceLocator  string `json:"referenceLocator"`
+}
+
+type SbomJson struct {
+	SPDXID            string        `json:"SPDXID"`
+	Name              string        `json:"name"`
+	SpdxVersion       string        `json:"spdxVersion"`
+	CreationInfo      CreationInfo  `json:"creationInfo"`
+	DataLicense       string        `json:"dataLicense"`
+	DocumentNamespace string        `json:"documentNamespace"`
+	DocumentDescribes []string      `json:"documentDescribes"`
+	Packages          []Package     `json:"packages"`
+	Relationships     Relationships `json:"relationships"`
+}
+
+var missingAuthorName = &SbomJson{
+	SPDXID: "SPDXRef-DOCUMENT",
+	SpdxVersion: "SPDX-2.2",
+	CreationInfo: {
+		Created: "2020-07-23T18:30:22Z",
+		Creators: [
+		"Organization: Example Inc."
+		],
+		LicenseListVersion: "3.9"
+	},
+	Name: "xyz-0.1.0",
+	DataLicense: "CC0-1.0",
+	DocumentNamespace: "http://spdx.org/spdxdocs/spdx-document-xyz",
+	DocumentDescribes: [
+		"SPDXRef-Package-xyz"
+	],
+	Packages: [
+		{
+		SPDXID: "SPDXRef-Package-xyz",
+		Summary: "Awesome product created by Example Inc.",
+		CopyrightText: "copyright 2004-2020 Example Inc. All Rights Reserved.",
+		DownloadLocation: "git+ssh://gitlab.example.com:3389/products/xyz.git@b2c358080011af6a366d2512a25a379fbe7b1f78",
+		FilesAnalyzed: false,
+		Homepage: "https://example.com/products/xyz",
+		LicenseConcluded: "NOASSERTION",
+		LicenseDeclared: "Apache-2.0 AND curl AND LicenseRef-Proprietary-ExampleInc",
+		Name: "xyz",
+		VersionInfo: "0.1.0"
+		},
+	],
+	Relationships: [
+		{
+		SpdxElementId: "SPDXRef-Package-xyz",
+		RelatedSpdxElement: "SPDXRef-Package-curl",
+		RelationshipType: "CONTAINS"
+		},
+		{
+		SpdxElementId: "SPDXRef-Package-xyz",
+		RelatedSpdxElement: "SPDXRef-Package-openssl",
+		RelationshipType: "CONTAINS"
+		}
+	]
+
+}
 
 func TestProcessFile(t *testing.T) {
 	testCases := []struct {
