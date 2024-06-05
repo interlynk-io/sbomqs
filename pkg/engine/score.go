@@ -73,7 +73,12 @@ func handlePaths(ctx context.Context, ep *Params) error {
 
 	for _, path := range ep.Path {
 		log.Debugf("Processing path :%s\n", path)
-		pathInfo, _ := os.Stat(path)
+
+		pathInfo, err := os.Stat(path)
+		if err != nil {
+			return fmt.Errorf("invalid path: %w", err)
+		}
+
 		if pathInfo.IsDir() {
 			files, err := os.ReadDir(path)
 			if err != nil {
