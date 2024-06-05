@@ -32,6 +32,8 @@ type Package struct {
 	Checksums               []Checksums             `json:"checksums"`
 	ExternalRefs            []ExternalRef           `json:"externalRefs"`
 	PackageVerificationCode PackageVerificationCode `json:"packageVerificationCode"`
+	Summary                 string                  `json:"summary"`
+	Homepage                string                  `json:"homepage"`
 }
 
 type Checksums struct {
@@ -49,60 +51,73 @@ type ExternalRef struct {
 }
 
 type SbomJson struct {
-	SPDXID            string        `json:"SPDXID"`
-	Name              string        `json:"name"`
-	SpdxVersion       string        `json:"spdxVersion"`
-	CreationInfo      CreationInfo  `json:"creationInfo"`
-	DataLicense       string        `json:"dataLicense"`
-	DocumentNamespace string        `json:"documentNamespace"`
-	DocumentDescribes []string      `json:"documentDescribes"`
-	Packages          []Package     `json:"packages"`
-	Relationships     Relationships `json:"relationships"`
+	SPDXID            string          `json:"SPDXID"`
+	Name              string          `json:"name"`
+	SpdxVersion       string          `json:"spdxVersion"`
+	CreationInfo      CreationInfo    `json:"creationInfo"`
+	DataLicense       string          `json:"dataLicense"`
+	DocumentNamespace string          `json:"documentNamespace"`
+	DocumentDescribes []string        `json:"documentDescribes"`
+	Packages          []Package       `json:"packages"`
+	Relationships     []Relationships `json:"relationships"`
 }
 
-var missingAuthorName = &SbomJson{
-	SPDXID: "SPDXRef-DOCUMENT",
+var missingAuthorName = SbomJson{
+	SPDXID:      "SPDXRef-DOCUMENT",
+	Name:        "xyz-0.1.0",
 	SpdxVersion: "SPDX-2.2",
-	CreationInfo: {
-		Created: "2020-07-23T18:30:22Z",
-		Creators: [
-		"Organization: Example Inc."
-		],
-		LicenseListVersion: "3.9"
+	CreationInfo: CreationInfo{
+		Creators:           []string{"Organization: Example Inc."},
+		Created:            time.Date(2020, 7, 23, 18, 30, 22, 0, time.UTC),
+		LicenseListVersion: "3.9",
 	},
-	Name: "xyz-0.1.0",
-	DataLicense: "CC0-1.0",
+	DataLicense:       "CC0-1.0",
 	DocumentNamespace: "http://spdx.org/spdxdocs/spdx-document-xyz",
-	DocumentDescribes: [
-		"SPDXRef-Package-xyz"
-	],
-	Packages: [
+	DocumentDescribes: []string{"SPDXRef-Package-xyz"},
+	Packages: []Package{
 		{
-		SPDXID: "SPDXRef-Package-xyz",
-		Summary: "Awesome product created by Example Inc.",
-		CopyrightText: "copyright 2004-2020 Example Inc. All Rights Reserved.",
-		DownloadLocation: "git+ssh://gitlab.example.com:3389/products/xyz.git@b2c358080011af6a366d2512a25a379fbe7b1f78",
-		FilesAnalyzed: false,
-		Homepage: "https://example.com/products/xyz",
-		LicenseConcluded: "NOASSERTION",
-		LicenseDeclared: "Apache-2.0 AND curl AND LicenseRef-Proprietary-ExampleInc",
-		Name: "xyz",
-		VersionInfo: "0.1.0"
-		},
-	],
-	Relationships: [
-		{
-		SpdxElementId: "SPDXRef-Package-xyz",
-		RelatedSpdxElement: "SPDXRef-Package-curl",
-		RelationshipType: "CONTAINS"
+			SPDXID:           "SPDXRef-Package-xyz",
+			Name:             "xyz",
+			VersionInfo:      "0.1.0",
+			FilesAnalyzed:    false,
+			LicenseDeclared:  "Apache-2.0 AND curl AND LicenseRef-Proprietary-ExampleInc",
+			LicenseConcluded: "NOASSERTION",
+			DownloadLocation: "git+ssh://gitlab.example.com:3389/products/xyz.git@b2c358080011af6a366d2512a25a379fbe7b1f78",
+			CopyrightText:    "copyright 2004-2020 Example Inc. All Rights Reserved.",
 		},
 		{
-		SpdxElementId: "SPDXRef-Package-xyz",
-		RelatedSpdxElement: "SPDXRef-Package-openssl",
-		RelationshipType: "CONTAINS"
-		}
-	]
-
+			SPDXID:           "SPDXRef-Package-curl",
+			Name:             "curl",
+			VersionInfo:      "7.70.0",
+			FilesAnalyzed:    false,
+			LicenseDeclared:  "curl",
+			LicenseConcluded: "NOASSERTION",
+			DownloadLocation: "https://github.com/curl/curl/releases/download/curl-7_70_0/curl-7.70.0.tar.gz",
+			CopyrightText:    "Copyright (c) 1996 - 2020, Daniel Stenberg, <daniel@haxx.se>, and many contributors, see the THANKS file.",
+		},
+		{
+			SPDXID:           "SPDXRef-Package-openssl",
+			Name:             "openssl",
+			VersionInfo:      "1.1.1g",
+			FilesAnalyzed:    false,
+			LicenseDeclared:  "Apache-2.0",
+			LicenseConcluded: "NOASSERTION",
+			DownloadLocation: "git+ssh://github.com/openssl/openssl.git@e2e09d9fba1187f8d6aafaa34d4172f56f1ffb72",
+			CopyrightText:    "copyright 2004-2020 The OpenSSL Project Authors. All Rights Reserved.",
+		},
+	},
+	Relationships: []Relationships{
+		{
+			SpdxElementID:      "SPDXRef-Package-xyz",
+			RelatedSpdxElement: "SPDXRef-Package-curl",
+			RelationshipType:   "CONTAINS",
+		},
+		{
+			SpdxElementID:      "SPDXRef-Package-xyz",
+			RelatedSpdxElement: "SPDXRef-Package-openssl",
+			RelationshipType:   "CONTAINS",
+		},
+	},
 }
 
 func TestProcessFile(t *testing.T) {
