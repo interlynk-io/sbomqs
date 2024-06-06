@@ -63,18 +63,32 @@ func Run(ctx context.Context, ep *Params) error {
 	return handlePaths(ctx, ep)
 }
 
+func validatePath(path string) error {
+	if _, err := os.Stat(path); err != nil {
+		return err
+	}
+	return nil
+}
+
 // retrieveFiles: retrieve all files from provided path
 func retrieveFiles(ctx context.Context, paths []string) ([]string, []string, error) {
 	var allFiles []string
 	var allPaths []string
 	log := logger.FromContext(ctx)
 	log.Debug("engine.retrieveFiles()")
+
 	var err error
 	for _, path := range paths {
+		allPaths = append(allPaths, path)
+		err := validatePath(path)
+		if err != nil {
+			fmt.Println("Vivek", err)
+			return allFiles, allPaths, err
+		}
 		log.Debugf("Processing path :%s\n", path)
 		pathInfo, err := os.Stat(path)
 		if err != nil {
-			return nil, nil, err
+			return allFiles, allPaths, err
 		}
 		if pathInfo.IsDir() {
 			files, err := os.ReadDir(path)
@@ -91,10 +105,9 @@ func retrieveFiles(ctx context.Context, paths []string) ([]string, []string, err
 				filePath := filepath.Join(path, file.Name())
 				allFiles = append(allFiles, filePath)
 			}
-			allPaths = append(allPaths, path)
 		}
 		allFiles = append(allFiles, path)
-		allPaths = append(allPaths, path)
+
 	}
 	return allFiles, allPaths, err
 }
