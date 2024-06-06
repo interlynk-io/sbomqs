@@ -9,42 +9,42 @@ before:
     - /bin/bash -c 'if [ -n "$(git --no-pager diff --exit-code go.mod go.sum)" ]; then exit 1; fi'
 
 gomod:
-  proxy: true 
+  proxy: true
 
 builds:
-  - id: binaries 
+  - id: binaries
     binary: sbomqs-{{ .Os }}-{{ .Arch }}
-    no_unique_dist_dir: true 
+    no_unique_dist_dir: true
     main: .
     flags:
-      - -trimpath 
+      - -trimpath
     mod_timestamp: '{{ .CommitTimestamp }}'
     goos:
       - linux
       - darwin
-      - windows 
+      - windows
     goarch:
       - amd64
       - arm64
     ldflags:
       - "{{ .Env.LDFLAGS }}"
-    env: 
+    env:
       - CGO_ENABLED=0
 
 archives:
 - format: binary
   name_template: "{{ .Binary }}"
-  allow_different_binary_count: true 
+  allow_different_binary_count: true
 
-snapshot: 
+snapshot:
   name_template: SNAPSHOT-{{ .ShortCommit }}
 
 release:
-  prerelease: allow 
-  draft: true 
+  prerelease: allow
+  draft: true
 
 sboms:
   -
     artifacts: binary
     documents:
-      - "${artifact}.spdx.sbom"  
+      - "${artifact}.spdx.sbom"
