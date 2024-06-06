@@ -176,7 +176,7 @@ For the list of features currently supported, visit [features.md](./Features.md)
 
 `sbomqs` provides its scoring output in basic and detailed forms.
 
-The basic output is great for a quick check of the quality of an SBOMs. Once you get a good sense of how the tool works, this can also becom the primary way of consuming data from this tool.
+The basic output is great for a quick check of the quality of an SBOMs. Once you get a good sense of how the tool works, this can also become the primary way of consuming data from this tool.
 
 ```sh
 6.0     samples/blogifier-dotnet-SBOM.json

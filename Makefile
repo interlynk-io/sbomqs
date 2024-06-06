@@ -51,7 +51,7 @@ dep:
 	go mod vendor
 	go mod tidy
 
-.PHONY: generate 
+.PHONY: generate
 generate:
 	go generate ./...
 

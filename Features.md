@@ -18,8 +18,8 @@
 # SBOM Quality Checks
 
 This page describes each SBOM Quality check in detail, including scoring criteria,
-remediation steps, and an explanation of the potential impact associated with a low score. 
-The checks are continually changing, and we welcome community feedback. 
+remediation steps, and an explanation of the potential impact associated with a low score.
+The checks are continually changing, and we welcome community feedback.
 
 If you have ideas for additions or new detection techniques,
 please [contribute](https://github.com/interlynk-io/sbomqs#contributions)!
@@ -44,21 +44,21 @@ Therefore comparing Quality Scores across `scoring_engine_version` is not recomm
 
 ### Category: Structural
 ---
-#### Specification 
+#### Specification
 
 This check determines whether the SBOM is in one of the specifications (CycloneDX, SPDX, SWID) recommended by the [CISA reference document](https://ntia.gov/sites/default/files/publications/ntia_sbom_framing_2nd_edition_20211021_0.pdf) .
 
-CISA recommends limiting 
+CISA recommends limiting
 the document to three commonly used formats to facilitate widespread adoption.
 
 
 ***Remediation***
 - Re-create the document in CycloneDX, SPDX, or SWID.
 ---
-#### Specification Version 
+#### Specification Version
 
-This check determines whether the given SBOM is in the specification version that can support fields necessary for typical SBOM operations. 
-The current check tests for 
+This check determines whether the given SBOM is in the specification version that can support fields necessary for typical SBOM operations.
+The current check tests for:
 - CycloneDX Versions: 1.0, 1.1, 1.2, 1.3, 1.4
 - SPDX Versions: 2.1, 2.2, 2.3
 
@@ -67,7 +67,7 @@ While the earlier versions of specifications may exist, a document in an earlier
 ***Remediation***
 - Re-create the document in one of the versions listed above.
 ---
-#### Specification File Format 
+#### Specification File Format
 
 This check determines whether the given SBOM can be easily consumed by testing for the most common file formats associated with the specification.
 - CycloneDX: XML, JSON
@@ -79,7 +79,7 @@ Building and sharing SBOM in the most commonly used file format enables the use 
 - Re-create the document in one of the file formats listed above.
 
 ---
-#### Specification Syntax 
+#### Specification Syntax
 
 This check determines whether the given SBOM meets all the requirements of the underlying specification and file format to be parsed.
 
@@ -92,7 +92,7 @@ A syntactic error in the SBOM will prevent it from being usable.
 ---
 ### Category: NTIA-Minimum-Elements
 ---
-#### Component Name 
+#### Component Name
 
 This check determines whether each component in the SBOM includes a name.
 
@@ -105,7 +105,7 @@ Identify the component with a missing name and check its product page to get its
 - SPDX field: [PackageName](https://spdx.github.io/spdx-spec/v2.3/package-information/#71-package-name-field)
 
 ---
-#### Supplier Name 
+#### Supplier Name
 
 This check determines whether each component in the SBOM includes a supplier name. Supplier name is not a well defined term
 especially in the context of Open Source projects and we will update the recommendation here once a consensus emerges.
@@ -116,7 +116,7 @@ Identify the component with a missing supplier name and check its product page t
 - CycloneDX field: [components:supplier](https://cyclonedx.org/docs/1.4/json/#components_items_supplier)
 - SPDX field: [PackageSupplierName](https://spdx.github.io/spdx-spec/v2.3/package-information/#75-package-supplier-field)
 ---
-#### Unique Identifier 
+#### Unique Identifier
 
 This check determines whether each component in the SBOM includes a unique identifier.
 
@@ -129,7 +129,7 @@ Identify the component with a missing/duplicate identifier.
 - SPDX field: [SPDXID](https://spdx.github.io/spdx-spec/v2.3/package-information/#72-package-spdx-identifier-field)
 
 ---
-#### Component Version 
+#### Component Version
 
 This check determines whether each component in the SBOM includes a version.
 
@@ -140,7 +140,7 @@ Identify the component with the missing version and populate the version field b
 - CycloneDX field: [components:version](https://cyclonedx.org/docs/1.4/json/#components_items_version)
 - SPDX field: [PackageVersion](https://spdx.github.io/spdx-spec/v2.3/package-information/#73-package-version-field)
 ---
-#### Author Name 
+#### Author Name
 
 This check determines whether the document includes the name of the author.
 
@@ -152,7 +152,7 @@ Check and populate the following fields with the name of the person, organizatio
 - SPDX field: [Creator](https://spdx.github.io/spdx-spec/v2.3/document-creation-information/#68-creator-field)
 
 ---
-#### Timestamp 
+#### Timestamp
 
 This check determines if the document includes the timestamp of its creation.
 
@@ -164,7 +164,7 @@ The timestamp can be used to determine when the SBOM was created relative to the
 - SPDX field: [Created](https://spdx.github.io/spdx-spec/v2.3/document-creation-information/#69-created-field)
 
 ---
-#### Relationship among Components 
+#### Relationship among Components
 
 This check determines if the document describes the relationship among included components.
 
@@ -301,12 +301,12 @@ Check the following fields to confirm none of the licenses belong to the [restri
 #### Primary Component Present
 
 An sbom is expected to describe a primary component. This check determines if the sbom has
-a primary component or not. 
+a primary component or not.
 
 ***Remediation steps***
 
 - CycloneDX: ensure the metadata section has the primary [component](https://cyclonedx.org/docs/1.5/json/#metadata_component) defined
-- SPDX: Should have a [DESCRIBES](https://spdx.github.io/spdx-spec/v2.3/relationships-between-SPDX-elements/) relationship which points to a package, or have a documentDescribes field present. 
+- SPDX: Should have a [DESCRIBES](https://spdx.github.io/spdx-spec/v2.3/relationships-between-SPDX-elements/) relationship which points to a package, or have a documentDescribes field present.
 
 
 ---
