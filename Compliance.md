@@ -1,12 +1,12 @@
 # Compliance Reports
 
 sbomqs now helps generating compliance reports for your SBOMs. We support industry standard requirements
-like NTIA minimum elements, BSI TR-03183-2 v1.1 and OWASP SCVS. 
+like NTIA minimum elements, BSI TR-03183-2 v1.1 and OWASP SCVS.
 
-The goal of compliance reports is to verify if the sbom file adheres to these standard, before they are distributed. 
+The goal of compliance reports is to verify if the sbom file adheres to these standard, before they are distributed.
 
 We have explained below how sbomqs approaches compliance reports for BSI TR-03183-2 v1.1. We are not going to explain
-this technical guideline here, but rather go into our intepretation of it. 
+this technical guideline here, but rather go into our intepretation of it.
 
 The [BSI TR-03183-2 v1.1](https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/Publications/TechGuidelines/TR03183/BSI-TR-03183-2.pdf) specifies mandatory properties for an SBOM. Below is how we have derived all the values.
 
