@@ -9,29 +9,29 @@ import (
 
 func TestRetrieveFilesX(t *testing.T) {
 	// Create test directories
-	err := os.MkdirAll("testDir", 0o644)
+	err := os.MkdirAll("testDir", os.ModePerm)
 	if err != nil {
 		fmt.Println(err)
 	}
-	err = os.WriteFile("testDir/testFile.txt", []byte("test content file1"), 0o644)
+	err = os.WriteFile("testDir/testFile.txt", []byte("test content file1"), os.ModePerm)
 	if err != nil {
 		fmt.Println(err)
 	}
-	err = os.MkdirAll("testDir1", 0o644)
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	err = os.WriteFile("testDir1/testFile1.txt", []byte("test content in testDir1/testFile1.txt"), 0o644)
-	if err != nil {
-		fmt.Println(err)
-	}
-	err = os.MkdirAll("testDir2", 0o644)
+	err = os.MkdirAll("testDir1", os.ModePerm)
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	err = os.WriteFile("testDir2/testFile2.txt", []byte("test content"), 0o644)
+	err = os.WriteFile("testDir1/testFile1.txt", []byte("test content in testDir1/testFile1.txt"), os.ModePerm)
+	if err != nil {
+		fmt.Println(err)
+	}
+	err = os.MkdirAll("testDir2", os.ModePerm)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	err = os.WriteFile("testDir2/testFile2.txt", []byte("test content"), os.ModePerm)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -68,5 +68,20 @@ func TestRetrieveFilesX(t *testing.T) {
 	}
 	if files[1] != "testDir2/testFile2.txt" {
 		t.Errorf("Expected file path to be 'testDir2/testFile2.txt', got '%s'", files[1])
+	}
+
+	// Test with an error
+	files, paths, err = retrieveFiles(ctx, []string{"nonExistentDir"})
+	if err == nil {
+		t.Errorf("Expected error, got nil")
+	}
+	if len(files) != 0 {
+		t.Errorf("Expected 0 files, got %d", len(files))
+	}
+	if len(paths) != 1 {
+		t.Errorf("Expected 1 path, got %d", len(paths))
+	}
+	if paths[0] != "nonExistentDir" {
+		t.Errorf("Expected path to be 'nonExistentDir', got '%s'", paths[0])
 	}
 }
