@@ -65,8 +65,10 @@ func Run(ctx context.Context, ep *Params) error {
 
 func validatePath(path string) error {
 	if _, err := os.Stat(path); err != nil {
+		fmt.Printf("failed to stat %s\n", path)
 		return err
 	}
+
 	return nil
 }
 
@@ -148,29 +150,23 @@ func handlePaths(ctx context.Context, ep *Params) error {
 	return nil
 }
 
-func processFile(ctx context.Context, ep *Params, path string) (sbom.Document, scorer.Scores, error) {
+func processFile(ctx context.Context, ep *Params, file string) (sbom.Document, scorer.Scores, error) {
 	log := logger.FromContext(ctx)
-	log.Debugf("Processing file :%s\n", path)
+	log.Debugf("Processing file :%s\n", file)
 
-	if _, err := os.Stat(path); err != nil {
-		log.Debugf("os.Stat failed for file :%s\n", path)
-		fmt.Printf("failed to stat %s\n", path)
-		return nil, nil, err
-	}
-
-	f, err := os.Open(path)
+	f, err := os.Open(file)
 	if err != nil {
-		log.Debugf("os.Open failed for file :%s\n", path)
-		fmt.Printf("failed to open %s\n", path)
+		log.Debugf("os.Open failed for file :%s\n", file)
+		fmt.Printf("failed to open %s\n", file)
 		return nil, nil, err
 	}
 	defer f.Close()
 
 	doc, err := sbom.NewSBOMDocument(ctx, f)
 	if err != nil {
-		log.Debugf("failed to create sbom document for  :%s\n", path)
+		log.Debugf("failed to create sbom document for  :%s\n", file)
 		log.Debugf("%s\n", err)
-		fmt.Printf("failed to parse %s : %s\n", path, err)
+		fmt.Printf("failed to parse %s : %s\n", file, err)
 		return nil, nil, err
 	}
 
