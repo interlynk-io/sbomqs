@@ -17,6 +17,7 @@ package engine
 import (
 	"context"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -125,7 +126,7 @@ func generateReport(ctx context.Context, ep *Params) error {
 	}
 
 	for _, file := range files {
-		doc, err := getSbom(ctx, file)
+		doc, err := getSbom(ctx, file, sbom.NewSBOMDocument)
 		if err != nil {
 			continue
 		}
@@ -151,7 +152,7 @@ func getReport(ctx context.Context, ep *Params, docs []sbom.Document, scores []s
 	return reporter.NewReport(ctx, docs, scores, paths, reporter.WithFormat(strings.ToLower(reportFormat)))
 }
 
-func getSbom(ctx context.Context, file string) (sbom.Document, error) {
+func getSbom(ctx context.Context, file string, newSBOMDocument func(ctx context.Context, f io.ReadSeeker) (sbom.Document, error)) (sbom.Document, error) {
 	log := logger.FromContext(ctx)
 	log.Debugf("getSbom :%s\n", file)
 
@@ -163,7 +164,7 @@ func getSbom(ctx context.Context, file string) (sbom.Document, error) {
 	}
 	defer f.Close()
 
-	doc, err := sbom.NewSBOMDocument(ctx, f)
+	doc, err := newSBOMDocument(ctx, f)
 	if err != nil {
 		log.Debugf("failed to create sbom document for  :%s\n", file)
 		log.Debugf("%s\n", err)

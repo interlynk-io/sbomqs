@@ -85,11 +85,11 @@ func DtrackScore(ctx context.Context, dtP *DtParams) error {
 			if err != nil {
 				return err
 			}
-
-			doc, err := getSbom(ctx, file[0])
+			doc, err := getSbom(ctx, file[0], sbom.NewSBOMDocument)
 			if err != nil {
 				return err
 			}
+
 			sr := getScore(ctx, doc, ep)
 			if dtP.TagProjectWithScore {
 

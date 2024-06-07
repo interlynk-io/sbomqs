@@ -38,7 +38,7 @@ func ShareRun(ctx context.Context, ep *Params) error {
 		return err
 	}
 
-	doc, err := getSbom(ctx, file[0])
+	doc, err := getSbom(ctx, file[0], sbom.NewSBOMDocument)
 	if err != nil {
 		return err
 	}
