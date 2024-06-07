@@ -49,7 +49,6 @@ func DtrackScore(ctx context.Context, dtP *DtParams) error {
 
 	dTrackClient, err := dtrack.NewClient(dtP.Url,
 		dtrack.WithAPIKey(dtP.ApiKey), dtrack.WithDebug(false))
-
 	if err != nil {
 		log.Fatalf("Failed to create Dependency-Track client: %s", err)
 	}
@@ -81,20 +80,26 @@ func DtrackScore(ctx context.Context, dtP *DtParams) error {
 
 			ep := &Params{}
 			ep.Path = append(ep.Path, f.Name())
-			doc, scores, err := processFile(ctx, ep, ep.Path[0])
+
+			file, _, err := retrieveFiles(ctx, []string{ep.Path[0]})
 			if err != nil {
 				return err
 			}
 
+			doc, err := getSbom(ctx, file[0])
+			if err != nil {
+				return err
+			}
+			sr := getScore(ctx, doc, ep)
 			if dtP.TagProjectWithScore {
 
 				log.Debugf("Project: %+v", prj.Tags)
-				//remove old score
+				// remove old score
 				prj.Tags = lo.Filter(prj.Tags, func(t dtrack.Tag, _ int) bool {
 					return !strings.HasPrefix(t.Name, "sbomqs=")
 				})
 
-				tag := fmt.Sprintf("sbomqs=%0.1f", scores.AvgScore())
+				tag := fmt.Sprintf("sbomqs=%0.1f", sr.AvgScore())
 				prj.Tags = append(prj.Tags, dtrack.Tag{Name: tag})
 
 				log.Debugf("Tagging project with %s", tag)
@@ -117,7 +122,7 @@ func DtrackScore(ctx context.Context, dtP *DtParams) error {
 
 			nr := reporter.NewReport(ctx,
 				[]sbom.Document{doc},
-				[]scorer.Scores{scores},
+				[]scorer.Scores{sr},
 				[]string{path},
 				reporter.WithFormat(reportFormat))
 			nr.Report()

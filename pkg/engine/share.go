@@ -33,21 +33,25 @@ func ShareRun(ctx context.Context, ep *Params) error {
 	if len(ep.Path) <= 0 {
 		log.Fatal("path is required")
 	}
-
-	doc, scores, err := processFile(ctx, ep, ep.Path[0])
+	file, _, err := retrieveFiles(ctx, []string{ep.Path[0]})
 	if err != nil {
 		return err
 	}
 
-	url, err := share.Share(ctx, doc, scores, ep.Path[0])
+	doc, err := getSbom(ctx, file[0])
+	if err != nil {
+		return err
+	}
+	sr := getScore(ctx, doc, ep)
 
+	url, err := share.Share(ctx, doc, sr, ep.Path[0])
 	if err != nil {
 		fmt.Printf("Error sharing file %s: %s", ep.Path, err)
 		return err
 	}
 	nr := reporter.NewReport(ctx,
 		[]sbom.Document{doc},
-		[]scorer.Scores{scores},
+		[]scorer.Scores{sr},
 		[]string{ep.Path[0]},
 		reporter.WithFormat(strings.ToLower("basic")))
 	nr.Report()

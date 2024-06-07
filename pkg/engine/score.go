@@ -60,7 +60,7 @@ func Run(ctx context.Context, ep *Params) error {
 		log.Fatal("path is required")
 	}
 
-	return handlePaths(ctx, ep)
+	return generateReport(ctx, ep)
 }
 
 func validatePath(path string) error {
@@ -79,19 +79,20 @@ func retrieveFiles(ctx context.Context, paths []string) ([]string, []string, err
 	log := logger.FromContext(ctx)
 	log.Debug("engine.retrieveFiles()")
 
-	var err error
 	for _, path := range paths {
 		allPaths = append(allPaths, path)
 		err := validatePath(path)
 		if err != nil {
-			fmt.Println("Vivek", err)
+			log.Debugf("Path validation failed for %s: %v", path, err)
 			return allFiles, allPaths, err
 		}
 		log.Debugf("Processing path :%s\n", path)
+
 		pathInfo, err := os.Stat(path)
 		if err != nil {
 			return allFiles, allPaths, err
 		}
+
 		if pathInfo.IsDir() {
 			files, err := os.ReadDir(path)
 			if err != nil {
@@ -111,27 +112,35 @@ func retrieveFiles(ctx context.Context, paths []string) ([]string, []string, err
 		allFiles = append(allFiles, path)
 
 	}
-	return allFiles, allPaths, err
+	return allFiles, allPaths, nil
 }
 
-func handlePaths(ctx context.Context, ep *Params) error {
+func generateReport(ctx context.Context, ep *Params) error {
 	var docs []sbom.Document
-	var paths []string
 	var scores []scorer.Scores
 
 	files, paths, err := retrieveFiles(ctx, ep.Path)
 	if err != nil {
 		return err
 	}
+
 	for _, file := range files {
-		doc, scs, err := processFile(ctx, ep, file)
+		doc, err := getSbom(ctx, file)
 		if err != nil {
 			continue
 		}
+		sr := getScore(ctx, doc, ep)
 		docs = append(docs, doc)
-		scores = append(scores, scs)
+		scores = append(scores, sr)
 	}
 
+	gr := getReport(ctx, ep, docs, scores, paths)
+	gr.Report()
+
+	return nil
+}
+
+func getReport(ctx context.Context, ep *Params, docs []sbom.Document, scores []scorer.Scores, paths []string) *reporter.Reporter {
 	reportFormat := "detailed"
 	if ep.Basic {
 		reportFormat = "basic"
@@ -139,26 +148,18 @@ func handlePaths(ctx context.Context, ep *Params) error {
 		reportFormat = "json"
 	}
 
-	nr := reporter.NewReport(ctx,
-		docs,
-		scores,
-		paths,
-		reporter.WithFormat(strings.ToLower(reportFormat)))
-
-	nr.Report()
-
-	return nil
+	return reporter.NewReport(ctx, docs, scores, paths, reporter.WithFormat(strings.ToLower(reportFormat)))
 }
 
-func processFile(ctx context.Context, ep *Params, file string) (sbom.Document, scorer.Scores, error) {
+func getSbom(ctx context.Context, file string) (sbom.Document, error) {
 	log := logger.FromContext(ctx)
-	log.Debugf("Processing file :%s\n", file)
+	log.Debugf("getSbom :%s\n", file)
 
 	f, err := os.Open(file)
 	if err != nil {
 		log.Debugf("os.Open failed for file :%s\n", file)
 		fmt.Printf("failed to open %s\n", file)
-		return nil, nil, err
+		return nil, err
 	}
 	defer f.Close()
 
@@ -167,8 +168,15 @@ func processFile(ctx context.Context, ep *Params, file string) (sbom.Document, s
 		log.Debugf("failed to create sbom document for  :%s\n", file)
 		log.Debugf("%s\n", err)
 		fmt.Printf("failed to parse %s : %s\n", file, err)
-		return nil, nil, err
+		return nil, err
 	}
+
+	return doc, err
+}
+
+func getScore(ctx context.Context, doc sbom.Document, ep *Params) scorer.Scores {
+	log := logger.FromContext(ctx)
+	log.Debugf("getScore")
 
 	sr := scorer.NewScorer(ctx, doc)
 
@@ -200,6 +208,5 @@ func processFile(ctx context.Context, ep *Params, file string) (sbom.Document, s
 		}
 	}
 
-	scores := sr.Score()
-	return doc, scores, nil
+	return sr.Score()
 }
