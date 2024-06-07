@@ -8,9 +8,11 @@ import (
 
 	"github.com/interlynk-io/sbomqs/pkg/cpe"
 	"github.com/interlynk-io/sbomqs/pkg/licenses"
+	"github.com/interlynk-io/sbomqs/pkg/logger"
 	"github.com/interlynk-io/sbomqs/pkg/purl"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/pkg/scorer"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -91,6 +93,19 @@ func TestRetrieveFilesX(t *testing.T) {
 	if paths[0] != "nonExistentDir" {
 		t.Errorf("Expected path to be 'nonExistentDir', got '%s'", paths[0])
 	}
+}
+
+func TestSbomFileError(t *testing.T) {
+	ctx := context.Background()
+	logger.FromContext(ctx)
+
+	// Test with a nonexistent file to trigger the file opening error
+	nonexistentFile := "nonexistentfile.txt"
+
+	doc, err := getSbom(ctx, nonexistentFile)
+	assert.Nil(t, doc)
+	assert.Error(t, err)
+	assert.True(t, os.IsNotExist(err))
 }
 
 // write test for processFile:
