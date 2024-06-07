@@ -2,7 +2,9 @@ package engine
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"io"
 	"os"
 	"testing"
 
@@ -16,12 +18,14 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-func TestRetrieveFilesX(t *testing.T) {
+func TestRetrieveFiles(t *testing.T) {
 	// Create test directories
 	err := os.MkdirAll("testDir", os.ModePerm)
 	if err != nil {
 		fmt.Println(err)
 	}
+	defer os.RemoveAll("testDir")
+
 	err = os.WriteFile("testDir/testFile.txt", []byte("test content file1"), os.ModePerm)
 	if err != nil {
 		fmt.Println(err)
@@ -30,6 +34,7 @@ func TestRetrieveFilesX(t *testing.T) {
 	if err != nil {
 		fmt.Println(err)
 	}
+	defer os.RemoveAll("testDir1")
 
 	err = os.WriteFile("testDir1/testFile1.txt", []byte("test content in testDir1/testFile1.txt"), os.ModePerm)
 	if err != nil {
@@ -39,6 +44,7 @@ func TestRetrieveFilesX(t *testing.T) {
 	if err != nil {
 		fmt.Println(err)
 	}
+	defer os.RemoveAll("testDir2")
 
 	err = os.WriteFile("testDir2/testFile2.txt", []byte("test content"), os.ModePerm)
 	if err != nil {
@@ -95,32 +101,63 @@ func TestRetrieveFilesX(t *testing.T) {
 	}
 }
 
-func TestSbomFileError(t *testing.T) {
+func TestGetSbom(t *testing.T) {
 	ctx := context.Background()
 	logger.FromContext(ctx)
 
-	// Test with a nonexistent file to trigger the file opening error
-	nonexistentFile := "nonexistentfile.txt"
+	t.Run("file open error", func(t *testing.T) {
+		nonexistentFile := "nonexistentfile.txt"
 
-	doc, err := getSbom(ctx, nonexistentFile)
-	assert.Nil(t, doc)
-	assert.Error(t, err)
-	assert.True(t, os.IsNotExist(err))
+		doc, err := getSbom(ctx, nonexistentFile, nil)
+		assert.Nil(t, doc)
+		assert.Error(t, err)
+		assert.True(t, os.IsNotExist(err))
+	})
+
+	t.Run("sbom document creation error", func(t *testing.T) {
+		tempFile, err := os.CreateTemp("", "testfile*.txt")
+		assert.NoError(t, err)
+		defer os.Remove(tempFile.Name())
+
+		mockSBOM := new(MockSBOMDocument)
+		mockSBOM.On("NewSBOMDocument", ctx, mock.Anything).Return(nil, errors.New("failed to create sbom document"))
+
+		doc, err := getSbom(ctx, tempFile.Name(), mockSBOM.NewSBOMDocument)
+		assert.Nil(t, doc)
+		assert.Error(t, err)
+		assert.Equal(t, "failed to create sbom document", err.Error())
+		mockSBOM.AssertExpectations(t)
+	})
+
+	t.Run("successful sbom document creation", func(t *testing.T) {
+		tempFile, err := os.CreateTemp("", "testfile*.txt")
+		assert.NoError(t, err)
+		defer os.Remove(tempFile.Name())
+
+		dummyDoc := createDummyDocument()
+		mockSBOM := new(MockSBOMDocument)
+		mockSBOM.On("NewSBOMDocument", ctx, mock.Anything).Return(dummyDoc, nil)
+
+		doc, err := getSbom(ctx, tempFile.Name(), mockSBOM.NewSBOMDocument)
+		assert.NoError(t, err)
+		assert.NotNil(t, doc)
+		assert.Equal(t, dummyDoc, doc)
+
+		mockSBOM.AssertExpectations(t)
+	})
 }
 
-// write test for processFile:
-// 1. Opening a file successfully.
-// 2. Handling errors when a file cannot be opened.
-// 3. Creating and scoring an SBOM document.
-
-// Mock the sbom and scorer packages
-type MockSBOM struct {
+type MockSBOMDocument struct {
 	mock.Mock
 }
 
-func (m *MockSBOM) NewSBOMDocument(ctx context.Context, f *os.File) (sbom.Document, error) {
+func (m *MockSBOMDocument) NewSBOMDocument(ctx context.Context, f io.ReadSeeker) (sbom.Document, error) {
 	args := m.Called(ctx, f)
-	return args.Get(0).(sbom.Document), args.Error(1)
+	// Use args.Get to handle nil return values correctly
+	if args.Get(0) != nil {
+		return args.Get(0).(sbom.Document), args.Error(1)
+	}
+	return nil, args.Error(1)
 }
 
 type MockScorer struct {
@@ -143,74 +180,6 @@ func TestScore(t *testing.T) {
 	score := sr.Score()
 	fmt.Println("Score: ", score.AvgScore())
 }
-
-// func TestProcessFile(t *testing.T) {
-// 	ctx := context.Background()
-
-// 	tempFile, err := os.CreateTemp("", "testfile*.txt")
-// 	assert.NoError(t, err)
-// 	defer os.Remove(tempFile.Name())
-
-// 	_, err = tempFile.WriteString("test content")
-// 	assert.NoError(t, err)
-// 	tempFile.Close()
-
-// 	t.Run("successful processing", func(t *testing.T) {
-// 		mockSBOM := new(MockSBOM)
-// 		mockScorer := new(MockScorer)
-
-// 		doc := createDummyDocument()
-// 		scores := scorer.Scores{} // create dummy scores
-
-// 		mockSBOM.On("NewSBOMDocument", ctx, mock.Anything).Return(doc, nil)
-// 		mockScorer.On("Score").Return(scores)
-
-// 		ep := &Params{
-// 			Category:   "test-category",
-// 			Features:   []string{"test-feature"},
-// 			ConfigPath: "",
-// 		}
-
-// 		// Replace the actual functions with mocks
-// 		sbom.NewSBOMDocument = mockSBOM.NewSBOMDocument
-// 		scorer.NewScorer = func(ctx context.Context, doc sbom.Document) scorer.Scorer {
-// 			return mockScorer
-// 		}
-
-// 		resultDoc, resultScores, err := processFile(ctx, ep, tempFile.Name())
-// 		assert.NoError(t, err)
-// 		assert.Equal(t, doc, resultDoc)
-// 		assert.Equal(t, scores, resultScores)
-
-// 		mockSBOM.AssertExpectations(t)
-// 		mockScorer.AssertExpectations(t)
-// 	})
-
-// 	// t.Run("file open failure", func(t *testing.T) {
-// 	// 	ep := &Params{}
-// 	// 	_, _, err := processFile(ctx, ep, "nonexistentfile.txt")
-// 	// 	assert.Error(t, err)
-// 	// 	assert.True(t, os.IsNotExist(err))
-// 	// })
-
-// 	// t.Run("sbom document creation failure", func(t *testing.T) {
-// 	// 	mockSBOM := new(MockSBOM)
-// 	// 	mockScorer := new(MockScorer)
-
-// 	// 	mockSBOM.On("NewSBOMDocument", ctx, mock.Anything).Return(nil, assert.AnError)
-
-// 	// 	ep := &Params{}
-
-// 	// 	// Replace the actual function with mock
-// 	// 	sbom.NewSBOMDocument = mockSBOM.NewSBOMDocument
-
-// 	// 	_, _, err := processFile(ctx, ep, tempFile.Name())
-// 	// 	assert.Error(t, err)
-// 	// 	assert.Equal(t, assert.AnError, err)
-
-// 	// 	mockSBOM.AssertExpectations(t)
-// 	// })
-// }
 
 // Mock implementations of the interfaces
 type MockDocument struct {
