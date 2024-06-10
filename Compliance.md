@@ -25,8 +25,8 @@ The [BSI TR-03183-2 v1.1](https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/Pu
 || `dependencies` | dependencies, compositions| relationships| cdx we look for attestations via compositions, spdx nothing exists|
 || `license`| component->license| packageConcluded, packageDeclated| we lookup sdpx,spdx-exceptions,aboutcode, and licenseRef-|
 || `hash` | component->hashes | package->checksums | we only look for sha-256|
-|5.3.1 Additional Component fields | `SBOM-URI`| serialNumber, version | namespace | for cdx bom-link is considered a URN |
-| | `source code uri`| component->externalReferences->type (vcs) | no-deterministic-field | |
+|5.3.1 Additional SBOM fields | `SBOM-URI`| serialNumber, version | namespace | for cdx bom-link is considered a URN |
+| 5.3.2 Additional Component fields| `source code uri`| component->externalReferences->type (vcs) | no-deterministic-field | |
 | | `URI of the executable form`| component->externalReferences->type (distribution/distribution-intake) | PackageDownloadLocation | |
 | | `hash of source code`| no-deterministic-field | package->PackageVerificationCode | |
 | | `other uniq identifiers`| component->cpe, component->purl| package->externalReference->security (cpe/purl) | |
