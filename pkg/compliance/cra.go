@@ -23,28 +23,56 @@ import (
 	"github.com/samber/lo"
 )
 
-var valid_cra_spdx_versions = []string{"SPDX-2.3"}
-var valid_cra_cdx_versions = []string{"1.4", "1.5", "1.6"}
+var (
+	valid_cra_spdx_versions = []string{"SPDX-2.3"}
+	valid_cra_cdx_versions  = []string{"1.4", "1.5", "1.6"}
+)
 
 const (
 	SBOM_SPEC = iota
+	SBOM_SPDXID
+	SBOM_NAME
+	SBOM_COMMENT
+	SBOM_ORG
+	SBOM_TOOL
+	SBOM_NAMESPACE
+	SBOM_LICENSE
 	SBOM_SPEC_VERSION
 	SBOM_BUILD
 	SBOM_DEPTH
 	SBOM_CREATOR
 	SBOM_TIMESTAMP
 	SBOM_COMPONENTS
+	SBOM_PACKAGES
 	SBOM_URI
 	COMP_CREATOR
+	PACK_SUPPLIER
 	COMP_NAME
 	COMP_VERSION
+	PACK_HASH
 	COMP_HASH
 	COMP_SOURCE_CODE_URL
+	PACK_FILE_ANALYZED
+	PACK_SPDXID
+	PACK_NAME
+	PACK_VERSION
+	PACK_DOWNLOAD_URL
 	COMP_DOWNLOAD_URL
 	COMP_OTHER_UNIQ_IDS
 	COMP_SOURCE_HASH
 	COMP_LICENSE
+	PACK_LICENSE_CON
+	PACK_LICENSE_DEC
+	PACK_COPYRIGHT
 	COMP_DEPTH
+	SBOM_MACHINE_FORMAT
+	SBOM_HUMAN_FORMAT
+	SBOM_BUILD_INFO
+	SBOM_DELIVERY_TIME
+	SBOM_DELIVERY_METHOD
+	SBOM_SCOPE
+	PACK_INFO
+	PACK_EXT_REF
 )
 
 func craResult(ctx context.Context, doc sbom.Document, fileName string, outFormat string) {
@@ -76,7 +104,7 @@ func craResult(ctx context.Context, doc sbom.Document, fileName string, outForma
 }
 
 func craSpec(doc sbom.Document) *record {
-	v := doc.Spec().Name()
+	v := doc.Spec().SpecType()
 	v_to_lower := strings.Trim(strings.ToLower(v), " ")
 	result := ""
 	score := 0.0
@@ -92,7 +120,7 @@ func craSpec(doc sbom.Document) *record {
 }
 
 func craSpecVersion(doc sbom.Document) *record {
-	spec := doc.Spec().Name()
+	spec := doc.Spec().SpecType()
 	version := doc.Spec().Version()
 
 	result := ""
@@ -439,7 +467,6 @@ func craComponentVersion(component sbom.Component) *record {
 }
 
 func craComponentName(component sbom.Component) *record {
-
 	result := component.Name()
 
 	if result != "" {

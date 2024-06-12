@@ -43,7 +43,6 @@ func compWithValidLicensesCheck(d sbom.Document, c *check) score {
 		})
 
 		return (float64(validLic) / float64(tl)) * 10.0
-
 	})
 
 	totalCompScore := lo.Reduce(compScores, func(agg float64, a float64, _ int) float64 {
@@ -76,7 +75,7 @@ func compWithPrimaryPackageCheck(d sbom.Document, c *check) score {
 		return *s
 	}
 	withPurpose := lo.CountBy(d.Components(), func(c sbom.Component) bool {
-		return c.PrimaryPurpose() != "" && lo.Contains(sbom.SupportedPrimaryPurpose(d.Spec().Name()), strings.ToLower(c.PrimaryPurpose()))
+		return c.PrimaryPurpose() != "" && lo.Contains(sbom.SupportedPrimaryPurpose(d.Spec().SpecType()), strings.ToLower(c.PrimaryPurpose()))
 	})
 
 	finalScore := (float64(withPurpose) / float64(totalComponents)) * 10.0

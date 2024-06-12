@@ -17,19 +17,23 @@ package compliance
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/interlynk-io/sbomqs/pkg/logger"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 )
 
-const CRA_REPORT = "CRA"
-const NTIA_REPORT = "NTIA"
+const (
+	CRA_REPORT  = "CRA"
+	NTIA_REPORT = "NTIA"
+	OCT_TELCO   = "OCT"
+)
 
 func ComplianceResult(ctx context.Context, doc sbom.Document, reportType, fileName, outFormat string) error {
 	log := logger.FromContext(ctx)
 	log.Debug("compliance.ComplianceResult()")
 
-	if reportType != CRA_REPORT && reportType != NTIA_REPORT {
+	if reportType != CRA_REPORT && reportType != NTIA_REPORT && reportType != OCT_TELCO {
 		log.Debugf("Invalid report type: %s\n", reportType)
 		return errors.New("invalid report type")
 	}
@@ -55,6 +59,14 @@ func ComplianceResult(ctx context.Context, doc sbom.Document, reportType, fileNa
 
 	if reportType == NTIA_REPORT {
 		ntiaResult(ctx, doc, fileName, outFormat)
+	}
+
+	if reportType == OCT_TELCO {
+		if doc.Spec().SpecType() != "spdx" {
+			fmt.Println("The Provided SBOM spec is other than SPDX. Open Chain Telco only support SPDX specs SBOMs.")
+			return nil
+		}
+		octResult(ctx, doc, fileName, outFormat)
 	}
 
 	return nil

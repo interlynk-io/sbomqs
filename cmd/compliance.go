@@ -25,7 +25,7 @@ import (
 var complianceCmd = &cobra.Command{
 	Use:   "compliance <sbom file>",
 	Short: "compliance command checks an SBOM for compliance with SBOM standards",
-	Long: `Check if your SBOM complies with various SBOM standards like NTIA minimum elements, BSI TR-03183-2.
+	Long: `Check if your SBOM complies with various SBOM standards like NTIA minimum elements, BSI TR-03183-2, OpenChain Telco.
 	Generate a compliance report for an SBOM file.
 	`,
 	Args: func(cmd *cobra.Command, args []string) error {
@@ -59,6 +59,7 @@ func setupEngineParams(cmd *cobra.Command, args []string) *engine.Params {
 
 	// engParams.Ntia, _ = cmd.Flags().GetBool("ntia")
 	engParams.Cra, _ = cmd.Flags().GetBool("cra")
+	engParams.Oct, _ = cmd.Flags().GetBool("oct")
 
 	engParams.Debug, _ = cmd.Flags().GetBool("debug")
 
@@ -70,18 +71,19 @@ func setupEngineParams(cmd *cobra.Command, args []string) *engine.Params {
 func init() {
 	rootCmd.AddCommand(complianceCmd)
 
-	//Debug control
+	// Debug control
 	complianceCmd.Flags().BoolP("debug", "D", false, "enable debug logging")
 
-	//Output control
+	// Output control
 	complianceCmd.Flags().BoolP("json", "j", false, "output in json format")
 	complianceCmd.Flags().BoolP("basic", "b", false, "output in basic format")
 	complianceCmd.Flags().BoolP("detailed", "d", false, "output in detailed format")
-	//complianceCmd.Flags().BoolP("pdf", "p", false, "output in pdf format")
+	// complianceCmd.Flags().BoolP("pdf", "p", false, "output in pdf format")
 	complianceCmd.MarkFlagsMutuallyExclusive("json", "basic", "detailed")
 
-	//Standards control
+	// Standards control
 	// complianceCmd.Flags().BoolP("ntia", "n", false, "check for NTIA minimum elements compliance")
 	complianceCmd.Flags().BoolP("cra", "c", false, "BSI TR-03183-2 v1.1 compliance")
 	// complianceCmd.MarkFlagsMutuallyExclusive("ntia", "cra")
+	complianceCmd.Flags().BoolP("oct", "t", false, "OpenChainTelco compliance")
 }

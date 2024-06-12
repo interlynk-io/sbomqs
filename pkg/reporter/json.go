@@ -84,12 +84,12 @@ func (r *Reporter) jsonReport(onlyResponse bool) (string, error) {
 		f.Components = len(doc.Components())
 		f.Format = doc.Spec().FileFormat()
 		f.Name = path
-		f.Spec = doc.Spec().Name()
+		f.Spec = doc.Spec().SpecType()
 		f.SpecVersion = doc.Spec().Version()
 		tools := doc.Tools()
 
 		if len(tools) > 0 {
-			//Use the first tool for now
+			// Use the first tool for now
 			f.ToolName = tools[0].Name()
 			f.ToolVersion = tools[0].Version()
 		}

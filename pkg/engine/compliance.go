@@ -46,6 +46,8 @@ func ComplianceRun(ctx context.Context, ep *Params) error {
 
 	if ep.Cra {
 		reportType = "CRA"
+	} else if ep.Oct {
+		reportType = "OCT"
 	}
 
 	outFormat := "detailed"

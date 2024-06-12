@@ -35,9 +35,11 @@ import (
 	spdx_yaml "github.com/spdx/tools-golang/yaml"
 )
 
-var spdx_file_formats = []string{"json", "yaml", "rdf", "tag-value"}
-var spdx_spec_versions = []string{"SPDX-2.1", "SPDX-2.2", "SPDX-2.3"}
-var spdx_primary_purpose = []string{"application", "framework", "library", "container", "operating-system", "device", "firmware", "source", "archive", "file", "install", "other"}
+var (
+	spdx_file_formats    = []string{"json", "yaml", "rdf", "tag-value"}
+	spdx_spec_versions   = []string{"SPDX-2.1", "SPDX-2.2", "SPDX-2.3"}
+	spdx_primary_purpose = []string{"application", "framework", "library", "container", "operating-system", "device", "firmware", "source", "archive", "file", "install", "other"}
+)
 
 type spdxDoc struct {
 	doc                *spdx.Document
@@ -110,6 +112,7 @@ func (s spdxDoc) Tools() []Tool {
 func (s spdxDoc) Relations() []Relation {
 	return s.rels
 }
+
 func (s spdxDoc) Logs() []string {
 	return s.logs
 }
@@ -144,10 +147,28 @@ func (s *spdxDoc) parseSpec() {
 	sp.format = string(s.format)
 	sp.version = s.doc.SPDXVersion
 
-	sp.name = string(SBOMSpecSPDX)
+	if s.doc.CreationInfo != nil {
+		for _, c := range s.doc.CreationInfo.Creators {
+			ctType := strings.ToLower(c.CreatorType)
+			if ctType == "organization" {
+				sp.organization = c.Creator
+			}
+		}
+		sp.comment = s.doc.CreationInfo.CreatorComment
+	}
+
+	sp.spdxid = string(s.doc.SPDXIdentifier)
+	sp.comment = s.doc.CreationInfo.CreatorComment
+
+	sp.specType = string(SBOMSpecSPDX)
+	sp.name = s.doc.DocumentName
+
 	sp.isReqFieldsPresent = s.requiredFields()
+
 	if s.doc.CreationInfo != nil {
 		sp.creationTimestamp = s.doc.CreationInfo.Created
+		// sp.created = s.doc.CreationInfo.Created
+		sp.comment = s.doc.CreationInfo.CreatorComment
 	}
 
 	lics := licenses.LookupExpression(s.doc.DataLicense, nil)
@@ -172,12 +193,17 @@ func (s *spdxDoc) parseComps() {
 		nc.version = sc.PackageVersion
 		nc.name = sc.PackageName
 		nc.purpose = sc.PrimaryPackagePurpose
+		nc.spdxid = string(sc.PackageSPDXIdentifier)
+		nc.copyRight = sc.PackageCopyrightText
+		nc.fileAnalyzed = sc.FilesAnalyzed
 		nc.isReqFieldsPresent = s.pkgRequiredFields(index)
 		nc.purls = s.purls(index)
 		nc.cpes = s.cpes(index)
 		nc.checksums = s.checksums(index)
+		nc.externalReferences = s.externalRefs(index)
 		nc.licenses = s.licenses(index)
 		nc.id = string(sc.PackageSPDXIdentifier)
+		nc.packageLicenseConcluded = sc.PackageLicenseConcluded
 
 		manu := s.getManufacturer(index)
 		if manu != nil {
@@ -194,7 +220,7 @@ func (s *spdxDoc) parseComps() {
 			nc.sourceCodeHash = sc.PackageVerificationCode.Value
 		}
 
-		//nc.sourceCodeUrl //no conlusive way to get this from SPDX
+		// nc.sourceCodeUrl //no conlusive way to get this from SPDX
 		if strings.ToLower(sc.PackageDownloadLocation) == "noassertion" || strings.ToLower(sc.PackageDownloadLocation) == "none" {
 			nc.downloadLocation = ""
 		} else {
@@ -272,9 +298,10 @@ func (s *spdxDoc) parseRels() {
 			s.rels = append(s.rels, nr)
 		}
 	}
-
 }
 
+// creationInfo.Creators.Tool
+// Also create for org: , creationInfo.Creators.Organization
 func (s *spdxDoc) parseTool() {
 	s.tools = []Tool{}
 
@@ -282,9 +309,9 @@ func (s *spdxDoc) parseTool() {
 		return
 	}
 
-	//https://spdx.github.io/spdx-spec/v2.3/document-creation-information/#68-creator-field
-	//spdx2.3 spec says If the SPDX document was created using a software tool,
-	//indicate the name and version for that tool
+	// https://spdx.github.io/spdx-spec/v2.3/document-creation-information/#68-creator-field
+	// spdx2.3 spec says If the SPDX document was created using a software tool,
+	// indicate the name and version for that tool
 	extractVersion := func(inputName string) (string, string) {
 		// Split the input string by "-"
 		parts := strings.Split(inputName, "-")
@@ -299,15 +326,15 @@ func (s *spdxDoc) parseTool() {
 		// The name is everything before the last element
 		name := strings.Join(parts[:len(parts)-1], "-")
 
-		//check if version has atleast one-digit
-		//if not, then it is not a version
+		// check if version has atleast one-digit
+		// if not, then it is not a version
 		for _, r := range version {
 			if unicode.IsDigit(r) {
 				return name, version
 			}
 		}
 
-		//This is a bad case
+		// This is a bad case
 		return inputName, ""
 	}
 
@@ -348,31 +375,31 @@ func (s *spdxDoc) requiredFields() bool {
 		s.addToLogs("spdx doc is missing Datalicense")
 		return false
 	}
-	//Identify the current SPDX document which may be referenced in relationships
-	//by other files, packages internally and documents externally
+	// Identify the current SPDX document which may be referenced in relationships
+	// by other files, packages internally and documents externally
 	if s.doc.SPDXIdentifier == "" {
 		s.addToLogs("spdx doc is missing SPDXIdentifier")
 		return false
 	}
-	//Identify name of this document as designated by creator
+	// Identify name of this document as designated by creator
 	if s.doc.DocumentName == "" {
 		s.addToLogs("spdx doc is missing DocumentName")
 		return false
 	}
 
-	//The URI provides an unambiguous mechanism for other SPDX documents to reference SPDX elements within this SPDX document
+	// The URI provides an unambiguous mechanism for other SPDX documents to reference SPDX elements within this SPDX document
 	if s.doc.DocumentNamespace == "" {
 		s.addToLogs("spdx doc is missing Document Namespace")
 		return false
 	}
 
-	//Identify who (or what, in the case of a tool) created the SPDX document.
+	// Identify who (or what, in the case of a tool) created the SPDX document.
 	if len(s.doc.CreationInfo.Creators) == 0 {
 		s.addToLogs("spdx doc is missing creators")
 		return false
 	}
 
-	//Identify when the SPDX document was originally created.
+	// Identify when the SPDX document was originally created.
 	if s.doc.CreationInfo.Created == "" {
 		s.addToLogs("spdx doc is missing created timestamp")
 		return false
@@ -381,7 +408,6 @@ func (s *spdxDoc) requiredFields() bool {
 }
 
 func (s *spdxDoc) pkgRequiredFields(index int) bool {
-
 	pkg := s.doc.Packages[index]
 
 	if pkg.PackageName == "" {
@@ -394,7 +420,7 @@ func (s *spdxDoc) pkgRequiredFields(index int) bool {
 		return false
 	}
 
-	//What is the correct behaviour for NONE and NOASSERTION?
+	// What is the correct behaviour for NONE and NOASSERTION?
 	if pkg.PackageDownloadLocation == "" {
 		s.addToLogs(fmt.Sprintf("spdx doc pkg %s at index %d missing downloadLocation", pkg.PackageName, index))
 		return false
@@ -405,7 +431,6 @@ func (s *spdxDoc) pkgRequiredFields(index int) bool {
 		return false
 	}
 	return true
-
 }
 
 func (s *spdxDoc) purls(index int) []purl.PURL {
@@ -433,7 +458,6 @@ func (s *spdxDoc) purls(index int) []purl.PURL {
 	}
 
 	return urls
-
 }
 
 func (s *spdxDoc) cpes(index int) []cpe.CPE {
@@ -453,7 +477,6 @@ func (s *spdxDoc) cpes(index int) []cpe.CPE {
 				s.addToLogs(fmt.Sprintf("spdx doc pkg %s at index %d invalid cpes found", pkg.PackageName, index))
 			}
 		}
-
 	}
 	if len(urls) == 0 {
 		s.addToLogs(fmt.Sprintf("spdx doc pkg %s at index %d no cpes found", pkg.PackageName, index))
@@ -479,6 +502,24 @@ func (s *spdxDoc) checksums(index int) []Checksum {
 	}
 
 	return chks
+}
+
+func (s *spdxDoc) externalRefs(index int) []ExternalReference {
+	extRefs := []ExternalReference{}
+	pkg := s.doc.Packages[index]
+
+	if len(pkg.PackageExternalReferences) == 0 {
+		s.addToLogs(fmt.Sprintf("spdx doc pkg %s at index %d no externalReferences found", pkg.PackageName, index))
+		return extRefs
+	}
+
+	for _, ext := range pkg.PackageExternalReferences {
+		extRef := externalReference{}
+		extRef.refType = ext.RefType
+		extRefs = append(extRefs, extRef)
+	}
+
+	return extRefs
 }
 
 func (s *spdxDoc) licenses(index int) []licenses.License {

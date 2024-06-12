@@ -14,33 +14,55 @@
 
 package sbom
 
-import "github.com/interlynk-io/sbomqs/pkg/licenses"
+import (
+	"github.com/interlynk-io/sbomqs/pkg/licenses"
+)
 
 type Spec interface {
 	Version() string
 	FileFormat() string
 	Parsable() bool
 	Name() string
+	SpecType() string
 	RequiredFields() bool
 	CreationTimestamp() string
 	Licenses() []licenses.License
 	Namespace() string
 	URI() string
+	Organization() string
+	Comment() string
+	SpdxID() string
 }
 
 type spec struct {
 	version            string
 	format             string
+	specType           string
 	name               string
 	isReqFieldsPresent bool
 	licenses           []licenses.License
 	creationTimestamp  string
 	namespace          string
 	uri                string
+	organization       string
+	comment            string
+	spdxid             string
 }
 
 func newSpec() *spec {
 	return &spec{}
+}
+
+func (s spec) Organization() string {
+	return s.organization
+}
+
+func (s spec) Comment() string {
+	return s.comment
+}
+
+func (s spec) SpdxID() string {
+	return s.spdxid
 }
 
 func (s spec) Version() string {
@@ -57,6 +79,10 @@ func (s spec) Parsable() bool {
 
 func (s spec) Name() string {
 	return s.name
+}
+
+func (s spec) SpecType() string {
+	return s.specType
 }
 
 func (s spec) RequiredFields() bool {
