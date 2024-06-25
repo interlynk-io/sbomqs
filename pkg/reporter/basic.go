@@ -14,11 +14,28 @@
 
 package reporter
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 func (r *Reporter) simpleReport() {
 	for index, path := range r.Paths {
 		scores := r.Scores[index]
-		fmt.Printf("%0.1f\t%s\n", scores.AvgScore(), path)
+		doc := r.Docs[index]
+
+		format := doc.Spec().FileFormat()
+		spec := doc.Spec().Name()
+		specVersion := doc.Spec().Version()
+
+		if spec == "spdx" {
+			specVersion = strings.Replace(specVersion, "SPDX-", "", 1)
+		}
+
+		if spec == "cyclonedx" {
+			spec = "cdx"
+		}
+
+		fmt.Printf("%0.1f\t%s\t%s\t%s\t%s\n", scores.AvgScore(), spec, specVersion, format, path)
 	}
 }
