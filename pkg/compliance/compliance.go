@@ -62,7 +62,7 @@ func ComplianceResult(ctx context.Context, doc sbom.Document, reportType, fileNa
 	}
 
 	if reportType == OCT_TELCO {
-		if doc.Spec().SpecType() != "spdx" {
+		if doc.Spec().GetSpecType() != "spdx" {
 			fmt.Println("The Provided SBOM spec is other than SPDX. Open Chain Telco only support SPDX specs SBOMs.")
 			return nil
 		}

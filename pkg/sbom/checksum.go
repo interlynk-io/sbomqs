@@ -15,19 +15,20 @@
 package sbom
 
 //counterfeiter:generate . Checksum
-type Checksum interface {
-	Algo() string
-	Content() string
+type GetChecksum interface {
+	GetAlgo() string
+	GetContent() string
 }
 
-type checksum struct {
-	alg     string
-	content string
+type Checksum struct {
+	Alg     string
+	Content string
 }
 
-func (c checksum) Algo() string {
-	return c.alg
+func (c Checksum) GetAlgo() string {
+	return c.Alg
 }
-func (c checksum) Content() string {
-	return c.content
+
+func (c Checksum) GetContent() string {
+	return c.Content
 }

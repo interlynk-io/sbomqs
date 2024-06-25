@@ -21,162 +21,162 @@ import (
 	"github.com/interlynk-io/sbomqs/pkg/purl"
 )
 
-type Component interface {
-	ID() string
-	SupplierName() string
-	Name() string
-	Version() string
+type GetComponent interface {
+	GetID() string
+	GetSupplierName() string
+	GetName() string
+	GetVersion() string
 	Cpes() []cpe.CPE
 	Purls() []purl.PURL
 	Licenses() []licenses.License
-	Checksums() []Checksum
+	GetChecksums() []GetChecksum
 	PrimaryPurpose() string
 	RequiredFields() bool
-	Supplier() Supplier
+	GetSupplier() Supplier
 	Manufacturer() Manufacturer
 	CountOfDependencies() int
 	SourceCodeUrl() string
-	DownloadLocationUrl() string
+	GetDownloadLocationUrl() string
 	SourceCodeHash() string
 	IsPrimaryComponent() bool
 	HasRelationShips() bool
 	RelationShipState() string
-	SpdxID() string
-	FileAnalyzed() bool
-	CopyRight() string
-	PackageLicenseDeclared() string
-	PackageLicenseConcluded() string
-	ExternalReferences() []ExternalReference
+	GetSpdxID() string
+	GetFileAnalyzed() bool
+	GetCopyRight() string
+	GetPackageLicenseDeclared() string
+	GetPackageLicenseConcluded() string
+	GetExternalReferences() []ExternalReference
 }
 
-type component struct {
-	supplierName            string
-	name                    string
-	version                 string
+type Component struct {
+	SupplierName            string
+	Name                    string
+	Version                 string
 	cpes                    []cpe.CPE
 	purls                   []purl.PURL
 	licenses                []licenses.License
-	checksums               []Checksum
+	Checksums               []GetChecksum
 	purpose                 string
 	isReqFieldsPresent      bool
-	id                      string
-	supplier                supplier
+	Id                      string
+	Supplier                supplier
 	manufacturer            manufacturer
 	dependenciesCount       int
 	sourceCodeUrl           string
-	downloadLocation        string
+	DownloadLocation        string
 	sourceCodeHash          string
 	isPrimary               bool
 	hasRelationships        bool
 	relationshipState       string
-	spdxid                  string
-	fileAnalyzed            bool
-	copyRight               string
-	packageLicenseConcluded string
-	packageLicenseDeclared  string
-	externalReferences      []ExternalReference
+	Spdxid                  string
+	FileAnalyzed            bool
+	CopyRight               string
+	PackageLicenseConcluded string
+	PackageLicenseDeclared  string
+	ExternalReferences      []ExternalReference
 }
 
-func newComponent() *component {
-	return &component{}
+func NewComponent() *Component {
+	return &Component{}
 }
 
-func (c component) SupplierName() string {
-	return c.supplierName
+func (c Component) GetSupplierName() string {
+	return c.SupplierName
 }
 
-func (c component) Name() string {
-	return c.name
+func (c Component) GetName() string {
+	return c.Name
 }
 
-func (c component) Version() string {
-	return c.version
+func (c Component) GetVersion() string {
+	return c.Version
 }
 
-func (c component) Purls() []purl.PURL {
+func (c Component) Purls() []purl.PURL {
 	return c.purls
 }
 
-func (c component) Cpes() []cpe.CPE {
+func (c Component) Cpes() []cpe.CPE {
 	return c.cpes
 }
 
-func (c component) Licenses() []licenses.License {
+func (c Component) Licenses() []licenses.License {
 	return c.licenses
 }
 
-func (c component) Checksums() []Checksum {
-	return c.checksums
+func (c Component) GetChecksums() []GetChecksum {
+	return c.Checksums
 }
 
-func (c component) PrimaryPurpose() string {
+func (c Component) PrimaryPurpose() string {
 	return c.purpose
 }
 
-func (c component) RequiredFields() bool {
+func (c Component) RequiredFields() bool {
 	return c.isReqFieldsPresent
 }
 
-func (c component) ID() string {
-	return c.id
+func (c Component) GetID() string {
+	return c.Id
 }
 
-func (c component) Manufacturer() Manufacturer {
+func (c Component) Manufacturer() Manufacturer {
 	return c.manufacturer
 }
 
-func (c component) Supplier() Supplier {
-	return c.supplier
+func (c Component) GetSupplier() Supplier {
+	return c.Supplier
 }
 
-func (c component) CountOfDependencies() int {
+func (c Component) CountOfDependencies() int {
 	return c.dependenciesCount
 }
 
-func (c component) SourceCodeUrl() string {
+func (c Component) SourceCodeUrl() string {
 	return c.sourceCodeUrl
 }
 
-func (c component) DownloadLocationUrl() string {
-	return c.downloadLocation
+func (c Component) GetDownloadLocationUrl() string {
+	return c.DownloadLocation
 }
 
-func (c component) SourceCodeHash() string {
+func (c Component) SourceCodeHash() string {
 	return c.sourceCodeHash
 }
 
-func (c component) IsPrimaryComponent() bool {
+func (c Component) IsPrimaryComponent() bool {
 	return c.isPrimary
 }
 
-func (c component) HasRelationShips() bool {
+func (c Component) HasRelationShips() bool {
 	return c.hasRelationships
 }
 
-func (c component) RelationShipState() string {
+func (c Component) RelationShipState() string {
 	return c.relationshipState
 }
 
-func (c component) SpdxID() string {
-	return c.spdxid
+func (c Component) GetSpdxID() string {
+	return c.Spdxid
 }
 
-func (c component) FileAnalyzed() bool {
-	return c.fileAnalyzed
+func (c Component) GetFileAnalyzed() bool {
+	return c.FileAnalyzed
 }
 
-func (c component) CopyRight() string {
-	return c.copyRight
+func (c Component) GetCopyRight() string {
+	return c.CopyRight
 }
 
-func (c component) PackageLicenseConcluded() string {
-	return c.packageLicenseConcluded
+func (c Component) GetPackageLicenseConcluded() string {
+	return c.PackageLicenseConcluded
 }
 
-func (c component) PackageLicenseDeclared() string {
-	return c.packageLicenseDeclared
+func (c Component) GetPackageLicenseDeclared() string {
+	return c.PackageLicenseDeclared
 }
 
-func (c component) ExternalReferences() []ExternalReference {
-	return c.externalReferences
+func (c Component) GetExternalReferences() []ExternalReference {
+	return c.ExternalReferences
 }

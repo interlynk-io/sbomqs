@@ -41,14 +41,14 @@ var (
 	spdx_primary_purpose = []string{"application", "framework", "library", "container", "operating-system", "device", "firmware", "source", "archive", "file", "install", "other"}
 )
 
-type spdxDoc struct {
+type SpdxDoc struct {
 	doc                *spdx.Document
 	format             FileFormat
 	ctx                context.Context
-	spec               *spec
-	comps              []Component
+	SpdxSpec           *Specs
+	Comps              []GetComponent
 	authors            []Author
-	tools              []Tool
+	SpdxTools          []GetTool
 	rels               []Relation
 	logs               []string
 	primaryComponent   bool
@@ -82,7 +82,7 @@ func newSPDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat) (Docume
 		return nil, err
 	}
 
-	doc := &spdxDoc{
+	doc := &SpdxDoc{
 		doc:    d,
 		format: format,
 		ctx:    ctx,
@@ -93,47 +93,47 @@ func newSPDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat) (Docume
 	return doc, err
 }
 
-func (s spdxDoc) Spec() Spec {
-	return *s.spec
+func (s SpdxDoc) Spec() Spec {
+	return *s.SpdxSpec
 }
 
-func (s spdxDoc) Components() []Component {
-	return s.comps
+func (s SpdxDoc) Components() []GetComponent {
+	return s.Comps
 }
 
-func (s spdxDoc) Authors() []Author {
+func (s SpdxDoc) Authors() []Author {
 	return s.authors
 }
 
-func (s spdxDoc) Tools() []Tool {
-	return s.tools
+func (s SpdxDoc) Tools() []GetTool {
+	return s.SpdxTools
 }
 
-func (s spdxDoc) Relations() []Relation {
+func (s SpdxDoc) Relations() []Relation {
 	return s.rels
 }
 
-func (s spdxDoc) Logs() []string {
+func (s SpdxDoc) Logs() []string {
 	return s.logs
 }
 
-func (s spdxDoc) PrimaryComponent() bool {
+func (s SpdxDoc) PrimaryComponent() bool {
 	return s.primaryComponent
 }
 
-func (s spdxDoc) Lifecycles() []string {
+func (s SpdxDoc) Lifecycles() []string {
 	return []string{s.lifecycles}
 }
 
-func (s spdxDoc) Manufacturer() Manufacturer {
+func (s SpdxDoc) Manufacturer() Manufacturer {
 	return nil
 }
 
-func (s spdxDoc) Supplier() Supplier {
+func (s SpdxDoc) Supplier() Supplier {
 	return nil
 }
 
-func (s *spdxDoc) parse() {
+func (s *SpdxDoc) parse() {
 	s.parseSpec()
 	s.parseAuthors()
 	s.parseTool()
@@ -142,68 +142,68 @@ func (s *spdxDoc) parse() {
 	s.parseComps()
 }
 
-func (s *spdxDoc) parseSpec() {
-	sp := newSpec()
-	sp.format = string(s.format)
-	sp.version = s.doc.SPDXVersion
+func (s *SpdxDoc) parseSpec() {
+	sp := NewSpec()
+	sp.Format = string(s.format)
+	sp.Version = s.doc.SPDXVersion
 
 	if s.doc.CreationInfo != nil {
 		for _, c := range s.doc.CreationInfo.Creators {
 			ctType := strings.ToLower(c.CreatorType)
 			if ctType == "organization" {
-				sp.organization = c.Creator
+				sp.Organization = c.Creator
 			}
 		}
-		sp.comment = s.doc.CreationInfo.CreatorComment
+		sp.Comment = s.doc.CreationInfo.CreatorComment
 	}
 
-	sp.spdxid = string(s.doc.SPDXIdentifier)
-	sp.comment = s.doc.CreationInfo.CreatorComment
+	sp.Spdxid = string(s.doc.SPDXIdentifier)
+	sp.Comment = s.doc.CreationInfo.CreatorComment
 
-	sp.specType = string(SBOMSpecSPDX)
-	sp.name = s.doc.DocumentName
+	sp.SpecType = string(SBOMSpecSPDX)
+	sp.Name = s.doc.DocumentName
 
 	sp.isReqFieldsPresent = s.requiredFields()
 
 	if s.doc.CreationInfo != nil {
-		sp.creationTimestamp = s.doc.CreationInfo.Created
+		sp.CreationTimestamp = s.doc.CreationInfo.Created
 		// sp.created = s.doc.CreationInfo.Created
-		sp.comment = s.doc.CreationInfo.CreatorComment
+		sp.Comment = s.doc.CreationInfo.CreatorComment
 	}
 
 	lics := licenses.LookupExpression(s.doc.DataLicense, nil)
 
-	sp.licenses = append(sp.licenses, lics...)
+	sp.Licenses = append(sp.Licenses, lics...)
 
-	sp.namespace = s.doc.DocumentNamespace
+	sp.Namespace = s.doc.DocumentNamespace
 
 	if s.doc.DocumentNamespace != "" {
 		sp.uri = s.doc.DocumentNamespace
 	}
 
-	s.spec = sp
+	s.SpdxSpec = sp
 }
 
-func (s *spdxDoc) parseComps() {
-	s.comps = []Component{}
+func (s *SpdxDoc) parseComps() {
+	s.Comps = []GetComponent{}
 
 	for index, sc := range s.doc.Packages {
-		nc := newComponent()
+		nc := NewComponent()
 
-		nc.version = sc.PackageVersion
-		nc.name = sc.PackageName
+		nc.Version = sc.PackageVersion
+		nc.Name = sc.PackageName
 		nc.purpose = sc.PrimaryPackagePurpose
-		nc.spdxid = string(sc.PackageSPDXIdentifier)
-		nc.copyRight = sc.PackageCopyrightText
-		nc.fileAnalyzed = sc.FilesAnalyzed
+		nc.Spdxid = string(sc.PackageSPDXIdentifier)
+		nc.CopyRight = sc.PackageCopyrightText
+		nc.FileAnalyzed = sc.FilesAnalyzed
 		nc.isReqFieldsPresent = s.pkgRequiredFields(index)
 		nc.purls = s.purls(index)
 		nc.cpes = s.cpes(index)
-		nc.checksums = s.checksums(index)
-		nc.externalReferences = s.externalRefs(index)
+		nc.Checksums = s.checksums(index)
+		nc.ExternalReferences = s.externalRefs(index)
 		nc.licenses = s.licenses(index)
-		nc.id = string(sc.PackageSPDXIdentifier)
-		nc.packageLicenseConcluded = sc.PackageLicenseConcluded
+		nc.Id = string(sc.PackageSPDXIdentifier)
+		nc.PackageLicenseConcluded = sc.PackageLicenseConcluded
 
 		manu := s.getManufacturer(index)
 		if manu != nil {
@@ -212,9 +212,9 @@ func (s *spdxDoc) parseComps() {
 
 		supp := s.getSupplier(index)
 		if supp != nil {
-			nc.supplier = *supp
+			nc.Supplier = *supp
 		}
-		nc.supplierName = s.addSupplierName(index)
+		nc.SupplierName = s.addSupplierName(index)
 
 		if sc.PackageVerificationCode != nil {
 			nc.sourceCodeHash = sc.PackageVerificationCode.Value
@@ -222,9 +222,9 @@ func (s *spdxDoc) parseComps() {
 
 		// nc.sourceCodeUrl //no conlusive way to get this from SPDX
 		if strings.ToLower(sc.PackageDownloadLocation) == "noassertion" || strings.ToLower(sc.PackageDownloadLocation) == "none" {
-			nc.downloadLocation = ""
+			nc.DownloadLocation = ""
 		} else {
-			nc.downloadLocation = sc.PackageDownloadLocation
+			nc.DownloadLocation = sc.PackageDownloadLocation
 		}
 
 		nc.isPrimary = s.primaryComponentId == string(sc.PackageSPDXIdentifier)
@@ -241,11 +241,11 @@ func (s *spdxDoc) parseComps() {
 		nc.hasRelationships = fromRelsPresent(s.rels, string(sc.PackageSPDXIdentifier))
 		nc.relationshipState = "not-specified"
 
-		s.comps = append(s.comps, nc)
+		s.Comps = append(s.Comps, nc)
 	}
 }
 
-func (s *spdxDoc) parseAuthors() {
+func (s *SpdxDoc) parseAuthors() {
 	s.authors = []Author{}
 
 	if s.doc.CreationInfo == nil {
@@ -269,7 +269,7 @@ func (s *spdxDoc) parseAuthors() {
 	}
 }
 
-func (s *spdxDoc) parseRels() {
+func (s *SpdxDoc) parseRels() {
 	s.rels = []Relation{}
 
 	var err error
@@ -302,8 +302,8 @@ func (s *spdxDoc) parseRels() {
 
 // creationInfo.Creators.Tool
 // Also create for org: , creationInfo.Creators.Organization
-func (s *spdxDoc) parseTool() {
-	s.tools = []Tool{}
+func (s *SpdxDoc) parseTool() {
+	s.SpdxTools = []GetTool{}
 
 	if s.doc.CreationInfo == nil {
 		return
@@ -343,17 +343,17 @@ func (s *spdxDoc) parseTool() {
 		if ctType != "tool" {
 			continue
 		}
-		t := tool{}
-		t.name, t.version = extractVersion(c.Creator)
-		s.tools = append(s.tools, t)
+		t := Tool{}
+		t.Name, t.Version = extractVersion(c.Creator)
+		s.SpdxTools = append(s.SpdxTools, t)
 	}
 }
 
-func (s *spdxDoc) addToLogs(log string) {
+func (s *SpdxDoc) addToLogs(log string) {
 	s.logs = append(s.logs, log)
 }
 
-func (s *spdxDoc) requiredFields() bool {
+func (s *SpdxDoc) requiredFields() bool {
 	if s.doc == nil {
 		s.addToLogs("spdx doc is not parsable")
 		return false
@@ -407,7 +407,7 @@ func (s *spdxDoc) requiredFields() bool {
 	return true
 }
 
-func (s *spdxDoc) pkgRequiredFields(index int) bool {
+func (s *SpdxDoc) pkgRequiredFields(index int) bool {
 	pkg := s.doc.Packages[index]
 
 	if pkg.PackageName == "" {
@@ -433,7 +433,7 @@ func (s *spdxDoc) pkgRequiredFields(index int) bool {
 	return true
 }
 
-func (s *spdxDoc) purls(index int) []purl.PURL {
+func (s *SpdxDoc) purls(index int) []purl.PURL {
 	urls := []purl.PURL{}
 	pkg := s.doc.Packages[index]
 
@@ -460,7 +460,7 @@ func (s *spdxDoc) purls(index int) []purl.PURL {
 	return urls
 }
 
-func (s *spdxDoc) cpes(index int) []cpe.CPE {
+func (s *SpdxDoc) cpes(index int) []cpe.CPE {
 	urls := []cpe.CPE{}
 	pkg := s.doc.Packages[index]
 	if len(pkg.PackageExternalReferences) == 0 {
@@ -485,8 +485,8 @@ func (s *spdxDoc) cpes(index int) []cpe.CPE {
 	return urls
 }
 
-func (s *spdxDoc) checksums(index int) []Checksum {
-	chks := []Checksum{}
+func (s *SpdxDoc) checksums(index int) []GetChecksum {
+	chks := []GetChecksum{}
 	pkg := s.doc.Packages[index]
 
 	if len(pkg.PackageChecksums) == 0 {
@@ -495,16 +495,16 @@ func (s *spdxDoc) checksums(index int) []Checksum {
 	}
 
 	for _, c := range pkg.PackageChecksums {
-		ck := checksum{}
-		ck.alg = string(c.Algorithm)
-		ck.content = c.Value
+		ck := Checksum{}
+		ck.Alg = string(c.Algorithm)
+		ck.Content = c.Value
 		chks = append(chks, ck)
 	}
 
 	return chks
 }
 
-func (s *spdxDoc) externalRefs(index int) []ExternalReference {
+func (s *SpdxDoc) externalRefs(index int) []ExternalReference {
 	extRefs := []ExternalReference{}
 	pkg := s.doc.Packages[index]
 
@@ -522,7 +522,7 @@ func (s *spdxDoc) externalRefs(index int) []ExternalReference {
 	return extRefs
 }
 
-func (s *spdxDoc) licenses(index int) []licenses.License {
+func (s *SpdxDoc) licenses(index int) []licenses.License {
 	lics := []licenses.License{}
 
 	pkg := s.doc.Packages[index]
@@ -548,7 +548,7 @@ func (s *spdxDoc) licenses(index int) []licenses.License {
 	return lics
 }
 
-func (s *spdxDoc) getManufacturer(index int) *manufacturer {
+func (s *SpdxDoc) getManufacturer(index int) *manufacturer {
 	pkg := s.doc.Packages[index]
 
 	if pkg.PackageOriginator == nil {
@@ -570,7 +570,7 @@ func (s *spdxDoc) getManufacturer(index int) *manufacturer {
 	}
 }
 
-func (s *spdxDoc) getSupplier(index int) *supplier {
+func (s *SpdxDoc) getSupplier(index int) *supplier {
 	pkg := s.doc.Packages[index]
 
 	if pkg.PackageSupplier == nil {
@@ -594,7 +594,7 @@ func (s *spdxDoc) getSupplier(index int) *supplier {
 
 // https://github.com/spdx/ntia-conformance-checker/issues/100
 // Add spdx support to check both supplier and originator
-func (s *spdxDoc) addSupplierName(index int) string {
+func (s *SpdxDoc) addSupplierName(index int) string {
 	supplier := s.getSupplier(index)
 	manufacturer := s.getManufacturer(index)
 
@@ -614,7 +614,7 @@ func (s *spdxDoc) addSupplierName(index int) string {
 	return ""
 }
 
-func (s *spdxDoc) parsePrimaryComponent() {
+func (s *SpdxDoc) parsePrimaryComponent() {
 	pkgIds := make(map[string]*spdx.Package)
 
 	for _, pkg := range s.doc.Packages {

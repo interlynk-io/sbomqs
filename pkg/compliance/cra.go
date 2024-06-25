@@ -104,7 +104,7 @@ func craResult(ctx context.Context, doc sbom.Document, fileName string, outForma
 }
 
 func craSpec(doc sbom.Document) *record {
-	v := doc.Spec().SpecType()
+	v := doc.Spec().GetSpecType()
 	v_to_lower := strings.Trim(strings.ToLower(v), " ")
 	result := ""
 	score := 0.0
@@ -120,8 +120,8 @@ func craSpec(doc sbom.Document) *record {
 }
 
 func craSpecVersion(doc sbom.Document) *record {
-	spec := doc.Spec().SpecType()
-	version := doc.Spec().Version()
+	spec := doc.Spec().GetSpecType()
+	version := doc.Spec().GetVersion()
 
 	result := ""
 	score := 0.0
@@ -167,7 +167,7 @@ func craSbomDepth(doc sbom.Document) *record {
 		return newRecordStmt(SBOM_DEPTH, "doc", "no-relationships", 0.0)
 	}
 
-	primary, _ := lo.Find(doc.Components(), func(c sbom.Component) bool {
+	primary, _ := lo.Find(doc.Components(), func(c sbom.GetComponent) bool {
 		return c.IsPrimaryComponent()
 	})
 
@@ -278,7 +278,7 @@ func craCreator(doc sbom.Document) *record {
 
 func craTimestamp(doc sbom.Document) *record {
 	score := 0.0
-	result := doc.Spec().CreationTimestamp()
+	result := doc.Spec().GetCreationTimestamp()
 
 	if result != "" {
 		score = 10.0
@@ -323,29 +323,29 @@ func craComponents(doc sbom.Document) []*record {
 	return records
 }
 
-func craComponentDepth(component sbom.Component) *record {
+func craComponentDepth(component sbom.GetComponent) *record {
 	if !component.HasRelationShips() {
-		return newRecordStmt(COMP_DEPTH, component.ID(), "no-relationships", 0.0)
+		return newRecordStmt(COMP_DEPTH, component.GetID(), "no-relationships", 0.0)
 	}
 
 	if component.RelationShipState() == "complete" {
-		return newRecordStmt(COMP_DEPTH, component.ID(), "complete", 10.0)
+		return newRecordStmt(COMP_DEPTH, component.GetID(), "complete", 10.0)
 	}
 
 	if component.HasRelationShips() {
-		return newRecordStmt(COMP_DEPTH, component.ID(), "unattested-has-relationships", 5.0)
+		return newRecordStmt(COMP_DEPTH, component.GetID(), "unattested-has-relationships", 5.0)
 	}
 
-	return newRecordStmt(COMP_DEPTH, component.ID(), "non-compliant", 0.0)
+	return newRecordStmt(COMP_DEPTH, component.GetID(), "non-compliant", 0.0)
 }
 
-func craComponentLicense(component sbom.Component) *record {
+func craComponentLicense(component sbom.GetComponent) *record {
 	licenses := component.Licenses()
 	score := 0.0
 
 	if len(licenses) == 0 {
 		// fmt.Printf("component %s : %s has no licenses\n", component.Name(), component.Version())
-		return newRecordStmt(COMP_LICENSE, component.ID(), "not-compliant", score)
+		return newRecordStmt(COMP_LICENSE, component.GetID(), "not-compliant", score)
 	}
 
 	var spdx, aboutcode, custom int
@@ -376,13 +376,13 @@ func craComponentLicense(component sbom.Component) *record {
 
 	if total != len(licenses) {
 		score = 0.0
-		return newRecordStmt(COMP_LICENSE, component.ID(), "not-compliant", score)
+		return newRecordStmt(COMP_LICENSE, component.GetID(), "not-compliant", score)
 	}
 
-	return newRecordStmt(COMP_LICENSE, component.ID(), "compliant", 10.0)
+	return newRecordStmt(COMP_LICENSE, component.GetID(), "compliant", 10.0)
 }
 
-func craComponentSourceHash(component sbom.Component) *record {
+func craComponentSourceHash(component sbom.GetComponent) *record {
 	result := ""
 	score := 0.0
 
@@ -391,10 +391,10 @@ func craComponentSourceHash(component sbom.Component) *record {
 		score = 10.0
 	}
 
-	return newRecordStmtOptional(COMP_SOURCE_HASH, component.ID(), result, score)
+	return newRecordStmtOptional(COMP_SOURCE_HASH, component.GetID(), result, score)
 }
 
-func craComponentOtherUniqIds(component sbom.Component) *record {
+func craComponentOtherUniqIds(component sbom.GetComponent) *record {
 	result := ""
 	score := 0.0
 
@@ -404,7 +404,7 @@ func craComponentOtherUniqIds(component sbom.Component) *record {
 		result = string(purl[0])
 		score = 10.0
 
-		return newRecordStmtOptional(COMP_OTHER_UNIQ_IDS, component.ID(), result, score)
+		return newRecordStmtOptional(COMP_OTHER_UNIQ_IDS, component.GetID(), result, score)
 	}
 
 	cpes := component.Cpes()
@@ -413,74 +413,74 @@ func craComponentOtherUniqIds(component sbom.Component) *record {
 		result = string(cpes[0])
 		score = 10.0
 
-		return newRecordStmtOptional(COMP_OTHER_UNIQ_IDS, component.ID(), result, score)
+		return newRecordStmtOptional(COMP_OTHER_UNIQ_IDS, component.GetID(), result, score)
 	}
 
-	return newRecordStmtOptional(COMP_OTHER_UNIQ_IDS, component.ID(), "", 0.0)
+	return newRecordStmtOptional(COMP_OTHER_UNIQ_IDS, component.GetID(), "", 0.0)
 }
 
-func craComponentDownloadUrl(component sbom.Component) *record {
-	result := component.DownloadLocationUrl()
+func craComponentDownloadUrl(component sbom.GetComponent) *record {
+	result := component.GetDownloadLocationUrl()
 
 	if result != "" {
-		return newRecordStmtOptional(COMP_DOWNLOAD_URL, component.ID(), result, 10.0)
+		return newRecordStmtOptional(COMP_DOWNLOAD_URL, component.GetID(), result, 10.0)
 	}
-	return newRecordStmtOptional(COMP_DOWNLOAD_URL, component.ID(), "", 0.0)
+	return newRecordStmtOptional(COMP_DOWNLOAD_URL, component.GetID(), "", 0.0)
 }
 
-func craComponentSourceCodeUrl(component sbom.Component) *record {
+func craComponentSourceCodeUrl(component sbom.GetComponent) *record {
 	result := component.SourceCodeUrl()
 
 	if result != "" {
-		return newRecordStmtOptional(COMP_SOURCE_CODE_URL, component.ID(), result, 10.0)
+		return newRecordStmtOptional(COMP_SOURCE_CODE_URL, component.GetID(), result, 10.0)
 	}
 
-	return newRecordStmtOptional(COMP_SOURCE_CODE_URL, component.ID(), "", 0.0)
+	return newRecordStmtOptional(COMP_SOURCE_CODE_URL, component.GetID(), "", 0.0)
 }
 
-func craComponentHash(component sbom.Component) *record {
+func craComponentHash(component sbom.GetComponent) *record {
 	result := ""
 	algos := []string{"SHA256", "SHA-256", "sha256", "sha-256"}
 	score := 0.0
 
-	checksums := component.Checksums()
+	checksums := component.GetChecksums()
 
 	for _, checksum := range checksums {
-		if lo.Count(algos, checksum.Algo()) > 0 {
-			result = checksum.Content()
+		if lo.Count(algos, checksum.GetAlgo()) > 0 {
+			result = checksum.GetContent()
 			score = 10.0
 			break
 		}
 	}
 
-	return newRecordStmt(COMP_HASH, component.ID(), result, score)
+	return newRecordStmt(COMP_HASH, component.GetID(), result, score)
 }
 
-func craComponentVersion(component sbom.Component) *record {
-	result := component.Version()
+func craComponentVersion(component sbom.GetComponent) *record {
+	result := component.GetVersion()
 
 	if result != "" {
-		return newRecordStmt(COMP_VERSION, component.ID(), result, 10.0)
+		return newRecordStmt(COMP_VERSION, component.GetID(), result, 10.0)
 	}
 
-	return newRecordStmt(COMP_VERSION, component.ID(), "", 0.0)
+	return newRecordStmt(COMP_VERSION, component.GetID(), "", 0.0)
 }
 
-func craComponentName(component sbom.Component) *record {
-	result := component.Name()
+func craComponentName(component sbom.GetComponent) *record {
+	result := component.GetName()
 
 	if result != "" {
-		return newRecordStmt(COMP_NAME, component.ID(), result, 10.0)
+		return newRecordStmt(COMP_NAME, component.GetID(), result, 10.0)
 	}
 
-	return newRecordStmt(COMP_NAME, component.ID(), "", 0.0)
+	return newRecordStmt(COMP_NAME, component.GetID(), "", 0.0)
 }
 
-func craComponentCreator(component sbom.Component) *record {
+func craComponentCreator(component sbom.GetComponent) *record {
 	result := ""
 	score := 0.0
 
-	supplier := component.Supplier()
+	supplier := component.GetSupplier()
 	if supplier != nil {
 		if supplier.Email() != "" {
 			result = supplier.Email()
@@ -488,7 +488,7 @@ func craComponentCreator(component sbom.Component) *record {
 		}
 
 		if result != "" {
-			return newRecordStmt(COMP_CREATOR, component.ID(), result, score)
+			return newRecordStmt(COMP_CREATOR, component.GetID(), result, score)
 		}
 
 		if supplier.Url() != "" {
@@ -497,7 +497,7 @@ func craComponentCreator(component sbom.Component) *record {
 		}
 
 		if result != "" {
-			return newRecordStmt(COMP_CREATOR, component.ID(), result, score)
+			return newRecordStmt(COMP_CREATOR, component.GetID(), result, score)
 		}
 
 		if supplier.Contacts() != nil {
@@ -510,7 +510,7 @@ func craComponentCreator(component sbom.Component) *record {
 			}
 
 			if result != "" {
-				return newRecordStmt(COMP_CREATOR, component.ID(), result, score)
+				return newRecordStmt(COMP_CREATOR, component.GetID(), result, score)
 			}
 		}
 	}
@@ -524,7 +524,7 @@ func craComponentCreator(component sbom.Component) *record {
 		}
 
 		if result != "" {
-			return newRecordStmt(COMP_CREATOR, component.ID(), result, score)
+			return newRecordStmt(COMP_CREATOR, component.GetID(), result, score)
 		}
 
 		if manufacturer.Url() != "" {
@@ -533,7 +533,7 @@ func craComponentCreator(component sbom.Component) *record {
 		}
 
 		if result != "" {
-			return newRecordStmt(COMP_CREATOR, component.ID(), result, score)
+			return newRecordStmt(COMP_CREATOR, component.GetID(), result, score)
 		}
 
 		if manufacturer.Contacts() != nil {
@@ -546,10 +546,10 @@ func craComponentCreator(component sbom.Component) *record {
 			}
 
 			if result != "" {
-				return newRecordStmt(COMP_CREATOR, component.ID(), result, score)
+				return newRecordStmt(COMP_CREATOR, component.GetID(), result, score)
 			}
 		}
 	}
 
-	return newRecordStmt(COMP_CREATOR, component.ID(), "", 0.0)
+	return newRecordStmt(COMP_CREATOR, component.GetID(), "", 0.0)
 }

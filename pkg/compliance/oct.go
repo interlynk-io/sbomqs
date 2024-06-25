@@ -28,7 +28,7 @@ var validOctSpdxVersions = []string{"SPDX-2.2", "SPDX-2.3"}
 
 func octResult(ctx context.Context, doc sbom.Document, fileName string, outFormat string) {
 	log := logger.FromContext(ctx)
-	log.Debug("compliance.craResult()")
+	log.Debug("compliance.octResult()")
 	db := newDB()
 
 	db.addRecord(octSpec(doc))
@@ -60,7 +60,7 @@ func octResult(ctx context.Context, doc sbom.Document, fileName string, outForma
 
 // check document data format
 func octSpec(doc sbom.Document) *record {
-	v := doc.Spec().SpecType()
+	v := doc.Spec().GetSpecType()
 	vToLower := strings.Trim(strings.ToLower(v), " ")
 	result := ""
 	score := 0.0
@@ -77,15 +77,13 @@ func octSpec(doc sbom.Document) *record {
 }
 
 func octSpecVersion(doc sbom.Document) *record {
-	spec := doc.Spec().SpecType()
-	version := doc.Spec().Version()
+	spec := doc.Spec().GetSpecType()
+	version := doc.Spec().GetVersion()
 
 	result := ""
 	score := 0.0
 
 	if spec == "spdx" && version != "" {
-		// count := lo.Count(validOctSpdxVersions, version)
-		// if count > 0 {
 		result = version
 		score = 10.0
 
@@ -98,9 +96,9 @@ func octSpecVersion(doc sbom.Document) *record {
 }
 
 func octCreatedTimestamp(doc sbom.Document) *record {
-	spec := doc.Spec().SpecType()
+	spec := doc.Spec().GetSpecType()
 	score := 0.0
-	result := doc.Spec().CreationTimestamp()
+	result := doc.Spec().GetCreationTimestamp()
 
 	if spec == "spdx" && result != "" {
 		score = 10.0
@@ -112,8 +110,8 @@ func octCreatedTimestamp(doc sbom.Document) *record {
 }
 
 func octSpecSpdxID(doc sbom.Document) *record {
-	spec := doc.Spec().SpecType()
-	spdxid := doc.Spec().SpdxID()
+	spec := doc.Spec().GetSpecType()
+	spdxid := doc.Spec().GetSpdxID()
 
 	result := ""
 	score := 0.0
@@ -130,8 +128,8 @@ func octSpecSpdxID(doc sbom.Document) *record {
 }
 
 func octSbomOrganization(doc sbom.Document) *record {
-	spec := doc.Spec().SpecType()
-	org := doc.Spec().Organization()
+	spec := doc.Spec().GetSpecType()
+	org := doc.Spec().GetOrganization()
 
 	result := ""
 	score := 0.0
@@ -147,8 +145,8 @@ func octSbomOrganization(doc sbom.Document) *record {
 }
 
 func octSbomComment(doc sbom.Document) *record {
-	spec := doc.Spec().SpecType()
-	comment := doc.Spec().Comment()
+	spec := doc.Spec().GetSpecType()
+	comment := doc.Spec().GetComment()
 
 	result := ""
 	score := 0.0
@@ -165,8 +163,8 @@ func octSbomComment(doc sbom.Document) *record {
 }
 
 func octSbomNamespace(doc sbom.Document) *record {
-	spec := doc.Spec().SpecType()
-	ns := doc.Spec().Namespace()
+	spec := doc.Spec().GetSpecType()
+	ns := doc.Spec().GetNamespace()
 	result := ""
 	score := 0.0
 
@@ -182,9 +180,9 @@ func octSbomNamespace(doc sbom.Document) *record {
 }
 
 func octSbomLicense(doc sbom.Document) *record {
-	spec := doc.Spec().SpecType()
+	spec := doc.Spec().GetSpecType()
 	var results []string
-	licenses := doc.Spec().Licenses()
+	licenses := doc.Spec().GetLicenses()
 	for _, x := range licenses {
 		results = append(results, x.Name())
 	}
@@ -204,8 +202,8 @@ func octSbomLicense(doc sbom.Document) *record {
 }
 
 func octSbomName(doc sbom.Document) *record {
-	spec := doc.Spec().SpecType()
-	name := doc.Spec().Name()
+	spec := doc.Spec().GetSpecType()
+	name := doc.Spec().GetName()
 
 	result := ""
 	score := 0.0
@@ -222,12 +220,12 @@ func octSbomName(doc sbom.Document) *record {
 }
 
 func octSbomTool(doc sbom.Document) *record {
-	spec := doc.Spec().SpecType()
+	spec := doc.Spec().GetSpecType()
 	result := doc.Tools()
 	y := ""
 
 	for _, x := range result {
-		y = x.Name()
+		y = x.GetName()
 	}
 
 	score := 0.0
@@ -241,7 +239,7 @@ func octSbomTool(doc sbom.Document) *record {
 }
 
 func octMachineFormat(doc sbom.Document) *record {
-	spec := doc.Spec().SpecType()
+	spec := doc.Spec().GetSpecType()
 	fileFormat := doc.Spec().FileFormat()
 	result := ""
 	score := 0.0
@@ -257,7 +255,7 @@ func octMachineFormat(doc sbom.Document) *record {
 }
 
 func octHumanFormat(doc sbom.Document) *record {
-	spec := doc.Spec().SpecType()
+	spec := doc.Spec().GetSpecType()
 	fileFormat := doc.Spec().FileFormat()
 	result := ""
 	score := 0.0
@@ -297,36 +295,36 @@ func octComponents(doc sbom.Document) []*record {
 	return records
 }
 
-func octPackageName(component sbom.Component) *record {
-	result := component.Name()
+func octPackageName(component sbom.GetComponent) *record {
+	result := component.GetName()
 
 	if result != "" {
-		return newRecordStmt(PACK_NAME, component.ID(), result, 10.0)
+		return newRecordStmt(PACK_NAME, component.GetID(), result, 10.0)
 	}
 
-	return newRecordStmt(PACK_NAME, component.ID(), "", 0.0)
+	return newRecordStmt(PACK_NAME, component.GetID(), "", 0.0)
 }
 
-func octPackageSpdxID(component sbom.Component) *record {
-	result := component.SpdxID()
+func octPackageSpdxID(component sbom.GetComponent) *record {
+	result := component.GetSpdxID()
 	if result != "" {
-		return newRecordStmt(PACK_SPDXID, component.ID(), result, 10.0)
+		return newRecordStmt(PACK_SPDXID, component.GetID(), result, 10.0)
 	}
-	return newRecordStmt(PACK_SPDXID, component.ID(), result, 0.0)
+	return newRecordStmt(PACK_SPDXID, component.GetID(), result, 0.0)
 }
 
-func octPackageVersion(component sbom.Component) *record {
-	result := component.Version()
+func octPackageVersion(component sbom.GetComponent) *record {
+	result := component.GetVersion()
 
 	if result != "" {
-		return newRecordStmt(PACK_VERSION, component.ID(), result, 10.0)
+		return newRecordStmt(PACK_VERSION, component.GetID(), result, 10.0)
 	}
 
-	return newRecordStmt(PACK_VERSION, component.ID(), "", 0.0)
+	return newRecordStmt(PACK_VERSION, component.GetID(), "", 0.0)
 }
 
-func octPackageSupplier(component sbom.Component) *record {
-	supplier := component.Supplier()
+func octPackageSupplier(component sbom.GetComponent) *record {
+	supplier := component.GetSupplier()
 	var results []string
 
 	if supplier != nil {
@@ -337,86 +335,86 @@ func octPackageSupplier(component sbom.Component) *record {
 	result := strings.Join(results, ", ")
 
 	if result != "" {
-		return newRecordStmt(PACK_SUPPLIER, component.ID(), result, 10.0)
+		return newRecordStmt(PACK_SUPPLIER, component.GetID(), result, 10.0)
 	}
-	return newRecordStmt(PACK_SUPPLIER, component.ID(), "", 0.0)
+	return newRecordStmt(PACK_SUPPLIER, component.GetID(), "", 0.0)
 }
 
-func octPackageDownloadUrl(component sbom.Component) *record {
-	result := component.DownloadLocationUrl()
+func octPackageDownloadUrl(component sbom.GetComponent) *record {
+	result := component.GetDownloadLocationUrl()
 
 	if result != "" {
-		return newRecordStmt(PACK_DOWNLOAD_URL, component.ID(), result, 10.0)
+		return newRecordStmt(PACK_DOWNLOAD_URL, component.GetID(), result, 10.0)
 	}
-	return newRecordStmt(PACK_DOWNLOAD_URL, component.ID(), "", 0.0)
+	return newRecordStmt(PACK_DOWNLOAD_URL, component.GetID(), "", 0.0)
 }
 
-func octPackageFileAnalyzed(component sbom.Component) *record {
-	result := component.FileAnalyzed()
+func octPackageFileAnalyzed(component sbom.GetComponent) *record {
+	result := component.GetFileAnalyzed()
 	if result {
-		return newRecordStmt(PACK_FILE_ANALYZED, component.ID(), "yes", 10.0)
+		return newRecordStmt(PACK_FILE_ANALYZED, component.GetID(), "yes", 10.0)
 	}
 
-	return newRecordStmt(PACK_FILE_ANALYZED, component.ID(), "no", 0.0)
+	return newRecordStmt(PACK_FILE_ANALYZED, component.GetID(), "no", 0.0)
 }
 
-func octPackageHash(component sbom.Component) *record {
+func octPackageHash(component sbom.GetComponent) *record {
 	result := ""
 	algos := []string{"SHA256", "SHA-256", "sha256", "sha-256"}
 	score := 0.0
 
-	checksums := component.Checksums()
+	checksums := component.GetChecksums()
 
 	for _, checksum := range checksums {
-		if lo.Count(algos, checksum.Algo()) > 0 {
-			result = checksum.Content()
+		if lo.Count(algos, checksum.GetAlgo()) > 0 {
+			result = checksum.GetContent()
 			score = 10.0
 			break
 		}
 	}
 
-	return newRecordStmt(PACK_HASH, component.ID(), result, score)
+	return newRecordStmt(PACK_HASH, component.GetID(), result, score)
 }
 
-func octPackageConLicense(component sbom.Component) *record {
-	result := component.PackageLicenseConcluded()
+func octPackageConLicense(component sbom.GetComponent) *record {
+	result := component.GetPackageLicenseConcluded()
 	if result != "" {
 		if result == "NOASSERTION" || result == "NONE" {
-			return newRecordStmt(PACK_LICENSE_CON, component.ID(), result, 0.0)
+			return newRecordStmt(PACK_LICENSE_CON, component.GetID(), result, 0.0)
 		}
-		return newRecordStmt(PACK_LICENSE_CON, component.ID(), result, 10.0)
+		return newRecordStmt(PACK_LICENSE_CON, component.GetID(), result, 10.0)
 	}
-	return newRecordStmt(PACK_LICENSE_CON, component.ID(), "", 0.0)
+	return newRecordStmt(PACK_LICENSE_CON, component.GetID(), "", 0.0)
 }
 
-func octPackageDecLicense(component sbom.Component) *record {
-	result := component.PackageLicenseDeclared()
+func octPackageDecLicense(component sbom.GetComponent) *record {
+	result := component.GetPackageLicenseDeclared()
 	if result != "" {
 		if result == "NOASSERTION" || result == "NONE" {
-			return newRecordStmt(PACK_LICENSE_DEC, component.ID(), result, 0.0)
+			return newRecordStmt(PACK_LICENSE_DEC, component.GetID(), result, 0.0)
 		}
-		return newRecordStmt(PACK_LICENSE_DEC, component.ID(), result, 10.0)
+		return newRecordStmt(PACK_LICENSE_DEC, component.GetID(), result, 10.0)
 	}
-	return newRecordStmt(PACK_LICENSE_DEC, component.ID(), "", 0.0)
+	return newRecordStmt(PACK_LICENSE_DEC, component.GetID(), "", 0.0)
 }
 
-func octPackageCopyright(component sbom.Component) *record {
-	result := component.CopyRight()
+func octPackageCopyright(component sbom.GetComponent) *record {
+	result := component.GetCopyRight()
 
 	if result != "" {
 		if result == "NOASSERTION" || result == "NONE" {
-			return newRecordStmt(PACK_COPYRIGHT, component.ID(), result, 0.0)
+			return newRecordStmt(PACK_COPYRIGHT, component.GetID(), result, 0.0)
 		}
-		return newRecordStmt(PACK_COPYRIGHT, component.ID(), result, 10.0)
+		return newRecordStmt(PACK_COPYRIGHT, component.GetID(), result, 10.0)
 	}
-	return newRecordStmt(PACK_COPYRIGHT, component.ID(), "", 0.0)
+	return newRecordStmt(PACK_COPYRIGHT, component.GetID(), "", 0.0)
 }
 
-func octPackageExternalRefs(component sbom.Component) *record {
+func octPackageExternalRefs(component sbom.GetComponent) *record {
 	result := ""
 	score := 0.0
 
-	extRefs := component.ExternalReferences()
+	extRefs := component.GetExternalReferences()
 	totalElements := 0
 	containPurlElement := 0
 
@@ -432,5 +430,5 @@ func octPackageExternalRefs(component sbom.Component) *record {
 		x := fmt.Sprintf(":(%d/%d)", containPurlElement, totalElements)
 		result = result + x
 	}
-	return newRecordStmt(PACK_EXT_REF, component.ID(), result, score)
+	return newRecordStmt(PACK_EXT_REF, component.GetID(), result, score)
 }

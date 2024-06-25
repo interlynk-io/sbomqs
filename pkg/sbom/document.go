@@ -19,10 +19,10 @@ package sbom
 //counterfeiter:generate . Document
 type Document interface {
 	Spec() Spec
-	Components() []Component
+	Components() []GetComponent
 	Relations() []Relation
 	Authors() []Author
-	Tools() []Tool
+	Tools() []GetTool
 	Logs() []string
 
 	PrimaryComponent() bool

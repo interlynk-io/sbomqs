@@ -14,18 +14,19 @@
 
 package sbom
 
-type Tool interface {
-	Name() string
-	Version() string
+type GetTool interface {
+	GetName() string
+	GetVersion() string
 }
-type tool struct {
-	name    string
-	version string
+type Tool struct {
+	Name    string
+	Version string
 }
 
-func (t tool) Name() string {
-	return t.name
+func (t Tool) GetName() string {
+	return t.Name
 }
-func (t tool) Version() string {
-	return t.version
+
+func (t Tool) GetVersion() string {
+	return t.Version
 }

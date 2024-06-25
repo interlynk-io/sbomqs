@@ -19,88 +19,88 @@ import (
 )
 
 type Spec interface {
-	Version() string
+	GetVersion() string
 	FileFormat() string
 	Parsable() bool
-	Name() string
-	SpecType() string
+	GetName() string
+	GetSpecType() string
 	RequiredFields() bool
-	CreationTimestamp() string
-	Licenses() []licenses.License
-	Namespace() string
+	GetCreationTimestamp() string
+	GetLicenses() []licenses.License
+	GetNamespace() string
 	URI() string
-	Organization() string
-	Comment() string
-	SpdxID() string
+	GetOrganization() string
+	GetComment() string
+	GetSpdxID() string
 }
 
-type spec struct {
-	version            string
-	format             string
-	specType           string
-	name               string
+type Specs struct {
+	Version            string
+	Format             string
+	SpecType           string
+	Name               string
 	isReqFieldsPresent bool
-	licenses           []licenses.License
-	creationTimestamp  string
-	namespace          string
+	Licenses           []licenses.License
+	CreationTimestamp  string
+	Namespace          string
 	uri                string
-	organization       string
-	comment            string
-	spdxid             string
+	Organization       string
+	Comment            string
+	Spdxid             string
 }
 
-func newSpec() *spec {
-	return &spec{}
+func NewSpec() *Specs {
+	return &Specs{}
 }
 
-func (s spec) Organization() string {
-	return s.organization
+func (s Specs) GetOrganization() string {
+	return s.Organization
 }
 
-func (s spec) Comment() string {
-	return s.comment
+func (s Specs) GetComment() string {
+	return s.Comment
 }
 
-func (s spec) SpdxID() string {
-	return s.spdxid
+func (s Specs) GetSpdxID() string {
+	return s.Spdxid
 }
 
-func (s spec) Version() string {
-	return s.version
+func (s Specs) GetVersion() string {
+	return s.Version
 }
 
-func (s spec) FileFormat() string {
-	return s.format
+func (s Specs) FileFormat() string {
+	return s.Format
 }
 
-func (s spec) Parsable() bool {
+func (s Specs) Parsable() bool {
 	return true
 }
 
-func (s spec) Name() string {
-	return s.name
+func (s Specs) GetName() string {
+	return s.Name
 }
 
-func (s spec) SpecType() string {
-	return s.specType
+func (s Specs) GetSpecType() string {
+	return s.SpecType
 }
 
-func (s spec) RequiredFields() bool {
+func (s Specs) RequiredFields() bool {
 	return s.isReqFieldsPresent
 }
 
-func (s spec) CreationTimestamp() string {
-	return s.creationTimestamp
+func (s Specs) GetCreationTimestamp() string {
+	return s.CreationTimestamp
 }
 
-func (s spec) Licenses() []licenses.License {
-	return s.licenses
+func (s Specs) GetLicenses() []licenses.License {
+	return s.Licenses
 }
 
-func (s spec) Namespace() string {
-	return s.namespace
+func (s Specs) GetNamespace() string {
+	return s.Namespace
 }
 
-func (s spec) URI() string {
+func (s Specs) URI() string {
 	return s.uri
 }
