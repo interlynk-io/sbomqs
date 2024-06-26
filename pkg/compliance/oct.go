@@ -253,7 +253,7 @@ func octMachineFormat(doc sbom.Document) *record {
 		result = spec + ", " + fileFormat
 		score = 10.0
 	} else {
-		result = spec + fileFormat
+		result = spec + ", " + fileFormat
 		score = 0.0
 	}
 	return newRecordStmt(SBOM_MACHINE_FORMAT, "Machine Readable Data Format", result, score)
