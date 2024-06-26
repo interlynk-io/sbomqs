@@ -46,7 +46,7 @@ type cdxDoc struct {
 	logs               []string
 	primaryComponent   bool
 	lifecycles         []string
-	supplier           Supplier
+	supplier           GetSupplier
 	manufacturer       Manufacturer
 	primaryComponentId string
 	compositions       map[string]string
@@ -117,7 +117,7 @@ func (c cdxDoc) Lifecycles() []string {
 	return c.lifecycles
 }
 
-func (c cdxDoc) Supplier() Supplier {
+func (c cdxDoc) Supplier() GetSupplier {
 	return c.supplier
 }
 
@@ -259,7 +259,7 @@ func copyC(cdxc *cydx.Component, c *cdxDoc) *Component {
 	supplier := c.assignSupplier(cdxc)
 	if supplier != nil {
 		nc.Supplier = *supplier
-		nc.SupplierName = supplier.name
+		nc.SupplierName = supplier.Name
 	}
 
 	if cdxc.ExternalReferences != nil {
@@ -489,17 +489,17 @@ func (c *cdxDoc) parseSupplier() {
 		return
 	}
 
-	supplier := supplier{}
+	supplier := Supplier{}
 
-	supplier.name = c.doc.Metadata.Supplier.Name
-	supplier.url = lo.FromPtr(c.doc.Metadata.Supplier.URL)[0]
+	supplier.Name = c.doc.Metadata.Supplier.Name
+	supplier.Url = lo.FromPtr(c.doc.Metadata.Supplier.URL)[0]
 
 	if c.doc.Metadata.Supplier.Contact != nil {
 		for _, cydxContact := range lo.FromPtr(c.doc.Metadata.Supplier.Contact) {
 			ctt := contact{}
 			ctt.name = cydxContact.Name
 			ctt.email = cydxContact.Email
-			supplier.contacts = append(supplier.contacts, ctt)
+			supplier.Contacts = append(supplier.Contacts, ctt)
 		}
 	}
 
@@ -545,20 +545,20 @@ func (c *cdxDoc) parseRels() {
 	}
 }
 
-func (c *cdxDoc) assignSupplier(comp *cydx.Component) *supplier {
+func (c *cdxDoc) assignSupplier(comp *cydx.Component) *Supplier {
 	if comp.Supplier == nil {
 		c.addToLogs(fmt.Sprintf("cdx doc comp %s no supplier found", comp.Name))
 		return nil
 	}
 
-	supplier := supplier{}
+	supplier := Supplier{}
 
 	if comp.Supplier.Name == "" {
-		supplier.name = comp.Supplier.Name
+		supplier.Name = comp.Supplier.Name
 	}
 
 	if comp.Supplier.URL != nil && len(lo.FromPtr(comp.Supplier.URL)) > 0 {
-		supplier.url = lo.FromPtr(comp.Supplier.URL)[0]
+		supplier.Url = lo.FromPtr(comp.Supplier.URL)[0]
 	}
 
 	if comp.Supplier.Contact != nil {
@@ -566,7 +566,7 @@ func (c *cdxDoc) assignSupplier(comp *cydx.Component) *supplier {
 			ctt := contact{}
 			ctt.name = cydxContact.Name
 			ctt.email = cydxContact.Email
-			supplier.contacts = append(supplier.contacts, ctt)
+			supplier.Contacts = append(supplier.Contacts, ctt)
 		}
 	}
 

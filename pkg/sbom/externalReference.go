@@ -1,13 +1,13 @@
 package sbom
 
-type ExternalReference interface {
-	RefType() string
+type GetExternalReference interface {
+	GetRefType() string
 }
 
-type externalReference struct {
-	refType string
+type ExternalReference struct {
+	RefType string
 }
 
-func (e externalReference) RefType() string {
-	return e.refType
+func (e ExternalReference) GetRefType() string {
+	return e.RefType
 }

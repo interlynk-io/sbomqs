@@ -129,7 +129,7 @@ func (s SpdxDoc) Manufacturer() Manufacturer {
 	return nil
 }
 
-func (s SpdxDoc) Supplier() Supplier {
+func (s SpdxDoc) Supplier() GetSupplier {
 	return nil
 }
 
@@ -200,7 +200,7 @@ func (s *SpdxDoc) parseComps() {
 		nc.purls = s.purls(index)
 		nc.cpes = s.cpes(index)
 		nc.Checksums = s.checksums(index)
-		nc.ExternalReferences = s.externalRefs(index)
+		nc.ExternalRefs = s.externalRefs(index)
 		nc.licenses = s.licenses(index)
 		nc.Id = string(sc.PackageSPDXIdentifier)
 		nc.PackageLicenseConcluded = sc.PackageLicenseConcluded
@@ -504,8 +504,8 @@ func (s *SpdxDoc) checksums(index int) []GetChecksum {
 	return chks
 }
 
-func (s *SpdxDoc) externalRefs(index int) []ExternalReference {
-	extRefs := []ExternalReference{}
+func (s *SpdxDoc) externalRefs(index int) []GetExternalReference {
+	extRefs := []GetExternalReference{}
 	pkg := s.doc.Packages[index]
 
 	if len(pkg.PackageExternalReferences) == 0 {
@@ -514,8 +514,8 @@ func (s *SpdxDoc) externalRefs(index int) []ExternalReference {
 	}
 
 	for _, ext := range pkg.PackageExternalReferences {
-		extRef := externalReference{}
-		extRef.refType = ext.RefType
+		extRef := ExternalReference{}
+		extRef.RefType = ext.RefType
 		extRefs = append(extRefs, extRef)
 	}
 
@@ -570,7 +570,7 @@ func (s *SpdxDoc) getManufacturer(index int) *manufacturer {
 	}
 }
 
-func (s *SpdxDoc) getSupplier(index int) *supplier {
+func (s *SpdxDoc) getSupplier(index int) *Supplier {
 	pkg := s.doc.Packages[index]
 
 	if pkg.PackageSupplier == nil {
@@ -586,9 +586,9 @@ func (s *SpdxDoc) getSupplier(index int) *supplier {
 		return nil
 	}
 
-	return &supplier{
-		name:  entity.name,
-		email: entity.email,
+	return &Supplier{
+		Name:  entity.name,
+		Email: entity.email,
 	}
 }
 
@@ -604,7 +604,7 @@ func (s *SpdxDoc) addSupplierName(index int) string {
 	}
 
 	if supplier != nil {
-		return supplier.name
+		return supplier.Name
 	}
 
 	if manufacturer != nil {

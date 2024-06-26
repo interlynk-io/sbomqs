@@ -32,7 +32,7 @@ type GetComponent interface {
 	GetChecksums() []GetChecksum
 	PrimaryPurpose() string
 	RequiredFields() bool
-	GetSupplier() Supplier
+	Suppliers() GetSupplier
 	Manufacturer() Manufacturer
 	CountOfDependencies() int
 	SourceCodeUrl() string
@@ -46,7 +46,7 @@ type GetComponent interface {
 	GetCopyRight() string
 	GetPackageLicenseDeclared() string
 	GetPackageLicenseConcluded() string
-	GetExternalReferences() []ExternalReference
+	ExternalReferences() []GetExternalReference
 }
 
 type Component struct {
@@ -60,7 +60,7 @@ type Component struct {
 	purpose                 string
 	isReqFieldsPresent      bool
 	Id                      string
-	Supplier                supplier
+	Supplier                Supplier
 	manufacturer            manufacturer
 	dependenciesCount       int
 	sourceCodeUrl           string
@@ -74,7 +74,7 @@ type Component struct {
 	CopyRight               string
 	PackageLicenseConcluded string
 	PackageLicenseDeclared  string
-	ExternalReferences      []ExternalReference
+	ExternalRefs            []GetExternalReference
 }
 
 func NewComponent() *Component {
@@ -125,7 +125,7 @@ func (c Component) Manufacturer() Manufacturer {
 	return c.manufacturer
 }
 
-func (c Component) GetSupplier() Supplier {
+func (c Component) Suppliers() GetSupplier {
 	return c.Supplier
 }
 
@@ -177,6 +177,6 @@ func (c Component) GetPackageLicenseDeclared() string {
 	return c.PackageLicenseDeclared
 }
 
-func (c Component) GetExternalReferences() []ExternalReference {
-	return c.ExternalReferences
+func (c Component) ExternalReferences() []GetExternalReference {
+	return c.ExternalRefs
 }

@@ -205,8 +205,8 @@ func craCreator(doc sbom.Document) *record {
 	supplier := doc.Supplier()
 
 	if supplier != nil {
-		if supplier.Email() != "" {
-			result = supplier.Email()
+		if supplier.GetEmail() != "" {
+			result = supplier.GetEmail()
 			score = 10.0
 		}
 
@@ -214,8 +214,8 @@ func craCreator(doc sbom.Document) *record {
 			return newRecordStmt(SBOM_CREATOR, "doc", result, score)
 		}
 
-		if supplier.Url() != "" {
-			result = supplier.Url()
+		if supplier.GetUrl() != "" {
+			result = supplier.GetUrl()
 			score = 10.0
 		}
 
@@ -223,8 +223,8 @@ func craCreator(doc sbom.Document) *record {
 			return newRecordStmt(SBOM_CREATOR, "doc", result, score)
 		}
 
-		if supplier.Contacts() != nil {
-			for _, contact := range supplier.Contacts() {
+		if supplier.GetContacts() != nil {
+			for _, contact := range supplier.GetContacts() {
 				if contact.Email() != "" {
 					result = contact.Email()
 					score = 10.0
@@ -480,10 +480,10 @@ func craComponentCreator(component sbom.GetComponent) *record {
 	result := ""
 	score := 0.0
 
-	supplier := component.GetSupplier()
+	supplier := component.Suppliers()
 	if supplier != nil {
-		if supplier.Email() != "" {
-			result = supplier.Email()
+		if supplier.GetEmail() != "" {
+			result = supplier.GetEmail()
 			score = 10.0
 		}
 
@@ -491,8 +491,8 @@ func craComponentCreator(component sbom.GetComponent) *record {
 			return newRecordStmt(COMP_CREATOR, component.GetID(), result, score)
 		}
 
-		if supplier.Url() != "" {
-			result = supplier.Url()
+		if supplier.GetUrl() != "" {
+			result = supplier.GetUrl()
 			score = 10.0
 		}
 
@@ -500,8 +500,8 @@ func craComponentCreator(component sbom.GetComponent) *record {
 			return newRecordStmt(COMP_CREATOR, component.GetID(), result, score)
 		}
 
-		if supplier.Contacts() != nil {
-			for _, contact := range supplier.Contacts() {
+		if supplier.GetContacts() != nil {
+			for _, contact := range supplier.GetContacts() {
 				if contact.Email() != "" {
 					result = contact.Email()
 					score = 10.0

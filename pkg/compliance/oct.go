@@ -224,21 +224,23 @@ func octSbomName(doc sbom.Document) *record {
 
 func octSbomTool(doc sbom.Document) *record {
 	spec := doc.Spec().GetSpecType()
-	result := doc.Tools()
-	y := ""
+	tool := doc.Tools()
+	name := ""
 
-	for _, x := range result {
-		y = x.GetName()
+	for _, x := range tool {
+		name = x.GetName()
 	}
 
 	score := 0.0
+	result := ""
 
-	if spec == "spdx" && result != nil {
+	if spec == "spdx" && tool != nil {
+		result = name
 		score = 10.0
 	} else {
 		score = 0.0
 	}
-	return newRecordStmt(SBOM_TOOL, "SBOM Build Information", y, score)
+	return newRecordStmt(SBOM_TOOL, "SBOM Build Information", result, score)
 }
 
 func octMachineFormat(doc sbom.Document) *record {
@@ -375,12 +377,12 @@ func octPackageVersion(component sbom.GetComponent) *record {
 }
 
 func octPackageSupplier(component sbom.GetComponent) *record {
-	supplier := component.GetSupplier()
+	supplier := component.Suppliers()
 	var results []string
 
 	if supplier != nil {
-		if supplier.Email() != "" {
-			results = append(results, supplier.Email())
+		if supplier.GetEmail() != "" {
+			results = append(results, supplier.GetEmail())
 		}
 	}
 	result := strings.Join(results, ", ")
@@ -465,13 +467,13 @@ func octPackageExternalRefs(component sbom.GetComponent) *record {
 	result := ""
 	score := 0.0
 
-	extRefs := component.GetExternalReferences()
+	extRefs := component.ExternalReferences()
 	totalElements := 0
 	containPurlElement := 0
 
 	for _, extRef := range extRefs {
 		totalElements++
-		result = extRef.RefType()
+		result = extRef.GetRefType()
 		if result == "purl" {
 			containPurlElement++
 		}
@@ -481,5 +483,6 @@ func octPackageExternalRefs(component sbom.GetComponent) *record {
 		x := fmt.Sprintf(":(%d/%d)", containPurlElement, totalElements)
 		result = result + x
 	}
+	fmt.Println("result: ", result)
 	return newRecordStmt(PACK_EXT_REF, component.GetID(), result, score)
 }

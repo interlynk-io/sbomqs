@@ -22,6 +22,12 @@ func createDummyDocument() sbom.Document {
 	lics := licenses.CreateCustomLicense("", "cc0-1.0")
 	s.Licenses = append(s.Licenses, lics)
 
+	var tools []sbom.GetTool
+	tool := sbom.Tool{
+		Name: "syft",
+	}
+	tools = append(tools, tool)
+
 	pack := sbom.NewComponent()
 	pack.Version = "v0.7.1"
 	pack.Name = "core-js"
@@ -33,17 +39,39 @@ func createDummyDocument() sbom.Document {
 	pack.PackageLicenseDeclared = "(LGPL-2.0-only AND LicenseRef-3)"
 	pack.DownloadLocation = "https://registry.npmjs.org/core-js/-/core-js-3.6.5.tgz"
 
+	supplier := sbom.Supplier{
+		Email: "vivekkumarsahu650@gmail.com",
+	}
+	pack.Supplier = supplier
+
+	checksum := sbom.Checksum{
+		Alg:     "SHA256",
+		Content: "ee1300ac533cebc2d070ce3765685d5f7fca2a5a78ca15068323f68ed63d4abf",
+	}
+
+	var checksums []sbom.GetChecksum
+	checksums = append(checksums, checksum)
+	pack.Checksums = checksums
+
+	extRef := sbom.ExternalReference{
+		RefType: "purl",
+	}
+	var externalReferences []sbom.GetExternalReference
+	externalReferences = append(externalReferences, extRef)
+	pack.ExternalRefs = externalReferences
+
 	var packages []sbom.GetComponent
 	packages = append(packages, pack)
 
 	doc := sbom.SpdxDoc{
-		SpdxSpec: s,
-		Comps:    packages,
+		SpdxSpec:  s,
+		Comps:     packages,
+		SpdxTools: tools,
 	}
 	return doc
 }
 
-func TestOctSbomSuccessful(t *testing.T) {
+func TestOctSbomPass(t *testing.T) {
 	doc := createDummyDocument()
 	type desired struct {
 		score  float64
@@ -61,7 +89,7 @@ func TestOctSbomSuccessful(t *testing.T) {
 				score:  10.0,
 				result: "spdx",
 				key:    SBOM_SPEC,
-				id:     "SBOM DataFormat",
+				id:     "SBOM Format",
 			},
 		},
 		{
@@ -70,7 +98,7 @@ func TestOctSbomSuccessful(t *testing.T) {
 				score:  10.0,
 				result: "nano",
 				key:    SBOM_NAME,
-				id:     "doc",
+				id:     "SPDX Elements",
 			},
 		},
 		{
@@ -79,7 +107,7 @@ func TestOctSbomSuccessful(t *testing.T) {
 				score:  10.0,
 				result: "https://anchore.com/syft/dir/sbomqs-6ec18b03-96cb-4951-b299-929890c1cfc8",
 				key:    SBOM_NAMESPACE,
-				id:     "doc",
+				id:     "SPDX Elements",
 			},
 		},
 		{
@@ -97,7 +125,16 @@ func TestOctSbomSuccessful(t *testing.T) {
 				score:  10.0,
 				result: "this is a general sbom created using syft tool",
 				key:    SBOM_COMMENT,
-				id:     "doc",
+				id:     "SPDX Elements",
+			},
+		},
+		{
+			actual: octSbomTool(doc),
+			expected: desired{
+				score:  10.0,
+				result: "syft",
+				key:    SBOM_TOOL,
+				id:     "SBOM Build Information",
 			},
 		},
 		{
@@ -106,7 +143,7 @@ func TestOctSbomSuccessful(t *testing.T) {
 				score:  10.0,
 				result: "cc0-1.0",
 				key:    SBOM_LICENSE,
-				id:     "doc",
+				id:     "SPDX Elements",
 			},
 		},
 		{
@@ -115,7 +152,7 @@ func TestOctSbomSuccessful(t *testing.T) {
 				score:  10.0,
 				result: "SPDX-2.3",
 				key:    SBOM_SPEC_VERSION,
-				id:     "doc",
+				id:     "SPDX Elements",
 			},
 		},
 		{
@@ -124,7 +161,7 @@ func TestOctSbomSuccessful(t *testing.T) {
 				score:  10.0,
 				result: "2023-05-04T09:33:40Z",
 				key:    SBOM_TIMESTAMP,
-				id:     "doc",
+				id:     "SPDX Elements",
 			},
 		},
 		{
@@ -133,7 +170,7 @@ func TestOctSbomSuccessful(t *testing.T) {
 				score:  10.0,
 				result: "DOCUMENT",
 				key:    SBOM_SPDXID,
-				id:     "doc",
+				id:     "SPDX Elements",
 			},
 		},
 
@@ -179,6 +216,33 @@ func TestOctSbomSuccessful(t *testing.T) {
 				score:  10.0,
 				result: "SPDXRef-npm-core-js-3.6.5",
 				key:    PACK_SPDXID,
+				id:     doc.Components()[0].GetID(),
+			},
+		},
+		{
+			actual: octPackageSupplier(doc.Components()[0]),
+			expected: desired{
+				score:  10.0,
+				result: "vivekkumarsahu650@gmail.com",
+				key:    PACK_SUPPLIER,
+				id:     doc.Components()[0].GetID(),
+			},
+		},
+		{
+			actual: octPackageHash(doc.Components()[0]),
+			expected: desired{
+				score:  10.0,
+				result: "ee1300ac533cebc2d070ce3765685d5f7fca2a5a78ca15068323f68ed63d4abf",
+				key:    PACK_HASH,
+				id:     doc.Components()[0].GetID(),
+			},
+		},
+		{
+			actual: octPackageExternalRefs(doc.Components()[0]),
+			expected: desired{
+				score:  10.0,
+				result: "purl:(1/1)",
+				key:    PACK_EXT_REF,
 				id:     doc.Components()[0].GetID(),
 			},
 		},

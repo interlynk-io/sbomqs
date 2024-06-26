@@ -29,5 +29,5 @@ type Document interface {
 
 	Lifecycles() []string
 	Manufacturer() Manufacturer
-	Supplier() Supplier
+	Supplier() GetSupplier
 }
