@@ -25,7 +25,7 @@ import (
 func sharableLicenseCheck(d sbom.Document, c *check) score {
 	s := newScoreFromCheck(c)
 
-	lics := d.Spec().Licenses()
+	lics := d.Spec().GetLicenses()
 
 	freeLics := lo.CountBy(lics, func(l licenses.License) bool {
 		return l.FreeAnyUse()

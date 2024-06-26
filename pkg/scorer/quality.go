@@ -35,7 +35,7 @@ func compWithValidLicensesCheck(d sbom.Document, c *check) score {
 		return *s
 	}
 
-	compScores := lo.Map(d.Components(), func(c sbom.Component, _ int) float64 {
+	compScores := lo.Map(d.Components(), func(c sbom.GetComponent, _ int) float64 {
 		tl := len(c.Licenses())
 
 		validLic := lo.CountBy(c.Licenses(), func(l licenses.License) bool {
@@ -74,8 +74,8 @@ func compWithPrimaryPackageCheck(d sbom.Document, c *check) score {
 		s.setIgnore(true)
 		return *s
 	}
-	withPurpose := lo.CountBy(d.Components(), func(c sbom.Component) bool {
-		return c.PrimaryPurpose() != "" && lo.Contains(sbom.SupportedPrimaryPurpose(d.Spec().SpecType()), strings.ToLower(c.PrimaryPurpose()))
+	withPurpose := lo.CountBy(d.Components(), func(c sbom.GetComponent) bool {
+		return c.PrimaryPurpose() != "" && lo.Contains(sbom.SupportedPrimaryPurpose(d.Spec().GetSpecType()), strings.ToLower(c.PrimaryPurpose()))
 	})
 
 	finalScore := (float64(withPurpose) / float64(totalComponents)) * 10.0
@@ -95,11 +95,11 @@ func compWithNoDepLicensesCheck(d sbom.Document, c *check) score {
 		return *s
 	}
 
-	totalLicenses := lo.Reduce(d.Components(), func(agg int, c sbom.Component, _ int) int {
+	totalLicenses := lo.Reduce(d.Components(), func(agg int, c sbom.GetComponent, _ int) int {
 		return agg + len(c.Licenses())
 	}, 0)
 
-	withDepLicense := lo.CountBy(d.Components(), func(c sbom.Component) bool {
+	withDepLicense := lo.CountBy(d.Components(), func(c sbom.GetComponent) bool {
 		deps := lo.CountBy(c.Licenses(), func(l licenses.License) bool {
 			return l.Deprecated()
 		})
@@ -127,11 +127,11 @@ func compWithRestrictedLicensesCheck(d sbom.Document, c *check) score {
 		return *s
 	}
 
-	totalLicenses := lo.Reduce(d.Components(), func(agg int, c sbom.Component, _ int) int {
+	totalLicenses := lo.Reduce(d.Components(), func(agg int, c sbom.GetComponent, _ int) int {
 		return agg + len(c.Licenses())
 	}, 0)
 
-	withRestrictLicense := lo.CountBy(d.Components(), func(c sbom.Component) bool {
+	withRestrictLicense := lo.CountBy(d.Components(), func(c sbom.GetComponent) bool {
 		rest := lo.CountBy(c.Licenses(), func(l licenses.License) bool {
 			return l.Restrictive()
 		})
@@ -160,7 +160,7 @@ func compWithAnyLookupIdCheck(d sbom.Document, c *check) score {
 		return *s
 	}
 
-	withAnyLookupId := lo.CountBy(d.Components(), func(c sbom.Component) bool {
+	withAnyLookupId := lo.CountBy(d.Components(), func(c sbom.GetComponent) bool {
 		if len(c.Cpes()) > 0 || len(c.Purls()) > 0 {
 			return true
 		}
@@ -187,7 +187,7 @@ func compWithMultipleIdCheck(d sbom.Document, c *check) score {
 		return *s
 	}
 
-	withMultipleId := lo.CountBy(d.Components(), func(c sbom.Component) bool {
+	withMultipleId := lo.CountBy(d.Components(), func(c sbom.GetComponent) bool {
 		if len(c.Cpes()) > 0 && len(c.Purls()) > 0 {
 			return true
 		}
@@ -208,8 +208,8 @@ func docWithCreatorCheck(d sbom.Document, c *check) score {
 
 	totalTools := len(d.Tools())
 
-	withCreatorAndVersion := lo.CountBy(d.Tools(), func(t sbom.Tool) bool {
-		return t.Name() != "" && t.Version() != ""
+	withCreatorAndVersion := lo.CountBy(d.Tools(), func(t sbom.GetTool) bool {
+		return t.GetName() != "" && t.GetVersion() != ""
 	})
 
 	finalScore := (float64(withCreatorAndVersion) / float64(totalTools)) * 10.0
