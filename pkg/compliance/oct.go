@@ -34,16 +34,19 @@ func octResult(ctx context.Context, doc sbom.Document, fileName string, outForma
 	db.addRecord(octSpec(doc))
 	db.addRecord(octSpecVersion(doc))
 	db.addRecord(octSpecSpdxID(doc))
-	db.addRecord(octSbomOrganization(doc))
 	db.addRecord(octSbomComment(doc))
 	db.addRecord(octSbomNamespace(doc))
 	db.addRecord(octSbomLicense(doc))
 	db.addRecord(octSbomName(doc))
 	db.addRecord(octCreatedTimestamp(doc))
-	db.addRecord(octSbomTool(doc))
+	db.addRecords(octComponents(doc))
 	db.addRecord(octMachineFormat(doc))
 	db.addRecord(octHumanFormat(doc))
-	db.addRecords(octComponents(doc))
+	db.addRecord(octSbomTool(doc))
+	db.addRecord(octSbomOrganization(doc))
+	db.addRecord(octSbomDeliveryTime(doc))
+	db.addRecord(octSbomDeliveryMethod(doc))
+	db.addRecord(octSbomScope(doc))
 
 	if outFormat == "json" {
 		octJsonReport(db, fileName)
@@ -73,7 +76,7 @@ func octSpec(doc sbom.Document) *record {
 		score = 0
 	}
 
-	return newRecordStmt(SBOM_SPEC, "SBOM DataFormat", result, score)
+	return newRecordStmt(SBOM_SPEC, "SBOM Format", result, score)
 }
 
 func octSpecVersion(doc sbom.Document) *record {
@@ -92,7 +95,7 @@ func octSpecVersion(doc sbom.Document) *record {
 		score = 0.0
 	}
 
-	return newRecordStmt(SBOM_SPEC_VERSION, "doc", result, score)
+	return newRecordStmt(SBOM_SPEC_VERSION, "SPDX Elements", result, score)
 }
 
 func octCreatedTimestamp(doc sbom.Document) *record {
@@ -106,7 +109,7 @@ func octCreatedTimestamp(doc sbom.Document) *record {
 		score = 0.0
 	}
 
-	return newRecordStmt(SBOM_TIMESTAMP, "doc", result, score)
+	return newRecordStmt(SBOM_TIMESTAMP, "SPDX Elements", result, score)
 }
 
 func octSpecSpdxID(doc sbom.Document) *record {
@@ -124,7 +127,7 @@ func octSpecSpdxID(doc sbom.Document) *record {
 		score = 0.0
 	}
 
-	return newRecordStmt(SBOM_SPDXID, "doc", result, score)
+	return newRecordStmt(SBOM_SPDXID, "SPDX Elements", result, score)
 }
 
 func octSbomOrganization(doc sbom.Document) *record {
@@ -159,7 +162,7 @@ func octSbomComment(doc sbom.Document) *record {
 		score = 0.0
 	}
 
-	return newRecordStmt(SBOM_COMMENT, "doc", result, score)
+	return newRecordStmt(SBOM_COMMENT, "SPDX Elements", result, score)
 }
 
 func octSbomNamespace(doc sbom.Document) *record {
@@ -176,7 +179,7 @@ func octSbomNamespace(doc sbom.Document) *record {
 		score = 0.0
 	}
 
-	return newRecordStmt(SBOM_NAMESPACE, "doc", result, score)
+	return newRecordStmt(SBOM_NAMESPACE, "SPDX Elements", result, score)
 }
 
 func octSbomLicense(doc sbom.Document) *record {
@@ -198,7 +201,7 @@ func octSbomLicense(doc sbom.Document) *record {
 		score = 0.0
 	}
 
-	return newRecordStmt(SBOM_LICENSE, "doc", result, score)
+	return newRecordStmt(SBOM_LICENSE, "SPDX Elements", result, score)
 }
 
 func octSbomName(doc sbom.Document) *record {
@@ -216,7 +219,7 @@ func octSbomName(doc sbom.Document) *record {
 		score = 0.0
 	}
 
-	return newRecordStmt(SBOM_NAME, "doc", result, score)
+	return newRecordStmt(SBOM_NAME, "SPDX Elements", result, score)
 }
 
 func octSbomTool(doc sbom.Document) *record {
@@ -270,6 +273,54 @@ func octHumanFormat(doc sbom.Document) *record {
 	return newRecordStmt(SBOM_HUMAN_FORMAT, "Human Readable Data Format", result, score)
 }
 
+func octSbomDeliveryMethod(doc sbom.Document) *record {
+	spec := doc.Spec().GetSpecType()
+	result := ""
+	score := 0.0
+
+	if spec == "spdx" {
+		result = "unknown"
+		score = 10.0
+	} else {
+		result = "non-defined"
+		score = 0
+	}
+
+	return newRecordStmt(SBOM_DELIVERY_METHOD, "Method of SBOM delivery", result, score)
+}
+
+func octSbomDeliveryTime(doc sbom.Document) *record {
+	spec := doc.Spec().GetSpecType()
+	result := ""
+	score := 0.0
+
+	if spec == "spdx" {
+		result = "unknown"
+		score = 10.0
+	} else {
+		result = "non-defined"
+		score = 0
+	}
+
+	return newRecordStmt(SBOM_DELIVERY_TIME, "Timing of SBOM delivery", result, score)
+}
+
+func octSbomScope(doc sbom.Document) *record {
+	spec := doc.Spec().GetSpecType()
+	result := ""
+	score := 0.0
+
+	if spec == "spdx" {
+		result = "unknown"
+		score = 10.0
+	} else {
+		result = "non-defined"
+		score = 0
+	}
+
+	return newRecordStmt(SBOM_SCOPE, "SBOM Scope", result, score)
+}
+
 func octComponents(doc sbom.Document) []*record {
 	records := []*record{}
 
@@ -291,7 +342,7 @@ func octComponents(doc sbom.Document) []*record {
 		records = append(records, octPackageCopyright(component))
 		records = append(records, octPackageExternalRefs(component))
 	}
-	records = append(records, newRecordStmt(PACK_INFO, "doc", "present", 10.0))
+	records = append(records, newRecordStmt(PACK_INFO, "SPDX Elements", "present", 10.0))
 	return records
 }
 
