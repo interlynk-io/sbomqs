@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/interlynk-io/sbomqs/pkg/logger"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
@@ -80,245 +81,165 @@ func octSpec(doc sbom.Document) *record {
 }
 
 func octSpecVersion(doc sbom.Document) *record {
-	spec := doc.Spec().GetSpecType()
 	version := doc.Spec().GetVersion()
 
 	result := ""
 	score := 0.0
 
-	if spec == "spdx" && version != "" {
+	if version != "" {
 		result = version
 		score = 10.0
-
-	} else {
-		result = version
-		score = 0.0
 	}
-
 	return newRecordStmt(SBOM_SPEC_VERSION, "SPDX Elements", result, score)
 }
 
 func octCreatedTimestamp(doc sbom.Document) *record {
-	spec := doc.Spec().GetSpecType()
 	score := 0.0
 	result := doc.Spec().GetCreationTimestamp()
 
-	if spec == "spdx" && result != "" {
-		score = 10.0
-	} else {
-		score = 0.0
+	if result != "" {
+		_, err := time.Parse(time.RFC3339, result)
+		if err != nil {
+			score = 0.0
+		} else {
+			score = 10.0
+		}
 	}
-
 	return newRecordStmt(SBOM_TIMESTAMP, "SPDX Elements", result, score)
 }
 
 func octSpecSpdxID(doc sbom.Document) *record {
-	spec := doc.Spec().GetSpecType()
 	spdxid := doc.Spec().GetSpdxID()
 
 	result := ""
 	score := 0.0
 
-	if spec == "spdx" && spdxid != "" {
+	if spdxid != "" {
 		result = spdxid
 		score = 10.0
-	} else {
-		result = spdxid
-		score = 0.0
 	}
-
 	return newRecordStmt(SBOM_SPDXID, "SPDX Elements", result, score)
 }
 
 func octSbomOrganization(doc sbom.Document) *record {
-	spec := doc.Spec().GetSpecType()
-	org := doc.Spec().GetOrganization()
+	result, score := "", 0.0
 
-	result := ""
-	score := 0.0
-
-	if spec == "spdx" && org != "" {
+	if org := doc.Spec().GetOrganization(); org != "" {
 		result = org
 		score = 10.0
-	} else {
-		result = org
-		score = 0.0
 	}
 	return newRecordStmt(SBOM_ORG, "SBOM Build Information", result, score)
 }
 
 func octSbomComment(doc sbom.Document) *record {
-	spec := doc.Spec().GetSpecType()
-	comment := doc.Spec().GetComment()
+	result, score := "", 0.0
 
-	result := ""
-	score := 0.0
-
-	if spec == "spdx" && comment != "" {
+	if comment := doc.Spec().GetComment(); comment != "" {
 		result = comment
 		score = 10.0
-	} else {
-		result = comment
-		score = 0.0
 	}
 
 	return newRecordStmt(SBOM_COMMENT, "SPDX Elements", result, score)
 }
 
 func octSbomNamespace(doc sbom.Document) *record {
-	spec := doc.Spec().GetSpecType()
-	ns := doc.Spec().GetNamespace()
-	result := ""
-	score := 0.0
+	result, score := "", 0.0
 
-	if spec == "spdx" && ns != "" {
+	if ns := doc.Spec().GetNamespace(); ns != "" {
 		result = ns
 		score = 10.0
-	} else {
-		result = ns
-		score = 0.0
 	}
 
 	return newRecordStmt(SBOM_NAMESPACE, "SPDX Elements", result, score)
 }
 
 func octSbomLicense(doc sbom.Document) *record {
-	spec := doc.Spec().GetSpecType()
 	var results []string
-	licenses := doc.Spec().GetLicenses()
-	for _, x := range licenses {
-		results = append(results, x.Name())
-	}
-
 	result := ""
 	score := 0.0
 
-	if spec == "spdx" && results != nil {
+	if licenses := doc.Spec().GetLicenses(); licenses != nil {
+		for _, x := range licenses {
+			if x.Name() != "" {
+				results = append(results, x.Name())
+			}
+		}
+	}
+
+	if results != nil {
 		result = strings.Join(results, ", ")
 		score = 10.0
-	} else {
-		result = strings.Join(results, ", ")
-		score = 0.0
 	}
 
 	return newRecordStmt(SBOM_LICENSE, "SPDX Elements", result, score)
 }
 
 func octSbomName(doc sbom.Document) *record {
-	spec := doc.Spec().GetSpecType()
-	name := doc.Spec().GetName()
+	result, score := "", 0.0
 
-	result := ""
-	score := 0.0
-
-	if spec == "spdx" && name != "" {
+	if name := doc.Spec().GetName(); name != "" {
 		result = name
 		score = 10.0
-	} else {
-		result = name
-		score = 0.0
 	}
 
 	return newRecordStmt(SBOM_NAME, "SPDX Elements", result, score)
 }
 
 func octSbomTool(doc sbom.Document) *record {
-	spec := doc.Spec().GetSpecType()
-	tool := doc.Tools()
-	name := ""
+	result, score, name := "", 0.0, ""
 
-	for _, x := range tool {
-		name = x.GetName()
+	if tools := doc.Tools(); tools != nil {
+		for _, tool := range tools {
+			if name = tool.GetName(); name != "" {
+				result = name
+				score = 10.0
+				break
+			}
+		}
 	}
 
-	score := 0.0
-	result := ""
-
-	if spec == "spdx" && tool != nil {
-		result = name
-		score = 10.0
-	} else {
-		score = 0.0
-	}
 	return newRecordStmt(SBOM_TOOL, "SBOM Build Information", result, score)
 }
 
 func octMachineFormat(doc sbom.Document) *record {
 	spec := doc.Spec().GetSpecType()
-	fileFormat := doc.Spec().FileFormat()
-	result := ""
-	score := 0.0
+	result, score := "", 0.0
 
-	if spec == "spdx" && fileFormat == "json" || fileFormat == "tag-value" {
+	if fileFormat := doc.Spec().FileFormat(); fileFormat == "json" || fileFormat == "tag-value" {
 		result = spec + ", " + fileFormat
 		score = 10.0
 	} else {
 		result = spec + ", " + fileFormat
-		score = 0.0
 	}
 	return newRecordStmt(SBOM_MACHINE_FORMAT, "Machine Readable Data Format", result, score)
 }
 
 func octHumanFormat(doc sbom.Document) *record {
-	spec := doc.Spec().GetSpecType()
-	fileFormat := doc.Spec().FileFormat()
-	result := ""
-	score := 0.0
+	result, score := "", 0.0
 
-	if spec == "spdx" && fileFormat == "json" || fileFormat == "tag-value" {
+	if fileFormat := doc.Spec().FileFormat(); fileFormat == "json" || fileFormat == "tag-value" {
 		result = fileFormat
 		score = 10.0
 	} else {
 		result = fileFormat
-		score = 0.0
 	}
 	return newRecordStmt(SBOM_HUMAN_FORMAT, "Human Readable Data Format", result, score)
 }
 
-func octSbomDeliveryMethod(doc sbom.Document) *record {
-	spec := doc.Spec().GetSpecType()
-	result := ""
-	score := 0.0
-
-	if spec == "spdx" {
-		result = "unknown"
-		score = 10.0
-	} else {
-		result = "non-defined"
-		score = 0
-	}
+func octSbomDeliveryMethod(_ sbom.Document) *record {
+	result, score := "unknown", 0.0
 
 	return newRecordStmt(SBOM_DELIVERY_METHOD, "Method of SBOM delivery", result, score)
 }
 
-func octSbomDeliveryTime(doc sbom.Document) *record {
-	spec := doc.Spec().GetSpecType()
-	result := ""
-	score := 0.0
-
-	if spec == "spdx" {
-		result = "unknown"
-		score = 10.0
-	} else {
-		result = "non-defined"
-		score = 0
-	}
+func octSbomDeliveryTime(_ sbom.Document) *record {
+	result, score := "unknown", 0.0
 
 	return newRecordStmt(SBOM_DELIVERY_TIME, "Timing of SBOM delivery", result, score)
 }
 
-func octSbomScope(doc sbom.Document) *record {
-	spec := doc.Spec().GetSpecType()
-	result := ""
-	score := 0.0
-
-	if spec == "spdx" {
-		result = "unknown"
-		score = 10.0
-	} else {
-		result = "non-defined"
-		score = 0
-	}
+func octSbomScope(_ sbom.Document) *record {
+	result, score := "unknown", 0.0
 
 	return newRecordStmt(SBOM_SCOPE, "SBOM Scope", result, score)
 }
@@ -349,62 +270,42 @@ func octComponents(doc sbom.Document) []*record {
 }
 
 func octPackageName(component sbom.GetComponent) *record {
-	result := component.GetName()
-
-	if result != "" {
+	if result := component.GetName(); result != "" {
 		return newRecordStmt(PACK_NAME, component.GetID(), result, 10.0)
 	}
-
 	return newRecordStmt(PACK_NAME, component.GetID(), "", 0.0)
 }
 
 func octPackageSpdxID(component sbom.GetComponent) *record {
-	result := component.GetSpdxID()
-	if result != "" {
+	if result := component.GetSpdxID(); result != "" {
 		return newRecordStmt(PACK_SPDXID, component.GetID(), result, 10.0)
 	}
-	return newRecordStmt(PACK_SPDXID, component.GetID(), result, 0.0)
+	return newRecordStmt(PACK_SPDXID, component.GetID(), "", 0.0)
 }
 
 func octPackageVersion(component sbom.GetComponent) *record {
-	result := component.GetVersion()
-
-	if result != "" {
+	if result := component.GetVersion(); result != "" {
 		return newRecordStmt(PACK_VERSION, component.GetID(), result, 10.0)
 	}
-
 	return newRecordStmt(PACK_VERSION, component.GetID(), "", 0.0)
 }
 
 func octPackageSupplier(component sbom.GetComponent) *record {
-	supplier := component.Suppliers()
-	var results []string
-
-	if supplier != nil {
-		if supplier.GetEmail() != "" {
-			results = append(results, supplier.GetEmail())
-		}
-	}
-	result := strings.Join(results, ", ")
-
-	if result != "" {
-		return newRecordStmt(PACK_SUPPLIER, component.GetID(), result, 10.0)
+	if supplier := component.Suppliers().GetEmail(); supplier != "" {
+		return newRecordStmt(PACK_SUPPLIER, component.GetID(), supplier, 10.0)
 	}
 	return newRecordStmt(PACK_SUPPLIER, component.GetID(), "", 0.0)
 }
 
 func octPackageDownloadUrl(component sbom.GetComponent) *record {
-	result := component.GetDownloadLocationUrl()
-
-	if result != "" {
+	if result := component.GetDownloadLocationUrl(); result != "" {
 		return newRecordStmt(PACK_DOWNLOAD_URL, component.GetID(), result, 10.0)
 	}
 	return newRecordStmt(PACK_DOWNLOAD_URL, component.GetID(), "", 0.0)
 }
 
 func octPackageFileAnalyzed(component sbom.GetComponent) *record {
-	result := component.GetFileAnalyzed()
-	if result {
+	if result := component.GetFileAnalyzed(); result {
 		return newRecordStmt(PACK_FILE_ANALYZED, component.GetID(), "yes", 10.0)
 	}
 
@@ -412,17 +313,16 @@ func octPackageFileAnalyzed(component sbom.GetComponent) *record {
 }
 
 func octPackageHash(component sbom.GetComponent) *record {
-	result := ""
+	result, score := "", 0.0
 	algos := []string{"SHA256", "SHA-256", "sha256", "sha-256"}
-	score := 0.0
 
-	checksums := component.GetChecksums()
-
-	for _, checksum := range checksums {
-		if lo.Count(algos, checksum.GetAlgo()) > 0 {
-			result = checksum.GetContent()
-			score = 10.0
-			break
+	if checksums := component.GetChecksums(); checksums != nil {
+		for _, checksum := range checksums {
+			if lo.Count(algos, checksum.GetAlgo()) > 0 {
+				result = checksum.GetContent()
+				score = 10.0
+				break
+			}
 		}
 	}
 
@@ -430,52 +330,45 @@ func octPackageHash(component sbom.GetComponent) *record {
 }
 
 func octPackageConLicense(component sbom.GetComponent) *record {
-	result := component.GetPackageLicenseConcluded()
-	if result != "" {
-		if result == "NOASSERTION" || result == "NONE" {
-			return newRecordStmt(PACK_LICENSE_CON, component.GetID(), result, 0.0)
-		}
+	result := ""
+
+	if result = component.GetPackageLicenseConcluded(); result != "" && result != "NOASSERTION" && result != "NONE" {
 		return newRecordStmt(PACK_LICENSE_CON, component.GetID(), result, 10.0)
 	}
-	return newRecordStmt(PACK_LICENSE_CON, component.GetID(), "", 0.0)
+
+	return newRecordStmt(PACK_LICENSE_CON, component.GetID(), result, 0.0)
 }
 
 func octPackageDecLicense(component sbom.GetComponent) *record {
-	result := component.GetPackageLicenseDeclared()
-	if result != "" {
-		if result == "NOASSERTION" || result == "NONE" {
-			return newRecordStmt(PACK_LICENSE_DEC, component.GetID(), result, 0.0)
-		}
+	result := ""
+
+	if result = component.GetPackageLicenseDeclared(); result != "" && result != "NOASSERTION" && result != "NONE" {
 		return newRecordStmt(PACK_LICENSE_DEC, component.GetID(), result, 10.0)
 	}
-	return newRecordStmt(PACK_LICENSE_DEC, component.GetID(), "", 0.0)
+
+	return newRecordStmt(PACK_LICENSE_DEC, component.GetID(), result, 0.0)
 }
 
 func octPackageCopyright(component sbom.GetComponent) *record {
-	result := component.GetCopyRight()
+	result := ""
 
-	if result != "" {
-		if result == "NOASSERTION" || result == "NONE" {
-			return newRecordStmt(PACK_COPYRIGHT, component.GetID(), result, 0.0)
-		}
+	if result = component.GetCopyRight(); result != "" && result != "NOASSERTION" && result != "NONE" {
 		return newRecordStmt(PACK_COPYRIGHT, component.GetID(), result, 10.0)
 	}
-	return newRecordStmt(PACK_COPYRIGHT, component.GetID(), "", 0.0)
+
+	return newRecordStmt(PACK_COPYRIGHT, component.GetID(), result, 0.0)
 }
 
 func octPackageExternalRefs(component sbom.GetComponent) *record {
-	result := ""
-	score := 0.0
+	result, score, totalElements, containPurlElement := "", 0.0, 0, 0
 
-	extRefs := component.ExternalReferences()
-	totalElements := 0
-	containPurlElement := 0
-
-	for _, extRef := range extRefs {
-		totalElements++
-		result = extRef.GetRefType()
-		if result == "purl" {
-			containPurlElement++
+	if extRefs := component.ExternalReferences(); extRefs != nil {
+		for _, extRef := range extRefs {
+			totalElements++
+			result = extRef.GetRefType()
+			if result == "purl" {
+				containPurlElement++
+			}
 		}
 	}
 	if containPurlElement != 0 {
@@ -483,6 +376,5 @@ func octPackageExternalRefs(component sbom.GetComponent) *record {
 		x := fmt.Sprintf(":(%d/%d)", containPurlElement, totalElements)
 		result = result + x
 	}
-	fmt.Println("result: ", result)
 	return newRecordStmt(PACK_EXT_REF, component.GetID(), result, score)
 }

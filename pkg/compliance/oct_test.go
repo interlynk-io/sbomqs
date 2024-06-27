@@ -310,7 +310,7 @@ func createFailureDummyDocument() sbom.Document {
 	s.Name = ""
 	s.Namespace = ""
 	s.Organization = ""
-	s.CreationTimestamp = ""
+	s.CreationTimestamp = "wrong-time-format"
 	s.Spdxid = ""
 	s.Comment = ""
 	lics := licenses.CreateCustomLicense("", "")
@@ -447,7 +447,7 @@ func TestOctSbomFail(t *testing.T) {
 			actual: octCreatedTimestamp(doc),
 			expected: desired{
 				score:  0.0,
-				result: "",
+				result: "wrong-time-format",
 				key:    SBOM_TIMESTAMP,
 				id:     "SPDX Elements",
 			},
