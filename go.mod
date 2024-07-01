@@ -15,7 +15,7 @@ require (
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/package-url/packageurl-go v0.1.3
 	github.com/samber/lo v1.39.0
-	github.com/spdx/tools-golang v0.5.4
+	github.com/spdx/tools-golang v0.5.5
 	github.com/spf13/cobra v1.8.1
 	go.uber.org/zap v1.27.0
 	gopkg.in/yaml.v2 v2.4.0
