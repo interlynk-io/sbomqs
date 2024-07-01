@@ -28,7 +28,7 @@ func specCheck(d sbom.Document, c *check) score {
 	s.setDesc(fmt.Sprintf("provided sbom is in a supported sbom format of %s", strings.Join(specs, ",")))
 
 	for _, spec := range specs {
-		if d.Spec().Name() == spec {
+		if d.Spec().GetSpecType() == spec {
 			s.setScore(10.0)
 		}
 	}
@@ -38,11 +38,11 @@ func specCheck(d sbom.Document, c *check) score {
 func specVersionCheck(d sbom.Document, c *check) score {
 	s := newScoreFromCheck(c)
 
-	versions := sbom.SupportedSBOMSpecVersions(d.Spec().Name())
-	s.setDesc(fmt.Sprintf("provided sbom should be in supported spec version for spec:%s and versions: %s", d.Spec().Version(), strings.Join(versions, ",")))
+	versions := sbom.SupportedSBOMSpecVersions(d.Spec().GetSpecType())
+	s.setDesc(fmt.Sprintf("provided sbom should be in supported spec version for spec:%s and versions: %s", d.Spec().GetVersion(), strings.Join(versions, ",")))
 
 	for _, ver := range versions {
-		if d.Spec().Version() == ver {
+		if d.Spec().GetVersion() == ver {
 			s.setScore(10.0)
 		}
 	}
@@ -53,7 +53,7 @@ func specVersionCheck(d sbom.Document, c *check) score {
 func specFileFormatCheck(d sbom.Document, c *check) score {
 	s := newScoreFromCheck(c)
 
-	formats := sbom.SupportedSBOMFileFormats(d.Spec().Name())
+	formats := sbom.SupportedSBOMFileFormats(d.Spec().GetSpecType())
 	s.setDesc(fmt.Sprintf("provided sbom should be in supported file format for spec: %s and version: %s", d.Spec().FileFormat(), strings.Join(formats, ",")))
 
 	for _, format := range formats {

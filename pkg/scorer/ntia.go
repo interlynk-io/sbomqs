@@ -33,8 +33,8 @@ func compSupplierCheck(d sbom.Document, c *check) score {
 		return *s
 	}
 
-	withNames := lo.CountBy(d.Components(), func(c sbom.Component) bool {
-		return c.SupplierName() != ""
+	withNames := lo.CountBy(d.Components(), func(c sbom.GetComponent) bool {
+		return c.GetSupplierName() != ""
 	})
 
 	if totalComponents > 0 {
@@ -55,8 +55,8 @@ func compWithNameCheck(d sbom.Document, c *check) score {
 		s.setIgnore(true)
 		return *s
 	}
-	withNames := lo.CountBy(d.Components(), func(c sbom.Component) bool {
-		return c.Name() != ""
+	withNames := lo.CountBy(d.Components(), func(c sbom.GetComponent) bool {
+		return c.GetName() != ""
 	})
 	if totalComponents > 0 {
 		s.setScore((float64(withNames) / float64(totalComponents)) * 10.0)
@@ -76,8 +76,8 @@ func compWithVersionCheck(d sbom.Document, c *check) score {
 		s.setIgnore(true)
 		return *s
 	}
-	withVersions := lo.CountBy(d.Components(), func(c sbom.Component) bool {
-		return c.Version() != ""
+	withVersions := lo.CountBy(d.Components(), func(c sbom.GetComponent) bool {
+		return c.GetVersion() != ""
 	})
 	if totalComponents > 0 {
 		s.setScore((float64(withVersions) / float64(totalComponents)) * 10.0)
@@ -98,17 +98,16 @@ func compWithUniqIDCheck(d sbom.Document, c *check) score {
 		return *s
 	}
 
-	compIDs := lo.FilterMap(d.Components(), func(c sbom.Component, i int) (string, bool) {
-		if c.ID() == "" {
+	compIDs := lo.FilterMap(d.Components(), func(c sbom.GetComponent, i int) (string, bool) {
+		if c.GetID() == "" {
 			return "", false
 		}
-		return strings.Join([]string{d.Spec().Namespace(), c.ID()}, ""), true
+		return strings.Join([]string{d.Spec().GetNamespace(), c.GetID()}, ""), true
 	})
 
-	//uniqComps := lo.Uniq(compIDs)
+	// uniqComps := lo.Uniq(compIDs)
 
 	if totalComponents > 0 {
-
 		s.setScore((float64(len(compIDs)) / float64(totalComponents)) * 10.0)
 	}
 	s.setDesc(fmt.Sprintf("%d/%d have unique ID's", len(compIDs), totalComponents))
@@ -139,16 +138,15 @@ func docWithAuthorsCheck(d sbom.Document, c *check) score {
 	s.setDesc(fmt.Sprintf("doc has %d authors", totalAuthors))
 
 	return *s
-
 }
 
 func docWithTimeStampCheck(d sbom.Document, c *check) score {
 	s := newScoreFromCheck(c)
 
-	if d.Spec().CreationTimestamp() != "" {
+	if d.Spec().GetCreationTimestamp() != "" {
 		s.setScore(10.0)
 	}
 
-	s.setDesc(fmt.Sprintf("doc has creation timestamp %s", d.Spec().CreationTimestamp()))
+	s.setDesc(fmt.Sprintf("doc has creation timestamp %s", d.Spec().GetCreationTimestamp()))
 	return *s
 }

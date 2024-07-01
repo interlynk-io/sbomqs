@@ -27,7 +27,7 @@ func docWithRequiredFieldCheck(d sbom.Document, c *check) score {
 	totalComponents := len(d.Components())
 
 	docOK := d.Spec().RequiredFields()
-	noOfPkgs := lo.CountBy(d.Components(), func(c sbom.Component) bool {
+	noOfPkgs := lo.CountBy(d.Components(), func(c sbom.GetComponent) bool {
 		return c.RequiredFields()
 	})
 	pkgsOK := false
@@ -72,7 +72,7 @@ func compWithLicensesCheck(d sbom.Document, c *check) score {
 		s.setIgnore(true)
 		return *s
 	}
-	withLicenses := lo.CountBy(d.Components(), func(c sbom.Component) bool {
+	withLicenses := lo.CountBy(d.Components(), func(c sbom.GetComponent) bool {
 		return len(c.Licenses()) > 0
 	})
 
@@ -96,8 +96,8 @@ func compWithChecksumsCheck(d sbom.Document, c *check) score {
 		return *s
 	}
 
-	withChecksums := lo.CountBy(d.Components(), func(c sbom.Component) bool {
-		return len(c.Checksums()) > 0
+	withChecksums := lo.CountBy(d.Components(), func(c sbom.GetComponent) bool {
+		return len(c.GetChecksums()) > 0
 	})
 
 	if totalComponents > 0 {

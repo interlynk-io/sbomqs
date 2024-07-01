@@ -84,16 +84,16 @@ func (r *Reporter) jsonReport(onlyResponse bool) (string, error) {
 		f.Components = len(doc.Components())
 		f.Format = doc.Spec().FileFormat()
 		f.Name = path
-		f.Spec = doc.Spec().Name()
-		f.SpecVersion = doc.Spec().Version()
+		f.Spec = doc.Spec().GetSpecType()
+		f.SpecVersion = doc.Spec().GetVersion()
 		tools := doc.Tools()
 
 		if len(tools) > 0 {
-			//Use the first tool for now
-			f.ToolName = tools[0].Name()
-			f.ToolVersion = tools[0].Version()
+			// Use the first tool for now
+			f.ToolName = tools[0].GetName()
+			f.ToolVersion = tools[0].GetVersion()
 		}
-		f.CreationTime = doc.Spec().CreationTimestamp()
+		f.CreationTime = doc.Spec().GetCreationTimestamp()
 
 		for _, ss := range scores.ScoreList() {
 			ns := new(score)

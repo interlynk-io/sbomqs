@@ -23,6 +23,11 @@ require (
 )
 
 require (
+	github.com/google/go-cmp v0.6.0 // indirect
+	github.com/pkg/errors v0.9.1 // indirect
+)
+
+require (
 	github.com/ProtonMail/go-crypto v1.0.0 // indirect
 	github.com/anchore/go-struct-converter v0.0.0-20230627203149-c72ef8859ca9 // indirect
 	github.com/cloudflare/circl v1.3.8 // indirect
@@ -43,5 +48,6 @@ require (
 	golang.org/x/sys v0.20.0 // indirect
 	golang.org/x/text v0.15.0 // indirect
 	golang.org/x/tools v0.21.0 // indirect
+	gotest.tools v2.2.0+incompatible
 	sigs.k8s.io/yaml v1.4.0 // indirect
 )

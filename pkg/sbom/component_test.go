@@ -22,7 +22,7 @@ import (
 )
 
 func TestGetCpeFromCompo(t *testing.T) {
-	var tests = []struct {
+	tests := []struct {
 		name  string
 		input []cpe.CPE
 		want  int
@@ -32,7 +32,7 @@ func TestGetCpeFromCompo(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cp := component{
+			cp := Component{
 				cpes: tt.input,
 			}
 			if len(tt.input) != len(cp.cpes) {
@@ -43,7 +43,7 @@ func TestGetCpeFromCompo(t *testing.T) {
 }
 
 func Test_component_Purls(t *testing.T) {
-	var tests = []struct {
+	tests := []struct {
 		name  string
 		input []purl.PURL
 		want  int
@@ -53,7 +53,7 @@ func Test_component_Purls(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			pl := component{
+			pl := Component{
 				purls: tt.input,
 			}
 			if len(tt.input) != len(pl.purls) {

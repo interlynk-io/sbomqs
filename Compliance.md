@@ -8,6 +8,8 @@ The goal of compliance reports is to verify if the sbom file adheres to these st
 We have explained below how sbomqs approaches compliance reports for BSI TR-03183-2 v1.1. We are not going to explain
 this technical guideline here, but rather go into our intepretation of it.
 
+## TR-03183: SBOM Requirements for CRA
+
 The [BSI TR-03183-2 v1.1](https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/Publications/TechGuidelines/TR03183/BSI-TR-03183-2.pdf) specifies mandatory properties for an SBOM. Below is how we have derived all the values.
 
 | TR-03183-2 | TR-03183-2 field | CycloneDx | SPDX(2.3) | Notes |
@@ -30,3 +32,37 @@ The [BSI TR-03183-2 v1.1](https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/Pu
 | | `URI of the executable form`| component->externalReferences->type (distribution/distribution-intake) | PackageDownloadLocation | |
 | | `hash of source code`| no-deterministic-field | package->PackageVerificationCode | |
 | | `other uniq identifiers`| component->cpe, component->purl| package->externalReference->security (cpe/purl) | |
+
+## OpenChain Telco: SBOM Requirements for OCT
+
+The [OpenChain Telco](https://github.com/OpenChain-Project/Reference-Material/blob/master/SBOM-Quality/Version-1/OpenChain-Telco-SBOM-Guide_EN.md) specifies mandatory properties for an SBOM. Below is how we have derived all the values.
+| OpenTelco | Section ID | OpenTelco field | SPDX(2.3) | Notes |
+| :---     | :---    | :---    |     :---      |          :--- |
+| DataFormat |3.1 | `SBOM data format` | specs | SPDX2.2 and SPDX2.3 only |
+| SPDX elements | 3.2 | `SBOM info`  | SBOM type    | SPDX only |
+| | 3.2.2 | `spec version field`  | SPDXVersion | SPDX 2.3 and above |
+| | 3.2.3 | `SBOM license field` | DataLicense |  |
+| | 3.2.4 | `spec identifier field`  | SPDXID   | |
+| | 3.2.5 | `SBOM name field`| DocumentName |  |
+| | 3.2.6 | `SBOM namespace field`| DocumentNamespace |  |
+| | 3.2.7 | `SBOM Creator field`| creator | Tools and Organization must be present |
+| | 3.2.8 | `SBOM Created field`| created | Time at which document was created. |
+| | 3.2.9 | `SBOM Creator comment field`| comment | Some comment from the document creators |
+| | 3.2.10 | `Package Info` | package info | |
+| | 3.2.11 | `Package name field` | PackageName | |
+| | 3.2.12 | `Package SPDX identifier field` | SPDXID | |
+| | 3.2.13 | `Package version field` | PackageVersion | |
+| | 3.2.14 | `Package supplier field` | PackageSupplier | |
+| | 3.2.15 | `Package download location field` | PackageDownloadLocation | |
+| | 3.2.16 | `Files analyzed field` | FilesAnalyzed | |
+| | 3.2.17 | `Package checksum field` | PackageChecksum | we only look for sha-256 |
+| | 3.2.18 | `Concluded license field`| PackageLicenseConcluded | |
+| | 3.2.19 | `Declared license field`| PackageLicenseDeclared | |
+| | 3.2.20 | `Copyright text field` | PackageCopyrightText | |
+| | 3.2.21 | `External reference field`| ExternalRef | |
+| Machine Readable Data Format | 3.3 | `SBOM machine readable format` | specs | SPDX data-format in Tag-value or JSON |
+| Human Readable Data Format | 3.4 | `SBOM human readable format` | SBOM file format | Tag:Value or JSON |
+| SBOM Build Information | 3.5 | `SBOM Creator field` | SBOM creator | It must contain tool name, tool version and Organization |
+| Timing of SBOM delivery | 3.6 | `SBOM delivery time` | delivery time | |
+| Method of SBOM delivery | 3.7 | `SBOM delivery method` | delivery method | |
+| SBOM Scope | 3.8 | `SBOM scope` | sbom scope | |
