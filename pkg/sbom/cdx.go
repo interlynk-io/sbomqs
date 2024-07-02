@@ -185,6 +185,7 @@ func (c *cdxDoc) parseSpec() {
 		}
 	}
 	sp.Namespace = c.doc.SerialNumber
+	sp.SpecType = string(SBOMSpecCDX)
 
 	if c.doc.SerialNumber != "" && strings.HasPrefix(sp.Namespace, "urn:uuid:") {
 		sp.uri = fmt.Sprintf("%s/%d", c.doc.SerialNumber, c.doc.Version)
