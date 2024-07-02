@@ -25,7 +25,7 @@ func (r *Reporter) simpleReport() {
 		doc := r.Docs[index]
 
 		format := doc.Spec().FileFormat()
-		spec := doc.Spec().GetName()
+		spec := doc.Spec().GetSpecType()
 		specVersion := doc.Spec().GetVersion()
 
 		if spec == "spdx" {
