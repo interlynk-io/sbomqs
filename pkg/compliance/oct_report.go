@@ -153,6 +153,6 @@ func octDetailedReport(db *db, fileName string) {
 
 func octBasicReport(db *db, fileName string) {
 	score := octAggregateScore(db)
-	fmt.Printf("Cyber Resilience Requirements for Manufacturers and Products Report TR-03183-2 (1.1)\n")
+	fmt.Printf("OpenChain Telco Report\n")
 	fmt.Printf("Score:%0.1f RequiredScore:%0.1f OptionalScore:%0.1f for %s\n", score.totalScore(), score.totalRequiredScore(), score.totalOptionalScore(), fileName)
 }
