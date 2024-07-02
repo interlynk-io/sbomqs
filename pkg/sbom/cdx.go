@@ -29,7 +29,7 @@ import (
 )
 
 var (
-	cdx_spec_versions   = []string{"1.0", "1.1", "1.2", "1.3", "1.4", "1.5"}
+	cdx_spec_versions   = []string{"1.0", "1.1", "1.2", "1.3", "1.4", "1.5", "1.6"}
 	cdx_file_formats    = []string{"json", "xml"}
 	cdx_primary_purpose = []string{"application", "framework", "library", "container", "operating-system", "device", "firmware", "file"}
 )
