@@ -21,7 +21,7 @@
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/interlynk-io/sbomqs/badge)](https://securityscorecards.dev/viewer/?uri=github.com/interlynk-io/sbomqs)
 ![GitHub all releases](https://img.shields.io/github/downloads/interlynk-io/sbomqs/total)
 
-`sbomqs` is your primary tool to assess an SBOM's quality. The higher the score the more consumable your SBOMs are.
+`sbomqs` is your primary tool to assess an SBOM's quality and compliance. The higher the score the more consumable & compliant your SBOMs are.
 
 ```console
 brew tap interlynk-io/interlynk
@@ -238,11 +238,11 @@ json format
 ```
 
 # Compliance Reports
-sbomqs can produce compliance reports for industry standard requirements. Currently we support [BSI TR-03183-2 v1.1](https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/Publications/TechGuidelines/TR03183/BSI-TR-03183-2.pdf). More details about its
-requirements are [avaliable here](./Compliance.md).
+sbomqs can produce compliance reports for industry standard requirements. Details about compliance implementation are [avaliable here](./Compliance.md).
 
 ## Reports
 - [BSI TR-03183-2 v1.1](https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/Publications/TechGuidelines/TR03183/BSI-TR-03183-2.pdf)
+- [OpenChain Telco SBOM Guide Version 1.0](https://github.com/OpenChain-Project/Reference-Material/blob/master/SBOM-Quality/Version-1/OpenChain-Telco-SBOM-Guide_EN.md)
 - [NTIA minimum element](https://www.ntia.doc.gov/files/ntia/publications/sbom_minimum_elements_report.pdf) - Coming soon.
 - [OWASP SCVS](https://scvs.owasp.org/bom-maturity-model/) - Coming soon.
 
@@ -280,7 +280,12 @@ Example of a BSI report
     },
 ...
 ```
-
+Example of a OpenChain Telco SBOM Basic Report
+```
+➜  sbomqs git:(fix/command-line) ./build/sbomqs compliance -t -b constellation-spdx.json
+OpenChain Telco Report
+Score:3.1 RequiredScore:3.1 OptionalScore:0.0 for constellation-spdx.json
+```
 
 # SBOM Samples
 - A sample set of SBOMs is present in the [samples](https://github.com/interlynk-io/sbomqs/tree/main/samples) directory above
