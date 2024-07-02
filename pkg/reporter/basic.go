@@ -25,8 +25,8 @@ func (r *Reporter) simpleReport() {
 		doc := r.Docs[index]
 
 		format := doc.Spec().FileFormat()
-		spec := doc.Spec().Name()
-		specVersion := doc.Spec().Version()
+		spec := doc.Spec().GetName()
+		specVersion := doc.Spec().GetVersion()
 
 		if spec == "spdx" {
 			specVersion = strings.Replace(specVersion, "SPDX-", "", 1)
