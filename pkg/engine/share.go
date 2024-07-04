@@ -34,13 +34,12 @@ func ShareRun(ctx context.Context, ep *Params) error {
 		log.Fatal("path is required")
 	}
 
-	doc, scores, err := processFile(ctx, ep, ep.Path[0])
+	doc, scores, err := processFile(ctx, ep, ep.Path[0], nil)
 	if err != nil {
 		return err
 	}
 
 	url, err := share.Share(ctx, doc, scores, ep.Path[0])
-
 	if err != nil {
 		fmt.Printf("Error sharing file %s: %s", ep.Path, err)
 		return err
