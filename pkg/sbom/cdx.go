@@ -554,7 +554,7 @@ func (c *cdxDoc) assignSupplier(comp *cydx.Component) *Supplier {
 
 	supplier := Supplier{}
 
-	if comp.Supplier.Name == "" {
+	if comp.Supplier.Name != "" {
 		supplier.Name = comp.Supplier.Name
 	}
 
