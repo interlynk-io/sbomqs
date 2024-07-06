@@ -1,8 +1,8 @@
-name: Create and publish a docker image to ghcr
+name: Release | Build GHCR image
 on:
   release:
-    types:
-      - created
+    types: [published]
+  workflow_dispatch:
 
 env:
     REGISTRY: ghcr.io
