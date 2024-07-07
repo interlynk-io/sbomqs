@@ -13,9 +13,9 @@ env:
   PYLYNK_TEMP_DIR: $RUNNER_TEMP/pylynk
   SBOM_TEMP_DIR: $RUNNER_TEMP/sbom
   SBOM_ENV: default
+  SBOM_FILE_PATH: $RUNNER_TEMP/sbom/_manifest/spdx_2.2/manifest.spdx.json
   MS_SBOM_TOOL_URL: https://github.com/microsoft/sbom-tool/releases/latest/download/sbom-tool-linux-x64
-  MS_SBOM_SBOM_PATH: $RUNNER_TEMP/sbom/_manifest/spdx_2.2/manifest.spdx.json
-  SBOM_EXCLUDE_DIRS: "**/samples/**"
+  MS_SBOM_TOOL_EXCLUDE_DIRS: "**/samples/**"
 
 jobs:
   build-sbom:
@@ -60,8 +60,8 @@ jobs:
           mkdir -p ${{ env.SBOM_TEMP_DIR}}
           curl -Lo $RUNNER_TEMP/sbom-tool ${{ env.MS_SBOM_TOOL_URL }}
           chmod +x $RUNNER_TEMP/sbom-tool
-          $RUNNER_TEMP/sbom-tool generate -b ${{ env.SBOM_TEMP_DIR }} -bc . -pn ${{ env.TOOL_NAME }} -pv ${{ env.LATEST_TAG }} -ps ${{ env.SUPPLIER_NAME}} -nsb ${{ env.SUPPLIER_URL }} -cd "--DirectoryExclusionList ${{ env.SBOM_EXCLUDE_DIRS }}"
+          $RUNNER_TEMP/sbom-tool generate -b ${{ env.SBOM_TEMP_DIR }} -bc . -pn ${{ env.TOOL_NAME }} -pv ${{ env.LATEST_TAG }} -ps ${{ env.SUPPLIER_NAME}} -nsb ${{ env.SUPPLIER_URL }} -cd "--DirectoryExclusionList ${{ env.MS_SBOM_TOOL_EXCLUDE_DIRS }}"
 
       - name: Upload SBOM
         run: |
-          python3 ${{ env.PYLYNK_TEMP_DIR }}/pylynk.py --verbose upload --prod ${{env.TOOL_NAME}} --env ${{ env.SBOM_ENV }} --sbom ${{ env.MS_SBOM_SBOM_PATH }} --token ${{ secrets.INTERLYNK_SECURITY_TOKEN }}
+          python3 ${{ env.PYLYNK_TEMP_DIR }}/pylynk.py --verbose upload --prod ${{env.TOOL_NAME}} --env ${{ env.SBOM_ENV }} --sbom ${{ env.SBOM_FILE_PATH }} --token ${{ secrets.INTERLYNK_SECURITY_TOKEN }}
