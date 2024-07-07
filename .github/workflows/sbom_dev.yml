@@ -3,24 +3,23 @@ name: Dev | Build SBOM
 on:
   push:
     branches-ignore:
-      - 'main'
+      - "main"
   pull_request:
     branches-ignore:
-      - 'main'
+      - "main"
   workflow_dispatch:
 
 env:
-    TOOL_NAME: ${{ github.repository }}
-    SUPPLIER_NAME: Interlynk
-    SUPPLIER_URL: https://interlynk.io
-    DEFAULT_TAG: v0.0.1
-    PYLYNK_TEMP_DIR: $RUNNER_TEMP/pylynk
-    SBOM_TEMP_DIR: $RUNNER_TEMP/sbom
-    SBOM_ENV: development
-    MS_SBOM_TOOL_URL: https://github.com/microsoft/sbom-tool/releases/latest/download/sbom-tool-linux-x64
-    MS_SBOM_SBOM_PATH: $RUNNER_TEMP/sbom/_manifest/spdx_2.2/manifest.spdx.json
-    SBOM_EXCLUDE_DIRS: "**/samples/**"
-
+  TOOL_NAME: ${{ github.repository }}
+  SUPPLIER_NAME: Interlynk
+  SUPPLIER_URL: https://interlynk.io
+  DEFAULT_TAG: v0.0.1
+  PYLYNK_TEMP_DIR: $RUNNER_TEMP/pylynk
+  SBOM_TEMP_DIR: $RUNNER_TEMP/sbom
+  SBOM_ENV: development
+  SBOM_FILE_PATH: $RUNNER_TEMP/sbom/_manifest/spdx_2.2/manifest.spdx.json
+  MS_SBOM_TOOL_URL: https://github.com/microsoft/sbom-tool/releases/latest/download/sbom-tool-linux-x64
+  MS_SBOM_TOOL_EXCLUDE_DIRS: "**/samples/**"
 
 jobs:
   build-sbom:
@@ -31,19 +30,18 @@ jobs:
       contents: write
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3 
+        uses: actions/checkout@v3
         with:
-            fetch-depth: 0
+          fetch-depth: 0
 
       - name: Get Tag
         id: get_tag
         run: echo "LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo 'v0.0.1')" >> $GITHUB_ENV
 
-
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.x'  # Specify the Python version needed
+          python-version: "3.x" # Specify the Python version needed
 
       - name: Checkout Python SBOM tool
         run: |
@@ -53,7 +51,7 @@ jobs:
           latest_tag=$(git describe --tags `git rev-list --tags --max-count=1`)
           git checkout $latest_tag
           echo "Checked out pylynk at tag: $latest_tag"
-  
+
       - name: Install Python dependencies
         run: |
           cd ${{ env.PYLYNK_TEMP_DIR }}
@@ -66,9 +64,10 @@ jobs:
           mkdir -p ${{ env.SBOM_TEMP_DIR}}
           curl -Lo $RUNNER_TEMP/sbom-tool ${{ env.MS_SBOM_TOOL_URL }}
           chmod +x $RUNNER_TEMP/sbom-tool
-          $RUNNER_TEMP/sbom-tool generate -b ${{ env.SBOM_TEMP_DIR }} -bc . -pn ${{ env.TOOL_NAME }} -pv ${{ env.LATEST_TAG }} -ps ${{ env.SUPPLIER_NAME}} -nsb ${{ env.SUPPLIER_URL }} -cd "--DirectoryExclusionList ${{ env.SBOM_EXCLUDE_DIRS }}"
+          SANITIZED_REF=$(echo "${{ github.ref_name}}" | sed -e 's/[^a-zA-Z0-9.-]/-/g' -e 's/^[^a-zA-Z0-9]*//g')
+          VERSION=${{ env.LATEST_TAG }}-$SANITIZED_REF          
+          $RUNNER_TEMP/sbom-tool generate -b ${{ env.SBOM_TEMP_DIR }} -bc . -pn ${{ env.TOOL_NAME }} -pv $VERSION -ps ${{ env.SUPPLIER_NAME}} -nsb ${{ env.SUPPLIER_URL }} -cd "--DirectoryExclusionList ${{ env.MS_SBOM_TOOL_EXCLUDE_DIRS }}"
 
-      - name: Upload SBOM 
+      - name: Upload SBOM
         run: |
-          python3 ${{ env.PYLYNK_TEMP_DIR }}/pylynk.py --verbose upload --prod ${{env.TOOL_NAME}} --env ${{ env.SBOM_ENV }} --sbom ${{ env.MS_SBOM_SBOM_PATH }} --token ${{ secrets.INTERLYNK_SECURITY_TOKEN }}
-
+          python3 ${{ env.PYLYNK_TEMP_DIR }}/pylynk.py --verbose upload --prod ${{env.TOOL_NAME}} --env ${{ env.SBOM_ENV }} --sbom ${{ env.SBOM_FILE_PATH }} --token ${{ secrets.INTERLYNK_SECURITY_TOKEN }}
