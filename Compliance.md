@@ -76,14 +76,14 @@ The [NTIA](https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/Publications/Tech
 | :---     | :---    |     :---      |          :--- | :--- |
 |1. SBOM formats| `specification`  | BomFormat     | SPDXversion    | CycloneDX and SPDX only |
 || `specification version`  | SpecVersion     | SPDXversion    | CycloneDX 1.4 and above, SPDX 2.3 and above |
-|2 Recommended| `Build SBOM`     | metadata->lifecycles (1.5 and above)       |  no-deterministic-field      | |
+|2. Recommended elements| `Build SBOM`     | metadata->lifecycles (1.5 and above)       |  no-deterministic-field      | |
 || `Depth`   | dependencies, compositions     | relationships    | A complex topic, mostly resolved via attestations via compositions, but spdx lacks that field now|
 || `license`| component->license| packageConcluded, packageDeclated| we lookup sdpx,spdx-exceptions,aboutcode, and licenseRef-|
 || `hash` | component->hashes | package->checksums | we only look for sha-256|
-|3 Required SBOM fields| `SBOM authors` | metadata->authors, metadata->supplier | creator | We are primarily looking for email or url from these fields, if the name exists but email/url missing its deemed non-compliant|
+|3. Required SBOM fields| `SBOM authors` | metadata->authors, metadata->supplier | creator | We are primarily looking for email or url from these fields, if the name exists but email/url missing its deemed non-compliant|
 |    | | metadata->manufacturer | | |
 || `SBOM timestamp`| metadata->timestamp| created |  |
-|3 Required Component fields| `creator` | component->supplier | packageSupplier, packageOriginator | Looking for email or url, for spdx, we check supplier then originatior(manufacturer)|
+|4. Required Component fields| `creator` | component->supplier | packageSupplier, packageOriginator | Looking for email or url, for spdx, we check supplier then originatior(manufacturer)|
 || `name` | component->name| package->name| |
 || `version` | component->version| package->version| |
 || `dependencies` | dependencies, compositions| relationships| cdx we look for attestations via compositions, spdx nothing exists|
