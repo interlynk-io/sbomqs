@@ -463,6 +463,13 @@ func (c *cdxDoc) parseTool() {
 		t.Version = ct.Version
 		c.tools = append(c.tools, t)
 	}
+
+	for _, ct := range lo.FromPtr(c.doc.Metadata.Tools.Services) {
+		t := Tool{}
+		t.Name = ct.Name
+		t.Version = ct.Version
+		c.tools = append(c.tools, t)
+	}
 }
 
 func (c *cdxDoc) parseAuthors() {
