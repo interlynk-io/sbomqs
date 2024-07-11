@@ -33,10 +33,10 @@ func TestGetCpeFromCompo(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			cp := Component{
-				cpes: tt.input,
+				Cpes: tt.input,
 			}
-			if len(tt.input) != len(cp.cpes) {
-				t.Errorf("got %d, want %d", len(cp.cpes), len(tt.input))
+			if len(tt.input) != len(cp.Cpes) {
+				t.Errorf("got %d, want %d", len(cp.Cpes), len(tt.input))
 			}
 		})
 	}
@@ -54,10 +54,10 @@ func Test_component_Purls(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			pl := Component{
-				purls: tt.input,
+				Purls: tt.input,
 			}
-			if len(tt.input) != len(pl.purls) {
-				t.Errorf("got %d, want %d", len(pl.purls), len(tt.input))
+			if len(tt.input) != len(pl.Purls) {
+				t.Errorf("got %d, want %d", len(pl.Purls), len(tt.input))
 			}
 		})
 	}
