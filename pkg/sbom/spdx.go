@@ -49,7 +49,7 @@ type SpdxDoc struct {
 	Comps              []GetComponent
 	authors            []Author
 	SpdxTools          []GetTool
-	rels               []Relation
+	rels               []GetRelation
 	logs               []string
 	primaryComponent   bool
 	primaryComponentId string
@@ -109,7 +109,7 @@ func (s SpdxDoc) Tools() []GetTool {
 	return s.SpdxTools
 }
 
-func (s SpdxDoc) Relations() []Relation {
+func (s SpdxDoc) Relations() []GetRelation {
 	return s.rels
 }
 
@@ -229,9 +229,9 @@ func (s *SpdxDoc) parseComps() {
 
 		nc.isPrimary = s.primaryComponentId == string(sc.PackageSPDXIdentifier)
 
-		fromRelsPresent := func(rels []Relation, id string) bool {
+		fromRelsPresent := func(rels []GetRelation, id string) bool {
 			for _, r := range rels {
-				if r.From() == id {
+				if r.GetFrom() == id {
 					return true
 				}
 			}
@@ -270,13 +270,13 @@ func (s *SpdxDoc) parseAuthors() {
 }
 
 func (s *SpdxDoc) parseRels() {
-	s.rels = []Relation{}
+	s.rels = []GetRelation{}
 
 	var err error
 	var aBytes, bBytes []byte
 
 	for _, r := range s.doc.Relationships {
-		nr := relation{}
+		nr := Relation{}
 		switch strings.ToUpper(r.Relationship) {
 		case spdx_common.TypeRelationshipDescribe:
 			fallthrough
@@ -293,8 +293,8 @@ func (s *SpdxDoc) parseRels() {
 				continue
 			}
 
-			nr.from = string(aBytes)
-			nr.to = string(bBytes)
+			nr.From = string(aBytes)
+			nr.To = string(bBytes)
 			s.rels = append(s.rels, nr)
 		}
 	}

@@ -42,7 +42,7 @@ type cdxDoc struct {
 	comps              []GetComponent
 	authors            []Author
 	tools              []GetTool
-	rels               []Relation
+	rels               []GetRelation
 	logs               []string
 	primaryComponent   bool
 	lifecycles         []string
@@ -101,7 +101,7 @@ func (c cdxDoc) Tools() []GetTool {
 	return c.tools
 }
 
-func (c cdxDoc) Relations() []Relation {
+func (c cdxDoc) Relations() []GetRelation {
 	return c.rels
 }
 
@@ -285,9 +285,9 @@ func copyC(cdxc *cydx.Component, c *cdxDoc) *Component {
 		nc.isPrimary = true
 	}
 
-	fromRelsPresent := func(rels []Relation, compID string) bool {
+	fromRelsPresent := func(rels []GetRelation, compID string) bool {
 		for _, r := range rels {
-			if r.From() == compID {
+			if r.GetFrom() == compID {
 				return true
 			}
 		}
@@ -534,13 +534,13 @@ func (c *cdxDoc) parseManufacturer() {
 }
 
 func (c *cdxDoc) parseRels() {
-	c.rels = []Relation{}
+	c.rels = []GetRelation{}
 
 	for _, r := range lo.FromPtr(c.doc.Dependencies) {
 		for _, d := range lo.FromPtr(r.Dependencies) {
-			nr := relation{}
-			nr.from = r.Ref
-			nr.to = d
+			nr := Relation{}
+			nr.From = r.Ref
+			nr.To = d
 			c.rels = append(c.rels, nr)
 		}
 	}
