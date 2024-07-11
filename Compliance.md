@@ -77,7 +77,6 @@ The [NTIA](https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/Publications/Tech
 |1. SBOM formats| `specification`  | BomFormat     | SPDXversion    | CycloneDX and SPDX only |
 || `specification version`  | SpecVersion     | SPDXversion    | CycloneDX 1.4 and above, SPDX 2.3 and above |
 |2. Recommended elements| `Build SBOM`     | metadata->lifecycles (1.5 and above)       |  no-deterministic-field      | |
-|| `Depth`   | dependencies, compositions     | relationships    | A complex topic, mostly resolved via attestations via compositions, but spdx lacks that field now|
 || `license`| component->license| packageConcluded, packageDeclated| we lookup sdpx,spdx-exceptions,aboutcode, and licenseRef-|
 || `hash` | component->hashes | package->checksums | we only look for sha-256|
 |3. Required SBOM fields| `SBOM authors` | metadata->authors, metadata->supplier | creator | We are primarily looking for email or url from these fields, if the name exists but email/url missing its deemed non-compliant|
