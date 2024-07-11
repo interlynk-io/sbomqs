@@ -24,7 +24,7 @@ import (
 	"github.com/samber/lo"
 )
 
-func ntiaResult(ctx context.Context, doc sbom.Document, fileName string, outFormat string) *db {
+func ntiaResult(ctx context.Context, doc sbom.Document, fileName string, outFormat string) {
 	log := logger.FromContext(ctx)
 	log.Debug("compliance.ntiaResult()")
 
@@ -35,20 +35,28 @@ func ntiaResult(ctx context.Context, doc sbom.Document, fileName string, outForm
 	db.addRecord(ntiaSbomCreator(doc))
 	db.addRecord(ntiaSbomCreatedTimestamp(doc))
 	db.addRecords(ntiaComponents(doc))
-	db.addRecord(ntiaBuildPhase(doc))
-	db.addRecord(ntiaSbomDepth(doc))
-	db.addRecord(ntiaComponentHash(doc))
-	db.addRecord(ntiaComponentlicense(doc))
+	// db.addRecord(ntiaBuildPhase(doc))
+	// db.addRecord(ntiaComponentHash(doc))
+	// db.addRecord(ntiaComponentlicense(doc))
 
-	return db
+	if outFormat == "json" {
+		ntiaJsonReport(db, fileName)
+	}
+
+	if outFormat == "basic" {
+		ntiaBasicReport(db, fileName)
+	}
+
+	if outFormat == "detailed" {
+		ntiaDetailedReport(db, fileName)
+	}
 }
 
 // format
 func ntiaSpec(doc sbom.Document) *record {
 	v := doc.Spec().GetSpecType()
 	v_to_lower := strings.Trim(strings.ToLower(v), " ")
-	result := ""
-	score := 0.0
+	result, score := "", 0.0
 
 	if v_to_lower == "spdx" {
 		result = v
@@ -85,10 +93,9 @@ func ntiaSpecVersion(doc sbom.Document) *record {
 // Required Sbom stuffs
 func ntiaSbomCreator(doc sbom.Document) *record {
 	spec := doc.Spec().GetSpecType()
+	result, score := "", 0.0
 
 	if spec == "spdx" {
-		result := ""
-		score := 0.0
 		name := ""
 		if tools := doc.Tools(); tools != nil {
 			for _, tool := range tools {
@@ -99,11 +106,9 @@ func ntiaSbomCreator(doc sbom.Document) *record {
 				}
 			}
 		}
-		return newRecordStmt(SBOM_CREATOR, "SBOM authors", result, score)
+		return newRecordStmt(SBOM_CREATOR, "doc", result, score)
 
 	} else if spec == "cyclonedx" {
-		result := ""
-		score := 0.0
 
 		for _, author := range doc.Authors() {
 			if author.Email() != "" {
@@ -114,7 +119,7 @@ func ntiaSbomCreator(doc sbom.Document) *record {
 		}
 
 		if result != "" {
-			return newRecordStmt(SBOM_CREATOR, "SBOM authors", result, score)
+			return newRecordStmt(SBOM_CREATOR, "doc", result, score)
 		}
 
 		supplier := doc.Supplier()
@@ -126,7 +131,7 @@ func ntiaSbomCreator(doc sbom.Document) *record {
 			}
 
 			if result != "" {
-				return newRecordStmt(SBOM_CREATOR, "SBOM authors", result, score)
+				return newRecordStmt(SBOM_CREATOR, "doc", result, score)
 			}
 
 			if supplier.GetUrl() != "" {
@@ -135,7 +140,7 @@ func ntiaSbomCreator(doc sbom.Document) *record {
 			}
 
 			if result != "" {
-				return newRecordStmt(SBOM_CREATOR, "SBOM authors", result, score)
+				return newRecordStmt(SBOM_CREATOR, "doc", result, score)
 			}
 
 			if supplier.GetContacts() != nil {
@@ -148,7 +153,7 @@ func ntiaSbomCreator(doc sbom.Document) *record {
 				}
 
 				if result != "" {
-					return newRecordStmt(SBOM_CREATOR, "SBOM authors", result, score)
+					return newRecordStmt(SBOM_CREATOR, "doc", result, score)
 				}
 			}
 		}
@@ -162,7 +167,7 @@ func ntiaSbomCreator(doc sbom.Document) *record {
 			}
 
 			if result != "" {
-				return newRecordStmt(SBOM_CREATOR, "SBOM authors", result, score)
+				return newRecordStmt(SBOM_CREATOR, "doc", result, score)
 			}
 
 			if manufacturer.Url() != "" {
@@ -171,7 +176,7 @@ func ntiaSbomCreator(doc sbom.Document) *record {
 			}
 
 			if result != "" {
-				return newRecordStmt(SBOM_CREATOR, "SBOM authors", result, score)
+				return newRecordStmt(SBOM_CREATOR, "doc", result, score)
 			}
 
 			if manufacturer.Contacts() != nil {
@@ -184,12 +189,12 @@ func ntiaSbomCreator(doc sbom.Document) *record {
 				}
 
 				if result != "" {
-					return newRecordStmt(SBOM_CREATOR, "SBOM authors", result, score)
+					return newRecordStmt(SBOM_CREATOR, "doc", result, score)
 				}
 			}
 		}
 	}
-	return newRecordStmt(SBOM_CREATOR, "Required SBOM fields", "", 0.0)
+	return newRecordStmt(SBOM_CREATOR, "doc", result, score)
 }
 
 func ntiaSbomCreatedTimestamp(doc sbom.Document) *record {
@@ -204,11 +209,29 @@ func ntiaSbomCreatedTimestamp(doc sbom.Document) *record {
 			score = 10.0
 		}
 	}
-	return newRecordStmt(SBOM_TIMESTAMP, "Required SBOM fields", result, score)
+	return newRecordStmt(SBOM_TIMESTAMP, "doc", result, score)
 }
 
 // Required component stuffs
-func ntiaComponents(doc sbom.Document) []*record {}
+func ntiaComponents(doc sbom.Document) []*record {
+	records := []*record{}
+
+	if len(doc.Components()) == 0 {
+		records := append(records, newRecordStmt(SBOM_COMPONENTS, "doc", "", 0.0))
+		return records
+	}
+
+	for _, component := range doc.Components() {
+		records = append(records, ntiaComponentCreator(doc, component))
+		records = append(records, ntiaComponentName(component))
+		records = append(records, ntiaComponentVersion(component))
+		records = append(records, ntiaComponentOtherUniqIds(doc, component))
+		records = append(records, ntiaComponentDependencies(doc, component))
+
+	}
+	records = append(records, newRecordStmt(SBOM_COMPONENTS, "doc", "present", 10.0))
+	return records
+}
 
 func ntiaComponentName(component sbom.GetComponent) *record {
 	if result := component.GetName(); result != "" {
@@ -313,27 +336,62 @@ func ntiaComponentVersion(component sbom.GetComponent) *record {
 
 	return newRecordStmt(COMP_VERSION, component.GetID(), "", 0.0)
 }
-func ntiaComponent(doc sbom.Document) *record             {}
-func ntiaComponentDepth(doc sbom.Document) *record        {}
-func ntiaComponentOtherUniqIds(doc sbom.Document) *record {}
+
+// func ntiaComponentDepth(doc sbom.Document) *record {}
+
+func ntiaComponentDependencies(doc sbom.Document, component sbom.GetComponent) *record {
+	spec := doc.Spec().GetSpecType()
+
+	if spec == "spdx" {
+		result, score := "", 0.0
+		if relation := doc.Relations(); relation != nil {
+			for _, rel := range relation {
+				if rel.GetFrom() != "" && rel.GetTo() != "" {
+					result = rel.GetFrom() + ", " + rel.GetTo()
+					score = 10
+					return newRecordStmt(COMP_DEPTH, component.GetID(), result, score)
+				}
+			}
+		}
+
+		return newRecordStmt(COMP_DEPTH, component.GetID(), result, score)
+
+	} else if spec == "cyclonedx" {
+		return craComponentDepth(component)
+	}
+
+	return newRecordStmt(COMP_DEPTH, component.GetID(), "", 0.0)
+}
+
+func ntiaComponentOtherUniqIds(doc sbom.Document, component sbom.GetComponent) *record {
+	spec := doc.Spec().GetSpecType()
+
+	if spec == "spdx" {
+		return octPackageExternalRefs(component)
+	} else if spec == "cyclonedx" {
+		return craComponentOtherUniqIds(component)
+	}
+	return newRecordStmt(COMP_OTHER_UNIQ_IDS, component.GetID(), "", 0.0)
+}
 
 // Recommended sbom stuffs
 // lifecycle
-func ntiaBuildPhase(doc sbom.Document) *record {
-	lifecycles := doc.Lifecycles()
-	result, score := "", 0.0
+// func ntiaBuildPhase(doc sbom.Document) *record {
+// 	lifecycles := doc.Lifecycles()
+// 	result, score := "", 0.0
 
-	found := lo.Count(lifecycles, "build")
+// 	found := lo.Count(lifecycles, "build")
 
-	if found > 0 {
-		result = "build"
-		score = 10.0
-	}
+// 	if found > 0 {
+// 		result = "build"
+// 		score = 10.0
+// 	}
 
-	return newRecordStmt(SBOM_BUILD, "doc", result, score)
-}
-func ntiaSbomDepth(doc sbom.Document) *record {}
+// 	return newRecordStmt(SBOM_BUILD, "doc", result, score)
+// }
+
+// func ntiaSbomDepth(doc sbom.Document) *record {}
 
 // Recommended component stuffs
-func ntiaComponentHash(doc sbom.Document) *record    {}
-func ntiaComponentlicense(doc sbom.Document) *record {}
+// func ntiaComponentHash(doc sbom.Document) *record    {}
+// func ntiaComponentlicense(doc sbom.Document) *record {}
