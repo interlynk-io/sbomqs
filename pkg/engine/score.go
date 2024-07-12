@@ -17,21 +17,21 @@ package engine
 import (
 	"context"
 	"fmt"
+	"io"
+	"log"
+	"net/http"
 	"net/url"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/go-git/go-billy/v5"
-	"github.com/go-git/go-billy/v5/memfs"
-	"github.com/go-git/go-git/v5"
-	"github.com/go-git/go-git/v5/plumbing"
-	"github.com/go-git/go-git/v5/storage/memory"
 	"github.com/interlynk-io/sbomqs/pkg/logger"
 	"github.com/interlynk-io/sbomqs/pkg/reporter"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/pkg/scorer"
-	"github.com/interlynk-io/sbomqs/pkg/source"
+	"github.com/spf13/afero"
 )
 
 type Params struct {
@@ -71,6 +71,40 @@ func Run(ctx context.Context, ep *Params) error {
 	return handlePaths(ctx, ep)
 }
 
+func handleURL(path string) (string, string, error) {
+	u, err := url.Parse(path)
+	if err != nil {
+		log.Fatalf("Failed to parse urlPath: %v", err)
+	}
+
+	parts := strings.Split(u.Path, "/")
+	if len(parts) < 5 {
+		log.Fatalf("invalid GitHub URL: %v", path)
+	}
+
+	if len(parts) < 5 {
+		log.Fatalf("invalid GitHub URL: %v", path)
+	}
+	fmt.Println("Parts: ", parts)
+
+	sbomFilePath := strings.Join(parts[5:], "/")
+	fmt.Println("sbomFilePath: ", sbomFilePath)
+
+	rawURL := strings.Replace(path, "github.com", "raw.githubusercontent.com", 1)
+	rawURL = strings.Replace(rawURL, "/blob/", "/", 1)
+	fmt.Println("rawURL: ", rawURL)
+
+	return sbomFilePath, rawURL, err
+}
+
+func IsURL(in string) bool {
+	return regexp.MustCompile("^(http|https)://").MatchString(in)
+}
+
+func IsGit(in string) bool {
+	return regexp.MustCompile("^(http|https)://github.com").MatchString(in)
+}
+
 func handlePaths(ctx context.Context, ep *Params) error {
 	log := logger.FromContext(ctx)
 	log.Debug("engine.handlePaths()")
@@ -80,79 +114,49 @@ func handlePaths(ctx context.Context, ep *Params) error {
 	var scores []scorer.Scores
 
 	for _, path := range ep.Path {
-		if source.IsGit(path) {
-			fmt.Println("Yes, it's a git url: ", path)
-
-			fs := memfs.New()
-
-			gitURL, err := url.Parse(path)
+		if IsURL(path) {
+			if IsGit(path) {
+				return fmt.Errorf("path is not a git URL: %s", path)
+			}
+			fmt.Println("It's a GitHub URL: ", path)
+			sbomFilePath, rawURL, err := handleURL(path)
 			if err != nil {
-				log.Fatalf("err:%v ", err)
-			}
-			fmt.Println("parse gitURL: ", gitURL)
-
-			pathElems := strings.Split(gitURL.Path[1:], "/")
-			if len(pathElems) <= 1 {
-				log.Fatalf("invalid URL path %s - expected https://github.com/:owner/:repository/:branch (without --git-branch flag) OR https://github.com/:owner/:repository/:directory (with --git-branch flag)", gitURL.Path)
+				log.Fatal("failed to get sbomFilePath, rawURL: %w", err)
 			}
 
-			fmt.Println("pathElems: ", pathElems)
-			fmt.Println("Before gitURL.Path: ", gitURL.Path)
+			fs := afero.NewMemMapFs()
 
-			var gitBranch string
-
-			if strings.Contains(strings.Join(pathElems, " "), "main") {
-				gitBranch = "main"
-			} else if strings.Contains(strings.Join(pathElems, " "), "master") {
-				gitBranch = "master"
-			} else {
-				gitBranch = "null"
-			}
-			fmt.Println("gitBranch: ", gitBranch)
-
-			gitURL.Path = strings.Join([]string{pathElems[0], pathElems[1]}, "/")
-			fmt.Println("After gitURL.Path: ", gitURL.Path)
-
-			repoURL := gitURL.String()
-			fmt.Println("repoURL: ", repoURL)
-
-			fileOrDirPath := strings.Join(pathElems[4:], "/")
-			fmt.Println("lastPathElement: ", fileOrDirPath)
-
-			cloneOptions := &git.CloneOptions{
-				URL:           repoURL,
-				ReferenceName: plumbing.ReferenceName(fmt.Sprintf("refs/heads/%s", gitBranch)),
-				Depth:         1,
-				Progress:      os.Stdout,
-				SingleBranch:  true,
-			}
-
-			_, err = git.Clone(memory.NewStorage(), fs, cloneOptions)
+			file, err := fs.Create(sbomFilePath)
 			if err != nil {
-				log.Fatalf("Failed to clone repository: %s", err)
+				return err
 			}
 
-			var baths []string
-			if baths, err = source.ProcessPath(fs, fileOrDirPath); err != nil {
-				log.Fatalf("Error processing path: %v", err)
+			resp, err := http.Get(rawURL)
+			if err != nil {
+				log.Fatalf("failed to get data: %v", err)
 			}
-			fmt.Println("baths: ", paths)
+			defer resp.Body.Close()
 
-			for _, p := range baths {
-				fmt.Println("File Path:", p)
-
-				doc, scs, err := processFile(ctx, ep, p, fs)
-				if err != nil {
-					continue
-				}
-				fmt.Println("scs.AvgScore: ", scs.AvgScore())
-
-				docs = append(docs, doc)
-				scores = append(scores, scs)
-				paths = append(paths, p)
-				fmt.Println("PATHS: ", paths)
+			// Ensure the response is OK
+			if resp.StatusCode != http.StatusOK {
+				log.Fatalf("failed to download file: %s", resp.Status)
+			}
+			_, err = io.Copy(file, resp.Body)
+			if err != nil {
+				log.Fatalf("failed to copy in file: %w", err)
 			}
 
+			doc, err := sbom.NewSBOMDocument(ctx, file)
+			if err != nil {
+				log.Fatalf("failed to parse SBOM document: %w", err)
+			}
+
+			sr := scorer.NewScorer(ctx, doc)
+			score := sr.Score()
+
+			docs = append(docs, doc)
+			scores = append(scores, score)
+			paths = append(paths, sbomFilePath)
 		} else {
 
 			log.Debugf("Processing path :%s\n", path)
@@ -190,7 +194,6 @@ func handlePaths(ctx context.Context, ep *Params) error {
 			paths = append(paths, path)
 		}
 	}
-	fmt.Println("Outside for loop and git condition")
 
 	reportFormat := "detailed"
 	if ep.Basic {
@@ -211,14 +214,11 @@ func handlePaths(ctx context.Context, ep *Params) error {
 }
 
 func processFile(ctx context.Context, ep *Params, path string, fs billy.Filesystem) (sbom.Document, scorer.Scores, error) {
-	fmt.Println("Inside processFile function")
-	defer fmt.Println("Exit processFile function")
 	log := logger.FromContext(ctx)
 	log.Debugf("Processing file :%s\n", path)
 	var doc sbom.Document
 
 	if fs != nil {
-		fmt.Println("Yes fs contains files")
 		f, err := fs.Open(path)
 		if err != nil {
 			log.Debugf("os.Open failed for file :%s\n", path)
