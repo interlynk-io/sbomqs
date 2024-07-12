@@ -101,7 +101,7 @@ Status: Downloaded newer image for ghcr.io/interlynk-io/sbomqs:latest
 ```
 
 # What is a high quality SBOM
-A high quality SBOM should allow for managements of assets, license, vulnerabilities, Intellectual Property, configuration management and incident response.
+A high quality SBOM should aptly support managing software assets, license information and Intellectual Property as well as provide a base for configuration management, vulnerability handling and incident response.
 
 A quality SBOM is one that is accurate, complete, and up-to-date. There are many factors that go into constructing a high quality SBOM.
 1. Identify & list all components of your product along with their transitive dependencies.
