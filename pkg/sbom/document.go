@@ -21,7 +21,7 @@ type Document interface {
 	Spec() Spec
 	Components() []GetComponent
 	Relations() []GetRelation
-	Authors() []Author
+	Authors() []GetAuthor
 	Tools() []GetTool
 	Logs() []string
 

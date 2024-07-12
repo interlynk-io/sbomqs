@@ -15,25 +15,26 @@
 package sbom
 
 //counterfeiter:generate . Author
-type Author interface {
-	Name() string
-	Type() string
-	Email() string
+type GetAuthor interface {
+	GetName() string
+	GetType() string
+	GetEmail() string
 }
 
-type author struct {
-	name       string
-	email      string
-	authorType string //person or org
+type Author struct {
+	Name       string
+	Email      string
+	AuthorType string // person or org
 }
 
-func (a author) Name() string {
-	return a.name
-}
-func (a author) Type() string {
-	return a.authorType
+func (a Author) GetName() string {
+	return a.Name
 }
 
-func (a author) Email() string {
-	return a.email
+func (a Author) GetType() string {
+	return a.AuthorType
+}
+
+func (a Author) GetEmail() string {
+	return a.Email
 }

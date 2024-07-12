@@ -111,8 +111,8 @@ func ntiaSbomCreator(doc sbom.Document) *record {
 	} else if spec == "cyclonedx" {
 
 		for _, author := range doc.Authors() {
-			if author.Email() != "" {
-				result = author.Email()
+			if author.GetEmail() != "" {
+				result = author.GetEmail()
 				score = 10.0
 				break
 			}

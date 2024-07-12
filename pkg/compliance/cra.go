@@ -191,8 +191,8 @@ func craCreator(doc sbom.Document) *record {
 	score := 0.0
 
 	for _, author := range doc.Authors() {
-		if author.Email() != "" {
-			result = author.Email()
+		if author.GetEmail() != "" {
+			result = author.GetEmail()
 			score = 10.0
 			break
 		}
@@ -398,7 +398,7 @@ func craComponentOtherUniqIds(component sbom.GetComponent) *record {
 	result := ""
 	score := 0.0
 
-	purl := component.Purls()
+	purl := component.GetPurls()
 
 	if len(purl) > 0 {
 		result = string(purl[0])
@@ -407,7 +407,7 @@ func craComponentOtherUniqIds(component sbom.GetComponent) *record {
 		return newRecordStmtOptional(COMP_OTHER_UNIQ_IDS, component.GetID(), result, score)
 	}
 
-	cpes := component.Cpes()
+	cpes := component.GetCpes()
 
 	if len(cpes) > 0 {
 		result = string(cpes[0])
