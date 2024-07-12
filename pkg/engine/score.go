@@ -115,7 +115,7 @@ func handlePaths(ctx context.Context, ep *Params) error {
 
 	for _, path := range ep.Path {
 		if IsURL(path) {
-			if IsGit(path) {
+			if !IsGit(path) {
 				return fmt.Errorf("path is not a git URL: %s", path)
 			}
 			fmt.Println("It's a GitHub URL: ", path)
