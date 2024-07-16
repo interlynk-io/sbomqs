@@ -31,6 +31,26 @@ builds:
     env:
       - CGO_ENABLED=0
 
+nfpms:
+  - id: sbomqs
+    package_name: sbomqs
+    file_name_template: "{{ .ConventionalFileName }}"
+    vendor: Interlynk
+    homepage: https://interlynk.io
+    maintainer: Interlynk Authors hello@interlynk.io
+    builds:
+      - binaries
+    description: SBOM quality score - Quality metrics for your sboms.
+    license: "Apache License 2.0"
+    formats:
+      - apk
+      - deb
+      - rpm
+    contents:
+      - src: /usr/bin/sbomqs-{{ .Os }}-{{ .Arch }}
+        dst: /usr/bin/sbomqs
+        type: "symlink"
+
 archives:
 - format: binary
   name_template: "{{ .Binary }}"
