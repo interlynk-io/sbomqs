@@ -20,8 +20,8 @@ package sbom
 type Document interface {
 	Spec() Spec
 	Components() []GetComponent
-	Relations() []Relation
-	Authors() []Author
+	Relations() []GetRelation
+	Authors() []GetAuthor
 	Tools() []GetTool
 	Logs() []string
 

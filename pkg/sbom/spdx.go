@@ -47,9 +47,9 @@ type SpdxDoc struct {
 	ctx                context.Context
 	SpdxSpec           *Specs
 	Comps              []GetComponent
-	authors            []Author
+	authors            []GetAuthor
 	SpdxTools          []GetTool
-	rels               []Relation
+	Rels               []GetRelation
 	logs               []string
 	primaryComponent   bool
 	primaryComponentId string
@@ -101,7 +101,7 @@ func (s SpdxDoc) Components() []GetComponent {
 	return s.Comps
 }
 
-func (s SpdxDoc) Authors() []Author {
+func (s SpdxDoc) Authors() []GetAuthor {
 	return s.authors
 }
 
@@ -109,8 +109,8 @@ func (s SpdxDoc) Tools() []GetTool {
 	return s.SpdxTools
 }
 
-func (s SpdxDoc) Relations() []Relation {
-	return s.rels
+func (s SpdxDoc) Relations() []GetRelation {
+	return s.Rels
 }
 
 func (s SpdxDoc) Logs() []string {
@@ -197,8 +197,8 @@ func (s *SpdxDoc) parseComps() {
 		nc.CopyRight = sc.PackageCopyrightText
 		nc.FileAnalyzed = sc.FilesAnalyzed
 		nc.isReqFieldsPresent = s.pkgRequiredFields(index)
-		nc.purls = s.purls(index)
-		nc.cpes = s.cpes(index)
+		nc.Purls = s.purls(index)
+		nc.Cpes = s.cpes(index)
 		nc.Checksums = s.checksums(index)
 		nc.ExternalRefs = s.externalRefs(index)
 		nc.licenses = s.licenses(index)
@@ -229,24 +229,24 @@ func (s *SpdxDoc) parseComps() {
 
 		nc.isPrimary = s.primaryComponentId == string(sc.PackageSPDXIdentifier)
 
-		fromRelsPresent := func(rels []Relation, id string) bool {
+		fromRelsPresent := func(rels []GetRelation, id string) bool {
 			for _, r := range rels {
-				if r.From() == id {
+				if r.GetFrom() == id {
 					return true
 				}
 			}
 			return false
 		}
 
-		nc.hasRelationships = fromRelsPresent(s.rels, string(sc.PackageSPDXIdentifier))
-		nc.relationshipState = "not-specified"
+		nc.hasRelationships = fromRelsPresent(s.Rels, string(sc.PackageSPDXIdentifier))
+		nc.RelationshipState = "not-specified"
 
 		s.Comps = append(s.Comps, nc)
 	}
 }
 
 func (s *SpdxDoc) parseAuthors() {
-	s.authors = []Author{}
+	s.authors = []GetAuthor{}
 
 	if s.doc.CreationInfo == nil {
 		return
@@ -257,26 +257,26 @@ func (s *SpdxDoc) parseAuthors() {
 		if ctType == "tool" {
 			continue
 		}
-		a := author{}
+		a := Author{}
 
 		entity := parseEntity(fmt.Sprintf("%s: %s", c.CreatorType, c.Creator))
 		if entity != nil {
-			a.name = entity.name
-			a.email = entity.email
-			a.authorType = ctType
+			a.Name = entity.name
+			a.Email = entity.email
+			a.AuthorType = ctType
 			s.authors = append(s.authors, a)
 		}
 	}
 }
 
 func (s *SpdxDoc) parseRels() {
-	s.rels = []Relation{}
+	s.Rels = []GetRelation{}
 
 	var err error
 	var aBytes, bBytes []byte
 
 	for _, r := range s.doc.Relationships {
-		nr := relation{}
+		nr := Relation{}
 		switch strings.ToUpper(r.Relationship) {
 		case spdx_common.TypeRelationshipDescribe:
 			fallthrough
@@ -293,9 +293,9 @@ func (s *SpdxDoc) parseRels() {
 				continue
 			}
 
-			nr.from = string(aBytes)
-			nr.to = string(bBytes)
-			s.rels = append(s.rels, nr)
+			nr.From = string(aBytes)
+			nr.To = string(bBytes)
+			s.Rels = append(s.Rels, nr)
 		}
 	}
 }
