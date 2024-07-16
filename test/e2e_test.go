@@ -2,7 +2,6 @@ package test
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"testing"
 
@@ -22,14 +21,16 @@ func TestSBOMQSMissingAuthorScore(t *testing.T) {
 
 	f, err := os.Open(inputFile)
 	if err != nil {
-		fmt.Println("Failed to open file")
+		t.Fatalf("Failed to open file: %v", err)
 	}
+	defer f.Close()
+
 	path := inputFile
 	doc, err := sbom.NewSBOMDocument(ctx, f)
 	if err != nil {
 		log.Debugf("failed to create sbom document for  :%s\n", path)
 		log.Debugf("%s\n", err)
-		fmt.Printf("failed to parse %s : %s\n", path, err)
+		t.Fatalf("Failed to parse %s: %s\n", inputFile, err)
 
 	}
 
