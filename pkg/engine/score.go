@@ -115,48 +115,87 @@ func handlePaths(ctx context.Context, ep *Params) error {
 
 	for _, path := range ep.Path {
 		if IsURL(path) {
-			if !IsGit(path) {
-				return fmt.Errorf("path is not a git URL: %s", path)
-			}
-			fmt.Println("It's a GitHub URL: ", path)
-			sbomFilePath, rawURL, err := handleURL(path)
-			if err != nil {
-				log.Fatal("failed to get sbomFilePath, rawURL: %w", err)
-			}
+			if IsGit(path) {
+				log.Debugf("Processing Git URL path :%s\n", path)
 
-			fs := afero.NewMemMapFs()
+				sbomFilePath, rawURL, err := handleURL(path)
+				if err != nil {
+					log.Fatal("failed to get sbomFilePath, rawURL: %w", err)
+				}
 
-			file, err := fs.Create(sbomFilePath)
-			if err != nil {
-				return err
+				fs := afero.NewMemMapFs()
+
+				file, err := fs.Create(sbomFilePath)
+				if err != nil {
+					return err
+				}
+
+				resp, err := http.Get(rawURL)
+				if err != nil {
+					log.Fatalf("failed to get data: %v", err)
+				}
+				defer resp.Body.Close()
+
+				// Ensure the response is OK
+				if resp.StatusCode != http.StatusOK {
+					log.Fatalf("failed to download file: %s", resp.Status)
+				}
+				_, err = io.Copy(file, resp.Body)
+				if err != nil {
+					log.Fatalf("failed to copy in file: %w", err)
+				}
+
+				doc, err := sbom.NewSBOMDocument(ctx, file)
+				if err != nil {
+					log.Fatalf("failed to parse SBOM document: %w", err)
+				}
+
+				sr := scorer.NewScorer(ctx, doc)
+				score := sr.Score()
+
+				docs = append(docs, doc)
+				scores = append(scores, score)
+				paths = append(paths, sbomFilePath)
+
+			} else {
+				log.Debugf("Processing URL path :%s\n", path)
+				filename := path
+				fs := afero.NewMemMapFs()
+
+				file, err := fs.Create(filename)
+				if err != nil {
+					log.Fatal("failed to get create file: %w", err)
+				}
+				defer file.Close()
+
+				resp, err := http.Get(path)
+				if err != nil {
+					panic(err)
+				}
+				defer resp.Body.Close()
+
+				if resp.StatusCode != http.StatusOK {
+					panic("Bad response from server: " + resp.Status)
+				}
+
+				_, err = io.Copy(file, resp.Body)
+				if err != nil {
+					log.Fatalf("failed to copy file: %w", err)
+				}
+
+				doc, err := sbom.NewSBOMDocument(ctx, file)
+				if err != nil {
+					log.Fatalf("failed to parse SBOM document: %w", err)
+				}
+
+				sr := scorer.NewScorer(ctx, doc)
+				score := sr.Score()
+
+				docs = append(docs, doc)
+				scores = append(scores, score)
+				paths = append(paths, path)
+
 			}
-
-			resp, err := http.Get(rawURL)
-			if err != nil {
-				log.Fatalf("failed to get data: %v", err)
-			}
-			defer resp.Body.Close()
-
-			// Ensure the response is OK
-			if resp.StatusCode != http.StatusOK {
-				log.Fatalf("failed to download file: %s", resp.Status)
-			}
-			_, err = io.Copy(file, resp.Body)
-			if err != nil {
-				log.Fatalf("failed to copy in file: %w", err)
-			}
-
-			doc, err := sbom.NewSBOMDocument(ctx, file)
-			if err != nil {
-				log.Fatalf("failed to parse SBOM document: %w", err)
-			}
-
-			sr := scorer.NewScorer(ctx, doc)
-			score := sr.Score()
-
-			docs = append(docs, doc)
-			scores = append(scores, score)
-			paths = append(paths, sbomFilePath)
 		} else {
 
 			log.Debugf("Processing path :%s\n", path)
