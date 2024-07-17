@@ -44,8 +44,8 @@ func ComplianceRun(ctx context.Context, ep *Params) error {
 
 	reportType := "NTIA"
 
-	if ep.Cra {
-		reportType = "CRA"
+	if ep.Bsi {
+		reportType = "BSI"
 	} else if ep.Oct {
 		reportType = "OCT"
 	}

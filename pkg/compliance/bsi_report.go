@@ -25,7 +25,7 @@ import (
 	"sigs.k8s.io/release-utils/version"
 )
 
-var craSectionDetails = map[int]craSection{
+var bsiSectionDetails = map[int]bsiSection{
 	SBOM_SPEC:            {Title: "SBOM formats", Id: "4", Required: true, DataField: "specification"},
 	SBOM_SPEC_VERSION:    {Title: "SBOM formats", Id: "4", Required: true, DataField: "specification version"},
 	SBOM_BUILD:           {Title: "Level of Detail", Id: "5.1", Required: true, DataField: "build process"},
@@ -63,7 +63,7 @@ type Summary struct {
 	TotalRequiredScore float64 `json:"required_elements_score"`
 	TotalOptionalScore float64 `json:"optional_elements_score"`
 }
-type craSection struct {
+type bsiSection struct {
 	Title         string  `json:"section_title"`
 	Id            string  `json:"section_id"`
 	DataField     string  `json:"section_data_field"`
@@ -72,19 +72,19 @@ type craSection struct {
 	ElementResult string  `json:"element_result"`
 	Score         float64 `json:"score"`
 }
-type craComplianceReport struct {
+type bsiComplianceReport struct {
 	Name     string       `json:"report_name"`
 	Subtitle string       `json:"subtitle"`
 	Revision string       `json:"revision"`
 	Run      run          `json:"run"`
 	Tool     tool         `json:"tool"`
 	Summary  Summary      `json:"summary"`
-	Sections []craSection `json:"sections"`
+	Sections []bsiSection `json:"sections"`
 }
 
-func newJsonReport() *craComplianceReport {
-	return &craComplianceReport{
-		Name:     "Cyber Resilience Requirements for Manufacturers and Products Report",
+func newJsonReport() *bsiComplianceReport {
+	return &bsiComplianceReport{
+		Name:     "BSI TR-03183-2 v1.1 Compliance Report",
 		Subtitle: "Part 2: Software Bill of Materials (SBOM)",
 		Revision: "TR-03183-2 (1.1)",
 		Run: run{
@@ -101,11 +101,11 @@ func newJsonReport() *craComplianceReport {
 	}
 }
 
-func craJsonReport(db *db, fileName string) {
+func bsiJsonReport(db *db, fileName string) {
 	jr := newJsonReport()
 	jr.Run.FileName = fileName
 
-	score := craAggregateScore(db)
+	score := bsiAggregateScore(db)
 	summary := Summary{}
 	summary.MaxScore = 10.0
 	summary.TotalScore = score.totalScore()
@@ -119,21 +119,21 @@ func craJsonReport(db *db, fileName string) {
 	fmt.Println(string(o))
 }
 
-func constructSections(db *db) []craSection {
-	var sections []craSection
+func constructSections(db *db) []bsiSection {
+	var sections []bsiSection
 	allIds := db.getAllIds()
 	for _, id := range allIds {
 		records := db.getRecordsById(id)
 
 		for _, r := range records {
-			section := craSectionDetails[r.check_key]
-			new_section := craSection{
+			section := bsiSectionDetails[r.check_key]
+			new_section := bsiSection{
 				Title:     section.Title,
 				Id:        section.Id,
 				DataField: section.DataField,
 				Required:  section.Required,
 			}
-			score := craKeyIdScore(db, r.check_key, r.id)
+			score := bsiKeyIdScore(db, r.check_key, r.id)
 			new_section.Score = score.totalScore()
 			if r.id == "doc" {
 				new_section.ElementId = "sbom"
@@ -149,11 +149,11 @@ func constructSections(db *db) []craSection {
 	return sections
 }
 
-func craDetailedReport(db *db, fileName string) {
+func bsiDetailedReport(db *db, fileName string) {
 	table := tablewriter.NewWriter(os.Stdout)
-	score := craAggregateScore(db)
+	score := bsiAggregateScore(db)
 
-	fmt.Printf("Cyber Resilience Requirements for Manufacturers and Products Report TR-03183-2 (1.1)\n")
+	fmt.Printf("BSI TR-03183-2 v1.1 Compliance Report \n")
 	fmt.Printf("Compliance score by Interlynk Score:%0.1f RequiredScore:%0.1f OptionalScore:%0.1f for %s\n", score.totalScore(), score.totalRequiredScore(), score.totalOptionalScore(), fileName)
 	fmt.Printf("* indicates optional fields\n")
 	table.SetHeader([]string{"ElementId", "Section", "Datafield", "Element Result", "Score"})
@@ -171,8 +171,8 @@ func craDetailedReport(db *db, fileName string) {
 	table.Render()
 }
 
-func craBasicReport(db *db, fileName string) {
-	score := craAggregateScore(db)
-	fmt.Printf("Cyber Resilience Requirements for Manufacturers and Products Report TR-03183-2 (1.1)\n")
+func bsiBasicReport(db *db, fileName string) {
+	score := bsiAggregateScore(db)
+	fmt.Printf("BSI TR-03183-2 v1.1 Compliance Report\n")
 	fmt.Printf("Score:%0.1f RequiredScore:%0.1f OptionalScore:%0.1f for %s\n", score.totalScore(), score.totalRequiredScore(), score.totalOptionalScore(), fileName)
 }
