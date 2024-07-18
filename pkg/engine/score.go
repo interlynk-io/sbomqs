@@ -85,14 +85,11 @@ func handleURL(path string) (string, string, error) {
 	if len(parts) < 5 {
 		log.Fatalf("invalid GitHub URL: %v", path)
 	}
-	fmt.Println("Parts: ", parts)
 
 	sbomFilePath := strings.Join(parts[5:], "/")
-	fmt.Println("sbomFilePath: ", sbomFilePath)
 
 	rawURL := strings.Replace(path, "github.com", "raw.githubusercontent.com", 1)
 	rawURL = strings.Replace(rawURL, "/blob/", "/", 1)
-	fmt.Println("rawURL: ", rawURL)
 
 	return sbomFilePath, rawURL, err
 }
@@ -108,7 +105,6 @@ func IsGit(in string) bool {
 func ProcessURL(url string, file afero.File) (afero.File, error) {
 	resp, err := http.Get(url)
 	if err != nil {
-		fmt.Println("FAiled to get http URL")
 		return nil, fmt.Errorf("failed to get data: %v", err)
 	}
 	defer resp.Body.Close()
