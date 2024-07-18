@@ -24,7 +24,7 @@ import (
 )
 
 const (
-	CRA_REPORT  = "CRA"
+	BSI_REPORT  = "BSI"
 	NTIA_REPORT = "NTIA"
 	OCT_TELCO   = "OCT"
 )
@@ -33,7 +33,7 @@ func ComplianceResult(ctx context.Context, doc sbom.Document, reportType, fileNa
 	log := logger.FromContext(ctx)
 	log.Debug("compliance.ComplianceResult()")
 
-	if reportType != CRA_REPORT && reportType != NTIA_REPORT && reportType != OCT_TELCO {
+	if reportType != BSI_REPORT && reportType != NTIA_REPORT && reportType != OCT_TELCO {
 		log.Debugf("Invalid report type: %s\n", reportType)
 		return errors.New("invalid report type")
 	}
@@ -53,8 +53,8 @@ func ComplianceResult(ctx context.Context, doc sbom.Document, reportType, fileNa
 		return errors.New("output format is empty")
 	}
 
-	if reportType == CRA_REPORT {
-		craResult(ctx, doc, fileName, outFormat)
+	if reportType == BSI_REPORT {
+		bsiResult(ctx, doc, fileName, outFormat)
 	}
 
 	if reportType == NTIA_REPORT {

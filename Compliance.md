@@ -8,7 +8,7 @@ The goal of compliance reports is to verify if the sbom file adheres to these st
 We have explained below how sbomqs approaches compliance reports for BSI TR-03183-2 v1.1. We are not going to explain
 this technical guideline here, but rather go into our intepretation of it.
 
-## TR-03183: SBOM Requirements for CRA
+## TR-03183: SBOM Requirements for BSI
 
 The [BSI TR-03183-2 v1.1](https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/Publications/TechGuidelines/TR03183/BSI-TR-03183-2.pdf) specifies mandatory properties for an SBOM. Below is how we have derived all the values.
 
