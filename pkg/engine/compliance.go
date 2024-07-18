@@ -22,6 +22,7 @@ import (
 	"github.com/interlynk-io/sbomqs/pkg/compliance"
 	"github.com/interlynk-io/sbomqs/pkg/logger"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
+	"github.com/spf13/afero"
 )
 
 func ComplianceRun(ctx context.Context, ep *Params) error {
@@ -74,27 +75,60 @@ func getSbomDocument(ctx context.Context, ep *Params) (*sbom.Document, error) {
 	log.Debugf("engine.getSbomDocument()")
 
 	path := ep.Path[0]
+	var doc sbom.Document
 
-	if _, err := os.Stat(path); err != nil {
-		log.Debugf("os.Stat failed for file :%s\n", path)
-		fmt.Printf("failed to stat %s\n", path)
-		return nil, err
-	}
+	if IsURL(path) {
+		log.Debugf("Processing Git URL path :%s\n", path)
 
-	f, err := os.Open(path)
-	if err != nil {
-		log.Debugf("os.Open failed for file :%s\n", path)
-		fmt.Printf("failed to open %s\n", path)
-		return nil, err
-	}
-	defer f.Close()
+		url, sbomFilePath := path, path
+		var err error
 
-	doc, err := sbom.NewSBOMDocument(ctx, f)
-	if err != nil {
-		log.Debugf("failed to create sbom document for  :%s\n", path)
-		log.Debugf("%s\n", err)
-		fmt.Printf("failed to parse %s : %s\n", path, err)
-		return nil, err
+		if IsGit(url) {
+			sbomFilePath, url, err = handleURL(path)
+			if err != nil {
+				log.Fatal("failed to get sbomFilePath, rawURL: %w", err)
+			}
+		}
+		fs := afero.NewMemMapFs()
+
+		file, err := fs.Create(sbomFilePath)
+		if err != nil {
+			return nil, err
+		}
+
+		f, err := ProcessURL(url, file)
+		if err != nil {
+			return nil, err
+		}
+
+		doc, err = sbom.NewSBOMDocument(ctx, f)
+		if err != nil {
+			log.Fatalf("failed to parse SBOM document: %w", err)
+		}
+
+	} else {
+
+		if _, err := os.Stat(path); err != nil {
+			log.Debugf("os.Stat failed for file :%s\n", path)
+			fmt.Printf("failed to stat %s\n", path)
+			return nil, err
+		}
+
+		f, err := os.Open(path)
+		if err != nil {
+			log.Debugf("os.Open failed for file :%s\n", path)
+			fmt.Printf("failed to open %s\n", path)
+			return nil, err
+		}
+		defer f.Close()
+
+		doc, err = sbom.NewSBOMDocument(ctx, f)
+		if err != nil {
+			log.Debugf("failed to create sbom document for  :%s\n", path)
+			log.Debugf("%s\n", err)
+			fmt.Printf("failed to parse %s : %s\n", path, err)
+			return nil, err
+		}
 	}
 
 	return &doc, nil
