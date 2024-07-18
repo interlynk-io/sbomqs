@@ -18,7 +18,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -74,19 +73,24 @@ func Run(ctx context.Context, ep *Params) error {
 func handleURL(path string) (string, string, error) {
 	u, err := url.Parse(path)
 	if err != nil {
-		log.Fatalf("Failed to parse urlPath: %v", err)
+		return "", "", fmt.Errorf("failed to parse urlPath: %v", err)
 	}
 
 	parts := strings.Split(u.Path, "/")
-	if len(parts) < 5 {
-		log.Fatalf("invalid GitHub URL: %v", path)
-	}
+	containSlash := strings.HasSuffix(u.Path, "/")
+	var sbomFilePath string
 
-	if len(parts) < 5 {
-		log.Fatalf("invalid GitHub URL: %v", path)
+	if containSlash {
+		if len(parts) < 7 {
+			return "", "", fmt.Errorf("invalid GitHub URL: %v", path)
+		}
+		sbomFilePath = strings.Join(parts[5:len(parts)-1], "/")
+	} else {
+		if len(parts) < 6 {
+			return "", "", fmt.Errorf("invalid GitHub URL: %v", path)
+		}
+		sbomFilePath = strings.Join(parts[5:], "/")
 	}
-
-	sbomFilePath := strings.Join(parts[5:], "/")
 
 	rawURL := strings.Replace(path, "github.com", "raw.githubusercontent.com", 1)
 	rawURL = strings.Replace(rawURL, "/blob/", "/", 1)
@@ -124,7 +128,7 @@ func ProcessURL(url string, file afero.File) (afero.File, error) {
 		return nil, fmt.Errorf("failed to stat file: %w", err)
 	}
 	if info.Size() == 0 {
-		return nil, fmt.Errorf("downloaded file is empty")
+		return nil, fmt.Errorf("downloaded file is empty: %v", info.Size())
 	}
 
 	return file, err
