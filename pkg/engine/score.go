@@ -108,17 +108,27 @@ func IsGit(in string) bool {
 func ProcessURL(url string, file afero.File) (afero.File, error) {
 	resp, err := http.Get(url)
 	if err != nil {
-		log.Fatalf("failed to get data: %v", err)
+		fmt.Println("FAiled to get http URL")
+		return nil, fmt.Errorf("failed to get data: %v", err)
 	}
 	defer resp.Body.Close()
 
 	// Ensure the response is OK
 	if resp.StatusCode != http.StatusOK {
-		log.Fatalf("failed to download file: %s", resp.Status)
+		return nil, fmt.Errorf("failed to download file: %s", resp.Status)
 	}
 	_, err = io.Copy(file, resp.Body)
 	if err != nil {
-		log.Fatalf("failed to copy in file: %w", err)
+		return nil, fmt.Errorf("failed to copy in file: %w", err)
+	}
+
+	// Check if the file is empty
+	info, err := file.Stat()
+	if err != nil {
+		return nil, fmt.Errorf("failed to stat file: %w", err)
+	}
+	if info.Size() == 0 {
+		return nil, fmt.Errorf("downloaded file is empty")
 	}
 
 	return file, err
