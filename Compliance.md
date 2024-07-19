@@ -74,8 +74,7 @@ The [NTIA](https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/Publications/Tech
 
 | NTIA minimum elements   | Elements    | Fields        | CycloneDX |SPDX(2.3)  | Notes                |
 | :---                    | :---        |:---           |   :---    |     :---  | :---                 |
-| Data Fields             | SBOM        |               |           |           |  all sbom elements   |
-|                         |             |  Author of the SBOM data       | metadata->authors, metadata->supplier | creator  |   |
+| Data Fields             | SBOM        |  Author of the SBOM data       | metadata->authors, metadata->supplier | creator  |   |
 |                         |             |  Timestamp    |  metadata->timestamp  |  created  |            |
 |                         |             |  Dependency Relationship | dependencies, composition | relationships  |  |
 |                         | package     |  present      |           |           | all package elements |
