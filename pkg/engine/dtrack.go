@@ -81,7 +81,7 @@ func DtrackScore(ctx context.Context, dtP *DtParams) error {
 			ep := &Params{}
 			ep.Path = append(ep.Path, f.Name())
 
-			file, err := ProcessFile(ctx, ep.Path[0])
+			file, err := ValidateFile(ctx, ep.Path[0])
 			if err != nil {
 				return err
 			}

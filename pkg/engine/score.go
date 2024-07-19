@@ -50,19 +50,14 @@ type Params struct {
 	Oct  bool
 }
 
-func ProcessFile(ctx context.Context, filePath string) (*os.File, error) {
-	log := logger.FromContext(ctx)
-
+func ValidateFile(ctx context.Context, filePath string) (*os.File, error) {
 	if _, err := os.Stat(filePath); err != nil {
-		log.Debugf("os.Stat failed for file :%s", filePath)
 		return nil, fmt.Errorf("failed to stat %s", filePath)
 	}
 
 	f, err := os.Open(filePath)
 	if err != nil {
-		log.Debugf("os.Open failed for file :%s", filePath)
 		return nil, fmt.Errorf("failed to open %s", filePath)
-
 	}
 	defer f.Close()
 	return f, nil
@@ -84,7 +79,7 @@ func ProcessScore(ctx context.Context, ep *Params) ([]sbom.Document, []string, [
 	// loop all files path to get files
 	for _, filesPath := range getFilesWithPath {
 
-		f, err := ProcessFile(ctx, filesPath)
+		f, err := ValidateFile(ctx, filesPath)
 		if err != nil {
 			continue
 		}

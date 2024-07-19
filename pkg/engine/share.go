@@ -34,7 +34,7 @@ func ShareRun(ctx context.Context, ep *Params) error {
 		log.Fatal("path is required")
 	}
 
-	file, err := ProcessFile(ctx, ep.Path[0])
+	file, err := ValidateFile(ctx, ep.Path[0])
 	if err != nil {
 		return err
 	}
