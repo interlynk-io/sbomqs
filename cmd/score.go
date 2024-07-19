@@ -37,25 +37,25 @@ var (
 )
 
 type userCmd struct {
-	//input control
+	// input control
 	path []string
 
-	//filter control
+	// filter control
 	category string
 	features []string
 
-	//output control
+	// output control
 	json     bool
 	basic    bool
 	detailed bool
 
-	//directory control
+	// directory control
 	recurse bool
 
-	//debug control
+	// debug control
 	debug bool
 
-	//config control
+	// config control
 	configPath string
 }
 
@@ -69,14 +69,13 @@ var scoreCmd = &cobra.Command{
 			if len(inFile) <= 0 && len(inDirPath) <= 0 {
 				return fmt.Errorf("provide a path to an sbom file or directory of sbom files")
 			}
-
 		}
 		return nil
 	},
-	RunE: processScore,
+	RunE: ProcessScoreReport,
 }
 
-func processScore(cmd *cobra.Command, args []string) error {
+func ProcessScoreReport(cmd *cobra.Command, args []string) error {
 	debug, _ := cmd.Flags().GetBool("debug")
 	if debug {
 		logger.InitDebugLogger()
@@ -92,12 +91,27 @@ func processScore(cmd *cobra.Command, args []string) error {
 	}
 
 	engParams := toEngineParams(uCmd)
-	return engine.Run(ctx, engParams)
+
+	docs, paths, scores, err := engine.ProcessScore(ctx, engParams)
+	if err != nil {
+		return err
+	}
+
+	nr := reporter.NewReport(ctx,
+		docs,
+		scores,
+		paths,
+		reporter.WithFormat(strings.ToLower(reportFormat)))
+
+	nr.Report()
+
+	return err
 }
+
 func toUserCmd(cmd *cobra.Command, args []string) *userCmd {
 	uCmd := &userCmd{}
 
-	//input control
+	// input control
 	if len(args) <= 0 {
 		if len(inFile) > 0 {
 			uCmd.path = append(uCmd.path, inFile)
@@ -110,13 +124,13 @@ func toUserCmd(cmd *cobra.Command, args []string) *userCmd {
 		uCmd.path = append(uCmd.path, args[0:]...)
 	}
 
-	//config control
+	// config control
 	if configPath == "" {
 		uCmd.configPath, _ = cmd.Flags().GetString("configpath")
 	} else {
 		uCmd.configPath = configPath
 	}
-	//filter control
+	// filter control
 	if category == "" {
 		uCmd.category, _ = cmd.Flags().GetString("category")
 	} else {
@@ -128,7 +142,7 @@ func toUserCmd(cmd *cobra.Command, args []string) *userCmd {
 		uCmd.features = strings.Split(f, ",")
 	}
 
-	//output control
+	// output control
 	uCmd.json, _ = cmd.Flags().GetBool("json")
 	uCmd.basic, _ = cmd.Flags().GetBool("basic")
 	uCmd.detailed, _ = cmd.Flags().GetBool("detailed")
@@ -139,7 +153,7 @@ func toUserCmd(cmd *cobra.Command, args []string) *userCmd {
 		uCmd.detailed = strings.ToLower(reportFormat) == "detailed"
 	}
 
-	//debug control
+	// debug control
 	uCmd.debug, _ = cmd.Flags().GetBool("debug")
 
 	return uCmd
@@ -165,8 +179,8 @@ func validatePath(path string) error {
 	}
 	return nil
 }
-func validateFlags(cmd *userCmd) error {
 
+func validateFlags(cmd *userCmd) error {
 	for _, path := range cmd.path {
 		if err := validatePath(path); err != nil {
 			return fmt.Errorf("invalid path: %w", err)
@@ -185,36 +199,37 @@ func validateFlags(cmd *userCmd) error {
 
 	return nil
 }
+
 func init() {
 	rootCmd.AddCommand(scoreCmd)
 
-	//Config Control
+	// Config Control
 	scoreCmd.Flags().StringP("configpath", "", "", "scoring based on config path")
 
-	//Filter Control
+	// Filter Control
 	scoreCmd.Flags().StringP("category", "c", "", "filter by category")
 	scoreCmd.Flags().StringP("feature", "f", "", "filter by feature")
 
-	//Spec Control
+	// Spec Control
 	scoreCmd.Flags().BoolP("spdx", "", false, "limit scoring to spdx sboms")
 	scoreCmd.Flags().BoolP("cdx", "", false, "limit scoring to cdx sboms")
 	scoreCmd.MarkFlagsMutuallyExclusive("spdx", "cdx")
 	scoreCmd.Flags().MarkHidden("spdx")
 	scoreCmd.Flags().MarkHidden("cdx")
 
-	//Directory Control
+	// Directory Control
 	scoreCmd.Flags().BoolP("recurse", "r", false, "recurse into subdirectories")
 	scoreCmd.Flags().MarkHidden("recurse")
 
-	//Output Control
+	// Output Control
 	scoreCmd.Flags().BoolP("json", "j", false, "results in json")
 	scoreCmd.Flags().BoolP("detailed", "d", false, "results in table format, default")
 	scoreCmd.Flags().BoolP("basic", "b", false, "results in single line format")
 
-	//Debug Control
+	// Debug Control
 	scoreCmd.Flags().BoolP("debug", "D", false, "enable debug logging")
 
-	//Deprecated
+	// Deprecated
 	scoreCmd.Flags().StringVar(&inFile, "filepath", "", "sbom file path")
 	scoreCmd.Flags().StringVar(&inDirPath, "dirpath", "", "sbom dir path")
 	scoreCmd.MarkFlagsMutuallyExclusive("filepath", "dirpath")
