@@ -105,7 +105,6 @@ func TestSbomqsNTIAMissingAuthor(t *testing.T) {
 		expectedAvgScore := score.AvgScore()
 		if expectedAvgScore != 0.0 {
 			actualAvgScore := fmt.Sprintf("%0.1f", score.AvgScore())
-			fmt.Println("actualAvgScore: ", actualAvgScore)
 			assert.Equal(t, fmt.Sprintf("%0.1f", test.expectedAvgScore), actualAvgScore)
 		} else {
 			assert.Equal(t, test.expectedAvgScore, score.AvgScore())
@@ -209,7 +208,6 @@ func TestSbomqsNTIAForMissingComponentName(t *testing.T) {
 		expectedAvgScore := score.AvgScore()
 		if expectedAvgScore != 0.0 {
 			actualAvgScore := fmt.Sprintf("%0.1f", score.AvgScore())
-			fmt.Println("actualAvgScore: ", actualAvgScore)
 			assert.Equal(t, fmt.Sprintf("%0.1f", test.expectedAvgScore), actualAvgScore)
 		} else {
 			assert.Equal(t, test.expectedAvgScore, score.AvgScore())
@@ -313,7 +311,6 @@ func TestSbomqsNTIAForMissingDependencies(t *testing.T) {
 		expectedAvgScore := score.AvgScore()
 		if expectedAvgScore != 0.0 {
 			actualAvgScore := fmt.Sprintf("%0.1f", score.AvgScore())
-			fmt.Println("actualAvgScore: ", actualAvgScore)
 			assert.Equal(t, fmt.Sprintf("%0.1f", test.expectedAvgScore), actualAvgScore)
 		} else {
 			assert.Equal(t, test.expectedAvgScore, score.AvgScore())
@@ -417,7 +414,6 @@ func TestSbomqsNTIAForMissingComponentSupplierName(t *testing.T) {
 		expectedAvgScore := score.AvgScore()
 		if expectedAvgScore != 0.0 {
 			actualAvgScore := fmt.Sprintf("%0.1f", score.AvgScore())
-			fmt.Println("actualAvgScore: ", actualAvgScore)
 			assert.Equal(t, fmt.Sprintf("%0.1f", test.expectedAvgScore), actualAvgScore)
 		} else {
 			assert.Equal(t, test.expectedAvgScore, score.AvgScore())
@@ -521,7 +517,6 @@ func TestSbomqsNTIAForMissingTimestamp(t *testing.T) {
 		expectedAvgScore := score.AvgScore()
 		if expectedAvgScore != 0.0 {
 			actualAvgScore := fmt.Sprintf("%0.1f", score.AvgScore())
-			fmt.Println("actualAvgScore: ", actualAvgScore)
 			assert.Equal(t, fmt.Sprintf("%0.1f", test.expectedAvgScore), actualAvgScore)
 		} else {
 			assert.Equal(t, test.expectedAvgScore, score.AvgScore())
@@ -625,7 +620,6 @@ func TestSbomqsNTIAForMissingComponentUniqueIDs(t *testing.T) {
 		expectedAvgScore := score.AvgScore()
 		if expectedAvgScore != 0.0 {
 			actualAvgScore := fmt.Sprintf("%0.1f", score.AvgScore())
-			fmt.Println("actualAvgScore: ", actualAvgScore)
 			assert.Equal(t, fmt.Sprintf("%0.1f", test.expectedAvgScore), actualAvgScore)
 		} else {
 			assert.Equal(t, test.expectedAvgScore, score.AvgScore())
@@ -729,7 +723,6 @@ func TestSbomqsNTIAForMissingComponentVersion(t *testing.T) {
 		expectedAvgScore := score.AvgScore()
 		if expectedAvgScore != 0.0 {
 			actualAvgScore := fmt.Sprintf("%0.1f", score.AvgScore())
-			fmt.Println("actualAvgScore: ", actualAvgScore)
 			assert.Equal(t, fmt.Sprintf("%0.1f", test.expectedAvgScore), actualAvgScore)
 		} else {
 			assert.Equal(t, test.expectedAvgScore, score.AvgScore())
