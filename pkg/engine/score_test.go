@@ -21,10 +21,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/interlynk-io/sbomqs/pkg/sbom"
-	"github.com/interlynk-io/sbomqs/pkg/scorer"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 )
 
 func TestValidateFile(t *testing.T) {
@@ -117,33 +114,10 @@ func TestHandlePaths(t *testing.T) {
 	assert.ElementsMatch(t, expectedPaths, allFilesPath)
 }
 
-// Mock implementations of sbom.Document and scorer.Scores
-type MockDocument struct {
-	mock.Mock
-}
-
-type MockScores struct {
-	mock.Mock
-}
-
-// Define a mock for the GetDocsAndScore function
-type MockGetDocsAndScore struct {
-	mock.Mock
-}
-
-func (m *MockGetDocsAndScore) GetDocsAndScore(ctx context.Context, f *os.File, ep *Params) (sbom.Document, scorer.Scores, error) {
-	args := m.Called(ctx, f, ep)
-	return args.Get(0).(sbom.Document), args.Get(1).(scorer.Scores), args.Error(2)
-}
-
 func TestGetDocsAndScore(t *testing.T) {
 	ctx := context.Background()
-	params := &Params{
-		Category:   "test-category",
-		Features:   []string{"test-feature"},
-		ConfigPath: "",
-	}
-	path := "sbomqs-spdx-syft.json"
+	params := &Params{}
+	path := "../../samples/sbomqs-spdx-syft.json"
 	file, err := ValidateFile(ctx, path)
 	assert.NoError(t, err)
 
@@ -151,4 +125,29 @@ func TestGetDocsAndScore(t *testing.T) {
 	assert.NotNil(t, doc)
 	assert.NoError(t, err)
 	assert.NotNil(t, score)
+
+	expectedAvgScore := 6.4
+	actualAvgScore := fmt.Sprintf("%0.1f", score.AvgScore())
+	fmt.Println("actualAvgScore: ", actualAvgScore)
+	assert.Equal(t, fmt.Sprintf("%0.1f", expectedAvgScore), actualAvgScore)
+}
+
+func TestGetDocsAndScoreWithError(t *testing.T) {
+	ctx := context.Background()
+	params := &Params{}
+
+	path := "../../samples/sbomqs-spdx-syft.json"
+	file, err := ValidateFile(ctx, path)
+	assert.NoError(t, err)
+
+	// on closing file will lead to pass closed file in GetDocsAndScoreet
+	file.Close()
+
+	doc, score, err := GetDocsAndScore(ctx, file, params)
+	assert.Nil(t, doc)
+	assert.Error(t, err)
+	assert.Nil(t, score)
+
+	expectedErr := fmt.Errorf("unsupported sbom format")
+	assert.EqualError(t, err, expectedErr.Error())
 }

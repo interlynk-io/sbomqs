@@ -59,7 +59,6 @@ func ValidateFile(ctx context.Context, filePath string) (*os.File, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to open %s", filePath)
 	}
-	defer f.Close()
 	return f, nil
 }
 
@@ -83,9 +82,12 @@ func ProcessScore(ctx context.Context, ep *Params) ([]sbom.Document, []string, [
 		if err != nil {
 			continue
 		}
+		f.Close()
+
 		// get docs and score for each file
 		doc, score, err := GetDocsAndScore(ctx, f, ep)
 		if err != nil {
+			fmt.Printf("Error: %v for path %s\n", err, filesPath)
 			continue
 		}
 
