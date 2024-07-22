@@ -2,56 +2,90 @@ package test
 
 import (
 	"context"
-	"os"
+	"fmt"
 	"testing"
 
 	"github.com/interlynk-io/sbomqs/pkg/engine"
-	"github.com/interlynk-io/sbomqs/pkg/logger"
-	"github.com/interlynk-io/sbomqs/pkg/sbom"
-	"github.com/interlynk-io/sbomqs/pkg/scorer"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestSBOMQSMissingAuthorScore(t *testing.T) {
-	// Define the input file and expected score
-	inputFile := "./data/missing_author_sbom.json"
-	expectedScore := 0.0
-
-	ctx := context.Background()
-	log := logger.FromContext(ctx)
-
-	f, err := os.Open(inputFile)
-	if err != nil {
-		t.Fatalf("Failed to open file: %v", err)
+	testCases := []struct {
+		input            string
+		feature          *engine.Params
+		expectedAvgScore float64
+	}{
+		{
+			input: "./data/missing_author_sbom.json",
+			feature: &engine.Params{
+				Features: []string{"sbom_authors"},
+			},
+			expectedAvgScore: 0.0,
+		},
+		{
+			input: "./data/missing_component_name.json",
+			feature: &engine.Params{
+				Features: []string{"comp_with_name"},
+			},
+			expectedAvgScore: 0.0,
+		},
+		{
+			input: "./data/missing_dependency_relationship.json",
+			feature: &engine.Params{
+				Features: []string{"sbom_dependencies"},
+			},
+			expectedAvgScore: 0.0,
+		},
+		{
+			input: "./data/missing_supplier_name.json",
+			feature: &engine.Params{
+				Features: []string{"comp_with_supplier"},
+			},
+			expectedAvgScore: 0.0,
+		},
+		{
+			input: "./data/missing_timestamp.json",
+			feature: &engine.Params{
+				Features: []string{"sbom_creation_timestamp"},
+			},
+			expectedAvgScore: 0.0,
+		},
+		{
+			input: "./data/missing_unique_identifiers.json",
+			feature: &engine.Params{
+				Features: []string{"comp_with_uniq_ids"},
+			},
+			expectedAvgScore: 0.0,
+		},
+		{
+			input: "./data/no_element_missing.json",
+			feature: &engine.Params{
+				Features: []string{""},
+			},
+			expectedAvgScore: 8.7,
+		},
 	}
-	defer f.Close()
 
-	path := inputFile
-	doc, err := sbom.NewSBOMDocument(ctx, f)
-	if err != nil {
-		log.Debugf("failed to create sbom document for  :%s\n", path)
-		log.Debugf("%s\n", err)
-		t.Fatalf("Failed to parse %s: %s\n", inputFile, err)
+	for _, test := range testCases {
+		ctx := context.Background()
 
-	}
+		f, err := engine.ValidateFile(ctx, test.input)
+		assert.NoError(t, err)
+		defer f.Close()
 
-	sr := scorer.NewScorer(ctx, doc)
-	var ep engine.Params
+		doc, score, err := engine.GetDocsAndScore(ctx, f, test.feature)
+		assert.NoError(t, err)
+		assert.NotNil(t, doc)
+		assert.NotNil(t, score)
 
-	ep.Features = []string{"sbom_authors"}
-
-	if len(ep.Features) > 0 {
-		for _, feature := range ep.Features {
-			if len(feature) <= 0 {
-				continue
-			}
-			sr.AddFilter(feature, scorer.Feature)
+		// expectedAvgScore := 0.0
+		expectedAvgScore := score.AvgScore()
+		if expectedAvgScore != 0.0 {
+			actualAvgScore := fmt.Sprintf("%0.1f", score.AvgScore())
+			fmt.Println("actualAvgScore: ", actualAvgScore)
+			assert.Equal(t, fmt.Sprintf("%0.1f", test.expectedAvgScore), actualAvgScore)
+		} else {
+			assert.Equal(t, test.expectedAvgScore, score.AvgScore())
 		}
-	}
-
-	scores := sr.Score()
-
-	// Check if the score matches the expected value
-	if scores.AvgScore() != expectedScore {
-		t.Errorf("Expected score %v, got %v", expectedScore, scores.AvgScore())
 	}
 }
