@@ -83,7 +83,6 @@ func ProcessScore(ctx context.Context, ep *Params) ([]sbom.Document, []string, [
 		if err != nil {
 			continue
 		}
-
 		// get docs and score for each file
 		doc, score, err := GetDocsAndScore(ctx, f, ep)
 		if err != nil {
@@ -100,36 +99,26 @@ func ProcessScore(ctx context.Context, ep *Params) ([]sbom.Document, []string, [
 
 func HandlePaths(ctx context.Context, paths []string) []string {
 	log := logger.FromContext(ctx)
-	log.Debugf("Vandling path :%s\n", paths)
+	log.Debugf("Handling paths: %v\n", paths)
+
 	var allFilesPath []string
 
 	for _, path := range paths {
-		log.Debugf("Handling each path :%s\n", path)
-
-		pathInfo, _ := os.Stat(path)
-
-		if pathInfo.IsDir() {
-			log.Debugf("Provided path is directory :%s\n", path)
-
-			files, err := os.ReadDir(path)
+		log.Debugf("Handling path: %s\n", path)
+		err := filepath.Walk(path, func(filePath string, fileInfo os.FileInfo, err error) error {
 			if err != nil {
-				log.Debugf("os.ReadDir failed for path:%s\n", path)
-				log.Debugf("%s\n", err)
-				continue
+				log.Debugf("filepath.Walk error for path %s: %v\n", filePath, err)
+				return nil
 			}
-
-			for _, file := range files {
-				log.Debugf("Processing file :%s\n", file.Name())
-				if file.IsDir() {
-					continue
-				}
-				path := filepath.Join(path, file.Name())
-				allFilesPath = append(allFilesPath, path)
+			if !fileInfo.IsDir() {
+				allFilesPath = append(allFilesPath, filePath)
 			}
+			return nil
+		})
+		if err != nil {
+			log.Debugf("filepath.Walk encountered an error for path %s: %v\n", path, err)
 			continue
 		}
-		allFilesPath = append(allFilesPath, paths[0])
-
 	}
 	return allFilesPath
 }

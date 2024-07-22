@@ -18,9 +18,13 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"path/filepath"
 	"testing"
 
+	"github.com/interlynk-io/sbomqs/pkg/sbom"
+	"github.com/interlynk-io/sbomqs/pkg/scorer"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestValidateFile(t *testing.T) {
@@ -62,4 +66,89 @@ func TestValidateFile(t *testing.T) {
 
 	// Restore file permissions to delete the temp file
 	os.Chmod(filePath, 0o644)
+}
+
+// TestHandlePaths tests the HandlePaths function
+func TestHandlePaths(t *testing.T) {
+	ctx := context.Background()
+
+	baseDir, err := os.MkdirTemp("", "testdir")
+	if err != nil {
+		t.Fatalf("Failed to create temporary directory: %v", err)
+	}
+	defer os.RemoveAll(baseDir)
+
+	file1 := filepath.Join(baseDir, "file1.txt")
+	err = os.WriteFile(file1, []byte("content1"), 0o644)
+	if err != nil {
+		t.Fatalf("Failed to create temporary file: %v", err)
+	}
+
+	subDir := filepath.Join(baseDir, "subdir")
+	err = os.Mkdir(subDir, 0o755)
+	if err != nil {
+		t.Fatalf("Failed to create temporary subdirectory: %v", err)
+	}
+
+	file2 := filepath.Join(subDir, "file2.txt")
+	err = os.WriteFile(file2, []byte("content2"), 0o644)
+	if err != nil {
+		t.Fatalf("Failed to create temporary file: %v", err)
+	}
+
+	// Test case: directory containing sub-dir and files
+	paths := []string{baseDir}
+	expectedPaths := []string{file1, file2}
+	allFilesPath := HandlePaths(ctx, paths)
+	assert.NotNil(t, allFilesPath)
+	assert.ElementsMatch(t, expectedPaths, allFilesPath)
+
+	// Test case: non-existent path
+	nonExistentPath := "/nonexistent"
+	paths = []string{nonExistentPath}
+	allFilesPath = HandlePaths(ctx, paths)
+	assert.Empty(t, allFilesPath)
+
+	// Test case: single file path
+	singleFilePath := file1
+	paths = []string{singleFilePath}
+	expectedPaths = []string{singleFilePath}
+	allFilesPath = HandlePaths(ctx, paths)
+	assert.ElementsMatch(t, expectedPaths, allFilesPath)
+}
+
+// Mock implementations of sbom.Document and scorer.Scores
+type MockDocument struct {
+	mock.Mock
+}
+
+type MockScores struct {
+	mock.Mock
+}
+
+// Define a mock for the GetDocsAndScore function
+type MockGetDocsAndScore struct {
+	mock.Mock
+}
+
+func (m *MockGetDocsAndScore) GetDocsAndScore(ctx context.Context, f *os.File, ep *Params) (sbom.Document, scorer.Scores, error) {
+	args := m.Called(ctx, f, ep)
+	return args.Get(0).(sbom.Document), args.Get(1).(scorer.Scores), args.Error(2)
+}
+
+func TestGetDocsAndScore(t *testing.T) {
+	ctx := context.Background()
+	params := &Params{
+		Category:   "test-category",
+		Features:   []string{"test-feature"},
+		ConfigPath: "",
+	}
+	path := "sbomqs-spdx-syft.json"
+	file, err := ValidateFile(ctx, path)
+	assert.NoError(t, err)
+
+	doc, score, err := GetDocsAndScore(ctx, file, params)
+	assert.NotNil(t, doc)
+	assert.NoError(t, err)
+	assert.NotNil(t, score)
 }
