@@ -38,6 +38,7 @@ func ShareRun(ctx context.Context, ep *Params) error {
 	if err != nil {
 		return err
 	}
+	defer file.Close()
 
 	doc, scores, err := GetDocsAndScore(ctx, file, ep)
 	if err != nil {

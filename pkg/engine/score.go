@@ -82,7 +82,7 @@ func ProcessScore(ctx context.Context, ep *Params) ([]sbom.Document, []string, [
 		if err != nil {
 			continue
 		}
-		f.Close()
+		defer f.Close()
 
 		// get docs and score for each file
 		doc, score, err := GetDocsAndScore(ctx, f, ep)
