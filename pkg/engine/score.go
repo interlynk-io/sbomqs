@@ -19,10 +19,8 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/interlynk-io/sbomqs/pkg/logger"
-	"github.com/interlynk-io/sbomqs/pkg/reporter"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/pkg/scorer"
 )
@@ -52,103 +50,86 @@ type Params struct {
 	Oct  bool
 }
 
-func Run(ctx context.Context, ep *Params) error {
-	log := logger.FromContext(ctx)
-	log.Debug("engine.Run()")
-	log.Debug(ep)
-
-	if len(ep.Path) <= 0 {
-		log.Fatal("path is required")
+func ValidateFile(ctx context.Context, filePath string) (*os.File, error) {
+	if _, err := os.Stat(filePath); err != nil {
+		return nil, fmt.Errorf("failed to stat %s", filePath)
 	}
 
-	return handlePaths(ctx, ep)
+	f, err := os.Open(filePath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open %s", filePath)
+	}
+	return f, nil
 }
 
-func handlePaths(ctx context.Context, ep *Params) error {
+func ProcessScore(ctx context.Context, ep *Params) ([]sbom.Document, []string, []scorer.Scores, error) {
 	log := logger.FromContext(ctx)
-	log.Debug("engine.handlePaths()")
+	log.Debugf("ProcessScore \n")
 
 	var docs []sbom.Document
-	var paths []string
 	var scores []scorer.Scores
+	var allPaths []string
 
-	for _, path := range ep.Path {
-		log.Debugf("Processing path :%s\n", path)
-		pathInfo, _ := os.Stat(path)
-		if pathInfo.IsDir() {
-			files, err := os.ReadDir(path)
-			if err != nil {
-				log.Debugf("os.ReadDir failed for path:%s\n", path)
-				log.Debugf("%s\n", err)
-				continue
-			}
-			for _, file := range files {
-				log.Debugf("Processing file :%s\n", file.Name())
-				if file.IsDir() {
-					continue
-				}
-				path := filepath.Join(path, file.Name())
-				doc, scs, err := processFile(ctx, ep, path)
-				if err != nil {
-					continue
-				}
-				docs = append(docs, doc)
-				scores = append(scores, scs)
-				paths = append(paths, path)
-			}
-			continue
-		}
+	// get all files from path
+	getFilesWithPath := HandlePaths(ctx, ep.Path)
 
-		doc, scs, err := processFile(ctx, ep, path)
+	fmt.Println("allFilesWithPath: ", getFilesWithPath)
+
+	// loop all files path to get files
+	for _, filesPath := range getFilesWithPath {
+
+		f, err := ValidateFile(ctx, filesPath)
 		if err != nil {
 			continue
 		}
+		defer f.Close()
+
+		// get docs and score for each file
+		doc, score, err := GetDocsAndScore(ctx, f, ep)
+		if err != nil {
+			fmt.Printf("Error: %v for path %s\n", err, filesPath)
+			continue
+		}
+
 		docs = append(docs, doc)
-		scores = append(scores, scs)
-		paths = append(paths, path)
+		scores = append(scores, score)
+		allPaths = append(allPaths, filesPath)
 	}
 
-	reportFormat := "detailed"
-	if ep.Basic {
-		reportFormat = "basic"
-	} else if ep.Json {
-		reportFormat = "json"
-	}
-
-	nr := reporter.NewReport(ctx,
-		docs,
-		scores,
-		paths,
-		reporter.WithFormat(strings.ToLower(reportFormat)))
-
-	nr.Report()
-
-	return nil
+	return docs, allPaths, scores, nil
 }
 
-func processFile(ctx context.Context, ep *Params, path string) (sbom.Document, scorer.Scores, error) {
+func HandlePaths(ctx context.Context, paths []string) []string {
 	log := logger.FromContext(ctx)
-	log.Debugf("Processing file :%s\n", path)
+	log.Debugf("Handling paths: %v\n", paths)
 
-	if _, err := os.Stat(path); err != nil {
-		log.Debugf("os.Stat failed for file :%s\n", path)
-		fmt.Printf("failed to stat %s\n", path)
-		return nil, nil, err
-	}
+	var allFilesPath []string
 
-	f, err := os.Open(path)
-	if err != nil {
-		log.Debugf("os.Open failed for file :%s\n", path)
-		fmt.Printf("failed to open %s\n", path)
-		return nil, nil, err
+	for _, path := range paths {
+		log.Debugf("Handling path: %s\n", path)
+		err := filepath.Walk(path, func(filePath string, fileInfo os.FileInfo, err error) error {
+			if err != nil {
+				log.Debugf("filepath.Walk error for path %s: %v\n", filePath, err)
+				return nil
+			}
+			if !fileInfo.IsDir() {
+				allFilesPath = append(allFilesPath, filePath)
+			}
+			return nil
+		})
+		if err != nil {
+			log.Debugf("filepath.Walk encountered an error for path %s: %v\n", path, err)
+			continue
+		}
 	}
-	defer f.Close()
+	return allFilesPath
+}
+
+func GetDocsAndScore(ctx context.Context, f *os.File, ep *Params) (sbom.Document, scorer.Scores, error) {
+	log := logger.FromContext(ctx)
 
 	doc, err := sbom.NewSBOMDocument(ctx, f)
 	if err != nil {
-		log.Debugf("failed to create sbom document for  :%s\n", path)
-		log.Debugf("%s\n", err)
-		fmt.Printf("failed to parse %s : %s\n", path, err)
 		return nil, nil, err
 	}
 
@@ -182,6 +163,6 @@ func processFile(ctx context.Context, ep *Params, path string) (sbom.Document, s
 		}
 	}
 
-	scores := sr.Score()
-	return doc, scores, nil
+	score := sr.Score()
+	return doc, score, nil
 }
