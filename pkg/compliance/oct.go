@@ -25,8 +25,6 @@ import (
 	"github.com/samber/lo"
 )
 
-var validOctSpdxVersions = []string{"SPDX-2.2", "SPDX-2.3"}
-
 func octResult(ctx context.Context, doc sbom.Document, fileName string, outFormat string) {
 	log := logger.FromContext(ctx)
 	log.Debug("compliance.octResult()")

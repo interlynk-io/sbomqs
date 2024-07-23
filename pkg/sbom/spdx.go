@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log"
 	"regexp"
 	"strings"
 	"unicode"
@@ -58,11 +59,14 @@ type SpdxDoc struct {
 
 func newSPDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat) (Document, error) {
 	_ = logger.FromContext(ctx)
+	var err error
 
-	f.Seek(0, io.SeekStart)
+	_, err = f.Seek(0, io.SeekStart)
+	if err != nil {
+		log.Printf("Failed to seek: %v", err)
+	}
 
 	var d *spdx.Document
-	var err error
 
 	switch format {
 	case FileFormatJSON:

@@ -90,8 +90,16 @@ func init() {
 	rootCmd.AddCommand(dtrackScoreCmd)
 	dtrackScoreCmd.Flags().StringP("url", "u", "", "dependency track url https://localhost:8080/")
 	dtrackScoreCmd.Flags().StringP("api-key", "k", "", "dependency track api key, requires VIEW_PORTFOLIO for scoring and PORTFOLIO_MANAGEMENT for tagging")
-	dtrackScoreCmd.MarkFlagRequired("url")
-	dtrackScoreCmd.MarkFlagRequired("api-key")
+	err := dtrackScoreCmd.MarkFlagRequired("url")
+	if err != nil {
+		// Handle the error appropriately, such as logging it or returning it
+		log.Fatalf("Failed to mark flag as deprecated: %v", err)
+	}
+	err = dtrackScoreCmd.MarkFlagRequired("api-key")
+	if err != nil {
+		// Handle the error appropriately, such as logging it or returning it
+		log.Fatalf("Failed to mark flag as deprecated: %v", err)
+	}
 
 	dtrackScoreCmd.Flags().BoolP("debug", "D", false, "enable debug logging")
 

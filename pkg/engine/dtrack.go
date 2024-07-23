@@ -49,7 +49,6 @@ func DtrackScore(ctx context.Context, dtP *DtParams) error {
 
 	dTrackClient, err := dtrack.NewClient(dtP.Url,
 		dtrack.WithAPIKey(dtP.ApiKey), dtrack.WithDebug(false))
-
 	if err != nil {
 		log.Fatalf("Failed to create Dependency-Track client: %s", err)
 	}
@@ -77,7 +76,10 @@ func DtrackScore(ctx context.Context, dtP *DtParams) error {
 			defer f.Close()
 			defer os.Remove(f.Name())
 
-			f.WriteString(bom)
+			_, err = f.WriteString(bom)
+			if err != nil {
+				log.Fatalf("Failed to write string: %v", err)
+			}
 
 			ep := &Params{}
 			ep.Path = append(ep.Path, f.Name())
@@ -89,7 +91,7 @@ func DtrackScore(ctx context.Context, dtP *DtParams) error {
 			if dtP.TagProjectWithScore {
 
 				log.Debugf("Project: %+v", prj.Tags)
-				//remove old score
+				// remove old score
 				prj.Tags = lo.Filter(prj.Tags, func(t dtrack.Tag, _ int) bool {
 					return !strings.HasPrefix(t.Name, "sbomqs=")
 				})

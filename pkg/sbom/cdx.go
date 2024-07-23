@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log"
 	"strings"
 
 	cydx "github.com/CycloneDX/cyclonedx-go"
@@ -53,9 +54,13 @@ type cdxDoc struct {
 }
 
 func newCDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat) (Document, error) {
-	f.Seek(0, io.SeekStart)
-
 	var err error
+
+	_, err = f.Seek(0, io.SeekStart)
+	if err != nil {
+		log.Printf("Failed to seek: %v", err)
+	}
+
 	var bom *cydx.BOM
 
 	switch format {

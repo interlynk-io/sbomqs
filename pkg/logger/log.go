@@ -16,6 +16,7 @@ package logger
 
 import (
 	"context"
+	"log"
 
 	"go.uber.org/zap"
 )
@@ -25,9 +26,18 @@ var logger *zap.SugaredLogger
 type logKey struct{}
 
 func InitProdLogger() {
-	l, _ := zap.NewProduction()
-	//l, _ := zap.NewDevelopment()
-	defer l.Sync()
+	l, err := zap.NewProduction()
+	if err != nil {
+		log.Fatalf("Failed to initialize logger: %v", err)
+	}
+	// l, _ := zap.NewDevelopment()
+	// Defer with error handling
+	defer func() {
+		if err := l.Sync(); err != nil {
+			log.Printf("Failed to sync logger: %v", err)
+		}
+	}()
+
 	if logger != nil {
 		panic("logger already initialized")
 	}
@@ -35,8 +45,17 @@ func InitProdLogger() {
 }
 
 func InitDebugLogger() {
-	l, _ := zap.NewDevelopment()
-	defer l.Sync()
+	l, err := zap.NewDevelopment()
+	if err != nil {
+		log.Printf("Failed to zap new development: %v", err)
+	}
+
+	// Defer with error handling
+	defer func() {
+		if err := l.Sync(); err != nil {
+			log.Printf("Failed to sync logger: %v", err)
+		}
+	}()
 	if logger != nil {
 		panic("logger already initialized")
 	}

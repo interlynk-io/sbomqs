@@ -70,6 +70,7 @@ func (d *db) getRecordsByKeyId(key int, id string) []*record {
 }
 
 // dumpAll prints all records, optionally filtered by the given keys
+// nolint
 func (d *db) dumpAll(keys []int) {
 	for _, records := range d.keyRecords {
 		for _, r := range records {

@@ -21,6 +21,7 @@ import (
 	"encoding/xml"
 	"errors"
 	"io"
+	"log"
 	"strings"
 
 	"github.com/interlynk-io/sbomqs/pkg/logger"
@@ -93,9 +94,17 @@ func SupportedPrimaryPurpose(f string) []string {
 }
 
 func detectSbomFormat(f io.ReadSeeker) (SBOMSpecFormat, FileFormat, error) {
-	defer f.Seek(0, io.SeekStart)
+	defer func() {
+		_, err := f.Seek(0, io.SeekStart)
+		if err != nil {
+			log.Printf("Failed to seek: %v", err)
+		}
+	}()
 
-	f.Seek(0, io.SeekStart)
+	_, err := f.Seek(0, io.SeekStart)
+	if err != nil {
+		log.Fatalf("Failed to seek: %v", err)
+	}
 
 	var s spdxbasic
 	if err := json.NewDecoder(f).Decode(&s); err == nil {
@@ -104,7 +113,10 @@ func detectSbomFormat(f io.ReadSeeker) (SBOMSpecFormat, FileFormat, error) {
 		}
 	}
 
-	f.Seek(0, io.SeekStart)
+	_, err = f.Seek(0, io.SeekStart)
+	if err != nil {
+		log.Printf("Failed to seek: %v", err)
+	}
 
 	var cdx cdxbasic
 	if err := json.NewDecoder(f).Decode(&cdx); err == nil {
@@ -113,14 +125,20 @@ func detectSbomFormat(f io.ReadSeeker) (SBOMSpecFormat, FileFormat, error) {
 		}
 	}
 
-	f.Seek(0, io.SeekStart)
+	_, err = f.Seek(0, io.SeekStart)
+	if err != nil {
+		log.Printf("Failed to seek: %v", err)
+	}
 
 	if err := xml.NewDecoder(f).Decode(&cdx); err == nil {
 		if strings.HasPrefix(cdx.XMLNS, "http://cyclonedx.org") {
 			return SBOMSpecCDX, FileFormatXML, nil
 		}
 	}
-	f.Seek(0, io.SeekStart)
+	_, err = f.Seek(0, io.SeekStart)
+	if err != nil {
+		log.Printf("Failed to seek: %v", err)
+	}
 
 	if sc := bufio.NewScanner(f); sc.Scan() {
 		if strings.HasPrefix(sc.Text(), "SPDX") {
@@ -128,7 +146,10 @@ func detectSbomFormat(f io.ReadSeeker) (SBOMSpecFormat, FileFormat, error) {
 		}
 	}
 
-	f.Seek(0, io.SeekStart)
+	_, err = f.Seek(0, io.SeekStart)
+	if err != nil {
+		log.Printf("Failed to seek: %v", err)
+	}
 
 	var y spdxbasic
 	if err := yaml.NewDecoder(f).Decode(&y); err == nil {

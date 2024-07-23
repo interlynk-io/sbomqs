@@ -4,6 +4,7 @@ import (
 	"embed"
 	"encoding/json"
 	"fmt"
+	"log"
 	"strings"
 )
 
@@ -50,8 +51,10 @@ type aboutCodeLicenseDetail struct {
 	License              string   `json:"license"`
 }
 
-var licenseList = map[string]meta{}
-var LicenseListAboutCode = map[string]meta{}
+var (
+	licenseList          = map[string]meta{}
+	LicenseListAboutCode = map[string]meta{}
+)
 
 func loadSpdxLicense() error {
 	licData, err := res.ReadFile(licenses["spdx"])
@@ -181,7 +184,16 @@ func loadAboutCodeLicense() error {
 }
 
 func init() {
-	loadSpdxLicense()
-	loadSpdxExceptions()
-	loadAboutCodeLicense()
+	err := loadSpdxLicense()
+	if err != nil {
+		log.Printf("Failed to load spdx license: %v", err)
+	}
+	err = loadSpdxExceptions()
+	if err != nil {
+		log.Printf("Failed to load spdx exceptions: %v", err)
+	}
+	err = loadAboutCodeLicense()
+	if err != nil {
+		log.Printf("Failed to load about code license: %v", err)
+	}
 }
