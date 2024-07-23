@@ -37,25 +37,25 @@ var (
 )
 
 type userCmd struct {
-	//input control
+	// input control
 	path []string
 
-	//filter control
+	// filter control
 	category string
 	features []string
 
-	//output control
+	// output control
 	json     bool
 	basic    bool
 	detailed bool
 
-	//directory control
+	// directory control
 	recurse bool
 
-	//debug control
+	// debug control
 	debug bool
 
-	//config control
+	// config control
 	configPath string
 }
 
@@ -64,12 +64,29 @@ var scoreCmd = &cobra.Command{
 	Use:          "score",
 	Short:        "comprehensive quality score for your sbom",
 	SilenceUsage: true,
+	Example: ` sbomqs score [--category <category>] [--feature <feature>]  [--basic|--json]  <SBOM file>
+
+  # Get a score against a SBOM in a table output
+  sbomqs score samples/sbomqs-spdx-syft.json
+
+  # Get a score against a SBOM in a basic output
+  sbomqs score --basic samples/sbomqs-spdx-syft.json
+
+  # Get a score against a SBOM in a JSON output
+  sbomqs score --json samples/sbomqs-spdx-syft.json
+ 
+  # Get a score for a 'NTIA-minimum-elements' category against a SBOM in a table output
+  sbomqs score --category NTIA-minimum-elements samples/sbomqs-spdx-syft.json
+
+  # Get a score for a 'NTIA-minimum-elements' category and 'sbom_authors' feature against a SBOM in a table output
+  sbomqs score --category NTIA-minimum-elements --feature sbom_authors samples/sbomqs-spdx-syft.json
+`,
+
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) <= 0 {
 			if len(inFile) <= 0 && len(inDirPath) <= 0 {
 				return fmt.Errorf("provide a path to an sbom file or directory of sbom files")
 			}
-
 		}
 		return nil
 	},
@@ -94,10 +111,11 @@ func processScore(cmd *cobra.Command, args []string) error {
 	engParams := toEngineParams(uCmd)
 	return engine.Run(ctx, engParams)
 }
+
 func toUserCmd(cmd *cobra.Command, args []string) *userCmd {
 	uCmd := &userCmd{}
 
-	//input control
+	// input control
 	if len(args) <= 0 {
 		if len(inFile) > 0 {
 			uCmd.path = append(uCmd.path, inFile)
@@ -110,13 +128,13 @@ func toUserCmd(cmd *cobra.Command, args []string) *userCmd {
 		uCmd.path = append(uCmd.path, args[0:]...)
 	}
 
-	//config control
+	// config control
 	if configPath == "" {
 		uCmd.configPath, _ = cmd.Flags().GetString("configpath")
 	} else {
 		uCmd.configPath = configPath
 	}
-	//filter control
+	// filter control
 	if category == "" {
 		uCmd.category, _ = cmd.Flags().GetString("category")
 	} else {
@@ -128,7 +146,7 @@ func toUserCmd(cmd *cobra.Command, args []string) *userCmd {
 		uCmd.features = strings.Split(f, ",")
 	}
 
-	//output control
+	// output control
 	uCmd.json, _ = cmd.Flags().GetBool("json")
 	uCmd.basic, _ = cmd.Flags().GetBool("basic")
 	uCmd.detailed, _ = cmd.Flags().GetBool("detailed")
@@ -139,7 +157,7 @@ func toUserCmd(cmd *cobra.Command, args []string) *userCmd {
 		uCmd.detailed = strings.ToLower(reportFormat) == "detailed"
 	}
 
-	//debug control
+	// debug control
 	uCmd.debug, _ = cmd.Flags().GetBool("debug")
 
 	return uCmd
@@ -165,8 +183,8 @@ func validatePath(path string) error {
 	}
 	return nil
 }
-func validateFlags(cmd *userCmd) error {
 
+func validateFlags(cmd *userCmd) error {
 	for _, path := range cmd.path {
 		if err := validatePath(path); err != nil {
 			return fmt.Errorf("invalid path: %w", err)
@@ -185,36 +203,37 @@ func validateFlags(cmd *userCmd) error {
 
 	return nil
 }
+
 func init() {
 	rootCmd.AddCommand(scoreCmd)
 
-	//Config Control
+	// Config Control
 	scoreCmd.Flags().StringP("configpath", "", "", "scoring based on config path")
 
-	//Filter Control
-	scoreCmd.Flags().StringP("category", "c", "", "filter by category")
-	scoreCmd.Flags().StringP("feature", "f", "", "filter by feature")
+	// Filter Control
+	scoreCmd.Flags().StringP("category", "c", "", "filter by category (e.g. 'NTIA-minimum-elements', 'Quality', 'Semantic', 'Sharing', 'Structural')")
+	scoreCmd.Flags().StringP("feature", "f", "", "filter by feature (e.g. 'sbom_authors',  'comp_with_name', 'sbom_creation_timestamp') ")
 
-	//Spec Control
+	// Spec Control
 	scoreCmd.Flags().BoolP("spdx", "", false, "limit scoring to spdx sboms")
 	scoreCmd.Flags().BoolP("cdx", "", false, "limit scoring to cdx sboms")
 	scoreCmd.MarkFlagsMutuallyExclusive("spdx", "cdx")
 	scoreCmd.Flags().MarkHidden("spdx")
 	scoreCmd.Flags().MarkHidden("cdx")
 
-	//Directory Control
+	// Directory Control
 	scoreCmd.Flags().BoolP("recurse", "r", false, "recurse into subdirectories")
 	scoreCmd.Flags().MarkHidden("recurse")
 
-	//Output Control
+	// Output Control
 	scoreCmd.Flags().BoolP("json", "j", false, "results in json")
 	scoreCmd.Flags().BoolP("detailed", "d", false, "results in table format, default")
 	scoreCmd.Flags().BoolP("basic", "b", false, "results in single line format")
 
-	//Debug Control
+	// Debug Control
 	scoreCmd.Flags().BoolP("debug", "D", false, "enable debug logging")
 
-	//Deprecated
+	// Deprecated
 	scoreCmd.Flags().StringVar(&inFile, "filepath", "", "sbom file path")
 	scoreCmd.Flags().StringVar(&inDirPath, "dirpath", "", "sbom dir path")
 	scoreCmd.MarkFlagsMutuallyExclusive("filepath", "dirpath")
