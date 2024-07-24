@@ -28,5 +28,4 @@ func ntiaResult(ctx context.Context, doc sbom.Document, fileName string, outForm
 	db := newDB()
 
 	return db
-
 }

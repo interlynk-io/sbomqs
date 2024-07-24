@@ -176,7 +176,6 @@ func loadAboutCodeLicense() error {
 			freeAnyUse:  isFreeAnyUse(l.Category),
 			source:      "aboutcode",
 		}
-
 	}
 	// fmt.Printf("loaded %d licenses\n", len(LicenseListAboutCode))
 

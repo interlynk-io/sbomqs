@@ -79,7 +79,6 @@ func newSPDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat) (Docume
 		d, err = spdx_rdf.Read(f)
 	default:
 		err = fmt.Errorf("unsupported spdx format %s", string(format))
-
 	}
 
 	if err != nil {

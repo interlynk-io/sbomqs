@@ -89,7 +89,6 @@ func DtrackScore(ctx context.Context, dtP *DtParams) error {
 			}
 
 			if dtP.TagProjectWithScore {
-
 				log.Debugf("Project: %+v", prj.Tags)
 				// remove old score
 				prj.Tags = lo.Filter(prj.Tags, func(t dtrack.Tag, _ int) bool {
@@ -123,7 +122,6 @@ func DtrackScore(ctx context.Context, dtP *DtParams) error {
 				[]string{path},
 				reporter.WithFormat(reportFormat))
 			nr.Report()
-
 		}
 	}
 

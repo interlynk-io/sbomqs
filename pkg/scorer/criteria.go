@@ -21,7 +21,7 @@ import (
 type category string
 
 const (
-	strucutral category = "Structural"
+	structural category = "Structural"
 	ntiam      category = "NTIA-minimum-elements"
 	semantic   category = "Semantic"
 	quality    category = "Quality"
@@ -38,10 +38,10 @@ type check struct {
 
 var checks = []check{
 	//structural
-	{string(strucutral), "sbom_spec", false, "SBOM Specification", specCheck},
-	{string(strucutral), "sbom_spec_version", false, "Spec Version", specVersionCheck},
-	{string(strucutral), "sbom_spec_file_format", false, "Spec File Format", specFileFormatCheck},
-	{string(strucutral), "sbom_parsable", false, "Spec is parsable", specParsableCheck},
+	{string(structural), "sbom_spec", false, "SBOM Specification", specCheck},
+	{string(structural), "sbom_spec_version", false, "Spec Version", specVersionCheck},
+	{string(structural), "sbom_spec_file_format", false, "Spec File Format", specFileFormatCheck},
+	{string(structural), "sbom_parsable", false, "Spec is parsable", specParsableCheck},
 
 	//ntia minimum
 	{string(ntiam), "comp_with_supplier", false, "components have suppliers", compSupplierCheck},

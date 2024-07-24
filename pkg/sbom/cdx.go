@@ -227,7 +227,7 @@ func (c *cdxDoc) requiredFields() bool {
 		})
 
 		if deps > 0 {
-			c.addToLogs("cdx doc is missing depedencies")
+			c.addToLogs("cdx doc is missing dependencies")
 			return false
 		}
 	}
