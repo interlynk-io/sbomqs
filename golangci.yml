@@ -1,0 +1,22 @@
+linters:
+  disable-all: true
+  enable:
+    - asciicheck
+    - unused
+    - errcheck
+    - errorlint
+    - gofmt
+    - goimports
+    - gosec
+    - prealloc
+    - revive
+    - misspell
+    - stylecheck
+    - staticcheck
+    - unconvert
+    - unparam
+    - whitespace
+
+run:
+  issues-exit-code: 1
+  timeout: 10m
