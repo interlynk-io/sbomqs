@@ -169,7 +169,7 @@ func (c *cdxDoc) parseDoc() {
 		}
 
 		if l.Name != "" {
-			return string(l.Name)
+			return l.Name
 		}
 
 		return ""
@@ -223,7 +223,7 @@ func (c *cdxDoc) requiredFields() bool {
 
 	if c.doc.Dependencies != nil {
 		deps := lo.CountBy(lo.FromPtr(c.doc.Dependencies), func(d cydx.Dependency) bool {
-			return string(d.Ref) == ""
+			return d.Ref == ""
 		})
 
 		if deps > 0 {
