@@ -32,7 +32,7 @@ type spdxLicenseDetail struct {
 	ReferenceNumber    int      `json:"referenceNumber"`
 	Name               string   `json:"name"`
 	LicenseID          string   `json:"licenseId"`
-	LicenseExceptionId string   `json:"licenseExceptionId"`
+	LicenseExceptionID string   `json:"licenseExceptionId"`
 	SeeAlso            []string `json:"seeAlso"`
 	IsOsiApproved      bool     `json:"isOsiApproved"`
 	IsFsfLibre         bool     `json:"isFsfLibre"`
@@ -45,9 +45,9 @@ type aboutCodeLicenseDetail struct {
 	OtherSpdxLicenseKeys []string `json:"other_spdx_license_keys"`
 	Exception            bool     `json:"is_exception"`
 	Deprecated           bool     `json:"is_deprecated"`
-	Json                 string   `json:"json"`
+	JSON                 string   `json:"json"`
 	Yaml                 string   `json:"yaml"`
-	Html                 string   `json:"html"`
+	HTML                 string   `json:"html"`
 	License              string   `json:"license"`
 }
 
@@ -100,9 +100,9 @@ func loadSpdxExceptions() error {
 	}
 
 	for _, l := range sl.Exceptions {
-		licenseList[l.LicenseExceptionId] = meta{
+		licenseList[l.LicenseExceptionID] = meta{
 			name:        l.Name,
-			short:       l.LicenseExceptionId,
+			short:       l.LicenseExceptionID,
 			deprecated:  l.IsDeprecated,
 			osiApproved: l.IsOsiApproved,
 			fsfLibre:    l.IsFsfLibre,

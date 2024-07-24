@@ -25,6 +25,7 @@ type Score interface {
 	MaxScore() float64
 }
 
+//nolint:revive,stylecheck
 const MAX_SCORE float64 = 10.0
 
 type score struct {

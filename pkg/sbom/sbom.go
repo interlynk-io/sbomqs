@@ -28,12 +28,12 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-type SBOMSpecFormat string
+type SpecFormat string
 
 const (
-	SBOMSpecSPDX    SBOMSpecFormat = "spdx"
-	SBOMSpecCDX     SBOMSpecFormat = "cyclonedx"
-	SBOMSpecUnknown SBOMSpecFormat = "unknown"
+	SBOMSpecSPDX    SpecFormat = "spdx"
+	SBOMSpecCDX     SpecFormat = "cyclonedx"
+	SBOMSpecUnknown SpecFormat = "unknown"
 )
 
 type FileFormat string
@@ -63,9 +63,9 @@ func SupportedSBOMSpecs() []string {
 func SupportedSBOMSpecVersions(f string) []string {
 	switch strings.ToLower(f) {
 	case "cyclonedx":
-		return cdx_spec_versions
+		return cdxSpecVersions
 	case "spdx":
-		return spdx_spec_versions
+		return spdxSpecVersions
 	default:
 		return []string{}
 	}
@@ -74,9 +74,9 @@ func SupportedSBOMSpecVersions(f string) []string {
 func SupportedSBOMFileFormats(f string) []string {
 	switch strings.ToLower(f) {
 	case "cyclonedx":
-		return cdx_file_formats
+		return cdxFileFormats
 	case "spdx":
-		return spdx_file_formats
+		return spdxFileFormats
 	default:
 		return []string{}
 	}
@@ -85,15 +85,15 @@ func SupportedSBOMFileFormats(f string) []string {
 func SupportedPrimaryPurpose(f string) []string {
 	switch strings.ToLower(f) {
 	case "cyclonedx":
-		return cdx_primary_purpose
+		return cdxPrimaryPurpose
 	case "spdx":
-		return spdx_primary_purpose
+		return spdxPrimaryPurpose
 	default:
 		return []string{}
 	}
 }
 
-func detectSbomFormat(f io.ReadSeeker) (SBOMSpecFormat, FileFormat, error) {
+func detectSbomFormat(f io.ReadSeeker) (SpecFormat, FileFormat, error) {
 	defer func() {
 		_, err := f.Seek(0, io.SeekStart)
 		if err != nil {

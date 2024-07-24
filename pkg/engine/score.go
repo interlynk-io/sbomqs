@@ -33,7 +33,7 @@ type Params struct {
 	Category string
 	Features []string
 
-	Json     bool
+	JSON     bool
 	Basic    bool
 	Detailed bool
 	Pdf      bool
@@ -111,7 +111,7 @@ func handlePaths(ctx context.Context, ep *Params) error {
 	reportFormat := "detailed"
 	if ep.Basic {
 		reportFormat = "basic"
-	} else if ep.Json {
+	} else if ep.JSON {
 		reportFormat = "json"
 	}
 

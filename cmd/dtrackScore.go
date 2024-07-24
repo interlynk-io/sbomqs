@@ -66,10 +66,10 @@ func extractArgs(cmd *cobra.Command, args []string) (*engine.DtParams, error) {
 	basic, _ := cmd.Flags().GetBool("basic")
 	detailed, _ := cmd.Flags().GetBool("detailed")
 
-	params.Url = url
-	params.ApiKey = apiKey
+	params.URL = url
+	params.APIKey = apiKey
 
-	params.Json = json
+	params.JSON = json
 	params.Basic = basic
 	params.Detailed = detailed
 
@@ -80,7 +80,7 @@ func extractArgs(cmd *cobra.Command, args []string) (*engine.DtParams, error) {
 		if err != nil {
 			return nil, err
 		}
-		params.ProjectIds = append(params.ProjectIds, argID)
+		params.ProjectIDs = append(params.ProjectIDs, argID)
 	}
 
 	return params, nil

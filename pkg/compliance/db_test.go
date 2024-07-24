@@ -15,11 +15,11 @@ func generateRecords(n int) []*record {
 	var records []*record
 	for i := 0; i < n; i++ {
 		records = append(records, &record{
-			check_key:   rand.Intn(1000),
-			check_value: fmt.Sprintf("value_%d", i),
-			id:          fmt.Sprintf("id_%d", rand.Intn(1000)),
-			score:       rand.Float64() * 100,
-			required:    rand.Intn(2) == 0,
+			checkKey:   rand.Intn(1000), // #nosec
+			checkValue: fmt.Sprintf("value_%d", i),
+			id:         fmt.Sprintf("id_%d", rand.Intn(1000)), // #nosec
+			score:      rand.Float64() * 100,                  // #nosec
+			required:   rand.Intn(2) == 0,                     // #nosec
 		})
 	}
 	return records
@@ -40,30 +40,30 @@ func BenchmarkOriginalDB(b *testing.B) {
 	// Benchmark retrieval by key
 	b.Run("GetByKey", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			db.getRecords(rand.Intn(1000))
+			db.getRecords(rand.Intn(1000)) // #nosec
 		}
 	})
 
 	// Benchmark retrieval by ID
 	b.Run("GetByID", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			db.getRecordsById(fmt.Sprintf("id_%d", rand.Intn(1000)))
+			db.getRecordsByID(fmt.Sprintf("id_%d", rand.Intn(1000))) // #nosec
 		}
 	})
 
 	// Benchmark for combined retrieval by key and ID case
 	b.Run("GetByKeyAndIDTogether", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			key := rand.Intn(1000)
-			id := fmt.Sprintf("id_%d", rand.Intn(1000))
-			db.getRecordsByKeyId(key, id)
+			key := rand.Intn(1000)                      // #nosec
+			id := fmt.Sprintf("id_%d", rand.Intn(1000)) // #nosec
+			db.getRecordsByKeyID(key, id)
 		}
 	})
 
 	// Benchmark for retrieval of all IDs case
 	b.Run("GetAllIDs", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			db.getAllIds()
+			db.getAllIDs()
 		}
 	})
 }

@@ -34,12 +34,11 @@ func ComplianceRun(ctx context.Context, ep *Params) error {
 
 	log.Debugf("Config: %+v", ep)
 
-	doc, error := getSbomDocument(ctx, ep)
-
-	if error != nil {
+	doc, err := getSbomDocument(ctx, ep)
+	if err != nil {
 		log.Debugf("getSbomDocument failed for file :%s\n", ep.Path[0])
 		fmt.Printf("failed to get sbom document for %s\n", ep.Path[0])
-		return error
+		return err
 	}
 
 	reportType := "NTIA"
@@ -54,11 +53,11 @@ func ComplianceRun(ctx context.Context, ep *Params) error {
 
 	if ep.Basic {
 		outFormat = "basic"
-	} else if ep.Json {
+	} else if ep.JSON {
 		outFormat = "json"
 	}
 
-	err := compliance.ComplianceResult(ctx, *doc, reportType, ep.Path[0], outFormat)
+	err = compliance.ComplianceResult(ctx, *doc, reportType, ep.Path[0], outFormat)
 	if err != nil {
 		log.Debugf("compliance.ComplianceResult failed for file :%s\n", ep.Path[0])
 		fmt.Printf("failed to get compliance result for %s\n", ep.Path[0])

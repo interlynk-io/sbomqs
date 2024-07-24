@@ -149,7 +149,7 @@ func compWithRestrictedLicensesCheck(d sbom.Document, c *check) score {
 	return *s
 }
 
-func compWithAnyLookupIdCheck(d sbom.Document, c *check) score {
+func compWithAnyLookupIDCheck(d sbom.Document, c *check) score {
 	s := newScoreFromCheck(c)
 
 	totalComponents := len(d.Components())
@@ -160,23 +160,23 @@ func compWithAnyLookupIdCheck(d sbom.Document, c *check) score {
 		return *s
 	}
 
-	withAnyLookupId := lo.CountBy(d.Components(), func(c sbom.GetComponent) bool {
+	withAnyLookupID := lo.CountBy(d.Components(), func(c sbom.GetComponent) bool {
 		if len(c.Cpes()) > 0 || len(c.Purls()) > 0 {
 			return true
 		}
 		return false
 	})
 
-	finalScore := (float64(withAnyLookupId) / float64(totalComponents)) * 10.0
+	finalScore := (float64(withAnyLookupID) / float64(totalComponents)) * 10.0
 
 	s.setScore(finalScore)
 
-	s.setDesc(fmt.Sprintf("%d/%d components have any lookup id", withAnyLookupId, totalComponents))
+	s.setDesc(fmt.Sprintf("%d/%d components have any lookup id", withAnyLookupID, totalComponents))
 
 	return *s
 }
 
-func compWithMultipleIdCheck(d sbom.Document, c *check) score {
+func compWithMultipleIDCheck(d sbom.Document, c *check) score {
 	s := newScoreFromCheck(c)
 
 	totalComponents := len(d.Components())
@@ -187,18 +187,18 @@ func compWithMultipleIdCheck(d sbom.Document, c *check) score {
 		return *s
 	}
 
-	withMultipleId := lo.CountBy(d.Components(), func(c sbom.GetComponent) bool {
+	withMultipleID := lo.CountBy(d.Components(), func(c sbom.GetComponent) bool {
 		if len(c.Cpes()) > 0 && len(c.Purls()) > 0 {
 			return true
 		}
 		return false
 	})
 
-	finalScore := (float64(withMultipleId) / float64(totalComponents)) * 10.0
+	finalScore := (float64(withMultipleID) / float64(totalComponents)) * 10.0
 
 	s.setScore(finalScore)
 
-	s.setDesc(fmt.Sprintf("%d/%d components have multiple lookup id", withMultipleId, totalComponents))
+	s.setDesc(fmt.Sprintf("%d/%d components have multiple lookup id", withMultipleID, totalComponents))
 
 	return *s
 }

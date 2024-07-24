@@ -44,7 +44,7 @@ func Share(ctx context.Context, doc sbom.Document, scores scorer.Scores, sbomFil
 }
 
 type shareResonse struct {
-	Url string `json:"url"`
+	URL string `json:"url"`
 }
 
 func sentToBenchmark(js string) (string, error) {
@@ -83,5 +83,5 @@ func sentToBenchmark(js string) (string, error) {
 		return "", err
 	}
 
-	return sr.Url, nil
+	return sr.URL, nil
 }

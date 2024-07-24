@@ -37,9 +37,9 @@ import (
 )
 
 var (
-	spdx_file_formats    = []string{"json", "yaml", "rdf", "tag-value"}
-	spdx_spec_versions   = []string{"SPDX-2.1", "SPDX-2.2", "SPDX-2.3"}
-	spdx_primary_purpose = []string{"application", "framework", "library", "container", "operating-system", "device", "firmware", "source", "archive", "file", "install", "other"}
+	spdxFileFormats    = []string{"json", "yaml", "rdf", "tag-value"}
+	spdxSpecVersions   = []string{"SPDX-2.1", "SPDX-2.2", "SPDX-2.3"}
+	spdxPrimaryPurpose = []string{"application", "framework", "library", "container", "operating-system", "device", "firmware", "source", "archive", "file", "install", "other"}
 )
 
 type SpdxDoc struct {
@@ -53,7 +53,7 @@ type SpdxDoc struct {
 	rels               []Relation
 	logs               []string
 	primaryComponent   bool
-	primaryComponentId string
+	primaryComponentID string
 	lifecycles         string
 }
 
@@ -205,7 +205,7 @@ func (s *SpdxDoc) parseComps() {
 		nc.Checksums = s.checksums(index)
 		nc.ExternalRefs = s.externalRefs(index)
 		nc.licenses = s.licenses(index)
-		nc.Id = string(sc.PackageSPDXIdentifier)
+		nc.ID = string(sc.PackageSPDXIdentifier)
 		nc.PackageLicenseConcluded = sc.PackageLicenseConcluded
 
 		manu := s.getManufacturer(index)
@@ -230,7 +230,7 @@ func (s *SpdxDoc) parseComps() {
 			nc.DownloadLocation = sc.PackageDownloadLocation
 		}
 
-		nc.isPrimary = s.primaryComponentId == string(sc.PackageSPDXIdentifier)
+		nc.isPrimary = s.primaryComponentID == string(sc.PackageSPDXIdentifier)
 
 		fromRelsPresent := func(rels []Relation, id string) bool {
 			for _, r := range rels {
@@ -568,8 +568,8 @@ func (s *SpdxDoc) getManufacturer(index int) *manufacturer {
 	}
 
 	return &manufacturer{
-		name:  entity.name,
-		email: entity.email,
+		Name:  entity.name,
+		Email: entity.email,
 	}
 }
 
@@ -611,24 +611,24 @@ func (s *SpdxDoc) addSupplierName(index int) string {
 	}
 
 	if manufacturer != nil {
-		return manufacturer.name
+		return manufacturer.Name
 	}
 
 	return ""
 }
 
 func (s *SpdxDoc) parsePrimaryComponent() {
-	pkgIds := make(map[string]*spdx.Package)
+	pkgIDs := make(map[string]*spdx.Package)
 
 	for _, pkg := range s.doc.Packages {
-		pkgIds[string(pkg.PackageSPDXIdentifier)] = pkg
+		pkgIDs[string(pkg.PackageSPDXIdentifier)] = pkg
 	}
 
 	for _, r := range s.doc.Relationships {
 		if strings.ToUpper(r.Relationship) == spdx_common.TypeRelationshipDescribe {
-			_, ok := pkgIds[string(r.RefB.ElementRefID)]
+			_, ok := pkgIDs[string(r.RefB.ElementRefID)]
 			if ok {
-				s.primaryComponentId = string(r.RefB.ElementRefID)
+				s.primaryComponentID = string(r.RefB.ElementRefID)
 				s.primaryComponent = true
 				return
 			}

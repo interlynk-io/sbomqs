@@ -98,7 +98,7 @@ func compWithUniqIDCheck(d sbom.Document, c *check) score {
 		return *s
 	}
 
-	compIDs := lo.FilterMap(d.Components(), func(c sbom.GetComponent, i int) (string, bool) {
+	compIDs := lo.FilterMap(d.Components(), func(c sbom.GetComponent, _ int) (string, bool) {
 		if c.GetID() == "" {
 			return "", false
 		}
