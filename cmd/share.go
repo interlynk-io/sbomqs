@@ -62,7 +62,6 @@ For more information, please visit https://sbombenchmark.dev
 func init() {
 	rootCmd.AddCommand(shareCmd)
 
-	//Debug Control
+	// Debug Control
 	shareCmd.Flags().BoolP("debug", "D", false, "enable debug logging")
-
 }
