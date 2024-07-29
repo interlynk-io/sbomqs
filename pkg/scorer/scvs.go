@@ -18,7 +18,8 @@ func docWithTimeStampScvsCheck(d sbom.Document, c *scvsCheck) scvsScore {
 	s := newScoreFromScvsCheck(c)
 
 	if d.Spec().GetCreationTimestamp() != "" {
-		s.setScore(green + bold + "✓" + reset)
+		s.setL3Score(green + bold + "✓" + reset)
+		s.setL1Score(green + bold + "✓" + reset)
 	}
 
 	return *s
@@ -28,7 +29,8 @@ func docWithNamespaceScvsCheck(d sbom.Document, c *scvsCheck) scvsScore {
 	s := newScoreFromScvsCheck(c)
 
 	if d.Spec().GetNamespace() != "" {
-		s.setScore(green + bold + "✓" + reset)
+		s.setL3Score(green + bold + "✓" + reset)
+		s.setL1Score(green + bold + "✓" + reset)
 	}
 
 	return *s
@@ -42,7 +44,8 @@ func specScvsCheck(d sbom.Document, c *scvsCheck) scvsScore {
 
 	for _, spec := range specs {
 		if d.Spec().GetSpecType() == spec {
-			s.setScore(green + bold + "✓" + reset)
+			s.setL3Score(green + bold + "✓" + reset)
+			s.setL1Score(green + bold + "✓" + reset)
 		}
 	}
 	return *s
@@ -53,7 +56,7 @@ func compWithUniqIDScvsCheck(d sbom.Document, c *scvsCheck) scvsScore {
 
 	totalComponents := len(d.Components())
 	if totalComponents == 0 {
-		s.setScore(red + bold + "✗" + reset)
+		s.setL3Score(red + bold + "✗" + reset)
 		// s.setIgnore(true)
 		return *s
 	}
@@ -69,9 +72,9 @@ func compWithUniqIDScvsCheck(d sbom.Document, c *scvsCheck) scvsScore {
 
 	if totalComponents > 0 {
 		if len(compIDs) == totalComponents {
-			s.setScore(green + bold + "✓" + reset)
+			s.setL3Score(green + bold + "✓" + reset)
 		} else {
-			s.setScore(red + bold + "✗" + reset)
+			s.setL3Score(red + bold + "✗" + reset)
 		}
 	}
 	// s.setDesc(fmt.Sprintf("%d/%d have unique ID's", len(compIDs), totalComponents))
@@ -83,7 +86,8 @@ func compWithLicensesScvsCheck(d sbom.Document, c *scvsCheck) scvsScore {
 
 	totalComponents := len(d.Components())
 	if totalComponents == 0 {
-		s.setScore(red + bold + "✗" + reset)
+		s.setL3Score(red + bold + "✗" + reset)
+		s.setL1Score(green + bold + "✗" + reset)
 		// s.setDesc("N/A (no components)")
 		// s.setIgnore(true)
 		return *s
@@ -94,9 +98,11 @@ func compWithLicensesScvsCheck(d sbom.Document, c *scvsCheck) scvsScore {
 
 	if totalComponents > 0 {
 		if withLicenses == totalComponents {
-			s.setScore(green + bold + "✓" + reset)
+			s.setL3Score(green + bold + "✓" + reset)
+			s.setL1Score(green + bold + "✓" + reset)
 		} else {
-			s.setScore(red + bold + "✗" + reset)
+			s.setL3Score(red + bold + "✗" + reset)
+			s.setL1Score(red + bold + "✗" + reset)
 		}
 	}
 
@@ -110,7 +116,7 @@ func compWithChecksumsScvsCheck(d sbom.Document, c *scvsCheck) scvsScore {
 
 	totalComponents := len(d.Components())
 	if totalComponents == 0 {
-		s.setScore(red + bold + "✗" + reset)
+		s.setL3Score(red + bold + "✗" + reset)
 		// s.setDesc("N/A (no components)")
 		// s.setIgnore(true)
 		return *s
@@ -122,9 +128,9 @@ func compWithChecksumsScvsCheck(d sbom.Document, c *scvsCheck) scvsScore {
 
 	if totalComponents > 0 {
 		if withChecksums == totalComponents {
-			s.setScore(green + bold + "✓" + reset)
+			s.setL3Score(green + bold + "✓" + reset)
 		} else {
-			s.setScore(red + bold + "✗" + reset)
+			s.setL3Score(red + bold + "✗" + reset)
 		}
 	}
 
@@ -138,7 +144,7 @@ func compWithCopyrightScvsCheck(d sbom.Document, c *scvsCheck) scvsScore {
 
 	totalComponents := len(d.Components())
 	if totalComponents == 0 {
-		s.setScore(red + bold + "✗" + reset)
+		s.setL3Score(red + bold + "✗" + reset)
 		// s.setDesc("N/A (no components)")
 		// s.setIgnore(true)
 		return *s
@@ -150,9 +156,9 @@ func compWithCopyrightScvsCheck(d sbom.Document, c *scvsCheck) scvsScore {
 
 	if totalComponents > 0 {
 		if withCopyrights == totalComponents {
-			s.setScore(green + bold + "✓" + reset)
+			s.setL3Score(green + bold + "✓" + reset)
 		} else {
-			s.setScore(red + bold + "✗" + reset)
+			s.setL3Score(red + bold + "✗" + reset)
 		}
 	}
 

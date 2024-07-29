@@ -16,12 +16,14 @@ package scorer
 
 type ScvsScore interface {
 	Feature() string
-	Score() string
+	L1Score() string
+	L3Score() string
 }
 
 type scvsScore struct {
 	feature string
-	score   string
+	l1Score string
+	l3Score string
 }
 
 func newScoreFromScvsCheck(c *scvsCheck) *scvsScore {
@@ -30,14 +32,22 @@ func newScoreFromScvsCheck(c *scvsCheck) *scvsScore {
 	}
 }
 
-func (s *scvsScore) setScore(v string) {
-	s.score = v
+func (s *scvsScore) setL3Score(v string) {
+	s.l3Score = v
+}
+
+func (s *scvsScore) setL1Score(v string) {
+	s.l1Score = v
 }
 
 func (s scvsScore) Feature() string {
 	return s.feature
 }
 
-func (s scvsScore) Score() string {
-	return s.score
+func (s scvsScore) L3Score() string {
+	return s.l3Score
+}
+
+func (s scvsScore) L1Score() string {
+	return s.l1Score
 }

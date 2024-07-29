@@ -41,7 +41,7 @@ func (s scvsScores) Count() int {
 func (s scvsScores) AvgScore() float64 {
 	score := 0.0
 	for _, s := range s.scs {
-		if s.Score() == "✓" {
+		if s.L1Score() == "✓" {
 			score++
 		}
 	}
