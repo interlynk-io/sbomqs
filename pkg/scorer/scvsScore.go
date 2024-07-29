@@ -15,30 +15,23 @@
 package scorer
 
 type ScvsScore interface {
-	Category() string
 	Feature() string
 	Score() string
 }
 
 type scvsScore struct {
-	category string
-	feature  string
-	score    string
+	feature string
+	score   string
 }
 
 func newScoreFromScvsCheck(c *scvsCheck) *scvsScore {
 	return &scvsScore{
-		category: c.Category,
-		feature:  c.Key,
+		feature: c.Key,
 	}
 }
 
 func (s *scvsScore) setScore(v string) {
 	s.score = v
-}
-
-func (s scvsScore) Category() string {
-	return s.category
 }
 
 func (s scvsScore) Feature() string {

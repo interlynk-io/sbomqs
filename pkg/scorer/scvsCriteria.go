@@ -17,18 +17,17 @@ package scorer
 import "github.com/interlynk-io/sbomqs/pkg/sbom"
 
 type scvsCheck struct {
-	Category string `yaml:"category"`
 	Key      string `yaml:"feature"`
 	evaluate func(sbom.Document, *scvsCheck) scvsScore
 }
 
 var scvsChecks = []scvsCheck{
 	// scvs
-	{string("scvs"), "sbom_spec", specScvsCheck},
-	{string("scvs"), "sbom_creation_timestamp", docWithTimeStampScvsCheck},
-	{string("scvs"), "sbom_namespace", docWithNamespaceScvsCheck},
-	{string("scvs"), "comp_with_uniq_ids", compWithUniqIDScvsCheck},
-	{string("scvs"), "comp_with_licenses", compWithLicensesScvsCheck},
-	{string("scvs"), "comp_with_checksums", compWithChecksumsScvsCheck},
-	{string("scvs"), "comp_with_copyright", compWithCopyrightScvsCheck},
+	{"Structured, machine-readable SBOM format", specScvsCheck},
+	{"SBOM is timestamped", docWithTimeStampScvsCheck},
+	{"Each SBOM has a unique identifier", docWithNamespaceScvsCheck},
+	{"Component point of origin is identified in a consistent, machine readable format (e.g. PURL)", compWithUniqIDScvsCheck},
+	{"Components defined in SBOM have accurate license information", compWithLicensesScvsCheck},
+	{"Components defined in SBOM have one or more file hashes (SHA-256, SHA-512, etc)", compWithChecksumsScvsCheck},
+	{"Components defined in SBOM have valid copyright statements", compWithCopyrightScvsCheck},
 }
