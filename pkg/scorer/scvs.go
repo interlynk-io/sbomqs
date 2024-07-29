@@ -19,6 +19,7 @@ func docWithTimeStampScvsCheck(d sbom.Document, c *scvsCheck) scvsScore {
 
 	if d.Spec().GetCreationTimestamp() != "" {
 		s.setL3Score(green + bold + "✓" + reset)
+		s.setL2Score(green + bold + "✓" + reset)
 		s.setL1Score(green + bold + "✓" + reset)
 	}
 
@@ -30,6 +31,7 @@ func docWithNamespaceScvsCheck(d sbom.Document, c *scvsCheck) scvsScore {
 
 	if d.Spec().GetNamespace() != "" {
 		s.setL3Score(green + bold + "✓" + reset)
+		s.setL2Score(green + bold + "✓" + reset)
 		s.setL1Score(green + bold + "✓" + reset)
 	}
 
@@ -45,6 +47,7 @@ func specScvsCheck(d sbom.Document, c *scvsCheck) scvsScore {
 	for _, spec := range specs {
 		if d.Spec().GetSpecType() == spec {
 			s.setL3Score(green + bold + "✓" + reset)
+			s.setL2Score(green + bold + "✓" + reset)
 			s.setL1Score(green + bold + "✓" + reset)
 		}
 	}
@@ -87,6 +90,7 @@ func compWithLicensesScvsCheck(d sbom.Document, c *scvsCheck) scvsScore {
 	totalComponents := len(d.Components())
 	if totalComponents == 0 {
 		s.setL3Score(red + bold + "✗" + reset)
+		s.setL2Score(red + bold + "✗" + reset)
 		s.setL1Score(green + bold + "✗" + reset)
 		// s.setDesc("N/A (no components)")
 		// s.setIgnore(true)
@@ -99,9 +103,11 @@ func compWithLicensesScvsCheck(d sbom.Document, c *scvsCheck) scvsScore {
 	if totalComponents > 0 {
 		if withLicenses == totalComponents {
 			s.setL3Score(green + bold + "✓" + reset)
+			s.setL2Score(green + bold + "✓" + reset)
 			s.setL1Score(green + bold + "✓" + reset)
 		} else {
 			s.setL3Score(red + bold + "✗" + reset)
+			s.setL2Score(red + bold + "✗" + reset)
 			s.setL1Score(red + bold + "✗" + reset)
 		}
 	}

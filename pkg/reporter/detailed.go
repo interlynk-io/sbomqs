@@ -70,7 +70,7 @@ func (r *ScvsReporter) detailedScvsReport() {
 		for _, score := range scores.ScoreList() {
 			var l []string
 
-			l = []string{score.Feature(), score.L1Score(), score.L3Score()}
+			l = []string{score.Feature(), score.L1Score(), score.L2Score(), score.L3Score()}
 
 			outDoc = append(outDoc, l)
 		}
@@ -88,7 +88,7 @@ func (r *ScvsReporter) detailedScvsReport() {
 		// fmt.Printf("SBOM Quality by Interlynk Score:%0.1f\tcomponents:%d\t%s\n", scores.AvgScore(), len(doc.Components()), path)
 		fmt.Println("Analysis of SCVS Report by OWASP Organization using SBOMQS Tool")
 		table := tablewriter.NewWriter(os.Stdout)
-		table.SetHeader([]string{"Feature", "Level 1", "Level 3"})
+		table.SetHeader([]string{"Feature", "Level 1", "Level 2", "Level 3"})
 		table.SetRowLine(true)
 		table.SetAutoWrapText(false)
 		table.SetColMinWidth(0, 60)
