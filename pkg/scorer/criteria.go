@@ -37,13 +37,13 @@ type check struct {
 }
 
 var checks = []check{
-	//structural
+	// structural
 	{string(strucutral), "sbom_spec", false, "SBOM Specification", specCheck},
 	{string(strucutral), "sbom_spec_version", false, "Spec Version", specVersionCheck},
 	{string(strucutral), "sbom_spec_file_format", false, "Spec File Format", specFileFormatCheck},
 	{string(strucutral), "sbom_parsable", false, "Spec is parsable", specParsableCheck},
 
-	//ntia minimum
+	// ntia minimum
 	{string(ntiam), "comp_with_supplier", false, "components have suppliers", compSupplierCheck},
 	{string(ntiam), "comp_with_name", false, "components have a name", compWithNameCheck},
 	{string(ntiam), "comp_with_version", false, "components have a version", compWithVersionCheck},
@@ -52,12 +52,12 @@ var checks = []check{
 	{string(ntiam), "sbom_authors", false, "sbom has authors", docWithAuthorsCheck},
 	{string(ntiam), "sbom_creation_timestamp", false, "sbom has creation timestamp", docWithTimeStampCheck},
 
-	//semantic
+	// semantic
 	{string(semantic), "sbom_required_fields", false, "sbom has all required fields", docWithRequiredFieldCheck},
 	{string(semantic), "comp_with_licenses", false, "components have licenses", compWithLicensesCheck},
 	{string(semantic), "comp_with_checksums", false, "components have checksums", compWithChecksumsCheck},
 
-	//quality
+	// quality
 	{string(quality), "comp_valid_licenses", false, "components with valid licenses", compWithValidLicensesCheck},
 	{string(quality), "comp_with_primary_purpose", false, "components with primary purpose", compWithPrimaryPackageCheck},
 	{string(quality), "comp_with_deprecated_licenses", false, "components with deprecated licenses", compWithNoDepLicensesCheck},
@@ -67,6 +67,6 @@ var checks = []check{
 	{string(quality), "sbom_with_creator_and_version", false, "sbom has creator and version", docWithCreatorCheck},
 	{string(quality), "sbom_with_primary_component", false, "sbom has primary component", docWithPrimaryComponentCheck},
 
-	//sharing
+	// sharing
 	{string(sharing), "sbom_sharable", false, "sbom document has a sharable license", sharableLicenseCheck},
 }

@@ -28,7 +28,18 @@ type Reporter struct {
 	Scores []scorer.Scores
 	Paths  []string
 
-	//optional params
+	// optional params
+	Format string
+}
+
+type ScvsReporter struct {
+	Ctx context.Context
+
+	Docs   []sbom.Document
+	Scores []scorer.ScvsScores
+	Paths  []string
+
+	// optional params
 	Format string
 }
 
@@ -56,6 +67,16 @@ func NewReport(ctx context.Context, doc []sbom.Document, scores []scorer.Scores,
 	return r
 }
 
+func NewScvsReport(ctx context.Context, doc []sbom.Document, scores []scorer.ScvsScores, paths []string, opts ...Option) *ScvsReporter {
+	r := &ScvsReporter{
+		Ctx:    ctx,
+		Docs:   doc,
+		Scores: scores,
+		Paths:  paths,
+	}
+	return r
+}
+
 func (r *Reporter) Report() {
 	if r.Format == "basic" {
 		r.simpleReport()
@@ -66,6 +87,10 @@ func (r *Reporter) Report() {
 	} else {
 		r.detailedReport()
 	}
+}
+
+func (r *ScvsReporter) ScvsReport() {
+	r.detailedScvsReport()
 }
 
 func (r *Reporter) ShareReport() (string, error) {
