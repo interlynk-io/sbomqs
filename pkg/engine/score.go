@@ -17,14 +17,20 @@ package engine
 import (
 	"context"
 	"fmt"
+	"io"
+	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 
+	"github.com/go-git/go-billy/v5"
 	"github.com/interlynk-io/sbomqs/pkg/logger"
 	"github.com/interlynk-io/sbomqs/pkg/reporter"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/pkg/scorer"
+	"github.com/spf13/afero"
 )
 
 type Params struct {
@@ -64,6 +70,70 @@ func Run(ctx context.Context, ep *Params) error {
 	return handlePaths(ctx, ep)
 }
 
+func handleURL(path string) (string, string, error) {
+	u, err := url.Parse(path)
+	if err != nil {
+		return "", "", fmt.Errorf("failed to parse urlPath: %v", err)
+	}
+
+	parts := strings.Split(u.Path, "/")
+	containSlash := strings.HasSuffix(u.Path, "/")
+	var sbomFilePath string
+
+	if containSlash {
+		if len(parts) < 7 {
+			return "", "", fmt.Errorf("invalid GitHub URL: %v", path)
+		}
+		sbomFilePath = strings.Join(parts[5:len(parts)-1], "/")
+	} else {
+		if len(parts) < 6 {
+			return "", "", fmt.Errorf("invalid GitHub URL: %v", path)
+		}
+		sbomFilePath = strings.Join(parts[5:], "/")
+	}
+
+	rawURL := strings.Replace(path, "github.com", "raw.githubusercontent.com", 1)
+	rawURL = strings.Replace(rawURL, "/blob/", "/", 1)
+
+	return sbomFilePath, rawURL, err
+}
+
+func IsURL(in string) bool {
+	return regexp.MustCompile("^(http|https)://").MatchString(in)
+}
+
+func IsGit(in string) bool {
+	return regexp.MustCompile("^(http|https)://github.com").MatchString(in)
+}
+
+func ProcessURL(url string, file afero.File) (afero.File, error) {
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get data: %v", err)
+	}
+	defer resp.Body.Close()
+
+	// Ensure the response is OK
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("failed to download file: %s", resp.Status)
+	}
+	_, err = io.Copy(file, resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to copy in file: %w", err)
+	}
+
+	// Check if the file is empty
+	info, err := file.Stat()
+	if err != nil {
+		return nil, fmt.Errorf("failed to stat file: %w", err)
+	}
+	if info.Size() == 0 {
+		return nil, fmt.Errorf("downloaded file is empty: %v", info.Size())
+	}
+
+	return file, err
+}
+
 func handlePaths(ctx context.Context, ep *Params) error {
 	log := logger.FromContext(ctx)
 	log.Debug("engine.handlePaths()")
@@ -73,39 +143,78 @@ func handlePaths(ctx context.Context, ep *Params) error {
 	var scores []scorer.Scores
 
 	for _, path := range ep.Path {
-		log.Debugf("Processing path :%s\n", path)
-		pathInfo, _ := os.Stat(path)
-		if pathInfo.IsDir() {
-			files, err := os.ReadDir(path)
+		if IsURL(path) {
+			log.Debugf("Processing Git URL path :%s\n", path)
+
+			url, sbomFilePath := path, path
+			var err error
+
+			if IsGit(url) {
+				sbomFilePath, url, err = handleURL(path)
+				if err != nil {
+					log.Fatal("failed to get sbomFilePath, rawURL: %w", err)
+				}
+			}
+			fs := afero.NewMemMapFs()
+
+			file, err := fs.Create(sbomFilePath)
 			if err != nil {
-				log.Debugf("os.ReadDir failed for path:%s\n", path)
-				log.Debugf("%s\n", err)
+				return err
+			}
+
+			f, err := ProcessURL(url, file)
+			if err != nil {
+				return err
+			}
+
+			doc, err := sbom.NewSBOMDocument(ctx, f)
+			if err != nil {
+				log.Fatalf("failed to parse SBOM document: %w", err)
+			}
+
+			sr := scorer.NewScorer(ctx, doc)
+			score := sr.Score()
+
+			docs = append(docs, doc)
+			scores = append(scores, score)
+			paths = append(paths, sbomFilePath)
+
+		} else {
+
+			log.Debugf("Processing path :%s\n", path)
+			pathInfo, _ := os.Stat(path)
+			if pathInfo.IsDir() {
+				files, err := os.ReadDir(path)
+				if err != nil {
+					log.Debugf("os.ReadDir failed for path:%s\n", path)
+					log.Debugf("%s\n", err)
+					continue
+				}
+				for _, file := range files {
+					log.Debugf("Processing file :%s\n", file.Name())
+					if file.IsDir() {
+						continue
+					}
+					path := filepath.Join(path, file.Name())
+					doc, scs, err := processFile(ctx, ep, path, nil)
+					if err != nil {
+						continue
+					}
+					docs = append(docs, doc)
+					scores = append(scores, scs)
+					paths = append(paths, path)
+				}
 				continue
 			}
-			for _, file := range files {
-				log.Debugf("Processing file :%s\n", file.Name())
-				if file.IsDir() {
-					continue
-				}
-				path := filepath.Join(path, file.Name())
-				doc, scs, err := processFile(ctx, ep, path)
-				if err != nil {
-					continue
-				}
-				docs = append(docs, doc)
-				scores = append(scores, scs)
-				paths = append(paths, path)
-			}
-			continue
-		}
 
-		doc, scs, err := processFile(ctx, ep, path)
-		if err != nil {
-			continue
+			doc, scs, err := processFile(ctx, ep, path, nil)
+			if err != nil {
+				continue
+			}
+			docs = append(docs, doc)
+			scores = append(scores, scs)
+			paths = append(paths, path)
 		}
-		docs = append(docs, doc)
-		scores = append(scores, scs)
-		paths = append(paths, path)
 	}
 
 	reportFormat := "detailed"
@@ -126,30 +235,51 @@ func handlePaths(ctx context.Context, ep *Params) error {
 	return nil
 }
 
-func processFile(ctx context.Context, ep *Params, path string) (sbom.Document, scorer.Scores, error) {
+func processFile(ctx context.Context, ep *Params, path string, fs billy.Filesystem) (sbom.Document, scorer.Scores, error) {
 	log := logger.FromContext(ctx)
 	log.Debugf("Processing file :%s\n", path)
+	var doc sbom.Document
 
-	if _, err := os.Stat(path); err != nil {
-		log.Debugf("os.Stat failed for file :%s\n", path)
-		fmt.Printf("failed to stat %s\n", path)
-		return nil, nil, err
-	}
+	if fs != nil {
+		f, err := fs.Open(path)
+		if err != nil {
+			log.Debugf("os.Open failed for file :%s\n", path)
+			fmt.Printf("failed to open %s\n", path)
+			return nil, nil, err
+		}
+		defer f.Close()
 
-	f, err := os.Open(path)
-	if err != nil {
-		log.Debugf("os.Open failed for file :%s\n", path)
-		fmt.Printf("failed to open %s\n", path)
-		return nil, nil, err
-	}
-	defer f.Close()
+		doc, err = sbom.NewSBOMDocument(ctx, f)
+		if err != nil {
+			log.Debugf("failed to create sbom document for  :%s\n", path)
+			log.Debugf("%s\n", err)
+			fmt.Printf("failed to parse %s : %s\n", path, err)
+			return nil, nil, err
+		}
 
-	doc, err := sbom.NewSBOMDocument(ctx, f)
-	if err != nil {
-		log.Debugf("failed to create sbom document for  :%s\n", path)
-		log.Debugf("%s\n", err)
-		fmt.Printf("failed to parse %s : %s\n", path, err)
-		return nil, nil, err
+	} else {
+
+		if _, err := os.Stat(path); err != nil {
+			log.Debugf("os.Stat failed for file :%s\n", path)
+			fmt.Printf("failed to stat %s\n", path)
+			return nil, nil, err
+		}
+
+		f, err := os.Open(path)
+		if err != nil {
+			log.Debugf("os.Open failed for file :%s\n", path)
+			fmt.Printf("failed to open %s\n", path)
+			return nil, nil, err
+		}
+		defer f.Close()
+
+		doc, err = sbom.NewSBOMDocument(ctx, f)
+		if err != nil {
+			log.Debugf("failed to create sbom document for  :%s\n", path)
+			log.Debugf("%s\n", err)
+			fmt.Printf("failed to parse %s : %s\n", path, err)
+			return nil, nil, err
+		}
 	}
 
 	sr := scorer.NewScorer(ctx, doc)
