@@ -21,12 +21,11 @@ import (
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 )
 
-func ntiaResult(ctx context.Context, doc sbom.Document, fileName string, outFormat string) *db {
+func ntiaResult(ctx context.Context, _ sbom.Document, _ string, _ string) *db {
 	log := logger.FromContext(ctx)
 	log.Debug("compliance.ntiaResult()")
 
 	db := newDB()
 
 	return db
-
 }

@@ -17,31 +17,31 @@ package sbom
 //counterfeiter:generate . Manufacturer
 
 type Manufacturer interface {
-	Name() string
-	Url() string
-	Email() string
-	Contacts() []Contact
+	GetName() string
+	GetURL() string
+	GetEmail() string
+	GetContacts() []Contact
 }
 
 type manufacturer struct {
-	name     string
-	url      string
-	email    string
-	contacts []Contact
+	Name     string
+	URL      string
+	Email    string
+	Contacts []Contact
 }
 
-func (m manufacturer) Name() string {
-	return m.name
+func (m manufacturer) GetName() string {
+	return m.Name
 }
 
-func (m manufacturer) Url() string {
-	return m.url
+func (m manufacturer) GetURL() string {
+	return m.URL
 }
 
-func (m manufacturer) Email() string {
-	return m.email
+func (m manufacturer) GetEmail() string {
+	return m.Email
 }
 
-func (m manufacturer) Contacts() []Contact {
-	return m.contacts
+func (m manufacturer) GetContacts() []Contact {
+	return m.Contacts
 }

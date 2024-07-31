@@ -24,10 +24,11 @@ import (
 )
 
 var (
-	valid_bsi_spdx_versions = []string{"SPDX-2.3"}
-	valid_bsi_cdx_versions  = []string{"1.4", "1.5", "1.6"}
+	validBsiSpdxVersions = []string{"SPDX-2.3"}
+	validBsiCdxVersions  = []string{"1.4", "1.5", "1.6"}
 )
 
+//nolint:revive,stylecheck
 const (
 	SBOM_SPEC = iota
 	SBOM_SPDXID
@@ -91,7 +92,7 @@ func bsiResult(ctx context.Context, doc sbom.Document, fileName string, outForma
 	db.addRecords(bsiComponents(doc))
 
 	if outFormat == "json" {
-		bsiJsonReport(db, fileName)
+		bsiJSONReport(db, fileName)
 	}
 
 	if outFormat == "basic" {
@@ -105,14 +106,14 @@ func bsiResult(ctx context.Context, doc sbom.Document, fileName string, outForma
 
 func bsiSpec(doc sbom.Document) *record {
 	v := doc.Spec().GetSpecType()
-	v_to_lower := strings.Trim(strings.ToLower(v), " ")
+	vToLower := strings.Trim(strings.ToLower(v), " ")
 	result := ""
 	score := 0.0
 
-	if v_to_lower == "spdx" {
+	if vToLower == "spdx" {
 		result = v
 		score = 10.0
-	} else if v_to_lower == "cyclonedx" {
+	} else if vToLower == "cyclonedx" {
 		result = v
 		score = 10.0
 	}
@@ -127,13 +128,13 @@ func bsiSpecVersion(doc sbom.Document) *record {
 	score := 0.0
 
 	if spec == "spdx" {
-		count := lo.Count(valid_bsi_spdx_versions, version)
+		count := lo.Count(validBsiSpdxVersions, version)
 		if count > 0 {
 			result = version
 			score = 10.0
 		}
 	} else if spec == "cyclonedx" {
-		count := lo.Count(valid_bsi_cdx_versions, version)
+		count := lo.Count(validBsiCdxVersions, version)
 		if count > 0 {
 			result = version
 			score = 10.0
@@ -214,8 +215,8 @@ func bsiCreator(doc sbom.Document) *record {
 			return newRecordStmt(SBOM_CREATOR, "doc", result, score)
 		}
 
-		if supplier.GetUrl() != "" {
-			result = supplier.GetUrl()
+		if supplier.GetURL() != "" {
+			result = supplier.GetURL()
 			score = 10.0
 		}
 
@@ -241,8 +242,8 @@ func bsiCreator(doc sbom.Document) *record {
 	manufacturer := doc.Manufacturer()
 
 	if manufacturer != nil {
-		if manufacturer.Email() != "" {
-			result = manufacturer.Email()
+		if manufacturer.GetEmail() != "" {
+			result = manufacturer.GetEmail()
 			score = 10.0
 		}
 
@@ -250,8 +251,8 @@ func bsiCreator(doc sbom.Document) *record {
 			return newRecordStmt(SBOM_CREATOR, "doc", result, score)
 		}
 
-		if manufacturer.Url() != "" {
-			result = manufacturer.Url()
+		if manufacturer.GetURL() != "" {
+			result = manufacturer.GetURL()
 			score = 10.0
 		}
 
@@ -259,8 +260,8 @@ func bsiCreator(doc sbom.Document) *record {
 			return newRecordStmt(SBOM_CREATOR, "doc", result, score)
 		}
 
-		if manufacturer.Contacts() != nil {
-			for _, contact := range manufacturer.Contacts() {
+		if manufacturer.GetContacts() != nil {
+			for _, contact := range manufacturer.GetContacts() {
 				if contact.Email() != "" {
 					result = contact.Email()
 					score = 10.0
@@ -312,10 +313,10 @@ func bsiComponents(doc sbom.Document) []*record {
 		records = append(records, bsiComponentLicense(component))
 		records = append(records, bsiComponentDepth(component))
 		records = append(records, bsiComponentHash(component))
-		records = append(records, bsiComponentSourceCodeUrl(component))
-		records = append(records, bsiComponentDownloadUrl(component))
+		records = append(records, bsiComponentSourceCodeURL(component))
+		records = append(records, bsiComponentDownloadURL(component))
 		records = append(records, bsiComponentSourceHash(component))
-		records = append(records, bsiComponentOtherUniqIds(component))
+		records = append(records, bsiComponentOtherUniqIDs(component))
 	}
 
 	records = append(records, newRecordStmt(SBOM_COMPONENTS, "doc", "present", 10.0))
@@ -352,18 +353,18 @@ func bsiComponentLicense(component sbom.GetComponent) *record {
 
 	for _, license := range licenses {
 		if license.Source() == "spdx" {
-			spdx += 1
+			spdx++
 			continue
 		}
 
 		if license.Source() == "aboutcode" {
-			aboutcode += 1
+			aboutcode++
 			continue
 		}
 
 		if license.Source() == "custom" {
 			if strings.HasPrefix(license.ShortID(), "LicenseRef-") || strings.HasPrefix(license.Name(), "LicenseRef-") {
-				custom += 1
+				custom++
 				continue
 			}
 		}
@@ -394,7 +395,7 @@ func bsiComponentSourceHash(component sbom.GetComponent) *record {
 	return newRecordStmtOptional(COMP_SOURCE_HASH, component.GetID(), result, score)
 }
 
-func bsiComponentOtherUniqIds(component sbom.GetComponent) *record {
+func bsiComponentOtherUniqIDs(component sbom.GetComponent) *record {
 	result := ""
 	score := 0.0
 
@@ -419,8 +420,8 @@ func bsiComponentOtherUniqIds(component sbom.GetComponent) *record {
 	return newRecordStmtOptional(COMP_OTHER_UNIQ_IDS, component.GetID(), "", 0.0)
 }
 
-func bsiComponentDownloadUrl(component sbom.GetComponent) *record {
-	result := component.GetDownloadLocationUrl()
+func bsiComponentDownloadURL(component sbom.GetComponent) *record {
+	result := component.GetDownloadLocationURL()
 
 	if result != "" {
 		return newRecordStmtOptional(COMP_DOWNLOAD_URL, component.GetID(), result, 10.0)
@@ -428,8 +429,8 @@ func bsiComponentDownloadUrl(component sbom.GetComponent) *record {
 	return newRecordStmtOptional(COMP_DOWNLOAD_URL, component.GetID(), "", 0.0)
 }
 
-func bsiComponentSourceCodeUrl(component sbom.GetComponent) *record {
-	result := component.SourceCodeUrl()
+func bsiComponentSourceCodeURL(component sbom.GetComponent) *record {
+	result := component.SourceCodeURL()
 
 	if result != "" {
 		return newRecordStmtOptional(COMP_SOURCE_CODE_URL, component.GetID(), result, 10.0)
@@ -491,8 +492,8 @@ func bsiComponentCreator(component sbom.GetComponent) *record {
 			return newRecordStmt(COMP_CREATOR, component.GetID(), result, score)
 		}
 
-		if supplier.GetUrl() != "" {
-			result = supplier.GetUrl()
+		if supplier.GetURL() != "" {
+			result = supplier.GetURL()
 			score = 10.0
 		}
 
@@ -518,8 +519,8 @@ func bsiComponentCreator(component sbom.GetComponent) *record {
 	manufacturer := component.Manufacturer()
 
 	if manufacturer != nil {
-		if manufacturer.Email() != "" {
-			result = manufacturer.Email()
+		if manufacturer.GetEmail() != "" {
+			result = manufacturer.GetEmail()
 			score = 10.0
 		}
 
@@ -527,8 +528,8 @@ func bsiComponentCreator(component sbom.GetComponent) *record {
 			return newRecordStmt(COMP_CREATOR, component.GetID(), result, score)
 		}
 
-		if manufacturer.Url() != "" {
-			result = manufacturer.Url()
+		if manufacturer.GetURL() != "" {
+			result = manufacturer.GetURL()
 			score = 10.0
 		}
 
@@ -536,8 +537,8 @@ func bsiComponentCreator(component sbom.GetComponent) *record {
 			return newRecordStmt(COMP_CREATOR, component.GetID(), result, score)
 		}
 
-		if manufacturer.Contacts() != nil {
-			for _, contact := range manufacturer.Contacts() {
+		if manufacturer.GetContacts() != nil {
+			for _, contact := range manufacturer.GetContacts() {
 				if contact.Email() != "" {
 					result = contact.Email()
 					score = 10.0

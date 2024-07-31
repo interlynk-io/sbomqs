@@ -4,6 +4,7 @@ import (
 	"embed"
 	"encoding/json"
 	"fmt"
+	"log"
 	"strings"
 )
 
@@ -31,7 +32,7 @@ type spdxLicenseDetail struct {
 	ReferenceNumber    int      `json:"referenceNumber"`
 	Name               string   `json:"name"`
 	LicenseID          string   `json:"licenseId"`
-	LicenseExceptionId string   `json:"licenseExceptionId"`
+	LicenseExceptionID string   `json:"licenseExceptionId"`
 	SeeAlso            []string `json:"seeAlso"`
 	IsOsiApproved      bool     `json:"isOsiApproved"`
 	IsFsfLibre         bool     `json:"isFsfLibre"`
@@ -44,14 +45,16 @@ type aboutCodeLicenseDetail struct {
 	OtherSpdxLicenseKeys []string `json:"other_spdx_license_keys"`
 	Exception            bool     `json:"is_exception"`
 	Deprecated           bool     `json:"is_deprecated"`
-	Json                 string   `json:"json"`
+	JSON                 string   `json:"json"`
 	Yaml                 string   `json:"yaml"`
-	Html                 string   `json:"html"`
+	HTML                 string   `json:"html"`
 	License              string   `json:"license"`
 }
 
-var licenseList = map[string]meta{}
-var LicenseListAboutCode = map[string]meta{}
+var (
+	licenseList          = map[string]meta{}
+	LicenseListAboutCode = map[string]meta{}
+)
 
 func loadSpdxLicense() error {
 	licData, err := res.ReadFile(licenses["spdx"])
@@ -97,9 +100,9 @@ func loadSpdxExceptions() error {
 	}
 
 	for _, l := range sl.Exceptions {
-		licenseList[l.LicenseExceptionId] = meta{
+		licenseList[l.LicenseExceptionID] = meta{
 			name:        l.Name,
-			short:       l.LicenseExceptionId,
+			short:       l.LicenseExceptionID,
 			deprecated:  l.IsDeprecated,
 			osiApproved: l.IsOsiApproved,
 			fsfLibre:    l.IsFsfLibre,
@@ -173,7 +176,6 @@ func loadAboutCodeLicense() error {
 			freeAnyUse:  isFreeAnyUse(l.Category),
 			source:      "aboutcode",
 		}
-
 	}
 	// fmt.Printf("loaded %d licenses\n", len(LicenseListAboutCode))
 
@@ -181,7 +183,16 @@ func loadAboutCodeLicense() error {
 }
 
 func init() {
-	loadSpdxLicense()
-	loadSpdxExceptions()
-	loadAboutCodeLicense()
+	err := loadSpdxLicense()
+	if err != nil {
+		log.Printf("Failed to load spdx license: %v", err)
+	}
+	err = loadSpdxExceptions()
+	if err != nil {
+		log.Printf("Failed to load spdx exceptions: %v", err)
+	}
+	err = loadAboutCodeLicense()
+	if err != nil {
+		log.Printf("Failed to load about code license: %v", err)
+	}
 }

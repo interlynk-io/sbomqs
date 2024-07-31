@@ -34,7 +34,7 @@ func createDummyDocument() sbom.Document {
 	pack.Spdxid = "SPDXRef-npm-core-js-3.6.5"
 	pack.CopyRight = "Copyright 2001-2011 The Apache Software Foundation"
 	pack.FileAnalyzed = true
-	pack.Id = "Package-go-module-github.com-CycloneDX-cyclonedx-go-21b8492723f5584d"
+	pack.ID = "Package-go-module-github.com-CycloneDX-cyclonedx-go-21b8492723f5584d"
 	pack.PackageLicenseConcluded = "(LGPL-2.0-only OR LicenseRef-3)"
 	pack.PackageLicenseDeclared = "(LGPL-2.0-only AND LicenseRef-3)"
 	pack.DownloadLocation = "https://registry.npmjs.org/core-js/-/core-js-3.6.5.tgz"
@@ -284,7 +284,7 @@ func TestOctSbomPass(t *testing.T) {
 			},
 		},
 		{
-			actual: octPackageDownloadUrl(doc.Components()[0]),
+			actual: octPackageDownloadURL(doc.Components()[0]),
 			expected: desired{
 				score:  10.0,
 				result: "https://registry.npmjs.org/core-js/-/core-js-3.6.5.tgz",
@@ -296,9 +296,9 @@ func TestOctSbomPass(t *testing.T) {
 
 	for _, test := range testCases {
 		assert.Equal(t, test.expected.score, test.actual.score)
-		assert.Equal(t, test.expected.key, test.actual.check_key)
+		assert.Equal(t, test.expected.key, test.actual.checkKey)
 		assert.Equal(t, test.expected.id, test.actual.id)
-		assert.Equal(t, test.expected.result, test.actual.check_value)
+		assert.Equal(t, test.expected.result, test.actual.checkValue)
 	}
 }
 
@@ -328,7 +328,7 @@ func createFailureDummyDocument() sbom.Document {
 	pack.Spdxid = ""
 	pack.CopyRight = "NOASSERTION"
 	pack.FileAnalyzed = false
-	pack.Id = ""
+	pack.ID = ""
 	pack.PackageLicenseConcluded = "NONE"
 	pack.PackageLicenseDeclared = "NOASSERTION"
 	pack.DownloadLocation = ""
@@ -570,7 +570,7 @@ func TestOctSbomFail(t *testing.T) {
 			},
 		},
 		{
-			actual: octPackageDownloadUrl(doc.Components()[0]),
+			actual: octPackageDownloadURL(doc.Components()[0]),
 			expected: desired{
 				score:  0.0,
 				result: "",
@@ -582,8 +582,8 @@ func TestOctSbomFail(t *testing.T) {
 
 	for _, test := range testCases {
 		assert.Equal(t, test.expected.score, test.actual.score)
-		assert.Equal(t, test.expected.key, test.actual.check_key)
+		assert.Equal(t, test.expected.key, test.actual.checkKey)
 		assert.Equal(t, test.expected.id, test.actual.id)
-		assert.Equal(t, test.expected.result, test.actual.check_value)
+		assert.Equal(t, test.expected.result, test.actual.checkValue)
 	}
 }

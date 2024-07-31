@@ -44,35 +44,35 @@ func (r *octScoreResult) totalOptionalScore() float64 {
 	return r.optionalScore / float64(r.optionalRecords)
 }
 
-func octKeyIdScore(db *db, key int, id string) *octScoreResult {
-	records := db.getRecordsByKeyId(key, id)
+func octKeyIDScore(db *db, key int, id string) *octScoreResult {
+	records := db.getRecordsByKeyID(key, id)
 
 	if len(records) == 0 {
 		return newOctScoreResult(id)
 	}
 
-	required_score := 0.0
-	optional_score := 0.0
+	requiredScore := 0.0
+	optionalScore := 0.0
 
-	required_recs := 0
-	optional_recs := 0
+	requiredRecs := 0
+	optionalRecs := 0
 
 	for _, r := range records {
 		if r.required {
-			required_score += r.score
-			required_recs += 1
+			requiredScore += r.score
+			requiredRecs++
 		} else {
-			optional_score += r.score
-			optional_recs += 1
+			optionalScore += r.score
+			optionalRecs++
 		}
 	}
 
 	return &octScoreResult{
 		id:              id,
-		requiredScore:   required_score,
-		optionalScore:   optional_score,
-		requiredRecords: required_recs,
-		optionalRecords: optional_recs,
+		requiredScore:   requiredScore,
+		optionalScore:   optionalScore,
+		requiredRecords: requiredRecs,
+		optionalRecords: optionalRecs,
 	}
 }
 
@@ -80,9 +80,9 @@ func octAggregateScore(db *db) *octScoreResult {
 	var results []octScoreResult
 	var finalResult octScoreResult
 
-	ids := db.getAllIds()
+	ids := db.getAllIDs()
 	for _, id := range ids {
-		results = append(results, *octIdScore(db, id))
+		results = append(results, *octIDScore(db, id))
 	}
 
 	for _, r := range results {
@@ -95,34 +95,34 @@ func octAggregateScore(db *db) *octScoreResult {
 	return &finalResult
 }
 
-func octIdScore(db *db, id string) *octScoreResult {
-	records := db.getRecordsById(id)
+func octIDScore(db *db, id string) *octScoreResult {
+	records := db.getRecordsByID(id)
 
 	if len(records) == 0 {
 		return newOctScoreResult(id)
 	}
 
-	required_score := 0.0
-	optional_score := 0.0
+	requiredScore := 0.0
+	optionalScore := 0.0
 
-	required_recs := 0
-	optional_recs := 0
+	requiredRecs := 0
+	optionalRecs := 0
 
 	for _, r := range records {
 		if r.required {
-			required_score += r.score
-			required_recs += 1
+			requiredScore += r.score
+			requiredRecs++
 		} else {
-			optional_score += r.score
-			optional_recs += 1
+			optionalScore += r.score
+			optionalRecs++
 		}
 	}
 
 	return &octScoreResult{
 		id:              id,
-		requiredScore:   required_score,
-		optionalScore:   optional_score,
-		requiredRecords: required_recs,
-		optionalRecords: optional_recs,
+		requiredScore:   requiredScore,
+		optionalScore:   optionalScore,
+		requiredRecords: requiredRecs,
+		optionalRecords: optionalRecs,
 	}
 }

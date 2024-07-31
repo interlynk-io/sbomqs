@@ -15,11 +15,11 @@
 package compliance
 
 type record struct {
-	check_key   int
-	check_value string
-	id          string
-	score       float64
-	required    bool
+	checkKey   int
+	checkValue string
+	id         string
+	score      float64
+	required   bool
 }
 
 func newRecord() *record {
@@ -28,8 +28,8 @@ func newRecord() *record {
 
 func newRecordStmt(key int, id, value string, score float64) *record {
 	r := newRecord()
-	r.check_key = key
-	r.check_value = value
+	r.checkKey = key
+	r.checkValue = value
 	r.id = id
 	r.score = score
 	r.required = true
@@ -38,8 +38,8 @@ func newRecordStmt(key int, id, value string, score float64) *record {
 
 func newRecordStmtOptional(key int, id, value string, score float64) *record {
 	r := newRecord()
-	r.check_key = key
-	r.check_value = value
+	r.checkKey = key
+	r.checkValue = value
 	r.id = id
 	r.score = score
 	r.required = false

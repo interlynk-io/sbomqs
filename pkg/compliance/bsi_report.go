@@ -26,28 +26,28 @@ import (
 )
 
 var bsiSectionDetails = map[int]bsiSection{
-	SBOM_SPEC:            {Title: "SBOM formats", Id: "4", Required: true, DataField: "specification"},
-	SBOM_SPEC_VERSION:    {Title: "SBOM formats", Id: "4", Required: true, DataField: "specification version"},
-	SBOM_BUILD:           {Title: "Level of Detail", Id: "5.1", Required: true, DataField: "build process"},
-	SBOM_DEPTH:           {Title: "Level of Detail", Id: "5.1", Required: true, DataField: "depth"},
-	SBOM_CREATOR:         {Title: "Required fields sboms ", Id: "5.2.1", Required: true, DataField: "creator of sbom"},
-	SBOM_TIMESTAMP:       {Title: "Required fields sboms", Id: "5.2.1", Required: true, DataField: "timestamp"},
-	SBOM_COMPONENTS:      {Title: "Required fields component", Id: "5.2.2", Required: true, DataField: "components"},
-	SBOM_URI:             {Title: "Additional fields sboms", Id: "5.3.1", Required: false, DataField: "SBOM-URI"},
-	COMP_CREATOR:         {Title: "Required fields component", Id: "5.2.2", Required: true, DataField: "component creator"},
-	COMP_NAME:            {Title: "Required fields components", Id: "5.2.2", Required: true, DataField: "component name"},
-	COMP_VERSION:         {Title: "Required fields components", Id: "5.2.2", Required: true, DataField: "component version"},
-	COMP_DEPTH:           {Title: "Required fields components", Id: "5.2.2", Required: true, DataField: "Dependencies on other components"},
-	COMP_LICENSE:         {Title: "Required fields components", Id: "5.2.2", Required: true, DataField: "License"},
-	COMP_HASH:            {Title: "Required fields components", Id: "5.2.2", Required: true, DataField: "Hash value of the executable component"},
-	COMP_SOURCE_CODE_URL: {Title: "Additional fields components", Id: "5.3.2", Required: false, DataField: "Source code URI"},
-	COMP_DOWNLOAD_URL:    {Title: "Additional fields components", Id: "5.3.2", Required: false, DataField: "URI of the executable form of the component"},
-	COMP_SOURCE_HASH:     {Title: "Additional fields components", Id: "5.3.2", Required: false, DataField: "Hash value of the source code of the component"},
-	COMP_OTHER_UNIQ_IDS:  {Title: "Additional fields components", Id: "5.3.2", Required: false, DataField: "Other unique identifiers"},
+	SBOM_SPEC:            {Title: "SBOM formats", ID: "4", Required: true, DataField: "specification"},
+	SBOM_SPEC_VERSION:    {Title: "SBOM formats", ID: "4", Required: true, DataField: "specification version"},
+	SBOM_BUILD:           {Title: "Level of Detail", ID: "5.1", Required: true, DataField: "build process"},
+	SBOM_DEPTH:           {Title: "Level of Detail", ID: "5.1", Required: true, DataField: "depth"},
+	SBOM_CREATOR:         {Title: "Required fields sboms ", ID: "5.2.1", Required: true, DataField: "creator of sbom"},
+	SBOM_TIMESTAMP:       {Title: "Required fields sboms", ID: "5.2.1", Required: true, DataField: "timestamp"},
+	SBOM_COMPONENTS:      {Title: "Required fields component", ID: "5.2.2", Required: true, DataField: "components"},
+	SBOM_URI:             {Title: "Additional fields sboms", ID: "5.3.1", Required: false, DataField: "SBOM-URI"},
+	COMP_CREATOR:         {Title: "Required fields component", ID: "5.2.2", Required: true, DataField: "component creator"},
+	COMP_NAME:            {Title: "Required fields components", ID: "5.2.2", Required: true, DataField: "component name"},
+	COMP_VERSION:         {Title: "Required fields components", ID: "5.2.2", Required: true, DataField: "component version"},
+	COMP_DEPTH:           {Title: "Required fields components", ID: "5.2.2", Required: true, DataField: "Dependencies on other components"},
+	COMP_LICENSE:         {Title: "Required fields components", ID: "5.2.2", Required: true, DataField: "License"},
+	COMP_HASH:            {Title: "Required fields components", ID: "5.2.2", Required: true, DataField: "Hash value of the executable component"},
+	COMP_SOURCE_CODE_URL: {Title: "Additional fields components", ID: "5.3.2", Required: false, DataField: "Source code URI"},
+	COMP_DOWNLOAD_URL:    {Title: "Additional fields components", ID: "5.3.2", Required: false, DataField: "URI of the executable form of the component"},
+	COMP_SOURCE_HASH:     {Title: "Additional fields components", ID: "5.3.2", Required: false, DataField: "Hash value of the source code of the component"},
+	COMP_OTHER_UNIQ_IDS:  {Title: "Additional fields components", ID: "5.3.2", Required: false, DataField: "Other unique identifiers"},
 }
 
 type run struct {
-	Id            string `json:"id"`
+	ID            string `json:"id"`
 	GeneratedAt   string `json:"generated_at"`
 	FileName      string `json:"file_name"`
 	EngineVersion string `json:"compliance_engine_version"`
@@ -65,10 +65,10 @@ type Summary struct {
 }
 type bsiSection struct {
 	Title         string  `json:"section_title"`
-	Id            string  `json:"section_id"`
+	ID            string  `json:"section_id"`
 	DataField     string  `json:"section_data_field"`
 	Required      bool    `json:"required"`
-	ElementId     string  `json:"element_id"`
+	ElementID     string  `json:"element_id"`
 	ElementResult string  `json:"element_result"`
 	Score         float64 `json:"score"`
 }
@@ -82,13 +82,13 @@ type bsiComplianceReport struct {
 	Sections []bsiSection `json:"sections"`
 }
 
-func newJsonReport() *bsiComplianceReport {
+func newJSONReport() *bsiComplianceReport {
 	return &bsiComplianceReport{
 		Name:     "BSI TR-03183-2 v1.1 Compliance Report",
 		Subtitle: "Part 2: Software Bill of Materials (SBOM)",
 		Revision: "TR-03183-2 (1.1)",
 		Run: run{
-			Id:            uuid.New().String(),
+			ID:            uuid.New().String(),
 			GeneratedAt:   time.Now().UTC().Format(time.RFC3339),
 			FileName:      "",
 			EngineVersion: "1",
@@ -101,8 +101,8 @@ func newJsonReport() *bsiComplianceReport {
 	}
 }
 
-func bsiJsonReport(db *db, fileName string) {
-	jr := newJsonReport()
+func bsiJSONReport(db *db, fileName string) {
+	jr := newJSONReport()
 	jr.Run.FileName = fileName
 
 	score := bsiAggregateScore(db)
@@ -121,29 +121,29 @@ func bsiJsonReport(db *db, fileName string) {
 
 func constructSections(db *db) []bsiSection {
 	var sections []bsiSection
-	allIds := db.getAllIds()
-	for _, id := range allIds {
-		records := db.getRecordsById(id)
+	allIDs := db.getAllIDs()
+	for _, id := range allIDs {
+		records := db.getRecordsByID(id)
 
 		for _, r := range records {
-			section := bsiSectionDetails[r.check_key]
-			new_section := bsiSection{
+			section := bsiSectionDetails[r.checkKey]
+			newSection := bsiSection{
 				Title:     section.Title,
-				Id:        section.Id,
+				ID:        section.ID,
 				DataField: section.DataField,
 				Required:  section.Required,
 			}
-			score := bsiKeyIdScore(db, r.check_key, r.id)
-			new_section.Score = score.totalScore()
+			score := bsiKeyIDScore(db, r.checkKey, r.id)
+			newSection.Score = score.totalScore()
 			if r.id == "doc" {
-				new_section.ElementId = "sbom"
+				newSection.ElementID = "sbom"
 			} else {
-				new_section.ElementId = r.id
+				newSection.ElementID = r.id
 			}
 
-			new_section.ElementResult = r.check_value
+			newSection.ElementResult = r.checkValue
 
-			sections = append(sections, new_section)
+			sections = append(sections, newSection)
 		}
 	}
 	return sections
@@ -162,11 +162,11 @@ func bsiDetailedReport(db *db, fileName string) {
 
 	sections := constructSections(db)
 	for _, section := range sections {
-		sectionId := section.Id
+		sectionID := section.ID
 		if !section.Required {
-			sectionId = sectionId + "*"
+			sectionID = sectionID + "*"
 		}
-		table.Append([]string{section.ElementId, sectionId, section.DataField, section.ElementResult, fmt.Sprintf("%0.1f", section.Score)})
+		table.Append([]string{section.ElementID, sectionID, section.DataField, section.ElementResult, fmt.Sprintf("%0.1f", section.Score)})
 	}
 	table.Render()
 }

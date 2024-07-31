@@ -30,11 +30,11 @@ import (
 )
 
 type DtParams struct {
-	Url        string
-	ApiKey     string
-	ProjectIds []uuid.UUID
+	URL        string
+	APIKey     string
+	ProjectIDs []uuid.UUID
 
-	Json     bool
+	JSON     bool
 	Basic    bool
 	Detailed bool
 
@@ -47,13 +47,13 @@ func DtrackScore(ctx context.Context, dtP *DtParams) error {
 
 	log.Debugf("Config: %+v", dtP)
 
-	dTrackClient, err := dtrack.NewClient(dtP.Url,
-		dtrack.WithAPIKey(dtP.ApiKey), dtrack.WithDebug(false))
+	dTrackClient, err := dtrack.NewClient(dtP.URL,
+		dtrack.WithAPIKey(dtP.APIKey), dtrack.WithDebug(false))
 	if err != nil {
 		log.Fatalf("Failed to create Dependency-Track client: %s", err)
 	}
 
-	for _, pid := range dtP.ProjectIds {
+	for _, pid := range dtP.ProjectIDs {
 		log.Debugf("Processing project %s", pid)
 
 		prj, err := dTrackClient.Project.Get(ctx, pid)
@@ -76,7 +76,10 @@ func DtrackScore(ctx context.Context, dtP *DtParams) error {
 			defer f.Close()
 			defer os.Remove(f.Name())
 
-			f.WriteString(bom)
+			_, err = f.WriteString(bom)
+			if err != nil {
+				log.Fatalf("Failed to write string: %v", err)
+			}
 
 			ep := &Params{}
 			ep.Path = append(ep.Path, f.Name())
@@ -86,7 +89,6 @@ func DtrackScore(ctx context.Context, dtP *DtParams) error {
 			}
 
 			if dtP.TagProjectWithScore {
-
 				log.Debugf("Project: %+v", prj.Tags)
 				// remove old score
 				prj.Tags = lo.Filter(prj.Tags, func(t dtrack.Tag, _ int) bool {
@@ -110,7 +112,7 @@ func DtrackScore(ctx context.Context, dtP *DtParams) error {
 			reportFormat := "detailed"
 			if dtP.Basic {
 				reportFormat = "basic"
-			} else if dtP.Json {
+			} else if dtP.JSON {
 				reportFormat = "json"
 			}
 
@@ -120,7 +122,6 @@ func DtrackScore(ctx context.Context, dtP *DtParams) error {
 				[]string{path},
 				reporter.WithFormat(reportFormat))
 			nr.Report()
-
 		}
 	}
 

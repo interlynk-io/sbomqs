@@ -58,67 +58,67 @@ func (r *bsiScoreResult) totalOptionalScore() float64 {
 	return r.optionalScore / float64(r.optionalRecords)
 }
 
-func bsiKeyIdScore(db *db, key int, id string) *bsiScoreResult {
-	records := db.getRecordsByKeyId(key, id)
+func bsiKeyIDScore(db *db, key int, id string) *bsiScoreResult {
+	records := db.getRecordsByKeyID(key, id)
 
 	if len(records) == 0 {
 		return newBsiScoreResult(id)
 	}
 
-	required_score := 0.0
-	optional_score := 0.0
+	requiredScore := 0.0
+	optionalScore := 0.0
 
-	required_recs := 0
-	optional_recs := 0
+	requiredRecs := 0
+	optionalRecs := 0
 
 	for _, r := range records {
 		if r.required {
-			required_score += r.score
-			required_recs += 1
+			requiredScore += r.score
+			requiredRecs++
 		} else {
-			optional_score += r.score
-			optional_recs += 1
+			optionalScore += r.score
+			optionalRecs++
 		}
 	}
 
 	return &bsiScoreResult{
 		id:              id,
-		requiredScore:   required_score,
-		optionalScore:   optional_score,
-		requiredRecords: required_recs,
-		optionalRecords: optional_recs,
+		requiredScore:   requiredScore,
+		optionalScore:   optionalScore,
+		requiredRecords: requiredRecs,
+		optionalRecords: optionalRecs,
 	}
 }
 
-func bsiIdScore(db *db, id string) *bsiScoreResult {
-	records := db.getRecordsById(id)
+func bsiIDScore(db *db, id string) *bsiScoreResult {
+	records := db.getRecordsByID(id)
 
 	if len(records) == 0 {
 		return newBsiScoreResult(id)
 	}
 
-	required_score := 0.0
-	optional_score := 0.0
+	requiredScore := 0.0
+	optionalScore := 0.0
 
-	required_recs := 0
-	optional_recs := 0
+	requiredRecs := 0
+	optionalRecs := 0
 
 	for _, r := range records {
 		if r.required {
-			required_score += r.score
-			required_recs += 1
+			requiredScore += r.score
+			requiredRecs++
 		} else {
-			optional_score += r.score
-			optional_recs += 1
+			optionalScore += r.score
+			optionalRecs++
 		}
 	}
 
 	return &bsiScoreResult{
 		id:              id,
-		requiredScore:   required_score,
-		optionalScore:   optional_score,
-		requiredRecords: required_recs,
-		optionalRecords: optional_recs,
+		requiredScore:   requiredScore,
+		optionalScore:   optionalScore,
+		requiredRecords: requiredRecs,
+		optionalRecords: optionalRecs,
 	}
 }
 
@@ -126,9 +126,9 @@ func bsiAggregateScore(db *db) *bsiScoreResult {
 	var results []bsiScoreResult
 	var finalResult bsiScoreResult
 
-	ids := db.getAllIds()
+	ids := db.getAllIDs()
 	for _, id := range ids {
-		results = append(results, *bsiIdScore(db, id))
+		results = append(results, *bsiIDScore(db, id))
 	}
 
 	for _, r := range results {

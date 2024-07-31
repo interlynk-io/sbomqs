@@ -23,12 +23,14 @@ import (
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 )
 
+//nolint:revive,stylecheck
 const (
 	BSI_REPORT  = "BSI"
 	NTIA_REPORT = "NTIA"
 	OCT_TELCO   = "OCT"
 )
 
+//nolint:revive,stylecheck
 func ComplianceResult(ctx context.Context, doc sbom.Document, reportType, fileName, outFormat string) error {
 	log := logger.FromContext(ctx)
 	log.Debug("compliance.ComplianceResult()")

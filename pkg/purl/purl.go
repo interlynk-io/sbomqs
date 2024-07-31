@@ -29,6 +29,6 @@ func (p PURL) Valid() bool {
 	return err == nil
 }
 
-func (meta PURL) String() string {
-	return string(meta)
+func (p PURL) String() string {
+	return string(p)
 }

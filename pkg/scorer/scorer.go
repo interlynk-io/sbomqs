@@ -23,23 +23,23 @@ import (
 
 const EngineVersion = "7"
 
-type FilterType int
+type filterType int
 
 const (
-	Feature FilterType = iota
+	Feature filterType = iota
 	Category
 )
 
 type Filter struct {
 	Name  string
-	Ftype FilterType
+	Ftype filterType
 }
 
 type Scorer struct {
 	ctx context.Context
 	doc sbom.Document
 
-	//optional params
+	// optional params
 	featFilter map[string]bool
 	catFilter  map[string]bool
 }
@@ -55,7 +55,7 @@ func NewScorer(ctx context.Context, doc sbom.Document) *Scorer {
 	return scorer
 }
 
-func (s *Scorer) AddFilter(nm string, ftype FilterType) {
+func (s *Scorer) AddFilter(nm string, ftype filterType) {
 	switch ftype {
 	case Feature:
 		s.featFilter[nm] = true
@@ -86,8 +86,9 @@ func (s *Scorer) catScores() Scores {
 	scores := newScores()
 
 	for _, c := range checks {
+		cCopy := c // Create a copy of c
 		if s.catFilter[c.Category] {
-			scores.addScore(c.evaluate(s.doc, &c))
+			scores.addScore(c.evaluate(s.doc, &cCopy))
 		}
 	}
 
@@ -99,7 +100,7 @@ func (s *Scorer) featureScores() Scores {
 
 	for _, c := range checks {
 		if s.featFilter[c.Key] {
-			scores.addScore(c.evaluate(s.doc, &c))
+			scores.addScore(c.evaluate(s.doc, &c)) //nolint:gosec
 		}
 	}
 
@@ -110,7 +111,7 @@ func (s *Scorer) AllScores() Scores {
 	scores := newScores()
 
 	for _, c := range checks {
-		scores.addScore(c.evaluate(s.doc, &c))
+		scores.addScore(c.evaluate(s.doc, &c)) //nolint:gosec
 	}
 
 	return scores

@@ -18,7 +18,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -36,7 +36,6 @@ func Share(ctx context.Context, doc sbom.Document, scores scorer.Scores, sbomFil
 		reporter.WithFormat(strings.ToLower("json")))
 
 	js, err := nr.ShareReport()
-
 	if err != nil {
 		return "", err
 	}
@@ -45,7 +44,7 @@ func Share(ctx context.Context, doc sbom.Document, scores scorer.Scores, sbomFil
 }
 
 type shareResonse struct {
-	Url string `json:"url"`
+	URL string `json:"url"`
 }
 
 func sentToBenchmark(js string) (string, error) {
@@ -55,7 +54,7 @@ func sentToBenchmark(js string) (string, error) {
 		Header: http.Header{
 			"Content-Type": []string{"application/json"},
 		},
-		Body: ioutil.NopCloser(strings.NewReader(js)),
+		Body: io.NopCloser(strings.NewReader(js)),
 	}
 
 	// // Save a copy of this request for debugging.
@@ -66,7 +65,6 @@ func sentToBenchmark(js string) (string, error) {
 	//		fmt.Println(string(requestDump))
 
 	resp, err := http.DefaultClient.Do(req)
-
 	if err != nil {
 		return "", err
 	}
@@ -77,7 +75,7 @@ func sentToBenchmark(js string) (string, error) {
 		return "", fmt.Errorf("bad response from Benchmark: %s", resp.Status)
 	}
 
-	data, _ := ioutil.ReadAll(resp.Body)
+	data, _ := io.ReadAll(resp.Body)
 	sr := shareResonse{}
 
 	err = json.Unmarshal(data, &sr)
@@ -85,5 +83,5 @@ func sentToBenchmark(js string) (string, error) {
 		return "", err
 	}
 
-	return sr.Url, nil
+	return sr.URL, nil
 }

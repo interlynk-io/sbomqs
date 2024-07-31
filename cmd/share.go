@@ -64,5 +64,4 @@ func init() {
 
 	//Debug Control
 	shareCmd.Flags().BoolP("debug", "D", false, "enable debug logging")
-
 }

@@ -23,14 +23,16 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const features_file_name = "features.yaml"
-const features = "features"
+const (
+	featuresFileName = "features.yaml"
+	features         = "features"
+)
 
 // generateCmd represents the generate command
 var generateCmd = &cobra.Command{
 	Use:   "generate",
 	Short: "provides a comprehensive config generate for your sbom to get specific criteria",
-	RunE: func(cmd *cobra.Command, args []string) error {
+	RunE: func(_ *cobra.Command, args []string) error {
 		ctx := logger.WithLogger(context.Background())
 
 		if len(args) > 0 {
@@ -41,7 +43,6 @@ var generateCmd = &cobra.Command{
 			return fmt.Errorf(fmt.Sprintf("arguments missing%s", "list of valid command eg. features"))
 		}
 		return fmt.Errorf(fmt.Sprintf("invalid arguments%s", "list of valid command eg. features"))
-
 	},
 }
 
@@ -49,6 +50,6 @@ func init() {
 	rootCmd.AddCommand(generateCmd)
 }
 
-func generateYaml(ctx context.Context) error {
-	return os.WriteFile(features_file_name, []byte(scorer.DefaultConfig()), 0755)
+func generateYaml(_ context.Context) error {
+	return os.WriteFile(featuresFileName, []byte(scorer.DefaultConfig()), 0o600)
 }

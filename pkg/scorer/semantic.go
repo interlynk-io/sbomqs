@@ -50,7 +50,6 @@ func docWithRequiredFieldCheck(d sbom.Document, c *check) score {
 			pkgScore = (float64(noOfPkgs) / float64(totalComponents)) * 10.0
 		}
 		s.setScore((docScore + pkgScore) / 2.0)
-
 	}
 
 	if docOK && pkgsOK {

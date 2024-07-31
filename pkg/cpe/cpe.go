@@ -30,6 +30,6 @@ func NewCPE(cpe string) CPE {
 	return CPE(cpe)
 }
 
-func (meta CPE) String() string {
-	return string(meta)
+func (cpe CPE) String() string {
+	return string(cpe)
 }
