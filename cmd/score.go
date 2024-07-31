@@ -168,12 +168,6 @@ func validatePath(path string) error {
 }
 
 func validateFlags(cmd *userCmd) error {
-	for _, path := range cmd.path {
-		if err := validatePath(path); err != nil {
-			return fmt.Errorf("invalid path: %w", err)
-		}
-	}
-
 	if cmd.configPath != "" {
 		if err := validatePath(cmd.configPath); err != nil {
 			return fmt.Errorf("invalid config path: %w", err)
