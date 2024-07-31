@@ -104,9 +104,7 @@ func getSbomDocument(ctx context.Context, ep *Params) (*sbom.Document, error) {
 		if err != nil {
 			log.Fatalf("failed to parse SBOM document: %w", err)
 		}
-
 	} else {
-
 		if _, err := os.Stat(path); err != nil {
 			log.Debugf("os.Stat failed for file :%s\n", path)
 			fmt.Printf("failed to stat %s\n", path)

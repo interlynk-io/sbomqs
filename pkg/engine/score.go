@@ -73,7 +73,7 @@ func Run(ctx context.Context, ep *Params) error {
 func handleURL(path string) (string, string, error) {
 	u, err := url.Parse(path)
 	if err != nil {
-		return "", "", fmt.Errorf("failed to parse urlPath: %v", err)
+		return "", "", fmt.Errorf("failed to parse urlPath: %w", err)
 	}
 
 	parts := strings.Split(u.Path, "/")
@@ -107,9 +107,10 @@ func IsGit(in string) bool {
 }
 
 func ProcessURL(url string, file afero.File) (afero.File, error) {
+	//nolint: gosec
 	resp, err := http.Get(url)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get data: %v", err)
+		return nil, fmt.Errorf("failed to get data: %w", err)
 	}
 	defer resp.Body.Close()
 
@@ -178,9 +179,7 @@ func handlePaths(ctx context.Context, ep *Params) error {
 			docs = append(docs, doc)
 			scores = append(scores, score)
 			paths = append(paths, sbomFilePath)
-
 		} else {
-
 			log.Debugf("Processing path :%s\n", path)
 			pathInfo, _ := os.Stat(path)
 			if pathInfo.IsDir() {
@@ -256,9 +255,7 @@ func processFile(ctx context.Context, ep *Params, path string, fs billy.Filesyst
 			fmt.Printf("failed to parse %s : %s\n", path, err)
 			return nil, nil, err
 		}
-
 	} else {
-
 		if _, err := os.Stat(path); err != nil {
 			log.Debugf("os.Stat failed for file :%s\n", path)
 			fmt.Printf("failed to stat %s\n", path)
