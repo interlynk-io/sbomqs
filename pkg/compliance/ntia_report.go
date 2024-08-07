@@ -12,18 +12,16 @@ import (
 )
 
 var ntiaSectionDetails = map[int]ntiaSection{
-	SBOM_SPEC:           {Title: "SBOM Format", Id: "1", Required: true, DataField: "SBOM data format"},
-	SBOM_SPEC_VERSION:   {Title: "SPDX Format", Id: "1.1", Required: true, DataField: "Spec version"},
-	SBOM_CREATOR:        {Title: "Required fields sboms ", Id: "2", Required: true, DataField: "creator of sbom"},
-	SBOM_TIMESTAMP:      {Title: "Required fields sboms", Id: "2.1", Required: true, DataField: "SBOM timestamp"},
-	SBOM_COMPONENTS:     {Title: "Required sbom component", Id: "2.2", Required: true, DataField: "SBOM components"},
-	COMP_NAME:           {Title: "Required fields components", Id: "3", Required: true, DataField: "component name"},
-	COMP_VERSION:        {Title: "Required fields components", Id: "3.1", Required: true, DataField: "component version"},
-	COMP_DEPTH:          {Title: "Required fields components", Id: "3.2", Required: true, DataField: "Dependencies on other components"},
-	COMP_CREATOR:        {Title: "Required fields component", Id: "3.3", Required: true, DataField: "component creator"},
-	PACK_SUPPLIER:       {Title: "Required fields component", Id: "3.3", Required: true, DataField: "Package supplier"},
-	COMP_OTHER_UNIQ_IDS: {Title: "Required fields component", Id: "3.5", Required: true, DataField: "Other unique identifiers"},
-	PACK_EXT_REF:        {Title: "Required fields component", Id: "3.5", Required: true, DataField: "Package external References"},
+	SBOM_MACHINE_FORMAT: {Title: "Automation Support", Id: "2.1", Required: true, DataField: "Machine-Readable Formats"},
+	SBOM_CREATOR:        {Title: "Required fields sboms ", Id: "1.1", Required: true, DataField: "Author"},
+	SBOM_TIMESTAMP:      {Title: "Required fields sboms", Id: "1.2", Required: true, DataField: "Timestamp"},
+	SBOM_COMPONENTS:     {Title: "Required sbom component", Id: "1.4", Required: true, DataField: "Packages"},
+	COMP_NAME:           {Title: "Required fields components", Id: "1.5", Required: true, DataField: "Package Name"},
+	COMP_DEPTH:          {Title: "Required fields components", Id: "1.3", Required: true, DataField: "Dependencies on other components"},
+	COMP_CREATOR:        {Title: "Required fields component", Id: "1.6", Required: true, DataField: "Package Supplier"},
+	PACK_SUPPLIER:       {Title: "Required fields component", Id: "1.6", Required: true, DataField: "Package Supplier"},
+	COMP_VERSION:        {Title: "Required fields components", Id: "1.7", Required: true, DataField: "Package Version"},
+	COMP_OTHER_UNIQ_IDS: {Title: "Required fields component", Id: "1.8", Required: true, DataField: "Other Uniq IDs"},
 }
 
 type ntiaSection struct {
@@ -48,7 +46,7 @@ type ntiaComplianceReport struct {
 
 func newNtiaJsonReport() *ntiaComplianceReport {
 	return &ntiaComplianceReport{
-		Name:     "NTIA Report",
+		Name:     "NTIA Compliance Report",
 		Subtitle: "Part 2: Software Bill of Materials (SBOM)",
 		Revision: "",
 		Run: run{
@@ -120,7 +118,7 @@ func ntiaDetailedReport(db *db, fileName string) {
 	fmt.Printf("NTIA Report\n")
 	fmt.Printf("Compliance score by Interlynk Score:%0.1f RequiredScore:%0.1f OptionalScore:%0.1f for %s\n", score.totalScore(), score.totalRequiredScore(), score.totalOptionalScore(), fileName)
 	fmt.Printf("* indicates optional fields\n")
-	table.SetHeader([]string{"ElementId", "Section", "Datafield", "Element Result", "Score"})
+	table.SetHeader([]string{"ELEMENT ID", "Section ID", "NTIA minimum elements", "Result", "Score"})
 	table.SetRowLine(true)
 	table.SetAutoMergeCellsByColumnIndex([]int{0})
 

@@ -70,7 +70,7 @@ func TestNtiaSpdxSbomPass(t *testing.T) {
 		expected desiredNtia
 	}{
 		{
-			actual: ntiaSpec(doc),
+			actual: ntiaAutomationSpec(doc),
 			expected: desiredNtia{
 				score:  10.0,
 				result: "spdx",
@@ -85,15 +85,6 @@ func TestNtiaSpdxSbomPass(t *testing.T) {
 				result: "syft",
 				key:    SBOM_CREATOR,
 				id:     "doc",
-			},
-		},
-		{
-			actual: ntiaSpecVersion(doc),
-			expected: desiredNtia{
-				score:  10.0,
-				result: "SPDX-2.3",
-				key:    SBOM_SPEC_VERSION,
-				id:     "SBOM format",
 			},
 		},
 		{
@@ -212,7 +203,7 @@ func TestNtiaCdxSbomPass(t *testing.T) {
 		expected desiredNtia
 	}{
 		{
-			actual: ntiaSpec(doc),
+			actual: ntiaAutomationSpec(doc),
 			expected: desiredNtia{
 				score:  10.0,
 				result: "cyclonedx",
@@ -227,15 +218,6 @@ func TestNtiaCdxSbomPass(t *testing.T) {
 				result: "vivekkumarsahu650@gmail.com",
 				key:    SBOM_CREATOR,
 				id:     "doc",
-			},
-		},
-		{
-			actual: ntiaSpecVersion(doc),
-			expected: desiredNtia{
-				score:  10.0,
-				result: "1.4",
-				key:    SBOM_SPEC_VERSION,
-				id:     "SBOM format",
 			},
 		},
 		{
