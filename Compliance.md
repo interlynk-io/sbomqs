@@ -72,20 +72,16 @@ The [OpenChain Telco](https://github.com/OpenChain-Project/Reference-Material/bl
 
 The [NTIA](https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/Publications/TechGuidelines/TR03183/BSI-TR-03183-2.pdf) specifies mandatory properties for an SBOM. Below is how we have derived all the values.
 
-| NTIA minimum elements   | Elements    | Fields        | CycloneDX |SPDX(2.3)  | Notes                |
+| NTIA minimum elements   | Section ID    | NTIA Fields        | CycloneDX |SPDX(2.3)  | Notes                |
 | :---                    | :---        |:---           |   :---    |     :---  | :---                 |
-| Data Fields             | SBOM        |  Author of the SBOM data       | metadata->authors, metadata->supplier | creator  |   |
-|                         |             |  Timestamp    |  metadata->timestamp  |  created  |            |
-|                         |             |  Dependency Relationship | dependencies, composition | relationships  |  |
-|                         | package     |  present      |           |           | all package elements |
-|                         | package-xyz |  Component Name         |  component->name | package->name |                      |
-|                         |             |  Supplier Name  |  component->supplier | packageSupplier, packageOriginator	|  |
-|                         |             |  Version of Component | component->version | package->version	|  |
-|                         |             |  Other Uniq IDs     | component->cpe, component->purl | DocumentNamespace, SPDXID |  |
-| Automation Support      | SBOM        |  Format       |  BomFormat | SPDXversion |  |
-| Practices and Processes | SBOM        |  Frequency                 |   |  |  |
-|                         |             |  Depth  |   |  |  |
-|                         |             |  Known Unknowns |   |  |  |
-|                         |             |  Distribution and Delivery  |   |  |  |
-|                         |             |  Access Control  |   |  |  |
-|                         |             |  Accommodation of Mistakes  |   |  |  |
+| Data Fields             | 1.1        |  Author of the SBOM data       | metadata->authors, metadata->supplier | creator  |   |
+|                         | 1.2            |  Timestamp    |  metadata->timestamp  |  created  |            |
+|                         | 1.3            |  Dependency Relationship | dependencies, composition | relationships  |  |
+|                         | 1.4     |  present      |           |           | all package elements |
+|                         | 1.5 |  Component Name         |  component->name | package->name |                      |
+|                         | 1.6           |  Supplier Name  |  component->supplier | packageSupplier, packageOriginator |  |
+|                         | 1.7           |  Version of Component | component->version | package->version	|  |
+|                         | 1.8           |  Other Uniq IDs     | component->cpe, component->purl | DocumentNamespace, SPDXID |  |
+| Automation Support      | 2.1        |  Format       |  BomFormat | SPDXversion |  |
+| Practices and Processes | 3.1        |  Depth  | dependencies, compositions | relationships |  |
+|                         | 3.2           |  Known Unknowns |   |  |  |
