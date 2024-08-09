@@ -94,11 +94,11 @@ func lookupLicense(licenseKey string) (License, error) {
 
 	tLicKey := strings.TrimRight(licenseKey, "+")
 
-	//Lookup spdx & exception list
+	// Lookup spdx & exception list
 	license, lok := licenseList[tLicKey]
 	abouLicense, aok := LicenseListAboutCode[tLicKey]
 
-	//fmt.Printf("lookupLicense: %s %v %v\n", tLicKey, lok, aok)
+	// fmt.Printf("lookupLicense: %s %v %v\n", tLicKey, lok, aok)
 
 	if lok && aok {
 		return abouLicense, nil
@@ -142,7 +142,6 @@ func LookupExpression(expression string, customLicense []License) []License {
 	for _, l := range licenses {
 		tLicKey := strings.TrimRight(l, "+")
 		lic, err := lookupLicense(tLicKey)
-
 		if err != nil {
 			custLic, err2 := customLookup(tLicKey)
 			if err2 != nil {
@@ -171,6 +170,6 @@ func CreateCustomLicense(id, name string) License {
 		freeAnyUse:  false,
 		restrictive: false,
 		exception:   false,
-		source:      "custom",
+		source:      "unknown license",
 	}
 }
