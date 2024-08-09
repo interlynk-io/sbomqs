@@ -39,7 +39,11 @@ func compWithValidLicensesCheck(d sbom.Document, c *check) score {
 		tl := len(c.Licenses())
 
 		validLic := lo.CountBy(c.Licenses(), func(l licenses.License) bool {
-			return l.Deprecated() || l.Source() == "custom"
+			if l.Deprecated() || l.Source() == "unknown license" {
+				return false
+			} else {
+				return true
+			}
 		})
 
 		return (float64(validLic) / float64(tl)) * 10.0
