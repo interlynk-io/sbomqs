@@ -17,6 +17,7 @@ package compliance
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/interlynk-io/sbomqs/pkg/logger"
@@ -33,9 +34,6 @@ func ntiaResult(ctx context.Context, doc sbom.Document, fileName string, outForm
 	db.addRecord(ntiaSbomCreator(doc))
 	db.addRecord(ntiaSbomCreatedTimestamp(doc))
 	db.addRecords(ntiaComponents(doc))
-	// db.addRecord(ntiaBuildPhase(doc))
-	// db.addRecord(ntiaComponentHash(doc))
-	// db.addRecord(ntiaComponentlicense(doc))
 
 	if outFormat == "json" {
 		ntiaJsonReport(db, fileName)
@@ -320,8 +318,8 @@ func ntiaComponentDependencies(doc sbom.Document, component sbom.GetComponent) *
 		result, score := "", 0.0
 		if relation := doc.Relations(); relation != nil {
 			for _, rel := range relation {
-				if rel.GetFrom() != "" && rel.GetTo() != "" {
-					result = rel.GetFrom() + ", " + rel.GetTo()
+				if strings.Contains(rel.GetFrom(), component.GetID()) {
+					result = rel.GetTo()
 					score = 10
 					return newRecordStmt(COMP_DEPTH, component.GetID(), result, score)
 				}

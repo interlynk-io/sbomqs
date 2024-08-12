@@ -234,7 +234,7 @@ func (s *SpdxDoc) parseComps() {
 
 		fromRelsPresent := func(rels []GetRelation, id string) bool {
 			for _, r := range rels {
-				if r.GetFrom() == id {
+				if strings.Contains(r.GetFrom(), id) {
 					return true
 				}
 			}
