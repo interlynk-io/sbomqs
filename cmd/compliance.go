@@ -28,6 +28,20 @@ var complianceCmd = &cobra.Command{
 	Long: `Check if your SBOM complies with various SBOM standards like NTIA minimum elements, BSI TR-03183-2, OpenChain Telco.
 	Generate a compliance report for an SBOM file.
 	`,
+	Example: ` sbomqs compliance --bsi|--oct  [--basic|--json] <SBOM file>
+
+  # Check a BSI TR-03183-2 v1.1 compliance against a SBOM in a table output
+  sbomqs compliance --bsi samples/sbomqs-spdx-syft.json
+
+  # Check a BSI TR-03183-2 v1.1 compliance against a SBOM in a JSON output
+  sbomqs compliance --bsi --json samples/sbomqs-spdx-syft.json
+
+  # Check a OpenChain Telco compliance against a SBOM in a table output
+  sbomqs compliance --oct samples/sbomqs-spdx-syft.json
+
+  # Check a OpenChain Telco compliance against a SBOM in a JSON output
+  sbomqs compliance --oct --json samples/sbomqs-spdx-syft.json
+`,
 	Args: func(cmd *cobra.Command, args []string) error {
 		if err := cobra.ExactArgs(1)(cmd, args); err != nil {
 			return fmt.Errorf("compliance requires a single argument, the path to an SBOM file")

@@ -65,7 +65,25 @@ var scoreCmd = &cobra.Command{
 	Use:          "score",
 	Short:        "comprehensive quality score for your sbom",
 	SilenceUsage: true,
-	Args: func(_ *cobra.Command, args []string) error {
+	Example: ` sbomqs score [--category <category>] [--feature <feature>]  [--basic|--json]  <SBOM file>
+
+  # Get a score against a SBOM in a table output
+  sbomqs score samples/sbomqs-spdx-syft.json
+
+  # Get a score against a SBOM in a basic output
+  sbomqs score --basic samples/sbomqs-spdx-syft.json
+
+  # Get a score against a SBOM in a JSON output
+  sbomqs score --json samples/sbomqs-spdx-syft.json
+ 
+  # Get a score for a 'NTIA-minimum-elements' category against a SBOM in a table output
+  sbomqs score --category NTIA-minimum-elements samples/sbomqs-spdx-syft.json
+
+  # Get a score for a 'NTIA-minimum-elements' category and 'sbom_authors' feature against a SBOM in a table output
+  sbomqs score --category NTIA-minimum-elements --feature sbom_authors samples/sbomqs-spdx-syft.json
+`,
+
+	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) <= 0 {
 			if len(inFile) <= 0 && len(inDirPath) <= 0 {
 				return fmt.Errorf("provide a path to an sbom file or directory of sbom files")
@@ -188,8 +206,8 @@ func init() {
 	scoreCmd.Flags().StringP("configpath", "", "", "scoring based on config path")
 
 	// Filter Control
-	scoreCmd.Flags().StringP("category", "c", "", "filter by category")
-	scoreCmd.Flags().StringP("feature", "f", "", "filter by feature")
+	scoreCmd.Flags().StringP("category", "c", "", "filter by category (e.g. 'NTIA-minimum-elements', 'Quality', 'Semantic', 'Sharing', 'Structural')")
+	scoreCmd.Flags().StringP("feature", "f", "", "filter by feature (e.g. 'sbom_authors',  'comp_with_name', 'sbom_creation_timestamp') ")
 
 	// Spec Control
 	scoreCmd.Flags().BoolP("spdx", "", false, "limit scoring to spdx sboms")
