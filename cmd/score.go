@@ -16,6 +16,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 	"strings"
 
@@ -82,7 +83,7 @@ var scoreCmd = &cobra.Command{
   sbomqs score --category NTIA-minimum-elements --feature sbom_authors samples/sbomqs-spdx-syft.json
 `,
 
-	Args: func(cmd *cobra.Command, args []string) error {
+	Args: func(_ *cobra.Command, args []string) error {
 		if len(args) <= 0 {
 			if len(inFile) <= 0 && len(inDirPath) <= 0 {
 				return fmt.Errorf("provide a path to an sbom file or directory of sbom files")
@@ -168,7 +169,7 @@ func toEngineParams(uCmd *userCmd) *engine.Params {
 		Path:       uCmd.path,
 		Category:   uCmd.category,
 		Features:   uCmd.features,
-		Json:       uCmd.json,
+		JSON:       uCmd.json,
 		Basic:      uCmd.basic,
 		Detailed:   uCmd.detailed,
 		Recurse:    uCmd.recurse,
@@ -212,12 +213,24 @@ func init() {
 	scoreCmd.Flags().BoolP("spdx", "", false, "limit scoring to spdx sboms")
 	scoreCmd.Flags().BoolP("cdx", "", false, "limit scoring to cdx sboms")
 	scoreCmd.MarkFlagsMutuallyExclusive("spdx", "cdx")
-	scoreCmd.Flags().MarkHidden("spdx")
-	scoreCmd.Flags().MarkHidden("cdx")
+	err := scoreCmd.Flags().MarkHidden("spdx")
+	if err != nil {
+		// Handle the error appropriately, such as logging it or returning it
+		log.Fatalf("Failed to mark flag as deprecated: %v", err)
+	}
+	err = scoreCmd.Flags().MarkHidden("cdx")
+	if err != nil {
+		// Handle the error appropriately, such as logging it or returning it
+		log.Fatalf("Failed to mark flag as deprecated: %v", err)
+	}
 
 	// Directory Control
 	scoreCmd.Flags().BoolP("recurse", "r", false, "recurse into subdirectories")
-	scoreCmd.Flags().MarkHidden("recurse")
+	err = scoreCmd.Flags().MarkHidden("recurse")
+	if err != nil {
+		// Handle the error appropriately, such as logging it or returning it
+		log.Fatalf("Failed to mark flag as deprecated: %v", err)
+	}
 
 	// Output Control
 	scoreCmd.Flags().BoolP("json", "j", false, "results in json")
@@ -232,7 +245,24 @@ func init() {
 	scoreCmd.Flags().StringVar(&inDirPath, "dirpath", "", "sbom dir path")
 	scoreCmd.MarkFlagsMutuallyExclusive("filepath", "dirpath")
 	scoreCmd.Flags().StringVar(&reportFormat, "reportFormat", "", "reporting format basic/detailed/json")
-	scoreCmd.Flags().MarkDeprecated("reportFormat", "use --json, --detailed, or --basic instead")
-	scoreCmd.Flags().MarkDeprecated("filepath", "use positional argument instead")
-	scoreCmd.Flags().MarkDeprecated("dirpath", "use positional argument instead")
+	err = scoreCmd.Flags().MarkDeprecated("reportFormat", "use --json, --detailed, or --basic instead")
+	if err != nil {
+		// Handle the error appropriately, such as logging it or returning it
+		log.Fatalf("Failed to mark flag as deprecated: %v", err)
+	}
+	err = scoreCmd.Flags().MarkDeprecated("filepath", "use positional argument instead")
+	if err != nil {
+		// Handle the error appropriately, such as logging it or returning it
+		log.Fatalf("Failed to mark flag as deprecated: %v", err)
+	}
+	err = scoreCmd.Flags().MarkDeprecated("dirpath", "use positional argument instead")
+	if err != nil {
+		// Handle the error appropriately, such as logging it or returning it
+		log.Fatalf("Failed to mark flag as deprecated: %v", err)
+	}
+	err = scoreCmd.Flags().MarkDeprecated("dirpath", "use positional argument instead")
+	if err != nil {
+		// Handle the error appropriately, such as logging it or returning it
+		log.Fatalf("Failed to mark flag as deprecated: %v", err)
+	}
 }

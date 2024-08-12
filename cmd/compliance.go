@@ -69,7 +69,7 @@ func setupEngineParams(cmd *cobra.Command, args []string) *engine.Params {
 
 	engParams.Basic, _ = cmd.Flags().GetBool("basic")
 	engParams.Detailed, _ = cmd.Flags().GetBool("detailed")
-	engParams.Json, _ = cmd.Flags().GetBool("json")
+	engParams.JSON, _ = cmd.Flags().GetBool("json")
 
 	// engParams.Ntia, _ = cmd.Flags().GetBool("ntia")
 	engParams.Bsi, _ = cmd.Flags().GetBool("bsi")

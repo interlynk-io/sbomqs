@@ -35,8 +35,8 @@ type GetComponent interface {
 	Suppliers() GetSupplier
 	Manufacturer() Manufacturer
 	CountOfDependencies() int
-	SourceCodeUrl() string
-	GetDownloadLocationUrl() string
+	SourceCodeURL() string
+	GetDownloadLocationURL() string
 	SourceCodeHash() string
 	IsPrimaryComponent() bool
 	HasRelationShips() bool
@@ -59,11 +59,11 @@ type Component struct {
 	Checksums               []GetChecksum
 	purpose                 string
 	isReqFieldsPresent      bool
-	Id                      string
+	ID                      string
 	Supplier                Supplier
 	manufacturer            manufacturer
 	dependenciesCount       int
-	sourceCodeUrl           string
+	sourceCodeURL           string
 	DownloadLocation        string
 	sourceCodeHash          string
 	isPrimary               bool
@@ -118,7 +118,7 @@ func (c Component) RequiredFields() bool {
 }
 
 func (c Component) GetID() string {
-	return c.Id
+	return c.ID
 }
 
 func (c Component) Manufacturer() Manufacturer {
@@ -133,11 +133,11 @@ func (c Component) CountOfDependencies() int {
 	return c.dependenciesCount
 }
 
-func (c Component) SourceCodeUrl() string {
-	return c.sourceCodeUrl
+func (c Component) SourceCodeURL() string {
+	return c.sourceCodeURL
 }
 
-func (c Component) GetDownloadLocationUrl() string {
+func (c Component) GetDownloadLocationURL() string {
 	return c.DownloadLocation
 }
 

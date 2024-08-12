@@ -12,42 +12,42 @@ import (
 )
 
 var octSectionDetails = map[int]octSection{
-	SBOM_SPEC:            {Title: "SBOM Format", Id: "3.1", Required: true, DataField: "SBOM data format"},
-	SBOM_SPEC_VERSION:    {Title: "SPDX Elements", Id: "3.2", Required: true, DataField: "Spec version"},
-	SBOM_SPDXID:          {Title: "SPDX Elements", Id: "3.2", Required: true, DataField: "Spec spdxid"},
-	SBOM_ORG:             {Title: "SBOM Build Information", Id: "3.5", Required: true, DataField: "SBOM creator organization"},
-	SBOM_COMMENT:         {Title: "SPDX Elements", Id: "3.2", Required: true, DataField: "SBOM creator comment"},
-	SBOM_NAMESPACE:       {Title: "SPDX Elements", Id: "3.2", Required: true, DataField: "SBOM namespace"},
-	SBOM_LICENSE:         {Title: "SPDX Elements", Id: "3.2", Required: true, DataField: "SBOM license"},
-	SBOM_NAME:            {Title: "SPDX Elements", Id: "3.2", Required: true, DataField: "SBOM name"},
-	SBOM_TIMESTAMP:       {Title: "SPDX Elements", Id: "3.2", Required: true, DataField: "SBOM timestamp"},
-	SBOM_TOOL:            {Title: "SBOM Build Information", Id: "3.5", Required: true, DataField: "SBOM creator tool"},
-	PACK_INFO:            {Title: "SPDX Elements", Id: "3.2", Required: true, DataField: "Package info"},
-	PACK_NAME:            {Title: "SPDX Elements", Id: "3.2", Required: true, DataField: "Package name"},
-	PACK_SPDXID:          {Title: "SPDX Elements", Id: "3.2", Required: true, DataField: "Package spdxid"},
-	PACK_VERSION:         {Title: "SPDX Elements", Id: "3.2", Required: true, DataField: "Package version"},
-	PACK_FILE_ANALYZED:   {Title: "SPDX Elements", Id: "3.2", Required: true, DataField: "FileAnalyze"},
-	PACK_DOWNLOAD_URL:    {Title: "SPDX Elements", Id: "3.2", Required: true, DataField: "Package download URL"},
-	PACK_HASH:            {Title: "SPDX Elements", Id: "3.2", Required: true, DataField: "Package checksum"},
-	PACK_SUPPLIER:        {Title: "SPDX Elements", Id: "3.2", Required: true, DataField: "Package supplier"},
-	PACK_LICENSE_CON:     {Title: "SPDX Elements", Id: "3.2", Required: true, DataField: "Package concluded License"},
-	PACK_LICENSE_DEC:     {Title: "SPDX Elements", Id: "3.2", Required: true, DataField: "Package declared License"},
-	PACK_COPYRIGHT:       {Title: "SPDX Elements", Id: "3.2", Required: true, DataField: "Package copyright"},
-	PACK_EXT_REF:         {Title: "SPDX Elements", Id: "3.2", Required: true, DataField: "Package external References"},
-	SBOM_MACHINE_FORMAT:  {Title: "Machine Readable Data Format", Id: "3.3", Required: true, DataField: "SBOM machine readable format"},
-	SBOM_HUMAN_FORMAT:    {Title: "Human Readable Data Format", Id: "3.4", Required: true, DataField: "SBOM human readable format"},
-	SBOM_BUILD_INFO:      {Title: "SBOM Build Information", Id: "3.5", Required: true, DataField: "SBOM creator field"},
-	SBOM_DELIVERY_TIME:   {Title: "Timing of SBOM delivery", Id: "3.6", Required: true, DataField: "SBOM delivery time"},
-	SBOM_DELIVERY_METHOD: {Title: "Method of SBOM delivery", Id: "3.7", Required: true, DataField: "SBOM delivery method"},
-	SBOM_SCOPE:           {Title: "SBOM Scope", Id: "3.8", Required: true, DataField: "SBOM scope"},
+	SBOM_SPEC:            {Title: "SBOM Format", ID: "3.1", Required: true, DataField: "SBOM data format"},
+	SBOM_SPEC_VERSION:    {Title: "SPDX Elements", ID: "3.2", Required: true, DataField: "Spec version"},
+	SBOM_SPDXID:          {Title: "SPDX Elements", ID: "3.2", Required: true, DataField: "Spec spdxid"},
+	SBOM_ORG:             {Title: "SBOM Build Information", ID: "3.5", Required: true, DataField: "SBOM creator organization"},
+	SBOM_COMMENT:         {Title: "SPDX Elements", ID: "3.2", Required: true, DataField: "SBOM creator comment"},
+	SBOM_NAMESPACE:       {Title: "SPDX Elements", ID: "3.2", Required: true, DataField: "SBOM namespace"},
+	SBOM_LICENSE:         {Title: "SPDX Elements", ID: "3.2", Required: true, DataField: "SBOM license"},
+	SBOM_NAME:            {Title: "SPDX Elements", ID: "3.2", Required: true, DataField: "SBOM name"},
+	SBOM_TIMESTAMP:       {Title: "SPDX Elements", ID: "3.2", Required: true, DataField: "SBOM timestamp"},
+	SBOM_TOOL:            {Title: "SBOM Build Information", ID: "3.5", Required: true, DataField: "SBOM creator tool"},
+	PACK_INFO:            {Title: "SPDX Elements", ID: "3.2", Required: true, DataField: "Package info"},
+	PACK_NAME:            {Title: "SPDX Elements", ID: "3.2", Required: true, DataField: "Package name"},
+	PACK_SPDXID:          {Title: "SPDX Elements", ID: "3.2", Required: true, DataField: "Package spdxid"},
+	PACK_VERSION:         {Title: "SPDX Elements", ID: "3.2", Required: true, DataField: "Package version"},
+	PACK_FILE_ANALYZED:   {Title: "SPDX Elements", ID: "3.2", Required: true, DataField: "FileAnalyze"},
+	PACK_DOWNLOAD_URL:    {Title: "SPDX Elements", ID: "3.2", Required: true, DataField: "Package download URL"},
+	PACK_HASH:            {Title: "SPDX Elements", ID: "3.2", Required: true, DataField: "Package checksum"},
+	PACK_SUPPLIER:        {Title: "SPDX Elements", ID: "3.2", Required: true, DataField: "Package supplier"},
+	PACK_LICENSE_CON:     {Title: "SPDX Elements", ID: "3.2", Required: true, DataField: "Package concluded License"},
+	PACK_LICENSE_DEC:     {Title: "SPDX Elements", ID: "3.2", Required: true, DataField: "Package declared License"},
+	PACK_COPYRIGHT:       {Title: "SPDX Elements", ID: "3.2", Required: true, DataField: "Package copyright"},
+	PACK_EXT_REF:         {Title: "SPDX Elements", ID: "3.2", Required: true, DataField: "Package external References"},
+	SBOM_MACHINE_FORMAT:  {Title: "Machine Readable Data Format", ID: "3.3", Required: true, DataField: "SBOM machine readable format"},
+	SBOM_HUMAN_FORMAT:    {Title: "Human Readable Data Format", ID: "3.4", Required: true, DataField: "SBOM human readable format"},
+	SBOM_BUILD_INFO:      {Title: "SBOM Build Information", ID: "3.5", Required: true, DataField: "SBOM creator field"},
+	SBOM_DELIVERY_TIME:   {Title: "Timing of SBOM delivery", ID: "3.6", Required: true, DataField: "SBOM delivery time"},
+	SBOM_DELIVERY_METHOD: {Title: "Method of SBOM delivery", ID: "3.7", Required: true, DataField: "SBOM delivery method"},
+	SBOM_SCOPE:           {Title: "SBOM Scope", ID: "3.8", Required: true, DataField: "SBOM scope"},
 }
 
 type octSection struct {
 	Title         string  `json:"section_title"`
-	Id            string  `json:"section_id"`
+	ID            string  `json:"section_id"`
 	DataField     string  `json:"section_data_field"`
 	Required      bool    `json:"required"`
-	ElementId     string  `json:"element_id"`
+	ElementID     string  `json:"element_id"`
 	ElementResult string  `json:"element_result"`
 	Score         float64 `json:"score"`
 }
@@ -62,13 +62,13 @@ type octComplianceReport struct {
 	Sections []octSection `json:"sections"`
 }
 
-func newOctJsonReport() *octComplianceReport {
+func newOctJSONReport() *octComplianceReport {
 	return &octComplianceReport{
 		Name:     "Open Chain Telco Report",
 		Subtitle: "Part 2: Software Bill of Materials (SBOM)",
 		Revision: "",
 		Run: run{
-			Id:            uuid.New().String(),
+			ID:            uuid.New().String(),
 			GeneratedAt:   time.Now().UTC().Format(time.RFC3339),
 			FileName:      "",
 			EngineVersion: "1",
@@ -81,8 +81,8 @@ func newOctJsonReport() *octComplianceReport {
 	}
 }
 
-func octJsonReport(db *db, fileName string) {
-	jr := newOctJsonReport()
+func octJSONReport(db *db, fileName string) {
+	jr := newOctJSONReport()
 	jr.Run.FileName = fileName
 
 	score := octAggregateScore(db)
@@ -101,29 +101,29 @@ func octJsonReport(db *db, fileName string) {
 
 func octConstructSections(db *db) []octSection {
 	var sections []octSection
-	allIds := db.getAllIds()
-	for _, id := range allIds {
-		records := db.getRecordsById(id)
+	allIDs := db.getAllIDs()
+	for _, id := range allIDs {
+		records := db.getRecordsByID(id)
 
 		for _, r := range records {
-			section := octSectionDetails[r.check_key]
-			new_section := octSection{
+			section := octSectionDetails[r.checkKey]
+			newSection := octSection{
 				Title:     section.Title,
-				Id:        section.Id,
+				ID:        section.ID,
 				DataField: section.DataField,
 				Required:  section.Required,
 			}
-			score := octKeyIdScore(db, r.check_key, r.id)
-			new_section.Score = score.totalScore()
+			score := octKeyIDScore(db, r.checkKey, r.id)
+			newSection.Score = score.totalScore()
 			if r.id == "doc" {
-				new_section.ElementId = "sbom"
+				newSection.ElementID = "sbom"
 			} else {
-				new_section.ElementId = r.id
+				newSection.ElementID = r.id
 			}
 
-			new_section.ElementResult = r.check_value
+			newSection.ElementResult = r.checkValue
 
-			sections = append(sections, new_section)
+			sections = append(sections, newSection)
 		}
 	}
 	return sections
@@ -142,11 +142,11 @@ func octDetailedReport(db *db, fileName string) {
 
 	sections := octConstructSections(db)
 	for _, section := range sections {
-		sectionId := section.Id
+		sectionID := section.ID
 		if !section.Required {
-			sectionId = sectionId + "*"
+			sectionID = sectionID + "*"
 		}
-		table.Append([]string{section.ElementId, sectionId, section.DataField, section.ElementResult, fmt.Sprintf("%0.1f", section.Score)})
+		table.Append([]string{section.ElementID, sectionID, section.DataField, section.ElementResult, fmt.Sprintf("%0.1f", section.Score)})
 	}
 	table.Render()
 }

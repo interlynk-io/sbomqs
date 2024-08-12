@@ -19,14 +19,14 @@ package sbom
 type GetSupplier interface {
 	GetName() string
 	GetEmail() string
-	GetUrl() string
+	GetURL() string
 	GetContacts() []Contact
 }
 
 type Supplier struct {
 	Name     string
 	Email    string
-	Url      string
+	URL      string
 	Contacts []Contact
 }
 
@@ -38,8 +38,8 @@ func (s Supplier) GetEmail() string {
 	return s.Email
 }
 
-func (s Supplier) GetUrl() string {
-	return s.Url
+func (s Supplier) GetURL() string {
+	return s.URL
 }
 
 func (s Supplier) GetContacts() []Contact {
