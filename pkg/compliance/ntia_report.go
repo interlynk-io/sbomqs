@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"sort"
 	"time"
 
 	"github.com/google/uuid"
@@ -12,16 +13,16 @@ import (
 )
 
 var ntiaSectionDetails = map[int]ntiaSection{
-	SBOM_MACHINE_FORMAT: {Title: "Automation Support", Id: "2.1", Required: true, DataField: "Machine-Readable Formats"},
-	SBOM_CREATOR:        {Title: "Required fields sboms ", Id: "1.1", Required: true, DataField: "Author"},
-	SBOM_TIMESTAMP:      {Title: "Required fields sboms", Id: "1.2", Required: true, DataField: "Timestamp"},
-	SBOM_COMPONENTS:     {Title: "Required sbom component", Id: "1.4", Required: true, DataField: "Packages"},
-	COMP_NAME:           {Title: "Required fields components", Id: "1.5", Required: true, DataField: "Package Name"},
-	COMP_DEPTH:          {Title: "Required fields components", Id: "1.3", Required: true, DataField: "Dependencies on other components"},
-	COMP_CREATOR:        {Title: "Required fields component", Id: "1.6", Required: true, DataField: "Package Supplier"},
-	PACK_SUPPLIER:       {Title: "Required fields component", Id: "1.6", Required: true, DataField: "Package Supplier"},
-	COMP_VERSION:        {Title: "Required fields components", Id: "1.7", Required: true, DataField: "Package Version"},
-	COMP_OTHER_UNIQ_IDS: {Title: "Required fields component", Id: "1.8", Required: true, DataField: "Other Uniq IDs"},
+	SBOM_MACHINE_FORMAT: {Title: "Automation Support", Id: "1.1", Required: true, DataField: "Machine-Readable Formats"},
+	SBOM_CREATOR:        {Title: "Required fields sboms ", Id: "2.1", Required: true, DataField: "Author"},
+	SBOM_TIMESTAMP:      {Title: "Required fields sboms", Id: "2.2", Required: true, DataField: "Timestamp"},
+	SBOM_COMPONENTS:     {Title: "Required sbom component", Id: "2.3", Required: true, DataField: "Packages"},
+	COMP_NAME:           {Title: "Required fields components", Id: "2.4", Required: true, DataField: "Package Name"},
+	COMP_DEPTH:          {Title: "Required fields components", Id: "2.5", Required: true, DataField: "Dependencies on other components"},
+	COMP_CREATOR:        {Title: "Required fields component", Id: "2.6", Required: true, DataField: "Package Supplier"},
+	PACK_SUPPLIER:       {Title: "Required fields component", Id: "2.6", Required: true, DataField: "Package Supplier"},
+	COMP_VERSION:        {Title: "Required fields components", Id: "2.8", Required: true, DataField: "Package Version"},
+	COMP_OTHER_UNIQ_IDS: {Title: "Required fields component", Id: "2.9", Required: true, DataField: "Other Uniq IDs"},
 }
 
 type ntiaSection struct {
@@ -46,7 +47,7 @@ type ntiaComplianceReport struct {
 
 func newNtiaJsonReport() *ntiaComplianceReport {
 	return &ntiaComplianceReport{
-		Name:     "NTIA Compliance Report",
+		Name:     "NTIA-minimum elements Compliance Report",
 		Subtitle: "Part 2: Software Bill of Materials (SBOM)",
 		Revision: "",
 		Run: run{
@@ -123,6 +124,15 @@ func ntiaDetailedReport(db *db, fileName string) {
 	table.SetAutoMergeCellsByColumnIndex([]int{0})
 
 	sections := ntiaConstructSections(db)
+
+	// Sort sections by ElementId and then by SectionId
+	sort.Slice(sections, func(i, j int) bool {
+		if sections[i].ElementId == sections[j].ElementId {
+			return sections[i].Id < sections[j].Id
+		}
+		return sections[i].ElementId < sections[j].ElementId
+	})
+
 	for _, section := range sections {
 		sectionId := section.Id
 		if !section.Required {
