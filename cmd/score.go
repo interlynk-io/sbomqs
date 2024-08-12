@@ -83,7 +83,7 @@ var scoreCmd = &cobra.Command{
   sbomqs score --category NTIA-minimum-elements --feature sbom_authors samples/sbomqs-spdx-syft.json
 `,
 
-	Args: func(cmd *cobra.Command, args []string) error {
+	Args: func(_ *cobra.Command, args []string) error {
 		if len(args) <= 0 {
 			if len(inFile) <= 0 && len(inDirPath) <= 0 {
 				return fmt.Errorf("provide a path to an sbom file or directory of sbom files")
