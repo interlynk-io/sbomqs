@@ -50,7 +50,7 @@ func newNtiaJsonReport() *ntiaComplianceReport {
 		Subtitle: "Part 2: Software Bill of Materials (SBOM)",
 		Revision: "",
 		Run: run{
-			Id:            uuid.New().String(),
+			ID:            uuid.New().String(),
 			GeneratedAt:   time.Now().UTC().Format(time.RFC3339),
 			FileName:      "",
 			EngineVersion: "1",
@@ -83,19 +83,19 @@ func ntiaJsonReport(db *db, fileName string) {
 
 func ntiaConstructSections(db *db) []ntiaSection {
 	var sections []ntiaSection
-	allIds := db.getAllIds()
+	allIds := db.getAllIDs()
 	for _, id := range allIds {
-		records := db.getRecordsById(id)
+		records := db.getRecordsByID(id)
 
 		for _, r := range records {
-			section := ntiaSectionDetails[r.check_key]
+			section := ntiaSectionDetails[r.checkKey]
 			new_section := ntiaSection{
 				Title:     section.Title,
 				Id:        section.Id,
 				DataField: section.DataField,
 				Required:  section.Required,
 			}
-			score := ntiaKeyIdScore(db, r.check_key, r.id)
+			score := ntiaKeyIdScore(db, r.checkKey, r.id)
 			new_section.Score = score.totalScore()
 			if r.id == "doc" {
 				new_section.ElementId = "sbom"
@@ -103,7 +103,7 @@ func ntiaConstructSections(db *db) []ntiaSection {
 				new_section.ElementId = r.id
 			}
 
-			new_section.ElementResult = r.check_value
+			new_section.ElementResult = r.checkValue
 
 			sections = append(sections, new_section)
 		}

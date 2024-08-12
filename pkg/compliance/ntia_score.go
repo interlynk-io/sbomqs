@@ -45,7 +45,7 @@ func (r *ntiaScoreResult) totalOptionalScore() float64 {
 }
 
 func ntiaKeyIdScore(db *db, key int, id string) *ntiaScoreResult {
-	records := db.getRecordsByKeyId(key, id)
+	records := db.getRecordsByKeyID(key, id)
 
 	if len(records) == 0 {
 		return newNtiaScoreResult(id)
@@ -80,7 +80,7 @@ func ntiaAggregateScore(db *db) *ntiaScoreResult {
 	var results []ntiaScoreResult
 	var finalResult ntiaScoreResult
 
-	ids := db.getAllIds()
+	ids := db.getAllIDs()
 	for _, id := range ids {
 		results = append(results, *ntiaIdScore(db, id))
 	}
@@ -96,7 +96,7 @@ func ntiaAggregateScore(db *db) *ntiaScoreResult {
 }
 
 func ntiaIdScore(db *db, id string) *ntiaScoreResult {
-	records := db.getRecordsById(id)
+	records := db.getRecordsByID(id)
 
 	if len(records) == 0 {
 		return newNtiaScoreResult(id)

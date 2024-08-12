@@ -146,9 +146,9 @@ func TestNtiaSpdxSbomPass(t *testing.T) {
 
 	for _, test := range testCases {
 		assert.Equal(t, test.expected.score, test.actual.score)
-		assert.Equal(t, test.expected.key, test.actual.check_key)
+		assert.Equal(t, test.expected.key, test.actual.checkKey)
 		assert.Equal(t, test.expected.id, test.actual.id)
-		assert.Equal(t, test.expected.result, test.actual.check_value)
+		assert.Equal(t, test.expected.result, test.actual.checkValue)
 	}
 }
 
@@ -269,9 +269,9 @@ func TestNtiaCdxSbomPass(t *testing.T) {
 	}
 	for _, test := range testCases {
 		assert.Equal(t, test.expected.score, test.actual.score)
-		assert.Equal(t, test.expected.key, test.actual.check_key)
+		assert.Equal(t, test.expected.key, test.actual.checkKey)
 		assert.Equal(t, test.expected.id, test.actual.id)
-		assert.Equal(t, test.expected.result, test.actual.check_value)
+		assert.Equal(t, test.expected.result, test.actual.checkValue)
 	}
 }
 
