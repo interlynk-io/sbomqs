@@ -31,60 +31,74 @@ brew install sbomqs
 Other [installation options](#installation).
 
 # SBOM Card
+
 [![SBOMCard](https://api.interlynk.io/api/v1/badges.svg?type=hcard&project_group_id=7f52093e-3d78-49cb-aeb1-6c977de9442e
 )](https://app.interlynk.io/customer/products?id=7f52093e-3d78-49cb-aeb1-6c977de9442e&signed_url_params=eyJfcmFpbHMiOnsibWVzc2FnZSI6IklqUmhPRGRoTjJNNExXSXpZekl0TkdVeE9TMDVNRGxoTFRKbFpHRmlPR1ZoWldReVl5ST0iLCJleHAiOm51bGwsInB1ciI6InNoYXJlX2x5bmsvc2hhcmVfbHluayJ9fQ==--daf6585ecf8013a0b2713a5cebb28c140d29eed904b15c84c0566b9ddd334e71)
 
 # Usage
-#### Quality Score for a single SBOM
+
+## Quality Score for a single SBOM
+
 ```sh
 sbomqs score <sbom-file>
 ```
 
-#### Compliance Report: BSI TR-03183-2
+## Compliance Report: BSI TR-03183-2
+
 ```sh
 sbomqs compliance -c samples/photon.spdx.json
 ```
 
-#### Quality Score with a shareable link at [sbombenchmark.dev](https://sbombenchmark.dev/)
+## Quality Score with a shareable link at [sbombenchmark.dev](https://sbombenchmark.dev/)
+
 ```sh
 sbomqs share <sbom-file>
 ```
 
 Example:
+
 ```sh
 sbomqs share cdxgen-9.5.1_alpine-latest.cdx.json
 ```
 
-```
-5.9	cdxgen-9.5.1_alpine-latest.cdx.json
+```sh
+5.9 cdxgen-9.5.1_alpine-latest.cdx.json
 ShareLink: https://sbombenchmark.dev/user/score?id=a97af1bf-4c9d-4a55-8524-3d4bcee0b9a4
 ```
 
-#### Quality Score for your dependency track projects
+## Quality Score for your dependency track projects
+
 ```sh
 sbomqs dtrackScore  -u <dt-host-url> -k <dt-api-key> <project-uuid>
 ```
 
 Example:
+
 ```sh
 sbomqs dtrackScore  -u "http://localhost:8080/" -k "IIcfPA9qc1F4IkQFa2FqQJoTwcfQI" bbd4434d-8062-4e59-a323-3b416701c948
 ```
+
 ![alt text](./images/dt.png "Depedency Track with sbomqs score")
 
-#### Quality Score in an AirGapped Environment
+## Quality Score in an AirGapped Environment
+
 ```sh
 INTERLYNK_DISABLE_VERSION_CHECK=true ./build/sbomqs score ~/wrk/sbom*/samples/*.json  -b
 ```
 
-#### Quality Score using containers
+## Quality Score using containers
+
 ```sh
 docker run -v <path of sbom file or folder>:/app/inputfile ghcr.io/interlynk-io/sbomqs score /app/inputfile
 ```
+
 Example
+
 ```sh
 docker run -v $(pwd)/samples/sbomqs-cdx-cgomod.json:/app/inputfile ghcr.io/interlynk-io/sbomqs score -j /app/inputfile
 ```
-```
+
+```sh
 Unable to find image 'ghcr.io/interlynk-io/sbomqs:latest' locally
 latest: Pulling from interlynk-io/sbomqs
 708d61464c72: Already exists
@@ -101,9 +115,11 @@ Status: Downloaded newer image for ghcr.io/interlynk-io/sbomqs:latest
 ```
 
 # What is a high quality SBOM
+
 A high quality SBOM should aptly support managing software assets, license information and Intellectual Property as well as provide a base for configuration management, vulnerability handling and incident response.
 
 A quality SBOM is one that is accurate, complete, and up-to-date. There are many factors that go into constructing a high quality SBOM.
+
 1. Identify & list all components of your product along with their transitive dependencies.
 2. List all your components along with their versions & content checksums.
 3. Include accurate component licenses.
@@ -112,10 +128,10 @@ A quality SBOM is one that is accurate, complete, and up-to-date. There are many
 6. Signed SBOMs.
 7. Should layout information based on industry standard specs like CycloneDX, SPDX and SWID.
 
-
 # Goals
 
 The main goals of the utility are:
+
 1. Make it easy and fast to assess the quality if an SBOM, generated or acquired.
 2. Support all well-known SBOM standards.
 3. Scoring output should be customizable.
@@ -130,13 +146,15 @@ SBOMs can be generated using both commercial and open-source tooling. As consume
 ```sh
 sbomqs score samples/julia.spdx.tv -b
 ```
-```
+
+```sh
 6.9     samples/julia.spdx.json
 ```
 
 ## Goal #2: SBOM Standards
 
 The NTIA recommends these standards for SBOMs:
+
 - SPDX
 - CycloneDX
 - SWID
@@ -152,8 +170,10 @@ In addition to supporting these SBOM formats, we support various formats for dat
 
 `sbomqs` scoring output can be customized by category or by feature. We understand everyone's needs for scoring differ, hence we allow to customize which categories or features should rsp. should not be included for scoring.
 
-#### Category scoring
+## Category scoring
+
 We have categorized our current features as follows:
+
 - **NTIA-minimum-elements**: Includes features, which help you to quickly understand if an SBOM complies with NTIA's minimum element guidelines.
 - **Structural**: Checks if an SBOM complies with the underlying specifications, be it [SPDX](https://spdx.dev/specifications/) or [CycloneDX](https://cyclonedx.org/specification/overview/).
 - **Semantic**: Checks meaning of SBOM fields specific to their standard.
@@ -161,8 +181,8 @@ We have categorized our current features as follows:
 - **Sharing**: Helps to determine if an SBOM can be shared.
 - [OWASP BOM Maturity Model](https://docs.google.com/spreadsheets/d/1wu6KbgwuokC5357ikrhFN-QkwQ7Pyb6z0zE80sTNNus/edit#gid=0): Work in progress
 
+## Feature Scoring
 
-#### Feature Scoring
 We allow running any single feature to be tested against an SBOM.
 
 1. `sbomqs generate features` generates a features.yaml file.
@@ -187,6 +207,7 @@ The basic output is great for a quick check of the quality of an SBOMs. Once you
 Detailed output is presented in tabular and json formats, currently:
 
 Tabular format: this format has been inspired by oss scorecard project.
+
 ```sh
 SBOM Quality Score: 6.0 samples/blogifier-dotnet-SBOM.json
 +-----------------------+--------------------------------+-----------+--------------------------------+
@@ -206,6 +227,7 @@ SBOM Quality Score: 6.0 samples/blogifier-dotnet-SBOM.json
 ```
 
 json format
+
 ```json
 {
   "run_id": "fc86a94d-7490-4f20-a202-b04bb3cdfde9",
@@ -238,16 +260,19 @@ json format
 ```
 
 # Compliance Reports
+
 sbomqs can produce compliance reports for industry standard requirements. Details about compliance implementation are [avaliable here](./Compliance.md).
 
 ## Reports
+
 - [BSI TR-03183-2 v1.1](https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/Publications/TechGuidelines/TR03183/BSI-TR-03183-2.pdf)
 - [OpenChain Telco SBOM Guide Version 1.0](https://github.com/OpenChain-Project/Reference-Material/blob/master/SBOM-Quality/Version-1/OpenChain-Telco-SBOM-Guide_EN.md)
 - [NTIA minimum element](https://www.ntia.doc.gov/files/ntia/publications/sbom_minimum_elements_report.pdf) - Coming soon.
 - [OWASP SCVS](https://scvs.owasp.org/bom-maturity-model/) - Coming soon.
 
 Example of a BSI report
-```
+
+```json
 {
   "report_name": "Cyber Resilience Requirements for Manufacturers and Products Report",
   "subtitle": "Part 2: Software Bill of Materials (SBOM)",
@@ -280,7 +305,9 @@ Example of a BSI report
     },
 ...
 ```
+
 Example of a OpenChain Telco SBOM Basic Report
+
 ```
 ➜  sbomqs git:(fix/command-line) ./build/sbomqs compliance -t -b constellation-spdx.json
 OpenChain Telco Report
@@ -288,6 +315,7 @@ Score:3.1 RequiredScore:3.1 OptionalScore:0.0 for constellation-spdx.json
 ```
 
 # SBOM Samples
+
 - A sample set of SBOMs is present in the [samples](https://github.com/interlynk-io/sbomqs/tree/main/samples) directory above
 - [SBOM Benchmark](https://www.sbombenchmark.dev) is a repository of SBOM and quality score for most popular containers and repositories
 - [SBOM Explorer](https://github.com/interlynk-io/sbomex) is a command line utility to search and pull SBOMs
@@ -302,6 +330,7 @@ https://github.com/interlynk-io/sbomqs/releases
 ```
 
 ## Using Homebrew
+
 ```console
 brew tap interlynk-io/interlynk
 brew install sbomqs
@@ -323,7 +352,9 @@ This approach involves cloning the repo and building it.
 4. To test if the build was successful run the following command `./build/sbomqs version`
 
 # Contributions
+
 We look forward to your contributions, below are a few guidelines on how to submit them
+
 - Fork the repo
 - Create your feature/bug branch (`git checkout -b feature/bug`)
 - Commit your changes (`git commit -aSm "awesome new feature"`) - commits must be signed
@@ -331,13 +362,16 @@ We look forward to your contributions, below are a few guidelines on how to subm
 - Create a new pull-request
 
 # Other Open Source Software tools for SBOMs
+
 - [SBOM Assembler](https://github.com/interlynk-io/sbomasm) - A tool to compose a single SBOM by combining other SBOMs or parts of them
 - [SBOM Quality Score](https://github.com/interlynk-io/sbomqs) - A tool for evaluating the quality and completeness of SBOMs
 - [SBOM Search Tool](https://github.com/interlynk-io/sbomagr) - A tool to grep style semantic search in SBOMs
 - [SBOM Explorer](https://github.com/interlynk-io/sbomex) - A tool for discovering and downloading SBOMs from a public repository
 
 # Contact
+
 We appreciate all feedback. The best ways to get in touch with us:
+
 - ❓& 🅰️ [Slack](https://join.slack.com/t/sbomqa/shared_invite/zt-2jzq1ttgy-4IGzOYBEtHwJdMyYj~BACA)
 - :phone: [Live Chat](https://www.interlynk.io/#hs-chat-open)
 - 📫 [Email Us](mailto:hello@interlynk.io)
@@ -349,5 +383,3 @@ We appreciate all feedback. The best ways to get in touch with us:
 If you like this project, please support us by starring it.
 
 [![Stargazers](https://starchart.cc/interlynk-io/sbomqs.svg)](https://starchart.cc/interlynk-io/sbomqs)
-
-
