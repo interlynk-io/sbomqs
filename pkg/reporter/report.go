@@ -16,6 +16,7 @@ package reporter
 
 import (
 	"context"
+	"log"
 
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/pkg/scorer"
@@ -28,7 +29,7 @@ type Reporter struct {
 	Scores []scorer.Scores
 	Paths  []string
 
-	//optional params
+	// optional params
 	Format string
 }
 
@@ -62,7 +63,10 @@ func (r *Reporter) Report() {
 	} else if r.Format == "detailed" {
 		r.detailedReport()
 	} else if r.Format == "json" {
-		r.jsonReport(false)
+		_, err := r.jsonReport(false)
+		if err != nil {
+			log.Printf("Failed to print json report: %v", err)
+		}
 	} else {
 		r.detailedReport()
 	}

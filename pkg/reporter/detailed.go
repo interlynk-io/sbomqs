@@ -24,7 +24,6 @@ import (
 )
 
 func (r *Reporter) detailedReport() {
-
 	for index, path := range r.Paths {
 		doc := r.Docs[index]
 		scores := r.Scores[index]

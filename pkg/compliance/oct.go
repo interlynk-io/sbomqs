@@ -25,8 +25,6 @@ import (
 	"github.com/samber/lo"
 )
 
-var validOctSpdxVersions = []string{"SPDX-2.2", "SPDX-2.3"}
-
 func octResult(ctx context.Context, doc sbom.Document, fileName string, outFormat string) {
 	log := logger.FromContext(ctx)
 	log.Debug("compliance.octResult()")
@@ -50,7 +48,7 @@ func octResult(ctx context.Context, doc sbom.Document, fileName string, outForma
 	db.addRecord(octSbomScope(doc))
 
 	if outFormat == "json" {
-		octJsonReport(db, fileName)
+		octJSONReport(db, fileName)
 	}
 
 	if outFormat == "basic" {
@@ -257,7 +255,7 @@ func octComponents(doc sbom.Document) []*record {
 		records = append(records, octPackageSpdxID(component))
 		records = append(records, octPackageVersion(component))
 		records = append(records, octPackageSupplier(component))
-		records = append(records, octPackageDownloadUrl(component))
+		records = append(records, octPackageDownloadURL(component))
 		records = append(records, octPackageFileAnalyzed(component))
 		records = append(records, octPackageHash(component))
 		records = append(records, octPackageConLicense(component))
@@ -297,8 +295,8 @@ func octPackageSupplier(component sbom.GetComponent) *record {
 	return newRecordStmt(PACK_SUPPLIER, component.GetID(), "", 0.0)
 }
 
-func octPackageDownloadUrl(component sbom.GetComponent) *record {
-	if result := component.GetDownloadLocationUrl(); result != "" {
+func octPackageDownloadURL(component sbom.GetComponent) *record {
+	if result := component.GetDownloadLocationURL(); result != "" {
 		return newRecordStmt(PACK_DOWNLOAD_URL, component.GetID(), result, 10.0)
 	}
 	return newRecordStmt(PACK_DOWNLOAD_URL, component.GetID(), "", 0.0)

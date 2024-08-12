@@ -2,74 +2,86 @@ package compliance
 
 import (
 	"fmt"
-
-	"github.com/samber/lo"
 )
 
 type db struct {
-	records []*record
+	keyRecords   map[int][]*record            // store record as a value of a Map with a key as a "check_key"
+	idRecords    map[string][]*record         // store record as a value of a Map with a key as a "id"
+	idKeyRecords map[string]map[int][]*record // store record as a value of a Map with a key as a "check_key an id"
+	allIDs       map[string]struct{}          // Set of all unique ids
 }
 
+// newDB initializes and returns a new database instance.
 func newDB() *db {
-	return &db{}
+	return &db{
+		keyRecords:   make(map[int][]*record),
+		idRecords:    make(map[string][]*record),
+		idKeyRecords: make(map[string]map[int][]*record),
+		allIDs:       make(map[string]struct{}),
+	}
 }
 
+// addRecord adds a single record to the database
 func (d *db) addRecord(r *record) {
-	d.records = append(d.records, r)
+	// store record using a key
+	d.keyRecords[r.checkKey] = append(d.keyRecords[r.checkKey], r)
+
+	// store record using a id
+	d.idRecords[r.id] = append(d.idRecords[r.id], r)
+	if d.idKeyRecords[r.id] == nil {
+		d.idKeyRecords[r.id] = make(map[int][]*record)
+	}
+
+	// store record using a key and id
+	d.idKeyRecords[r.id][r.checkKey] = append(d.idKeyRecords[r.id][r.checkKey], r)
+
+	d.allIDs[r.id] = struct{}{}
 }
 
+// addRecords adds multiple records to the database
 func (d *db) addRecords(rs []*record) {
-	d.records = append(d.records, rs...)
-}
-
-func (d *db) getRecords(key int) []record {
-	var rs []record
-	for _, r := range d.records {
-		if r.check_key == key {
-			rs = append(rs, *r)
-		}
+	for _, r := range rs {
+		d.addRecord(r)
 	}
-	return rs
 }
 
-func (d *db) getAllIds() []string {
-	var ids []string
-	for _, r := range d.records {
-		ids = append(ids, r.id)
+// getRecords retrieves records by the given "check_key"
+func (d *db) getRecords(key int) []*record {
+	return d.keyRecords[key]
+}
+
+// getAllIDs retrieves all unique ids in the database
+func (d *db) getAllIDs() []string {
+	ids := make([]string, 0, len(d.allIDs))
+	for id := range d.allIDs {
+		ids = append(ids, id)
 	}
-
-	return lo.Uniq(ids)
+	return ids
 }
 
-func (d *db) getRecordsById(id string) []record {
-	var rs []record
-	for _, r := range d.records {
-		if r.id == id {
-			rs = append(rs, *r)
-		}
-	}
-	return rs
+// getRecordsByID retrieves records by the given "id"
+func (d *db) getRecordsByID(id string) []*record {
+	return d.idRecords[id]
 }
 
-func (d *db) getRecordsByKeyId(key int, id string) []record {
-	var rs []record
-	for _, r := range d.records {
-		if r.check_key == key && r.id == id {
-			rs = append(rs, *r)
-		}
-	}
-	return rs
+// getRecordsByKeyID retrieves records by the given "check_key" and "id"
+func (d *db) getRecordsByKeyID(key int, id string) []*record {
+	return d.idKeyRecords[id][key]
 }
 
-func (d *db) dumpAll(key []int) {
-	for _, r := range d.records {
-		if len(key) == 0 {
-			fmt.Printf("id: %s, key: %d, value: %s\n", r.id, r.check_key, r.check_value)
-			continue
-		}
-		for _, k := range key {
-			if r.check_key == k {
-				fmt.Printf("id: %s, key: %d, value: %s\n", r.id, r.check_key, r.check_value)
+// dumpAll prints all records, optionally filtered by the given keys
+// nolint
+func (d *db) dumpAll(keys []int) {
+	for _, records := range d.keyRecords {
+		for _, r := range records {
+			if len(keys) == 0 {
+				fmt.Printf("id: %s, key: %d, value: %s\n", r.id, r.checkKey, r.checkValue)
+				continue
+			}
+			for _, k := range keys {
+				if r.checkKey == k {
+					fmt.Printf("id: %s, key: %d, value: %s\n", r.id, r.checkKey, r.checkValue)
+				}
 			}
 		}
 	}

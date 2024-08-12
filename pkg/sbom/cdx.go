@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log"
 	"strings"
 
 	cydx "github.com/CycloneDX/cyclonedx-go"
@@ -29,9 +30,9 @@ import (
 )
 
 var (
-	cdx_spec_versions   = []string{"1.0", "1.1", "1.2", "1.3", "1.4", "1.5", "1.6"}
-	cdx_file_formats    = []string{"json", "xml"}
-	cdx_primary_purpose = []string{"application", "framework", "library", "container", "operating-system", "device", "firmware", "file"}
+	cdxSpecVersions   = []string{"1.0", "1.1", "1.2", "1.3", "1.4", "1.5", "1.6"}
+	cdxFileFormats    = []string{"json", "xml"}
+	cdxPrimaryPurpose = []string{"application", "framework", "library", "container", "operating-system", "device", "firmware", "file"}
 )
 
 type CdxDoc struct {
@@ -48,14 +49,18 @@ type CdxDoc struct {
 	lifecycles         []string
 	supplier           GetSupplier
 	manufacturer       Manufacturer
-	primaryComponentId string
+	primaryComponentID string
 	compositions       map[string]string
 }
 
 func newCDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat) (Document, error) {
-	f.Seek(0, io.SeekStart)
-
 	var err error
+
+	_, err = f.Seek(0, io.SeekStart)
+	if err != nil {
+		log.Printf("Failed to seek: %v", err)
+	}
+
 	var bom *cydx.BOM
 
 	switch format {
@@ -164,7 +169,7 @@ func (c *CdxDoc) parseDoc() {
 		}
 
 		if l.Name != "" {
-			return string(l.Name)
+			return l.Name
 		}
 
 		return ""
@@ -181,7 +186,7 @@ func (c *CdxDoc) parseSpec() {
 	if c.doc.Metadata != nil {
 		sp.CreationTimestamp = c.doc.Metadata.Timestamp
 		if c.doc.Metadata.Licenses != nil {
-			sp.Licenses = aggregate_licenses(*c.doc.Metadata.Licenses)
+			sp.Licenses = aggregateLicenses(*c.doc.Metadata.Licenses)
 		}
 	}
 	sp.Namespace = c.doc.SerialNumber
@@ -218,11 +223,11 @@ func (c *CdxDoc) requiredFields() bool {
 
 	if c.doc.Dependencies != nil {
 		deps := lo.CountBy(lo.FromPtr(c.doc.Dependencies), func(d cydx.Dependency) bool {
-			return string(d.Ref) == ""
+			return d.Ref == ""
 		})
 
 		if deps > 0 {
-			c.addToLogs("cdx doc is missing depedencies")
+			c.addToLogs("cdx doc is missing dependencies")
 			return false
 		}
 	}
@@ -269,7 +274,7 @@ func copyC(cdxc *cydx.Component, c *CdxDoc) *Component {
 		})
 
 		if len(sources) > 0 {
-			nc.sourceCodeUrl = sources[0].URL
+			nc.sourceCodeURL = sources[0].URL
 		}
 
 		downloads := lo.Filter(*cdxc.ExternalReferences, func(er cydx.ExternalReference, _ int) bool {
@@ -281,7 +286,7 @@ func copyC(cdxc *cydx.Component, c *CdxDoc) *Component {
 		}
 	}
 
-	if cdxc.BOMRef == c.primaryComponentId {
+	if cdxc.BOMRef == c.primaryComponentID {
 		nc.isPrimary = true
 	}
 
@@ -328,7 +333,7 @@ func copyC(cdxc *cydx.Component, c *CdxDoc) *Component {
 		}
 	}
 
-	nc.Id = cdxc.BOMRef
+	nc.ID = cdxc.BOMRef
 	return nc
 }
 
@@ -356,10 +361,12 @@ func walkComponents(comps *[]cydx.Component, doc *CdxDoc, store map[string]*Comp
 		if c.Components != nil {
 			walkComponents(c.Components, doc, store)
 		}
+		//nolint:gosec
 		if _, ok := store[compID(&c)]; ok {
 			// already present no need to re add it.
 			continue
 		}
+		//nolint:gosec
 		store[compID(&c)] = copyC(&c, doc)
 	}
 }
@@ -411,10 +418,10 @@ func (c *CdxDoc) checksums(comp *cydx.Component) []GetChecksum {
 }
 
 func (c *CdxDoc) licenses(comp *cydx.Component) []licenses.License {
-	return aggregate_licenses(lo.FromPtr(comp.Licenses))
+	return aggregateLicenses(lo.FromPtr(comp.Licenses))
 }
 
-func aggregate_licenses(clicenses cydx.Licenses) []licenses.License {
+func aggregateLicenses(clicenses cydx.Licenses) []licenses.License {
 	if clicenses == nil {
 		return []licenses.License{}
 	}
@@ -463,6 +470,13 @@ func (c *CdxDoc) parseTool() {
 		t.Version = ct.Version
 		c.CdxTools = append(c.CdxTools, t)
 	}
+
+	for _, ct := range lo.FromPtr(c.doc.Metadata.Tools.Services) {
+		t := Tool{}
+		t.Name = ct.Name
+		t.Version = ct.Version
+		c.CdxTools = append(c.CdxTools, t)
+	}
 }
 
 func (c *CdxDoc) parseAuthors() {
@@ -493,7 +507,7 @@ func (c *CdxDoc) parseSupplier() {
 	supplier := Supplier{}
 
 	supplier.Name = c.doc.Metadata.Supplier.Name
-	supplier.Url = lo.FromPtr(c.doc.Metadata.Supplier.URL)[0]
+	supplier.URL = lo.FromPtr(c.doc.Metadata.Supplier.URL)[0]
 
 	if c.doc.Metadata.Supplier.Contact != nil {
 		for _, cydxContact := range lo.FromPtr(c.doc.Metadata.Supplier.Contact) {
@@ -518,15 +532,15 @@ func (c *CdxDoc) parseManufacturer() {
 
 	m := manufacturer{}
 
-	m.name = c.doc.Metadata.Manufacture.Name
-	m.url = lo.FromPtr(c.doc.Metadata.Manufacture.URL)[0]
+	m.Name = c.doc.Metadata.Manufacture.Name
+	m.URL = lo.FromPtr(c.doc.Metadata.Manufacture.URL)[0]
 
 	if c.doc.Metadata.Manufacture.Contact != nil {
 		for _, cydxContact := range lo.FromPtr(c.doc.Metadata.Manufacture.Contact) {
 			ctt := contact{}
 			ctt.name = cydxContact.Name
 			ctt.email = cydxContact.Email
-			m.contacts = append(m.contacts, ctt)
+			m.Contacts = append(m.Contacts, ctt)
 		}
 	}
 
@@ -559,7 +573,7 @@ func (c *CdxDoc) assignSupplier(comp *cydx.Component) *Supplier {
 	}
 
 	if comp.Supplier.URL != nil && len(lo.FromPtr(comp.Supplier.URL)) > 0 {
-		supplier.Url = lo.FromPtr(comp.Supplier.URL)[0]
+		supplier.URL = lo.FromPtr(comp.Supplier.URL)[0]
 	}
 
 	if comp.Supplier.Contact != nil {
@@ -584,7 +598,7 @@ func (c *CdxDoc) parsePrimaryComponent() {
 	}
 
 	c.primaryComponent = true
-	c.primaryComponentId = c.doc.Metadata.Component.BOMRef
+	c.primaryComponentID = c.doc.Metadata.Component.BOMRef
 }
 
 func (c *CdxDoc) parseCompositions() {

@@ -108,8 +108,8 @@ func ntiaSbomCreator(doc sbom.Document) *record {
 				return newRecordStmt(SBOM_CREATOR, "SBOM Data Fields", result, score)
 			}
 
-			if supplier.GetUrl() != "" {
-				result = supplier.GetUrl()
+			if supplier.GetURL() != "" {
+				result = supplier.GetURL()
 				score = 10.0
 			}
 
@@ -135,8 +135,8 @@ func ntiaSbomCreator(doc sbom.Document) *record {
 		manufacturer := doc.Manufacturer()
 
 		if manufacturer != nil {
-			if manufacturer.Email() != "" {
-				result = manufacturer.Email()
+			if manufacturer.GetEmail() != "" {
+				result = manufacturer.GetEmail()
 				score = 10.0
 			}
 
@@ -144,8 +144,8 @@ func ntiaSbomCreator(doc sbom.Document) *record {
 				return newRecordStmt(SBOM_CREATOR, "SBOM Data Fields", result, score)
 			}
 
-			if manufacturer.Url() != "" {
-				result = manufacturer.Url()
+			if manufacturer.GetURL() != "" {
+				result = manufacturer.GetURL()
 				score = 10.0
 			}
 
@@ -153,8 +153,8 @@ func ntiaSbomCreator(doc sbom.Document) *record {
 				return newRecordStmt(SBOM_CREATOR, "SBOM Data Fields", result, score)
 			}
 
-			if manufacturer.Contacts() != nil {
-				for _, contact := range manufacturer.Contacts() {
+			if manufacturer.GetContacts() != nil {
+				for _, contact := range manufacturer.GetContacts() {
 					if contact.Email() != "" {
 						result = contact.Email()
 						score = 10.0
@@ -237,8 +237,8 @@ func ntiaComponentCreator(doc sbom.Document, component sbom.GetComponent) *recor
 				return newRecordStmt(COMP_CREATOR, component.GetID(), result, score)
 			}
 
-			if supplier.GetUrl() != "" {
-				result = supplier.GetUrl()
+			if supplier.GetURL() != "" {
+				result = supplier.GetURL()
 				score = 10.0
 			}
 
@@ -264,8 +264,8 @@ func ntiaComponentCreator(doc sbom.Document, component sbom.GetComponent) *recor
 		manufacturer := component.Manufacturer()
 
 		if manufacturer != nil {
-			if manufacturer.Email() != "" {
-				result = manufacturer.Email()
+			if manufacturer.GetEmail() != "" {
+				result = manufacturer.GetEmail()
 				score = 10.0
 			}
 
@@ -273,8 +273,8 @@ func ntiaComponentCreator(doc sbom.Document, component sbom.GetComponent) *recor
 				return newRecordStmt(COMP_CREATOR, component.GetID(), result, score)
 			}
 
-			if manufacturer.Url() != "" {
-				result = manufacturer.Url()
+			if manufacturer.GetEmail() != "" {
+				result = manufacturer.GetURL()
 				score = 10.0
 			}
 
@@ -282,8 +282,8 @@ func ntiaComponentCreator(doc sbom.Document, component sbom.GetComponent) *recor
 				return newRecordStmt(COMP_CREATOR, component.GetID(), result, score)
 			}
 
-			if manufacturer.Contacts() != nil {
-				for _, contact := range manufacturer.Contacts() {
+			if manufacturer.GetContacts() != nil {
+				for _, contact := range manufacturer.GetContacts() {
 					if contact.Email() != "" {
 						result = contact.Email()
 						score = 10.0
@@ -331,7 +331,7 @@ func ntiaComponentDependencies(doc sbom.Document, component sbom.GetComponent) *
 		return newRecordStmt(COMP_DEPTH, component.GetID(), result, score)
 
 	} else if spec == "cyclonedx" {
-		return craComponentDepth(component)
+		return bsiComponentDepth(component)
 	}
 
 	return newRecordStmt(COMP_DEPTH, component.GetID(), "", 0.0)

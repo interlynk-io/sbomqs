@@ -66,10 +66,10 @@ func extractArgs(cmd *cobra.Command, args []string) (*engine.DtParams, error) {
 	basic, _ := cmd.Flags().GetBool("basic")
 	detailed, _ := cmd.Flags().GetBool("detailed")
 
-	params.Url = url
-	params.ApiKey = apiKey
+	params.URL = url
+	params.APIKey = apiKey
 
-	params.Json = json
+	params.JSON = json
 	params.Basic = basic
 	params.Detailed = detailed
 
@@ -80,7 +80,7 @@ func extractArgs(cmd *cobra.Command, args []string) (*engine.DtParams, error) {
 		if err != nil {
 			return nil, err
 		}
-		params.ProjectIds = append(params.ProjectIds, argID)
+		params.ProjectIDs = append(params.ProjectIDs, argID)
 	}
 
 	return params, nil
@@ -90,8 +90,16 @@ func init() {
 	rootCmd.AddCommand(dtrackScoreCmd)
 	dtrackScoreCmd.Flags().StringP("url", "u", "", "dependency track url https://localhost:8080/")
 	dtrackScoreCmd.Flags().StringP("api-key", "k", "", "dependency track api key, requires VIEW_PORTFOLIO for scoring and PORTFOLIO_MANAGEMENT for tagging")
-	dtrackScoreCmd.MarkFlagRequired("url")
-	dtrackScoreCmd.MarkFlagRequired("api-key")
+	err := dtrackScoreCmd.MarkFlagRequired("url")
+	if err != nil {
+		// Handle the error appropriately, such as logging it or returning it
+		log.Fatalf("Failed to mark flag as deprecated: %v", err)
+	}
+	err = dtrackScoreCmd.MarkFlagRequired("api-key")
+	if err != nil {
+		// Handle the error appropriately, such as logging it or returning it
+		log.Fatalf("Failed to mark flag as deprecated: %v", err)
+	}
 
 	dtrackScoreCmd.Flags().BoolP("debug", "D", false, "enable debug logging")
 

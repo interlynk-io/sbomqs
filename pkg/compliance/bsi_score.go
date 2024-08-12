@@ -14,7 +14,7 @@
 
 package compliance
 
-type craScoreResult struct {
+type bsiScoreResult struct {
 	id              string
 	requiredScore   float64
 	optionalScore   float64
@@ -22,11 +22,11 @@ type craScoreResult struct {
 	optionalRecords int
 }
 
-func newCraScoreResult(id string) *craScoreResult {
-	return &craScoreResult{id: id}
+func newBsiScoreResult(id string) *bsiScoreResult {
+	return &bsiScoreResult{id: id}
 }
 
-func (r *craScoreResult) totalScore() float64 {
+func (r *bsiScoreResult) totalScore() float64 {
 	if r.requiredRecords == 0 && r.optionalRecords == 0 {
 		return 0.0
 	}
@@ -42,7 +42,7 @@ func (r *craScoreResult) totalScore() float64 {
 	return r.totalRequiredScore()
 }
 
-func (r *craScoreResult) totalRequiredScore() float64 {
+func (r *bsiScoreResult) totalRequiredScore() float64 {
 	if r.requiredRecords == 0 {
 		return 0.0
 	}
@@ -50,7 +50,7 @@ func (r *craScoreResult) totalRequiredScore() float64 {
 	return r.requiredScore / float64(r.requiredRecords)
 }
 
-func (r *craScoreResult) totalOptionalScore() float64 {
+func (r *bsiScoreResult) totalOptionalScore() float64 {
 	if r.optionalRecords == 0 {
 		return 0.0
 	}
@@ -58,78 +58,77 @@ func (r *craScoreResult) totalOptionalScore() float64 {
 	return r.optionalScore / float64(r.optionalRecords)
 }
 
-func craKeyIdScore(db *db, key int, id string) *craScoreResult {
-	records := db.getRecordsByKeyId(key, id)
+func bsiKeyIDScore(db *db, key int, id string) *bsiScoreResult {
+	records := db.getRecordsByKeyID(key, id)
 
 	if len(records) == 0 {
-		return newCraScoreResult(id)
+		return newBsiScoreResult(id)
 	}
 
-	required_score := 0.0
-	optional_score := 0.0
+	requiredScore := 0.0
+	optionalScore := 0.0
 
-	required_recs := 0
-	optional_recs := 0
+	requiredRecs := 0
+	optionalRecs := 0
 
 	for _, r := range records {
 		if r.required {
-			required_score += r.score
-			required_recs += 1
+			requiredScore += r.score
+			requiredRecs++
 		} else {
-			optional_score += r.score
-			optional_recs += 1
+			optionalScore += r.score
+			optionalRecs++
 		}
 	}
 
-	return &craScoreResult{
+	return &bsiScoreResult{
 		id:              id,
-		requiredScore:   required_score,
-		optionalScore:   optional_score,
-		requiredRecords: required_recs,
-		optionalRecords: optional_recs,
+		requiredScore:   requiredScore,
+		optionalScore:   optionalScore,
+		requiredRecords: requiredRecs,
+		optionalRecords: optionalRecs,
 	}
-
 }
 
-func craIdScore(db *db, id string) *craScoreResult {
-	records := db.getRecordsById(id)
+func bsiIDScore(db *db, id string) *bsiScoreResult {
+	records := db.getRecordsByID(id)
 
 	if len(records) == 0 {
-		return newCraScoreResult(id)
+		return newBsiScoreResult(id)
 	}
 
-	required_score := 0.0
-	optional_score := 0.0
+	requiredScore := 0.0
+	optionalScore := 0.0
 
-	required_recs := 0
-	optional_recs := 0
+	requiredRecs := 0
+	optionalRecs := 0
 
 	for _, r := range records {
 		if r.required {
-			required_score += r.score
-			required_recs += 1
+			requiredScore += r.score
+			requiredRecs++
 		} else {
-			optional_score += r.score
-			optional_recs += 1
+			optionalScore += r.score
+			optionalRecs++
 		}
 	}
 
-	return &craScoreResult{
+	return &bsiScoreResult{
 		id:              id,
-		requiredScore:   required_score,
-		optionalScore:   optional_score,
-		requiredRecords: required_recs,
-		optionalRecords: optional_recs,
+		requiredScore:   requiredScore,
+		optionalScore:   optionalScore,
+		requiredRecords: requiredRecs,
+		optionalRecords: optionalRecs,
 	}
 }
 
-func craAggregateScore(db *db) *craScoreResult {
-	var results []craScoreResult
-	var finalResult craScoreResult
+func bsiAggregateScore(db *db) *bsiScoreResult {
+	var results []bsiScoreResult
+	var finalResult bsiScoreResult
 
-	ids := db.getAllIds()
+	ids := db.getAllIDs()
 	for _, id := range ids {
-		results = append(results, *craIdScore(db, id))
+		results = append(results, *bsiIDScore(db, id))
 	}
 
 	for _, r := range results {

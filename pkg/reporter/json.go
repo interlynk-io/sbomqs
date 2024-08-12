@@ -59,7 +59,7 @@ type jsonReport struct {
 	Files        []file   `json:"files"`
 }
 
-func newJsonReport() *jsonReport {
+func newJSONReport() *jsonReport {
 	return &jsonReport{
 		RunID:     uuid.New().String(),
 		TimeStamp: time.Now().UTC().Format(time.RFC3339),
@@ -74,7 +74,7 @@ func newJsonReport() *jsonReport {
 }
 
 func (r *Reporter) jsonReport(onlyResponse bool) (string, error) {
-	jr := newJsonReport()
+	jr := newJSONReport()
 	for index, path := range r.Paths {
 		doc := r.Docs[index]
 		scores := r.Scores[index]

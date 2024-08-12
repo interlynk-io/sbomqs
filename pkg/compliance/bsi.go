@@ -24,10 +24,11 @@ import (
 )
 
 var (
-	valid_cra_spdx_versions = []string{"SPDX-2.3"}
-	valid_cra_cdx_versions  = []string{"1.4", "1.5", "1.6"}
+	validBsiSpdxVersions = []string{"SPDX-2.3"}
+	validBsiCdxVersions  = []string{"1.4", "1.5", "1.6"}
 )
 
+//nolint:revive,stylecheck
 const (
 	SBOM_SPEC = iota
 	SBOM_SPDXID
@@ -75,51 +76,51 @@ const (
 	PACK_EXT_REF
 )
 
-func craResult(ctx context.Context, doc sbom.Document, fileName string, outFormat string) {
+func bsiResult(ctx context.Context, doc sbom.Document, fileName string, outFormat string) {
 	log := logger.FromContext(ctx)
-	log.Debug("compliance.craResult()")
+	log.Debug("compliance.bsiResult()")
 
 	db := newDB()
 
-	db.addRecord(craSpec(doc))
-	db.addRecord(craSpecVersion(doc))
-	db.addRecord(craBuildPhase(doc))
-	db.addRecord(craSbomDepth(doc))
-	db.addRecord(craCreator(doc))
-	db.addRecord(craTimestamp(doc))
-	db.addRecord(craSbomURI(doc))
-	db.addRecords(craComponents(doc))
+	db.addRecord(bsiSpec(doc))
+	db.addRecord(bsiSpecVersion(doc))
+	db.addRecord(bsiBuildPhase(doc))
+	db.addRecord(bsiSbomDepth(doc))
+	db.addRecord(bsiCreator(doc))
+	db.addRecord(bsiTimestamp(doc))
+	db.addRecord(bsiSbomURI(doc))
+	db.addRecords(bsiComponents(doc))
 
 	if outFormat == "json" {
-		craJsonReport(db, fileName)
+		bsiJSONReport(db, fileName)
 	}
 
 	if outFormat == "basic" {
-		craBasicReport(db, fileName)
+		bsiBasicReport(db, fileName)
 	}
 
 	if outFormat == "detailed" {
-		craDetailedReport(db, fileName)
+		bsiDetailedReport(db, fileName)
 	}
 }
 
-func craSpec(doc sbom.Document) *record {
+func bsiSpec(doc sbom.Document) *record {
 	v := doc.Spec().GetSpecType()
-	v_to_lower := strings.Trim(strings.ToLower(v), " ")
+	vToLower := strings.Trim(strings.ToLower(v), " ")
 	result := ""
 	score := 0.0
 
-	if v_to_lower == "spdx" {
+	if vToLower == "spdx" {
 		result = v
 		score = 10.0
-	} else if v_to_lower == "cyclonedx" {
+	} else if vToLower == "cyclonedx" {
 		result = v
 		score = 10.0
 	}
 	return newRecordStmt(SBOM_SPEC, "doc", result, score)
 }
 
-func craSpecVersion(doc sbom.Document) *record {
+func bsiSpecVersion(doc sbom.Document) *record {
 	spec := doc.Spec().GetSpecType()
 	version := doc.Spec().GetVersion()
 
@@ -127,13 +128,13 @@ func craSpecVersion(doc sbom.Document) *record {
 	score := 0.0
 
 	if spec == "spdx" {
-		count := lo.Count(valid_cra_spdx_versions, version)
+		count := lo.Count(validBsiSpdxVersions, version)
 		if count > 0 {
 			result = version
 			score = 10.0
 		}
 	} else if spec == "cyclonedx" {
-		count := lo.Count(valid_cra_cdx_versions, version)
+		count := lo.Count(validBsiCdxVersions, version)
 		if count > 0 {
 			result = version
 			score = 10.0
@@ -143,7 +144,7 @@ func craSpecVersion(doc sbom.Document) *record {
 	return newRecordStmt(SBOM_SPEC_VERSION, "doc", result, score)
 }
 
-func craBuildPhase(doc sbom.Document) *record {
+func bsiBuildPhase(doc sbom.Document) *record {
 	lifecycles := doc.Lifecycles()
 	result := ""
 	score := 0.0
@@ -158,7 +159,7 @@ func craBuildPhase(doc sbom.Document) *record {
 	return newRecordStmt(SBOM_BUILD, "doc", result, score)
 }
 
-func craSbomDepth(doc sbom.Document) *record {
+func bsiSbomDepth(doc sbom.Document) *record {
 	if !doc.PrimaryComponent() {
 		return newRecordStmt(SBOM_DEPTH, "doc", "no-primary", 0.0)
 	}
@@ -186,7 +187,7 @@ func craSbomDepth(doc sbom.Document) *record {
 	return newRecordStmt(SBOM_DEPTH, "doc", "non-compliant", 0.0)
 }
 
-func craCreator(doc sbom.Document) *record {
+func bsiCreator(doc sbom.Document) *record {
 	result := ""
 	score := 0.0
 
@@ -214,8 +215,8 @@ func craCreator(doc sbom.Document) *record {
 			return newRecordStmt(SBOM_CREATOR, "doc", result, score)
 		}
 
-		if supplier.GetUrl() != "" {
-			result = supplier.GetUrl()
+		if supplier.GetURL() != "" {
+			result = supplier.GetURL()
 			score = 10.0
 		}
 
@@ -241,8 +242,8 @@ func craCreator(doc sbom.Document) *record {
 	manufacturer := doc.Manufacturer()
 
 	if manufacturer != nil {
-		if manufacturer.Email() != "" {
-			result = manufacturer.Email()
+		if manufacturer.GetEmail() != "" {
+			result = manufacturer.GetEmail()
 			score = 10.0
 		}
 
@@ -250,8 +251,8 @@ func craCreator(doc sbom.Document) *record {
 			return newRecordStmt(SBOM_CREATOR, "doc", result, score)
 		}
 
-		if manufacturer.Url() != "" {
-			result = manufacturer.Url()
+		if manufacturer.GetURL() != "" {
+			result = manufacturer.GetURL()
 			score = 10.0
 		}
 
@@ -259,8 +260,8 @@ func craCreator(doc sbom.Document) *record {
 			return newRecordStmt(SBOM_CREATOR, "doc", result, score)
 		}
 
-		if manufacturer.Contacts() != nil {
-			for _, contact := range manufacturer.Contacts() {
+		if manufacturer.GetContacts() != nil {
+			for _, contact := range manufacturer.GetContacts() {
 				if contact.Email() != "" {
 					result = contact.Email()
 					score = 10.0
@@ -276,7 +277,7 @@ func craCreator(doc sbom.Document) *record {
 	return newRecordStmt(SBOM_CREATOR, "doc", "", 0.0)
 }
 
-func craTimestamp(doc sbom.Document) *record {
+func bsiTimestamp(doc sbom.Document) *record {
 	score := 0.0
 	result := doc.Spec().GetCreationTimestamp()
 
@@ -287,7 +288,7 @@ func craTimestamp(doc sbom.Document) *record {
 	return newRecordStmt(SBOM_TIMESTAMP, "doc", result, score)
 }
 
-func craSbomURI(doc sbom.Document) *record {
+func bsiSbomURI(doc sbom.Document) *record {
 	uri := doc.Spec().URI()
 
 	if uri != "" {
@@ -297,7 +298,7 @@ func craSbomURI(doc sbom.Document) *record {
 	return newRecordStmt(SBOM_URI, "doc", "", 0)
 }
 
-func craComponents(doc sbom.Document) []*record {
+func bsiComponents(doc sbom.Document) []*record {
 	records := []*record{}
 
 	if len(doc.Components()) == 0 {
@@ -306,16 +307,16 @@ func craComponents(doc sbom.Document) []*record {
 	}
 
 	for _, component := range doc.Components() {
-		records = append(records, craComponentCreator(component))
-		records = append(records, craComponentName(component))
-		records = append(records, craComponentVersion(component))
-		records = append(records, craComponentLicense(component))
-		records = append(records, craComponentDepth(component))
-		records = append(records, craComponentHash(component))
-		records = append(records, craComponentSourceCodeUrl(component))
-		records = append(records, craComponentDownloadUrl(component))
-		records = append(records, craComponentSourceHash(component))
-		records = append(records, craComponentOtherUniqIds(component))
+		records = append(records, bsiComponentCreator(component))
+		records = append(records, bsiComponentName(component))
+		records = append(records, bsiComponentVersion(component))
+		records = append(records, bsiComponentLicense(component))
+		records = append(records, bsiComponentDepth(component))
+		records = append(records, bsiComponentHash(component))
+		records = append(records, bsiComponentSourceCodeURL(component))
+		records = append(records, bsiComponentDownloadURL(component))
+		records = append(records, bsiComponentSourceHash(component))
+		records = append(records, bsiComponentOtherUniqIDs(component))
 	}
 
 	records = append(records, newRecordStmt(SBOM_COMPONENTS, "doc", "present", 10.0))
@@ -323,7 +324,7 @@ func craComponents(doc sbom.Document) []*record {
 	return records
 }
 
-func craComponentDepth(component sbom.GetComponent) *record {
+func bsiComponentDepth(component sbom.GetComponent) *record {
 	if !component.HasRelationShips() {
 		return newRecordStmt(COMP_DEPTH, component.GetID(), "no-relationships", 0.0)
 	}
@@ -339,7 +340,7 @@ func craComponentDepth(component sbom.GetComponent) *record {
 	return newRecordStmt(COMP_DEPTH, component.GetID(), "non-compliant", 0.0)
 }
 
-func craComponentLicense(component sbom.GetComponent) *record {
+func bsiComponentLicense(component sbom.GetComponent) *record {
 	licenses := component.Licenses()
 	score := 0.0
 
@@ -352,18 +353,18 @@ func craComponentLicense(component sbom.GetComponent) *record {
 
 	for _, license := range licenses {
 		if license.Source() == "spdx" {
-			spdx += 1
+			spdx++
 			continue
 		}
 
 		if license.Source() == "aboutcode" {
-			aboutcode += 1
+			aboutcode++
 			continue
 		}
 
 		if license.Source() == "custom" {
 			if strings.HasPrefix(license.ShortID(), "LicenseRef-") || strings.HasPrefix(license.Name(), "LicenseRef-") {
-				custom += 1
+				custom++
 				continue
 			}
 		}
@@ -382,7 +383,7 @@ func craComponentLicense(component sbom.GetComponent) *record {
 	return newRecordStmt(COMP_LICENSE, component.GetID(), "compliant", 10.0)
 }
 
-func craComponentSourceHash(component sbom.GetComponent) *record {
+func bsiComponentSourceHash(component sbom.GetComponent) *record {
 	result := ""
 	score := 0.0
 
@@ -394,7 +395,7 @@ func craComponentSourceHash(component sbom.GetComponent) *record {
 	return newRecordStmtOptional(COMP_SOURCE_HASH, component.GetID(), result, score)
 }
 
-func craComponentOtherUniqIds(component sbom.GetComponent) *record {
+func bsiComponentOtherUniqIDs(component sbom.GetComponent) *record {
 	result := ""
 	score := 0.0
 
@@ -419,8 +420,8 @@ func craComponentOtherUniqIds(component sbom.GetComponent) *record {
 	return newRecordStmtOptional(COMP_OTHER_UNIQ_IDS, component.GetID(), "", 0.0)
 }
 
-func craComponentDownloadUrl(component sbom.GetComponent) *record {
-	result := component.GetDownloadLocationUrl()
+func bsiComponentDownloadURL(component sbom.GetComponent) *record {
+	result := component.GetDownloadLocationURL()
 
 	if result != "" {
 		return newRecordStmtOptional(COMP_DOWNLOAD_URL, component.GetID(), result, 10.0)
@@ -428,8 +429,8 @@ func craComponentDownloadUrl(component sbom.GetComponent) *record {
 	return newRecordStmtOptional(COMP_DOWNLOAD_URL, component.GetID(), "", 0.0)
 }
 
-func craComponentSourceCodeUrl(component sbom.GetComponent) *record {
-	result := component.SourceCodeUrl()
+func bsiComponentSourceCodeURL(component sbom.GetComponent) *record {
+	result := component.SourceCodeURL()
 
 	if result != "" {
 		return newRecordStmtOptional(COMP_SOURCE_CODE_URL, component.GetID(), result, 10.0)
@@ -438,7 +439,7 @@ func craComponentSourceCodeUrl(component sbom.GetComponent) *record {
 	return newRecordStmtOptional(COMP_SOURCE_CODE_URL, component.GetID(), "", 0.0)
 }
 
-func craComponentHash(component sbom.GetComponent) *record {
+func bsiComponentHash(component sbom.GetComponent) *record {
 	result := ""
 	algos := []string{"SHA256", "SHA-256", "sha256", "sha-256"}
 	score := 0.0
@@ -456,7 +457,7 @@ func craComponentHash(component sbom.GetComponent) *record {
 	return newRecordStmt(COMP_HASH, component.GetID(), result, score)
 }
 
-func craComponentVersion(component sbom.GetComponent) *record {
+func bsiComponentVersion(component sbom.GetComponent) *record {
 	result := component.GetVersion()
 
 	if result != "" {
@@ -466,7 +467,7 @@ func craComponentVersion(component sbom.GetComponent) *record {
 	return newRecordStmt(COMP_VERSION, component.GetID(), "", 0.0)
 }
 
-func craComponentName(component sbom.GetComponent) *record {
+func bsiComponentName(component sbom.GetComponent) *record {
 	result := component.GetName()
 
 	if result != "" {
@@ -476,7 +477,7 @@ func craComponentName(component sbom.GetComponent) *record {
 	return newRecordStmt(COMP_NAME, component.GetID(), "", 0.0)
 }
 
-func craComponentCreator(component sbom.GetComponent) *record {
+func bsiComponentCreator(component sbom.GetComponent) *record {
 	result := ""
 	score := 0.0
 
@@ -491,8 +492,8 @@ func craComponentCreator(component sbom.GetComponent) *record {
 			return newRecordStmt(COMP_CREATOR, component.GetID(), result, score)
 		}
 
-		if supplier.GetUrl() != "" {
-			result = supplier.GetUrl()
+		if supplier.GetURL() != "" {
+			result = supplier.GetURL()
 			score = 10.0
 		}
 
@@ -518,8 +519,8 @@ func craComponentCreator(component sbom.GetComponent) *record {
 	manufacturer := component.Manufacturer()
 
 	if manufacturer != nil {
-		if manufacturer.Email() != "" {
-			result = manufacturer.Email()
+		if manufacturer.GetEmail() != "" {
+			result = manufacturer.GetEmail()
 			score = 10.0
 		}
 
@@ -527,8 +528,8 @@ func craComponentCreator(component sbom.GetComponent) *record {
 			return newRecordStmt(COMP_CREATOR, component.GetID(), result, score)
 		}
 
-		if manufacturer.Url() != "" {
-			result = manufacturer.Url()
+		if manufacturer.GetURL() != "" {
+			result = manufacturer.GetURL()
 			score = 10.0
 		}
 
@@ -536,8 +537,8 @@ func craComponentCreator(component sbom.GetComponent) *record {
 			return newRecordStmt(COMP_CREATOR, component.GetID(), result, score)
 		}
 
-		if manufacturer.Contacts() != nil {
-			for _, contact := range manufacturer.Contacts() {
+		if manufacturer.GetContacts() != nil {
+			for _, contact := range manufacturer.GetContacts() {
 				if contact.Email() != "" {
 					result = contact.Email()
 					score = 10.0

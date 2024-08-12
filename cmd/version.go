@@ -15,8 +15,6 @@
 package cmd
 
 import (
-	_ "embed"
-
 	version "sigs.k8s.io/release-utils/version"
 )
 
