@@ -42,7 +42,7 @@ func ntiaResult(ctx context.Context, doc sbom.Document, fileName string, outForm
 	db.addRecords(ntiaComponents(doc))
 
 	if outFormat == "json" {
-		ntiaJsonReport(db, fileName)
+		ntiaJSONReport(db, fileName)
 	}
 
 	if outFormat == "basic" {
@@ -85,9 +85,7 @@ func ntiaSbomCreator(doc sbom.Document) *record {
 				}
 			}
 		}
-
 	} else if spec == "cyclonedx" {
-
 		for _, author := range doc.Authors() {
 			if author.GetEmail() != "" {
 				result = author.GetEmail()
@@ -203,9 +201,8 @@ func ntiaComponents(doc sbom.Document) []*record {
 		records = append(records, ntiaComponentName(component))
 		records = append(records, ntiaComponentCreator(doc, component))
 		records = append(records, ntiaComponentVersion(component))
-		records = append(records, ntiaComponentOtherUniqIds(doc, component))
+		records = append(records, ntiaComponentOtherUniqIDs(doc, component))
 		records = append(records, ntiaComponentDependencies(doc, component))
-
 	}
 	records = append(records, newRecordStmt(SBOM_COMPONENTS, "SBOM Data Fields", "present", 10.0))
 	return records
@@ -300,7 +297,6 @@ func ntiaComponentCreator(doc sbom.Document, component sbom.GetComponent) *recor
 				}
 			}
 		}
-
 	}
 	return newRecordStmt(COMP_CREATOR, component.GetID(), "", 0.0)
 }
@@ -335,7 +331,7 @@ func ntiaComponentDependencies(doc sbom.Document, component sbom.GetComponent) *
 	return newRecordStmt(COMP_DEPTH, component.GetID(), result, score)
 }
 
-func ntiaComponentOtherUniqIds(doc sbom.Document, component sbom.GetComponent) *record {
+func ntiaComponentOtherUniqIDs(doc sbom.Document, component sbom.GetComponent) *record {
 	spec := doc.Spec().GetSpecType()
 
 	if spec == "spdx" {

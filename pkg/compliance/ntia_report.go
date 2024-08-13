@@ -13,24 +13,24 @@ import (
 )
 
 var ntiaSectionDetails = map[int]ntiaSection{
-	SBOM_MACHINE_FORMAT: {Title: "Automation Support", Id: "1.1", Required: true, DataField: "Machine-Readable Formats"},
-	SBOM_CREATOR:        {Title: "Required fields sboms ", Id: "2.1", Required: true, DataField: "Author"},
-	SBOM_TIMESTAMP:      {Title: "Required fields sboms", Id: "2.2", Required: true, DataField: "Timestamp"},
-	SBOM_COMPONENTS:     {Title: "Required sbom component", Id: "2.3", Required: true, DataField: "Packages"},
-	COMP_NAME:           {Title: "Required fields components", Id: "2.4", Required: true, DataField: "Package Name"},
-	COMP_DEPTH:          {Title: "Required fields components", Id: "2.5", Required: true, DataField: "Dependencies on other components"},
-	COMP_CREATOR:        {Title: "Required fields component", Id: "2.6", Required: true, DataField: "Package Supplier"},
-	PACK_SUPPLIER:       {Title: "Required fields component", Id: "2.6", Required: true, DataField: "Package Supplier"},
-	COMP_VERSION:        {Title: "Required fields components", Id: "2.7", Required: true, DataField: "Package Version"},
-	COMP_OTHER_UNIQ_IDS: {Title: "Required fields component", Id: "2.8", Required: true, DataField: "Other Uniq IDs"},
+	SBOM_MACHINE_FORMAT: {Title: "Automation Support", ID: "1.1", Required: true, DataField: "Machine-Readable Formats"},
+	SBOM_CREATOR:        {Title: "Required fields sboms ", ID: "2.1", Required: true, DataField: "Author"},
+	SBOM_TIMESTAMP:      {Title: "Required fields sboms", ID: "2.2", Required: true, DataField: "Timestamp"},
+	SBOM_COMPONENTS:     {Title: "Required sbom component", ID: "2.3", Required: true, DataField: "Packages"},
+	COMP_NAME:           {Title: "Required fields components", ID: "2.4", Required: true, DataField: "Package Name"},
+	COMP_DEPTH:          {Title: "Required fields components", ID: "2.5", Required: true, DataField: "Dependencies on other components"},
+	COMP_CREATOR:        {Title: "Required fields component", ID: "2.6", Required: true, DataField: "Package Supplier"},
+	PACK_SUPPLIER:       {Title: "Required fields component", ID: "2.6", Required: true, DataField: "Package Supplier"},
+	COMP_VERSION:        {Title: "Required fields components", ID: "2.7", Required: true, DataField: "Package Version"},
+	COMP_OTHER_UNIQ_IDS: {Title: "Required fields component", ID: "2.8", Required: true, DataField: "Other Uniq IDs"},
 }
 
 type ntiaSection struct {
 	Title         string  `json:"section_title"`
-	Id            string  `json:"section_id"`
+	ID            string  `json:"section_id"`
 	DataField     string  `json:"section_data_field"`
 	Required      bool    `json:"required"`
-	ElementId     string  `json:"element_id"`
+	ElementID     string  `json:"element_id"`
 	ElementResult string  `json:"element_result"`
 	Score         float64 `json:"score"`
 }
@@ -45,7 +45,7 @@ type ntiaComplianceReport struct {
 	Sections []ntiaSection `json:"sections"`
 }
 
-func newNtiaJsonReport() *ntiaComplianceReport {
+func newNtiaJSONReport() *ntiaComplianceReport {
 	return &ntiaComplianceReport{
 		Name:     "NTIA-minimum elements Compliance Report",
 		Subtitle: "Part 2: Software Bill of Materials (SBOM)",
@@ -64,8 +64,8 @@ func newNtiaJsonReport() *ntiaComplianceReport {
 	}
 }
 
-func ntiaJsonReport(db *db, fileName string) {
-	jr := newNtiaJsonReport()
+func ntiaJSONReport(db *db, fileName string) {
+	jr := newNtiaJSONReport()
 	jr.Run.FileName = fileName
 
 	score := ntiaAggregateScore(db)
@@ -84,29 +84,29 @@ func ntiaJsonReport(db *db, fileName string) {
 
 func ntiaConstructSections(db *db) []ntiaSection {
 	var sections []ntiaSection
-	allIds := db.getAllIDs()
-	for _, id := range allIds {
+	allIDs := db.getAllIDs()
+	for _, id := range allIDs {
 		records := db.getRecordsByID(id)
 
 		for _, r := range records {
 			section := ntiaSectionDetails[r.checkKey]
-			new_section := ntiaSection{
+			newSection := ntiaSection{
 				Title:     section.Title,
-				Id:        section.Id,
+				ID:        section.ID,
 				DataField: section.DataField,
 				Required:  section.Required,
 			}
-			score := ntiaKeyIdScore(db, r.checkKey, r.id)
-			new_section.Score = score.totalScore()
+			score := ntiaKeyIDScore(db, r.checkKey, r.id)
+			newSection.Score = score.totalScore()
 			if r.id == "doc" {
-				new_section.ElementId = "sbom"
+				newSection.ElementID = "sbom"
 			} else {
-				new_section.ElementId = r.id
+				newSection.ElementID = r.id
 			}
 
-			new_section.ElementResult = r.checkValue
+			newSection.ElementResult = r.checkValue
 
-			sections = append(sections, new_section)
+			sections = append(sections, newSection)
 		}
 	}
 	return sections
@@ -127,18 +127,18 @@ func ntiaDetailedReport(db *db, fileName string) {
 
 	// Sort sections by ElementId and then by SectionId
 	sort.Slice(sections, func(i, j int) bool {
-		if sections[i].ElementId == sections[j].ElementId {
-			return sections[i].Id < sections[j].Id
+		if sections[i].ElementID == sections[j].ElementID {
+			return sections[i].ID < sections[j].ID
 		}
-		return sections[i].ElementId < sections[j].ElementId
+		return sections[i].ElementID < sections[j].ElementID
 	})
 
 	for _, section := range sections {
-		sectionId := section.Id
+		sectionID := section.ID
 		if !section.Required {
-			sectionId = sectionId + "*"
+			sectionID = sectionID + "*"
 		}
-		table.Append([]string{section.ElementId, sectionId, section.DataField, section.ElementResult, fmt.Sprintf("%0.1f", section.Score)})
+		table.Append([]string{section.ElementID, sectionID, section.DataField, section.ElementResult, fmt.Sprintf("%0.1f", section.Score)})
 	}
 	table.Render()
 }

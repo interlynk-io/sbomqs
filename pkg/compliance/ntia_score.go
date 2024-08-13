@@ -44,35 +44,35 @@ func (r *ntiaScoreResult) totalOptionalScore() float64 {
 	return r.optionalScore / float64(r.optionalRecords)
 }
 
-func ntiaKeyIdScore(db *db, key int, id string) *ntiaScoreResult {
+func ntiaKeyIDScore(db *db, key int, id string) *ntiaScoreResult {
 	records := db.getRecordsByKeyID(key, id)
 
 	if len(records) == 0 {
 		return newNtiaScoreResult(id)
 	}
 
-	required_score := 0.0
-	optional_score := 0.0
+	requiredScore := 0.0
+	optionalScore := 0.0
 
-	required_recs := 0
-	optional_recs := 0
+	requiredRecs := 0
+	optionalRecs := 0
 
 	for _, r := range records {
 		if r.required {
-			required_score += r.score
-			required_recs += 1
+			requiredScore += r.score
+			requiredRecs++
 		} else {
-			optional_score += r.score
-			optional_recs += 1
+			optionalScore += r.score
+			optionalRecs++
 		}
 	}
 
 	return &ntiaScoreResult{
 		id:              id,
-		requiredScore:   required_score,
-		optionalScore:   optional_score,
-		requiredRecords: required_recs,
-		optionalRecords: optional_recs,
+		requiredScore:   requiredScore,
+		optionalScore:   optionalScore,
+		requiredRecords: requiredRecs,
+		optionalRecords: optionalRecs,
 	}
 }
 
@@ -82,7 +82,7 @@ func ntiaAggregateScore(db *db) *ntiaScoreResult {
 
 	ids := db.getAllIDs()
 	for _, id := range ids {
-		results = append(results, *ntiaIdScore(db, id))
+		results = append(results, *ntiaIDScore(db, id))
 	}
 
 	for _, r := range results {
@@ -95,34 +95,34 @@ func ntiaAggregateScore(db *db) *ntiaScoreResult {
 	return &finalResult
 }
 
-func ntiaIdScore(db *db, id string) *ntiaScoreResult {
+func ntiaIDScore(db *db, id string) *ntiaScoreResult {
 	records := db.getRecordsByID(id)
 
 	if len(records) == 0 {
 		return newNtiaScoreResult(id)
 	}
 
-	required_score := 0.0
-	optional_score := 0.0
+	requiredScore := 0.0
+	optionalScore := 0.0
 
-	required_recs := 0
-	optional_recs := 0
+	requiredRecs := 0
+	optionalRecs := 0
 
 	for _, r := range records {
 		if r.required {
-			required_score += r.score
-			required_recs += 1
+			requiredScore += r.score
+			requiredRecs++
 		} else {
-			optional_score += r.score
-			optional_recs += 1
+			optionalScore += r.score
+			optionalRecs++
 		}
 	}
 
 	return &ntiaScoreResult{
 		id:              id,
-		requiredScore:   required_score,
-		optionalScore:   optional_score,
-		requiredRecords: required_recs,
-		optionalRecords: optional_recs,
+		requiredScore:   requiredScore,
+		optionalScore:   optionalScore,
+		requiredRecords: requiredRecs,
+		optionalRecords: optionalRecs,
 	}
 }

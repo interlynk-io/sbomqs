@@ -126,7 +126,7 @@ func TestNtiaSpdxSbomPass(t *testing.T) {
 			},
 		},
 		{
-			actual: ntiaComponentOtherUniqIds(doc, doc.Components()[0]),
+			actual: ntiaComponentOtherUniqIDs(doc, doc.Components()[0]),
 			expected: desiredNtia{
 				score:  10.0,
 				result: "purl:(1/1)",
@@ -259,7 +259,7 @@ func TestNtiaCdxSbomPass(t *testing.T) {
 			},
 		},
 		{
-			actual: ntiaComponentOtherUniqIds(doc, doc.Components()[0]),
+			actual: ntiaComponentOtherUniqIDs(doc, doc.Components()[0]),
 			expected: desiredNtia{
 				score:  10.0,
 				result: "vivek",
@@ -387,7 +387,7 @@ func TestNTIASbomFail(t *testing.T) {
 			},
 		},
 		{
-			actual: ntiaComponentOtherUniqIds(doc, doc.Components()[0]),
+			actual: ntiaComponentOtherUniqIDs(doc, doc.Components()[0]),
 			expected: desiredNtia{
 				score:  0.0,
 				result: "",
