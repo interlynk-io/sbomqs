@@ -21,8 +21,8 @@ var ntiaSectionDetails = map[int]ntiaSection{
 	COMP_DEPTH:          {Title: "Required fields components", Id: "2.5", Required: true, DataField: "Dependencies on other components"},
 	COMP_CREATOR:        {Title: "Required fields component", Id: "2.6", Required: true, DataField: "Package Supplier"},
 	PACK_SUPPLIER:       {Title: "Required fields component", Id: "2.6", Required: true, DataField: "Package Supplier"},
-	COMP_VERSION:        {Title: "Required fields components", Id: "2.8", Required: true, DataField: "Package Version"},
-	COMP_OTHER_UNIQ_IDS: {Title: "Required fields component", Id: "2.9", Required: true, DataField: "Other Uniq IDs"},
+	COMP_VERSION:        {Title: "Required fields components", Id: "2.7", Required: true, DataField: "Package Version"},
+	COMP_OTHER_UNIQ_IDS: {Title: "Required fields component", Id: "2.8", Required: true, DataField: "Other Uniq IDs"},
 }
 
 type ntiaSection struct {
