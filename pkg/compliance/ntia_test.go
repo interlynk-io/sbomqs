@@ -12,6 +12,7 @@ func createSpdxDummyDocumentNtia() sbom.Document {
 	s := sbom.NewSpec()
 	s.Version = "SPDX-2.3"
 	s.SpecType = "spdx"
+	s.Format = "json"
 	s.CreationTimestamp = "2023-05-04T09:33:40Z"
 
 	var creators []sbom.GetTool
@@ -25,7 +26,7 @@ func createSpdxDummyDocumentNtia() sbom.Document {
 	pack.Name = "core-js"
 
 	supplier := sbom.Supplier{
-		Email: "vivekkumarsahu650@gmail.com",
+		Email: "hello@interlynk.io",
 	}
 	pack.Supplier = supplier
 
@@ -73,9 +74,9 @@ func TestNtiaSpdxSbomPass(t *testing.T) {
 			actual: ntiaAutomationSpec(doc),
 			expected: desiredNtia{
 				score:  10.0,
-				result: "spdx",
-				key:    SBOM_SPEC,
-				id:     "SBOM format",
+				result: "spdx, json",
+				key:    SBOM_MACHINE_FORMAT,
+				id:     "Automation Support",
 			},
 		},
 		{
@@ -84,7 +85,7 @@ func TestNtiaSpdxSbomPass(t *testing.T) {
 				score:  10.0,
 				result: "syft",
 				key:    SBOM_CREATOR,
-				id:     "doc",
+				id:     "SBOM Data Fields",
 			},
 		},
 		{
@@ -93,14 +94,14 @@ func TestNtiaSpdxSbomPass(t *testing.T) {
 				score:  10.0,
 				result: "2023-05-04T09:33:40Z",
 				key:    SBOM_TIMESTAMP,
-				id:     "doc",
+				id:     "SBOM Data Fields",
 			},
 		},
 		{
 			actual: ntiaComponentCreator(doc, doc.Components()[0]),
 			expected: desiredNtia{
 				score:  10.0,
-				result: "vivekkumarsahu650@gmail.com",
+				result: "hello@interlynk.io",
 				key:    PACK_SUPPLIER,
 				id:     doc.Components()[0].GetID(),
 			},
@@ -129,7 +130,7 @@ func TestNtiaSpdxSbomPass(t *testing.T) {
 			expected: desiredNtia{
 				score:  10.0,
 				result: "purl:(1/1)",
-				key:    PACK_EXT_REF,
+				key:    COMP_OTHER_UNIQ_IDS,
 				id:     doc.Components()[0].GetID(),
 			},
 		},
@@ -137,7 +138,7 @@ func TestNtiaSpdxSbomPass(t *testing.T) {
 			actual: ntiaComponentDependencies(doc, doc.Components()[0]),
 			expected: desiredNtia{
 				score:  10.0,
-				result: "SPDXRef-Package-go-module-github.com-abc, SPDXRef-Package-go-module-github.com-xyz",
+				result: "SPDXRef-Package-go-module-github.com-xyz",
 				key:    COMP_DEPTH,
 				id:     doc.Components()[0].GetID(),
 			},
@@ -157,10 +158,11 @@ func createCdxDummyDocumentNtia() sbom.Document {
 	cdxSpec.Version = "1.4"
 	cdxSpec.SpecType = "cyclonedx"
 	cdxSpec.CreationTimestamp = "2023-05-04T09:33:40Z"
+	cdxSpec.Format = "xml"
 
 	var authors []sbom.GetAuthor
 	author := sbom.Author{
-		Email: "vivekkumarsahu650@gmail.com",
+		Email: "hello@interlynk.io",
 	}
 	authors = append(authors, author)
 
@@ -169,7 +171,7 @@ func createCdxDummyDocumentNtia() sbom.Document {
 	comp.Name = "core-js"
 
 	supplier := sbom.Supplier{
-		Email: "vivekkumarsahu650@gmail.com",
+		Email: "hello@interlynk.io",
 	}
 	comp.Supplier = supplier
 
@@ -206,18 +208,18 @@ func TestNtiaCdxSbomPass(t *testing.T) {
 			actual: ntiaAutomationSpec(doc),
 			expected: desiredNtia{
 				score:  10.0,
-				result: "cyclonedx",
-				key:    SBOM_SPEC,
-				id:     "SBOM format",
+				result: "cyclonedx, xml",
+				key:    SBOM_MACHINE_FORMAT,
+				id:     "Automation Support",
 			},
 		},
 		{
 			actual: ntiaSbomCreator(doc),
 			expected: desiredNtia{
 				score:  10.0,
-				result: "vivekkumarsahu650@gmail.com",
+				result: "hello@interlynk.io",
 				key:    SBOM_CREATOR,
-				id:     "doc",
+				id:     "SBOM Data Fields",
 			},
 		},
 		{
@@ -226,19 +228,18 @@ func TestNtiaCdxSbomPass(t *testing.T) {
 				score:  10.0,
 				result: "2023-05-04T09:33:40Z",
 				key:    SBOM_TIMESTAMP,
-				id:     "doc",
+				id:     "SBOM Data Fields",
 			},
 		},
 		{
 			actual: ntiaComponentCreator(doc, doc.Components()[0]),
 			expected: desiredNtia{
 				score:  10.0,
-				result: "vivekkumarsahu650@gmail.com",
+				result: "hello@interlynk.io",
 				key:    COMP_CREATOR,
 				id:     doc.Components()[0].GetID(),
 			},
 		},
-
 		{
 			actual: ntiaComponentName(doc.Components()[0]),
 			expected: desiredNtia{
@@ -275,288 +276,131 @@ func TestNtiaCdxSbomPass(t *testing.T) {
 	}
 }
 
-// func createFailureDummyDocumentNtia() sbom.Document {
-// 	s := sbom.NewSpec()
-// 	s.Version = ""
-// 	s.Format = "xml"
-// 	s.SpecType = "cyclonedx"
-// 	s.Name = ""
-// 	s.Namespace = ""
-// 	s.Organization = ""
-// 	s.CreationTimestamp = "wrong-time-format"
-// 	s.Spdxid = ""
-// 	s.Comment = ""
-// 	lics := licenses.CreateCustomLicense("", "")
-// 	s.Licenses = append(s.Licenses, lics)
+func createSpdxDummyDocumentFailNtia() sbom.Document {
+	s := sbom.NewSpec()
+	s.Version = "SPDX-4.0"
+	s.SpecType = "swid"
+	s.Format = "fjson"
+	s.CreationTimestamp = "2023-05-04"
 
-// 	var tools []sbom.GetTool
-// 	tool := sbom.Tool{
-// 		Name: "",
-// 	}
-// 	tools = append(tools, tool)
+	var creators []sbom.GetTool
+	creator := sbom.Tool{
+		Name: "",
+	}
+	creators = append(creators, creator)
 
-// 	pack := sbom.NewComponent()
-// 	pack.Version = ""
-// 	pack.Name = ""
-// 	pack.Spdxid = ""
-// 	pack.CopyRight = "NOASSERTION"
-// 	pack.FileAnalyzed = false
-// 	pack.Id = ""
-// 	pack.PackageLicenseConcluded = "NONE"
-// 	pack.PackageLicenseDeclared = "NOASSERTION"
-// 	pack.DownloadLocation = ""
+	pack := sbom.NewComponent()
+	pack.Version = ""
+	pack.Name = ""
 
-// 	supplier := sbom.Supplier{
-// 		Email: "",
-// 	}
-// 	pack.Supplier = supplier
+	supplier := sbom.Supplier{
+		Email: "",
+	}
+	pack.Supplier = supplier
 
-// 	checksum := sbom.Checksum{
-// 		Alg:     "SHA-1",
-// 		Content: "443238d9cf19f77ccc8cdda3ba5421ea9ea2bc78",
-// 	}
+	extRef := sbom.ExternalReference{
+		RefType: "purl",
+	}
 
-// 	var checksums []sbom.GetChecksum
-// 	checksums = append(checksums, checksum)
-// 	pack.Checksums = checksums
+	var externalReferences []sbom.GetExternalReference
+	externalReferences = append(externalReferences, extRef)
+	pack.ExternalRefs = externalReferences
 
-// 	extRef := sbom.ExternalReference{
-// 		RefType: "cpe23Type",
-// 	}
-// 	var externalReferences []sbom.GetExternalReference
-// 	externalReferences = append(externalReferences, extRef)
-// 	pack.ExternalRefs = externalReferences
+	var packages []sbom.GetComponent
+	packages = append(packages, pack)
 
-// 	var packages []sbom.GetComponent
-// 	packages = append(packages, pack)
+	depend := sbom.Relation{
+		From: "",
+		To:   "",
+	}
+	var dependencies []sbom.GetRelation
+	dependencies = append(dependencies, depend)
 
-// 	doc := sbom.SpdxDoc{
-// 		SpdxSpec:  s,
-// 		Comps:     packages,
-// 		SpdxTools: tools,
-// 	}
-// 	return doc
-// }
+	doc := sbom.SpdxDoc{
+		SpdxSpec:  s,
+		Comps:     packages,
+		SpdxTools: creators,
+		Rels:      dependencies,
+	}
+	return doc
+}
 
-// func TestOctSbomFail(t *testing.T) {
-// 	doc := createFailureDummyDocument()
-// 	testCases := []struct {
-// 		actual   *record
-// 		expected desired
-// 	}{
-// 		{
-// 			actual: octSpec(doc),
-// 			expected: desired{
-// 				score:  0.0,
-// 				result: "cyclonedx",
-// 				key:    SBOM_SPEC,
-// 				id:     "SBOM Format",
-// 			},
-// 		},
-// 		{
-// 			actual: octSbomName(doc),
-// 			expected: desired{
-// 				score:  0.0,
-// 				result: "",
-// 				key:    SBOM_NAME,
-// 				id:     "SPDX Elements",
-// 			},
-// 		},
-// 		{
-// 			actual: octSbomNamespace(doc),
-// 			expected: desired{
-// 				score:  0.0,
-// 				result: "",
-// 				key:    SBOM_NAMESPACE,
-// 				id:     "SPDX Elements",
-// 			},
-// 		},
-// 		{
-// 			actual: octSbomOrganization(doc),
-// 			expected: desired{
-// 				score:  0.0,
-// 				result: "",
-// 				key:    SBOM_ORG,
-// 				id:     "SBOM Build Information",
-// 			},
-// 		},
-// 		{
-// 			actual: octSbomComment(doc),
-// 			expected: desired{
-// 				score:  0.0,
-// 				result: "",
-// 				key:    SBOM_COMMENT,
-// 				id:     "SPDX Elements",
-// 			},
-// 		},
-// 		{
-// 			actual: octSbomTool(doc),
-// 			expected: desired{
-// 				score:  0.0,
-// 				result: "",
-// 				key:    SBOM_TOOL,
-// 				id:     "SBOM Build Information",
-// 			},
-// 		},
-// 		{
-// 			actual: octSbomLicense(doc),
-// 			expected: desired{
-// 				score:  0.0,
-// 				result: "",
-// 				key:    SBOM_LICENSE,
-// 				id:     "SPDX Elements",
-// 			},
-// 		},
-// 		{
-// 			actual: octSpecVersion(doc),
-// 			expected: desired{
-// 				score:  0.0,
-// 				result: "",
-// 				key:    SBOM_SPEC_VERSION,
-// 				id:     "SPDX Elements",
-// 			},
-// 		},
-// 		{
-// 			actual: octCreatedTimestamp(doc),
-// 			expected: desired{
-// 				score:  0.0,
-// 				result: "wrong-time-format",
-// 				key:    SBOM_TIMESTAMP,
-// 				id:     "SPDX Elements",
-// 			},
-// 		},
-// 		{
-// 			actual: octSpecSpdxID(doc),
-// 			expected: desired{
-// 				score:  0.0,
-// 				result: "",
-// 				key:    SBOM_SPDXID,
-// 				id:     "SPDX Elements",
-// 			},
-// 		},
-// 		{
-// 			actual: octMachineFormat(doc),
-// 			expected: desired{
-// 				score:  0.0,
-// 				result: "cyclonedx, xml",
-// 				key:    SBOM_MACHINE_FORMAT,
-// 				id:     "Machine Readable Data Format",
-// 			},
-// 		},
-// 		{
-// 			actual: octHumanFormat(doc),
-// 			expected: desired{
-// 				score:  0.0,
-// 				result: "xml",
-// 				key:    SBOM_HUMAN_FORMAT,
-// 				id:     "Human Readable Data Format",
-// 			},
-// 		},
-// 		{
-// 			actual: octPackageName(doc.Components()[0]),
-// 			expected: desired{
-// 				score:  0.0,
-// 				result: "",
-// 				key:    PACK_NAME,
-// 				id:     doc.Components()[0].GetID(),
-// 			},
-// 		},
-// 		{
-// 			actual: octPackageVersion(doc.Components()[0]),
-// 			expected: desired{
-// 				score:  0.0,
-// 				result: "",
-// 				key:    PACK_VERSION,
-// 				id:     doc.Components()[0].GetID(),
-// 			},
-// 		},
-// 		{
-// 			actual: octPackageSpdxID(doc.Components()[0]),
-// 			expected: desired{
-// 				score:  0.0,
-// 				result: "",
-// 				key:    PACK_SPDXID,
-// 				id:     doc.Components()[0].GetID(),
-// 			},
-// 		},
-// 		{
-// 			actual: octPackageSupplier(doc.Components()[0]),
-// 			expected: desired{
-// 				score:  0.0,
-// 				result: "",
-// 				key:    PACK_SUPPLIER,
-// 				id:     doc.Components()[0].GetID(),
-// 			},
-// 		},
-// 		{
-// 			actual: octPackageHash(doc.Components()[0]),
-// 			expected: desired{
-// 				score:  0.0,
-// 				result: "",
-// 				key:    PACK_HASH,
-// 				id:     doc.Components()[0].GetID(),
-// 			},
-// 		},
-// 		{
-// 			actual: octPackageExternalRefs(doc.Components()[0]),
-// 			expected: desired{
-// 				score:  0.0,
-// 				result: "cpe23Type",
-// 				key:    PACK_EXT_REF,
-// 				id:     doc.Components()[0].GetID(),
-// 			},
-// 		},
-// 		{
-// 			actual: octPackageCopyright(doc.Components()[0]),
-// 			expected: desired{
-// 				score:  0.0,
-// 				result: "NOASSERTION",
-// 				key:    PACK_COPYRIGHT,
-// 				id:     doc.Components()[0].GetID(),
-// 			},
-// 		},
-// 		{
-// 			actual: octPackageFileAnalyzed(doc.Components()[0]),
-// 			expected: desired{
-// 				score:  0.0,
-// 				result: "no",
-// 				key:    PACK_FILE_ANALYZED,
-// 				id:     doc.Components()[0].GetID(),
-// 			},
-// 		},
-// 		{
-// 			actual: octPackageConLicense(doc.Components()[0]),
-// 			expected: desired{
-// 				score:  0.0,
-// 				result: "NONE",
-// 				key:    PACK_LICENSE_CON,
-// 				id:     doc.Components()[0].GetID(),
-// 			},
-// 		},
-// 		{
-// 			actual: octPackageDecLicense(doc.Components()[0]),
-// 			expected: desired{
-// 				score:  0.0,
-// 				result: "NOASSERTION",
-// 				key:    PACK_LICENSE_DEC,
-// 				id:     doc.Components()[0].GetID(),
-// 			},
-// 		},
-// 		{
-// 			actual: octPackageDownloadUrl(doc.Components()[0]),
-// 			expected: desired{
-// 				score:  0.0,
-// 				result: "",
-// 				key:    PACK_DOWNLOAD_URL,
-// 				id:     doc.Components()[0].GetID(),
-// 			},
-// 		},
-// 	}
+func TestNTIASbomFail(t *testing.T) {
+	doc := createSpdxDummyDocumentFailNtia()
+	testCases := []struct {
+		actual   *record
+		expected desiredNtia
+	}{
+		{
+			actual: ntiaAutomationSpec(doc),
+			expected: desiredNtia{
+				score:  0.0,
+				result: "swid, fjson",
+				key:    SBOM_MACHINE_FORMAT,
+				id:     "Automation Support",
+			},
+		},
+		{
+			actual: ntiaSbomCreator(doc),
+			expected: desiredNtia{
+				score:  0.0,
+				result: "",
+				key:    SBOM_CREATOR,
+				id:     "SBOM Data Fields",
+			},
+		},
+		{
+			actual: ntiaSbomCreatedTimestamp(doc),
+			expected: desiredNtia{
+				score:  0.0,
+				result: "2023-05-04",
+				key:    SBOM_TIMESTAMP,
+				id:     "SBOM Data Fields",
+			},
+		},
+		{
+			actual: ntiaComponentCreator(doc, doc.Components()[0]),
+			expected: desiredNtia{
+				score:  0.0,
+				result: "",
+				key:    COMP_CREATOR,
+				id:     doc.Components()[0].GetID(),
+			},
+		},
 
-// 	for _, test := range testCases {
-// 		assert.Equal(t, test.expected.score, test.actual.score)
-// 		assert.Equal(t, test.expected.key, test.actual.check_key)
-// 		assert.Equal(t, test.expected.id, test.actual.id)
-// 		assert.Equal(t, test.expected.result, test.actual.check_value)
-// 	}
-// }
+		{
+			actual: ntiaComponentName(doc.Components()[0]),
+			expected: desiredNtia{
+				score:  0.0,
+				result: "",
+				key:    COMP_NAME,
+				id:     doc.Components()[0].GetID(),
+			},
+		},
+		{
+			actual: ntiaComponentVersion(doc.Components()[0]),
+			expected: desiredNtia{
+				score:  0.0,
+				result: "",
+				key:    COMP_VERSION,
+				id:     doc.Components()[0].GetID(),
+			},
+		},
+		{
+			actual: ntiaComponentOtherUniqIds(doc, doc.Components()[0]),
+			expected: desiredNtia{
+				score:  0.0,
+				result: "",
+				key:    COMP_OTHER_UNIQ_IDS,
+				id:     doc.Components()[0].GetID(),
+			},
+		},
+	}
+
+	for _, test := range testCases {
+		assert.Equal(t, test.expected.score, test.actual.score)
+		assert.Equal(t, test.expected.key, test.actual.checkKey)
+		assert.Equal(t, test.expected.id, test.actual.id)
+		assert.Equal(t, test.expected.result, test.actual.checkValue)
+	}
+}
