@@ -218,6 +218,13 @@ func (s *SpdxDoc) parseComps() {
 			nc.Supplier = *supp
 		}
 
+		// https://github.com/spdx/ntia-conformance-checker/issues/100
+		// Add spdx support to check both supplier and originator
+		if supp == nil && manu != nil {
+			nc.Supplier.Name = manu.Name
+			nc.Supplier.Email = manu.Email
+		}
+
 		if sc.PackageVerificationCode != nil {
 			nc.sourceCodeHash = sc.PackageVerificationCode.Value
 		}
@@ -574,6 +581,8 @@ func (s *SpdxDoc) getManufacturer(index int) *manufacturer {
 	}
 }
 
+// https://github.com/spdx/ntia-conformance-checker/issues/100
+// Add spdx support to check both supplier and originator
 func (s *SpdxDoc) getSupplier(index int) *Supplier {
 	pkg := s.doc.Packages[index]
 
@@ -594,28 +603,6 @@ func (s *SpdxDoc) getSupplier(index int) *Supplier {
 		Name:  entity.name,
 		Email: entity.email,
 	}
-}
-
-// https://github.com/spdx/ntia-conformance-checker/issues/100
-// Add spdx support to check both supplier and originator
-func (s *SpdxDoc) addSupplierName(index int) string {
-	supplier := s.getSupplier(index)
-	manufacturer := s.getManufacturer(index)
-
-	if supplier == nil && manufacturer == nil {
-		s.addToLogs(fmt.Sprintf("spdx doc pkg %s at index %d no supplier/originator found", s.doc.Packages[index].PackageName, index))
-		return ""
-	}
-
-	if supplier != nil {
-		return supplier.Name
-	}
-
-	if manufacturer != nil {
-		return manufacturer.Name
-	}
-
-	return ""
 }
 
 func (s *SpdxDoc) parsePrimaryComponent() {

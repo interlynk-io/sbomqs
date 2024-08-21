@@ -31,7 +31,11 @@ func InitProdLogger() {
 		log.Fatalf("Failed to initialize logger: %v", err)
 	}
 
-	defer l.Sync()
+	defer func() {
+		if err := logger.Sync(); err != nil {
+			return
+		}
+	}()
 
 	if logger != nil {
 		panic("logger already initialized")
@@ -45,7 +49,11 @@ func InitDebugLogger() {
 		log.Printf("Failed to zap new development: %v", err)
 	}
 
-	defer l.Sync()
+	defer func() {
+		if err := logger.Sync(); err != nil {
+			return
+		}
+	}()
 
 	if logger != nil {
 		panic("logger already initialized")
