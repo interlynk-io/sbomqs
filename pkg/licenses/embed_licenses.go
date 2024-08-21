@@ -53,7 +53,7 @@ type aboutCodeLicenseDetail struct {
 
 var (
 	licenseList          = map[string]meta{}
-	LicenseListAboutCode = map[string]meta{}
+	licenseListAboutCode = map[string]meta{}
 )
 
 func loadSpdxLicense() error {
@@ -152,7 +152,7 @@ func loadAboutCodeLicense() error {
 
 	for _, l := range acl {
 		for _, otherKey := range l.OtherSpdxLicenseKeys {
-			LicenseListAboutCode[otherKey] = meta{
+			licenseListAboutCode[otherKey] = meta{
 				name:        l.LicenseKey,
 				short:       otherKey,
 				deprecated:  l.Deprecated,
@@ -165,7 +165,7 @@ func loadAboutCodeLicense() error {
 			}
 		}
 
-		LicenseListAboutCode[l.SpdxLicenseKey] = meta{
+		licenseListAboutCode[l.SpdxLicenseKey] = meta{
 			name:        l.LicenseKey,
 			short:       l.SpdxLicenseKey,
 			deprecated:  l.Deprecated,

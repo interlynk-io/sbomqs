@@ -265,7 +265,6 @@ func copyC(cdxc *cydx.Component, c *cdxDoc) *Component {
 	supplier := c.assignSupplier(cdxc)
 	if supplier != nil {
 		nc.Supplier = *supplier
-		nc.SupplierName = supplier.Name
 	}
 
 	if cdxc.ExternalReferences != nil {
@@ -443,6 +442,7 @@ func aggregateLicenses(clicenses cydx.Licenses) []licenses.License {
 			}
 		}
 	}
+
 	return lics
 }
 

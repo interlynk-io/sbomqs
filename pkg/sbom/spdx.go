@@ -217,7 +217,13 @@ func (s *SpdxDoc) parseComps() {
 		if supp != nil {
 			nc.Supplier = *supp
 		}
-		nc.SupplierName = s.addSupplierName(index)
+
+		// https://github.com/spdx/ntia-conformance-checker/issues/100
+		// Add spdx support to check both supplier and originator
+		if supp == nil && manu != nil {
+			nc.Supplier.Name = manu.Name
+			nc.Supplier.Email = manu.Email
+		}
 
 		if sc.PackageVerificationCode != nil {
 			nc.sourceCodeHash = sc.PackageVerificationCode.Value
@@ -534,18 +540,20 @@ func (s *SpdxDoc) licenses(index int) []licenses.License {
 		return licenses.CreateCustomLicense(l.LicenseIdentifier, l.LicenseName)
 	})
 
-	if pkg.PackageLicenseConcluded != "" && strings.ToLower(pkg.PackageLicenseConcluded) != "noassertion" && strings.ToLower(pkg.PackageLicenseConcluded) != "none" {
+	if pkg.PackageLicenseConcluded != "" {
 		conLics := licenses.LookupExpression(pkg.PackageLicenseConcluded, otherLicenses)
-		lics = append(lics, conLics...)
 		if len(conLics) > 0 {
+			lics = append(lics, conLics...)
 			return lics
 		}
 	}
 
-	if pkg.PackageLicenseDeclared != "" && strings.ToLower(pkg.PackageLicenseDeclared) != "noassertion" && strings.ToLower(pkg.PackageLicenseDeclared) != "none" {
+	if pkg.PackageLicenseDeclared != "" {
 		decLics := licenses.LookupExpression(pkg.PackageLicenseDeclared, otherLicenses)
-		lics = append(lics, decLics...)
-		return lics
+		if len(decLics) > 0 {
+			lics = append(lics, decLics...)
+			return lics
+		}
 	}
 
 	return lics
@@ -573,6 +581,8 @@ func (s *SpdxDoc) getManufacturer(index int) *manufacturer {
 	}
 }
 
+// https://github.com/spdx/ntia-conformance-checker/issues/100
+// Add spdx support to check both supplier and originator
 func (s *SpdxDoc) getSupplier(index int) *Supplier {
 	pkg := s.doc.Packages[index]
 
@@ -593,28 +603,6 @@ func (s *SpdxDoc) getSupplier(index int) *Supplier {
 		Name:  entity.name,
 		Email: entity.email,
 	}
-}
-
-// https://github.com/spdx/ntia-conformance-checker/issues/100
-// Add spdx support to check both supplier and originator
-func (s *SpdxDoc) addSupplierName(index int) string {
-	supplier := s.getSupplier(index)
-	manufacturer := s.getManufacturer(index)
-
-	if supplier == nil && manufacturer == nil {
-		s.addToLogs(fmt.Sprintf("spdx doc pkg %s at index %d no supplier/originator found", s.doc.Packages[index].PackageName, index))
-		return ""
-	}
-
-	if supplier != nil {
-		return supplier.Name
-	}
-
-	if manufacturer != nil {
-		return manufacturer.Name
-	}
-
-	return ""
 }
 
 func (s *SpdxDoc) parsePrimaryComponent() {

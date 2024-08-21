@@ -38,9 +38,17 @@ func compWithValidLicensesCheck(d sbom.Document, c *check) score {
 	compScores := lo.Map(d.Components(), func(c sbom.GetComponent, _ int) float64 {
 		tl := len(c.Licenses())
 
+		if tl == 0 {
+			return 0.0
+		}
+
 		validLic := lo.CountBy(c.Licenses(), func(l licenses.License) bool {
-			return l.Deprecated() || l.Source() == "custom"
+			return l.Spdx()
 		})
+
+		if validLic == 0 {
+			return 0.0
+		}
 
 		return (float64(validLic) / float64(tl)) * 10.0
 	})
@@ -53,6 +61,7 @@ func compWithValidLicensesCheck(d sbom.Document, c *check) score {
 	}, 0.0)
 
 	finalScore := (totalCompScore / float64(totalComponents))
+
 	compsWithValidScores := lo.CountBy(compScores, func(score float64) bool {
 		return score > 0.0
 	})
