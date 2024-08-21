@@ -40,9 +40,9 @@ var generateCmd = &cobra.Command{
 				return generateYaml(ctx)
 			}
 		} else {
-			return fmt.Errorf(fmt.Sprintf("arguments missing%s", "list of valid command eg. features"))
+			return fmt.Errorf("arguments missing%s", "list of valid command eg. features")
 		}
-		return fmt.Errorf(fmt.Sprintf("invalid arguments%s", "list of valid command eg. features"))
+		return fmt.Errorf("invalid arguments%s", "list of valid command eg. features")
 	},
 }
 
