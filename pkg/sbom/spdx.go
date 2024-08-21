@@ -217,7 +217,6 @@ func (s *SpdxDoc) parseComps() {
 		if supp != nil {
 			nc.Supplier = *supp
 		}
-		nc.SupplierName = s.addSupplierName(index)
 
 		if sc.PackageVerificationCode != nil {
 			nc.sourceCodeHash = sc.PackageVerificationCode.Value
@@ -534,18 +533,20 @@ func (s *SpdxDoc) licenses(index int) []licenses.License {
 		return licenses.CreateCustomLicense(l.LicenseIdentifier, l.LicenseName)
 	})
 
-	if pkg.PackageLicenseConcluded != "" && strings.ToLower(pkg.PackageLicenseConcluded) != "noassertion" && strings.ToLower(pkg.PackageLicenseConcluded) != "none" {
+	if pkg.PackageLicenseConcluded != "" {
 		conLics := licenses.LookupExpression(pkg.PackageLicenseConcluded, otherLicenses)
-		lics = append(lics, conLics...)
 		if len(conLics) > 0 {
+			lics = append(lics, conLics...)
 			return lics
 		}
 	}
 
-	if pkg.PackageLicenseDeclared != "" && strings.ToLower(pkg.PackageLicenseDeclared) != "noassertion" && strings.ToLower(pkg.PackageLicenseDeclared) != "none" {
+	if pkg.PackageLicenseDeclared != "" {
 		decLics := licenses.LookupExpression(pkg.PackageLicenseDeclared, otherLicenses)
-		lics = append(lics, decLics...)
-		return lics
+		if len(decLics) > 0 {
+			lics = append(lics, decLics...)
+			return lics
+		}
 	}
 
 	return lics

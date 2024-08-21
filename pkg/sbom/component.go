@@ -23,7 +23,6 @@ import (
 
 type GetComponent interface {
 	GetID() string
-	GetSupplierName() string
 	GetName() string
 	GetVersion() string
 	Cpes() []cpe.CPE
@@ -50,7 +49,6 @@ type GetComponent interface {
 }
 
 type Component struct {
-	SupplierName            string
 	Name                    string
 	Version                 string
 	cpes                    []cpe.CPE
@@ -79,10 +77,6 @@ type Component struct {
 
 func NewComponent() *Component {
 	return &Component{}
-}
-
-func (c Component) GetSupplierName() string {
-	return c.SupplierName
 }
 
 func (c Component) GetName() string {

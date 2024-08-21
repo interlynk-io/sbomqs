@@ -30,13 +30,8 @@ func InitProdLogger() {
 	if err != nil {
 		log.Fatalf("Failed to initialize logger: %v", err)
 	}
-	// l, _ := zap.NewDevelopment()
-	// Defer with error handling
-	defer func() {
-		if err := l.Sync(); err != nil {
-			log.Printf("Failed to sync logger: %v", err)
-		}
-	}()
+
+	defer l.Sync()
 
 	if logger != nil {
 		panic("logger already initialized")
@@ -50,12 +45,8 @@ func InitDebugLogger() {
 		log.Printf("Failed to zap new development: %v", err)
 	}
 
-	// Defer with error handling
-	defer func() {
-		if err := l.Sync(); err != nil {
-			log.Printf("Failed to sync logger: %v", err)
-		}
-	}()
+	defer l.Sync()
+
 	if logger != nil {
 		panic("logger already initialized")
 	}

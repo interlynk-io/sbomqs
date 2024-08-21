@@ -31,6 +31,9 @@ type License interface {
 	Restrictive() bool
 	Exception() bool
 	Source() string
+	Custom() bool
+	Spdx() bool
+	AboutCode() bool
 }
 
 type meta struct {
@@ -81,7 +84,19 @@ func (m meta) Source() string {
 	return m.source
 }
 
-func lookupLicense(licenseKey string) (License, error) {
+func (m meta) Custom() bool {
+	return m.source == "custom"
+}
+
+func (m meta) Spdx() bool {
+	return m.source == "spdx"
+}
+
+func (m meta) AboutCode() bool {
+	return m.source == "aboutcode"
+}
+
+func LookupSpdxLicense(licenseKey string) (License, error) {
 	if licenseKey == "" {
 		return nil, errors.New("license not found")
 	}
@@ -95,32 +110,44 @@ func lookupLicense(licenseKey string) (License, error) {
 	tLicKey := strings.TrimRight(licenseKey, "+")
 
 	// Lookup spdx & exception list
-	license, lok := licenseList[tLicKey]
-	abouLicense, aok := LicenseListAboutCode[tLicKey]
+	license, ok := licenseList[tLicKey]
 
-	// fmt.Printf("lookupLicense: %s %v %v\n", tLicKey, lok, aok)
-
-	if lok && aok {
-		return abouLicense, nil
+	if !ok {
+		return nil, errors.New("license not found")
 	}
 
-	if lok {
-		return license, nil
-	}
-
-	if aok {
-		return abouLicense, nil
-	}
-	return nil, errors.New("license not found")
+	return license, nil
 }
 
-func LookupExpression(expression string, customLicense []License) []License {
+func LookupAboutCodeLicense(licenseKey string) (License, error) {
+	if licenseKey == "" {
+		return nil, errors.New("license not found")
+	}
+
+	lowerKey := strings.ToLower(licenseKey)
+
+	if lowerKey == "none" || lowerKey == "noassertion" {
+		return nil, errors.New("license not found")
+	}
+
+	tLicKey := strings.TrimRight(licenseKey, "+")
+
+	license, ok := licenseListAboutCode[tLicKey]
+
+	if !ok {
+		return nil, errors.New("license not found")
+	}
+
+	return license, nil
+}
+
+func LookupExpression(expression string, customLicenses []License) []License {
 	customLookup := func(licenseKey string) (License, error) {
-		if len(customLicense) == 0 {
+		if len(customLicenses) == 0 {
 			return nil, errors.New("license not found")
 		}
 
-		for _, l := range customLicense {
+		for _, l := range customLicenses {
 			if l.ShortID() == licenseKey {
 				return l, nil
 			}
@@ -128,35 +155,46 @@ func LookupExpression(expression string, customLicense []License) []License {
 		return nil, errors.New("license not found")
 	}
 
-	if expression == "" || strings.ToLower(expression) == "none" || strings.ToLower(expression) == "noassertion" {
+	lExp := strings.ToLower(expression)
+
+	if expression == "" || lExp == "none" || lExp == "noassertion" {
 		return []License{}
 	}
 
-	licenses, err := spdxexp.ExtractLicenses(expression)
+	extLicenses, err := spdxexp.ExtractLicenses(expression)
 	if err != nil {
 		return []License{CreateCustomLicense(expression, expression)}
 	}
 
-	ls := []License{}
+	licenses := []License{}
 
-	for _, l := range licenses {
-		tLicKey := strings.TrimRight(l, "+")
-		lic, err := lookupLicense(tLicKey)
-		if err != nil {
-			custLic, err2 := customLookup(tLicKey)
-			if err2 != nil {
-				ls = append(ls, CreateCustomLicense(tLicKey, tLicKey))
-				continue
-			}
-			ls = append(ls, custLic)
+	for _, l := range extLicenses {
+		trimLicenseKey := strings.TrimRight(l, "+")
+
+		license, err := LookupSpdxLicense(trimLicenseKey)
+		if err == nil {
+			licenses = append(licenses, license)
+			continue
 		}
 
-		if lic != nil {
-			ls = append(ls, lic)
+		license, err = LookupAboutCodeLicense(trimLicenseKey)
+		if err == nil {
+			licenses = append(licenses, license)
+			continue
 		}
+
+		//if custom license list is provided use that.
+		license, err = customLookup(trimLicenseKey)
+		if err == nil {
+			licenses = append(licenses, license)
+			continue
+		}
+
+		//if nothing else this license is custom
+		licenses = append(licenses, CreateCustomLicense(trimLicenseKey, trimLicenseKey))
 	}
 
-	return ls
+	return licenses
 }
 
 func CreateCustomLicense(id, name string) License {

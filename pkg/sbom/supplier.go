@@ -21,6 +21,7 @@ type GetSupplier interface {
 	GetEmail() string
 	GetURL() string
 	GetContacts() []Contact
+	IsPresent() bool
 }
 
 type Supplier struct {
@@ -44,4 +45,8 @@ func (s Supplier) GetURL() string {
 
 func (s Supplier) GetContacts() []Contact {
 	return s.Contacts
+}
+
+func (s Supplier) IsPresent() bool {
+	return s.Name != "" || s.Email != "" || s.URL != "" || len(s.Contacts) > 0
 }
