@@ -181,7 +181,13 @@ func handlePaths(ctx context.Context, ep *Params) error {
 			paths = append(paths, sbomFilePath)
 		} else {
 			log.Debugf("Processing path :%s\n", path)
-			pathInfo, _ := os.Stat(path)
+			pathInfo, err := os.Stat(path)
+			if err != nil {
+				log.Debugf("os.Stat failed for path:%s\n", path)
+				log.Infof("%s\n", err)
+				continue
+			}
+
 			if pathInfo.IsDir() {
 				files, err := os.ReadDir(path)
 				if err != nil {
