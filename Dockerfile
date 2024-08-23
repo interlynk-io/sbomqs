@@ -13,13 +13,17 @@ COPY . .
 ARG TARGETOS TARGETARCH
 RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -a -o sbomqs .
 
+RUN chmod +x sbomqs
+
 # Final stage
-FROM scratch
+FROM alpine:3.19
 LABEL org.opencontainers.image.source="https://github.com/interlynk-io/sbomqs"
-LABEL org.opencontainers.image.description="Quality metrics for your sboms"
+LABEL org.opencontainers.image.description="Quality & Compliance metrics for your sboms"
 LABEL org.opencontainers.image.licenses=Apache-2.0
 
-# Copy our static executable
 COPY --from=builder /app/sbomqs /app/sbomqs
+
+# Disable version check
+ENV INTERLYNK_DISABLE_VERSION_CHECK=true
 
 ENTRYPOINT ["/app/sbomqs"]
