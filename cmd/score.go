@@ -42,8 +42,8 @@ type userCmd struct {
 	path []string
 
 	// filter control
-	category string
-	features []string
+	categories []string
+	features   []string
 
 	// output control
 	json     bool
@@ -81,6 +81,12 @@ var scoreCmd = &cobra.Command{
 
   # Get a score for a 'NTIA-minimum-elements' category and 'sbom_authors' feature against a SBOM in a table output
   sbomqs score --category NTIA-minimum-elements --feature sbom_authors samples/sbomqs-spdx-syft.json
+
+  # Get  a score for multiple features
+  sbomqs score --feature comp_with_name,comp_with_uniq_ids,sbom_authors,sbom_creation_timestamp  samples/sbomqs-spdx-syft.json 
+
+  # Get a score for multiple categories
+  sbomqs score --category NTIA-minimum-elements,Structural,Semantic,Sharing   samples/sbomqs-spdx-syft.json
 `,
 
 	Args: func(_ *cobra.Command, args []string) error {
@@ -137,9 +143,8 @@ func toUserCmd(cmd *cobra.Command, args []string) *userCmd {
 	}
 	// filter control
 	if category == "" {
-		uCmd.category, _ = cmd.Flags().GetString("category")
-	} else {
-		uCmd.category = category
+		c, _ := cmd.Flags().GetString("category")
+		uCmd.categories = strings.Split(c, ",")
 	}
 
 	if feature == "" {
@@ -167,7 +172,7 @@ func toUserCmd(cmd *cobra.Command, args []string) *userCmd {
 func toEngineParams(uCmd *userCmd) *engine.Params {
 	return &engine.Params{
 		Path:       uCmd.path,
-		Category:   uCmd.category,
+		Categories: uCmd.categories,
 		Features:   uCmd.features,
 		JSON:       uCmd.json,
 		Basic:      uCmd.basic,
