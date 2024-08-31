@@ -54,6 +54,7 @@ type SpdxDoc struct {
 	primaryComponent   bool
 	primaryComponentId string
 	lifecycles         string
+	signature          []GetSignature
 }
 
 func newSPDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat) (Document, error) {
@@ -133,6 +134,10 @@ func (s SpdxDoc) Supplier() GetSupplier {
 	return nil
 }
 
+func (s SpdxDoc) Signature() []GetSignature {
+	return s.signature
+}
+
 func (s *SpdxDoc) parse() {
 	s.parseSpec()
 	s.parseAuthors()
@@ -140,6 +145,12 @@ func (s *SpdxDoc) parse() {
 	s.parseRels()
 	s.parsePrimaryComponent()
 	s.parseComps()
+	s.parseSignature()
+}
+
+func (s *SpdxDoc) parseSignature() {
+	s.signature = append(s.signature, nil)
+	return
 }
 
 func (s *SpdxDoc) parseSpec() {

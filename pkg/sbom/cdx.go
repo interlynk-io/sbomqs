@@ -50,6 +50,7 @@ type cdxDoc struct {
 	manufacturer       Manufacturer
 	primaryComponentId string
 	compositions       map[string]string
+	signature          []GetSignature
 }
 
 func newCDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat) (Document, error) {
@@ -125,6 +126,10 @@ func (c cdxDoc) Manufacturer() Manufacturer {
 	return c.manufacturer
 }
 
+func (c cdxDoc) Signature() []GetSignature {
+	return c.signature
+}
+
 func (c *cdxDoc) parse() {
 	c.parseDoc()
 	c.parseSpec()
@@ -136,6 +141,7 @@ func (c *cdxDoc) parse() {
 	c.parseCompositions()
 	c.parseRels()
 	c.parseComps()
+	c.parseSignature()
 }
 
 func (c *cdxDoc) addToLogs(log string) {
@@ -191,7 +197,46 @@ func (c *cdxDoc) parseSpec() {
 		sp.uri = fmt.Sprintf("%s/%d", c.doc.SerialNumber, c.doc.Version)
 	}
 
+	// // parse  signature
+	// parseSignature(c)
+	// isSignatureExists := sp.GetSignature().CheckSignatureExists()
+	// fmt.Println("isSignatureExists : ", isSignatureExists)
 	c.spec = sp
+}
+
+func (c *cdxDoc) parseSignature() {
+	if c.doc.Declarations == nil {
+		return
+	}
+
+	if c.doc.Declarations.Signature != nil {
+		return
+	}
+
+	s := signature{}
+	s.keyID = c.doc.Declarations.Signature.KeyID
+	s.algorithm = c.doc.Declarations.Signature.Algorithm
+	s.value = c.doc.Declarations.Affirmation.Signature.Value
+	s.publicKey = c.doc.Declarations.Affirmation.Signature.PublicKey.CRV
+	c.signature = append(c.signature, s)
+
+	for _, ss := range lo.FromPtr(c.doc.Declarations.Affirmation.Signature.Signers) {
+		sig := signature{}
+		sig.keyID = ss.KeyID
+		sig.algorithm = ss.Algorithm
+		sig.value = ss.Value
+		sig.publicKey = ss.PublicKey.CRV
+		c.signature = append(c.signature, sig)
+	}
+
+	for _, sc := range lo.FromPtr(c.doc.Declarations.Affirmation.Signature.Chain) {
+		sig := signature{}
+		sig.keyID = sc.KeyID
+		sig.algorithm = sc.Algorithm
+		sig.value = sc.Value
+		sig.publicKey = sc.PublicKey.CRV
+		c.signature = append(c.signature, sig)
+	}
 }
 
 func (c *cdxDoc) requiredFields() bool {

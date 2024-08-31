@@ -30,4 +30,6 @@ type Document interface {
 	Lifecycles() []string
 	Manufacturer() Manufacturer
 	Supplier() GetSupplier
+
+	Signature() []GetSignature
 }
