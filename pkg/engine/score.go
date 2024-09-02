@@ -36,8 +36,8 @@ import (
 type Params struct {
 	Path []string
 
-	Category string
-	Features []string
+	Categories []string
+	Features   []string
 
 	JSON     bool
 	Basic    bool
@@ -287,8 +287,13 @@ func processFile(ctx context.Context, ep *Params, path string, fs billy.Filesyst
 
 	sr := scorer.NewScorer(ctx, doc)
 
-	if ep.Category != "" {
-		sr.AddFilter(ep.Category, scorer.Category)
+	if len(ep.Categories) > 0 {
+		for _, category := range ep.Categories {
+			if len(category) <= 0 {
+				continue
+			}
+			sr.AddFilter(category, scorer.Category)
+		}
 	}
 
 	if len(ep.Features) > 0 {
