@@ -6,6 +6,7 @@ import (
 	"os/exec"
 	"strings"
 
+	"github.com/interlynk-io/sbomqs/pkg/licenses"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 	"github.com/samber/lo"
 )
@@ -43,7 +44,8 @@ func IsSBOMHasUniqID(d sbom.Document) bool {
 		return true
 	}
 	return false
-} // 2.3
+}
+
 func IsSBOMHasSignature(d sbom.Document) bool {
 	// isSignatureExists := d.Spec().GetSignature().CheckSignatureExists()
 	sig := d.Signature()
@@ -55,11 +57,12 @@ func IsSBOMHasSignature(d sbom.Document) bool {
 	}
 
 	return false
-} // 2.4
+}
 
 func IsSBOMSignatureCorrect(d sbom.Document) bool {
 	return IsSBOMHasSignature(d)
-} // 2.5
+}
+
 func IsSBOMSignatureVerified(d sbom.Document) bool {
 	// Save signature and public key to temporary files
 	signature := d.Signature()
@@ -122,10 +125,14 @@ func IsSBOMTimestamped(d sbom.Document) bool {
 		return true
 	}
 	return false
-}                                                 // 2.7
-func IsSBOMAnalyzedForRisk() bool                 { return false } // 2.8
-func IsSBOMHasInventoryOfDependencies() bool      { return false } // 2.9
+}
+
+func IsSBOMAnalyzedForRisk() bool { return false } // 2.8
+
+func IsSBOMHasInventoryOfDependencies() bool { return false } // 2.9
+
 func IsSBOMInventoryContainsTestComponents() bool { return false } // 2.10
+
 func IsSBOMHasPrimaryComponents(d sbom.Document) bool {
 	//
 	if d.PrimaryComponent() {
@@ -134,7 +141,6 @@ func IsSBOMHasPrimaryComponents(d sbom.Document) bool {
 	return false
 }
 
-// 2.11
 func IsComponentHasIdentityID(d sbom.Document) bool {
 	totalComponents := len(d.Components())
 	if totalComponents == 0 {
@@ -154,7 +160,7 @@ func IsComponentHasIdentityID(d sbom.Document) bool {
 	}
 
 	return false
-} // 2.12
+}
 
 func IsComponentHasOriginID(d sbom.Document) bool {
 	totalComponents := len(d.Components())
@@ -175,7 +181,9 @@ func IsComponentHasOriginID(d sbom.Document) bool {
 	}
 
 	return false
-} // 2.13
+}
+
+// 2.13
 func IsComponentHasLicenses(d sbom.Document) bool {
 	//
 	totalComponents := len(d.Components())
@@ -196,8 +204,33 @@ func IsComponentHasLicenses(d sbom.Document) bool {
 	}
 
 	return false
-}                                         // 2.14
-func IsComponentHasVerifiedLicense() bool { return false } // 2.15
+}
+
+// 2.14
+func IsComponentHasVerifiedLicense(d sbom.Document) bool {
+	totalComponents := len(d.Components())
+	if totalComponents == 0 {
+		return false
+	}
+	// withLicense := lo.CountBy(d.Components(), func(c sbom.GetComponent) bool {
+	// 	return c.Licenses()
+	// })
+	for _, comp := range d.Components() {
+		for _, licen := range comp.Licenses() {
+			licenses.IsValidLicenseID(licen.Name())
+		}
+	}
+
+	if lic := d.Spec().GetLicenses(); lic != nil {
+		for _, l := range lic {
+			licenses.IsValidLicenseID(l.Name())
+		}
+	}
+
+	// and call IsValidLicenseID
+	return false
+}
+
 func IsComponentHasCopyright(d sbom.Document) bool {
 	totalComponents := len(d.Components())
 	if totalComponents == 0 {
@@ -217,6 +250,26 @@ func IsComponentHasCopyright(d sbom.Document) bool {
 	}
 
 	return false
-}                                                  // 2.16
+}
+
+// 2.16
 func IsComponentContainsModificationChanges() bool { return false } // 2.17
-func IsComponentContainsHash() bool                { return false } // 2.18
+
+func IsComponentContainsHash(d sbom.Document) bool {
+	totalComponents := len(d.Components())
+	if totalComponents == 0 {
+		return false
+	}
+
+	withChecksums := lo.CountBy(d.Components(), func(c sbom.GetComponent) bool {
+		return len(c.GetChecksums()) > 0
+	})
+	if totalComponents > 0 {
+		if withChecksums == totalComponents {
+			return true
+		} else {
+			return false
+		}
+	}
+	return false
+} // 2.18
