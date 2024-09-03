@@ -12,7 +12,7 @@ import (
 )
 
 // A structured, machine readable software bill of materials (SBOM) format is present
-func IsSBOMMachineReadable(d sbom.Document) bool {
+func IsSBOMMachineReadable(d sbom.Document, s *scvsScore) bool {
 	// check spec is SPDX or CycloneDX
 	specs := sbom.SupportedSBOMSpecs()
 
@@ -49,11 +49,18 @@ func IsSBOMHasUniqID(d sbom.Document) bool {
 func IsSBOMHasSignature(d sbom.Document) bool {
 	// isSignatureExists := d.Spec().GetSignature().CheckSignatureExists()
 	sig := d.Signature()
+	fmt.Println("Signature: ", sig)
 
 	if sig != nil {
-		for _, isSignatureExists := range sig {
-			return isSignatureExists.CheckSignatureExists()
+		fmt.Println("Signature is not nil")
+
+		for _, signature := range sig {
+			if signature != nil {
+				return signature.CheckSignatureExists()
+			}
 		}
+	} else {
+		fmt.Println("Signature is nil")
 	}
 
 	return false
@@ -70,6 +77,9 @@ func IsSBOMSignatureVerified(d sbom.Document) bool {
 		return false
 	}
 	for _, sig := range signature {
+		if sig == nil {
+			return false
+		}
 
 		sigFile, err := os.CreateTemp("", "signature-*.sig")
 		if err != nil {
@@ -196,7 +206,8 @@ func IsComponentHasLicenses(d sbom.Document) bool {
 	})
 
 	if totalComponents > 0 {
-		if withLicenses == totalComponents {
+		// Check if at least 50% of the components have licenses
+		if withLicenses >= totalComponents/2 {
 			return true
 		} else {
 			return false

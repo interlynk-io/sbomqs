@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package scorer
+package scvs
 
 import "github.com/interlynk-io/sbomqs/pkg/sbom"
 
@@ -33,7 +33,7 @@ var scvsChecks = []scvsCheck{
 	{"SBOM is analyzed for risk", scvsSBOMRiskAnalysisCheck},
 	{"SBOM contains a complete and accurate inventory of all components the SBOM describes", scvsSBOMInventoryListCheck},
 	{"SBOM contains an accurate inventory of all test components for the asset or application it describes", scvsSBOMTestInventoryListCheck},
-	{"SSBOM contains metadata about the asset or software the SBOM describes", scvsSBOMPrimaryCompCheck},
+	{"SBOM contains metadata about the asset or software the SBOM describes", scvsSBOMPrimaryCompCheck},
 	{"Component identifiers are derived from their native ecosystems (if applicable)", scvsCompHasIdentityIDCheck},
 	{"Component point of origin is identified in a consistent, machine readable format (e.g. PURL)", scvsCompHasOriginIDCheck},
 	{"Components defined in SBOM have accurate license information", scvsCompHasLicensesCheck},

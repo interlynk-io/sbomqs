@@ -12,20 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package scorer
+package scvs
 
 type ScvsScore interface {
 	Feature() string
 	L1Score() string
 	L2Score() string
 	L3Score() string
+	Description() string
 }
 
 type scvsScore struct {
-	feature string
-	l1Score string
-	l2Score string
-	l3Score string
+	feature     string
+	l1Score     string
+	l2Score     string
+	l3Score     string
+	description string
 }
 
 func newScoreFromScvsCheck(c *scvsCheck) *scvsScore {
@@ -60,4 +62,8 @@ func (s scvsScore) L1Score() string {
 
 func (s scvsScore) L2Score() string {
 	return s.l2Score
+}
+
+func (s scvsScore) Description() string {
+	return s.description
 }

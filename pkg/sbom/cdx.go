@@ -206,10 +206,12 @@ func (c *cdxDoc) parseSpec() {
 
 func (c *cdxDoc) parseSignature() {
 	if c.doc.Declarations == nil {
+		fmt.Println("Declaratic.doc.Declarationsons field is nil ")
 		return
 	}
 
 	if c.doc.Declarations.Signature != nil {
+		fmt.Println("c.doc.Declarations.Signature field is nil ")
 		return
 	}
 

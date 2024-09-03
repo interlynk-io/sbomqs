@@ -24,7 +24,7 @@ import (
 	"github.com/interlynk-io/sbomqs/pkg/logger"
 	"github.com/interlynk-io/sbomqs/pkg/reporter"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
-	"github.com/interlynk-io/sbomqs/pkg/scorer"
+	"github.com/interlynk-io/sbomqs/pkg/scvs"
 )
 
 func RunScvs(ctx context.Context, ep *Params) error {
@@ -45,7 +45,7 @@ func handleScvsPaths(ctx context.Context, ep *Params) error {
 
 	var docs []sbom.Document
 	var paths []string
-	var scores []scorer.ScvsScores
+	var scores []scvs.ScvsScores
 
 	for _, path := range ep.Path {
 		log.Debugf("Processing path :%s\n", path)
@@ -102,7 +102,7 @@ func handleScvsPaths(ctx context.Context, ep *Params) error {
 	return nil
 }
 
-func processScvsFile(ctx context.Context, ep *Params, path string) (sbom.Document, scorer.ScvsScores, error) {
+func processScvsFile(ctx context.Context, ep *Params, path string) (sbom.Document, scvs.ScvsScores, error) {
 	log := logger.FromContext(ctx)
 	log.Debugf("Processing file :%s\n", path)
 
@@ -128,7 +128,7 @@ func processScvsFile(ctx context.Context, ep *Params, path string) (sbom.Documen
 		return nil, nil, err
 	}
 
-	sr := scorer.NewScvsScorer(ctx, doc)
+	sr := scvs.NewScvsScorer(ctx, doc)
 
 	scores := sr.ScvsScore()
 	return doc, scores, nil

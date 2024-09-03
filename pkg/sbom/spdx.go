@@ -149,7 +149,7 @@ func (s *SpdxDoc) parse() {
 }
 
 func (s *SpdxDoc) parseSignature() {
-	s.signature = append(s.signature, nil)
+	s.signature = nil
 	return
 }
 

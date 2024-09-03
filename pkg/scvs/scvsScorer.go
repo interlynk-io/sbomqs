@@ -12,42 +12,42 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package scorer
+package scvs
 
-type ScvsScores interface {
-	Count() int
-	AvgScore() float64
-	ScoreList() []ScvsScore
+import (
+	"context"
+
+	"github.com/interlynk-io/sbomqs/pkg/sbom"
+)
+
+type ScvsScorer struct {
+	ctx context.Context
+	doc sbom.Document
 }
 
-type scvsScores struct {
-	scs []ScvsScore
-}
-
-func newScvsScores() *scvsScores {
-	return &scvsScores{
-		scs: []ScvsScore{},
+func NewScvsScorer(ctx context.Context, doc sbom.Document) *ScvsScorer {
+	scorer := &ScvsScorer{
+		ctx: ctx,
+		doc: doc,
 	}
+
+	return scorer
 }
 
-func (s *scvsScores) addScore(ss scvsScore) {
-	s.scs = append(s.scs, ss)
-}
-
-func (s scvsScores) Count() int {
-	return len(s.scs)
-}
-
-func (s scvsScores) AvgScore() float64 {
-	score := 0.0
-	for _, s := range s.scs {
-		if s.L1Score() == "✓" {
-			score++
-		}
+func (s *ScvsScorer) ScvsScore() ScvsScores {
+	if s.doc == nil {
+		return newScvsScores()
 	}
-	return score / float64(s.Count())
+
+	return s.AllScvsScores()
 }
 
-func (s scvsScores) ScoreList() []ScvsScore {
-	return s.scs
+func (s *ScvsScorer) AllScvsScores() ScvsScores {
+	scores := newScvsScores()
+
+	for _, c := range scvsChecks {
+		scores.addScore(c.evaluate(s.doc, &c))
+	}
+
+	return scores
 }
