@@ -31,7 +31,7 @@ func scvsSBOMMachineReadableCheck(d sbom.Document, c *scvsCheck) scvsScore {
 func scvsSBOMAutomationCreationCheck(d sbom.Document, c *scvsCheck) scvsScore {
 	s := newScoreFromScvsCheck(c)
 
-	if IsSBOMCreationAutomated(d) {
+	if IsSBOMCreationAutomated(d, s) {
 		s.setL3Score(green + bold + "✓" + reset)
 		s.setL2Score(green + bold + "✓" + reset)
 	} else {
@@ -45,7 +45,7 @@ func scvsSBOMAutomationCreationCheck(d sbom.Document, c *scvsCheck) scvsScore {
 func scvsSBOMUniqIDCheck(d sbom.Document, c *scvsCheck) scvsScore {
 	s := newScoreFromScvsCheck(c)
 
-	if IsSBOMHasUniqID(d) {
+	if IsSBOMHasUniqID(d, s) {
 		s.setL3Score(green + bold + "✓" + reset)
 		s.setL2Score(green + bold + "✓" + reset)
 		s.setL1Score(green + bold + "✓" + reset)
@@ -61,7 +61,7 @@ func scvsSBOMUniqIDCheck(d sbom.Document, c *scvsCheck) scvsScore {
 func scvsSBOMSigcheck(d sbom.Document, c *scvsCheck) scvsScore {
 	s := newScoreFromScvsCheck(c)
 
-	if IsSBOMHasSignature(d) {
+	if IsSBOMHasSignature(d, s) {
 		s.setL3Score(green + bold + "✓" + reset)
 		s.setL2Score(green + bold + "✓" + reset)
 	} else {
@@ -75,7 +75,7 @@ func scvsSBOMSigcheck(d sbom.Document, c *scvsCheck) scvsScore {
 func scvsSBOMSigCorrectnessCheck(d sbom.Document, c *scvsCheck) scvsScore {
 	s := newScoreFromScvsCheck(c)
 
-	if IsSBOMSignatureCorrect(d) {
+	if IsSBOMSignatureCorrect(d, s) {
 		s.setL3Score(green + bold + "✓" + reset)
 		s.setL2Score(green + bold + "✓" + reset)
 	} else {
@@ -89,7 +89,7 @@ func scvsSBOMSigCorrectnessCheck(d sbom.Document, c *scvsCheck) scvsScore {
 func scvsSBOMSigVerified(d sbom.Document, c *scvsCheck) scvsScore {
 	s := newScoreFromScvsCheck(c)
 
-	if IsSBOMSignatureVerified(d) {
+	if IsSBOMSignatureVerified(d, s) {
 		s.setL3Score(green + bold + "✓" + reset)
 	} else {
 		s.setL3Score(red + bold + "✗" + reset)
@@ -101,7 +101,7 @@ func scvsSBOMSigVerified(d sbom.Document, c *scvsCheck) scvsScore {
 func scvsSBOMTimestampCheck(d sbom.Document, c *scvsCheck) scvsScore {
 	s := newScoreFromScvsCheck(c)
 
-	if IsSBOMTimestamped(d) {
+	if IsSBOMTimestamped(d, s) {
 		s.setL3Score(green + bold + "✓" + reset)
 		s.setL2Score(green + bold + "✓" + reset)
 		s.setL1Score(green + bold + "✓" + reset)
@@ -117,7 +117,7 @@ func scvsSBOMTimestampCheck(d sbom.Document, c *scvsCheck) scvsScore {
 func scvsSBOMRiskAnalysisCheck(d sbom.Document, c *scvsCheck) scvsScore {
 	s := newScoreFromScvsCheck(c)
 
-	if IsSBOMAnalyzedForRisk() {
+	if IsSBOMAnalyzedForRisk(d, s) {
 		s.setL3Score(green + bold + "✓" + reset)
 		s.setL2Score(green + bold + "✓" + reset)
 		s.setL1Score(green + bold + "✓" + reset)
@@ -133,7 +133,7 @@ func scvsSBOMRiskAnalysisCheck(d sbom.Document, c *scvsCheck) scvsScore {
 func scvsSBOMInventoryListCheck(d sbom.Document, c *scvsCheck) scvsScore {
 	s := newScoreFromScvsCheck(c)
 
-	if IsSBOMHasInventoryOfDependencies() {
+	if IsSBOMHasInventoryOfDependencies(d, s) {
 		s.setL3Score(green + bold + "✓" + reset)
 		s.setL2Score(green + bold + "✓" + reset)
 		s.setL1Score(green + bold + "✓" + reset)
@@ -149,7 +149,7 @@ func scvsSBOMInventoryListCheck(d sbom.Document, c *scvsCheck) scvsScore {
 func scvsSBOMTestInventoryListCheck(d sbom.Document, c *scvsCheck) scvsScore {
 	s := newScoreFromScvsCheck(c)
 
-	if IsSBOMInventoryContainsTestComponents() {
+	if IsSBOMInventoryContainsTestComponents(d, s) {
 		s.setL3Score(green + bold + "✓" + reset)
 		s.setL2Score(green + bold + "✓" + reset)
 	} else {
@@ -163,7 +163,7 @@ func scvsSBOMTestInventoryListCheck(d sbom.Document, c *scvsCheck) scvsScore {
 func scvsSBOMPrimaryCompCheck(d sbom.Document, c *scvsCheck) scvsScore {
 	s := newScoreFromScvsCheck(c)
 
-	if IsSBOMHasPrimaryComponents(d) {
+	if IsSBOMHasPrimaryComponents(d, s) {
 		s.setL3Score(green + bold + "✓" + reset)
 		s.setL2Score(green + bold + "✓" + reset)
 	} else {
@@ -177,7 +177,7 @@ func scvsSBOMPrimaryCompCheck(d sbom.Document, c *scvsCheck) scvsScore {
 func scvsCompHasIdentityIDCheck(d sbom.Document, c *scvsCheck) scvsScore {
 	s := newScoreFromScvsCheck(c)
 
-	if IsComponentHasIdentityID(d) {
+	if IsComponentHasIdentityID(d, s) {
 		s.setL3Score(green + bold + "✓" + reset)
 		s.setL2Score(green + bold + "✓" + reset)
 		s.setL1Score(green + bold + "✓" + reset)
@@ -193,7 +193,7 @@ func scvsCompHasIdentityIDCheck(d sbom.Document, c *scvsCheck) scvsScore {
 func scvsCompHasOriginIDCheck(d sbom.Document, c *scvsCheck) scvsScore {
 	s := newScoreFromScvsCheck(c)
 
-	if IsComponentHasOriginID(d) {
+	if IsComponentHasOriginID(d, s) {
 		s.setL3Score(green + bold + "✓" + reset)
 	} else {
 		s.setL3Score(red + bold + "✗" + reset)
@@ -205,7 +205,7 @@ func scvsCompHasOriginIDCheck(d sbom.Document, c *scvsCheck) scvsScore {
 func scvsCompHasLicensesCheck(d sbom.Document, c *scvsCheck) scvsScore {
 	s := newScoreFromScvsCheck(c)
 
-	if IsComponentHasLicenses(d) {
+	if IsComponentHasLicenses(d, s) {
 		s.setL3Score(green + bold + "✓" + reset)
 		s.setL2Score(green + bold + "✓" + reset)
 		s.setL1Score(green + bold + "✓" + reset)
@@ -221,7 +221,7 @@ func scvsCompHasLicensesCheck(d sbom.Document, c *scvsCheck) scvsScore {
 func scvsCompHasValidLicenseCheck(d sbom.Document, c *scvsCheck) scvsScore {
 	s := newScoreFromScvsCheck(c)
 
-	if IsComponentHasVerifiedLicense(d) {
+	if IsComponentHasVerifiedLicense(d, s) {
 		s.setL3Score(green + bold + "✓" + reset)
 		s.setL2Score(green + bold + "✓" + reset)
 	} else {
@@ -235,7 +235,7 @@ func scvsCompHasValidLicenseCheck(d sbom.Document, c *scvsCheck) scvsScore {
 func scvsCompHasCopyright(d sbom.Document, c *scvsCheck) scvsScore {
 	s := newScoreFromScvsCheck(c)
 
-	if IsComponentHasCopyright(d) {
+	if IsComponentHasCopyright(d, s) {
 		s.setL3Score(green + bold + "✓" + reset)
 	} else {
 		s.setL3Score(red + bold + "✗" + reset)
@@ -247,7 +247,7 @@ func scvsCompHasCopyright(d sbom.Document, c *scvsCheck) scvsScore {
 func scvsCompHasModificationCheck(d sbom.Document, c *scvsCheck) scvsScore {
 	s := newScoreFromScvsCheck(c)
 
-	if IsComponentContainsModificationChanges() {
+	if IsComponentContainsModificationChanges(d, s) {
 		s.setL3Score(green + bold + "✓" + reset)
 	} else {
 		s.setL3Score(red + bold + "✗" + reset)
@@ -259,7 +259,7 @@ func scvsCompHasModificationCheck(d sbom.Document, c *scvsCheck) scvsScore {
 func scvsCompHashCheck(d sbom.Document, c *scvsCheck) scvsScore {
 	s := newScoreFromScvsCheck(c)
 
-	if IsComponentContainsHash(d) {
+	if IsComponentContainsHash(d, s) {
 		s.setL3Score(green + bold + "✓" + reset)
 	} else {
 		s.setL3Score(red + bold + "✗" + reset)

@@ -18,6 +18,7 @@ func IsSBOMMachineReadable(d sbom.Document, s *scvsScore) bool {
 
 	for _, spec := range specs {
 		if d.Spec().GetSpecType() == spec {
+			s.setDesc("SBOM is machine readable")
 			return true
 		}
 	}
@@ -25,28 +26,37 @@ func IsSBOMMachineReadable(d sbom.Document, s *scvsScore) bool {
 }
 
 // SBOM creation is automated and reproducible
-func IsSBOMCreationAutomated(d sbom.Document) bool {
+func IsSBOMCreationAutomated(d sbom.Document, s *scvsScore) bool {
+	noOfTools := len(d.Tools())
 	if tools := d.Tools(); tools != nil {
 		for _, tool := range tools {
 			name := tool.GetName()
+			fmt.Println("Name: ", name)
 			version := tool.GetVersion()
+			fmt.Println("version: ", version)
+
 			if name != "" && version != "" {
+				s.setDesc(fmt.Sprintf("SBOM has %d authors", noOfTools))
 				return true
 			}
 		}
 	}
+
+	s.setDesc(fmt.Sprintf("SBOM has %d authors", noOfTools))
 	return false
 }
 
 // 2.3 Each SBOM has a unique identifier
-func IsSBOMHasUniqID(d sbom.Document) bool {
+func IsSBOMHasUniqID(d sbom.Document, s *scvsScore) bool {
 	if ns := d.Spec().GetNamespace(); ns != "" {
+		s.setDesc(fmt.Sprintf("SBOM has uniq ID"))
 		return true
 	}
+	s.setDesc(fmt.Sprintf("SBOM doesn't has uniq ID"))
 	return false
 }
 
-func IsSBOMHasSignature(d sbom.Document) bool {
+func IsSBOMHasSignature(d sbom.Document, s *scvsScore) bool {
 	// isSignatureExists := d.Spec().GetSignature().CheckSignatureExists()
 	sig := d.Signature()
 	fmt.Println("Signature: ", sig)
@@ -66,11 +76,11 @@ func IsSBOMHasSignature(d sbom.Document) bool {
 	return false
 }
 
-func IsSBOMSignatureCorrect(d sbom.Document) bool {
-	return IsSBOMHasSignature(d)
+func IsSBOMSignatureCorrect(d sbom.Document, s *scvsScore) bool {
+	return IsSBOMHasSignature(d, s)
 }
 
-func IsSBOMSignatureVerified(d sbom.Document) bool {
+func IsSBOMSignatureVerified(d sbom.Document, s *scvsScore) bool {
 	// Save signature and public key to temporary files
 	signature := d.Signature()
 	if signature == nil {
@@ -130,30 +140,35 @@ func IsSBOMSignatureVerified(d sbom.Document) bool {
 	return false
 }
 
-func IsSBOMTimestamped(d sbom.Document) bool {
+func IsSBOMTimestamped(d sbom.Document, s *scvsScore) bool {
 	if d.Spec().GetCreationTimestamp() != "" {
+		s.setDesc(fmt.Sprintf("SBOM is timestamped"))
 		return true
 	}
+	s.setDesc(fmt.Sprintf("SBOM isn't timestamped"))
 	return false
 }
 
-func IsSBOMAnalyzedForRisk() bool { return false } // 2.8
+func IsSBOMAnalyzedForRisk(d sbom.Document, s *scvsScore) bool { return false } // 2.8
 
-func IsSBOMHasInventoryOfDependencies() bool { return false } // 2.9
+func IsSBOMHasInventoryOfDependencies(d sbom.Document, s *scvsScore) bool { return false } // 2.9
 
-func IsSBOMInventoryContainsTestComponents() bool { return false } // 2.10
+func IsSBOMInventoryContainsTestComponents(d sbom.Document, s *scvsScore) bool { return false } // 2.10
 
-func IsSBOMHasPrimaryComponents(d sbom.Document) bool {
+func IsSBOMHasPrimaryComponents(d sbom.Document, s *scvsScore) bool {
 	//
 	if d.PrimaryComponent() {
+		s.setDesc(fmt.Sprintf("SBOM have primary comp"))
 		return true
 	}
+	s.setDesc(fmt.Sprintf("SBOM doesn't have primary comp"))
 	return false
 }
 
-func IsComponentHasIdentityID(d sbom.Document) bool {
+func IsComponentHasIdentityID(d sbom.Document, s *scvsScore) bool {
 	totalComponents := len(d.Components())
 	if totalComponents == 0 {
+		s.setDesc("N/A (no components)")
 		return false
 	}
 
@@ -163,18 +178,18 @@ func IsComponentHasIdentityID(d sbom.Document) bool {
 
 	if totalComponents > 0 {
 		if withIdentityID == totalComponents {
+			s.setDesc(fmt.Sprintf("%d/%d comp have Identity ID's", withIdentityID, totalComponents))
 			return true
-		} else {
-			return false
 		}
 	}
-
+	s.setDesc(fmt.Sprintf("%d/%d comp have Identity ID's", withIdentityID, totalComponents))
 	return false
 }
 
-func IsComponentHasOriginID(d sbom.Document) bool {
+func IsComponentHasOriginID(d sbom.Document, s *scvsScore) bool {
 	totalComponents := len(d.Components())
 	if totalComponents == 0 {
+		s.setDesc("N/A (no components)")
 		return false
 	}
 
@@ -184,20 +199,20 @@ func IsComponentHasOriginID(d sbom.Document) bool {
 
 	if totalComponents > 0 {
 		if withOriginID == totalComponents {
+			s.setDesc(fmt.Sprintf("%d/%d comp have Origin ID's", withOriginID, totalComponents))
 			return true
-		} else {
-			return false
 		}
 	}
-
+	s.setDesc(fmt.Sprintf("%d/%d comp have Origin ID's", withOriginID, totalComponents))
 	return false
 }
 
 // 2.13
-func IsComponentHasLicenses(d sbom.Document) bool {
+func IsComponentHasLicenses(d sbom.Document, s *scvsScore) bool {
 	//
 	totalComponents := len(d.Components())
 	if totalComponents == 0 {
+		s.setDesc("N/A (no components)")
 		return false
 	}
 
@@ -206,45 +221,51 @@ func IsComponentHasLicenses(d sbom.Document) bool {
 	})
 
 	if totalComponents > 0 {
-		// Check if at least 50% of the components have licenses
-		if withLicenses >= totalComponents/2 {
+		if withLicenses >= totalComponents {
+			s.setDesc(fmt.Sprintf("%d/%d comp has Licenses", withLicenses, totalComponents))
 			return true
-		} else {
-			return false
 		}
 	}
-
+	s.setDesc(fmt.Sprintf("%d/%d comp has Licenses", withLicenses, totalComponents))
 	return false
 }
 
 // 2.14
-func IsComponentHasVerifiedLicense(d sbom.Document) bool {
+func IsComponentHasVerifiedLicense(d sbom.Document, s *scvsScore) bool {
 	totalComponents := len(d.Components())
 	if totalComponents == 0 {
+		s.setDesc("N/A (no components)")
 		return false
 	}
-	// withLicense := lo.CountBy(d.Components(), func(c sbom.GetComponent) bool {
-	// 	return c.Licenses()
-	// })
-	for _, comp := range d.Components() {
-		for _, licen := range comp.Licenses() {
-			licenses.IsValidLicenseID(licen.Name())
+
+	// var countAllValidLicense int
+	// for _, comp := range d.Components() {
+	// 	for _, licen := range comp.Licenses() {
+	// 		if licenses.IsValidLicenseID(licen.Name()) {
+	// 			countAllValidLicense++
+	// 		}
+	// 	}
+	// }
+	countAllValidLicense := lo.CountBy(d.Components(), func(comp sbom.GetComponent) bool {
+		return lo.SomeBy(comp.Licenses(), func(licen licenses.License) bool {
+			return licenses.IsValidLicenseID(licen.Name())
+		})
+	})
+
+	if totalComponents > 0 {
+		if countAllValidLicense >= totalComponents {
+			s.setDesc(fmt.Sprintf("%d/%d comp has valid Licenses", countAllValidLicense, totalComponents))
+			return true
 		}
 	}
-
-	if lic := d.Spec().GetLicenses(); lic != nil {
-		for _, l := range lic {
-			licenses.IsValidLicenseID(l.Name())
-		}
-	}
-
-	// and call IsValidLicenseID
+	s.setDesc(fmt.Sprintf("%d/%d comp has valid Licenses", countAllValidLicense, totalComponents))
 	return false
 }
 
-func IsComponentHasCopyright(d sbom.Document) bool {
+func IsComponentHasCopyright(d sbom.Document, s *scvsScore) bool {
 	totalComponents := len(d.Components())
 	if totalComponents == 0 {
+		s.setDesc("N/A (no components)")
 		return false
 	}
 
@@ -254,19 +275,18 @@ func IsComponentHasCopyright(d sbom.Document) bool {
 
 	if totalComponents > 0 {
 		if withCopyrights == totalComponents {
+			s.setDesc(fmt.Sprintf("%d/%d comp has Copyright", withCopyrights, totalComponents))
 			return true
-		} else {
-			return false
 		}
 	}
-
+	s.setDesc(fmt.Sprintf("%d/%d comp has Copyright", withCopyrights, totalComponents))
 	return false
 }
 
 // 2.16
-func IsComponentContainsModificationChanges() bool { return false } // 2.17
+func IsComponentContainsModificationChanges(d sbom.Document, s *scvsScore) bool { return false } // 2.17
 
-func IsComponentContainsHash(d sbom.Document) bool {
+func IsComponentContainsHash(d sbom.Document, s *scvsScore) bool {
 	totalComponents := len(d.Components())
 	if totalComponents == 0 {
 		return false
@@ -277,10 +297,10 @@ func IsComponentContainsHash(d sbom.Document) bool {
 	})
 	if totalComponents > 0 {
 		if withChecksums == totalComponents {
+			s.setDesc(fmt.Sprintf("%d/%d comp has Checksum", withChecksums, totalComponents))
 			return true
-		} else {
-			return false
 		}
 	}
+	s.setDesc(fmt.Sprintf("%d/%d comp has Checksum", withChecksums, totalComponents))
 	return false
 } // 2.18

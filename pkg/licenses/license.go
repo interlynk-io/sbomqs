@@ -81,6 +81,25 @@ func (m meta) Source() string {
 	return m.source
 }
 
+func IsValidLicenseID(licenseID string) bool {
+	if licenseID == "" {
+		return false
+	}
+
+	lowerKey := strings.ToLower(licenseID)
+
+	if lowerKey == "none" || lowerKey == "noassertion" {
+		return false
+	}
+
+	tLicKey := strings.TrimRight(licenseID, "+")
+
+	_, lok := licenseList[tLicKey]
+	_, aok := LicenseListAboutCode[tLicKey]
+
+	return lok || aok
+}
+
 func lookupLicense(licenseKey string) (License, error) {
 	if licenseKey == "" {
 		return nil, errors.New("license not found")
@@ -94,11 +113,11 @@ func lookupLicense(licenseKey string) (License, error) {
 
 	tLicKey := strings.TrimRight(licenseKey, "+")
 
-	//Lookup spdx & exception list
+	// Lookup spdx & exception list
 	license, lok := licenseList[tLicKey]
 	abouLicense, aok := LicenseListAboutCode[tLicKey]
 
-	//fmt.Printf("lookupLicense: %s %v %v\n", tLicKey, lok, aok)
+	// fmt.Printf("lookupLicense: %s %v %v\n", tLicKey, lok, aok)
 
 	if lok && aok {
 		return abouLicense, nil
@@ -142,7 +161,6 @@ func LookupExpression(expression string, customLicense []License) []License {
 	for _, l := range licenses {
 		tLicKey := strings.TrimRight(l, "+")
 		lic, err := lookupLicense(tLicKey)
-
 		if err != nil {
 			custLic, err2 := customLookup(tLicKey)
 			if err2 != nil {

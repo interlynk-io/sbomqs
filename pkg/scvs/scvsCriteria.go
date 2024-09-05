@@ -39,6 +39,6 @@ var scvsChecks = []scvsCheck{
 	{"Components defined in SBOM have accurate license information", scvsCompHasLicensesCheck},
 	{"Components defined in SBOM have valid SPDX license ID's or expressions (if applicable)", scvsCompHasValidLicenseCheck},
 	{"Components defined in SBOM have valid copyright statements", scvsCompHasCopyright},
-	{"Components defined in SBOM which have been modified from the original have detailed provenance and pedigree information", scvsCompHasModificationCheck},
+	{"Components defined in SBOM which have been modified from the original have detailed provenance", scvsCompHasModificationCheck},
 	{"Components defined in SBOM have one or more file hashes (SHA-256, SHA-512, etc)", scvsCompHashCheck},
 }

@@ -19,21 +19,25 @@ type ScvsScore interface {
 	L1Score() string
 	L2Score() string
 	L3Score() string
-	Description() string
+	Descr() string
 }
 
 type scvsScore struct {
-	feature     string
-	l1Score     string
-	l2Score     string
-	l3Score     string
-	description string
+	feature string
+	l1Score string
+	l2Score string
+	l3Score string
+	descr   string
 }
 
 func newScoreFromScvsCheck(c *scvsCheck) *scvsScore {
 	return &scvsScore{
 		feature: c.Key,
 	}
+}
+
+func (s *scvsScore) setDesc(d string) {
+	s.descr = d
 }
 
 func (s *scvsScore) setL3Score(v string) {
@@ -64,6 +68,6 @@ func (s scvsScore) L2Score() string {
 	return s.l2Score
 }
 
-func (s scvsScore) Description() string {
-	return s.description
+func (s scvsScore) Descr() string {
+	return s.descr
 }
