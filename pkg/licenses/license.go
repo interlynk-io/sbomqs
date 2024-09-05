@@ -96,6 +96,25 @@ func (m meta) AboutCode() bool {
 	return m.source == "aboutcode"
 }
 
+func IsValidLicenseID(licenseID string) bool {
+	if licenseID == "" {
+		return false
+	}
+
+	lowerKey := strings.ToLower(licenseID)
+
+	if lowerKey == "none" || lowerKey == "noassertion" {
+		return false
+	}
+
+	tLicKey := strings.TrimRight(licenseID, "+")
+
+	_, lok := licenseList[tLicKey]
+	_, aok := licenseListAboutCode[tLicKey]
+
+	return lok || aok
+}
+
 func LookupSpdxLicense(licenseKey string) (License, error) {
 	if licenseKey == "" {
 		return nil, errors.New("license not found")
@@ -183,14 +202,14 @@ func LookupExpression(expression string, customLicenses []License) []License {
 			continue
 		}
 
-		//if custom license list is provided use that.
+		// if custom license list is provided use that.
 		license, err = customLookup(trimLicenseKey)
 		if err == nil {
 			licenses = append(licenses, license)
 			continue
 		}
 
-		//if nothing else this license is custom
+		// if nothing else this license is custom
 		licenses = append(licenses, CreateCustomLicense(trimLicenseKey, trimLicenseKey))
 	}
 

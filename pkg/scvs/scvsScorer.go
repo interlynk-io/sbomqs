@@ -12,26 +12,42 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package sbom
+package scvs
 
-//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
+import (
+	"context"
 
-//counterfeiter:generate . Document
-type Document interface {
-	Spec() Spec
-	Components() []GetComponent
-	Relations() []GetRelation
-	Authors() []GetAuthor
-	Tools() []GetTool
-	Logs() []string
+	"github.com/interlynk-io/sbomqs/pkg/sbom"
+)
 
-	Lifecycles() []string
-	Manufacturer() Manufacturer
-	Supplier() GetSupplier
+type ScvsScorer struct {
+	ctx context.Context
+	doc sbom.Document
+}
 
-	PrimaryComp() GetPrimaryComp
-	GetRelationships(string) []string
+func NewScvsScorer(ctx context.Context, doc sbom.Document) *ScvsScorer {
+	scorer := &ScvsScorer{
+		ctx: ctx,
+		doc: doc,
+	}
 
-	Vulnerabilities() GetVulnerabilities
-	Signature() []GetSignature
+	return scorer
+}
+
+func (s *ScvsScorer) ScvsScore() ScvsScores {
+	if s.doc == nil {
+		return newScvsScores()
+	}
+
+	return s.AllScvsScores()
+}
+
+func (s *ScvsScorer) AllScvsScores() ScvsScores {
+	scores := newScvsScores()
+
+	for _, c := range scvsChecks {
+		scores.addScore(c.evaluate(s.doc, &c))
+	}
+
+	return scores
 }

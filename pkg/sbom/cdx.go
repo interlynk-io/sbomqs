@@ -56,6 +56,7 @@ type CdxDoc struct {
 	Dependencies     map[string][]string
 	composition      map[string]string
 	vuln             GetVulnerabilities
+	signature        []GetSignature
 }
 
 func newCDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat) (Document, error) {
@@ -147,6 +148,10 @@ func (s CdxDoc) Vulnerabilities() GetVulnerabilities {
 	return s.vuln
 }
 
+func (c CdxDoc) Signature() []GetSignature {
+	return c.signature
+}
+
 func (c *CdxDoc) parse() {
 	c.parseDoc()
 	c.parseSpec()
@@ -158,6 +163,7 @@ func (c *CdxDoc) parse() {
 	c.parsePrimaryCompAndRelationships()
 	c.parseVulnerabilities()
 	c.parseComps()
+	c.parseSignature()
 }
 
 func (c *CdxDoc) addToLogs(log string) {
@@ -225,6 +231,43 @@ func (c *CdxDoc) parseVulnerabilities() {
 			}
 		}
 		c.vuln = vuln
+	}
+}
+
+func (c *CdxDoc) parseSignature() {
+	if c.doc.Declarations == nil {
+		fmt.Println("Declaratic.doc.Declarationsons field is nil ")
+		return
+	}
+
+	if c.doc.Declarations.Signature != nil {
+		fmt.Println("c.doc.Declarations.Signature field is nil ")
+		return
+	}
+
+	s := signature{}
+	s.keyID = c.doc.Declarations.Signature.KeyID
+	s.algorithm = c.doc.Declarations.Signature.Algorithm
+	s.value = c.doc.Declarations.Affirmation.Signature.Value
+	s.publicKey = c.doc.Declarations.Affirmation.Signature.PublicKey.CRV
+	c.signature = append(c.signature, s)
+
+	for _, ss := range lo.FromPtr(c.doc.Declarations.Affirmation.Signature.Signers) {
+		sig := signature{}
+		sig.keyID = ss.KeyID
+		sig.algorithm = ss.Algorithm
+		sig.value = ss.Value
+		sig.publicKey = ss.PublicKey.CRV
+		c.signature = append(c.signature, sig)
+	}
+
+	for _, sc := range lo.FromPtr(c.doc.Declarations.Affirmation.Signature.Chain) {
+		sig := signature{}
+		sig.keyID = sc.KeyID
+		sig.algorithm = sc.Algorithm
+		sig.value = sc.Value
+		sig.publicKey = sc.PublicKey.CRV
+		c.signature = append(c.signature, sig)
 	}
 }
 
