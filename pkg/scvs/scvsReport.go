@@ -51,9 +51,8 @@ func (r *ScvsReporter) detailedScvsReport() {
 		outDoc := [][]string{}
 
 		for _, score := range scores.ScoreList() {
-			var l []string
 
-			l = []string{score.Feature(), score.L1Score(), score.L2Score(), score.L3Score(), score.Descr()}
+			l := []string{score.Feature(), score.L1Score(), score.L2Score(), score.L3Score(), score.Descr()}
 
 			outDoc = append(outDoc, l)
 		}

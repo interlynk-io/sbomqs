@@ -45,9 +45,7 @@ func IsSBOMCreationAutomated(d sbom.Document, s *scvsScore) bool {
 	if tools := d.Tools(); tools != nil {
 		for _, tool := range tools {
 			name := tool.GetName()
-			fmt.Println("Name: ", name)
 			version := tool.GetVersion()
-			fmt.Println("version: ", version)
 
 			if name != "" && version != "" {
 				s.setDesc(fmt.Sprintf("SBOM has %d authors", noOfTools))
@@ -63,21 +61,18 @@ func IsSBOMCreationAutomated(d sbom.Document, s *scvsScore) bool {
 // 2.3 Each SBOM has a unique identifier
 func IsSBOMHasUniqID(d sbom.Document, s *scvsScore) bool {
 	if ns := d.Spec().GetNamespace(); ns != "" {
-		s.setDesc(fmt.Sprintf("SBOM has uniq ID"))
+		s.setDesc("SBOM has uniq ID")
 		return true
 	}
-	s.setDesc(fmt.Sprintf("SBOM doesn't has uniq ID"))
+	s.setDesc("SBOM doesn't has uniq ID")
 	return false
 }
 
 func IsSBOMHasSignature(d sbom.Document, s *scvsScore) bool {
 	// isSignatureExists := d.Spec().GetSignature().CheckSignatureExists()
 	sig := d.Signature()
-	fmt.Println("Signature: ", sig)
 
 	if sig != nil {
-		fmt.Println("Signature is not nil")
-
 		for _, signature := range sig {
 			if signature != nil {
 				return signature.CheckSignatureExists()
@@ -100,66 +95,58 @@ func IsSBOMSignatureVerified(d sbom.Document, s *scvsScore) bool {
 	if signature == nil {
 		return false
 	}
-	for _, sig := range signature {
-		if sig == nil {
-			return false
-		}
 
-		sigFile, err := os.CreateTemp("", "signature-*.sig")
-		if err != nil {
-			fmt.Println("Error creating temp file for signature:", err)
-			return false
-		}
-		defer os.Remove(sigFile.Name())
-
-		pubKeyFile, err := os.CreateTemp("", "publickey-*.pem")
-		if err != nil {
-			fmt.Println("Error creating temp file for public key:", err)
-			return false
-		}
-		defer os.Remove(pubKeyFile.Name())
-
-		_, err = sigFile.WriteString(sig.Value())
-		if err != nil {
-			fmt.Println("Error writing signature to temp file:", err)
-			return false
-		}
-		_, err = pubKeyFile.WriteString(sig.PublicKey())
-		if err != nil {
-			fmt.Println("Error writing public key to temp file:", err)
-			return false
-		}
-
-		// Use openssl to verify the signature
-		cmd := exec.Command("openssl", "dgst", "-verify", pubKeyFile.Name(), "-signature", sigFile.Name(), "data-to-verify.txt")
-		output, err := cmd.CombinedOutput()
-		if err != nil {
-			fmt.Println("Error verifying signature with openssl:", err)
-			return false
-		}
-		// // Use cosign to verify the signature
-		// cmd := exec.Command("cosign", "verify-blob", "--key", pubKeyFile.Name(), "--signature", sigFile.Name(), "data-to-verify.txt")
-		// output, err := cmd.CombinedOutput()
-		// if err != nil {
-		//     fmt.Println("Error verifying signature with cosign:", err)
-		//     fmt.Println(string(output))
-		//     return false
-		// }
-
-		verificationResult := strings.Contains(string(output), "Verified OK")
-		fmt.Println("Verification result:", verificationResult)
-
-		return verificationResult
+	// Use the first signature
+	sig := signature[0]
+	if sig == nil {
+		return false
 	}
-	return false
+
+	sigFile, err := os.CreateTemp("", "signature-*.sig")
+	if err != nil {
+		fmt.Println("Error creating temp file for signature:", err)
+		return false
+	}
+	defer os.Remove(sigFile.Name())
+
+	pubKeyFile, err := os.CreateTemp("", "publickey-*.pem")
+	if err != nil {
+		fmt.Println("Error creating temp file for public key:", err)
+		return false
+	}
+	defer os.Remove(pubKeyFile.Name())
+
+	_, err = sigFile.WriteString(sig.Value())
+	if err != nil {
+		fmt.Println("Error writing signature to temp file:", err)
+		return false
+	}
+	_, err = pubKeyFile.WriteString(sig.PublicKey())
+	if err != nil {
+		fmt.Println("Error writing public key to temp file:", err)
+		return false
+	}
+
+	// Use openssl to verify the signature
+	cmd := exec.Command("openssl", "dgst", "-verify", pubKeyFile.Name(), "-signature", sigFile.Name(), "data-to-verify.txt")
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		fmt.Println("Error verifying signature with openssl:", err)
+		return false
+	}
+
+	verificationResult := strings.Contains(string(output), "Verified OK")
+	fmt.Println("Verification result:", verificationResult)
+
+	return verificationResult
 }
 
 func IsSBOMTimestamped(d sbom.Document, s *scvsScore) bool {
 	if d.Spec().GetCreationTimestamp() != "" {
-		s.setDesc(fmt.Sprintf("SBOM is timestamped"))
+		s.setDesc("SBOM is timestamped")
 		return true
 	}
-	s.setDesc(fmt.Sprintf("SBOM isn't timestamped"))
+	s.setDesc("SBOM isn't timestamped")
 	return false
 }
 
@@ -172,10 +159,10 @@ func IsSBOMInventoryContainsTestComponents(d sbom.Document, s *scvsScore) bool {
 func IsSBOMHasPrimaryComponents(d sbom.Document, s *scvsScore) bool {
 	//
 	if d.PrimaryComponent() {
-		s.setDesc(fmt.Sprintf("SBOM have primary comp"))
+		s.setDesc("SBOM have primary comp")
 		return true
 	}
-	s.setDesc(fmt.Sprintf("SBOM doesn't have primary comp"))
+	s.setDesc("SBOM doesn't have primary comp")
 	return false
 }
 

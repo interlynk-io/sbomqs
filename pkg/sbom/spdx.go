@@ -174,7 +174,6 @@ func (s *SpdxDoc) parse() {
 
 func (s *SpdxDoc) parseSignature() {
 	s.signature = nil
-	return
 }
 
 func (s *SpdxDoc) parseDoc() {
