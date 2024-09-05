@@ -36,21 +36,20 @@ var (
 )
 
 type CdxDoc struct {
-	doc                *cydx.BOM
-	format             FileFormat
-	ctx                context.Context
-	CdxSpec            *Specs
-	Comps              []GetComponent
-	CdxAuthors         []GetAuthor
-	CdxTools           []GetTool
-	rels               []GetRelation
-	logs               []string
-	primaryComponent   bool
-	lifecycles         []string
-	supplier           GetSupplier
-	manufacturer       Manufacturer
-	primaryComponentID string
-	compositions       map[string]string
+	doc          *cydx.BOM
+	format       FileFormat
+	ctx          context.Context
+	CdxSpec      *Specs
+	Comps        []GetComponent
+	CdxAuthors   []GetAuthor
+	CdxTools     []GetTool
+	rels         []GetRelation
+	logs         []string
+	lifecycles   []string
+	supplier     GetSupplier
+	manufacturer Manufacturer
+	compositions map[string]string
+	primaryComp  primaryComp
 }
 
 func newCDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat) (Document, error) {
@@ -90,6 +89,10 @@ func newCDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat) (Documen
 	return doc, err
 }
 
+func (c CdxDoc) PrimaryComp() PrimaryComp {
+	return &c.primaryComp
+}
+
 func (c CdxDoc) Spec() Spec {
 	return *c.CdxSpec
 }
@@ -114,10 +117,6 @@ func (c CdxDoc) Logs() []string {
 	return c.logs
 }
 
-func (c CdxDoc) PrimaryComponent() bool {
-	return c.primaryComponent
-}
-
 func (c CdxDoc) Lifecycles() []string {
 	return c.lifecycles
 }
@@ -137,9 +136,8 @@ func (c *CdxDoc) parse() {
 	c.parseSupplier()
 	c.parseManufacturer()
 	c.parseTool()
-	c.parsePrimaryComponent()
 	c.parseCompositions()
-	c.parseRels()
+	c.parseRelsAndPrimaryComp()
 	c.parseComps()
 }
 
@@ -286,7 +284,7 @@ func copyC(cdxc *cydx.Component, c *CdxDoc) *Component {
 		}
 	}
 
-	if cdxc.BOMRef == c.primaryComponentID {
+	if cdxc.BOMRef == c.primaryComp.id {
 		nc.isPrimary = true
 	}
 
@@ -547,17 +545,32 @@ func (c *CdxDoc) parseManufacturer() {
 	c.manufacturer = m
 }
 
-func (c *CdxDoc) parseRels() {
+func (c *CdxDoc) parseRelsAndPrimaryComp() {
+	if c.doc.Metadata == nil {
+		return
+	}
+
+	if c.doc.Metadata.Component == nil {
+		return
+	}
+	c.primaryComp.present = true
+	c.primaryComp.id = c.doc.Metadata.Component.BOMRef
+	var totalDependencies int
+
 	c.rels = []GetRelation{}
 
 	for _, r := range lo.FromPtr(c.doc.Dependencies) {
 		for _, d := range lo.FromPtr(r.Dependencies) {
 			nr := Relation{}
 			nr.From = r.Ref
+			if r.Ref == c.primaryComp.id {
+				totalDependencies++
+			}
 			nr.To = d
 			c.rels = append(c.rels, nr)
 		}
 	}
+	c.primaryComp.dependecies = totalDependencies
 }
 
 func (c *CdxDoc) assignSupplier(comp *cydx.Component) *Supplier {
@@ -586,19 +599,6 @@ func (c *CdxDoc) assignSupplier(comp *cydx.Component) *Supplier {
 	}
 
 	return &supplier
-}
-
-func (c *CdxDoc) parsePrimaryComponent() {
-	if c.doc.Metadata == nil {
-		return
-	}
-
-	if c.doc.Metadata.Component == nil {
-		return
-	}
-
-	c.primaryComponent = true
-	c.primaryComponentID = c.doc.Metadata.Component.BOMRef
 }
 
 func (c *CdxDoc) parseCompositions() {

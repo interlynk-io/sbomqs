@@ -43,18 +43,17 @@ var (
 )
 
 type SpdxDoc struct {
-	doc                *spdx.Document
-	format             FileFormat
-	ctx                context.Context
-	SpdxSpec           *Specs
-	Comps              []GetComponent
-	authors            []GetAuthor
-	SpdxTools          []GetTool
-	Rels               []GetRelation
-	logs               []string
-	primaryComponent   bool
-	primaryComponentID string
-	lifecycles         string
+	doc         *spdx.Document
+	format      FileFormat
+	ctx         context.Context
+	SpdxSpec    *Specs
+	Comps       []GetComponent
+	authors     []GetAuthor
+	SpdxTools   []GetTool
+	Rels        []GetRelation
+	logs        []string
+	primaryComp primaryComp
+	lifecycles  string
 }
 
 func newSPDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat) (Document, error) {
@@ -96,6 +95,10 @@ func newSPDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat) (Docume
 	return doc, err
 }
 
+func (c SpdxDoc) PrimaryComp() PrimaryComp {
+	return &c.primaryComp
+}
+
 func (s SpdxDoc) Spec() Spec {
 	return *s.SpdxSpec
 }
@@ -120,10 +123,6 @@ func (s SpdxDoc) Logs() []string {
 	return s.logs
 }
 
-func (s SpdxDoc) PrimaryComponent() bool {
-	return s.primaryComponent
-}
-
 func (s SpdxDoc) Lifecycles() []string {
 	return []string{s.lifecycles}
 }
@@ -140,8 +139,7 @@ func (s *SpdxDoc) parse() {
 	s.parseSpec()
 	s.parseAuthors()
 	s.parseTool()
-	s.parseRels()
-	s.parsePrimaryComponent()
+	s.parseRelsAndPrimaryComp()
 	s.parseComps()
 }
 
@@ -230,7 +228,7 @@ func (s *SpdxDoc) parseComps() {
 			nc.DownloadLocation = sc.PackageDownloadLocation
 		}
 
-		nc.isPrimary = s.primaryComponentID == string(sc.PackageSPDXIdentifier)
+		nc.isPrimary = s.primaryComp.id == string(sc.PackageSPDXIdentifier)
 
 		fromRelsPresent := func(rels []GetRelation, id string) bool {
 			for _, r := range rels {
@@ -272,12 +270,12 @@ func (s *SpdxDoc) parseAuthors() {
 	}
 }
 
-func (s *SpdxDoc) parseRels() {
+func (s *SpdxDoc) parseRelsAndPrimaryComp() {
 	s.Rels = []GetRelation{}
-
 	var err error
 	var aBytes, bBytes []byte
 	var primaryComponent string
+	var totalDependencies int
 
 	for _, r := range s.doc.Relationships {
 		if strings.ToUpper(r.Relationship) == spdx_common.TypeRelationshipDescribe {
@@ -286,6 +284,8 @@ func (s *SpdxDoc) parseRels() {
 				continue
 			}
 			primaryComponent = string(bBytes)
+			s.primaryComp.id = primaryComponent
+			s.primaryComp.present = true
 		}
 	}
 	// If no primary component found, return early
@@ -314,6 +314,7 @@ func (s *SpdxDoc) parseRels() {
 					From: primaryComponent,
 					To:   string(bBytes),
 				}
+				totalDependencies++
 
 				s.Rels = append(s.Rels, nr)
 			} else {
@@ -325,6 +326,7 @@ func (s *SpdxDoc) parseRels() {
 			}
 		}
 	}
+	s.primaryComp.dependecies = totalDependencies
 }
 
 // creationInfo.Creators.Tool
@@ -639,25 +641,6 @@ func (s *SpdxDoc) addSupplierName(index int) string {
 	}
 
 	return ""
-}
-
-func (s *SpdxDoc) parsePrimaryComponent() {
-	pkgIDs := make(map[string]*spdx.Package)
-
-	for _, pkg := range s.doc.Packages {
-		pkgIDs[string(pkg.PackageSPDXIdentifier)] = pkg
-	}
-
-	for _, r := range s.doc.Relationships {
-		if strings.ToUpper(r.Relationship) == spdx_common.TypeRelationshipDescribe {
-			_, ok := pkgIDs[string(r.RefB.ElementRefID)]
-			if ok {
-				s.primaryComponentID = string(r.RefB.ElementRefID)
-				s.primaryComponent = true
-				return
-			}
-		}
-	}
 }
 
 type entity struct {

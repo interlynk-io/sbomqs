@@ -161,7 +161,7 @@ func bsiBuildPhase(doc sbom.Document) *record {
 }
 
 func bsiSbomDepth(doc sbom.Document) *record {
-	if !doc.PrimaryComponent() {
+	if !doc.PrimaryComp().Present() {
 		return newRecordStmt(SBOM_DEPTH, "doc", "no-primary", 0.0)
 	}
 

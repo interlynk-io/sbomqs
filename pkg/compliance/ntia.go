@@ -72,12 +72,13 @@ func ntiaAutomationSpec(doc sbom.Document) *record {
 
 func ntiaSBOMDependency(doc sbom.Document) *record {
 	result, score := "", 0.0
+	// for doc.Components()
+	totalDependencies := doc.PrimaryComp().Dependencies()
 
-	withDependencies := len(doc.Relations())
-	if withDependencies > 0 {
+	if totalDependencies > 0 {
 		score = 10.0
 	}
-	result = fmt.Sprintf("doc has %d depedencies", withDependencies)
+	result = fmt.Sprintf("doc has %d depedencies", totalDependencies)
 
 	return newRecordStmt(SBOM_DEPENDENCY, "SBOM Data Fields", result, score)
 }

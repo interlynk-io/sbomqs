@@ -116,11 +116,11 @@ func compWithUniqIDCheck(d sbom.Document, c *check) score {
 
 func docWithDepedenciesCheck(d sbom.Document, c *check) score {
 	s := newScoreFromCheck(c)
-	withRelations := len(d.Relations())
-	if withRelations > 0 {
+	totalDependencies := d.PrimaryComp().Dependencies()
+	if totalDependencies > 0 {
 		s.setScore(10.0)
 	}
-	s.setDesc(fmt.Sprintf("doc has %d relationships ", withRelations))
+	s.setDesc(fmt.Sprintf("doc has %d dependencies ", totalDependencies))
 	return *s
 }
 

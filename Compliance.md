@@ -76,8 +76,9 @@ The [NTIA](https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/Publications/Tech
 | Automation Support | 1.1 | `Machine Readable Format` |  BomFormat & data forrmat | SPDXversion & data forrmat | optional |
 | SBOM Data Fields | 2.1 |  `SBOM Authors` | metadata->authors, metadata->supplier | creator->Person, creator->organization or creator->tool  | Mandatory  |
 |  | 2.2 |  `SBOM Timestamp` |  metadata->timestamp  |  created  | Mandatory  |
+|  | 2.3 |  `SBOM Dependencies` | dependencies | relationships | Mandatory(number of dependencies primary comp have) |
 | Package Data Fields | 2.4 |  `Component Name` |  component->name | package->name | Mandatory |
-|  | 2.5 |  `SBOM Dependencies` | dependencies | relationships  | Mandatory |
+|  | 2.3 |  `Component Dependencies` | dependencies | relationships  | Optional(Component to component dependencies) |
 |  | 2.6 |  `Component Supplier Name`  |  component->supplier | packageSupplier, packageOriginator | Mandatory |
 |  | 2.7 |  `Component Version` | component->version | package->version | Mandatory |
 |  | 2.8 |  `Component with Uniq IDs` | component->cpe, component->purl | externalRef->cpe, externalRef->purl | Mandatory |
