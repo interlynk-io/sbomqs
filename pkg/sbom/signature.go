@@ -23,13 +23,13 @@ type GetSignature interface {
 }
 
 type signature struct {
-	keyID           string
-	algorithm       string
-	value           string
-	publicKey       string
-	certificatePath string
-	certificate     string
-	timestamp       string
+	keyID     string
+	algorithm string
+	value     string
+	publicKey string
+	// certificatePath string
+	certificate string
+	// timestamp       string
 }
 
 func (s signature) CheckSignatureExists() bool {
