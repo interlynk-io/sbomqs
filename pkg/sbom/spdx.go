@@ -277,28 +277,52 @@ func (s *SpdxDoc) parseRels() {
 
 	var err error
 	var aBytes, bBytes []byte
+	var primaryComponent string
 
 	for _, r := range s.doc.Relationships {
-		nr := Relation{}
-		switch strings.ToUpper(r.Relationship) {
-		case spdx_common.TypeRelationshipDescribe:
-			fallthrough
-		case spdx_common.TypeRelationshipContains:
-			fallthrough
-		case spdx_common.TypeRelationshipDependsOn:
+		if strings.ToUpper(r.Relationship) == spdx_common.TypeRelationshipDescribe {
+			bBytes, err = r.RefB.ElementRefID.MarshalJSON()
+			if err != nil {
+				continue
+			}
+			primaryComponent = string(bBytes)
+		}
+	}
+	// If no primary component found, return early
+	if primaryComponent == "" {
+		return
+	}
+
+	for _, r := range s.doc.Relationships {
+		if strings.ToUpper(r.Relationship) == spdx_common.TypeRelationshipDependsOn {
 			aBytes, err = r.RefA.MarshalJSON()
 			if err != nil {
 				continue
 			}
-
-			bBytes, err = r.RefB.MarshalJSON()
+			bBytes, err = r.RefB.ElementRefID.MarshalJSON()
 			if err != nil {
 				continue
 			}
 
-			nr.From = string(aBytes)
-			nr.To = string(bBytes)
-			s.Rels = append(s.Rels, nr)
+			if string(aBytes) == primaryComponent {
+				bBytes, err = r.RefB.MarshalJSON()
+				if err != nil {
+					continue
+				}
+
+				nr := Relation{
+					From: primaryComponent,
+					To:   string(bBytes),
+				}
+
+				s.Rels = append(s.Rels, nr)
+			} else {
+				nr := Relation{
+					From: string(aBytes),
+					To:   string(bBytes),
+				}
+				s.Rels = append(s.Rels, nr)
+			}
 		}
 	}
 }

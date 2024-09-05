@@ -73,14 +73,13 @@ The [NTIA](https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/Publications/Tech
 
 | NTIA minimum elements | Section ID | NTIA Fields | CycloneDX |SPDX(2.3)  | Notes |
 | :---   | :---  |:---   |   :---  |  :---  | :---   |
-| Automation Support | 1.1 | `Machine Readable Format` |  BomFormat & data forrmat | SPDXversion & data forrmat |  |
-| SBOM Data Fields | 2.1 |  `Author of the SBOM` | metadata->authors, metadata->supplier | creator  |   |
-|  | 2.2 |  `Timestamp` |  metadata->timestamp  |  created  |   |
-|  | 2.3 |  `present` |           |           | all package elements |
-| Package Data Fields | 2.4 |  `Package Name` |  component->name | package->name |  |
-|  | 2.5 |  `Dependency Relationship` | dependencies, composition | relationships  |  |
-|  | 2.6 |  `Supplier Name`  |  component->supplier | packageSupplier, packageOriginator |  |
-|  | 2.7 |  `Version of Component` | component->version | package->version |  |
-|  | 2.8 |  `Other Uniq IDs` | component->cpe, component->purl | DocumentNamespace, SPDXID |  |
-| Practices and Processes | 3.1        |  `Depth`  | dependencies, compositions | relationships |  |
-|  | 3.2 |  `Known Unknowns` |   |  |  |
+| Automation Support | 1.1 | `Machine Readable Format` |  BomFormat & data forrmat | SPDXversion & data forrmat | optional |
+| SBOM Data Fields | 2.1 |  `SBOM Authors` | metadata->authors, metadata->supplier | creator->Person, creator->organization or creator->tool  | Mandatory  |
+|  | 2.2 |  `SBOM Timestamp` |  metadata->timestamp  |  created  | Mandatory  |
+| Package Data Fields | 2.4 |  `Component Name` |  component->name | package->name | Mandatory |
+|  | 2.5 |  `SBOM Dependencies` | dependencies | relationships  | Mandatory |
+|  | 2.6 |  `Component Supplier Name`  |  component->supplier | packageSupplier, packageOriginator | Mandatory |
+|  | 2.7 |  `Component Version` | component->version | package->version | Mandatory |
+|  | 2.8 |  `Component with Uniq IDs` | component->cpe, component->purl | externalRef->cpe, externalRef->purl | Mandatory |
+| Practices and Processes | 3.1        |  `Depth`  | dependencies, compositions | relationships | optional |
+|  | 3.2 |  `Known Unknowns` |   |  | optional |

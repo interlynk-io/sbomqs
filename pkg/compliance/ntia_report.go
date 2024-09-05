@@ -16,7 +16,7 @@ var ntiaSectionDetails = map[int]ntiaSection{
 	SBOM_MACHINE_FORMAT: {Title: "Automation Support", ID: "1.1", Required: true, DataField: "Machine-Readable Formats"},
 	SBOM_CREATOR:        {Title: "Required fields sboms ", ID: "2.1", Required: true, DataField: "Author"},
 	SBOM_TIMESTAMP:      {Title: "Required fields sboms", ID: "2.2", Required: true, DataField: "Timestamp"},
-	SBOM_COMPONENTS:     {Title: "Required sbom component", ID: "2.3", Required: true, DataField: "Packages"},
+	SBOM_DEPENDENCY:     {Title: "Required fields sboms", ID: "2.3", Required: true, DataField: "Dependencies"},
 	COMP_NAME:           {Title: "Required fields components", ID: "2.4", Required: true, DataField: "Package Name"},
 	COMP_DEPTH:          {Title: "Required fields components", ID: "2.5", Required: true, DataField: "Dependencies on other components"},
 	COMP_CREATOR:        {Title: "Required fields component", ID: "2.6", Required: true, DataField: "Package Supplier"},

@@ -39,6 +39,7 @@ func ntiaResult(ctx context.Context, doc sbom.Document, fileName string, outForm
 	db.addRecord(ntiaAutomationSpec(doc))
 	db.addRecord(ntiaSbomCreator(doc))
 	db.addRecord(ntiaSbomCreatedTimestamp(doc))
+	db.addRecord(ntiaSBOMDependency(doc))
 	db.addRecords(ntiaComponents(doc))
 
 	if outFormat == "json" {
@@ -69,16 +70,41 @@ func ntiaAutomationSpec(doc sbom.Document) *record {
 	return newRecordStmt(SBOM_MACHINE_FORMAT, "Automation Support", result, score)
 }
 
+func ntiaSBOMDependency(doc sbom.Document) *record {
+	result, score := "", 0.0
+
+	withDependencies := len(doc.Relations())
+	if withDependencies > 0 {
+		score = 10.0
+	}
+	result = fmt.Sprintf("doc has %d depedencies", withDependencies)
+
+	return newRecordStmt(SBOM_DEPENDENCY, "SBOM Data Fields", result, score)
+}
+
 // Required Sbom stuffs
 func ntiaSbomCreator(doc sbom.Document) *record {
 	spec := doc.Spec().GetSpecType()
 	result, score := "", 0.0
 
 	if spec == "spdx" {
-		name := ""
+		name, email := "", ""
 		if tools := doc.Tools(); tools != nil {
 			for _, tool := range tools {
 				if name = tool.GetName(); name != "" {
+					result = name
+					score = 10.0
+					break
+				}
+			}
+		}
+		if authors := doc.Authors(); authors != nil {
+			for _, author := range authors {
+				if name = author.GetName(); name != "" {
+					result = name
+					score = 10.0
+					break
+				} else if email = author.GetEmail(); email != "" {
 					result = name
 					score = 10.0
 					break
@@ -96,6 +122,18 @@ func ntiaSbomCreator(doc sbom.Document) *record {
 
 		if result != "" {
 			return newRecordStmt(SBOM_CREATOR, "SBOM Data Fields", result, score)
+		}
+
+		tools := doc.Tools()
+
+		if tools != nil {
+			for _, tool := range tools {
+				if name := tool.GetName(); name != "" {
+					result = name
+					score = 10.0
+					break
+				}
+			}
 		}
 
 		supplier := doc.Supplier()
@@ -188,6 +226,17 @@ func ntiaSbomCreatedTimestamp(doc sbom.Document) *record {
 	return newRecordStmt(SBOM_TIMESTAMP, "SBOM Data Fields", result, score)
 }
 
+var CompIDWithName = make(map[string]string)
+
+func extractName(comp string) string {
+	for x, y := range CompIDWithName {
+		if strings.Contains(comp, x) {
+			return y
+		}
+	}
+	return ""
+}
+
 // Required component stuffs
 func ntiaComponents(doc sbom.Document) []*record {
 	records := []*record{}
@@ -197,6 +246,11 @@ func ntiaComponents(doc sbom.Document) []*record {
 		return records
 	}
 
+	// map package ID to Package Name
+	for _, component := range doc.Components() {
+		CompIDWithName[component.GetID()] = component.GetName()
+	}
+
 	for _, component := range doc.Components() {
 		records = append(records, ntiaComponentName(component))
 		records = append(records, ntiaComponentCreator(doc, component))
@@ -204,15 +258,14 @@ func ntiaComponents(doc sbom.Document) []*record {
 		records = append(records, ntiaComponentOtherUniqIDs(doc, component))
 		records = append(records, ntiaComponentDependencies(doc, component))
 	}
-	records = append(records, newRecordStmt(SBOM_COMPONENTS, "SBOM Data Fields", "present", 10.0))
 	return records
 }
 
 func ntiaComponentName(component sbom.GetComponent) *record {
 	if result := component.GetName(); result != "" {
-		return newRecordStmt(COMP_NAME, component.GetID(), result, 10.0)
+		return newRecordStmt(COMP_NAME, component.GetName(), result, 10.0)
 	}
-	return newRecordStmt(COMP_NAME, component.GetID(), "", 0.0)
+	return newRecordStmt(COMP_NAME, component.GetName(), "", 0.0)
 }
 
 func ntiaComponentCreator(doc sbom.Document, component sbom.GetComponent) *record {
@@ -220,9 +273,8 @@ func ntiaComponentCreator(doc sbom.Document, component sbom.GetComponent) *recor
 
 	if spec == "spdx" {
 		if supplier := component.Suppliers().GetEmail(); supplier != "" {
-			return newRecordStmt(PACK_SUPPLIER, component.GetID(), supplier, 10.0)
+			return newRecordStmt(PACK_SUPPLIER, component.GetName(), supplier, 10.0)
 		}
-		return newRecordStmt(PACK_SUPPLIER, component.GetID(), "", 0.0)
 	} else if spec == "cyclonedx" {
 		result := ""
 		score := 0.0
@@ -235,7 +287,7 @@ func ntiaComponentCreator(doc sbom.Document, component sbom.GetComponent) *recor
 			}
 
 			if result != "" {
-				return newRecordStmt(COMP_CREATOR, component.GetID(), result, score)
+				return newRecordStmt(COMP_CREATOR, component.GetName(), result, score)
 			}
 
 			if supplier.GetURL() != "" {
@@ -244,7 +296,7 @@ func ntiaComponentCreator(doc sbom.Document, component sbom.GetComponent) *recor
 			}
 
 			if result != "" {
-				return newRecordStmt(COMP_CREATOR, component.GetID(), result, score)
+				return newRecordStmt(COMP_CREATOR, component.GetName(), result, score)
 			}
 
 			if supplier.GetContacts() != nil {
@@ -257,7 +309,7 @@ func ntiaComponentCreator(doc sbom.Document, component sbom.GetComponent) *recor
 				}
 
 				if result != "" {
-					return newRecordStmt(COMP_CREATOR, component.GetID(), result, score)
+					return newRecordStmt(COMP_CREATOR, component.GetName(), result, score)
 				}
 			}
 		}
@@ -271,7 +323,7 @@ func ntiaComponentCreator(doc sbom.Document, component sbom.GetComponent) *recor
 			}
 
 			if result != "" {
-				return newRecordStmt(COMP_CREATOR, component.GetID(), result, score)
+				return newRecordStmt(COMP_CREATOR, component.GetName(), result, score)
 			}
 
 			if manufacturer.GetEmail() != "" {
@@ -280,7 +332,7 @@ func ntiaComponentCreator(doc sbom.Document, component sbom.GetComponent) *recor
 			}
 
 			if result != "" {
-				return newRecordStmt(COMP_CREATOR, component.GetID(), result, score)
+				return newRecordStmt(COMP_CREATOR, component.GetName(), result, score)
 			}
 
 			if manufacturer.GetContacts() != nil {
@@ -293,42 +345,46 @@ func ntiaComponentCreator(doc sbom.Document, component sbom.GetComponent) *recor
 				}
 
 				if result != "" {
-					return newRecordStmt(COMP_CREATOR, component.GetID(), result, score)
+					return newRecordStmt(COMP_CREATOR, component.GetName(), result, score)
 				}
 			}
 		}
 	}
-	return newRecordStmt(COMP_CREATOR, component.GetID(), "", 0.0)
+	return newRecordStmt(COMP_CREATOR, component.GetName(), "", 0.0)
 }
 
 func ntiaComponentVersion(component sbom.GetComponent) *record {
 	result := component.GetVersion()
 
 	if result != "" {
-		return newRecordStmt(COMP_VERSION, component.GetID(), result, 10.0)
+		return newRecordStmt(COMP_VERSION, component.GetName(), result, 10.0)
 	}
 
-	return newRecordStmt(COMP_VERSION, component.GetID(), "", 0.0)
+	return newRecordStmt(COMP_VERSION, component.GetName(), "", 0.0)
 }
 
 func ntiaComponentDependencies(doc sbom.Document, component sbom.GetComponent) *record {
-	spec := doc.Spec().GetSpecType()
 	result, score := "", 0.0
+	var results []string
 
-	if spec == "spdx" {
-		if relation := doc.Relations(); relation != nil {
-			for _, rel := range relation {
-				if strings.Contains(rel.GetFrom(), component.GetID()) {
-					result = rel.GetTo()
-					score = 10
-				}
+	if relation := doc.Relations(); relation != nil {
+		for _, rel := range relation {
+			if strings.Contains(rel.GetFrom(), component.GetID()) {
+				componentName := extractName(rel.GetTo())
+				results = append(results, componentName)
+				score = 10.0
 			}
 		}
-	} else if spec == "cyclonedx" {
-		return bsiComponentDepth(component)
+	}
+	if results != nil {
+		for _, name := range results {
+			result += name + ", "
+		}
+	} else {
+		result += "No Dependencies"
 	}
 
-	return newRecordStmt(COMP_DEPTH, component.GetID(), result, score)
+	return newRecordStmt(COMP_DEPTH, component.GetName(), result, score)
 }
 
 func ntiaComponentOtherUniqIDs(doc sbom.Document, component sbom.GetComponent) *record {
@@ -351,7 +407,7 @@ func ntiaComponentOtherUniqIDs(doc sbom.Document, component sbom.GetComponent) *
 			x := fmt.Sprintf(":(%d/%d)", containPurlElement, totalElements)
 			result = result + x
 		}
-		return newRecordStmt(COMP_OTHER_UNIQ_IDS, component.GetID(), result, score)
+		return newRecordStmt(COMP_OTHER_UNIQ_IDS, component.GetName(), result, score)
 	} else if spec == "cyclonedx" {
 		result := ""
 		score := 0.0
@@ -362,7 +418,7 @@ func ntiaComponentOtherUniqIDs(doc sbom.Document, component sbom.GetComponent) *
 			result = string(purl[0])
 			score = 10.0
 
-			return newRecordStmtOptional(COMP_OTHER_UNIQ_IDS, component.GetID(), result, score)
+			return newRecordStmtOptional(COMP_OTHER_UNIQ_IDS, component.GetName(), result, score)
 		}
 
 		cpes := component.GetCpes()
@@ -371,10 +427,10 @@ func ntiaComponentOtherUniqIDs(doc sbom.Document, component sbom.GetComponent) *
 			result = string(cpes[0])
 			score = 10.0
 
-			return newRecordStmtOptional(COMP_OTHER_UNIQ_IDS, component.GetID(), result, score)
+			return newRecordStmtOptional(COMP_OTHER_UNIQ_IDS, component.GetName(), result, score)
 		}
 
-		return newRecordStmtOptional(COMP_OTHER_UNIQ_IDS, component.GetID(), "", 0.0)
+		return newRecordStmtOptional(COMP_OTHER_UNIQ_IDS, component.GetName(), "", 0.0)
 	}
-	return newRecordStmt(COMP_OTHER_UNIQ_IDS, component.GetID(), "", 0.0)
+	return newRecordStmt(COMP_OTHER_UNIQ_IDS, component.GetName(), "", 0.0)
 }
