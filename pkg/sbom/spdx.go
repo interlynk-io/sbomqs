@@ -391,9 +391,15 @@ func (s *SpdxDoc) parseTool() {
 	// indicate the name and version for that tool
 	extractVersion := func(inputName string) (string, string) {
 		// Split the input string by "-"
-		parts := strings.Split(inputName, "-")
+		var parts []string
+		if strings.Contains(inputName, "-") {
+			parts = strings.Split(inputName, "-")
+		} else if strings.Contains(inputName, " ") {
+			// example: {FOSSA v0.12.0}
+			parts = strings.Split(inputName, " ")
+		}
 
-		// if there are no "-" its a bad string
+		// if there are no  dash("-") or empty string(" ") b/w name and version, then its a bad string
 		if len(parts) == 1 {
 			return inputName, ""
 		}
