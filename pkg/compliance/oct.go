@@ -159,7 +159,7 @@ func breakLongString(s string, maxLength int) []string {
 func octSbomNamespace(doc sbom.Document) *db.Record {
 	result, score := "", 0.0
 
-	if ns := doc.Spec().GetNamespace(); ns != "" {
+	if ns := doc.Spec().GetUniqID(); ns != "" {
 		result = ns
 		score = 10.0
 	}

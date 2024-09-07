@@ -27,7 +27,7 @@ type Spec interface {
 	RequiredFields() bool
 	GetCreationTimestamp() string
 	GetLicenses() []licenses.License
-	GetNamespace() string
+	GetUniqID() string
 	URI() string
 	GetOrganization() string
 	GetComment() string
@@ -42,7 +42,7 @@ type Specs struct {
 	isReqFieldsPresent bool
 	Licenses           []licenses.License
 	CreationTimestamp  string
-	Namespace          string
+	UniqID             string
 	uri                string
 	Organization       string
 	Comment            string
@@ -97,8 +97,8 @@ func (s Specs) GetLicenses() []licenses.License {
 	return s.Licenses
 }
 
-func (s Specs) GetNamespace() string {
-	return s.Namespace
+func (s Specs) GetUniqID() string {
+	return s.UniqID
 }
 
 func (s Specs) URI() string {

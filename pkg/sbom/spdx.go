@@ -219,7 +219,7 @@ func (s *SpdxDoc) parseSpec() {
 
 	sp.Licenses = append(sp.Licenses, lics...)
 
-	sp.Namespace = s.doc.DocumentNamespace
+	sp.UniqID = s.doc.DocumentNamespace
 
 	if s.doc.DocumentNamespace != "" {
 		sp.uri = s.doc.DocumentNamespace

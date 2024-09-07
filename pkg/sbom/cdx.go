@@ -212,10 +212,10 @@ func (c *CdxDoc) parseSpec() {
 			sp.Licenses = aggregateLicenses(*c.doc.Metadata.Licenses)
 		}
 	}
-	sp.Namespace = c.doc.SerialNumber
+	sp.UniqID = c.doc.SerialNumber
 	sp.SpecType = string(SBOMSpecCDX)
 
-	if c.doc.SerialNumber != "" && strings.HasPrefix(sp.Namespace, "urn:uuid:") {
+	if c.doc.SerialNumber != "" && strings.HasPrefix(sp.UniqID, "urn:uuid:") {
 		sp.uri = fmt.Sprintf("%s/%d", c.doc.SerialNumber, c.doc.Version)
 	}
 
