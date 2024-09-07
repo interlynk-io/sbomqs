@@ -81,7 +81,7 @@ func IsSBOMHasSignature(d sbom.Document, s *scvsScore) bool {
 			}
 		}
 	} else {
-		fmt.Println("Signature is nil")
+		s.setDesc("*Not Supported(N/A)")
 	}
 
 	return false
@@ -97,12 +97,14 @@ func IsSBOMSignatureVerified(d sbom.Document, s *scvsScore) bool {
 	// Save signature and public key to temporary files
 	signature := d.Signature()
 	if signature == nil {
+		s.setDesc("*Not Supported(N/A)")
 		return false
 	}
 
 	// Use the first signature
 	sig := signature[0]
 	if sig == nil {
+		s.setDesc("*Not Supported(N/A)")
 		return false
 	}
 
@@ -161,13 +163,18 @@ func IsSBOMTimestamped(d sbom.Document, s *scvsScore) bool {
 }
 
 // 2.8 SBOM is analyzed for risk(L1, L2, L3)
-func IsSBOMAnalyzedForRisk(d sbom.Document, s *scvsScore) bool { return false } // 2.8
+func IsSBOMAnalyzedForRisk(d sbom.Document, s *scvsScore) bool {
+	// N/A
+	s.setDesc("Not Supported(N/A)")
+	return false
+} // 2.8
 
 // 2.9 SBOM contains a complete and accurate inventory of all components the SBOM describes(L1, L2, L3)
 func IsSBOMHasInventoryOfDependencies(d sbom.Document, s *scvsScore) bool {
 	// get primaryComponentID: d.PrimaryComponent().GetID()
 	// get all dependencies of primary component: loop through all relation and collect all dependencies of primary comp
 	// now check each dependencies are present in component section: now through each component and check depedncies aare present or not.
+	s.setDesc("*Not Supported(N/A)")
 	return false
 }
 
@@ -268,7 +275,6 @@ func IsComponentHasVerifiedLicense(d sbom.Document, s *scvsScore) bool {
 	totalLicense := lo.FlatMap(d.Components(), func(comp sbom.GetComponent, _ int) []bool {
 		return lo.Map(comp.Licenses(), func(l licenses.License, _ int) bool {
 			isValidLicense := licenses.IsValidLicenseID(l.ShortID())
-			fmt.Println("isValidLicense: ", isValidLicense)
 			return isValidLicense
 		})
 	})
@@ -311,7 +317,11 @@ func IsComponentHasCopyright(d sbom.Document, s *scvsScore) bool {
 }
 
 // 2.17 Components defined in SBOM which have been modified from the original have detailed provenance and pedigree information(L3)
-func IsComponentContainsModificationChanges(d sbom.Document, s *scvsScore) bool { return false } // 2.17
+func IsComponentContainsModificationChanges(d sbom.Document, s *scvsScore) bool {
+	// N/A
+	s.setDesc("Not Supported(N/A)")
+	return false
+} // 2.17
 
 // 2.18 Components defined in SBOM have one or more file hashes (SHA-256, SHA-512, etc)(L3)
 func IsComponentContainsHash(d sbom.Document, s *scvsScore) bool {

@@ -101,7 +101,6 @@ func IsValidLicenseID(licenseKey string) bool {
 		return false
 	}
 
-	// fmt.Println("licenseKey: ", licenseKey)
 	if licenseKey == "none" || licenseKey == "noassertion" {
 		return false
 	}
