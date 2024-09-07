@@ -24,7 +24,7 @@ import (
 
 var scvsCmd = &cobra.Command{
 	Use:          "scvs",
-	Short:        "sbom component vs",
+	Short:        "OWASP SCVS V2 Maturity Level Software Bill of Materials (SBOM) Requirements",
 	SilenceUsage: true,
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) <= 0 {

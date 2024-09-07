@@ -60,7 +60,7 @@ func IsSBOMCreationAutomated(d sbom.Document, s *scvsScore) bool {
 
 // 2.3 Each SBOM has a unique identifier
 func IsSBOMHasUniqID(d sbom.Document, s *scvsScore) bool {
-	if ns := d.Spec().GetNamespace(); ns != "" {
+	if ns := d.Spec().GetUniqID(); ns != "" {
 		s.setDesc("SBOM has uniq ID")
 		return true
 	}

@@ -143,7 +143,7 @@ func octSbomComment(doc sbom.Document) *record {
 func octSbomNamespace(doc sbom.Document) *record {
 	result, score := "", 0.0
 
-	if ns := doc.Spec().GetNamespace(); ns != "" {
+	if ns := doc.Spec().GetUniqID(); ns != "" {
 		result = ns
 		score = 10.0
 	}
