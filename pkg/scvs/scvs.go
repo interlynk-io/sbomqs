@@ -19,13 +19,14 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"time"
 
 	"github.com/interlynk-io/sbomqs/pkg/licenses"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 	"github.com/samber/lo"
 )
 
-// A structured, machine readable software bill of materials (SBOM) format is present
+// 2.1 A structured, machine readable software bill of materials (SBOM) format is present(L1, L2, L3)
 func IsSBOMMachineReadable(d sbom.Document, s *scvsScore) bool {
 	// check spec is SPDX or CycloneDX
 	specs := sbom.SupportedSBOMSpecs()
@@ -39,7 +40,7 @@ func IsSBOMMachineReadable(d sbom.Document, s *scvsScore) bool {
 	return false
 }
 
-// SBOM creation is automated and reproducible
+// 2.3 SBOM creation is automated and reproducible(L2, L3)
 func IsSBOMCreationAutomated(d sbom.Document, s *scvsScore) bool {
 	noOfTools := len(d.Tools())
 	if tools := d.Tools(); tools != nil {
@@ -58,7 +59,7 @@ func IsSBOMCreationAutomated(d sbom.Document, s *scvsScore) bool {
 	return false
 }
 
-// 2.3 Each SBOM has a unique identifier
+// 2.3 Each SBOM has a unique identifier(L1, L2, L3)
 func IsSBOMHasUniqID(d sbom.Document, s *scvsScore) bool {
 	if ns := d.Spec().GetUniqID(); ns != "" {
 		s.setDesc("SBOM has uniq ID")
@@ -68,6 +69,7 @@ func IsSBOMHasUniqID(d sbom.Document, s *scvsScore) bool {
 	return false
 }
 
+// 2.4 SBOM has been signed by publisher, supplier, or certifying authority(L2, L3)
 func IsSBOMHasSignature(d sbom.Document, s *scvsScore) bool {
 	// isSignatureExists := d.Spec().GetSignature().CheckSignatureExists()
 	sig := d.Signature()
@@ -85,10 +87,12 @@ func IsSBOMHasSignature(d sbom.Document, s *scvsScore) bool {
 	return false
 }
 
+// 2.5  SBOM signature verification exists(L2, L3)
 func IsSBOMSignatureCorrect(d sbom.Document, s *scvsScore) bool {
 	return IsSBOMHasSignature(d, s)
 }
 
+// 2.6  SBOM signature verification is performed(L3)
 func IsSBOMSignatureVerified(d sbom.Document, s *scvsScore) bool {
 	// Save signature and public key to temporary files
 	signature := d.Signature()
@@ -141,8 +145,14 @@ func IsSBOMSignatureVerified(d sbom.Document, s *scvsScore) bool {
 	return verificationResult
 }
 
+// 2.7 SBOM is timestamped(L1, L2, L3)
 func IsSBOMTimestamped(d sbom.Document, s *scvsScore) bool {
-	if d.Spec().GetCreationTimestamp() != "" {
+	if result := d.Spec().GetCreationTimestamp(); result != "" {
+		_, err := time.Parse(time.RFC3339, result)
+		if err != nil {
+			s.setDesc("SBOM timestamped is incorrect")
+			return false
+		}
 		s.setDesc("SBOM is timestamped")
 		return true
 	}
@@ -150,14 +160,28 @@ func IsSBOMTimestamped(d sbom.Document, s *scvsScore) bool {
 	return false
 }
 
+// 2.8 SBOM is analyzed for risk(L1, L2, L3)
 func IsSBOMAnalyzedForRisk(d sbom.Document, s *scvsScore) bool { return false } // 2.8
 
-func IsSBOMHasInventoryOfDependencies(d sbom.Document, s *scvsScore) bool { return false } // 2.9
+// 2.9 SBOM contains a complete and accurate inventory of all components the SBOM describes(L1, L2, L3)
+func IsSBOMHasInventoryOfDependencies(d sbom.Document, s *scvsScore) bool {
+	// get primaryComponentID: d.PrimaryComponent().GetID()
+	// get all dependencies of primary component: loop through all relation and collect all dependencies of primary comp
+	// now check each dependencies are present in component section: now through each component and check depedncies aare present or not.
+	return false
+}
 
-func IsSBOMInventoryContainsTestComponents(d sbom.Document, s *scvsScore) bool { return false } // 2.10
+// 2,10 SBOM contains an accurate inventory of all test components for the asset or application it describes(L2, L3)
+func IsSBOMInventoryContainsTestComponents(_ sbom.Document, s *scvsScore) bool {
+	// N/A
+	s.setDesc("Not Supported(N/A)")
+	return false
+}
 
+// 2.11 SBOM contains metadata about the asset or software the SBOM describes(L2, L3)
 func IsSBOMHasPrimaryComponents(d sbom.Document, s *scvsScore) bool {
-	//
+	// get primaryComponentID: d.PrimaryComponent().GetID()
+	// Update this after NTIA get's merged
 	if d.PrimaryComponent() {
 		s.setDesc("SBOM have primary comp")
 		return true
@@ -166,6 +190,7 @@ func IsSBOMHasPrimaryComponents(d sbom.Document, s *scvsScore) bool {
 	return false
 }
 
+// 2.12 Component identifiers are derived from their native ecosystems (if applicable)(L1, L2, L3)
 func IsComponentHasIdentityID(d sbom.Document, s *scvsScore) bool {
 	totalComponents := len(d.Components())
 	if totalComponents == 0 {
@@ -174,7 +199,7 @@ func IsComponentHasIdentityID(d sbom.Document, s *scvsScore) bool {
 	}
 
 	withIdentityID := lo.CountBy(d.Components(), func(c sbom.GetComponent) bool {
-		return len(c.Purls()) > 0
+		return len(c.Purls()) > 0 || len(c.Cpes()) > 0
 	})
 
 	if totalComponents > 0 {
@@ -187,6 +212,7 @@ func IsComponentHasIdentityID(d sbom.Document, s *scvsScore) bool {
 	return false
 }
 
+// 2.13 Component point of origin is identified in a consistent, machine readable format (e.g. PURL)(L3)
 func IsComponentHasOriginID(d sbom.Document, s *scvsScore) bool {
 	totalComponents := len(d.Components())
 	if totalComponents == 0 {
@@ -208,7 +234,7 @@ func IsComponentHasOriginID(d sbom.Document, s *scvsScore) bool {
 	return false
 }
 
-// 2.13
+// 2.14 Components defined in SBOM have accurate license information(L1, L2, L3)
 func IsComponentHasLicenses(d sbom.Document, s *scvsScore) bool {
 	//
 	totalComponents := len(d.Components())
@@ -231,7 +257,7 @@ func IsComponentHasLicenses(d sbom.Document, s *scvsScore) bool {
 	return false
 }
 
-// 2.14
+// 2.15 Components defined in SBOM have valid SPDX license ID's or expressions (if applicable)(L2, L3)
 func IsComponentHasVerifiedLicense(d sbom.Document, s *scvsScore) bool {
 	totalComponents := len(d.Components())
 	if totalComponents == 0 {
@@ -239,30 +265,30 @@ func IsComponentHasVerifiedLicense(d sbom.Document, s *scvsScore) bool {
 		return false
 	}
 
-	// var countAllValidLicense int
-	// for _, comp := range d.Components() {
-	// 	for _, licen := range comp.Licenses() {
-	// 		if licenses.IsValidLicenseID(licen.Name()) {
-	// 			countAllValidLicense++
-	// 		}
-	// 	}
-	// }
-	countAllValidLicense := lo.CountBy(d.Components(), func(comp sbom.GetComponent) bool {
-		return lo.SomeBy(comp.Licenses(), func(licen licenses.License) bool {
-			return licenses.IsValidLicenseID(licen.Name())
+	totalLicense := lo.FlatMap(d.Components(), func(comp sbom.GetComponent, _ int) []bool {
+		return lo.Map(comp.Licenses(), func(l licenses.License, _ int) bool {
+			isValidLicense := licenses.IsValidLicenseID(l.ShortID())
+			fmt.Println("isValidLicense: ", isValidLicense)
+			return isValidLicense
 		})
 	})
 
-	if totalComponents > 0 {
-		if countAllValidLicense >= totalComponents {
-			s.setDesc(fmt.Sprintf("%d/%d comp has valid Licenses", countAllValidLicense, totalComponents))
+	withValidLicense := lo.CountBy(totalLicense, func(l bool) bool {
+		return l
+	})
+
+	if totalComponents >= 0 {
+		if withValidLicense >= totalComponents {
+			s.setDesc(fmt.Sprintf("%d/%d comp has Licenses", withValidLicense, totalComponents))
 			return true
 		}
 	}
-	s.setDesc(fmt.Sprintf("%d/%d comp has valid Licenses", countAllValidLicense, totalComponents))
+
+	s.setDesc(fmt.Sprintf("%d/%d comp has valid Licenses", withValidLicense, totalComponents))
 	return false
 }
 
+// 2.16 Components defined in SBOM have valid copyright statement(L3)
 func IsComponentHasCopyright(d sbom.Document, s *scvsScore) bool {
 	totalComponents := len(d.Components())
 	if totalComponents == 0 {
@@ -284,9 +310,10 @@ func IsComponentHasCopyright(d sbom.Document, s *scvsScore) bool {
 	return false
 }
 
-// 2.16
+// 2.17 Components defined in SBOM which have been modified from the original have detailed provenance and pedigree information(L3)
 func IsComponentContainsModificationChanges(d sbom.Document, s *scvsScore) bool { return false } // 2.17
 
+// 2.18 Components defined in SBOM have one or more file hashes (SHA-256, SHA-512, etc)(L3)
 func IsComponentContainsHash(d sbom.Document, s *scvsScore) bool {
 	totalComponents := len(d.Components())
 	if totalComponents == 0 {
@@ -304,4 +331,4 @@ func IsComponentContainsHash(d sbom.Document, s *scvsScore) bool {
 	}
 	s.setDesc(fmt.Sprintf("%d/%d comp has Checksum", withChecksums, totalComponents))
 	return false
-} // 2.18
+}

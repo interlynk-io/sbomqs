@@ -96,21 +96,18 @@ func (m meta) AboutCode() bool {
 	return m.source == "aboutcode"
 }
 
-func IsValidLicenseID(licenseID string) bool {
-	if licenseID == "" {
+func IsValidLicenseID(licenseKey string) bool {
+	if licenseKey == "" {
 		return false
 	}
 
-	lowerKey := strings.ToLower(licenseID)
-
-	if lowerKey == "none" || lowerKey == "noassertion" {
+	// fmt.Println("licenseKey: ", licenseKey)
+	if licenseKey == "none" || licenseKey == "noassertion" {
 		return false
 	}
 
-	tLicKey := strings.TrimRight(licenseID, "+")
-
-	_, lok := licenseList[tLicKey]
-	_, aok := licenseListAboutCode[tLicKey]
+	_, lok := licenseList[licenseKey]
+	_, aok := licenseListAboutCode[licenseKey]
 
 	return lok || aok
 }
