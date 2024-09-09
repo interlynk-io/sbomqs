@@ -127,13 +127,11 @@ func ntiaSbomCreator(doc sbom.Document) *record {
 
 		tools := doc.Tools()
 
-		if tools != nil {
-			for _, tool := range tools {
-				if name := tool.GetName(); name != "" {
-					result = name
-					score = 10.0
-					break
-				}
+		for _, tool := range tools {
+			if name := tool.GetName(); name != "" {
+				result = name
+				score = 10.0
+				break
 			}
 		}
 
@@ -158,19 +156,18 @@ func ntiaSbomCreator(doc sbom.Document) *record {
 				return newRecordStmt(SBOM_CREATOR, "SBOM Data Fields", result, score)
 			}
 
-			if supplier.GetContacts() != nil {
-				for _, contact := range supplier.GetContacts() {
-					if contact.Email() != "" {
-						result = contact.Email()
-						score = 10.0
-						break
-					}
-				}
-
-				if result != "" {
-					return newRecordStmt(SBOM_CREATOR, "SBOM Data Fields", result, score)
+			for _, contact := range supplier.GetContacts() {
+				if contact.Email() != "" {
+					result = contact.Email()
+					score = 10.0
+					break
 				}
 			}
+
+			if result != "" {
+				return newRecordStmt(SBOM_CREATOR, "SBOM Data Fields", result, score)
+			}
+
 		}
 
 		manufacturer := doc.Manufacturer()
@@ -194,19 +191,18 @@ func ntiaSbomCreator(doc sbom.Document) *record {
 				return newRecordStmt(SBOM_CREATOR, "SBOM Data Fields", result, score)
 			}
 
-			if manufacturer.GetContacts() != nil {
-				for _, contact := range manufacturer.GetContacts() {
-					if contact.Email() != "" {
-						result = contact.Email()
-						score = 10.0
-						break
-					}
-				}
-
-				if result != "" {
-					return newRecordStmt(SBOM_CREATOR, "SBOM Data Fields", result, score)
+			for _, contact := range manufacturer.GetContacts() {
+				if contact.Email() != "" {
+					result = contact.Email()
+					score = 10.0
+					break
 				}
 			}
+
+			if result != "" {
+				return newRecordStmt(SBOM_CREATOR, "SBOM Data Fields", result, score)
+			}
+
 		}
 	}
 	return newRecordStmt(SBOM_CREATOR, "SBOM Data Fields", result, score)

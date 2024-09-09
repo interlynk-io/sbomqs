@@ -631,6 +631,7 @@ func (s *SpdxDoc) getSupplier(index int) *Supplier {
 	}
 }
 
+// nolint
 // https://github.com/spdx/ntia-conformance-checker/issues/100
 // Add spdx support to check both supplier and originator
 func (s *SpdxDoc) addSupplierName(index int) string {
