@@ -34,7 +34,7 @@ func compSupplierCheck(d sbom.Document, c *check) score {
 	}
 
 	withNames := lo.CountBy(d.Components(), func(c sbom.GetComponent) bool {
-		return c.GetSupplierName() != ""
+		return c.Suppliers().IsPresent()
 	})
 
 	if totalComponents > 0 {
