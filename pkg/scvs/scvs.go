@@ -15,6 +15,7 @@
 package scvs
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"os/exec"
@@ -164,10 +165,31 @@ func IsSBOMTimestamped(d sbom.Document, s *scvsScore) bool {
 
 // 2.8 SBOM is analyzed for risk(L1, L2, L3)
 func IsSBOMAnalyzedForRisk(d sbom.Document, s *scvsScore) bool {
-	// N/A
-	s.setDesc("Not Supported(N/A)")
+	// // N/A
+	// s.setDesc("Not Supported(N/A)")
+	// return false
+
+	// Run OpenSCA CLI to check for vulnerabilities
+	cmd := exec.Command("opensca-cli", "scan", "--path", "~/sbom/sbomqs-fossa.spdx.json ")
+
+	var out bytes.Buffer
+	cmd.Stdout = &out
+	err := cmd.Run()
+	if err != nil {
+		s.setDesc("Error running OpenSCA CLI: " + err.Error())
+		return false
+	}
+
+	// Parse the output to check for vulnerabilities
+	output := out.String()
+	if strings.Contains(output, "Vulnerabilities found") {
+		s.setDesc("Vulnerabilities found in SBOM components")
+		return true
+	}
+
+	s.setDesc("No vulnerabilities found")
 	return false
-} // 2.8
+}
 
 // 2.9 SBOM contains a complete and accurate inventory of all components the SBOM describes(L1, L2, L3)
 func IsSBOMHasInventoryOfDependencies(d sbom.Document, s *scvsScore) bool {
