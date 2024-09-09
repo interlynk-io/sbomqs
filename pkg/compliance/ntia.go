@@ -374,9 +374,7 @@ func ntiaComponentDependencies(doc sbom.Document, component sbom.GetComponent) *
 		}
 	}
 	if results != nil {
-		for _, name := range results {
-			result += name + ", "
-		}
+		result = strings.Join(results, ", ")
 	} else {
 		result += "No Dependencies"
 	}
