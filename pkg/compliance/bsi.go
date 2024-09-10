@@ -16,6 +16,7 @@ package compliance
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"github.com/interlynk-io/sbomqs/pkg/logger"
@@ -161,31 +162,16 @@ func bsiBuildPhase(doc sbom.Document) *record {
 }
 
 func bsiSbomDepth(doc sbom.Document) *record {
-	if !doc.PrimaryComp().Present() {
-		return newRecordStmt(SBOM_DEPTH, "doc", "no-primary", 0.0)
+	result, score := "", 0.0
+	// for doc.Components()
+	totalDependencies := doc.PrimaryComp().Dependencies()
+
+	if totalDependencies > 0 {
+		score = 10.0
 	}
+	result = fmt.Sprintf("doc has %d depedencies", totalDependencies)
 
-	if len(doc.Relations()) == 0 {
-		return newRecordStmt(SBOM_DEPTH, "doc", "no-relationships", 0.0)
-	}
-
-	primary, _ := lo.Find(doc.Components(), func(c sbom.GetComponent) bool {
-		return c.IsPrimaryComponent()
-	})
-
-	if !primary.HasRelationShips() {
-		return newRecordStmt(SBOM_DEPTH, "doc", "no-primary-relationships", 0.0)
-	}
-
-	if primary.RelationShipState() == "complete" {
-		return newRecordStmt(SBOM_DEPTH, "doc", "complete", 10.0)
-	}
-
-	if primary.HasRelationShips() {
-		return newRecordStmt(SBOM_DEPTH, "doc", "unattested-has-relationships", 5.0)
-	}
-
-	return newRecordStmt(SBOM_DEPTH, "doc", "non-compliant", 0.0)
+	return newRecordStmt(SBOM_DEPTH, "doc", result, score)
 }
 
 func bsiCreator(doc sbom.Document) *record {
@@ -306,13 +292,17 @@ func bsiComponents(doc sbom.Document) []*record {
 		records := append(records, newRecordStmt(SBOM_COMPONENTS, "doc", "", 0.0))
 		return records
 	}
+	// map package ID to Package Name
+	for _, component := range doc.Components() {
+		CompIDWithName[component.GetID()] = component.GetName()
+	}
 
 	for _, component := range doc.Components() {
 		records = append(records, bsiComponentCreator(component))
 		records = append(records, bsiComponentName(component))
 		records = append(records, bsiComponentVersion(component))
 		records = append(records, bsiComponentLicense(component))
-		records = append(records, bsiComponentDepth(component))
+		records = append(records, bsiComponentDepth(doc, component))
 		records = append(records, bsiComponentHash(component))
 		records = append(records, bsiComponentSourceCodeURL(component))
 		records = append(records, bsiComponentDownloadURL(component))
@@ -325,20 +315,36 @@ func bsiComponents(doc sbom.Document) []*record {
 	return records
 }
 
-func bsiComponentDepth(component sbom.GetComponent) *record {
-	if !component.HasRelationShips() {
+func bsiComponentDepth(doc sbom.Document, component sbom.GetComponent) *record {
+	result, score := "", 0.0
+	var fResults []string
+
+	dependencies := doc.GetRelationships(component.GetID())
+	if dependencies == nil {
 		return newRecordStmt(COMP_DEPTH, component.GetName(), "no-relationships", 0.0)
 	}
 
-	if component.RelationShipState() == "complete" {
-		return newRecordStmt(COMP_DEPTH, component.GetName(), "complete", 10.0)
+	for _, d := range dependencies {
+		state := component.GetComposition(d)
+		if state == "complete" {
+			componentName := extractName(d)
+			fResults = append(fResults, componentName)
+			score = 10.0
+		} else {
+			componentName := extractName(d)
+			// state := "(unattested-has-relationships)"
+			fResults = append(fResults, componentName)
+			score = 5.0
+		}
 	}
 
-	if component.HasRelationShips() {
-		return newRecordStmt(COMP_DEPTH, component.GetName(), "unattested-has-relationships", 5.0)
+	if fResults != nil {
+		result = strings.Join(fResults, ", ")
+	} else {
+		result += "no-relationships"
 	}
 
-	return newRecordStmt(COMP_DEPTH, component.GetName(), "non-compliant", 0.0)
+	return newRecordStmt(COMP_DEPTH, component.GetName(), result, score)
 }
 
 func bsiComponentLicense(component sbom.GetComponent) *record {
@@ -346,7 +352,6 @@ func bsiComponentLicense(component sbom.GetComponent) *record {
 	score := 0.0
 
 	if len(licenses) == 0 {
-		// fmt.Printf("component %s : %s has no licenses\n", component.Name(), component.Version())
 		return newRecordStmt(COMP_LICENSE, component.GetName(), "not-compliant", score)
 	}
 
@@ -372,9 +377,6 @@ func bsiComponentLicense(component sbom.GetComponent) *record {
 	}
 
 	total := spdx + aboutcode + custom
-
-	// fmt.Printf("component %s : %s has (total)%d = (all)%d licenses\n", component.Name(), component.Version(), total, len(licenses))
-	// fmt.Printf("%+v\n", licenses)
 
 	if total != len(licenses) {
 		score = 0.0

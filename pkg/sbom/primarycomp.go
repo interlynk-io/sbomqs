@@ -21,9 +21,10 @@ type PrimaryComp interface {
 }
 
 type primaryComp struct {
-	present     bool
-	id          string
-	dependecies int
+	present         bool
+	id              string
+	dependecies     int
+	hasDependencies bool
 }
 
 func (pc *primaryComp) Present() bool {
@@ -36,4 +37,8 @@ func (pc *primaryComp) ID() string {
 
 func (pc *primaryComp) Dependencies() int {
 	return pc.dependecies
+}
+
+func (pc *primaryComp) HasDependencies() bool {
+	return pc.hasDependencies
 }

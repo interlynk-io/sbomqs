@@ -50,6 +50,8 @@ type CdxDoc struct {
 	manufacturer Manufacturer
 	compositions map[string]string
 	primaryComp  primaryComp
+	dependencies map[string][]string
+	composition  map[string]string
 }
 
 func newCDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat) (Document, error) {
@@ -129,6 +131,14 @@ func (c CdxDoc) Manufacturer() Manufacturer {
 	return c.manufacturer
 }
 
+func (c CdxDoc) GetRelationships(componentID string) []string {
+	return c.dependencies[componentID]
+}
+
+func (c CdxDoc) GetComposition(componentID string) string {
+	return c.composition[componentID]
+}
+
 func (c *CdxDoc) parse() {
 	c.parseDoc()
 	c.parseSpec()
@@ -137,7 +147,7 @@ func (c *CdxDoc) parse() {
 	c.parseManufacturer()
 	c.parseTool()
 	c.parseCompositions()
-	c.parseRelsAndPrimaryComp()
+	c.parsePrimaryCompAndRelationships()
 	c.parseComps()
 }
 
@@ -285,49 +295,6 @@ func copyC(cdxc *cydx.Component, c *CdxDoc) *Component {
 
 	if cdxc.BOMRef == c.primaryComp.id {
 		nc.isPrimary = true
-	}
-
-	fromRelsPresent := func(rels []GetRelation, compID string) bool {
-		for _, r := range rels {
-			if r.GetFrom() == compID {
-				return true
-			}
-		}
-		return false
-	}
-
-	compNormalise := func(compID string) string {
-		switch cydx.CompositionAggregate(compID) {
-		case cydx.CompositionAggregateComplete:
-			return "complete"
-		case cydx.CompositionAggregateIncomplete:
-			return "incomplete"
-		case cydx.CompositionAggregateIncompleteFirstPartyOnly:
-			return "incomplete-first-party-only"
-		case cydx.CompositionAggregateIncompleteFirstPartyOpenSourceOnly:
-			return "incomplete-first-party-open-source-only"
-		case cydx.CompositionAggregateIncompleteFirstPartyProprietaryOnly:
-			return "incomplete-first-party-proprietary-only"
-		case cydx.CompositionAggregateIncompleteThirdPartyOnly:
-			return "incomplete-third-party-only"
-		case cydx.CompositionAggregateIncompleteThirdPartyOpenSourceOnly:
-			return "incomplete-third-party-open-source-only"
-		case cydx.CompositionAggregateIncompleteThirdPartyProprietaryOnly:
-			return "incomplete-third-party-proprietary-only"
-		case cydx.CompositionAggregateNotSpecified:
-			return "not-specified"
-		case cydx.CompositionAggregateUnknown:
-			return "unknown"
-		}
-
-		return "not-specified"
-	}
-
-	nc.hasRelationships = fromRelsPresent(c.rels, cdxc.BOMRef)
-	if c.compositions != nil {
-		if comp, ok := c.compositions[cdxc.BOMRef]; ok {
-			nc.RelationshipState = compNormalise(comp)
-		}
 	}
 
 	nc.ID = cdxc.BOMRef
@@ -545,14 +512,16 @@ func (c *CdxDoc) parseManufacturer() {
 	c.manufacturer = m
 }
 
-func (c *CdxDoc) parseRelsAndPrimaryComp() {
+func (c *CdxDoc) parsePrimaryCompAndRelationships() {
 	if c.doc.Metadata == nil {
 		return
 	}
-
 	if c.doc.Metadata.Component == nil {
 		return
 	}
+
+	c.dependencies = make(map[string][]string)
+
 	c.primaryComp.present = true
 	c.primaryComp.id = c.doc.Metadata.Component.BOMRef
 	var totalDependencies int
@@ -563,14 +532,60 @@ func (c *CdxDoc) parseRelsAndPrimaryComp() {
 		for _, d := range lo.FromPtr(r.Dependencies) {
 			nr := Relation{}
 			nr.From = r.Ref
-			if r.Ref == c.primaryComp.id {
-				totalDependencies++
-			}
 			nr.To = d
-			c.rels = append(c.rels, nr)
+			if r.Ref == c.primaryComp.id {
+				c.primaryComp.hasDependencies = true
+				totalDependencies++
+				c.rels = append(c.rels, nr)
+				c.dependencies[c.primaryComp.id] = append(c.dependencies[c.primaryComp.id], d)
+			} else {
+				c.rels = append(c.rels, nr)
+				c.dependencies[r.Ref] = append(c.dependencies[r.Ref], d)
+			}
 		}
 	}
 	c.primaryComp.dependecies = totalDependencies
+}
+
+func (c *CdxDoc) parseComposition() {
+	if c.doc.Metadata == nil {
+		return
+	}
+	if c.doc.Compositions == nil {
+		return
+	}
+	c.composition = make(map[string]string)
+
+	for _, cp := range lo.FromPtr(c.doc.Compositions) {
+		state := compNormalise(cp.BOMRef)
+		c.composition[cp.BOMRef] = state
+	}
+}
+
+func compNormalise(compID string) string {
+	switch cydx.CompositionAggregate(compID) {
+	case cydx.CompositionAggregateComplete:
+		return "complete"
+	case cydx.CompositionAggregateIncomplete:
+		return "incomplete"
+	case cydx.CompositionAggregateIncompleteFirstPartyOnly:
+		return "incomplete-first-party-only"
+	case cydx.CompositionAggregateIncompleteFirstPartyOpenSourceOnly:
+		return "incomplete-first-party-open-source-only"
+	case cydx.CompositionAggregateIncompleteFirstPartyProprietaryOnly:
+		return "incomplete-first-party-proprietary-only"
+	case cydx.CompositionAggregateIncompleteThirdPartyOnly:
+		return "incomplete-third-party-only"
+	case cydx.CompositionAggregateIncompleteThirdPartyOpenSourceOnly:
+		return "incomplete-third-party-open-source-only"
+	case cydx.CompositionAggregateIncompleteThirdPartyProprietaryOnly:
+		return "incomplete-third-party-proprietary-only"
+	case cydx.CompositionAggregateNotSpecified:
+		return "not-specified"
+	case cydx.CompositionAggregateUnknown:
+		return "unknown"
+	}
+	return "not-specified"
 }
 
 func (c *CdxDoc) assignSupplier(comp *cydx.Component) *Supplier {

@@ -30,4 +30,5 @@ type Document interface {
 	Supplier() GetSupplier
 
 	PrimaryComp() PrimaryComp
+	GetRelationships(string) []string
 }

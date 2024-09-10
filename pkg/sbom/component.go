@@ -46,6 +46,7 @@ type GetComponent interface {
 	GetPackageLicenseDeclared() string
 	GetPackageLicenseConcluded() string
 	ExternalReferences() []GetExternalReference
+	GetComposition(string) string
 }
 
 type Component struct {
@@ -73,6 +74,7 @@ type Component struct {
 	PackageLicenseConcluded string
 	PackageLicenseDeclared  string
 	ExternalRefs            []GetExternalReference
+	composition             map[string]string
 }
 
 func NewComponent() *Component {
@@ -173,4 +175,8 @@ func (c Component) GetPackageLicenseDeclared() string {
 
 func (c Component) ExternalReferences() []GetExternalReference {
 	return c.ExternalRefs
+}
+
+func (c Component) GetComposition(componentID string) string {
+	return c.composition[componentID]
 }

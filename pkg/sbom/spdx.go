@@ -43,17 +43,19 @@ var (
 )
 
 type SpdxDoc struct {
-	doc         *spdx.Document
-	format      FileFormat
-	ctx         context.Context
-	SpdxSpec    *Specs
-	Comps       []GetComponent
-	authors     []GetAuthor
-	SpdxTools   []GetTool
-	Rels        []GetRelation
-	logs        []string
-	primaryComp primaryComp
-	lifecycles  string
+	doc          *spdx.Document
+	format       FileFormat
+	ctx          context.Context
+	SpdxSpec     *Specs
+	Comps        []GetComponent
+	authors      []GetAuthor
+	SpdxTools    []GetTool
+	Rels         []GetRelation
+	logs         []string
+	primaryComp  primaryComp
+	lifecycles   string
+	dependencies map[string][]string
+	composition  map[string]string
 }
 
 func newSPDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat) (Document, error) {
@@ -135,11 +137,19 @@ func (s SpdxDoc) Supplier() GetSupplier {
 	return nil
 }
 
+func (s SpdxDoc) GetRelationships(componentID string) []string {
+	return s.dependencies[componentID]
+}
+
+func (s SpdxDoc) GetComposition(componentID string) string {
+	return s.composition[componentID]
+}
+
 func (s *SpdxDoc) parse() {
 	s.parseSpec()
 	s.parseAuthors()
 	s.parseTool()
-	s.parseRelsAndPrimaryComp()
+	s.parsePrimaryCompAndRelationships()
 	s.parseComps()
 }
 
@@ -276,14 +286,16 @@ func (s *SpdxDoc) parseAuthors() {
 	}
 }
 
-func (s *SpdxDoc) parseRelsAndPrimaryComp() {
+func (s *SpdxDoc) parsePrimaryCompAndRelationships() {
 	s.Rels = []GetRelation{}
+	s.dependencies = make(map[string][]string)
 	var err error
 	var aBytes, bBytes []byte
 	var primaryComponent string
 	var totalDependencies int
 
 	for _, r := range s.doc.Relationships {
+		// check relation type DESCRIBE
 		if strings.ToUpper(r.Relationship) == spdx_common.TypeRelationshipDescribe {
 			bBytes, err = r.RefB.ElementRefID.MarshalJSON()
 			if err != nil {
@@ -294,21 +306,18 @@ func (s *SpdxDoc) parseRelsAndPrimaryComp() {
 			s.primaryComp.present = true
 		}
 	}
-	// If no primary component found, return early
-	if primaryComponent == "" {
-		return
-	}
 
+	// if s.primaryComp.present {
 	for _, r := range s.doc.Relationships {
 		if strings.ToUpper(r.Relationship) == spdx_common.TypeRelationshipDependsOn {
 			aBytes, err = r.RefA.MarshalJSON()
 			if err != nil {
 				continue
 			}
-			bBytes, err = r.RefB.ElementRefID.MarshalJSON()
-			if err != nil {
-				continue
-			}
+			// bBytes, err = r.RefB.ElementRefID.MarshalJSON()
+			// if err != nil {
+			// 	continue
+			// }
 
 			if string(aBytes) == primaryComponent {
 				bBytes, err = r.RefB.MarshalJSON()
@@ -323,17 +332,105 @@ func (s *SpdxDoc) parseRelsAndPrimaryComp() {
 				totalDependencies++
 
 				s.Rels = append(s.Rels, nr)
+				s.dependencies[primaryComponent] = append(s.dependencies[primaryComponent], string(bBytes))
 			} else {
 				nr := Relation{
 					From: string(aBytes),
 					To:   string(bBytes),
 				}
+				s.dependencies[string(aBytes)] = append(s.dependencies[string(aBytes)], string(bBytes))
 				s.Rels = append(s.Rels, nr)
 			}
 		}
 	}
-	s.primaryComp.dependecies = totalDependencies
+	// }
 }
+
+// func (s *SpdxDoc) parseComponentDepedencies() {
+// 	s.Rels = []GetRelation{}
+// 	s.dependencies = make(map[string][]string)
+// 	var err error
+// 	var aBytes, bBytes []byte
+
+// 	for _, r := range s.doc.Relationships {
+// 		if strings.ToUpper(r.Relationship) == spdx_common.TypeRelationshipDependsOn {
+// 			aBytes, err = r.RefA.MarshalJSON()
+// 			if err != nil {
+// 				continue
+// 			}
+// 			bBytes, err = r.RefB.ElementRefID.MarshalJSON()
+// 			if err != nil {
+// 				continue
+// 			}
+
+// 			nr := Relation{
+// 				From: string(aBytes),
+// 				To:   string(bBytes),
+// 			}
+// 			s.Rels = append(s.Rels, nr)
+// 			s.dependencies[string(aBytes)] = append(s.dependencies[string(aBytes)], string(bBytes))
+// 		}
+// 	}
+// }
+
+// func (s *SpdxDoc) parseRelsAndPrimaryComp() {
+// 	s.Rels = []GetRelation{}
+// 	var err error
+// 	var aBytes, bBytes []byte
+// 	var primaryComponent string
+// 	var totalDependencies int
+
+// 	for _, r := range s.doc.Relationships {
+// 		if strings.ToUpper(r.Relationship) == spdx_common.TypeRelationshipDescribe {
+// 			bBytes, err = r.RefB.ElementRefID.MarshalJSON()
+// 			if err != nil {
+// 				continue
+// 			}
+// 			primaryComponent = string(bBytes)
+// 			s.primaryComp.id = primaryComponent
+// 			s.primaryComp.present = true
+// 		}
+// 	}
+// 	// If no primary component found, return early
+// 	if primaryComponent == "" {
+// 		return
+// 	}
+
+// 	for _, r := range s.doc.Relationships {
+// 		if strings.ToUpper(r.Relationship) == spdx_common.TypeRelationshipDependsOn {
+// 			aBytes, err = r.RefA.MarshalJSON()
+// 			if err != nil {
+// 				continue
+// 			}
+// 			bBytes, err = r.RefB.ElementRefID.MarshalJSON()
+// 			if err != nil {
+// 				continue
+// 			}
+
+// 			if string(aBytes) == primaryComponent {
+// 				bBytes, err = r.RefB.MarshalJSON()
+// 				if err != nil {
+// 					continue
+// 				}
+
+// 				nr := Relation{
+// 					From: primaryComponent,
+// 					To:   string(bBytes),
+// 				}
+// 				totalDependencies++
+
+// 				s.Rels = append(s.Rels, nr)
+// 			} else {
+// 				nr := Relation{
+// 					From: string(aBytes),
+// 					To:   string(bBytes),
+// 				}
+// 				s.Rels = append(s.Rels, nr)
+// 			}
+// 		}
+// 	}
+// 	s.primaryComp.dependecies = totalDependencies
+// }
 
 // creationInfo.Creators.Tool
 // Also create for org: , creationInfo.Creators.Organization

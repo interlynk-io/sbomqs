@@ -364,19 +364,20 @@ func ntiaComponentDependencies(doc sbom.Document, component sbom.GetComponent) *
 	result, score := "", 0.0
 	var results []string
 
-	if relation := doc.Relations(); relation != nil {
-		for _, rel := range relation {
-			if strings.Contains(rel.GetFrom(), component.GetID()) {
-				componentName := extractName(rel.GetTo())
-				results = append(results, componentName)
-				score = 10.0
-			}
-		}
+	dependencies := doc.GetRelationships(component.GetID())
+	if dependencies == nil {
+		return newRecordStmt(COMP_DEPTH, component.GetName(), "no-relationships", 0.0)
 	}
+	for _, d := range dependencies {
+		componentName := extractName(d)
+		results = append(results, componentName)
+		score = 10.0
+	}
+
 	if results != nil {
 		result = strings.Join(results, ", ")
 	} else {
-		result += "No Dependencies"
+		result += "no-relationships"
 	}
 
 	return newRecordStmt(COMP_DEPTH, component.GetName(), result, score)
