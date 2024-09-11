@@ -42,20 +42,28 @@ func ComplianceRun(ctx context.Context, ep *Params) error {
 		return err
 	}
 
-	reportType := "NTIA"
+	var reportType string
 
-	if ep.Bsi {
+	switch {
+	case ep.Bsi:
 		reportType = "BSI"
-	} else if ep.Oct {
+	case ep.Oct:
 		reportType = "OCT"
+	case ep.Fsct:
+		reportType = "FSCT"
+	default:
+		reportType = "NTIA"
 	}
 
-	outFormat := "detailed"
+	var outFormat string
 
-	if ep.Basic {
+	switch {
+	case ep.Basic:
 		outFormat = "basic"
-	} else if ep.JSON {
+	case ep.JSON:
 		outFormat = "json"
+	default:
+		outFormat = "detailed"
 	}
 
 	err = compliance.ComplianceResult(ctx, *doc, reportType, ep.Path[0], outFormat)

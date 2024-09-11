@@ -12,30 +12,40 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package sbom
+package swid
 
-//counterfeiter:generate . Contact
-
-type GetContact interface {
+type SWID interface {
 	GetName() string
-	GetEmail() string
-	GetPhone() string
+	GetTagID() string
+	Valid() bool
+	String() string
 }
 
-type Contact struct {
+type swid struct {
+	TagID string
 	Name  string
-	Email string
-	Phone string
 }
 
-func (c Contact) GetName() string {
-	return c.Name
+func (s swid) GetName() string {
+	return s.Name
 }
 
-func (c Contact) GetEmail() string {
-	return c.Email
+func (s swid) GetTagID() string {
+	return s.TagID
 }
 
-func (c Contact) GetPhone() string {
-	return c.Phone
+func (s swid) Valid() bool {
+	// Basic validation: check if the TagID is a non-empty string
+	return s.TagID != ""
+}
+
+func (s swid) String() string {
+	return s.TagID
+}
+
+func NewSWID(tagID, name string) SWID {
+	return swid{
+		TagID: tagID,
+		Name:  name,
+	}
 }
