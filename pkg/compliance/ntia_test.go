@@ -42,8 +42,8 @@ func createSpdxDummyDocumentNtia() sbom.Document {
 	packages = append(packages, pack)
 
 	depend := sbom.Relation{
-		From: "SPDXRef-Package-go-module-github.com-abc",
-		To:   "SPDXRef-Package-go-module-github.com-xyz",
+		From: "github/spdx/tools-golang@9db247b854b9634d0109153d515fd1a9efd5a1b1",
+		To:   "github/spdx/gordf@b735bd5aac89fe25cad4ef488a95bc00ea549edd",
 	}
 	var dependencies []sbom.GetRelation
 	dependencies = append(dependencies, depend)
@@ -67,10 +67,12 @@ type desiredNtia struct {
 func TestNtiaSpdxSbomPass(t *testing.T) {
 	doc := createSpdxDummyDocumentNtia()
 	testCases := []struct {
+		name     string
 		actual   *record
 		expected desiredNtia
 	}{
 		{
+			name:   "AutomationSpec",
 			actual: ntiaAutomationSpec(doc),
 			expected: desiredNtia{
 				score:  10.0,
@@ -80,6 +82,7 @@ func TestNtiaSpdxSbomPass(t *testing.T) {
 			},
 		},
 		{
+			name:   "SbomCreator",
 			actual: ntiaSbomCreator(doc),
 			expected: desiredNtia{
 				score:  10.0,
@@ -89,6 +92,7 @@ func TestNtiaSpdxSbomPass(t *testing.T) {
 			},
 		},
 		{
+			name:   "SbomCreatedTimestamp",
 			actual: ntiaSbomCreatedTimestamp(doc),
 			expected: desiredNtia{
 				score:  10.0,
@@ -98,58 +102,63 @@ func TestNtiaSpdxSbomPass(t *testing.T) {
 			},
 		},
 		{
+			name:   "ComponentCreator",
 			actual: ntiaComponentCreator(doc, doc.Components()[0]),
 			expected: desiredNtia{
 				score:  10.0,
 				result: "hello@interlynk.io",
 				key:    PACK_SUPPLIER,
-				id:     doc.Components()[0].GetID(),
+				id:     doc.Components()[0].GetName(),
 			},
 		},
 
 		{
+			name:   "ComponentName",
 			actual: ntiaComponentName(doc.Components()[0]),
 			expected: desiredNtia{
 				score:  10.0,
 				result: "core-js",
 				key:    COMP_NAME,
-				id:     doc.Components()[0].GetID(),
+				id:     doc.Components()[0].GetName(),
 			},
 		},
 		{
+			name:   "ComponentVersion",
 			actual: ntiaComponentVersion(doc.Components()[0]),
 			expected: desiredNtia{
 				score:  10.0,
 				result: "v0.7.1",
 				key:    COMP_VERSION,
-				id:     doc.Components()[0].GetID(),
+				id:     doc.Components()[0].GetName(),
 			},
 		},
 		{
+			name:   "ComponentOtherUniqIDs",
 			actual: ntiaComponentOtherUniqIDs(doc, doc.Components()[0]),
 			expected: desiredNtia{
 				score:  10.0,
 				result: "purl:(1/1)",
 				key:    COMP_OTHER_UNIQ_IDS,
-				id:     doc.Components()[0].GetID(),
+				id:     doc.Components()[0].GetName(),
 			},
 		},
 		{
+			name:   "ComponentDependencies",
 			actual: ntiaComponentDependencies(doc, doc.Components()[0]),
 			expected: desiredNtia{
 				score:  10.0,
-				result: "SPDXRef-Package-go-module-github.com-xyz",
+				result: "gordf",
 				key:    COMP_DEPTH,
-				id:     doc.Components()[0].GetID(),
+				id:     doc.Components()[0].GetName(),
 			},
 		},
 	}
 
 	for _, test := range testCases {
-		assert.Equal(t, test.expected.score, test.actual.score)
-		assert.Equal(t, test.expected.key, test.actual.checkKey)
-		assert.Equal(t, test.expected.id, test.actual.id)
-		assert.Equal(t, test.expected.result, test.actual.checkValue)
+		assert.Equal(t, test.expected.score, test.actual.score, "Score mismatch for %s", test.name)
+		assert.Equal(t, test.expected.key, test.actual.checkKey, "Key mismatch for %s", test.name)
+		assert.Equal(t, test.expected.id, test.actual.id, "ID mismatch for %s", test.name)
+		assert.Equal(t, test.expected.result, test.actual.checkValue, "Result mismatch for %s", test.name)
 	}
 }
 
@@ -201,10 +210,12 @@ func createCdxDummyDocumentNtia() sbom.Document {
 func TestNtiaCdxSbomPass(t *testing.T) {
 	doc := createCdxDummyDocumentNtia()
 	testCases := []struct {
+		name     string
 		actual   *record
 		expected desiredNtia
 	}{
 		{
+			name:   "AutomationSpec",
 			actual: ntiaAutomationSpec(doc),
 			expected: desiredNtia{
 				score:  10.0,
@@ -214,6 +225,7 @@ func TestNtiaCdxSbomPass(t *testing.T) {
 			},
 		},
 		{
+			name:   "SbomCreator",
 			actual: ntiaSbomCreator(doc),
 			expected: desiredNtia{
 				score:  10.0,
@@ -223,6 +235,7 @@ func TestNtiaCdxSbomPass(t *testing.T) {
 			},
 		},
 		{
+			name:   "SbomCreatedTimestamp",
 			actual: ntiaSbomCreatedTimestamp(doc),
 			expected: desiredNtia{
 				score:  10.0,
@@ -232,6 +245,7 @@ func TestNtiaCdxSbomPass(t *testing.T) {
 			},
 		},
 		{
+			name:   "ComponentCreator",
 			actual: ntiaComponentCreator(doc, doc.Components()[0]),
 			expected: desiredNtia{
 				score:  10.0,
@@ -241,6 +255,7 @@ func TestNtiaCdxSbomPass(t *testing.T) {
 			},
 		},
 		{
+			name:   "ComponentName",
 			actual: ntiaComponentName(doc.Components()[0]),
 			expected: desiredNtia{
 				score:  10.0,
@@ -250,6 +265,7 @@ func TestNtiaCdxSbomPass(t *testing.T) {
 			},
 		},
 		{
+			name:   "ComponentVersion",
 			actual: ntiaComponentVersion(doc.Components()[0]),
 			expected: desiredNtia{
 				score:  10.0,
@@ -259,6 +275,7 @@ func TestNtiaCdxSbomPass(t *testing.T) {
 			},
 		},
 		{
+			name:   "ComponentOtherUniqIDs",
 			actual: ntiaComponentOtherUniqIDs(doc, doc.Components()[0]),
 			expected: desiredNtia{
 				score:  10.0,
@@ -269,10 +286,10 @@ func TestNtiaCdxSbomPass(t *testing.T) {
 		},
 	}
 	for _, test := range testCases {
-		assert.Equal(t, test.expected.score, test.actual.score)
-		assert.Equal(t, test.expected.key, test.actual.checkKey)
-		assert.Equal(t, test.expected.id, test.actual.id)
-		assert.Equal(t, test.expected.result, test.actual.checkValue)
+		assert.Equal(t, test.expected.score, test.actual.score, "Score mismatch for %s", test.name)
+		assert.Equal(t, test.expected.key, test.actual.checkKey, "Key mismatch for %s", test.name)
+		assert.Equal(t, test.expected.id, test.actual.id, "ID mismatch for %s", test.name)
+		assert.Equal(t, test.expected.result, test.actual.checkValue, "Result mismatch for %s", test.name)
 	}
 }
 
@@ -328,10 +345,12 @@ func createSpdxDummyDocumentFailNtia() sbom.Document {
 func TestNTIASbomFail(t *testing.T) {
 	doc := createSpdxDummyDocumentFailNtia()
 	testCases := []struct {
+		name     string
 		actual   *record
 		expected desiredNtia
 	}{
 		{
+			name:   "AutomationSpec",
 			actual: ntiaAutomationSpec(doc),
 			expected: desiredNtia{
 				score:  0.0,
@@ -341,6 +360,7 @@ func TestNTIASbomFail(t *testing.T) {
 			},
 		},
 		{
+			name:   "SbomCreator",
 			actual: ntiaSbomCreator(doc),
 			expected: desiredNtia{
 				score:  0.0,
@@ -350,6 +370,7 @@ func TestNTIASbomFail(t *testing.T) {
 			},
 		},
 		{
+			name:   "SbomCreatedTimestamp",
 			actual: ntiaSbomCreatedTimestamp(doc),
 			expected: desiredNtia{
 				score:  0.0,
@@ -359,6 +380,7 @@ func TestNTIASbomFail(t *testing.T) {
 			},
 		},
 		{
+			name:   "ComponentCreator",
 			actual: ntiaComponentCreator(doc, doc.Components()[0]),
 			expected: desiredNtia{
 				score:  0.0,
@@ -369,6 +391,7 @@ func TestNTIASbomFail(t *testing.T) {
 		},
 
 		{
+			name:   "ComponentName",
 			actual: ntiaComponentName(doc.Components()[0]),
 			expected: desiredNtia{
 				score:  0.0,
@@ -378,6 +401,7 @@ func TestNTIASbomFail(t *testing.T) {
 			},
 		},
 		{
+			name:   "ComponentVersion",
 			actual: ntiaComponentVersion(doc.Components()[0]),
 			expected: desiredNtia{
 				score:  0.0,
@@ -387,6 +411,7 @@ func TestNTIASbomFail(t *testing.T) {
 			},
 		},
 		{
+			name:   "ComponentOtherUniqIDs",
 			actual: ntiaComponentOtherUniqIDs(doc, doc.Components()[0]),
 			expected: desiredNtia{
 				score:  0.0,
@@ -398,9 +423,9 @@ func TestNTIASbomFail(t *testing.T) {
 	}
 
 	for _, test := range testCases {
-		assert.Equal(t, test.expected.score, test.actual.score)
-		assert.Equal(t, test.expected.key, test.actual.checkKey)
-		assert.Equal(t, test.expected.id, test.actual.id)
-		assert.Equal(t, test.expected.result, test.actual.checkValue)
+		assert.Equal(t, test.expected.score, test.actual.score, "Score mismatch for %s", test.name)
+		assert.Equal(t, test.expected.key, test.actual.checkKey, "Key mismatch for %s", test.name)
+		assert.Equal(t, test.expected.id, test.actual.id, "ID mismatch for %s", test.name)
+		assert.Equal(t, test.expected.result, test.actual.checkValue, "Result mismatch for %s", test.name)
 	}
 }
