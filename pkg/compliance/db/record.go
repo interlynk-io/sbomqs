@@ -20,19 +20,21 @@ type Record struct {
 	ID         string
 	Score      float64
 	Required   bool
+	Maturity   string
 }
 
 func NewRecord() *Record {
 	return &Record{}
 }
 
-func NewRecordStmt(key int, id, value string, score float64) *Record {
+func NewRecordStmt(key int, id, value string, score float64, maturity string) *Record {
 	r := NewRecord()
 	r.CheckKey = key
 	r.CheckValue = value
 	r.ID = id
 	r.Score = score
 	r.Required = true
+	r.Maturity = maturity
 	return r
 }
 

@@ -83,10 +83,12 @@ type desired struct {
 func TestOctSbomPass(t *testing.T) {
 	doc := createDummyDocument()
 	testCases := []struct {
+		name     string
 		actual   *db.Record
 		expected desired
 	}{
 		{
+			name:   "octSpec",
 			actual: octSpec(doc),
 			expected: desired{
 				name:   "octSpec",
@@ -97,6 +99,7 @@ func TestOctSbomPass(t *testing.T) {
 			},
 		},
 		{
+			name:   "octSbomName",
 			actual: octSbomName(doc),
 			expected: desired{
 				name:   "octSbomName",
@@ -107,6 +110,7 @@ func TestOctSbomPass(t *testing.T) {
 			},
 		},
 		{
+			name:   "octSbomNamespace",
 			actual: octSbomNamespace(doc),
 			expected: desired{
 				name:   "octSbomNamespace",
@@ -117,6 +121,7 @@ func TestOctSbomPass(t *testing.T) {
 			},
 		},
 		{
+			name:   "octSbomOrganization",
 			actual: octSbomOrganization(doc),
 			expected: desired{
 				name:   "octSbomOrganization",
@@ -127,6 +132,7 @@ func TestOctSbomPass(t *testing.T) {
 			},
 		},
 		{
+			name:   "octSbomComment",
 			actual: octSbomComment(doc),
 			expected: desired{
 				name:   "octSbomComment",
@@ -137,6 +143,7 @@ func TestOctSbomPass(t *testing.T) {
 			},
 		},
 		{
+			name:   "octSbomTool",
 			actual: octSbomTool(doc),
 			expected: desired{
 				name:   "octSbomTool",
@@ -147,6 +154,7 @@ func TestOctSbomPass(t *testing.T) {
 			},
 		},
 		{
+			name:   "octSbomLicense",
 			actual: octSbomLicense(doc),
 			expected: desired{
 				name:   "octSbomLicense",
@@ -157,6 +165,7 @@ func TestOctSbomPass(t *testing.T) {
 			},
 		},
 		{
+			name:   "octSpecVersion",
 			actual: octSpecVersion(doc),
 			expected: desired{
 				name:   "octSpecVersion",
@@ -167,6 +176,7 @@ func TestOctSbomPass(t *testing.T) {
 			},
 		},
 		{
+			name:   "octCreatedTimestamp",
 			actual: octCreatedTimestamp(doc),
 			expected: desired{
 				name:   "octCreatedTimestamp",
@@ -177,6 +187,7 @@ func TestOctSbomPass(t *testing.T) {
 			},
 		},
 		{
+			name:   "octSpecSpdxID",
 			actual: octSpecSpdxID(doc),
 			expected: desired{
 				name:   "octSpecSpdxID",
@@ -186,8 +197,8 @@ func TestOctSbomPass(t *testing.T) {
 				id:     "SPDX Elements",
 			},
 		},
-
 		{
+			name:   "octMachineFormat",
 			actual: octMachineFormat(doc),
 			expected: desired{
 				name:   "octMachineFormat",
@@ -198,6 +209,7 @@ func TestOctSbomPass(t *testing.T) {
 			},
 		},
 		{
+			name:   "octHumanFormat",
 			actual: octHumanFormat(doc),
 			expected: desired{
 				name:   "octHumanFormat",
@@ -208,6 +220,7 @@ func TestOctSbomPass(t *testing.T) {
 			},
 		},
 		{
+			name:   "octPackageName",
 			actual: octPackageName(doc.Components()[0]),
 			expected: desired{
 				name:   "octPackageName",
@@ -218,6 +231,7 @@ func TestOctSbomPass(t *testing.T) {
 			},
 		},
 		{
+			name:   "octPackageVersion",
 			actual: octPackageVersion(doc.Components()[0]),
 			expected: desired{
 				name:   "octPackageVersion",
@@ -228,6 +242,7 @@ func TestOctSbomPass(t *testing.T) {
 			},
 		},
 		{
+			name:   "octPackageSpdxID",
 			actual: octPackageSpdxID(doc.Components()[0]),
 			expected: desired{
 				name:   "octPackageSpdxID",
@@ -238,6 +253,7 @@ func TestOctSbomPass(t *testing.T) {
 			},
 		},
 		{
+			name:   "octPackageSupplier",
 			actual: octPackageSupplier(doc.Components()[0]),
 			expected: desired{
 				name:   "octPackageSupplier",
@@ -248,6 +264,7 @@ func TestOctSbomPass(t *testing.T) {
 			},
 		},
 		{
+			name:   "octPackageHash",
 			actual: octPackageHash(doc.Components()[0]),
 			expected: desired{
 				name:   "octPackageHash",
@@ -258,6 +275,7 @@ func TestOctSbomPass(t *testing.T) {
 			},
 		},
 		{
+			name:   "octPackageExternalRefs",
 			actual: octPackageExternalRefs(doc.Components()[0]),
 			expected: desired{
 				name:   "octPackageExternalRefs",
@@ -268,6 +286,7 @@ func TestOctSbomPass(t *testing.T) {
 			},
 		},
 		{
+			name:   "octPackageCopyright",
 			actual: octPackageCopyright(doc.Components()[0]),
 			expected: desired{
 				name:   "octPackageCopyright",
@@ -278,6 +297,7 @@ func TestOctSbomPass(t *testing.T) {
 			},
 		},
 		{
+			name:   "octPackageFileAnalyzed",
 			actual: octPackageFileAnalyzed(doc.Components()[0]),
 			expected: desired{
 				name:   "octPackageFileAnalyzed",
@@ -288,6 +308,7 @@ func TestOctSbomPass(t *testing.T) {
 			},
 		},
 		{
+			name:   "octPackageConLicense",
 			actual: octPackageConLicense(doc.Components()[0]),
 			expected: desired{
 				name:   "octPackageConLicense",
@@ -298,6 +319,7 @@ func TestOctSbomPass(t *testing.T) {
 			},
 		},
 		{
+			name:   "octPackageDecLicense",
 			actual: octPackageDecLicense(doc.Components()[0]),
 			expected: desired{
 				name:   "octPackageDecLicense",
@@ -308,6 +330,7 @@ func TestOctSbomPass(t *testing.T) {
 			},
 		},
 		{
+			name:   "octPackageDownloadURL",
 			actual: octPackageDownloadURL(doc.Components()[0]),
 			expected: desired{
 				name:   "octPackageDownloadURL",
@@ -320,10 +343,10 @@ func TestOctSbomPass(t *testing.T) {
 	}
 
 	for _, test := range testCases {
-		assert.Equal(t, test.expected.score, test.actual.Score)
-		assert.Equal(t, test.expected.key, test.actual.CheckKey)
-		assert.Equal(t, test.expected.id, test.actual.ID)
-		assert.Equal(t, test.expected.result, test.actual.CheckValue)
+		assert.Equal(t, test.expected.score, test.actual.Score, "Score mismatch for %s", test.name)
+		assert.Equal(t, test.expected.key, test.actual.CheckKey, "Key mismatch for %s", test.name)
+		assert.Equal(t, test.expected.id, test.actual.ID, "ID mismatch for %s", test.name)
+		assert.Equal(t, test.expected.result, test.actual.CheckValue, "Result mismatch for %s", test.name)
 	}
 }
 

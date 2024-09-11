@@ -19,12 +19,14 @@ type GetAuthor interface {
 	GetName() string
 	GetType() string
 	GetEmail() string
+	GetPhone() string
 }
 
 type Author struct {
 	Name       string
 	Email      string
 	AuthorType string // person or org
+	Phone      string
 }
 
 func (a Author) GetName() string {
@@ -37,4 +39,8 @@ func (a Author) GetType() string {
 
 func (a Author) GetEmail() string {
 	return a.Email
+}
+
+func (a Author) GetPhone() string {
+	return a.Phone
 }

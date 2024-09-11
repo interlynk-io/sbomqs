@@ -76,6 +76,7 @@ const (
 	SBOM_DELIVERY_METHOD
 	SBOM_SCOPE
 	PACK_INFO
+	SBOM_TYPE
 	PACK_EXT_REF
 )
 
@@ -120,7 +121,7 @@ func bsiSpec(doc sbom.Document) *db.Record {
 		result = v
 		score = 10.0
 	}
-	return db.NewRecordStmt(SBOM_SPEC, "doc", result, score)
+	return db.NewRecordStmt(SBOM_SPEC, "doc", result, score, "")
 }
 
 func bsiSpecVersion(doc sbom.Document) *db.Record {
@@ -144,7 +145,7 @@ func bsiSpecVersion(doc sbom.Document) *db.Record {
 		}
 	}
 
-	return db.NewRecordStmt(SBOM_SPEC_VERSION, "doc", result, score)
+	return db.NewRecordStmt(SBOM_SPEC_VERSION, "doc", result, score, "")
 }
 
 func bsiBuildPhase(doc sbom.Document) *db.Record {
@@ -159,7 +160,7 @@ func bsiBuildPhase(doc sbom.Document) *db.Record {
 		score = 10.0
 	}
 
-	return db.NewRecordStmt(SBOM_BUILD, "doc", result, score)
+	return db.NewRecordStmt(SBOM_BUILD, "doc", result, score, "")
 }
 
 func bsiSbomDepth(doc sbom.Document) *db.Record {
@@ -173,7 +174,7 @@ func bsiSbomDepth(doc sbom.Document) *db.Record {
 	result = fmt.Sprintf("doc has %d dependencies", totalDependencies)
 
 	if len(doc.Relations()) == 0 {
-		return db.NewRecordStmt(SBOM_DEPTH, "doc", "no-relationships", 0.0)
+		return db.NewRecordStmt(SBOM_DEPTH, "doc", "no-relationships", 0.0, "")
 	}
 
 	primary, _ := lo.Find(doc.Components(), func(c sbom.GetComponent) bool {
@@ -181,18 +182,18 @@ func bsiSbomDepth(doc sbom.Document) *db.Record {
 	})
 
 	if !primary.HasRelationShips() {
-		return db.NewRecordStmt(SBOM_DEPTH, "doc", "no-primary-relationships", 0.0)
+		return db.NewRecordStmt(SBOM_DEPTH, "doc", "no-primary-relationships", 0.0, "")
 	}
 
 	if primary.RelationShipState() == "complete" {
-		return db.NewRecordStmt(SBOM_DEPTH, "doc", "complete", 10.0)
+		return db.NewRecordStmt(SBOM_DEPTH, "doc", "complete", 10.0, "")
 	}
 
 	if primary.HasRelationShips() {
-		return db.NewRecordStmt(SBOM_DEPTH, "doc", "unattested-has-relationships", 5.0)
+		return db.NewRecordStmt(SBOM_DEPTH, "doc", "unattested-has-relationships", 5.0, "")
 	}
 
-	return db.NewRecordStmt(SBOM_DEPTH, "doc", result, score)
+	return db.NewRecordStmt(SBOM_DEPTH, "doc", result, score, "")
 }
 
 func bsiCreator(doc sbom.Document) *db.Record {
@@ -208,7 +209,7 @@ func bsiCreator(doc sbom.Document) *db.Record {
 	}
 
 	if result != "" {
-		return db.NewRecordStmt(SBOM_CREATOR, "doc", result, score)
+		return db.NewRecordStmt(SBOM_CREATOR, "doc", result, score, "")
 	}
 
 	supplier := doc.Supplier()
@@ -220,7 +221,7 @@ func bsiCreator(doc sbom.Document) *db.Record {
 		}
 
 		if result != "" {
-			return db.NewRecordStmt(SBOM_CREATOR, "doc", result, score)
+			return db.NewRecordStmt(SBOM_CREATOR, "doc", result, score, "")
 		}
 
 		if supplier.GetURL() != "" {
@@ -229,20 +230,20 @@ func bsiCreator(doc sbom.Document) *db.Record {
 		}
 
 		if result != "" {
-			return db.NewRecordStmt(SBOM_CREATOR, "doc", result, score)
+			return db.NewRecordStmt(SBOM_CREATOR, "doc", result, score, "")
 		}
 
 		if supplier.GetContacts() != nil {
 			for _, contact := range supplier.GetContacts() {
-				if contact.Email() != "" {
-					result = contact.Email()
+				if contact.GetEmail() != "" {
+					result = contact.GetEmail()
 					score = 10.0
 					break
 				}
 			}
 
 			if result != "" {
-				return db.NewRecordStmt(SBOM_CREATOR, "doc", result, score)
+				return db.NewRecordStmt(SBOM_CREATOR, "doc", result, score, "")
 			}
 		}
 	}
@@ -256,7 +257,7 @@ func bsiCreator(doc sbom.Document) *db.Record {
 		}
 
 		if result != "" {
-			return db.NewRecordStmt(SBOM_CREATOR, "doc", result, score)
+			return db.NewRecordStmt(SBOM_CREATOR, "doc", result, score, "")
 		}
 
 		if manufacturer.GetURL() != "" {
@@ -265,24 +266,24 @@ func bsiCreator(doc sbom.Document) *db.Record {
 		}
 
 		if result != "" {
-			return db.NewRecordStmt(SBOM_CREATOR, "doc", result, score)
+			return db.NewRecordStmt(SBOM_CREATOR, "doc", result, score, "")
 		}
 
 		if manufacturer.GetContacts() != nil {
 			for _, contact := range manufacturer.GetContacts() {
-				if contact.Email() != "" {
-					result = contact.Email()
+				if contact.GetEmail() != "" {
+					result = contact.GetEmail()
 					score = 10.0
 					break
 				}
 			}
 
 			if result != "" {
-				return db.NewRecordStmt(SBOM_CREATOR, "doc", result, score)
+				return db.NewRecordStmt(SBOM_CREATOR, "doc", result, score, "")
 			}
 		}
 	}
-	return db.NewRecordStmt(SBOM_CREATOR, "doc", "", 0.0)
+	return db.NewRecordStmt(SBOM_CREATOR, "doc", "", 0.0, "")
 }
 
 func bsiTimestamp(doc sbom.Document) *db.Record {
@@ -293,24 +294,24 @@ func bsiTimestamp(doc sbom.Document) *db.Record {
 		score = 10.0
 	}
 
-	return db.NewRecordStmt(SBOM_TIMESTAMP, "doc", result, score)
+	return db.NewRecordStmt(SBOM_TIMESTAMP, "doc", result, score, "")
 }
 
 func bsiSbomURI(doc sbom.Document) *db.Record {
 	uri := doc.Spec().URI()
 
 	if uri != "" {
-		return db.NewRecordStmt(SBOM_URI, "doc", uri, 10.0)
+		return db.NewRecordStmt(SBOM_URI, "doc", uri, 10.0, "")
 	}
 
-	return db.NewRecordStmt(SBOM_URI, "doc", "", 0)
+	return db.NewRecordStmt(SBOM_URI, "doc", "", 0, "")
 }
 
 func bsiComponents(doc sbom.Document) []*db.Record {
 	records := []*db.Record{}
 
 	if len(doc.Components()) == 0 {
-		records := append(records, db.NewRecordStmt(SBOM_COMPONENTS, "doc", "", 0.0))
+		records := append(records, db.NewRecordStmt(SBOM_COMPONENTS, "doc", "", 0.0, ""))
 		return records
 	}
 	// map package ID to Package Name
@@ -331,25 +332,25 @@ func bsiComponents(doc sbom.Document) []*db.Record {
 		records = append(records, bsiComponentOtherUniqIDs(component))
 	}
 
-	records = append(records, db.NewRecordStmt(SBOM_COMPONENTS, "doc", "present", 10.0))
+	records = append(records, db.NewRecordStmt(SBOM_COMPONENTS, "doc", "present", 10.0, ""))
 
 	return records
 }
 
 func bsiComponentDepth(component sbom.GetComponent) *db.Record {
 	if !component.HasRelationShips() {
-		return db.NewRecordStmt(COMP_DEPTH, component.GetName(), "no-relationships", 0.0)
+		return db.NewRecordStmt(COMP_DEPTH, component.GetID(), "no-relationships", 0.0, "")
 	}
 
 	if component.RelationShipState() == "complete" {
-		return db.NewRecordStmt(COMP_DEPTH, component.GetName(), "complete", 10.0)
+		return db.NewRecordStmt(COMP_DEPTH, component.GetID(), "complete", 10.0, "")
 	}
 
 	if component.HasRelationShips() {
-		return db.NewRecordStmt(COMP_DEPTH, component.GetName(), "unattested-has-relationships", 5.0)
+		return db.NewRecordStmt(COMP_DEPTH, component.GetID(), "unattested-has-relationships", 5.0, "")
 	}
 
-	return db.NewRecordStmt(COMP_DEPTH, component.GetName(), "non-compliant", 0.0)
+	return db.NewRecordStmt(COMP_DEPTH, component.GetID(), "non-compliant", 0.0, "")
 }
 
 func bsiComponentLicense(component sbom.GetComponent) *db.Record {
@@ -357,7 +358,8 @@ func bsiComponentLicense(component sbom.GetComponent) *db.Record {
 	score := 0.0
 
 	if len(licenses) == 0 {
-		return db.NewRecordStmt(COMP_LICENSE, component.GetName(), "not-compliant", score)
+		// fmt.Printf("component %s : %s has no licenses\n", component.Name(), component.Version())
+		return db.NewRecordStmt(COMP_LICENSE, component.GetID(), "not-compliant", score, "")
 	}
 
 	var spdx, aboutcode, custom int
@@ -385,10 +387,10 @@ func bsiComponentLicense(component sbom.GetComponent) *db.Record {
 
 	if total != len(licenses) {
 		score = 0.0
-		return db.NewRecordStmt(COMP_LICENSE, component.GetName(), "not-compliant", score)
+		return db.NewRecordStmt(COMP_LICENSE, component.GetID(), "not-compliant", score, "")
 	}
 
-	return db.NewRecordStmt(COMP_LICENSE, component.GetName(), "compliant", 10.0)
+	return db.NewRecordStmt(COMP_LICENSE, component.GetID(), "compliant", 10.0, "")
 }
 
 func bsiComponentSourceHash(component sbom.GetComponent) *db.Record {
@@ -462,27 +464,27 @@ func bsiComponentHash(component sbom.GetComponent) *db.Record {
 		}
 	}
 
-	return db.NewRecordStmt(COMP_HASH, component.GetName(), result, score)
+	return db.NewRecordStmt(COMP_HASH, component.GetID(), result, score, "")
 }
 
 func bsiComponentVersion(component sbom.GetComponent) *db.Record {
 	result := component.GetVersion()
 
 	if result != "" {
-		return db.NewRecordStmt(COMP_VERSION, component.GetName(), result, 10.0)
+		return db.NewRecordStmt(COMP_VERSION, component.GetID(), result, 10.0, "")
 	}
 
-	return db.NewRecordStmt(COMP_VERSION, component.GetName(), "", 0.0)
+	return db.NewRecordStmt(COMP_VERSION, component.GetID(), "", 0.0, "")
 }
 
 func bsiComponentName(component sbom.GetComponent) *db.Record {
 	result := component.GetName()
 
 	if result != "" {
-		return db.NewRecordStmt(COMP_NAME, component.GetName(), result, 10.0)
+		return db.NewRecordStmt(COMP_NAME, component.GetID(), result, 10.0, "")
 	}
 
-	return db.NewRecordStmt(COMP_NAME, component.GetName(), "", 0.0)
+	return db.NewRecordStmt(COMP_NAME, component.GetID(), "", 0.0, "")
 }
 
 func bsiComponentCreator(component sbom.GetComponent) *db.Record {
@@ -497,7 +499,7 @@ func bsiComponentCreator(component sbom.GetComponent) *db.Record {
 		}
 
 		if result != "" {
-			return db.NewRecordStmt(COMP_CREATOR, component.GetName(), result, score)
+			return db.NewRecordStmt(COMP_CREATOR, component.GetID(), result, score, "")
 		}
 
 		if supplier.GetURL() != "" {
@@ -506,20 +508,20 @@ func bsiComponentCreator(component sbom.GetComponent) *db.Record {
 		}
 
 		if result != "" {
-			return db.NewRecordStmt(COMP_CREATOR, component.GetName(), result, score)
+			return db.NewRecordStmt(COMP_CREATOR, component.GetID(), result, score, "")
 		}
 
 		if supplier.GetContacts() != nil {
 			for _, contact := range supplier.GetContacts() {
-				if contact.Email() != "" {
-					result = contact.Email()
+				if contact.GetEmail() != "" {
+					result = contact.GetEmail()
 					score = 10.0
 					break
 				}
 			}
 
 			if result != "" {
-				return db.NewRecordStmt(COMP_CREATOR, component.GetName(), result, score)
+				return db.NewRecordStmt(COMP_CREATOR, component.GetID(), result, score, "")
 			}
 		}
 	}
@@ -533,7 +535,7 @@ func bsiComponentCreator(component sbom.GetComponent) *db.Record {
 		}
 
 		if result != "" {
-			return db.NewRecordStmt(COMP_CREATOR, component.GetName(), result, score)
+			return db.NewRecordStmt(COMP_CREATOR, component.GetID(), result, score, "")
 		}
 
 		if manufacturer.GetURL() != "" {
@@ -542,23 +544,23 @@ func bsiComponentCreator(component sbom.GetComponent) *db.Record {
 		}
 
 		if result != "" {
-			return db.NewRecordStmt(COMP_CREATOR, component.GetName(), result, score)
+			return db.NewRecordStmt(COMP_CREATOR, component.GetID(), result, score, "")
 		}
 
 		if manufacturer.GetContacts() != nil {
 			for _, contact := range manufacturer.GetContacts() {
-				if contact.Email() != "" {
-					result = contact.Email()
+				if contact.GetEmail() != "" {
+					result = contact.GetEmail()
 					score = 10.0
 					break
 				}
 			}
 
 			if result != "" {
-				return db.NewRecordStmt(COMP_CREATOR, component.GetName(), result, score)
+				return db.NewRecordStmt(COMP_CREATOR, component.GetID(), result, score, "")
 			}
 		}
 	}
 
-	return db.NewRecordStmt(COMP_CREATOR, component.GetName(), "", 0.0)
+	return db.NewRecordStmt(COMP_CREATOR, component.GetID(), "", 0.0, "")
 }

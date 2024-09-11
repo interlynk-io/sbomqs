@@ -56,6 +56,7 @@ type Params struct {
 	Ntia bool
 	Bsi  bool
 	Oct  bool
+	Fsct bool
 }
 
 func Run(ctx context.Context, ep *Params) error {
