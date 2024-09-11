@@ -3,6 +3,7 @@ package compliance
 import (
 	"testing"
 
+	"github.com/interlynk-io/sbomqs/pkg/compliance/db"
 	"github.com/interlynk-io/sbomqs/pkg/licenses"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 	"gotest.tools/assert"
@@ -82,7 +83,7 @@ type desired struct {
 func TestOctSbomPass(t *testing.T) {
 	doc := createDummyDocument()
 	testCases := []struct {
-		actual   *record
+		actual   *db.Record
 		expected desired
 	}{
 		{
@@ -319,10 +320,10 @@ func TestOctSbomPass(t *testing.T) {
 	}
 
 	for _, test := range testCases {
-		assert.Equal(t, test.expected.score, test.actual.score)
-		assert.Equal(t, test.expected.key, test.actual.checkKey)
-		assert.Equal(t, test.expected.id, test.actual.id)
-		assert.Equal(t, test.expected.result, test.actual.checkValue)
+		assert.Equal(t, test.expected.score, test.actual.Score)
+		assert.Equal(t, test.expected.key, test.actual.CheckKey)
+		assert.Equal(t, test.expected.id, test.actual.ID)
+		assert.Equal(t, test.expected.result, test.actual.CheckValue)
 	}
 }
 
@@ -392,7 +393,7 @@ func createFailureDummyDocument() sbom.Document {
 func TestOctSbomFail(t *testing.T) {
 	doc := createFailureDummyDocument()
 	testCases := []struct {
-		actual   *record
+		actual   *db.Record
 		expected desired
 	}{
 		{
@@ -605,9 +606,9 @@ func TestOctSbomFail(t *testing.T) {
 	}
 
 	for _, test := range testCases {
-		assert.Equal(t, test.expected.score, test.actual.score)
-		assert.Equal(t, test.expected.key, test.actual.checkKey)
-		assert.Equal(t, test.expected.id, test.actual.id)
-		assert.Equal(t, test.expected.result, test.actual.checkValue)
+		assert.Equal(t, test.expected.score, test.actual.Score)
+		assert.Equal(t, test.expected.key, test.actual.CheckKey)
+		assert.Equal(t, test.expected.id, test.actual.ID)
+		assert.Equal(t, test.expected.result, test.actual.CheckValue)
 	}
 }

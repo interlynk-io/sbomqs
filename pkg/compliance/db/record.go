@@ -12,36 +12,36 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package compliance
+package db
 
-type record struct {
-	checkKey   int
-	checkValue string
-	id         string
-	score      float64
-	required   bool
+type Record struct {
+	CheckKey   int
+	CheckValue string
+	ID         string
+	Score      float64
+	Required   bool
 }
 
-func newRecord() *record {
-	return &record{}
+func NewRecord() *Record {
+	return &Record{}
 }
 
-func newRecordStmt(key int, id, value string, score float64) *record {
-	r := newRecord()
-	r.checkKey = key
-	r.checkValue = value
-	r.id = id
-	r.score = score
-	r.required = true
+func NewRecordStmt(key int, id, value string, score float64) *Record {
+	r := NewRecord()
+	r.CheckKey = key
+	r.CheckValue = value
+	r.ID = id
+	r.Score = score
+	r.Required = true
 	return r
 }
 
-func newRecordStmtOptional(key int, id, value string, score float64) *record {
-	r := newRecord()
-	r.checkKey = key
-	r.checkValue = value
-	r.id = id
-	r.score = score
-	r.required = false
+func NewRecordStmtOptional(key int, id, value string, score float64) *Record {
+	r := NewRecord()
+	r.CheckKey = key
+	r.CheckValue = value
+	r.ID = id
+	r.Score = score
+	r.Required = false
 	return r
 }

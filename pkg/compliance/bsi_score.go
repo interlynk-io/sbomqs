@@ -14,6 +14,8 @@
 
 package compliance
 
+import "github.com/interlynk-io/sbomqs/pkg/compliance/db"
+
 type bsiScoreResult struct {
 	id              string
 	requiredScore   float64
@@ -58,8 +60,8 @@ func (r *bsiScoreResult) totalOptionalScore() float64 {
 	return r.optionalScore / float64(r.optionalRecords)
 }
 
-func bsiKeyIDScore(db *db, key int, id string) *bsiScoreResult {
-	records := db.getRecordsByKeyID(key, id)
+func bsiKeyIDScore(dtb *db.DB, key int, id string) *bsiScoreResult {
+	records := dtb.GetRecordsByKeyID(key, id)
 
 	if len(records) == 0 {
 		return newBsiScoreResult(id)
@@ -72,11 +74,11 @@ func bsiKeyIDScore(db *db, key int, id string) *bsiScoreResult {
 	optionalRecs := 0
 
 	for _, r := range records {
-		if r.required {
-			requiredScore += r.score
+		if r.Required {
+			requiredScore += r.Score
 			requiredRecs++
 		} else {
-			optionalScore += r.score
+			optionalScore += r.Score
 			optionalRecs++
 		}
 	}
@@ -90,8 +92,8 @@ func bsiKeyIDScore(db *db, key int, id string) *bsiScoreResult {
 	}
 }
 
-func bsiIDScore(db *db, id string) *bsiScoreResult {
-	records := db.getRecordsByID(id)
+func bsiIDScore(dtb *db.DB, id string) *bsiScoreResult {
+	records := dtb.GetRecordsByID(id)
 
 	if len(records) == 0 {
 		return newBsiScoreResult(id)
@@ -104,11 +106,11 @@ func bsiIDScore(db *db, id string) *bsiScoreResult {
 	optionalRecs := 0
 
 	for _, r := range records {
-		if r.required {
-			requiredScore += r.score
+		if r.Required {
+			requiredScore += r.Score
 			requiredRecs++
 		} else {
-			optionalScore += r.score
+			optionalScore += r.Score
 			optionalRecs++
 		}
 	}
@@ -122,13 +124,13 @@ func bsiIDScore(db *db, id string) *bsiScoreResult {
 	}
 }
 
-func bsiAggregateScore(db *db) *bsiScoreResult {
+func bsiAggregateScore(dtb *db.DB) *bsiScoreResult {
 	var results []bsiScoreResult
 	var finalResult bsiScoreResult
 
-	ids := db.getAllIDs()
+	ids := dtb.GetAllIDs()
 	for _, id := range ids {
-		results = append(results, *bsiIDScore(db, id))
+		results = append(results, *bsiIDScore(dtb, id))
 	}
 
 	for _, r := range results {
