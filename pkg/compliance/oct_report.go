@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/interlynk-io/sbomqs/pkg/compliance/db"
 	"github.com/olekukonko/tablewriter"
 	"sigs.k8s.io/release-utils/version"
 )
@@ -81,11 +82,11 @@ func newOctJSONReport() *octComplianceReport {
 	}
 }
 
-func octJSONReport(db *db, fileName string) {
+func octJSONReport(dtb *db.DB, fileName string) {
 	jr := newOctJSONReport()
 	jr.Run.FileName = fileName
 
-	score := octAggregateScore(db)
+	score := octAggregateScore(dtb)
 	summary := Summary{}
 	summary.MaxScore = 10.0
 	summary.TotalScore = score.totalScore()
@@ -93,35 +94,35 @@ func octJSONReport(db *db, fileName string) {
 	summary.TotalOptionalScore = score.totalOptionalScore()
 
 	jr.Summary = summary
-	jr.Sections = octConstructSections(db)
+	jr.Sections = octConstructSections(dtb)
 
 	o, _ := json.MarshalIndent(jr, "", "  ")
 	fmt.Println(string(o))
 }
 
-func octConstructSections(db *db) []octSection {
+func octConstructSections(dtb *db.DB) []octSection {
 	var sections []octSection
-	allIDs := db.getAllIDs()
+	allIDs := dtb.GetAllIDs()
 	for _, id := range allIDs {
-		records := db.getRecordsByID(id)
+		records := dtb.GetRecordsByID(id)
 
 		for _, r := range records {
-			section := octSectionDetails[r.checkKey]
+			section := octSectionDetails[r.CheckKey]
 			newSection := octSection{
 				Title:     section.Title,
 				ID:        section.ID,
 				DataField: section.DataField,
 				Required:  section.Required,
 			}
-			score := octKeyIDScore(db, r.checkKey, r.id)
+			score := octKeyIDScore(dtb, r.CheckKey, r.ID)
 			newSection.Score = score.totalScore()
-			if r.id == "doc" {
+			if r.ID == "doc" {
 				newSection.ElementID = "sbom"
 			} else {
-				newSection.ElementID = r.id
+				newSection.ElementID = r.ID
 			}
 
-			newSection.ElementResult = r.checkValue
+			newSection.ElementResult = r.CheckValue
 
 			sections = append(sections, newSection)
 		}
@@ -129,9 +130,9 @@ func octConstructSections(db *db) []octSection {
 	return sections
 }
 
-func octDetailedReport(db *db, fileName string) {
+func octDetailedReport(dtb *db.DB, fileName string) {
 	table := tablewriter.NewWriter(os.Stdout)
-	score := octAggregateScore(db)
+	score := octAggregateScore(dtb)
 
 	fmt.Printf("OpenChain Telco Report\n")
 	fmt.Printf("Compliance score by Interlynk Score:%0.1f RequiredScore:%0.1f OptionalScore:%0.1f for %s\n", score.totalScore(), score.totalRequiredScore(), score.totalOptionalScore(), fileName)
@@ -140,7 +141,7 @@ func octDetailedReport(db *db, fileName string) {
 	table.SetRowLine(true)
 	table.SetAutoMergeCellsByColumnIndex([]int{0})
 
-	sections := octConstructSections(db)
+	sections := octConstructSections(dtb)
 	for _, section := range sections {
 		sectionID := section.ID
 		if !section.Required {
@@ -151,8 +152,8 @@ func octDetailedReport(db *db, fileName string) {
 	table.Render()
 }
 
-func octBasicReport(db *db, fileName string) {
-	score := octAggregateScore(db)
+func octBasicReport(dtb *db.DB, fileName string) {
+	score := octAggregateScore(dtb)
 	fmt.Printf("OpenChain Telco Report\n")
 	fmt.Printf("Score:%0.1f RequiredScore:%0.1f OptionalScore:%0.1f for %s\n", score.totalScore(), score.totalRequiredScore(), score.totalOptionalScore(), fileName)
 }

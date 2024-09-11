@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	db "github.com/interlynk-io/sbomqs/pkg/compliance/db"
 	"github.com/olekukonko/tablewriter"
 	"sigs.k8s.io/release-utils/version"
 )
@@ -101,11 +102,11 @@ func newJSONReport() *bsiComplianceReport {
 	}
 }
 
-func bsiJSONReport(db *db, fileName string) {
+func bsiJSONReport(dtb *db.DB, fileName string) {
 	jr := newJSONReport()
 	jr.Run.FileName = fileName
 
-	score := bsiAggregateScore(db)
+	score := bsiAggregateScore(dtb)
 	summary := Summary{}
 	summary.MaxScore = 10.0
 	summary.TotalScore = score.totalScore()
@@ -113,35 +114,35 @@ func bsiJSONReport(db *db, fileName string) {
 	summary.TotalOptionalScore = score.totalOptionalScore()
 
 	jr.Summary = summary
-	jr.Sections = constructSections(db)
+	jr.Sections = constructSections(dtb)
 
 	o, _ := json.MarshalIndent(jr, "", "  ")
 	fmt.Println(string(o))
 }
 
-func constructSections(db *db) []bsiSection {
+func constructSections(dtb *db.DB) []bsiSection {
 	var sections []bsiSection
-	allIDs := db.getAllIDs()
+	allIDs := dtb.GetAllIDs()
 	for _, id := range allIDs {
-		records := db.getRecordsByID(id)
+		records := dtb.GetRecordsByID(id)
 
 		for _, r := range records {
-			section := bsiSectionDetails[r.checkKey]
+			section := bsiSectionDetails[r.CheckKey]
 			newSection := bsiSection{
 				Title:     section.Title,
 				ID:        section.ID,
 				DataField: section.DataField,
 				Required:  section.Required,
 			}
-			score := bsiKeyIDScore(db, r.checkKey, r.id)
+			score := bsiKeyIDScore(dtb, r.CheckKey, r.ID)
 			newSection.Score = score.totalScore()
-			if r.id == "doc" {
+			if r.ID == "doc" {
 				newSection.ElementID = "sbom"
 			} else {
-				newSection.ElementID = r.id
+				newSection.ElementID = r.ID
 			}
 
-			newSection.ElementResult = r.checkValue
+			newSection.ElementResult = r.CheckValue
 
 			sections = append(sections, newSection)
 		}
@@ -149,9 +150,9 @@ func constructSections(db *db) []bsiSection {
 	return sections
 }
 
-func bsiDetailedReport(db *db, fileName string) {
+func bsiDetailedReport(dtb *db.DB, fileName string) {
 	table := tablewriter.NewWriter(os.Stdout)
-	score := bsiAggregateScore(db)
+	score := bsiAggregateScore(dtb)
 
 	fmt.Printf("BSI TR-03183-2 v1.1 Compliance Report \n")
 	fmt.Printf("Compliance score by Interlynk Score:%0.1f RequiredScore:%0.1f OptionalScore:%0.1f for %s\n", score.totalScore(), score.totalRequiredScore(), score.totalOptionalScore(), fileName)
@@ -160,7 +161,7 @@ func bsiDetailedReport(db *db, fileName string) {
 	table.SetRowLine(true)
 	table.SetAutoMergeCellsByColumnIndex([]int{0})
 
-	sections := constructSections(db)
+	sections := constructSections(dtb)
 	for _, section := range sections {
 		sectionID := section.ID
 		if !section.Required {
@@ -171,8 +172,8 @@ func bsiDetailedReport(db *db, fileName string) {
 	table.Render()
 }
 
-func bsiBasicReport(db *db, fileName string) {
-	score := bsiAggregateScore(db)
+func bsiBasicReport(dtb *db.DB, fileName string) {
+	score := bsiAggregateScore(dtb)
 	fmt.Printf("BSI TR-03183-2 v1.1 Compliance Report\n")
 	fmt.Printf("Score:%0.1f RequiredScore:%0.1f OptionalScore:%0.1f for %s\n", score.totalScore(), score.totalRequiredScore(), score.totalOptionalScore(), fileName)
 }

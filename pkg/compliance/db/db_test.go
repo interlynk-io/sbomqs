@@ -1,4 +1,4 @@
-package compliance
+package db
 
 import (
 	"fmt"
@@ -11,15 +11,15 @@ const (
 )
 
 // Generate large data set
-func generateRecords(n int) []*record {
-	var records []*record
+func generateRecords(n int) []*Record {
+	var records []*Record
 	for i := 0; i < n; i++ {
-		records = append(records, &record{
-			checkKey:   rand.Intn(1000), // #nosec
-			checkValue: fmt.Sprintf("value_%d", i),
-			id:         fmt.Sprintf("id_%d", rand.Intn(1000)), // #nosec
-			score:      rand.Float64() * 100,                  // #nosec
-			required:   rand.Intn(2) == 0,                     // #nosec
+		records = append(records, &Record{
+			CheckKey:   rand.Intn(1000), // #nosec
+			CheckValue: fmt.Sprintf("value_%d", i),
+			ID:         fmt.Sprintf("id_%d", rand.Intn(1000)), // #nosec
+			Score:      rand.Float64() * 100,                  // #nosec
+			Required:   rand.Intn(2) == 0,                     // #nosec
 		})
 	}
 	return records
@@ -28,26 +28,26 @@ func generateRecords(n int) []*record {
 // Benchmark original db implementation
 func BenchmarkOriginalDB(b *testing.B) {
 	records := generateRecords(numRecords)
-	db := newDB()
+	db := NewDB()
 
 	// Benchmark insertion
 	b.Run("Insert", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			db.addRecords(records)
+			db.AddRecords(records)
 		}
 	})
 
 	// Benchmark retrieval by key
 	b.Run("GetByKey", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			db.getRecords(rand.Intn(1000)) // #nosec
+			db.GetRecords(rand.Intn(1000)) // #nosec
 		}
 	})
 
 	// Benchmark retrieval by ID
 	b.Run("GetByID", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			db.getRecordsByID(fmt.Sprintf("id_%d", rand.Intn(1000))) // #nosec
+			db.GetRecordsByID(fmt.Sprintf("id_%d", rand.Intn(1000))) // #nosec
 		}
 	})
 
@@ -56,14 +56,14 @@ func BenchmarkOriginalDB(b *testing.B) {
 		for i := 0; i < b.N; i++ {
 			key := rand.Intn(1000)                      // #nosec
 			id := fmt.Sprintf("id_%d", rand.Intn(1000)) // #nosec
-			db.getRecordsByKeyID(key, id)
+			db.GetRecordsByKeyID(key, id)
 		}
 	})
 
 	// Benchmark for retrieval of all IDs case
 	b.Run("GetAllIDs", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			db.getAllIDs()
+			db.GetAllIDs()
 		}
 	})
 }

@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/interlynk-io/sbomqs/pkg/compliance/db"
 	"github.com/olekukonko/tablewriter"
 	"sigs.k8s.io/release-utils/version"
 )
@@ -64,7 +65,7 @@ func newNtiaJSONReport() *ntiaComplianceReport {
 	}
 }
 
-func ntiaJSONReport(db *db, fileName string) {
+func ntiaJSONReport(db *db.DB, fileName string) {
 	jr := newNtiaJSONReport()
 	jr.Run.FileName = fileName
 
@@ -82,29 +83,29 @@ func ntiaJSONReport(db *db, fileName string) {
 	fmt.Println(string(o))
 }
 
-func ntiaConstructSections(db *db) []ntiaSection {
+func ntiaConstructSections(db *db.DB) []ntiaSection {
 	var sections []ntiaSection
-	allIDs := db.getAllIDs()
+	allIDs := db.GetAllIDs()
 	for _, id := range allIDs {
-		records := db.getRecordsByID(id)
+		records := db.GetRecordsByID(id)
 
 		for _, r := range records {
-			section := ntiaSectionDetails[r.checkKey]
+			section := ntiaSectionDetails[r.CheckKey]
 			newSection := ntiaSection{
 				Title:     section.Title,
 				ID:        section.ID,
 				DataField: section.DataField,
 				Required:  section.Required,
 			}
-			score := ntiaKeyIDScore(db, r.checkKey, r.id)
+			score := ntiaKeyIDScore(db, r.CheckKey, r.ID)
 			newSection.Score = score.totalScore()
-			if r.id == "doc" {
+			if r.ID == "doc" {
 				newSection.ElementID = "sbom"
 			} else {
-				newSection.ElementID = r.id
+				newSection.ElementID = r.ID
 			}
 
-			newSection.ElementResult = r.checkValue
+			newSection.ElementResult = r.CheckValue
 
 			sections = append(sections, newSection)
 		}
@@ -112,7 +113,7 @@ func ntiaConstructSections(db *db) []ntiaSection {
 	return sections
 }
 
-func ntiaDetailedReport(db *db, fileName string) {
+func ntiaDetailedReport(db *db.DB, fileName string) {
 	table := tablewriter.NewWriter(os.Stdout)
 	score := ntiaAggregateScore(db)
 
@@ -143,7 +144,7 @@ func ntiaDetailedReport(db *db, fileName string) {
 	table.Render()
 }
 
-func ntiaBasicReport(db *db, fileName string) {
+func ntiaBasicReport(db *db.DB, fileName string) {
 	score := ntiaAggregateScore(db)
 	fmt.Printf("NTIA Report\n")
 	fmt.Printf("Score:%0.1f RequiredScore:%0.1f OptionalScore:%0.1f for %s\n", score.totalScore(), score.totalRequiredScore(), score.totalOptionalScore(), fileName)
