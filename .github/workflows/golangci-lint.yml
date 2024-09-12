@@ -2,12 +2,16 @@
 name: golangci-lint
 
 on:
-  push:
-    branches:
-      - 'main'
   pull_request:
+    branches: main
+    types:
+      - opened
+      - reopened
+      - synchronize
 
-permissions: {}
+permissions:
+  contents: read
+
 
 jobs:
   golangci:
@@ -16,14 +20,19 @@ jobs:
 
     permissions:
       contents: read
+      pull-requests: read
 
     steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
-      - uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32 # v5.0.2
+      - name: Checkout mode
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+      
+      - name: Set up Go
+        uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32 # v5.0.2
         with:
           go-version: '1.22'
           check-latest: true
-      - name: golangci-lint
+
+      - name: Run golangci-lint
         uses: golangci/golangci-lint-action@a4f60bb28d35aeee14e6880718e0c85ff1882e64 # v6.0.1
         with:
           version: v1.59
