@@ -14,31 +14,31 @@
 
 package sbom
 
-type PrimaryComp interface {
-	Present() bool
-	ID() string
-	Dependencies() int
+type GetPrimaryComp interface {
+	IsPresent() bool
+	GetID() string
+	GetTotalNoOfDependencies() int
 }
 
-type primaryComp struct {
-	present         bool
-	id              string
-	dependecies     int
+type PrimaryComp struct {
+	Present         bool
+	ID              string
+	Dependecies     int
 	hasDependencies bool
 }
 
-func (pc *primaryComp) Present() bool {
-	return pc.present
+func (pc *PrimaryComp) IsPresent() bool {
+	return pc.Present
 }
 
-func (pc *primaryComp) ID() string {
-	return pc.id
+func (pc *PrimaryComp) GetID() string {
+	return pc.ID
 }
 
-func (pc *primaryComp) Dependencies() int {
-	return pc.dependecies
+func (pc *PrimaryComp) GetTotalNoOfDependencies() int {
+	return pc.Dependecies
 }
 
-func (pc *primaryComp) HasDependencies() bool {
+func (pc *PrimaryComp) HasDependencies() bool {
 	return pc.hasDependencies
 }

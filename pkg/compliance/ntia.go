@@ -30,6 +30,12 @@ var (
 	validFormats = []string{"json", "xml", "yaml", "yml", "tag-value"}
 )
 
+// nolint
+const (
+	SCORE_FULL = 10.0
+	SCORE_ZERO = 0.0
+)
+
 func ntiaResult(ctx context.Context, doc sbom.Document, fileName string, outFormat string) {
 	log := logger.FromContext(ctx)
 	log.Debug("compliance.ntiaResult()")
@@ -57,167 +63,155 @@ func ntiaResult(ctx context.Context, doc sbom.Document, fileName string, outForm
 
 // format
 func ntiaAutomationSpec(doc sbom.Document) *record {
+	result, score := "", SCORE_ZERO
 	spec := doc.Spec().GetSpecType()
-	result, score := "", 0.0
-
 	fileFormat := doc.Spec().FileFormat()
+
+	result = spec + ", " + fileFormat
+
 	if lo.Contains(validFormats, fileFormat) && lo.Contains(validSpec, spec) {
 		result = spec + ", " + fileFormat
-		score = 10.0
-	} else {
-		result = spec + ", " + fileFormat
+		score = SCORE_FULL
 	}
 	return newRecordStmt(SBOM_MACHINE_FORMAT, "Automation Support", result, score)
 }
 
 func ntiaSBOMDependency(doc sbom.Document) *record {
-	result, score := "", 0.0
-	// for doc.Components()
-	totalDependencies := doc.PrimaryComp().Dependencies()
+	result, score := "", SCORE_ZERO
+	totalRootDependencies := doc.PrimaryComp().GetTotalNoOfDependencies()
 
-	if totalDependencies > 0 {
-		score = 10.0
+	if totalRootDependencies > 0 {
+		score = SCORE_FULL
 	}
-	result = fmt.Sprintf("doc has %d depedencies", totalDependencies)
+	result = fmt.Sprintf("doc has %d dependencies", totalRootDependencies)
 
 	return newRecordStmt(SBOM_DEPENDENCY, "SBOM Data Fields", result, score)
 }
 
-// Required Sbom stuffs
 func ntiaSbomCreator(doc sbom.Document) *record {
 	spec := doc.Spec().GetSpecType()
-	result, score := "", 0.0
+	result, score := "", SCORE_ZERO
 
-	if spec == "spdx" {
-		name, email := "", ""
+	switch spec {
+	case "spdx":
 		if tools := doc.Tools(); tools != nil {
-			for _, tool := range tools {
-				if name = tool.GetName(); name != "" {
-					result = name
-					score = 10.0
-					break
-				}
+			if toolResult, found := getToolInfo(tools); found {
+				result = toolResult
+				score = SCORE_FULL
+				break
 			}
 		}
 		if authors := doc.Authors(); authors != nil {
-			for _, author := range authors {
-				if name = author.GetName(); name != "" {
-					result = name
-					score = 10.0
-					break
-				} else if email = author.GetEmail(); email != "" {
-					result = name
-					score = 10.0
-					break
-				}
-			}
-		}
-	} else if spec == "cyclonedx" {
-		for _, author := range doc.Authors() {
-			if author.GetEmail() != "" {
-				result = author.GetEmail()
-				score = 10.0
+			if authorResult, found := getAuthorInfo(authors); found {
+				result = authorResult
+				score = SCORE_FULL
 				break
 			}
 		}
-
+	case "cyclonedx":
+		if authors := doc.Authors(); authors != nil {
+			if authorResult, found := getAuthorInfo(authors); found {
+				result = authorResult
+				score = SCORE_FULL
+				break
+			}
+		}
 		if result != "" {
 			return newRecordStmt(SBOM_CREATOR, "SBOM Data Fields", result, score)
 		}
-
-		tools := doc.Tools()
-
-		for _, tool := range tools {
-			if name := tool.GetName(); name != "" {
-				result = name
-				score = 10.0
+		if tools := doc.Tools(); tools != nil {
+			if toolResult, found := getToolInfo(tools); found {
+				result = toolResult
+				score = SCORE_FULL
 				break
 			}
 		}
-
-		supplier := doc.Supplier()
-
-		if supplier != nil {
-			if supplier.GetEmail() != "" {
-				result = supplier.GetEmail()
-				score = 10.0
+		if supplier := doc.Supplier(); supplier != nil {
+			if supplierResult, found := getSupplierInfo(supplier); found {
+				result = supplierResult
+				score = SCORE_FULL
+				break
 			}
-
-			if result != "" {
-				return newRecordStmt(SBOM_CREATOR, "SBOM Data Fields", result, score)
-			}
-
-			if supplier.GetURL() != "" {
-				result = supplier.GetURL()
-				score = 10.0
-			}
-
-			if result != "" {
-				return newRecordStmt(SBOM_CREATOR, "SBOM Data Fields", result, score)
-			}
-
-			for _, contact := range supplier.GetContacts() {
-				if contact.Email() != "" {
-					result = contact.Email()
-					score = 10.0
-					break
-				}
-			}
-
-			if result != "" {
-				return newRecordStmt(SBOM_CREATOR, "SBOM Data Fields", result, score)
-			}
-
 		}
-
-		manufacturer := doc.Manufacturer()
-
-		if manufacturer != nil {
-			if manufacturer.GetEmail() != "" {
-				result = manufacturer.GetEmail()
-				score = 10.0
+		if manufacturer := doc.Manufacturer(); manufacturer != nil {
+			if manufacturerResult, found := getManufacturerInfo(manufacturer); found {
+				result = manufacturerResult
+				score = SCORE_FULL
+				break
 			}
-
-			if result != "" {
-				return newRecordStmt(SBOM_CREATOR, "SBOM Data Fields", result, score)
-			}
-
-			if manufacturer.GetURL() != "" {
-				result = manufacturer.GetURL()
-				score = 10.0
-			}
-
-			if result != "" {
-				return newRecordStmt(SBOM_CREATOR, "SBOM Data Fields", result, score)
-			}
-
-			for _, contact := range manufacturer.GetContacts() {
-				if contact.Email() != "" {
-					result = contact.Email()
-					score = 10.0
-					break
-				}
-			}
-
-			if result != "" {
-				return newRecordStmt(SBOM_CREATOR, "SBOM Data Fields", result, score)
-			}
-
 		}
 	}
+
 	return newRecordStmt(SBOM_CREATOR, "SBOM Data Fields", result, score)
 }
 
+func getManufacturerInfo(manufacturer sbom.Manufacturer) (string, bool) {
+	if manufacturer == nil {
+		return "", false
+	}
+	if email := manufacturer.GetEmail(); email != "" {
+		return email, true
+	}
+	if url := manufacturer.GetURL(); url != "" {
+		return url, true
+	}
+	for _, contact := range manufacturer.GetContacts() {
+		if email := contact.Email(); email != "" {
+			return email, true
+		}
+	}
+	return "", false
+}
+
+func getSupplierInfo(supplier sbom.GetSupplier) (string, bool) {
+	if supplier == nil {
+		return "", false
+	}
+	if email := supplier.GetEmail(); email != "" {
+		return email, true
+	}
+	if url := supplier.GetURL(); url != "" {
+		return url, true
+	}
+	for _, contact := range supplier.GetContacts() {
+		if email := contact.Email(); email != "" {
+			return email, true
+		}
+	}
+	return "", false
+}
+
+func getAuthorInfo(authors []sbom.GetAuthor) (string, bool) {
+	for _, author := range authors {
+		if email := author.GetEmail(); email != "" {
+			return email, true
+		}
+		if name := author.GetName(); name != "" {
+			return name, true
+		}
+	}
+	return "", false
+}
+
+func getToolInfo(tools []sbom.GetTool) (string, bool) {
+	for _, tool := range tools {
+		if name := tool.GetName(); name != "" {
+			return name, true
+		}
+	}
+	return "", false
+}
+
 func ntiaSbomCreatedTimestamp(doc sbom.Document) *record {
-	score := 0.0
+	score := SCORE_ZERO
 	result := doc.Spec().GetCreationTimestamp()
 
 	if result != "" {
 		_, err := time.Parse(time.RFC3339, result)
 		if err != nil {
-			score = 0.0
+			score = SCORE_ZERO
 		} else {
-			score = 10.0
+			score = SCORE_FULL
 		}
 	}
 	return newRecordStmt(SBOM_TIMESTAMP, "SBOM Data Fields", result, score)
@@ -239,7 +233,7 @@ func ntiaComponents(doc sbom.Document) []*record {
 	records := []*record{}
 
 	if len(doc.Components()) == 0 {
-		records = append(records, newRecordStmt(SBOM_COMPONENTS, "SBOM Data Fields", "absent", 0.0))
+		records = append(records, newRecordStmt(SBOM_COMPONENTS, "SBOM Data Fields", "absent", SCORE_ZERO))
 		return records
 	}
 
@@ -260,118 +254,66 @@ func ntiaComponents(doc sbom.Document) []*record {
 
 func ntiaComponentName(component sbom.GetComponent) *record {
 	if result := component.GetName(); result != "" {
-		return newRecordStmt(COMP_NAME, component.GetName(), result, 10.0)
+		return newRecordStmt(COMP_NAME, component.GetName(), result, SCORE_FULL)
 	}
-	return newRecordStmt(COMP_NAME, component.GetName(), "", 0.0)
+	return newRecordStmt(COMP_NAME, component.GetName(), "", SCORE_ZERO)
 }
 
 func ntiaComponentCreator(doc sbom.Document, component sbom.GetComponent) *record {
 	spec := doc.Spec().GetSpecType()
+	result, score := "", SCORE_ZERO
 
-	if spec == "spdx" {
-		if supplier := component.Suppliers().GetEmail(); supplier != "" {
-			return newRecordStmt(PACK_SUPPLIER, component.GetName(), supplier, 10.0)
+	switch spec {
+	case "spdx":
+		if supplier := component.Suppliers(); supplier != nil {
+			if supplierResult, found := getSupplierInfo(supplier); found {
+				result = supplierResult
+				score = SCORE_FULL
+				break
+			}
 		}
-	} else if spec == "cyclonedx" {
-		result := ""
-		score := 0.0
-
-		supplier := component.Suppliers()
-		if supplier != nil {
-			if supplier.GetEmail() != "" {
-				result = supplier.GetEmail()
-				score = 10.0
-			}
-
-			if result != "" {
-				return newRecordStmt(COMP_CREATOR, component.GetName(), result, score)
-			}
-
-			if supplier.GetURL() != "" {
-				result = supplier.GetURL()
-				score = 10.0
-			}
-
-			if result != "" {
-				return newRecordStmt(COMP_CREATOR, component.GetName(), result, score)
-			}
-
-			if supplier.GetContacts() != nil {
-				for _, contact := range supplier.GetContacts() {
-					if contact.Email() != "" {
-						result = contact.Email()
-						score = 10.0
-						break
-					}
-				}
-
-				if result != "" {
-					return newRecordStmt(COMP_CREATOR, component.GetName(), result, score)
-				}
+	case "cyclonedx":
+		if supplier := component.Suppliers(); supplier != nil {
+			if supplierResult, found := getSupplierInfo(supplier); found {
+				result = supplierResult
+				score = SCORE_FULL
+				break
 			}
 		}
 
-		manufacturer := component.Manufacturer()
-
-		if manufacturer != nil {
-			if manufacturer.GetEmail() != "" {
-				result = manufacturer.GetEmail()
-				score = 10.0
-			}
-
-			if result != "" {
-				return newRecordStmt(COMP_CREATOR, component.GetName(), result, score)
-			}
-
-			if manufacturer.GetEmail() != "" {
-				result = manufacturer.GetURL()
-				score = 10.0
-			}
-
-			if result != "" {
-				return newRecordStmt(COMP_CREATOR, component.GetName(), result, score)
-			}
-
-			if manufacturer.GetContacts() != nil {
-				for _, contact := range manufacturer.GetContacts() {
-					if contact.Email() != "" {
-						result = contact.Email()
-						score = 10.0
-						break
-					}
-				}
-
-				if result != "" {
-					return newRecordStmt(COMP_CREATOR, component.GetName(), result, score)
-				}
+		if manufacturer := component.Manufacturer(); manufacturer != nil {
+			if manufacturerResult, found := getManufacturerInfo(manufacturer); found {
+				result = manufacturerResult
+				score = SCORE_FULL
+				break
 			}
 		}
 	}
-	return newRecordStmt(COMP_CREATOR, component.GetName(), "", 0.0)
+	return newRecordStmt(COMP_CREATOR, component.GetName(), result, score)
 }
 
 func ntiaComponentVersion(component sbom.GetComponent) *record {
 	result := component.GetVersion()
 
 	if result != "" {
-		return newRecordStmt(COMP_VERSION, component.GetName(), result, 10.0)
+		return newRecordStmt(COMP_VERSION, component.GetName(), result, SCORE_FULL)
 	}
 
-	return newRecordStmt(COMP_VERSION, component.GetName(), "", 0.0)
+	return newRecordStmt(COMP_VERSION, component.GetName(), "", SCORE_ZERO)
 }
 
 func ntiaComponentDependencies(doc sbom.Document, component sbom.GetComponent) *record {
-	result, score := "", 0.0
+	result, score := "", SCORE_ZERO
 	var results []string
 
 	dependencies := doc.GetRelationships(component.GetID())
 	if dependencies == nil {
-		return newRecordStmt(COMP_DEPTH, component.GetName(), "no-relationships", 0.0)
+		return newRecordStmt(COMP_DEPTH, component.GetName(), "no-relationships", SCORE_ZERO)
 	}
 	for _, d := range dependencies {
 		componentName := extractName(d)
 		results = append(results, componentName)
-		score = 10.0
+		score = SCORE_FULL
 	}
 
 	if results != nil {
@@ -387,7 +329,7 @@ func ntiaComponentOtherUniqIDs(doc sbom.Document, component sbom.GetComponent) *
 	spec := doc.Spec().GetSpecType()
 
 	if spec == "spdx" {
-		result, score, totalElements, containPurlElement := "", 0.0, 0, 0
+		result, score, totalElements, containPurlElement := "", SCORE_ZERO, 0, 0
 
 		if extRefs := component.ExternalReferences(); extRefs != nil {
 			for _, extRef := range extRefs {
@@ -399,34 +341,31 @@ func ntiaComponentOtherUniqIDs(doc sbom.Document, component sbom.GetComponent) *
 			}
 		}
 		if containPurlElement != 0 {
-			score = (float64(containPurlElement) / float64(totalElements)) * 10.0
+			score = (float64(containPurlElement) / float64(totalElements)) * SCORE_FULL
 			x := fmt.Sprintf(":(%d/%d)", containPurlElement, totalElements)
 			result = result + x
 		}
 		return newRecordStmt(COMP_OTHER_UNIQ_IDS, component.GetName(), result, score)
 	} else if spec == "cyclonedx" {
 		result := ""
-		score := 0.0
 
 		purl := component.GetPurls()
 
 		if len(purl) > 0 {
 			result = string(purl[0])
-			score = 10.0
 
-			return newRecordStmtOptional(COMP_OTHER_UNIQ_IDS, component.GetName(), result, score)
+			return newRecordStmtOptional(COMP_OTHER_UNIQ_IDS, component.GetName(), result, SCORE_FULL)
 		}
 
 		cpes := component.GetCpes()
 
 		if len(cpes) > 0 {
 			result = string(cpes[0])
-			score = 10.0
 
-			return newRecordStmtOptional(COMP_OTHER_UNIQ_IDS, component.GetName(), result, score)
+			return newRecordStmtOptional(COMP_OTHER_UNIQ_IDS, component.GetName(), result, SCORE_FULL)
 		}
 
-		return newRecordStmtOptional(COMP_OTHER_UNIQ_IDS, component.GetName(), "", 0.0)
+		return newRecordStmtOptional(COMP_OTHER_UNIQ_IDS, component.GetName(), "", SCORE_ZERO)
 	}
-	return newRecordStmt(COMP_OTHER_UNIQ_IDS, component.GetName(), "", 0.0)
+	return newRecordStmt(COMP_OTHER_UNIQ_IDS, component.GetName(), "", SCORE_ZERO)
 }

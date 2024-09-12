@@ -164,12 +164,12 @@ func bsiBuildPhase(doc sbom.Document) *record {
 func bsiSbomDepth(doc sbom.Document) *record {
 	result, score := "", 0.0
 	// for doc.Components()
-	totalDependencies := doc.PrimaryComp().Dependencies()
+	totalDependencies := doc.PrimaryComp().GetTotalNoOfDependencies()
 
 	if totalDependencies > 0 {
 		score = 10.0
 	}
-	result = fmt.Sprintf("doc has %d depedencies", totalDependencies)
+	result = fmt.Sprintf("doc has %d dependencies", totalDependencies)
 
 	return newRecordStmt(SBOM_DEPTH, "doc", result, score)
 }

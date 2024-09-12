@@ -29,6 +29,6 @@ type Document interface {
 	Manufacturer() Manufacturer
 	Supplier() GetSupplier
 
-	PrimaryComp() PrimaryComp
+	PrimaryComp() GetPrimaryComp
 	GetRelationships(string) []string
 }

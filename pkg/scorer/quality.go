@@ -231,7 +231,7 @@ func docWithCreatorCheck(d sbom.Document, c *check) score {
 func docWithPrimaryComponentCheck(d sbom.Document, c *check) score {
 	s := newScoreFromCheck(c)
 
-	if d.PrimaryComp().Present() {
+	if d.PrimaryComp().IsPresent() {
 		s.setScore(10.0)
 		s.setDesc("primary component found")
 		return *s

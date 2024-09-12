@@ -36,22 +36,22 @@ var (
 )
 
 type CdxDoc struct {
-	doc          *cydx.BOM
-	format       FileFormat
-	ctx          context.Context
-	CdxSpec      *Specs
-	Comps        []GetComponent
-	CdxAuthors   []GetAuthor
-	CdxTools     []GetTool
-	rels         []GetRelation
-	logs         []string
-	lifecycles   []string
-	supplier     GetSupplier
-	manufacturer Manufacturer
-	compositions map[string]string
-	primaryComp  primaryComp
-	dependencies map[string][]string
-	composition  map[string]string
+	doc              *cydx.BOM
+	format           FileFormat
+	ctx              context.Context
+	CdxSpec          *Specs
+	Comps            []GetComponent
+	CdxAuthors       []GetAuthor
+	CdxTools         []GetTool
+	rels             []GetRelation
+	logs             []string
+	lifecycles       []string
+	supplier         GetSupplier
+	manufacturer     Manufacturer
+	compositions     map[string]string
+	PrimaryComponent PrimaryComp
+	Dependencies     map[string][]string
+	composition      map[string]string
 }
 
 func newCDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat) (Document, error) {
@@ -91,8 +91,8 @@ func newCDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat) (Documen
 	return doc, err
 }
 
-func (c CdxDoc) PrimaryComp() PrimaryComp {
-	return &c.primaryComp
+func (c CdxDoc) PrimaryComp() GetPrimaryComp {
+	return &c.PrimaryComponent
 }
 
 func (c CdxDoc) Spec() Spec {
@@ -132,7 +132,7 @@ func (c CdxDoc) Manufacturer() Manufacturer {
 }
 
 func (c CdxDoc) GetRelationships(componentID string) []string {
-	return c.dependencies[componentID]
+	return c.Dependencies[componentID]
 }
 
 func (c CdxDoc) GetComposition(componentID string) string {
@@ -293,7 +293,7 @@ func copyC(cdxc *cydx.Component, c *CdxDoc) *Component {
 		}
 	}
 
-	if cdxc.BOMRef == c.primaryComp.id {
+	if cdxc.BOMRef == c.PrimaryComponent.ID {
 		nc.isPrimary = true
 	}
 
@@ -520,10 +520,10 @@ func (c *CdxDoc) parsePrimaryCompAndRelationships() {
 		return
 	}
 
-	c.dependencies = make(map[string][]string)
+	c.Dependencies = make(map[string][]string)
 
-	c.primaryComp.present = true
-	c.primaryComp.id = c.doc.Metadata.Component.BOMRef
+	c.PrimaryComponent.Present = true
+	c.PrimaryComponent.ID = c.doc.Metadata.Component.BOMRef
 	var totalDependencies int
 
 	c.rels = []GetRelation{}
@@ -533,20 +533,21 @@ func (c *CdxDoc) parsePrimaryCompAndRelationships() {
 			nr := Relation{}
 			nr.From = r.Ref
 			nr.To = d
-			if r.Ref == c.primaryComp.id {
-				c.primaryComp.hasDependencies = true
+			if r.Ref == c.PrimaryComponent.ID {
+				c.PrimaryComponent.hasDependencies = true
 				totalDependencies++
 				c.rels = append(c.rels, nr)
-				c.dependencies[c.primaryComp.id] = append(c.dependencies[c.primaryComp.id], d)
+				c.Dependencies[c.PrimaryComponent.ID] = append(c.Dependencies[c.PrimaryComponent.ID], d)
 			} else {
 				c.rels = append(c.rels, nr)
-				c.dependencies[r.Ref] = append(c.dependencies[r.Ref], d)
+				c.Dependencies[r.Ref] = append(c.Dependencies[r.Ref], d)
 			}
 		}
 	}
-	c.primaryComp.dependecies = totalDependencies
+	c.PrimaryComponent.Dependecies = totalDependencies
 }
 
+// nolint
 func (c *CdxDoc) parseComposition() {
 	if c.doc.Metadata == nil {
 		return
@@ -562,6 +563,7 @@ func (c *CdxDoc) parseComposition() {
 	}
 }
 
+// nolint
 func compNormalise(compID string) string {
 	switch cydx.CompositionAggregate(compID) {
 	case cydx.CompositionAggregateComplete:

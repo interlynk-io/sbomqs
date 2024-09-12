@@ -23,7 +23,8 @@ func createSpdxDummyDocumentNtia() sbom.Document {
 
 	pack := sbom.NewComponent()
 	pack.Version = "v0.7.1"
-	pack.Name = "core-js"
+	pack.Name = "tool-golang"
+	pack.ID = "github/spdx/tools-golang@9db247b854b9634d0109153d515fd1a9efd5a1b1"
 
 	supplier := sbom.Supplier{
 		Email: "hello@interlynk.io",
@@ -34,6 +35,9 @@ func createSpdxDummyDocumentNtia() sbom.Document {
 		RefType: "purl",
 	}
 
+	var primary sbom.PrimaryComp
+	primary.Dependecies = 1
+
 	var externalReferences []sbom.GetExternalReference
 	externalReferences = append(externalReferences, extRef)
 	pack.ExternalRefs = externalReferences
@@ -41,18 +45,16 @@ func createSpdxDummyDocumentNtia() sbom.Document {
 	var packages []sbom.GetComponent
 	packages = append(packages, pack)
 
-	depend := sbom.Relation{
-		From: "github/spdx/tools-golang@9db247b854b9634d0109153d515fd1a9efd5a1b1",
-		To:   "github/spdx/gordf@b735bd5aac89fe25cad4ef488a95bc00ea549edd",
-	}
-	var dependencies []sbom.GetRelation
-	dependencies = append(dependencies, depend)
+	relationships := make(map[string][]string)
+	relationships["github/spdx/tools-golang@9db247b854b9634d0109153d515fd1a9efd5a1b1"] = append(relationships["github/spdx/tools-golang@9db247b854b9634d0109153d515fd1a9efd5a1b1"], "github/spdx/gordf@b735bd5aac89fe25cad4ef488a95bc00ea549edd")
 
+	CompIDWithName["github/spdx/gordf@b735bd5aac89fe25cad4ef488a95bc00ea549edd"] = "gordf"
 	doc := sbom.SpdxDoc{
-		SpdxSpec:  s,
-		Comps:     packages,
-		SpdxTools: creators,
-		Rels:      dependencies,
+		SpdxSpec:         s,
+		Comps:            packages,
+		SpdxTools:        creators,
+		Dependencies:     relationships,
+		PrimaryComponent: primary,
 	}
 	return doc
 }
@@ -102,12 +104,23 @@ func TestNtiaSpdxSbomPass(t *testing.T) {
 			},
 		},
 		{
+			name:   "SbomDependency",
+			actual: ntiaSBOMDependency(doc),
+			expected: desiredNtia{
+				score:  10.0,
+				result: "doc has 1 dependencies",
+				key:    SBOM_DEPENDENCY,
+				id:     "SBOM Data Fields",
+			},
+		},
+
+		{
 			name:   "ComponentCreator",
 			actual: ntiaComponentCreator(doc, doc.Components()[0]),
 			expected: desiredNtia{
 				score:  10.0,
 				result: "hello@interlynk.io",
-				key:    PACK_SUPPLIER,
+				key:    COMP_CREATOR,
 				id:     doc.Components()[0].GetName(),
 			},
 		},
@@ -117,7 +130,7 @@ func TestNtiaSpdxSbomPass(t *testing.T) {
 			actual: ntiaComponentName(doc.Components()[0]),
 			expected: desiredNtia{
 				score:  10.0,
-				result: "core-js",
+				result: "tool-golang",
 				key:    COMP_NAME,
 				id:     doc.Components()[0].GetName(),
 			},
@@ -177,7 +190,8 @@ func createCdxDummyDocumentNtia() sbom.Document {
 
 	comp := sbom.NewComponent()
 	comp.Version = "v0.7.1"
-	comp.Name = "core-js"
+	comp.Name = "tool-golang"
+	comp.ID = "github/spdx/tools-golang@9db247b854b9634d0109153d515fd1a9efd5a1b1"
 
 	supplier := sbom.Supplier{
 		Email: "hello@interlynk.io",
@@ -199,10 +213,20 @@ func createCdxDummyDocumentNtia() sbom.Document {
 	var components []sbom.GetComponent
 	components = append(components, comp)
 
+	relationships := make(map[string][]string)
+	relationships["github/spdx/tools-golang@9db247b854b9634d0109153d515fd1a9efd5a1b1"] = append(relationships["github/spdx/tools-golang@9db247b854b9634d0109153d515fd1a9efd5a1b1"], "github/spdx/gordf@b735bd5aac89fe25cad4ef488a95bc00ea549edd")
+
+	var primary sbom.PrimaryComp
+	primary.Dependecies = 1
+
+	CompIDWithName["github/spdx/gordf@b735bd5aac89fe25cad4ef488a95bc00ea549edd"] = "gordf"
+
 	doc := sbom.CdxDoc{
-		CdxSpec:    cdxSpec,
-		Comps:      components,
-		CdxAuthors: authors,
+		CdxSpec:          cdxSpec,
+		Comps:            components,
+		CdxAuthors:       authors,
+		Dependencies:     relationships,
+		PrimaryComponent: primary,
 	}
 	return doc
 }
@@ -245,13 +269,23 @@ func TestNtiaCdxSbomPass(t *testing.T) {
 			},
 		},
 		{
+			name:   "SbomDependency",
+			actual: ntiaSBOMDependency(doc),
+			expected: desiredNtia{
+				score:  10.0,
+				result: "doc has 1 dependencies",
+				key:    SBOM_DEPENDENCY,
+				id:     "SBOM Data Fields",
+			},
+		},
+		{
 			name:   "ComponentCreator",
 			actual: ntiaComponentCreator(doc, doc.Components()[0]),
 			expected: desiredNtia{
 				score:  10.0,
 				result: "hello@interlynk.io",
 				key:    COMP_CREATOR,
-				id:     doc.Components()[0].GetID(),
+				id:     doc.Components()[0].GetName(),
 			},
 		},
 		{
@@ -259,9 +293,9 @@ func TestNtiaCdxSbomPass(t *testing.T) {
 			actual: ntiaComponentName(doc.Components()[0]),
 			expected: desiredNtia{
 				score:  10.0,
-				result: "core-js",
+				result: "tool-golang",
 				key:    COMP_NAME,
-				id:     doc.Components()[0].GetID(),
+				id:     doc.Components()[0].GetName(),
 			},
 		},
 		{
@@ -271,7 +305,7 @@ func TestNtiaCdxSbomPass(t *testing.T) {
 				score:  10.0,
 				result: "v0.7.1",
 				key:    COMP_VERSION,
-				id:     doc.Components()[0].GetID(),
+				id:     doc.Components()[0].GetName(),
 			},
 		},
 		{
@@ -281,7 +315,17 @@ func TestNtiaCdxSbomPass(t *testing.T) {
 				score:  10.0,
 				result: "vivek",
 				key:    COMP_OTHER_UNIQ_IDS,
-				id:     doc.Components()[0].GetID(),
+				id:     doc.Components()[0].GetName(),
+			},
+		},
+		{
+			name:   "ComponentDependencies",
+			actual: ntiaComponentDependencies(doc, doc.Components()[0]),
+			expected: desiredNtia{
+				score:  10.0,
+				result: "gordf",
+				key:    COMP_DEPTH,
+				id:     doc.Components()[0].GetName(),
 			},
 		},
 	}
