@@ -15,20 +15,20 @@
 package sbom
 
 //counterfeiter:generate . Relation
-type Relation interface {
-	From() string
-	To() string
+type GetRelation interface {
+	GetFrom() string
+	GetTo() string
 }
 
-type relation struct {
-	from string
-	to   string
+type Relation struct {
+	From string
+	To   string
 }
 
-func (r relation) From() string {
-	return r.from
+func (r Relation) GetFrom() string {
+	return r.From
 }
 
-func (r relation) To() string {
-	return r.to
+func (r Relation) GetTo() string {
+	return r.To
 }

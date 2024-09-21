@@ -71,6 +71,7 @@ func setupEngineParams(cmd *cobra.Command, args []string) *engine.Params {
 	engParams.Detailed, _ = cmd.Flags().GetBool("detailed")
 	engParams.JSON, _ = cmd.Flags().GetBool("json")
 
+	engParams.Ntia, _ = cmd.Flags().GetBool("ntia")
 	// engParams.Ntia, _ = cmd.Flags().GetBool("ntia")
 	engParams.Bsi, _ = cmd.Flags().GetBool("bsi")
 	engParams.Oct, _ = cmd.Flags().GetBool("oct")
@@ -96,7 +97,7 @@ func init() {
 	complianceCmd.MarkFlagsMutuallyExclusive("json", "basic", "detailed")
 
 	// Standards control
-	// complianceCmd.Flags().BoolP("ntia", "n", false, "check for NTIA minimum elements compliance")
+	complianceCmd.Flags().BoolP("ntia", "n", false, "check for NTIA minimum elements compliance")
 	complianceCmd.Flags().BoolP("bsi", "c", false, "BSI TR-03183-2 v1.1 compliance")
 	// complianceCmd.MarkFlagsMutuallyExclusive("ntia", "cra")
 	complianceCmd.Flags().BoolP("oct", "t", false, "OpenChainTelco compliance")

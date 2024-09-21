@@ -20,14 +20,15 @@ package sbom
 type Document interface {
 	Spec() Spec
 	Components() []GetComponent
-	Relations() []Relation
-	Authors() []Author
+	Relations() []GetRelation
+	Authors() []GetAuthor
 	Tools() []GetTool
 	Logs() []string
-
-	PrimaryComponent() bool
 
 	Lifecycles() []string
 	Manufacturer() Manufacturer
 	Supplier() GetSupplier
+
+	PrimaryComp() GetPrimaryComp
+	GetRelationships(string) []string
 }

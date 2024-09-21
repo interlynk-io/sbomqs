@@ -269,45 +269,45 @@ func octComponents(doc sbom.Document) []*record {
 
 func octPackageName(component sbom.GetComponent) *record {
 	if result := component.GetName(); result != "" {
-		return newRecordStmt(PACK_NAME, component.GetID(), result, 10.0)
+		return newRecordStmt(PACK_NAME, component.GetName(), result, 10.0)
 	}
-	return newRecordStmt(PACK_NAME, component.GetID(), "", 0.0)
+	return newRecordStmt(PACK_NAME, component.GetName(), "", 0.0)
 }
 
 func octPackageSpdxID(component sbom.GetComponent) *record {
 	if result := component.GetSpdxID(); result != "" {
-		return newRecordStmt(PACK_SPDXID, component.GetID(), result, 10.0)
+		return newRecordStmt(PACK_SPDXID, component.GetName(), result, 10.0)
 	}
-	return newRecordStmt(PACK_SPDXID, component.GetID(), "", 0.0)
+	return newRecordStmt(PACK_SPDXID, component.GetName(), "", 0.0)
 }
 
 func octPackageVersion(component sbom.GetComponent) *record {
 	if result := component.GetVersion(); result != "" {
-		return newRecordStmt(PACK_VERSION, component.GetID(), result, 10.0)
+		return newRecordStmt(PACK_VERSION, component.GetName(), result, 10.0)
 	}
-	return newRecordStmt(PACK_VERSION, component.GetID(), "", 0.0)
+	return newRecordStmt(PACK_VERSION, component.GetName(), "", 0.0)
 }
 
 func octPackageSupplier(component sbom.GetComponent) *record {
 	if supplier := component.Suppliers().GetEmail(); supplier != "" {
-		return newRecordStmt(PACK_SUPPLIER, component.GetID(), supplier, 10.0)
+		return newRecordStmt(PACK_SUPPLIER, component.GetName(), supplier, 10.0)
 	}
-	return newRecordStmt(PACK_SUPPLIER, component.GetID(), "", 0.0)
+	return newRecordStmt(PACK_SUPPLIER, component.GetName(), "", 0.0)
 }
 
 func octPackageDownloadURL(component sbom.GetComponent) *record {
 	if result := component.GetDownloadLocationURL(); result != "" {
-		return newRecordStmt(PACK_DOWNLOAD_URL, component.GetID(), result, 10.0)
+		return newRecordStmt(PACK_DOWNLOAD_URL, component.GetName(), result, 10.0)
 	}
-	return newRecordStmt(PACK_DOWNLOAD_URL, component.GetID(), "", 0.0)
+	return newRecordStmt(PACK_DOWNLOAD_URL, component.GetName(), "", 0.0)
 }
 
 func octPackageFileAnalyzed(component sbom.GetComponent) *record {
 	if result := component.GetFileAnalyzed(); result {
-		return newRecordStmt(PACK_FILE_ANALYZED, component.GetID(), "yes", 10.0)
+		return newRecordStmt(PACK_FILE_ANALYZED, component.GetName(), "yes", 10.0)
 	}
 
-	return newRecordStmt(PACK_FILE_ANALYZED, component.GetID(), "no", 0.0)
+	return newRecordStmt(PACK_FILE_ANALYZED, component.GetName(), "no", 0.0)
 }
 
 func octPackageHash(component sbom.GetComponent) *record {
@@ -324,37 +324,37 @@ func octPackageHash(component sbom.GetComponent) *record {
 		}
 	}
 
-	return newRecordStmt(PACK_HASH, component.GetID(), result, score)
+	return newRecordStmt(PACK_HASH, component.GetName(), result, score)
 }
 
 func octPackageConLicense(component sbom.GetComponent) *record {
 	result := ""
 
 	if result = component.GetPackageLicenseConcluded(); result != "" && result != "NOASSERTION" && result != "NONE" {
-		return newRecordStmt(PACK_LICENSE_CON, component.GetID(), result, 10.0)
+		return newRecordStmt(PACK_LICENSE_CON, component.GetName(), result, 10.0)
 	}
 
-	return newRecordStmt(PACK_LICENSE_CON, component.GetID(), result, 0.0)
+	return newRecordStmt(PACK_LICENSE_CON, component.GetName(), result, 0.0)
 }
 
 func octPackageDecLicense(component sbom.GetComponent) *record {
 	result := ""
 
 	if result = component.GetPackageLicenseDeclared(); result != "" && result != "NOASSERTION" && result != "NONE" {
-		return newRecordStmt(PACK_LICENSE_DEC, component.GetID(), result, 10.0)
+		return newRecordStmt(PACK_LICENSE_DEC, component.GetName(), result, 10.0)
 	}
 
-	return newRecordStmt(PACK_LICENSE_DEC, component.GetID(), result, 0.0)
+	return newRecordStmt(PACK_LICENSE_DEC, component.GetName(), result, 0.0)
 }
 
 func octPackageCopyright(component sbom.GetComponent) *record {
 	result := ""
 
 	if result = component.GetCopyRight(); result != "" && result != "NOASSERTION" && result != "NONE" {
-		return newRecordStmt(PACK_COPYRIGHT, component.GetID(), result, 10.0)
+		return newRecordStmt(PACK_COPYRIGHT, component.GetName(), result, 10.0)
 	}
 
-	return newRecordStmt(PACK_COPYRIGHT, component.GetID(), result, 0.0)
+	return newRecordStmt(PACK_COPYRIGHT, component.GetName(), result, 0.0)
 }
 
 func octPackageExternalRefs(component sbom.GetComponent) *record {
@@ -374,5 +374,5 @@ func octPackageExternalRefs(component sbom.GetComponent) *record {
 		x := fmt.Sprintf(":(%d/%d)", containPurlElement, totalElements)
 		result = result + x
 	}
-	return newRecordStmt(PACK_EXT_REF, component.GetID(), result, score)
+	return newRecordStmt(PACK_EXT_REF, component.GetName(), result, score)
 }

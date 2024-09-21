@@ -170,7 +170,7 @@ func compWithAnyLookupIDCheck(d sbom.Document, c *check) score {
 	}
 
 	withAnyLookupID := lo.CountBy(d.Components(), func(c sbom.GetComponent) bool {
-		if len(c.Cpes()) > 0 || len(c.Purls()) > 0 {
+		if len(c.GetCpes()) > 0 || len(c.GetPurls()) > 0 {
 			return true
 		}
 		return false
@@ -197,7 +197,7 @@ func compWithMultipleIDCheck(d sbom.Document, c *check) score {
 	}
 
 	withMultipleID := lo.CountBy(d.Components(), func(c sbom.GetComponent) bool {
-		if len(c.Cpes()) > 0 && len(c.Purls()) > 0 {
+		if len(c.GetCpes()) > 0 && len(c.GetPurls()) > 0 {
 			return true
 		}
 		return false
@@ -231,7 +231,7 @@ func docWithCreatorCheck(d sbom.Document, c *check) score {
 func docWithPrimaryComponentCheck(d sbom.Document, c *check) score {
 	s := newScoreFromCheck(c)
 
-	if d.PrimaryComponent() {
+	if d.PrimaryComp().IsPresent() {
 		s.setScore(10.0)
 		s.setDesc("primary component found")
 		return *s

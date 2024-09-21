@@ -43,18 +43,19 @@ var (
 )
 
 type SpdxDoc struct {
-	doc                *spdx.Document
-	format             FileFormat
-	ctx                context.Context
-	SpdxSpec           *Specs
-	Comps              []GetComponent
-	authors            []Author
-	SpdxTools          []GetTool
-	rels               []Relation
-	logs               []string
-	primaryComponent   bool
-	primaryComponentID string
-	lifecycles         string
+	doc              *spdx.Document
+	format           FileFormat
+	ctx              context.Context
+	SpdxSpec         *Specs
+	Comps            []GetComponent
+	authors          []GetAuthor
+	SpdxTools        []GetTool
+	Rels             []GetRelation
+	logs             []string
+	PrimaryComponent PrimaryComp
+	lifecycles       string
+	Dependencies     map[string][]string
+	composition      map[string]string
 }
 
 func newSPDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat) (Document, error) {
@@ -96,6 +97,10 @@ func newSPDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat) (Docume
 	return doc, err
 }
 
+func (s SpdxDoc) PrimaryComp() GetPrimaryComp {
+	return &s.PrimaryComponent
+}
+
 func (s SpdxDoc) Spec() Spec {
 	return *s.SpdxSpec
 }
@@ -104,7 +109,7 @@ func (s SpdxDoc) Components() []GetComponent {
 	return s.Comps
 }
 
-func (s SpdxDoc) Authors() []Author {
+func (s SpdxDoc) Authors() []GetAuthor {
 	return s.authors
 }
 
@@ -112,16 +117,12 @@ func (s SpdxDoc) Tools() []GetTool {
 	return s.SpdxTools
 }
 
-func (s SpdxDoc) Relations() []Relation {
-	return s.rels
+func (s SpdxDoc) Relations() []GetRelation {
+	return s.Rels
 }
 
 func (s SpdxDoc) Logs() []string {
 	return s.logs
-}
-
-func (s SpdxDoc) PrimaryComponent() bool {
-	return s.primaryComponent
 }
 
 func (s SpdxDoc) Lifecycles() []string {
@@ -136,12 +137,19 @@ func (s SpdxDoc) Supplier() GetSupplier {
 	return nil
 }
 
+func (s SpdxDoc) GetRelationships(componentID string) []string {
+	return s.Dependencies[componentID]
+}
+
+func (s SpdxDoc) GetComposition(componentID string) string {
+	return s.composition[componentID]
+}
+
 func (s *SpdxDoc) parse() {
 	s.parseSpec()
 	s.parseAuthors()
 	s.parseTool()
-	s.parseRels()
-	s.parsePrimaryComponent()
+	s.parsePrimaryCompAndRelationships()
 	s.parseComps()
 }
 
@@ -200,8 +208,8 @@ func (s *SpdxDoc) parseComps() {
 		nc.CopyRight = sc.PackageCopyrightText
 		nc.FileAnalyzed = sc.FilesAnalyzed
 		nc.isReqFieldsPresent = s.pkgRequiredFields(index)
-		nc.purls = s.purls(index)
-		nc.cpes = s.cpes(index)
+		nc.Purls = s.purls(index)
+		nc.Cpes = s.cpes(index)
 		nc.Checksums = s.checksums(index)
 		nc.ExternalRefs = s.externalRefs(index)
 		nc.licenses = s.licenses(index)
@@ -236,26 +244,26 @@ func (s *SpdxDoc) parseComps() {
 			nc.DownloadLocation = sc.PackageDownloadLocation
 		}
 
-		nc.isPrimary = s.primaryComponentID == string(sc.PackageSPDXIdentifier)
+		nc.isPrimary = s.PrimaryComponent.ID == string(sc.PackageSPDXIdentifier)
 
-		fromRelsPresent := func(rels []Relation, id string) bool {
+		fromRelsPresent := func(rels []GetRelation, id string) bool {
 			for _, r := range rels {
-				if r.From() == id {
+				if strings.Contains(r.GetFrom(), id) {
 					return true
 				}
 			}
 			return false
 		}
 
-		nc.hasRelationships = fromRelsPresent(s.rels, string(sc.PackageSPDXIdentifier))
-		nc.relationshipState = "not-specified"
+		nc.hasRelationships = fromRelsPresent(s.Rels, string(sc.PackageSPDXIdentifier))
+		nc.RelationshipState = "not-specified"
 
 		s.Comps = append(s.Comps, nc)
 	}
 }
 
 func (s *SpdxDoc) parseAuthors() {
-	s.authors = []Author{}
+	s.authors = []GetAuthor{}
 
 	if s.doc.CreationInfo == nil {
 		return
@@ -266,47 +274,71 @@ func (s *SpdxDoc) parseAuthors() {
 		if ctType == "tool" {
 			continue
 		}
-		a := author{}
+		a := Author{}
 
 		entity := parseEntity(fmt.Sprintf("%s: %s", c.CreatorType, c.Creator))
 		if entity != nil {
-			a.name = entity.name
-			a.email = entity.email
-			a.authorType = ctType
+			a.Name = entity.name
+			a.Email = entity.email
+			a.AuthorType = ctType
 			s.authors = append(s.authors, a)
 		}
 	}
 }
 
-func (s *SpdxDoc) parseRels() {
-	s.rels = []Relation{}
-
+func (s *SpdxDoc) parsePrimaryCompAndRelationships() {
+	s.Rels = []GetRelation{}
+	s.Dependencies = make(map[string][]string)
 	var err error
 	var aBytes, bBytes []byte
+	var primaryComponent string
+	var totalDependencies int
 
 	for _, r := range s.doc.Relationships {
-		nr := relation{}
-		switch strings.ToUpper(r.Relationship) {
-		case spdx_common.TypeRelationshipDescribe:
-			fallthrough
-		case spdx_common.TypeRelationshipContains:
-			fallthrough
-		case spdx_common.TypeRelationshipDependsOn:
+		// check relation type DESCRIBE
+		if strings.ToUpper(r.Relationship) == spdx_common.TypeRelationshipDescribe {
+			bBytes, err = r.RefB.ElementRefID.MarshalJSON()
+			if err != nil {
+				continue
+			}
+			primaryComponent = string(bBytes)
+			s.PrimaryComponent.ID = primaryComponent
+			s.PrimaryComponent.Present = true
+		}
+	}
+
+	for _, r := range s.doc.Relationships {
+		if strings.ToUpper(r.Relationship) == spdx_common.TypeRelationshipDependsOn {
 			aBytes, err = r.RefA.MarshalJSON()
 			if err != nil {
 				continue
 			}
 
-			bBytes, err = r.RefB.MarshalJSON()
-			if err != nil {
-				continue
-			}
+			if string(aBytes) == primaryComponent {
+				bBytes, err = r.RefB.MarshalJSON()
+				if err != nil {
+					continue
+				}
 
-			nr.from = string(aBytes)
-			nr.to = string(bBytes)
-			s.rels = append(s.rels, nr)
+				nr := Relation{
+					From: primaryComponent,
+					To:   string(bBytes),
+				}
+				totalDependencies++
+
+				s.Rels = append(s.Rels, nr)
+				s.Dependencies[primaryComponent] = append(s.Dependencies[primaryComponent], string(bBytes))
+			} else {
+				nr := Relation{
+					From: string(aBytes),
+					To:   string(bBytes),
+				}
+				s.Dependencies[string(aBytes)] = append(s.Dependencies[string(aBytes)], string(bBytes))
+				s.Rels = append(s.Rels, nr)
+			}
 		}
 	}
+	s.PrimaryComponent.Dependecies = totalDependencies
 }
 
 // creationInfo.Creators.Tool
@@ -605,23 +637,27 @@ func (s *SpdxDoc) getSupplier(index int) *Supplier {
 	}
 }
 
-func (s *SpdxDoc) parsePrimaryComponent() {
-	pkgIDs := make(map[string]*spdx.Package)
+// nolint
+// https://github.com/spdx/ntia-conformance-checker/issues/100
+// Add spdx support to check both supplier and originator
+func (s *SpdxDoc) addSupplierName(index int) string {
+	supplier := s.getSupplier(index)
+	manufacturer := s.getManufacturer(index)
 
-	for _, pkg := range s.doc.Packages {
-		pkgIDs[string(pkg.PackageSPDXIdentifier)] = pkg
+	if supplier == nil && manufacturer == nil {
+		s.addToLogs(fmt.Sprintf("spdx doc pkg %s at index %d no supplier/originator found", s.doc.Packages[index].PackageName, index))
+		return ""
 	}
 
-	for _, r := range s.doc.Relationships {
-		if strings.ToUpper(r.Relationship) == spdx_common.TypeRelationshipDescribe {
-			_, ok := pkgIDs[string(r.RefB.ElementRefID)]
-			if ok {
-				s.primaryComponentID = string(r.RefB.ElementRefID)
-				s.primaryComponent = true
-				return
-			}
-		}
+	if supplier != nil {
+		return supplier.Name
 	}
+
+	if manufacturer != nil {
+		return manufacturer.Name
+	}
+
+	return ""
 }
 
 type entity struct {

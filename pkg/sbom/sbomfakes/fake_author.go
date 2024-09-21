@@ -42,7 +42,7 @@ type FakeAuthor struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeAuthor) Email() string {
+func (fake *FakeAuthor) GetEmail() string {
 	fake.emailMutex.Lock()
 	ret, specificReturn := fake.emailReturnsOnCall[len(fake.emailArgsForCall)]
 	fake.emailArgsForCall = append(fake.emailArgsForCall, struct {
@@ -95,7 +95,7 @@ func (fake *FakeAuthor) EmailReturnsOnCall(i int, result1 string) {
 	}{result1}
 }
 
-func (fake *FakeAuthor) Name() string {
+func (fake *FakeAuthor) GetName() string {
 	fake.nameMutex.Lock()
 	ret, specificReturn := fake.nameReturnsOnCall[len(fake.nameArgsForCall)]
 	fake.nameArgsForCall = append(fake.nameArgsForCall, struct {
@@ -148,7 +148,7 @@ func (fake *FakeAuthor) NameReturnsOnCall(i int, result1 string) {
 	}{result1}
 }
 
-func (fake *FakeAuthor) Type() string {
+func (fake *FakeAuthor) GetType() string {
 	fake.typeMutex.Lock()
 	ret, specificReturn := fake.typeReturnsOnCall[len(fake.typeArgsForCall)]
 	fake.typeArgsForCall = append(fake.typeArgsForCall, struct {
@@ -229,4 +229,4 @@ func (fake *FakeAuthor) recordInvocation(key string, args []interface{}) {
 	fake.invocations[key] = append(fake.invocations[key], args)
 }
 
-var _ sbom.Author = new(FakeAuthor)
+var _ sbom.GetAuthor = new(FakeAuthor)

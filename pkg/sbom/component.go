@@ -25,8 +25,8 @@ type GetComponent interface {
 	GetID() string
 	GetName() string
 	GetVersion() string
-	Cpes() []cpe.CPE
-	Purls() []purl.PURL
+	GetCpes() []cpe.CPE
+	GetPurls() []purl.PURL
 	Licenses() []licenses.License
 	GetChecksums() []GetChecksum
 	PrimaryPurpose() string
@@ -46,13 +46,14 @@ type GetComponent interface {
 	GetPackageLicenseDeclared() string
 	GetPackageLicenseConcluded() string
 	ExternalReferences() []GetExternalReference
+	GetComposition(string) string
 }
 
 type Component struct {
 	Name                    string
 	Version                 string
-	cpes                    []cpe.CPE
-	purls                   []purl.PURL
+	Cpes                    []cpe.CPE
+	Purls                   []purl.PURL
 	licenses                []licenses.License
 	Checksums               []GetChecksum
 	purpose                 string
@@ -66,13 +67,14 @@ type Component struct {
 	sourceCodeHash          string
 	isPrimary               bool
 	hasRelationships        bool
-	relationshipState       string
+	RelationshipState       string
 	Spdxid                  string
 	FileAnalyzed            bool
 	CopyRight               string
 	PackageLicenseConcluded string
 	PackageLicenseDeclared  string
 	ExternalRefs            []GetExternalReference
+	composition             map[string]string
 }
 
 func NewComponent() *Component {
@@ -87,12 +89,12 @@ func (c Component) GetVersion() string {
 	return c.Version
 }
 
-func (c Component) Purls() []purl.PURL {
-	return c.purls
+func (c Component) GetPurls() []purl.PURL {
+	return c.Purls
 }
 
-func (c Component) Cpes() []cpe.CPE {
-	return c.cpes
+func (c Component) GetCpes() []cpe.CPE {
+	return c.Cpes
 }
 
 func (c Component) Licenses() []licenses.License {
@@ -148,7 +150,7 @@ func (c Component) HasRelationShips() bool {
 }
 
 func (c Component) RelationShipState() string {
-	return c.relationshipState
+	return c.RelationshipState
 }
 
 func (c Component) GetSpdxID() string {
@@ -173,4 +175,8 @@ func (c Component) GetPackageLicenseDeclared() string {
 
 func (c Component) ExternalReferences() []GetExternalReference {
 	return c.ExternalRefs
+}
+
+func (c Component) GetComposition(componentID string) string {
+	return c.composition[componentID]
 }

@@ -66,3 +66,21 @@ The [OpenChain Telco](https://github.com/OpenChain-Project/Reference-Material/bl
 | Timing of SBOM delivery | 3.6 | `SBOM delivery time` | delivery time | |
 | Method of SBOM delivery | 3.7 | `SBOM delivery method` | delivery method | |
 | SBOM Scope | 3.8 | `SBOM scope` | sbom scope | |
+
+## NTIA minimum elements: SBOM Requirements for NTIA
+
+The [NTIA](https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/Publications/TechGuidelines/TR03183/BSI-TR-03183-2.pdf) specifies mandatory properties for an SBOM. Below is how we have derived all the values.
+
+| NTIA minimum elements | Section ID | NTIA Fields | CycloneDX |SPDX(2.3)  | Notes |
+| :---   | :---  |:---   |   :---  |  :---  | :---   |
+| Automation Support | 1.1 | `Machine Readable Format` |  BomFormat & data forrmat | SPDXversion & data forrmat | optional |
+| SBOM Data Fields | 2.1 |  `SBOM Authors` | metadata->authors, metadata->supplier | creator->Person, creator->organization or creator->tool  | Mandatory  |
+|  | 2.2 |  `SBOM Timestamp` |  metadata->timestamp  |  created  | Mandatory  |
+|  | 2.3 |  `SBOM Dependencies` | dependencies | relationships | Mandatory(number of dependencies primary comp have) |
+| Package Data Fields | 2.4 |  `Component Name` |  component->name | package->name | Mandatory |
+|  | 2.3 |  `Component Dependencies` | dependencies | relationships  | Optional(Component to component dependencies) |
+|  | 2.6 |  `Component Supplier Name`  |  component->supplier | packageSupplier, packageOriginator | Mandatory |
+|  | 2.7 |  `Component Version` | component->version | package->version | Mandatory |
+|  | 2.8 |  `Component with Uniq IDs` | component->cpe, component->purl | externalRef->cpe, externalRef->purl | Mandatory |
+| Practices and Processes | 3.1        |  `Depth`  | dependencies, compositions | relationships | optional |
+|  | 3.2 |  `Known Unknowns` |   |  | optional |
