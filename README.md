@@ -30,6 +30,10 @@ brew install sbomqs
 
 Other [installation options](#installation).
 
+# SBOM Platform - Free Tier
+
+Our new free tier provides a comprehensive solution to manage SBOMs (Software Bill of Materials) effortlessly, from centralized storage to vulnerability scanning, all while ensuring compliance and enhancing software supply chain security. Free tier is ideal for small teams. [Sign up](https://app.interlynk.io/)
+
 # SBOM Card
 
 [![SBOMCard](https://api.interlynk.io/api/v1/badges.svg?type=hcard&project_group_id=7f52093e-3d78-49cb-aeb1-6c977de9442e
