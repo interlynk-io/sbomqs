@@ -32,7 +32,8 @@ Other [installation options](#installation).
 
 # SBOM Platform - Free Tier
 
-Our new free tier provides a comprehensive solution to manage SBOMs (Software Bill of Materials) effortlessly, from centralized storage to vulnerability scanning, all while ensuring compliance and enhancing software supply chain security. Free tier is ideal for small teams. [Sign up](https://app.interlynk.io/)
+Our SBOM Automation Platform has a new free tier that provides a comprehensive solution to manage SBOMs (Software Bill of Materials) effortlessly. From centralized SBOM storage, built-in SBOM editor, continuous vulnerability mapping and assessment, and support for organizational policies, all while ensuring compliance and enhancing software supply chain security using integrated SBOM quality scores. The free tier is ideal for small teams. [Sign up](https://app.interlynk.io/)
+
 
 # SBOM Card
 
