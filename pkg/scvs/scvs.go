@@ -211,7 +211,7 @@ func IsSBOMInventoryContainsTestComponents(_ sbom.Document, s *scvsScore) bool {
 func IsSBOMHasPrimaryComponents(d sbom.Document, s *scvsScore) bool {
 	// get primaryComponentID: d.PrimaryComponent().GetID()
 	// Update this after NTIA get's merged
-	if d.PrimaryComponent() {
+	if d.PrimaryComp().IsPresent() {
 		s.setDesc("SBOM have primary comp")
 		return true
 	}
@@ -228,7 +228,7 @@ func IsComponentHasIdentityID(d sbom.Document, s *scvsScore) bool {
 	}
 
 	withIdentityID := lo.CountBy(d.Components(), func(c sbom.GetComponent) bool {
-		return len(c.Purls()) > 0 || len(c.Cpes()) > 0
+		return len(c.GetPurls()) > 0 || len(c.GetCpes()) > 0
 	})
 
 	if totalComponents > 0 {
@@ -250,7 +250,7 @@ func IsComponentHasOriginID(d sbom.Document, s *scvsScore) bool {
 	}
 
 	withOriginID := lo.CountBy(d.Components(), func(c sbom.GetComponent) bool {
-		return len(c.Purls()) > 0
+		return len(c.GetPurls()) > 0
 	})
 
 	if totalComponents > 0 {
