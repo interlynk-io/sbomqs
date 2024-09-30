@@ -352,7 +352,7 @@ func bsiComponents(doc sbom.Document) []*db.Record {
 }
 
 func bsiComponentDepth(doc sbom.Document, component sbom.GetComponent) *db.Record {
-	result, score := "", SCORE_ZERO
+	result, score := "", 0.0
 	var dependencies []string
 	var allDepByName []string
 
@@ -369,17 +369,16 @@ func bsiComponentDepth(doc sbom.Document, component sbom.GetComponent) *db.Recor
 				return db.NewRecordStmt(COMP_DEPTH, component.GetName(), "included-in", 10.0, "")
 			}
 			return db.NewRecordStmt(COMP_DEPTH, component.GetName(), "no-relationship", 0.0, "")
-		} else {
-			allDepByName = common.GetDependenciesByName(dependencies, bsiCompIDWithName)
-			if bsiPrimaryDependencies[common.GetID(component.GetSpdxID())] {
-				allDepByName = append([]string{"included-in"}, allDepByName...)
-				result = strings.Join(allDepByName, ", ")
-				return db.NewRecordStmt(COMP_DEPTH, component.GetName(), result, 10.0, "")
-			} else {
-				result = strings.Join(allDepByName, ", ")
-				return db.NewRecordStmt(COMP_DEPTH, component.GetName(), result, 10.0, "")
-			}
 		}
+		allDepByName = common.GetDependenciesByName(dependencies, bsiCompIDWithName)
+		if bsiPrimaryDependencies[common.GetID(component.GetSpdxID())] {
+			allDepByName = append([]string{"included-in"}, allDepByName...)
+			result = strings.Join(allDepByName, ", ")
+			return db.NewRecordStmt(COMP_DEPTH, component.GetName(), result, 10.0, "")
+		}
+		result = strings.Join(allDepByName, ", ")
+		return db.NewRecordStmt(COMP_DEPTH, component.GetName(), result, 10.0, "")
+
 	} else if doc.Spec().GetSpecType() == "cyclonedx" {
 		if component.GetPrimaryCompInfo().IsPresent() {
 			result = strings.Join(bsiGetAllPrimaryDepenciesByName, ", ")
@@ -393,17 +392,15 @@ func bsiComponentDepth(doc sbom.Document, component sbom.GetComponent) *db.Recor
 				return db.NewRecordStmt(COMP_DEPTH, component.GetName(), "included-in", 10.0, "")
 			}
 			return db.NewRecordStmt(COMP_DEPTH, component.GetName(), "no-relationship", 0.0, "")
-		} else {
-			allDepByName = common.GetDependenciesByName(dependencies, bsiCompIDWithName)
-			if bsiPrimaryDependencies[id] {
-				allDepByName = append([]string{"included-in"}, allDepByName...)
-				result = strings.Join(allDepByName, ", ")
-				return db.NewRecordStmt(COMP_DEPTH, component.GetName(), result, 10.0, "")
-			} else {
-				result = strings.Join(allDepByName, ", ")
-				return db.NewRecordStmt(COMP_DEPTH, component.GetName(), result, 10.0, "")
-			}
 		}
+		allDepByName = common.GetDependenciesByName(dependencies, bsiCompIDWithName)
+		if bsiPrimaryDependencies[id] {
+			allDepByName = append([]string{"included-in"}, allDepByName...)
+			result = strings.Join(allDepByName, ", ")
+			return db.NewRecordStmt(COMP_DEPTH, component.GetName(), result, 10.0, "")
+		}
+		result = strings.Join(allDepByName, ", ")
+		return db.NewRecordStmt(COMP_DEPTH, component.GetName(), result, 10.0, "")
 	}
 
 	return db.NewRecordStmt(COMP_DEPTH, component.GetName(), "no-relationships", 0.0, "")
