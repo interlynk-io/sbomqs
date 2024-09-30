@@ -1099,9 +1099,7 @@ func cdxCompWithPrimaryDependency() (sbom.Document, sbom.GetComponent) {
 	ComponentList[rel2.RefB.ID] = true
 	ComponentList[rel3.RefB.ID] = true
 
-	allDepByName := lo.Map(deps, func(d string, _ int) string {
-		return extractName(d)
-	})
+	allDepByName := getDepByName(deps)
 
 	areAllDepesPresentInCompList := lo.EveryBy(deps, func(id string) bool {
 		return ComponentList[id]

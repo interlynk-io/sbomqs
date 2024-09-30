@@ -16,6 +16,7 @@ package fsct
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"github.com/interlynk-io/sbomqs/pkg/compliance/common"
@@ -137,13 +138,14 @@ var (
 	PrimaryDependencies           = make(map[string]bool)
 	IsMinimimRequirementFulfilled bool
 	GetAllPrimaryDepenciesByName  = []string{}
-	// GetAllPrimaryDepenciesByID  = []string{}
 )
 
 func getDepByName(dependencies []string) []string {
-	return lo.Map(dependencies, func(d string, _ int) string {
-		return extractName(d)
-	})
+	var allDepByName []string
+	for _, dep := range dependencies {
+		allDepByName = append(allDepByName, CompIDWithName[dep])
+	}
+	return allDepByName
 }
 
 func areAllDependenciesPresentInCompList(dependencies []string) bool {
@@ -152,97 +154,30 @@ func areAllDependenciesPresentInCompList(dependencies []string) bool {
 	})
 }
 
-func extractName(comp string) string {
-	for x, y := range CompIDWithName {
-		if strings.Contains(comp, x) {
-			return y
-		}
-	}
-	return ""
-}
-
 func Components(doc sbom.Document) []*db.Record {
 	records := []*db.Record{}
 
 	if len(doc.Components()) == 0 {
 		return records
 	}
-	// map package ID to Package Name
-	for _, component := range doc.Components() {
-		if doc.Spec().GetSpecType() == "spdx" {
-			id := "SPDXRef-" + component.GetSpdxID()
-			CompIDWithName[id] = component.GetName()
-			ComponentList[id] = true
-			if component.GetPrimaryCompInfo().IsPresent() {
-				// get all dependencies of primary component
-				id := "SPDXRef-" + component.GetSpdxID()
-				dependencies := doc.GetRelationships(id)
-				for _, d := range dependencies {
-					PrimaryDependencies[d] = true
-				}
-			}
-		} else if doc.Spec().GetSpecType() == "cyclonedx" {
-			CompIDWithName[component.GetID()] = component.GetName()
-			ComponentList[component.GetID()] = true
-			if component.GetPrimaryCompInfo().IsPresent() {
-				// get all dependencies of primary component
-				dependencies := doc.GetRelationships(component.GetID())
-				for _, d := range dependencies {
-					PrimaryDependencies[d] = true
-				}
-			}
+	CompIDWithName = common.ComponentsNamesMapToIDs(doc)
+	ComponentList = common.ComponentsLists(doc)
+	PrimaryDependencies = common.MapPrimaryDependencies(doc)
+
+	dependencies := common.GetAllPrimaryComponentDependencies(doc)
+	if dependencies == nil {
+		if len(doc.Components()) == 1 {
+			IsMinimimRequirementFulfilled = true
 		}
 	}
+	areAllDepesPresentInCompList := common.CheckPrimaryDependenciesInComponentList(dependencies, ComponentList)
+	allDepByName := common.GetDependenciesByName(dependencies, CompIDWithName)
 
-	for _, component := range doc.Components() {
-		if doc.Spec().GetSpecType() == "spdx" {
-			if component.GetPrimaryCompInfo().IsPresent() {
-				id := "SPDXRef-" + component.GetSpdxID()
-				dependencies := doc.GetRelationships(id)
-				if dependencies == nil {
-					if len(doc.Components()) == 1 {
-						IsMinimimRequirementFulfilled = true
-					}
-				}
-
-				areAllDepesPresentInCompList := areAllDependenciesPresentInCompList(dependencies)
-
-				allDepByName := getDepByName(dependencies)
-
-				if areAllDepesPresentInCompList {
-					IsMinimimRequirementFulfilled = true
-					GetAllPrimaryDepenciesByName = allDepByName
-				}
-			}
-		} else if doc.Spec().GetSpecType() == "cyclonedx" {
-			// strings.Contains(s.PrimaryComponent.ID, string(sc.PackageSPDXIdentifier))
-			if component.GetPrimaryCompInfo().IsPresent() {
-				// get all direct-dependencies("dependsOn") of the primary component.
-				dependencies := doc.GetRelationships(component.GetID())
-				if dependencies == nil {
-					if len(doc.Components()) == 1 {
-						IsMinimimRequirementFulfilled = true
-					}
-				}
-
-				// Each of these listed dependencies must indeed have a corresponding
-				// entry in the components section of the SBOM
-				areAllDepesPresentInCompList := lo.EveryBy(dependencies, func(id string) bool {
-					return ComponentList[id]
-				})
-
-				// retrieve the name of all dependencies
-				allDepByName := lo.Map(dependencies, func(d string, _ int) string {
-					return extractName(d)
-				})
-
-				if areAllDepesPresentInCompList {
-					IsMinimimRequirementFulfilled = true
-					GetAllPrimaryDepenciesByName = allDepByName
-				}
-			}
-		}
+	if areAllDepesPresentInCompList {
+		IsMinimimRequirementFulfilled = true
+		GetAllPrimaryDepenciesByName = allDepByName
 	}
+
 	for _, component := range doc.Components() {
 		records = append(records, fsctPackageName(component))
 		records = append(records, fsctPackageVersion(component))
@@ -377,10 +312,6 @@ func fsctPackageHash(doc sbom.Document, component sbom.GetComponent) *db.Record 
 	return db.NewRecordStmt(COMP_CHECKSUM, component.GetName(), result, score, maturity)
 }
 
-func getID(componentID string) string {
-	return "SPDXRef-" + componentID
-}
-
 func IsComponentPartOfPrimaryDependency(id string) bool {
 	return PrimaryDependencies[id]
 }
@@ -394,17 +325,19 @@ func fsctPackageDependencies(doc sbom.Document, component sbom.GetComponent) *db
 	var compWithRelAndIncluded bool
 	var allDepByName []string
 	if doc.Spec().GetSpecType() == "spdx" {
+
 		if component.GetPrimaryCompInfo().IsPresent() {
 			result = strings.Join(GetAllPrimaryDepenciesByName, ", ")
 			score = 10.0
 			maturity = "Minimum"
 			return db.NewRecordStmt(COMP_RELATIONSHIP, component.GetName(), result, score, maturity)
 		}
+
 		// get dependencies for normal component
-		dependencies = doc.GetRelationships(getID(component.GetSpdxID()))
+		dependencies = doc.GetRelationships(common.GetID(component.GetSpdxID()))
 		if dependencies == nil {
 			// Check if the component is a part of primary dependency
-			if IsComponentPartOfPrimaryDependency(getID(component.GetSpdxID())) {
+			if IsComponentPartOfPrimaryDependency(common.GetID(component.GetSpdxID())) {
 				// it's dependecy type will be "included-in"
 				compWithIncludedRel = true
 			} else {
@@ -414,7 +347,7 @@ func fsctPackageDependencies(doc sbom.Document, component sbom.GetComponent) *db
 		} else {
 			allDepByName = getDepByName(dependencies)
 
-			if IsComponentPartOfPrimaryDependency(getID(component.GetSpdxID())) {
+			if IsComponentPartOfPrimaryDependency(common.GetID(component.GetSpdxID())) {
 				compWithRelAndIncluded = true
 				allDepByName = append([]string{"included-in"}, allDepByName...)
 			} else {
@@ -424,6 +357,7 @@ func fsctPackageDependencies(doc sbom.Document, component sbom.GetComponent) *db
 		}
 	} else if doc.Spec().GetSpecType() == "cyclonedx" {
 		if component.GetPrimaryCompInfo().IsPresent() {
+			fmt.Println("GetAllPrimaryDepenciesByName: ", GetAllPrimaryDepenciesByName)
 			result = strings.Join(GetAllPrimaryDepenciesByName, ", ")
 			score = 10.0
 			maturity = "Minimum"
@@ -439,9 +373,7 @@ func fsctPackageDependencies(doc sbom.Document, component sbom.GetComponent) *db
 				compWithNoRel = true
 			}
 		} else {
-			allDepByName = lo.Map(dependencies, func(d string, _ int) string {
-				return extractName(d)
-			})
+			allDepByName = getDepByName(dependencies)
 			if PrimaryDependencies[component.GetID()] {
 				compWithRelAndIncluded = true
 				allDepByName = append([]string{"included-in"}, allDepByName...)
