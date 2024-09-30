@@ -139,7 +139,7 @@ func TestFsctCDXSbomAuthorFields(t *testing.T) {
 	}{
 		{
 			name:   "CDX SBOM with author name only",
-			actual: FsctSbomAuthor(cdxDocWithSbomAuthorName()),
+			actual: SbomAuthor(cdxDocWithSbomAuthorName()),
 			expected: desired{
 				score:    10.0,
 				result:   "Samantha Wright",
@@ -150,7 +150,7 @@ func TestFsctCDXSbomAuthorFields(t *testing.T) {
 		},
 		{
 			name:   "CDX SBOM with author name and email",
-			actual: FsctSbomAuthor(cdxDocWithSbomAuthorNameAndEmail()),
+			actual: SbomAuthor(cdxDocWithSbomAuthorNameAndEmail()),
 			expected: desired{
 				score:    10.0,
 				result:   "Samantha Wright (samantha.wright@example.com)",
@@ -161,7 +161,7 @@ func TestFsctCDXSbomAuthorFields(t *testing.T) {
 		},
 		{
 			name:   "CDX SBOM with author name and contact",
-			actual: FsctSbomAuthor(cdxDocWithSbomAuthorNameAndContact()),
+			actual: SbomAuthor(cdxDocWithSbomAuthorNameAndContact()),
 			expected: desired{
 				score:    10.0,
 				result:   "Samantha Wright (800-555-1212)",
@@ -172,7 +172,7 @@ func TestFsctCDXSbomAuthorFields(t *testing.T) {
 		},
 		{
 			name:   "CDX SBOM with author name, email and contact",
-			actual: FsctSbomAuthor(cdxDocWithSbomAuthorNameEmailAndContact()),
+			actual: SbomAuthor(cdxDocWithSbomAuthorNameEmailAndContact()),
 			expected: desired{
 				score:    10.0,
 				result:   "Samantha Wright (samantha.wright@example.com, 800-555-1212)",
@@ -183,7 +183,7 @@ func TestFsctCDXSbomAuthorFields(t *testing.T) {
 		},
 		{
 			name:   "CDX SBOM with a tool",
-			actual: FsctSbomAuthor(cdxDocWithTool()),
+			actual: SbomAuthor(cdxDocWithTool()),
 			expected: desired{
 				score:    0.0,
 				result:   "sbom-tool-9.1.2",
@@ -194,7 +194,7 @@ func TestFsctCDXSbomAuthorFields(t *testing.T) {
 		},
 		{
 			name:   "CDX SBOM with multiple tools",
-			actual: FsctSbomAuthor(cdxDocWithMultipleTools()),
+			actual: SbomAuthor(cdxDocWithMultipleTools()),
 			expected: desired{
 				score:    0.0,
 				result:   "sbom-tool-9.1.2, syft-1.1.2",
@@ -205,7 +205,7 @@ func TestFsctCDXSbomAuthorFields(t *testing.T) {
 		},
 		{
 			name:   "CDX SBOM with a Author and tool",
-			actual: FsctSbomAuthor(cdxDocWithAuthorAndTools()),
+			actual: SbomAuthor(cdxDocWithAuthorAndTools()),
 			expected: desired{
 				score:    12.0,
 				result:   "Samantha Wright (samantha.wright@example.com, 800-555-1212), sbom-tool-9.1.2",
@@ -270,7 +270,7 @@ func TestFsctCDXOtherSbomLevelFields(t *testing.T) {
 	}{
 		{
 			name:   "CDX SBOM with timestamp",
-			actual: FsctSbomTimestamp(cdxDocWithTimestamp()),
+			actual: SbomTimestamp(cdxDocWithTimestamp()),
 			expected: desired{
 				score:    10.0,
 				result:   "2020-04-13T20:20:39+00:00",
@@ -281,7 +281,7 @@ func TestFsctCDXOtherSbomLevelFields(t *testing.T) {
 		},
 		{
 			name:   "CDX SBOM with custom phase lifecycle",
-			actual: FsctSbomType(cdxDocWithCustomPhaseLifecycles()),
+			actual: SbomType(cdxDocWithCustomPhaseLifecycles()),
 			expected: desired{
 				score:    15.0,
 				result:   "platform-integration-testing",
@@ -292,7 +292,7 @@ func TestFsctCDXOtherSbomLevelFields(t *testing.T) {
 		},
 		{
 			name:   "CDX SBOM with pre-defined phase lifecycle",
-			actual: FsctSbomType(cdxDocWithPreDefinedPhaseLifecycles()),
+			actual: SbomType(cdxDocWithPreDefinedPhaseLifecycles()),
 			expected: desired{
 				score:    15.0,
 				result:   "build",
@@ -303,7 +303,7 @@ func TestFsctCDXOtherSbomLevelFields(t *testing.T) {
 		},
 		{
 			name:   "CDX SBOM with primary component",
-			actual: FsctSbomPrimaryComponent(cdxDocWithPrimaryComponent()),
+			actual: SbomPrimaryComponent(cdxDocWithPrimaryComponent()),
 			expected: desired{
 				score:    10.0,
 				result:   "git@github.com:interlynk/sbomqs.git",
@@ -402,7 +402,7 @@ func TestFsctSPDXSbomLevelFields(t *testing.T) {
 	}{
 		{
 			name:   "SPDX SBOM with lifecycle",
-			actual: FsctSbomType(spdxDocWithLifecycles()),
+			actual: SbomType(spdxDocWithLifecycles()),
 			expected: desired{
 				score:    15.0,
 				result:   "hellow, this is sbom build phase",
@@ -413,7 +413,7 @@ func TestFsctSPDXSbomLevelFields(t *testing.T) {
 		},
 		{
 			name:   "SPDX SBOM with primary component",
-			actual: FsctSbomPrimaryComponent(spdxDocWithPrimaryComponent()),
+			actual: SbomPrimaryComponent(spdxDocWithPrimaryComponent()),
 			expected: desired{
 				score:    10.0,
 				result:   "SPDXRef-DocumentRoot-File-sbomqs-linux-amd64",
@@ -424,7 +424,7 @@ func TestFsctSPDXSbomLevelFields(t *testing.T) {
 		},
 		{
 			name:   "SPDX SBOM with author name only",
-			actual: FsctSbomAuthor(spdxDocWithSbomAuthor()),
+			actual: SbomAuthor(spdxDocWithSbomAuthor()),
 			expected: desired{
 				score:    10.0,
 				result:   "Jane Doe",
@@ -435,7 +435,7 @@ func TestFsctSPDXSbomLevelFields(t *testing.T) {
 		},
 		{
 			name:   "SPDX SBOM with tool only",
-			actual: FsctSbomAuthor(spdxDocWithSbomTool()),
+			actual: SbomAuthor(spdxDocWithSbomTool()),
 			expected: desired{
 				score:    0.0,
 				result:   "syft-1.9.0",
@@ -446,7 +446,7 @@ func TestFsctSPDXSbomLevelFields(t *testing.T) {
 		},
 		{
 			name:   "SPDX SBOM with Author and tool both",
-			actual: FsctSbomAuthor(spdxDocWithSbomAuthorAndTool()),
+			actual: SbomAuthor(spdxDocWithSbomAuthorAndTool()),
 			expected: desired{
 				score:    12.0,
 				result:   "Jane Doe, syft-1.9.0",
@@ -764,21 +764,6 @@ func TestFsctComponentLevelOnSpdxAndCdx(t *testing.T) {
 		assert.Equal(t, test.expected.result, test.actual.CheckValue, "Result mismatch for %s", test.name)
 		assert.Equal(t, test.expected.maturity, test.actual.Maturity, "Maturity mismatch for %s", test.name)
 	}
-}
-
-func cdxCompWithUniqID() sbom.GetComponent {
-	name := "cobra"
-	p := []purl.PURL{}
-	npurl := purl.NewPURL("pkg:github/spf13/cobra@e94f6d0dd9a5e5738dca6bce03c4b1207ffbc0ec")
-	if npurl.Valid() {
-		p = append(p, npurl)
-	}
-
-	comp := sbom.Component{
-		Name:  name,
-		Purls: p,
-	}
-	return comp
 }
 
 func primaryCompWithHigherChecksum() (sbom.Document, sbom.GetComponent) {
@@ -1380,17 +1365,6 @@ func cdxCompWithOmniBorID() sbom.GetComponent {
 
 	omni := omniborid.NewOmni(omniBorID)
 	comp.OmniID = append(comp.OmniID, omni)
-
-	return comp
-}
-
-func cdxCompWithCPE() sbom.GetComponent {
-	comp := sbom.NewComponent()
-	comp.Name = "packageurl-go"
-	PackageURL := "pkg:github/package-url/packageurl-go@7cb81af9593b9512bb946c55c85609948c48aab9"
-
-	prl := purl.NewPURL(PackageURL)
-	comp.Purls = []purl.PURL{prl}
 
 	return comp
 }

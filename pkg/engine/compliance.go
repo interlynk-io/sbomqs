@@ -86,7 +86,6 @@ func getSbomDocument(ctx context.Context, ep *Params) (*sbom.Document, error) {
 
 	if IsURL(path) {
 		log.Debugf("Processing Git URL path :%s\n", path)
-
 		url, sbomFilePath := path, path
 		var err error
 
