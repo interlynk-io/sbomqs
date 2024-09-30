@@ -266,9 +266,6 @@ func CheckCopyright(cp string) (string, bool) {
 	return cp, cp != "NOASSERTION" && cp != "NONE"
 }
 
-func GetPrimaryDependencies(component sbom.GetComponent) {
-}
-
 // ComponentsLists return component lists as a map
 func ComponentsLists(doc sbom.Document) map[string]bool {
 	componentList := make(map[string]bool)

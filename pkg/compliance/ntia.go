@@ -219,15 +219,6 @@ func ntiaSbomCreatedTimestamp(doc sbom.Document) *db.Record {
 	return db.NewRecordStmt(SBOM_TIMESTAMP, "SBOM Data Fields", result, score, "")
 }
 
-func extractName(comp string) string {
-	for x, y := range compIDWithName {
-		if strings.Contains(comp, x) {
-			return y
-		}
-	}
-	return ""
-}
-
 var (
 	compIDWithName               = make(map[string]string)
 	componentList                = make(map[string]bool)
@@ -328,21 +319,24 @@ func ntiaComponentDependencies(doc sbom.Document, component sbom.GetComponent) *
 
 		dependencies = doc.GetRelationships(component.GetID())
 		if dependencies == nil {
+
 			if primaryDependencies[common.GetID(component.GetSpdxID())] {
 				return db.NewRecordStmt(COMP_DEPTH, component.GetName(), "included-in", 10.0, "")
 			}
 			return db.NewRecordStmt(COMP_DEPTH, component.GetName(), "no-relationship", 0.0, "")
-		} else {
-			allDepByName = common.GetDependenciesByName(dependencies, compIDWithName)
-			if primaryDependencies[common.GetID(component.GetSpdxID())] {
-				allDepByName = append([]string{"included-in"}, allDepByName...)
-				result = strings.Join(allDepByName, ", ")
-				return db.NewRecordStmt(COMP_DEPTH, component.GetName(), result, 10.0, "")
-			} else {
-				result = strings.Join(allDepByName, ", ")
-				return db.NewRecordStmt(COMP_DEPTH, component.GetName(), result, 10.0, "")
-			}
+
 		}
+		allDepByName = common.GetDependenciesByName(dependencies, compIDWithName)
+
+		if primaryDependencies[common.GetID(component.GetSpdxID())] {
+			allDepByName = append([]string{"included-in"}, allDepByName...)
+			result = strings.Join(allDepByName, ", ")
+			return db.NewRecordStmt(COMP_DEPTH, component.GetName(), result, 10.0, "")
+		}
+
+		result = strings.Join(allDepByName, ", ")
+		return db.NewRecordStmt(COMP_DEPTH, component.GetName(), result, 10.0, "")
+
 	} else if doc.Spec().GetSpecType() == "cyclonedx" {
 		if component.GetPrimaryCompInfo().IsPresent() {
 			result = strings.Join(getAllPrimaryDepenciesByName, ", ")
@@ -356,17 +350,16 @@ func ntiaComponentDependencies(doc sbom.Document, component sbom.GetComponent) *
 				return db.NewRecordStmt(COMP_DEPTH, component.GetName(), "included-in", 10.0, "")
 			}
 			return db.NewRecordStmt(COMP_DEPTH, component.GetName(), "no-relationship", 0.0, "")
-		} else {
-			allDepByName = common.GetDependenciesByName(dependencies, compIDWithName)
-			if primaryDependencies[id] {
-				allDepByName = append([]string{"included-in"}, allDepByName...)
-				result = strings.Join(allDepByName, ", ")
-				return db.NewRecordStmt(COMP_DEPTH, component.GetName(), result, 10.0, "")
-			} else {
-				result = strings.Join(allDepByName, ", ")
-				return db.NewRecordStmt(COMP_DEPTH, component.GetName(), result, 10.0, "")
-			}
 		}
+		allDepByName = common.GetDependenciesByName(dependencies, compIDWithName)
+		if primaryDependencies[id] {
+			allDepByName = append([]string{"included-in"}, allDepByName...)
+			result = strings.Join(allDepByName, ", ")
+			return db.NewRecordStmt(COMP_DEPTH, component.GetName(), result, 10.0, "")
+		}
+		result = strings.Join(allDepByName, ", ")
+		return db.NewRecordStmt(COMP_DEPTH, component.GetName(), result, 10.0, "")
+
 	}
 	return db.NewRecordStmt(COMP_DEPTH, component.GetName(), result, score, "")
 }
