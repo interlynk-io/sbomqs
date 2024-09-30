@@ -49,7 +49,7 @@ func createSpdxDummyDocumentNtia() sbom.Document {
 	relationships := make(map[string][]string)
 	relationships["github/spdx/tools-golang@9db247b854b9634d0109153d515fd1a9efd5a1b1"] = append(relationships["github/spdx/tools-golang@9db247b854b9634d0109153d515fd1a9efd5a1b1"], "github/spdx/gordf@b735bd5aac89fe25cad4ef488a95bc00ea549edd")
 
-	CompIDWithName["github/spdx/gordf@b735bd5aac89fe25cad4ef488a95bc00ea549edd"] = "gordf"
+	compIDWithName["github/spdx/gordf@b735bd5aac89fe25cad4ef488a95bc00ea549edd"] = "gordf"
 	doc := sbom.SpdxDoc{
 		SpdxSpec:         s,
 		Comps:            packages,
@@ -220,7 +220,7 @@ func createCdxDummyDocumentNtia() sbom.Document {
 	var primary sbom.PrimaryComp
 	primary.Dependecies = 1
 
-	CompIDWithName["github/spdx/gordf@b735bd5aac89fe25cad4ef488a95bc00ea549edd"] = "gordf"
+	compIDWithName["github/spdx/gordf@b735bd5aac89fe25cad4ef488a95bc00ea549edd"] = "gordf"
 
 	doc := sbom.CdxDoc{
 		CdxSpec:          cdxSpec,

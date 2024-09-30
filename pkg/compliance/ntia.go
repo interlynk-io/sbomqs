@@ -20,6 +20,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/interlynk-io/sbomqs/pkg/compliance/common"
 	db "github.com/interlynk-io/sbomqs/pkg/compliance/db"
 	"github.com/interlynk-io/sbomqs/pkg/logger"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
@@ -218,16 +219,21 @@ func ntiaSbomCreatedTimestamp(doc sbom.Document) *db.Record {
 	return db.NewRecordStmt(SBOM_TIMESTAMP, "SBOM Data Fields", result, score, "")
 }
 
-var CompIDWithName = make(map[string]string)
-
 func extractName(comp string) string {
-	for x, y := range CompIDWithName {
+	for x, y := range compIDWithName {
 		if strings.Contains(comp, x) {
 			return y
 		}
 	}
 	return ""
 }
+
+var (
+	compIDWithName               = make(map[string]string)
+	componentList                = make(map[string]bool)
+	primaryDependencies          = make(map[string]bool)
+	getAllPrimaryDepenciesByName = []string{}
+)
 
 // Required component stuffs
 func ntiaComponents(doc sbom.Document) []*db.Record {
@@ -238,9 +244,14 @@ func ntiaComponents(doc sbom.Document) []*db.Record {
 		return records
 	}
 
-	// map package ID to Package Name
-	for _, component := range doc.Components() {
-		CompIDWithName[component.GetID()] = component.GetName()
+	compIDWithName = common.ComponentsNamesMapToIDs(doc)
+	componentList = common.ComponentsLists(doc)
+	primaryDependencies = common.MapPrimaryDependencies(doc)
+	dependencies := common.GetAllPrimaryComponentDependencies(doc)
+	areAllDepesPresentInCompList := common.CheckPrimaryDependenciesInComponentList(dependencies, componentList)
+
+	if areAllDepesPresentInCompList {
+		getAllPrimaryDepenciesByName = common.GetDependenciesByName(dependencies, compIDWithName)
 	}
 
 	for _, component := range doc.Components() {
@@ -305,24 +316,58 @@ func ntiaComponentVersion(component sbom.GetComponent) *db.Record {
 
 func ntiaComponentDependencies(doc sbom.Document, component sbom.GetComponent) *db.Record {
 	result, score := "", SCORE_ZERO
-	var results []string
+	var dependencies []string
+	var allDepByName []string
 
-	dependencies := doc.GetRelationships(component.GetID())
-	if dependencies == nil {
-		return db.NewRecordStmt(COMP_DEPTH, component.GetName(), "no-relationships", SCORE_ZERO, "")
-	}
-	for _, d := range dependencies {
-		componentName := extractName(d)
-		results = append(results, componentName)
-		score = SCORE_FULL
-	}
+	if doc.Spec().GetSpecType() == "spdx" {
+		if component.GetPrimaryCompInfo().IsPresent() {
+			result = strings.Join(getAllPrimaryDepenciesByName, ", ")
+			score = 10.0
+			return db.NewRecordStmt(COMP_DEPTH, component.GetName(), result, score, "")
+		}
 
-	if results != nil {
-		result = strings.Join(results, ", ")
-	} else {
-		result += "no-relationships"
+		dependencies = doc.GetRelationships(component.GetID())
+		if dependencies == nil {
+			if primaryDependencies[common.GetID(component.GetSpdxID())] {
+				return db.NewRecordStmt(COMP_DEPTH, component.GetName(), "included-in", 10.0, "")
+			}
+			return db.NewRecordStmt(COMP_DEPTH, component.GetName(), "no-relationship", 0.0, "")
+		} else {
+			allDepByName = common.GetDependenciesByName(dependencies, compIDWithName)
+			if primaryDependencies[common.GetID(component.GetSpdxID())] {
+				allDepByName = append([]string{"included-in"}, allDepByName...)
+				result = strings.Join(allDepByName, ", ")
+				return db.NewRecordStmt(COMP_DEPTH, component.GetName(), result, 10.0, "")
+			} else {
+				result = strings.Join(allDepByName, ", ")
+				return db.NewRecordStmt(COMP_DEPTH, component.GetName(), result, 10.0, "")
+			}
+		}
+	} else if doc.Spec().GetSpecType() == "cyclonedx" {
+		if component.GetPrimaryCompInfo().IsPresent() {
+			result = strings.Join(getAllPrimaryDepenciesByName, ", ")
+			score = 10.0
+			return db.NewRecordStmt(COMP_DEPTH, component.GetName(), result, score, "")
+		}
+		id := component.GetID()
+		dependencies = doc.GetRelationships(id)
+		if len(dependencies) == 0 {
+			if primaryDependencies[id] {
+				return db.NewRecordStmt(COMP_DEPTH, component.GetName(), "included-in", 10.0, "")
+			}
+			return db.NewRecordStmt(COMP_DEPTH, component.GetName(), "no-relationship", 0.0, "")
+		} else {
+			allDepByName = common.GetDependenciesByName(dependencies, compIDWithName)
+			if primaryDependencies[id] {
+				allDepByName = append([]string{"included-in"}, allDepByName...)
+				result = strings.Join(allDepByName, ", ")
+				return db.NewRecordStmt(COMP_DEPTH, component.GetName(), result, 10.0, "")
+			} else {
+				result = strings.Join(allDepByName, ", ")
+				return db.NewRecordStmt(COMP_DEPTH, component.GetName(), result, 10.0, "")
+			}
+		}
 	}
-
 	return db.NewRecordStmt(COMP_DEPTH, component.GetName(), result, score, "")
 }
 
