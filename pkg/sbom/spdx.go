@@ -344,7 +344,6 @@ func (s *SpdxDoc) parsePrimaryCompAndRelationships() {
 				continue
 			}
 			s.Dependencies[CleanKey(string(aBytes))] = append(s.Dependencies[CleanKey(string(aBytes))], CleanKey(string(bBytes)))
-
 		}
 	}
 	s.PrimaryComponent.Dependecies = totalDependencies

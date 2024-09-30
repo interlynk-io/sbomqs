@@ -81,7 +81,7 @@ func ComplianceResult(ctx context.Context, doc sbom.Document, reportType, fileNa
 		octResult(ctx, doc, fileName, outFormat)
 
 	case reportType == FSCT_V3:
-		fsct.FsctResult(ctx, doc, fileName, outFormat)
+		fsct.Result(ctx, doc, fileName, outFormat)
 
 	default:
 		fmt.Println("No compliance type is provided")

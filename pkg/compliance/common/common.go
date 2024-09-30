@@ -218,7 +218,7 @@ func CheckSwid(swid []swid.SWID) (string, bool) {
 	results := []string{}
 	for _, s := range swid {
 		if s.GetTagID() != "" && s.GetName() != "" {
-			result := string(s.GetTagID()) + ", " + string(s.GetName())
+			result := s.GetTagID() + ", " + s.GetName()
 			results = append(results, result)
 		}
 	}

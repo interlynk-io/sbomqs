@@ -25,20 +25,20 @@ import (
 	"github.com/samber/lo"
 )
 
-func FsctResult(ctx context.Context, doc sbom.Document, fileName string, outFormat string) {
+func Result(ctx context.Context, doc sbom.Document, fileName string, outFormat string) {
 	log := logger.FromContext(ctx)
 	log.Debug("fsct compliance")
 
 	dtb := db.NewDB()
 
 	// SBOM Level
-	dtb.AddRecord(FsctSbomAuthor(doc))
-	dtb.AddRecord(FsctSbomTimestamp(doc))
-	dtb.AddRecord(FsctSbomType(doc))
-	dtb.AddRecord(FsctSbomPrimaryComponent(doc))
+	dtb.AddRecord(SbomAuthor(doc))
+	dtb.AddRecord(SbomTimestamp(doc))
+	dtb.AddRecord(SbomType(doc))
+	dtb.AddRecord(SbomPrimaryComponent(doc))
 
 	// component Level
-	dtb.AddRecords(FsctComponents(doc))
+	dtb.AddRecords(Components(doc))
 
 	if outFormat == "json" {
 		fsctJSONReport(dtb, fileName)
@@ -53,7 +53,7 @@ func FsctResult(ctx context.Context, doc sbom.Document, fileName string, outForm
 	}
 }
 
-func FsctSbomPrimaryComponent(doc sbom.Document) *db.Record {
+func SbomPrimaryComponent(doc sbom.Document) *db.Record {
 	result, score, maturity := "", 0.0, "None"
 
 	// waiting for NTIA to get merged
@@ -67,7 +67,7 @@ func FsctSbomPrimaryComponent(doc sbom.Document) *db.Record {
 	return db.NewRecordStmt(SBOM_PRIMARY_COMPONENT, "doc", result, score, maturity)
 }
 
-func FsctSbomType(doc sbom.Document) *db.Record {
+func SbomType(doc sbom.Document) *db.Record {
 	result, score, maturity := "", 0.0, "None"
 
 	lifecycles := doc.Lifecycles()
@@ -82,7 +82,7 @@ func FsctSbomType(doc sbom.Document) *db.Record {
 	return db.NewRecordStmt(SBOM_TYPE, "doc", result, score, maturity)
 }
 
-func FsctSbomTimestamp(doc sbom.Document) *db.Record {
+func SbomTimestamp(doc sbom.Document) *db.Record {
 	result, score, maturity := "", 0.0, "None"
 
 	if result = doc.Spec().GetCreationTimestamp(); result != "" {
@@ -94,7 +94,7 @@ func FsctSbomTimestamp(doc sbom.Document) *db.Record {
 	return db.NewRecordStmt(SBOM_TIMESTAMP, "doc", result, score, maturity)
 }
 
-func FsctSbomAuthor(doc sbom.Document) *db.Record {
+func SbomAuthor(doc sbom.Document) *db.Record {
 	result, score, maturity := "", 0.0, ""
 	authorPresent, toolPresent := false, false
 	toolResult, authorResult := "", ""
@@ -161,7 +161,7 @@ func extractName(comp string) string {
 	return ""
 }
 
-func FsctComponents(doc sbom.Document) []*db.Record {
+func Components(doc sbom.Document) []*db.Record {
 	records := []*db.Record{}
 
 	if len(doc.Components()) == 0 {
@@ -182,7 +182,6 @@ func FsctComponents(doc sbom.Document) []*db.Record {
 				}
 			}
 		} else if doc.Spec().GetSpecType() == "cyclonedx" {
-
 			CompIDWithName[component.GetID()] = component.GetName()
 			ComponentList[component.GetID()] = true
 			if component.GetPrimaryCompInfo().IsPresent() {
@@ -214,7 +213,6 @@ func FsctComponents(doc sbom.Document) []*db.Record {
 					IsMinimimRequirementFulfilled = true
 					GetAllPrimaryDepenciesByName = allDepByName
 				}
-
 			}
 		} else if doc.Spec().GetSpecType() == "cyclonedx" {
 			// strings.Contains(s.PrimaryComponent.ID, string(sc.PackageSPDXIdentifier))
@@ -242,11 +240,9 @@ func FsctComponents(doc sbom.Document) []*db.Record {
 					IsMinimimRequirementFulfilled = true
 					GetAllPrimaryDepenciesByName = allDepByName
 				}
-
 			}
 		}
 	}
-
 	for _, component := range doc.Components() {
 		records = append(records, fsctPackageName(component))
 		records = append(records, fsctPackageVersion(component))
@@ -343,7 +339,6 @@ func fsctPackageUniqIDs(component sbom.GetComponent) *db.Record {
 		score = 10.0
 		maturity = "Minimum"
 		result = strings.Join(uniqIDResults, ", ")
-
 	}
 	return db.NewRecordStmt(COMP_UNIQ_ID, component.GetName(), result, score, maturity)
 }
@@ -391,7 +386,7 @@ func IsComponentPartOfPrimaryDependency(id string) bool {
 }
 
 func fsctPackageDependencies(doc sbom.Document, component sbom.GetComponent) *db.Record {
-	result, score, maturity := "no-relationships", 0.0, "None"
+	result, score, maturity := "", 0.0, ""
 	var dependencies []string
 	compWithIncludedRel := false
 	var compWithNoRel bool
@@ -399,7 +394,6 @@ func fsctPackageDependencies(doc sbom.Document, component sbom.GetComponent) *db
 	var compWithRelAndIncluded bool
 	var allDepByName []string
 	if doc.Spec().GetSpecType() == "spdx" {
-
 		if component.GetPrimaryCompInfo().IsPresent() {
 			result = strings.Join(GetAllPrimaryDepenciesByName, ", ")
 			score = 10.0
@@ -427,7 +421,6 @@ func fsctPackageDependencies(doc sbom.Document, component sbom.GetComponent) *db
 				// no dependency
 				compWithRel = true
 			}
-
 		}
 	} else if doc.Spec().GetSpecType() == "cyclonedx" {
 		if component.GetPrimaryCompInfo().IsPresent() {
@@ -452,13 +445,10 @@ func fsctPackageDependencies(doc sbom.Document, component sbom.GetComponent) *db
 			if PrimaryDependencies[component.GetID()] {
 				compWithRelAndIncluded = true
 				allDepByName = append([]string{"included-in"}, allDepByName...)
-				// allDepByName = append(allDepByName, "included-in")
 			}
 			compWithRel = true
-
 		}
 	}
-
 	switch {
 	case IsMinimimRequirementFulfilled && compWithIncludedRel:
 		score = 12.0

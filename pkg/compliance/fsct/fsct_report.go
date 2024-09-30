@@ -27,6 +27,7 @@ import (
 	"sigs.k8s.io/release-utils/version"
 )
 
+// nolint
 const (
 	SBOM_AUTHOR = iota
 	SBOM_TIMESTAMP
