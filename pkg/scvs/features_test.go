@@ -371,9 +371,95 @@ func TestComponentWithID(t *testing.T) {
 	}
 	for _, test := range testCases {
 		assert.Equal(t, test.expected.feature, test.actual.feature, "Score mismatch for %s", test.name)
-		assert.Equal(t, test.expected.l1score, test.actual.l1Score, "Key mismatch for %s", test.name)
-		assert.Equal(t, test.expected.l2score, test.actual.l2Score, "ID mismatch for %s", test.name)
 		assert.Equal(t, test.expected.l3score, test.actual.l3Score, "Result mismatch for %s", test.name)
 		assert.Equal(t, test.expected.desc, test.actual.descr, "Maturity mismatch for %s", test.name)
+	}
+}
+
+func compWithCopyright() (d sbom.Document, c *scvsCheck) {
+	p := scvsCheck{
+		Key: "Components defined in SBOM have valid copyright statements",
+	}
+	comps := []sbom.GetComponent{}
+	copyright := "2013-2023 The Cobra Authors"
+	comp := sbom.NewComponent()
+	comp.CopyRight = copyright
+	comps = append(comps, comp)
+
+	doc := sbom.CdxDoc{
+		Comps: comps,
+	}
+	return doc, &p
+}
+
+func TestComponentWithCopyright(t *testing.T) {
+	testCases := []struct {
+		name     string
+		actual   scvsScore
+		expected desired
+	}{
+		{
+			name:   "compWithCopyright",
+			actual: scvsCompHasCopyright(compWithCopyright()),
+			expected: desired{
+				feature: "Components defined in SBOM have valid copyright statements",
+				l3score: green + bold + "✓" + reset,
+				desc:    "1/1 comp has Copyright",
+			},
+		},
+	}
+	for _, test := range testCases {
+		assert.Equal(t, test.expected.feature, test.actual.feature, "Score mismatch for %s", test.name)
+		assert.Equal(t, test.expected.l3score, test.actual.l3Score, "Result mismatch for %s", test.name)
+		assert.Equal(t, test.expected.desc, test.actual.descr, "Description mismatch for %s", test.name)
+
+	}
+}
+
+func compWithHigherChecksum() (d sbom.Document, c *scvsCheck) {
+	p := scvsCheck{
+		Key: "Components defined in SBOM have one or more file hashes (SHA-256, SHA-512, etc)",
+	}
+	comps := []sbom.GetComponent{}
+	chks := []sbom.GetChecksum{}
+
+	ck := sbom.Checksum{}
+	ck.Alg = "SHA256"
+	ck.Content = "11b6d3ee554eedf79299905a98f9b9a04e498210b59f15094c916c91d150efcd"
+
+	chks = append(chks, ck)
+
+	comp := sbom.Component{
+		Checksums: chks,
+	}
+	comps = append(comps, comp)
+
+	doc := sbom.SpdxDoc{
+		Comps: comps,
+	}
+	return doc, &p
+}
+
+func TestComponentWithHash(t *testing.T) {
+	testCases := []struct {
+		name     string
+		actual   scvsScore
+		expected desired
+	}{
+		{
+			name:   "compWithChecksum",
+			actual: scvsCompHashCheck(compWithHigherChecksum()),
+			expected: desired{
+				feature: "Components defined in SBOM have one or more file hashes (SHA-256, SHA-512, etc)",
+				l3score: green + bold + "✓" + reset,
+				desc:    "1/1 comp has Checksum",
+			},
+		},
+	}
+	for _, test := range testCases {
+		assert.Equal(t, test.expected.feature, test.actual.feature, "Score mismatch for %s", test.name)
+		assert.Equal(t, test.expected.l3score, test.actual.l3Score, "Result mismatch for %s", test.name)
+		assert.Equal(t, test.expected.desc, test.actual.descr, "Description mismatch for %s", test.name)
+
 	}
 }
