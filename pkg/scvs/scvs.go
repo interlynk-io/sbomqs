@@ -43,30 +43,28 @@ func IsSBOMMachineReadable(d sbom.Document, s *scvsScore) bool {
 
 // 2.3 SBOM creation is automated and reproducible(L2, L3)
 func IsSBOMCreationAutomated(d sbom.Document, s *scvsScore) bool {
-	noOfTools := len(d.Tools())
 	if tools := d.Tools(); tools != nil {
 		for _, tool := range tools {
 			name := tool.GetName()
 			version := tool.GetVersion()
 
 			if name != "" && version != "" {
-				s.setDesc(fmt.Sprintf("SBOM has %d authors", noOfTools))
+				s.setDesc(fmt.Sprintf("SBOM creation is automated"))
 				return true
 			}
 		}
 	}
-
-	s.setDesc(fmt.Sprintf("SBOM has %d authors", noOfTools))
+	s.setDesc(fmt.Sprintf("SBOM creation is non-automated"))
 	return false
 }
 
 // 2.3 Each SBOM has a unique identifier(L1, L2, L3)
-func IsSBOMHasUniqID(d sbom.Document, s *scvsScore) bool {
+func IsSBOMHasGlobalUniqID(d sbom.Document, s *scvsScore) bool {
 	if ns := d.Spec().GetUniqID(); ns != "" {
-		s.setDesc("SBOM has uniq ID")
+		s.setDesc("SBOM have global uniq ID")
 		return true
 	}
-	s.setDesc("SBOM doesn't has uniq ID")
+	s.setDesc("SBOM doesn't have global uniq ID")
 	return false
 }
 
@@ -149,7 +147,7 @@ func IsSBOMSignatureVerified(d sbom.Document, s *scvsScore) bool {
 }
 
 // 2.7 SBOM is timestamped(L1, L2, L3)
-func IsSBOMTimestamped(d sbom.Document, s *scvsScore) bool {
+func DoesSBOMHasTimestamp(d sbom.Document, s *scvsScore) bool {
 	if result := d.Spec().GetCreationTimestamp(); result != "" {
 		_, err := time.Parse(time.RFC3339, result)
 		if err != nil {

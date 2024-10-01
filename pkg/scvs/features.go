@@ -59,7 +59,7 @@ func scvsSBOMAutomationCreationCheck(d sbom.Document, c *scvsCheck) scvsScore {
 func scvsSBOMUniqIDCheck(d sbom.Document, c *scvsCheck) scvsScore {
 	s := newScoreFromScvsCheck(c)
 
-	if IsSBOMHasUniqID(d, s) {
+	if IsSBOMHasGlobalUniqID(d, s) {
 		s.setL3Score(green + bold + "✓" + reset)
 		s.setL2Score(green + bold + "✓" + reset)
 		s.setL1Score(green + bold + "✓" + reset)
@@ -115,7 +115,7 @@ func scvsSBOMSigVerified(d sbom.Document, c *scvsCheck) scvsScore {
 func scvsSBOMTimestampCheck(d sbom.Document, c *scvsCheck) scvsScore {
 	s := newScoreFromScvsCheck(c)
 
-	if IsSBOMTimestamped(d, s) {
+	if DoesSBOMHasTimestamp(d, s) {
 		s.setL3Score(green + bold + "✓" + reset)
 		s.setL2Score(green + bold + "✓" + reset)
 		s.setL1Score(green + bold + "✓" + reset)
