@@ -215,7 +215,7 @@ func (c *CdxDoc) parseSpec() {
 
 func (c *CdxDoc) parseSignature() {
 	if c.doc.Declarations == nil {
-		fmt.Println("Declaratic.doc.Declarationsons field is nil ")
+		fmt.Println("c.doc.Declarations field is nil ")
 		return
 	}
 
@@ -295,6 +295,7 @@ func copyC(cdxc *cydx.Component, c *CdxDoc) *Component {
 	nc.Name = cdxc.Name
 	nc.purpose = string(cdxc.Type)
 	nc.isReqFieldsPresent = c.pkgRequiredFields(cdxc)
+	nc.CopyRight = cdxc.Copyright
 
 	ncpe := cpe.NewCPE(cdxc.CPE)
 	if ncpe.Valid() {

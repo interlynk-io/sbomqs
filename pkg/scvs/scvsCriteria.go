@@ -25,7 +25,7 @@ var scvsChecks = []scvsCheck{
 	// scvs
 	{"A structured, machine readable software bill of materials (SBOM) format is present", scvsSBOMMachineReadableCheck},
 	{"SBOM creation is automated and reproducible", scvsSBOMAutomationCreationCheck},
-	{"Each SBOM has a unique identifier", scvsSBOMUniqIDCheck},
+	{"Each SBOM has global unique ID", scvsSBOMUniqIDCheck},
 	{"SBOM has been signed by publisher, supplier, or certifying authority", scvsSBOMSigcheck},
 	{"SBOM signature verification exists", scvsSBOMSigCorrectnessCheck},
 	{"SBOM signature verification is performed", scvsSBOMSigVerified},
