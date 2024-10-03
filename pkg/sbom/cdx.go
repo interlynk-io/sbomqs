@@ -52,6 +52,7 @@ type CdxDoc struct {
 	PrimaryComponent PrimaryComp
 	Dependencies     map[string][]string
 	composition      map[string]string
+	signature        []GetSignature
 }
 
 func newCDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat) (Document, error) {
@@ -139,6 +140,10 @@ func (c CdxDoc) GetComposition(componentID string) string {
 	return c.composition[componentID]
 }
 
+func (c CdxDoc) Signature() []GetSignature {
+	return c.signature
+}
+
 func (c *CdxDoc) parse() {
 	c.parseDoc()
 	c.parseSpec()
@@ -149,6 +154,7 @@ func (c *CdxDoc) parse() {
 	c.parseCompositions()
 	c.parsePrimaryCompAndRelationships()
 	c.parseComps()
+	c.parseSignature()
 }
 
 func (c *CdxDoc) addToLogs(log string) {
@@ -197,14 +203,89 @@ func (c *CdxDoc) parseSpec() {
 			sp.Licenses = aggregateLicenses(*c.doc.Metadata.Licenses)
 		}
 	}
-	sp.Namespace = c.doc.SerialNumber
+	sp.UniqID = c.doc.SerialNumber
 	sp.SpecType = string(SBOMSpecCDX)
 
-	if c.doc.SerialNumber != "" && strings.HasPrefix(sp.Namespace, "urn:uuid:") {
+	if c.doc.SerialNumber != "" && strings.HasPrefix(sp.UniqID, "urn:uuid:") {
 		sp.uri = fmt.Sprintf("%s/%d", c.doc.SerialNumber, c.doc.Version)
 	}
 
 	c.CdxSpec = sp
+}
+
+func (c *CdxDoc) parseSignature() {
+	if c.doc.Declarations == nil {
+		fmt.Println("c.doc.Declarations field is nil ")
+		return
+	}
+
+	if c.doc.Declarations.Signature != nil {
+		fmt.Println("c.doc.Declarations.Signature field is nil ")
+		return
+	}
+
+	s := signature{}
+	s.keyID = c.doc.Declarations.Signature.KeyID
+	s.algorithm = c.doc.Declarations.Signature.Algorithm
+	s.value = c.doc.Declarations.Affirmation.Signature.Value
+	s.publicKey = c.doc.Declarations.Affirmation.Signature.PublicKey.CRV
+	c.signature = append(c.signature, s)
+
+	for _, ss := range lo.FromPtr(c.doc.Declarations.Affirmation.Signature.Signers) {
+		sig := signature{}
+		sig.keyID = ss.KeyID
+		sig.algorithm = ss.Algorithm
+		sig.value = ss.Value
+		sig.publicKey = ss.PublicKey.CRV
+		c.signature = append(c.signature, sig)
+	}
+
+	for _, sc := range lo.FromPtr(c.doc.Declarations.Affirmation.Signature.Chain) {
+		sig := signature{}
+		sig.keyID = sc.KeyID
+		sig.algorithm = sc.Algorithm
+		sig.value = sc.Value
+		sig.publicKey = sc.PublicKey.CRV
+		c.signature = append(c.signature, sig)
+	}
+}
+
+func (c *CdxDoc) parsePedigree(comp *cydx.Component) Pedigree {
+	pedigree := Pedigree{}
+
+	if comp.Pedigree == nil {
+		return pedigree
+	}
+
+	if comp.Pedigree.Commits == nil {
+		return pedigree
+	}
+	commits := []GetCommit{}
+
+	for _, cmt := range *comp.Pedigree.Commits {
+		commit := Commit{}
+		commit.Uid = cmt.UID
+		commit.Url = cmt.URL
+		commit.Message = cmt.Message
+
+		author := CommitAuthor{}
+		author.Name = cmt.Author.Name
+		author.Email = cmt.Author.Email
+		author.Timestamp = cmt.Author.Timestamp
+		commit.ComitAuthor = author
+
+		committer := CommitCommitter{}
+		committer.Name = cmt.Committer.Name
+		committer.Email = cmt.Committer.Email
+		committer.Timestamp = cmt.Committer.Timestamp
+		commit.ComitComiter = committer
+
+		commits = append(commits, commit)
+
+	}
+	pedigree.Commits = commits
+
+	return pedigree
 }
 
 func (c *CdxDoc) requiredFields() bool {
@@ -252,6 +333,7 @@ func copyC(cdxc *cydx.Component, c *CdxDoc) *Component {
 	nc.Name = cdxc.Name
 	nc.purpose = string(cdxc.Type)
 	nc.isReqFieldsPresent = c.pkgRequiredFields(cdxc)
+	nc.CopyRight = cdxc.Copyright
 
 	ncpe := cpe.NewCPE(cdxc.CPE)
 	if ncpe.Valid() {
@@ -296,6 +378,7 @@ func copyC(cdxc *cydx.Component, c *CdxDoc) *Component {
 	if cdxc.BOMRef == c.PrimaryComponent.ID {
 		nc.isPrimary = true
 	}
+	nc.Pedigrees = c.parsePedigree(cdxc)
 
 	nc.ID = cdxc.BOMRef
 	return nc

@@ -102,7 +102,7 @@ func compWithUniqIDCheck(d sbom.Document, c *check) score {
 		if c.GetID() == "" {
 			return "", false
 		}
-		return strings.Join([]string{d.Spec().GetNamespace(), c.GetID()}, ""), true
+		return strings.Join([]string{d.Spec().GetUniqID(), c.GetID()}, ""), true
 	})
 
 	// uniqComps := lo.Uniq(compIDs)
