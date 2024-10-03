@@ -261,7 +261,7 @@ func scvsCompHasCopyright(d sbom.Document, c *scvsCheck) scvsScore {
 func scvsCompHasModificationCheck(d sbom.Document, c *scvsCheck) scvsScore {
 	s := newScoreFromScvsCheck(c)
 
-	if IsComponentContainsModificationChanges(d, s) {
+	if IsComponentModified(d, s) {
 		s.setL3Score(green + bold + "✓" + reset)
 	} else {
 		s.setL3Score(red + bold + "✗" + reset)

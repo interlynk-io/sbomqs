@@ -54,6 +54,7 @@ type GetComponent interface {
 	ExternalReferences() []GetExternalReference
 	GetComposition(string) string
 	GetPrimaryCompInfo() GetPrimaryComp
+	GetPedigrees() GetPedigree
 }
 
 type Component struct {
@@ -86,6 +87,7 @@ type Component struct {
 	PackageLicenseDeclared  string
 	ExternalRefs            []GetExternalReference
 	composition             map[string]string
+	Pedigrees               Pedigree
 }
 
 func NewComponent() *Component {
@@ -206,4 +208,8 @@ func (c Component) ExternalReferences() []GetExternalReference {
 
 func (c Component) GetComposition(componentID string) string {
 	return c.composition[componentID]
+}
+
+func (c Component) GetPedigrees() GetPedigree {
+	return c.Pedigrees
 }

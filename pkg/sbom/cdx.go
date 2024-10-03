@@ -271,6 +271,44 @@ func (c *CdxDoc) parseSignature() {
 	}
 }
 
+func (c *CdxDoc) parsePedigree(comp *cydx.Component) Pedigree {
+	pedigree := Pedigree{}
+
+	if comp.Pedigree == nil {
+		return pedigree
+	}
+
+	if comp.Pedigree.Commits == nil {
+		return pedigree
+	}
+	commits := []GetCommit{}
+
+	for _, cmt := range *comp.Pedigree.Commits {
+		commit := Commit{}
+		commit.Uid = cmt.UID
+		commit.Url = cmt.URL
+		commit.Message = cmt.Message
+
+		author := CommitAuthor{}
+		author.Name = cmt.Author.Name
+		author.Email = cmt.Author.Email
+		author.Timestamp = cmt.Author.Timestamp
+		commit.ComitAuthor = author
+
+		committer := CommitCommitter{}
+		committer.Name = cmt.Committer.Name
+		committer.Email = cmt.Committer.Email
+		committer.Timestamp = cmt.Committer.Timestamp
+		commit.ComitComiter = committer
+
+		commits = append(commits, commit)
+
+	}
+	pedigree.Commits = commits
+
+	return pedigree
+}
+
 func (c *CdxDoc) requiredFields() bool {
 	if c.doc == nil {
 		c.addToLogs("cdx doc is not parsable")
@@ -398,6 +436,8 @@ func copyC(cdxc *cydx.Component, c *CdxDoc) *Component {
 	if cdxc.Name == c.PrimaryComponent.Name {
 		nc.PrimaryCompt = c.PrimaryComponent
 	}
+	nc.Pedigrees = c.parsePedigree(cdxc)
+
 	nc.ID = cdxc.BOMRef
 	return nc
 }

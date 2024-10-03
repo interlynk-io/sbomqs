@@ -22,6 +22,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/interlynk-io/sbomqs/pkg/hshgrity"
 	"github.com/interlynk-io/sbomqs/pkg/licenses"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 	"github.com/samber/lo"
@@ -337,7 +338,62 @@ func IsComponentHasCopyright(d sbom.Document, s *scvsScore) bool {
 }
 
 // 2.17 Components defined in SBOM which have been modified from the original have detailed provenance and pedigree information(L3)
-func IsComponentContainsModificationChanges(d sbom.Document, s *scvsScore) bool {
+func IsComponentModified(d sbom.Document, s *scvsScore) bool {
+	for _, comp := range d.Components() {
+		// var purl string
+		var providedHash string
+
+		for _, c := range comp.GetChecksums() {
+			providedHash = c.GetContent()
+		}
+		firstPurl := "pkg:pkg.go.dev/github.com/interlynk-io/sbomqs@v0.1.9"
+
+		calculatedHashes, err := hshgrity.GetCalculatedHash(firstPurl)
+		if err != nil {
+			fmt.Println("Error getting calculated hashes:", err)
+			return false
+		}
+
+		// Check if the provided hash is in the list of calculated hashes
+		hashFound := false
+		for _, hash := range calculatedHashes {
+			if providedHash == hash {
+				hashFound = true
+				// break
+			}
+		}
+
+		if hashFound {
+			fmt.Println("The provided hash is present in the checksum file. The component has not been modified.")
+			return true
+		} else {
+			fmt.Println("The provided hash is not present in the checksum file. The component may have been modified.")
+			for _, commit := range comp.GetPedigrees().GetCommits() {
+				commitURL := commit.GetURL()
+
+				fmt.Println("commitURL: ", commitURL)
+				githubCommit, err := hshgrity.FetchCommitDetails(commitURL)
+				if err != nil {
+					fmt.Println("Error fetching commit details:", err)
+					continue
+				}
+				fmt.Println("githubCommit: ", githubCommit)
+
+				if hshgrity.VerifyCommitDetails(commit, githubCommit) {
+					fmt.Println("Commit verified successfully:")
+					fmt.Printf("Commit ID: %s\n", commit.GetUID())
+					fmt.Printf("Author: %s <%s>\n", commit.GetComitAuthor().GetName(), commit.GetComitAuthor().GetEmail())
+					fmt.Printf("Committer: %s <%s>\n", commit.GetComitComiter().GetName(), commit.GetComitComiter().GetEmail())
+					fmt.Printf("Message: %s\n", commit.GetMessage())
+				} else {
+					fmt.Println("Commit verification failed for commit ID:", commit.GetUID())
+				}
+
+			}
+		}
+
+	}
+
 	// N/A
 	s.setDesc("Not Supported(N/A)")
 	return false
