@@ -18,6 +18,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"sort"
 	"time"
 
 	"github.com/google/uuid"
@@ -137,7 +138,7 @@ func constructSections(dtb *db.DB) []bsiSection {
 			score := bsiKeyIDScore(dtb, r.CheckKey, r.ID)
 			newSection.Score = score.totalScore()
 			if r.ID == "doc" {
-				newSection.ElementID = "sbom"
+				newSection.ElementID = "SBOM"
 			} else {
 				newSection.ElementID = r.ID
 			}
@@ -147,6 +148,29 @@ func constructSections(dtb *db.DB) []bsiSection {
 			sections = append(sections, newSection)
 		}
 	}
+	// Group sections by ElementID
+	sectionsByElementID := make(map[string][]bsiSection)
+	for _, section := range sections {
+		sectionsByElementID[section.ElementID] = append(sectionsByElementID[section.ElementID], section)
+	}
+
+	// Sort each group of sections by section.ID and ensure "SBOM" comes first within its group if it exists
+	var sortedSections []bsiSection
+	var sbomLevelSections []bsiSection
+	for elementID, group := range sectionsByElementID {
+		sort.Slice(group, func(i, j int) bool {
+			return group[i].ID < group[j].ID
+		})
+		if elementID == "SBOM" {
+			sbomLevelSections = group
+		} else {
+			sortedSections = append(sortedSections, group...)
+		}
+	}
+
+	// Place "SBOM Level" sections at the top
+	sortedSections = append(sbomLevelSections, sortedSections...)
+
 	return sections
 }
 
@@ -162,6 +186,15 @@ func bsiDetailedReport(dtb *db.DB, fileName string) {
 	table.SetAutoMergeCellsByColumnIndex([]int{0})
 
 	sections := constructSections(dtb)
+
+	// Sort sections by ElementId and then by SectionId
+	sort.Slice(sections, func(i, j int) bool {
+		if sections[i].ElementID == sections[j].ElementID {
+			return sections[i].ID < sections[j].ID
+		}
+		return sections[i].ElementID < sections[j].ElementID
+	})
+
 	for _, section := range sections {
 		sectionID := section.ID
 		if !section.Required {
