@@ -16,7 +16,6 @@ package fsct
 
 import (
 	"context"
-	"fmt"
 	"strings"
 
 	"github.com/interlynk-io/sbomqs/pkg/compliance/common"
@@ -357,7 +356,6 @@ func fsctPackageDependencies(doc sbom.Document, component sbom.GetComponent) *db
 		}
 	} else if doc.Spec().GetSpecType() == "cyclonedx" {
 		if component.GetPrimaryCompInfo().IsPresent() {
-			fmt.Println("GetAllPrimaryDepenciesByName: ", GetAllPrimaryDepenciesByName)
 			result = strings.Join(GetAllPrimaryDepenciesByName, ", ")
 			score = 10.0
 			maturity = "Minimum"
