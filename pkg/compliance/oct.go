@@ -385,14 +385,6 @@ func octPackageCopyright(component sbom.GetComponent) *db.Record {
 	return db.NewRecordStmt(PACK_COPYRIGHT, component.GetName(), result, 0.0, "")
 }
 
-// Helper function to truncate content
-func truncateContent(s string, maxLength int) string {
-	if len(s) <= maxLength {
-		return s
-	}
-	return s[:maxLength] + "..."
-}
-
 func octPackageExternalRefs(component sbom.GetComponent) *db.Record {
 	result, score, totalElements, containPurlElement := "", 0.0, 0, 0
 

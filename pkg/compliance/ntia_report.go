@@ -133,7 +133,7 @@ func ntiaConstructSections(db *db.DB) []ntiaSection {
 	// Place "SBOM Level" sections at the top
 	sortedSections = append(sbomLevelSections, sortedSections...)
 
-	return sections
+	return sortedSections
 }
 
 func ntiaDetailedReport(db *db.DB, fileName string) {
