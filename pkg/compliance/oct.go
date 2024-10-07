@@ -287,7 +287,6 @@ func octComponents(doc sbom.Document) []*db.Record {
 
 func octPackageName(component sbom.GetComponent) *db.Record {
 	if result := component.GetName(); result != "" {
-		fmt.Println("result: ", result)
 		return db.NewRecordStmt(PACK_NAME, component.GetName(), result, 10.0, "")
 	}
 

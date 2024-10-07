@@ -43,10 +43,10 @@ var complianceCmd = &cobra.Command{
   sbomqs compliance --oct --json samples/sbomqs-spdx-syft.json
 
   # Check a V3 Framing document compliance  against a SBOM in a table output
-  sbomqs compliance --fsct-v3 <sbom>
+  sbomqs compliance --fsct <sbom>
 
   # Check a V3 Framing document compliance  against a SBOM in a JSON output
-  sbomqs compliance --fsct-v3 -j <sbom>
+  sbomqs compliance --fsct -j <sbom>
 `,
 	Args: func(cmd *cobra.Command, args []string) error {
 		if err := cobra.ExactArgs(1)(cmd, args); err != nil {
