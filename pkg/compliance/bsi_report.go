@@ -171,7 +171,7 @@ func constructSections(dtb *db.DB) []bsiSection {
 	// Place "SBOM Level" sections at the top
 	sortedSections = append(sbomLevelSections, sortedSections...)
 
-	return sections
+	return sortedSections
 }
 
 func bsiDetailedReport(dtb *db.DB, fileName string) {
