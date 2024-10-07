@@ -110,6 +110,29 @@ func ntiaConstructSections(db *db.DB) []ntiaSection {
 			sections = append(sections, newSection)
 		}
 	}
+	// Group sections by ElementID
+	sectionsByElementID := make(map[string][]ntiaSection)
+	for _, section := range sections {
+		sectionsByElementID[section.ElementID] = append(sectionsByElementID[section.ElementID], section)
+	}
+
+	// Sort each group of sections by section.ID and ensure "SBOM Data Fields" comes first within its group if it exists
+	var sortedSections []ntiaSection
+	var sbomLevelSections []ntiaSection
+	for elementID, group := range sectionsByElementID {
+		sort.Slice(group, func(i, j int) bool {
+			return group[i].ID < group[j].ID
+		})
+		if elementID == "SBOM Level" {
+			sbomLevelSections = group
+		} else {
+			sortedSections = append(sortedSections, group...)
+		}
+	}
+
+	// Place "SBOM Level" sections at the top
+	sortedSections = append(sbomLevelSections, sortedSections...)
+
 	return sections
 }
 
