@@ -19,6 +19,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/interlynk-io/sbomqs/pkg/compliance/fsct"
 	"github.com/interlynk-io/sbomqs/pkg/logger"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 )
@@ -28,14 +29,24 @@ const (
 	BSI_REPORT  = "BSI"
 	NTIA_REPORT = "NTIA"
 	OCT_TELCO   = "OCT"
+	FSCT_V3     = "FSCT"
 )
+
+func validReportTypes() map[string]bool {
+	return map[string]bool{
+		BSI_REPORT:  true,
+		NTIA_REPORT: true,
+		OCT_TELCO:   true,
+		FSCT_V3:     true,
+	}
+}
 
 //nolint:revive,stylecheck
 func ComplianceResult(ctx context.Context, doc sbom.Document, reportType, fileName, outFormat string) error {
 	log := logger.FromContext(ctx)
 	log.Debug("compliance.ComplianceResult()")
 
-	if reportType != BSI_REPORT && reportType != NTIA_REPORT && reportType != OCT_TELCO {
+	if !validReportTypes()[reportType] {
 		log.Debugf("Invalid report type: %s\n", reportType)
 		return errors.New("invalid report type")
 	}
@@ -55,20 +66,26 @@ func ComplianceResult(ctx context.Context, doc sbom.Document, reportType, fileNa
 		return errors.New("output format is empty")
 	}
 
-	if reportType == BSI_REPORT {
+	switch {
+	case reportType == BSI_REPORT:
 		bsiResult(ctx, doc, fileName, outFormat)
-	}
 
-	if reportType == NTIA_REPORT {
+	case reportType == NTIA_REPORT:
 		ntiaResult(ctx, doc, fileName, outFormat)
-	}
 
-	if reportType == OCT_TELCO {
+	case reportType == OCT_TELCO:
 		if doc.Spec().GetSpecType() != "spdx" {
 			fmt.Println("The Provided SBOM spec is other than SPDX. Open Chain Telco only support SPDX specs SBOMs.")
 			return nil
 		}
 		octResult(ctx, doc, fileName, outFormat)
+
+	case reportType == FSCT_V3:
+		fsct.Result(ctx, doc, fileName, outFormat)
+
+	default:
+		fmt.Println("No compliance type is provided")
+
 	}
 
 	return nil

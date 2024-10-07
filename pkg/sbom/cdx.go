@@ -25,7 +25,10 @@ import (
 	"github.com/google/uuid"
 	"github.com/interlynk-io/sbomqs/pkg/cpe"
 	"github.com/interlynk-io/sbomqs/pkg/licenses"
+	"github.com/interlynk-io/sbomqs/pkg/omniborid"
 	"github.com/interlynk-io/sbomqs/pkg/purl"
+	"github.com/interlynk-io/sbomqs/pkg/swhid"
+	"github.com/interlynk-io/sbomqs/pkg/swid"
 	"github.com/samber/lo"
 )
 
@@ -45,7 +48,7 @@ type CdxDoc struct {
 	CdxTools         []GetTool
 	rels             []GetRelation
 	logs             []string
-	lifecycles       []string
+	Lifecycle        []string
 	supplier         GetSupplier
 	manufacturer     Manufacturer
 	compositions     map[string]string
@@ -120,7 +123,7 @@ func (c CdxDoc) Logs() []string {
 }
 
 func (c CdxDoc) Lifecycles() []string {
-	return c.lifecycles
+	return c.Lifecycle
 }
 
 func (c CdxDoc) Supplier() GetSupplier {
@@ -171,7 +174,7 @@ func (c *CdxDoc) parseDoc() {
 		return
 	}
 
-	c.lifecycles = lo.Map(lo.FromPtr(c.doc.Metadata.Lifecycles), func(l cydx.Lifecycle, _ int) string {
+	c.Lifecycle = lo.Map(lo.FromPtr(c.doc.Metadata.Lifecycles), func(l cydx.Lifecycle, _ int) string {
 		if l.Phase != "" {
 			return string(l.Phase)
 		}
@@ -252,7 +255,7 @@ func copyC(cdxc *cydx.Component, c *CdxDoc) *Component {
 	nc.Name = cdxc.Name
 	nc.purpose = string(cdxc.Type)
 	nc.isReqFieldsPresent = c.pkgRequiredFields(cdxc)
-
+	nc.CopyRight = cdxc.Copyright
 	ncpe := cpe.NewCPE(cdxc.CPE)
 	if ncpe.Valid() {
 		nc.Cpes = []cpe.CPE{ncpe}
@@ -265,6 +268,43 @@ func copyC(cdxc *cydx.Component, c *CdxDoc) *Component {
 		nc.Purls = []purl.PURL{npurl}
 	} else {
 		c.addToLogs(fmt.Sprintf("cdx base doc component %s at index %d invalid purl found", cdxc.Name, -1))
+	}
+
+	if cdxc.SWHID != nil {
+		for _, swhidStr := range *cdxc.SWHID {
+			nswhid := swhid.NewSWHID(swhidStr)
+			if nswhid.Valid() {
+				nc.Swhid = append(nc.Swhid, nswhid)
+			} else {
+				c.addToLogs(fmt.Sprintf("cdx base doc component %s at index %d invalid swhid found", cdxc.Name, -1))
+			}
+		}
+	} else {
+		c.addToLogs(fmt.Sprintf("cdx base doc component %s has nil SWHID", cdxc.Name))
+	}
+
+	if cdxc.SWID != nil {
+		nswid := swid.NewSWID(cdxc.SWID.TagID, cdxc.SWID.Name)
+		if nswid.Valid() {
+			nc.Swid = []swid.SWID{nswid}
+		} else {
+			c.addToLogs(fmt.Sprintf("cdx base doc component %s at index %d invalid swid found", cdxc.Name, -1))
+		}
+	} else {
+		c.addToLogs(fmt.Sprintf("cdx base doc component %s has nil SWID or SWID.Name", cdxc.Name))
+	}
+
+	if cdxc.OmniborID != nil {
+		for _, omniStr := range *cdxc.OmniborID {
+			omniID := omniborid.NewOmni(omniStr)
+			if omniID.Valid() {
+				nc.OmniID = append(nc.OmniID, omniID)
+			} else {
+				c.addToLogs(fmt.Sprintf("cdx base doc component %s at index %d invalid omniborid found", cdxc.Name, -1))
+			}
+		}
+	} else {
+		c.addToLogs(fmt.Sprintf("cdx base doc component %s has nil OmniborID", cdxc.Name))
 	}
 
 	nc.Checksums = c.checksums(cdxc)
@@ -294,9 +334,13 @@ func copyC(cdxc *cydx.Component, c *CdxDoc) *Component {
 	}
 
 	if cdxc.BOMRef == c.PrimaryComponent.ID {
+		pc := PrimaryComp{}
+		pc.Name = cdxc.Name
+		pc.ID = cdxc.BOMRef
+		pc.Present = true
 		nc.isPrimary = true
+		nc.PrimaryCompt = pc
 	}
-
 	nc.ID = cdxc.BOMRef
 	return nc
 }
@@ -455,6 +499,7 @@ func (c *CdxDoc) parseAuthors() {
 		a := Author{}
 		a.Name = auth.Name
 		a.Email = auth.Email
+		a.Phone = auth.Phone
 		a.AuthorType = "person"
 		c.CdxAuthors = append(c.CdxAuthors, a)
 	}
@@ -476,9 +521,9 @@ func (c *CdxDoc) parseSupplier() {
 
 	if c.doc.Metadata.Supplier.Contact != nil {
 		for _, cydxContact := range lo.FromPtr(c.doc.Metadata.Supplier.Contact) {
-			ctt := contact{}
-			ctt.name = cydxContact.Name
-			ctt.email = cydxContact.Email
+			ctt := Contact{}
+			ctt.Name = cydxContact.Name
+			ctt.Email = cydxContact.Email
 			supplier.Contacts = append(supplier.Contacts, ctt)
 		}
 	}
@@ -502,9 +547,9 @@ func (c *CdxDoc) parseManufacturer() {
 
 	if c.doc.Metadata.Manufacture.Contact != nil {
 		for _, cydxContact := range lo.FromPtr(c.doc.Metadata.Manufacture.Contact) {
-			ctt := contact{}
-			ctt.name = cydxContact.Name
-			ctt.email = cydxContact.Email
+			ctt := Contact{}
+			ctt.Name = cydxContact.Name
+			ctt.Email = cydxContact.Email
 			m.Contacts = append(m.Contacts, ctt)
 		}
 	}
@@ -524,6 +569,7 @@ func (c *CdxDoc) parsePrimaryCompAndRelationships() {
 
 	c.PrimaryComponent.Present = true
 	c.PrimaryComponent.ID = c.doc.Metadata.Component.BOMRef
+	c.PrimaryComponent.Name = c.doc.Metadata.Component.Name
 	var totalDependencies int
 
 	c.rels = []GetRelation{}
@@ -534,7 +580,7 @@ func (c *CdxDoc) parsePrimaryCompAndRelationships() {
 			nr.From = r.Ref
 			nr.To = d
 			if r.Ref == c.PrimaryComponent.ID {
-				c.PrimaryComponent.hasDependencies = true
+				c.PrimaryComponent.HasDependency = true
 				totalDependencies++
 				c.rels = append(c.rels, nr)
 				c.Dependencies[c.PrimaryComponent.ID] = append(c.Dependencies[c.PrimaryComponent.ID], d)
@@ -608,9 +654,9 @@ func (c *CdxDoc) assignSupplier(comp *cydx.Component) *Supplier {
 
 	if comp.Supplier.Contact != nil {
 		for _, cydxContact := range lo.FromPtr(comp.Supplier.Contact) {
-			ctt := contact{}
-			ctt.name = cydxContact.Name
-			ctt.email = cydxContact.Email
+			ctt := Contact{}
+			ctt.Name = cydxContact.Name
+			ctt.Email = cydxContact.Email
 			supplier.Contacts = append(supplier.Contacts, ctt)
 		}
 	}

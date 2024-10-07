@@ -19,6 +19,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/interlynk-io/sbomqs/pkg/compliance/common"
+	db "github.com/interlynk-io/sbomqs/pkg/compliance/db"
 	"github.com/interlynk-io/sbomqs/pkg/logger"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 	"github.com/samber/lo"
@@ -75,6 +77,7 @@ const (
 	SBOM_DELIVERY_METHOD
 	SBOM_SCOPE
 	PACK_INFO
+	SBOM_TYPE
 	PACK_EXT_REF
 )
 
@@ -82,31 +85,31 @@ func bsiResult(ctx context.Context, doc sbom.Document, fileName string, outForma
 	log := logger.FromContext(ctx)
 	log.Debug("compliance.bsiResult()")
 
-	db := newDB()
+	dtb := db.NewDB()
 
-	db.addRecord(bsiSpec(doc))
-	db.addRecord(bsiSpecVersion(doc))
-	db.addRecord(bsiBuildPhase(doc))
-	db.addRecord(bsiSbomDepth(doc))
-	db.addRecord(bsiCreator(doc))
-	db.addRecord(bsiTimestamp(doc))
-	db.addRecord(bsiSbomURI(doc))
-	db.addRecords(bsiComponents(doc))
+	dtb.AddRecord(bsiSpec(doc))
+	dtb.AddRecord(bsiSpecVersion(doc))
+	dtb.AddRecord(bsiBuildPhase(doc))
+	dtb.AddRecord(bsiSbomDepth(doc))
+	dtb.AddRecord(bsiCreator(doc))
+	dtb.AddRecord(bsiTimestamp(doc))
+	dtb.AddRecord(bsiSbomURI(doc))
+	dtb.AddRecords(bsiComponents(doc))
 
 	if outFormat == "json" {
-		bsiJSONReport(db, fileName)
+		bsiJSONReport(dtb, fileName)
 	}
 
 	if outFormat == "basic" {
-		bsiBasicReport(db, fileName)
+		bsiBasicReport(dtb, fileName)
 	}
 
 	if outFormat == "detailed" {
-		bsiDetailedReport(db, fileName)
+		bsiDetailedReport(dtb, fileName)
 	}
 }
 
-func bsiSpec(doc sbom.Document) *record {
+func bsiSpec(doc sbom.Document) *db.Record {
 	v := doc.Spec().GetSpecType()
 	vToLower := strings.Trim(strings.ToLower(v), " ")
 	result := ""
@@ -119,10 +122,10 @@ func bsiSpec(doc sbom.Document) *record {
 		result = v
 		score = 10.0
 	}
-	return newRecordStmt(SBOM_SPEC, "doc", result, score)
+	return db.NewRecordStmt(SBOM_SPEC, "doc", result, score, "")
 }
 
-func bsiSpecVersion(doc sbom.Document) *record {
+func bsiSpecVersion(doc sbom.Document) *db.Record {
 	spec := doc.Spec().GetSpecType()
 	version := doc.Spec().GetVersion()
 
@@ -143,10 +146,10 @@ func bsiSpecVersion(doc sbom.Document) *record {
 		}
 	}
 
-	return newRecordStmt(SBOM_SPEC_VERSION, "doc", result, score)
+	return db.NewRecordStmt(SBOM_SPEC_VERSION, "doc", result, score, "")
 }
 
-func bsiBuildPhase(doc sbom.Document) *record {
+func bsiBuildPhase(doc sbom.Document) *db.Record {
 	lifecycles := doc.Lifecycles()
 	result := ""
 	score := 0.0
@@ -158,10 +161,10 @@ func bsiBuildPhase(doc sbom.Document) *record {
 		score = 10.0
 	}
 
-	return newRecordStmt(SBOM_BUILD, "doc", result, score)
+	return db.NewRecordStmt(SBOM_BUILD, "doc", result, score, "")
 }
 
-func bsiSbomDepth(doc sbom.Document) *record {
+func bsiSbomDepth(doc sbom.Document) *db.Record {
 	result, score := "", 0.0
 	// for doc.Components()
 	totalDependencies := doc.PrimaryComp().GetTotalNoOfDependencies()
@@ -171,10 +174,30 @@ func bsiSbomDepth(doc sbom.Document) *record {
 	}
 	result = fmt.Sprintf("doc has %d dependencies", totalDependencies)
 
-	return newRecordStmt(SBOM_DEPTH, "doc", result, score)
+	// if len(doc.Relations()) == 0 {
+	// 	return db.NewRecordStmt(SBOM_DEPTH, "doc", "no-relationships", 0.0, "")
+	// }
+
+	// primary, _ := lo.Find(doc.Components(), func(c sbom.GetComponent) bool {
+	// 	return c.IsPrimaryComponent()
+	// })
+
+	// if !primary.HasRelationShips() {
+	// 	return db.NewRecordStmt(SBOM_DEPTH, "doc", "no-primary-relationships", 0.0, "")
+	// }
+
+	// if primary.RelationShipState() == "complete" {
+	// 	return db.NewRecordStmt(SBOM_DEPTH, "doc", "complete", 10.0, "")
+	// }
+
+	// if primary.HasRelationShips() {
+	// 	return db.NewRecordStmt(SBOM_DEPTH, "doc", "unattested-has-relationships", 5.0, "")
+	// }
+
+	return db.NewRecordStmt(SBOM_DEPTH, "doc", result, score, "")
 }
 
-func bsiCreator(doc sbom.Document) *record {
+func bsiCreator(doc sbom.Document) *db.Record {
 	result := ""
 	score := 0.0
 
@@ -187,7 +210,7 @@ func bsiCreator(doc sbom.Document) *record {
 	}
 
 	if result != "" {
-		return newRecordStmt(SBOM_CREATOR, "doc", result, score)
+		return db.NewRecordStmt(SBOM_CREATOR, "doc", result, score, "")
 	}
 
 	supplier := doc.Supplier()
@@ -199,7 +222,7 @@ func bsiCreator(doc sbom.Document) *record {
 		}
 
 		if result != "" {
-			return newRecordStmt(SBOM_CREATOR, "doc", result, score)
+			return db.NewRecordStmt(SBOM_CREATOR, "doc", result, score, "")
 		}
 
 		if supplier.GetURL() != "" {
@@ -208,20 +231,20 @@ func bsiCreator(doc sbom.Document) *record {
 		}
 
 		if result != "" {
-			return newRecordStmt(SBOM_CREATOR, "doc", result, score)
+			return db.NewRecordStmt(SBOM_CREATOR, "doc", result, score, "")
 		}
 
 		if supplier.GetContacts() != nil {
 			for _, contact := range supplier.GetContacts() {
-				if contact.Email() != "" {
-					result = contact.Email()
+				if contact.GetEmail() != "" {
+					result = contact.GetEmail()
 					score = 10.0
 					break
 				}
 			}
 
 			if result != "" {
-				return newRecordStmt(SBOM_CREATOR, "doc", result, score)
+				return db.NewRecordStmt(SBOM_CREATOR, "doc", result, score, "")
 			}
 		}
 	}
@@ -235,7 +258,7 @@ func bsiCreator(doc sbom.Document) *record {
 		}
 
 		if result != "" {
-			return newRecordStmt(SBOM_CREATOR, "doc", result, score)
+			return db.NewRecordStmt(SBOM_CREATOR, "doc", result, score, "")
 		}
 
 		if manufacturer.GetURL() != "" {
@@ -244,27 +267,27 @@ func bsiCreator(doc sbom.Document) *record {
 		}
 
 		if result != "" {
-			return newRecordStmt(SBOM_CREATOR, "doc", result, score)
+			return db.NewRecordStmt(SBOM_CREATOR, "doc", result, score, "")
 		}
 
 		if manufacturer.GetContacts() != nil {
 			for _, contact := range manufacturer.GetContacts() {
-				if contact.Email() != "" {
-					result = contact.Email()
+				if contact.GetEmail() != "" {
+					result = contact.GetEmail()
 					score = 10.0
 					break
 				}
 			}
 
 			if result != "" {
-				return newRecordStmt(SBOM_CREATOR, "doc", result, score)
+				return db.NewRecordStmt(SBOM_CREATOR, "doc", result, score, "")
 			}
 		}
 	}
-	return newRecordStmt(SBOM_CREATOR, "doc", "", 0.0)
+	return db.NewRecordStmt(SBOM_CREATOR, "doc", "", 0.0, "")
 }
 
-func bsiTimestamp(doc sbom.Document) *record {
+func bsiTimestamp(doc sbom.Document) *db.Record {
 	score := 0.0
 	result := doc.Spec().GetCreationTimestamp()
 
@@ -272,29 +295,44 @@ func bsiTimestamp(doc sbom.Document) *record {
 		score = 10.0
 	}
 
-	return newRecordStmt(SBOM_TIMESTAMP, "doc", result, score)
+	return db.NewRecordStmt(SBOM_TIMESTAMP, "doc", result, score, "")
 }
 
-func bsiSbomURI(doc sbom.Document) *record {
+func bsiSbomURI(doc sbom.Document) *db.Record {
 	uri := doc.Spec().URI()
 
 	if uri != "" {
-		return newRecordStmt(SBOM_URI, "doc", uri, 10.0)
+		brokenResult := breakLongString(uri, 50)
+		result := strings.Join(brokenResult, "\n")
+		return db.NewRecordStmt(SBOM_URI, "doc", result, 10.0, "")
 	}
 
-	return newRecordStmt(SBOM_URI, "doc", "", 0)
+	return db.NewRecordStmt(SBOM_URI, "doc", "", 0, "")
 }
 
-func bsiComponents(doc sbom.Document) []*record {
-	records := []*record{}
+var (
+	bsiCompIDWithName               = make(map[string]string)
+	bsiComponentList                = make(map[string]bool)
+	bsiPrimaryDependencies          = make(map[string]bool)
+	bsiGetAllPrimaryDepenciesByName = []string{}
+)
+
+func bsiComponents(doc sbom.Document) []*db.Record {
+	records := []*db.Record{}
 
 	if len(doc.Components()) == 0 {
-		records := append(records, newRecordStmt(SBOM_COMPONENTS, "doc", "", 0.0))
+		records := append(records, db.NewRecordStmt(SBOM_COMPONENTS, "doc", "", 0.0, ""))
 		return records
 	}
-	// map package ID to Package Name
-	for _, component := range doc.Components() {
-		CompIDWithName[component.GetID()] = component.GetName()
+
+	bsiCompIDWithName = common.ComponentsNamesMapToIDs(doc)
+	bsiComponentList = common.ComponentsLists(doc)
+	bsiPrimaryDependencies = common.MapPrimaryDependencies(doc)
+	dependencies := common.GetAllPrimaryComponentDependencies(doc)
+	isBsiAllDepesPresentInCompList := common.CheckPrimaryDependenciesInComponentList(dependencies, bsiComponentList)
+
+	if isBsiAllDepesPresentInCompList {
+		bsiGetAllPrimaryDepenciesByName = common.GetDependenciesByName(dependencies, bsiCompIDWithName)
 	}
 
 	for _, component := range doc.Components() {
@@ -310,49 +348,73 @@ func bsiComponents(doc sbom.Document) []*record {
 		records = append(records, bsiComponentOtherUniqIDs(component))
 	}
 
-	records = append(records, newRecordStmt(SBOM_COMPONENTS, "doc", "present", 10.0))
+	records = append(records, db.NewRecordStmt(SBOM_COMPONENTS, "doc", "present", 10.0, ""))
 
 	return records
 }
 
-func bsiComponentDepth(doc sbom.Document, component sbom.GetComponent) *record {
+func bsiComponentDepth(doc sbom.Document, component sbom.GetComponent) *db.Record {
 	result, score := "", 0.0
-	var fResults []string
+	var dependencies []string
+	var allDepByName []string
 
-	dependencies := doc.GetRelationships(component.GetID())
-	if dependencies == nil {
-		return newRecordStmt(COMP_DEPTH, component.GetName(), "no-relationships", 0.0)
-	}
-
-	for _, d := range dependencies {
-		state := component.GetComposition(d)
-		if state == "complete" {
-			componentName := extractName(d)
-			fResults = append(fResults, componentName)
+	if doc.Spec().GetSpecType() == "spdx" {
+		if component.GetPrimaryCompInfo().IsPresent() {
+			result = strings.Join(bsiGetAllPrimaryDepenciesByName, ", ")
 			score = 10.0
-		} else {
-			componentName := extractName(d)
-			// state := "(unattested-has-relationships)"
-			fResults = append(fResults, componentName)
-			score = 5.0
+			return db.NewRecordStmt(COMP_DEPTH, component.GetName(), result, score, "")
 		}
+
+		dependencies = doc.GetRelationships(common.GetID(component.GetSpdxID()))
+		if dependencies == nil {
+			if bsiPrimaryDependencies[common.GetID(component.GetSpdxID())] {
+				return db.NewRecordStmt(COMP_DEPTH, component.GetName(), "included-in", 10.0, "")
+			}
+			return db.NewRecordStmt(COMP_DEPTH, component.GetName(), "no-relationship", 0.0, "")
+		}
+		allDepByName = common.GetDependenciesByName(dependencies, bsiCompIDWithName)
+		if bsiPrimaryDependencies[common.GetID(component.GetSpdxID())] {
+			allDepByName = append([]string{"included-in"}, allDepByName...)
+			result = strings.Join(allDepByName, ", ")
+			return db.NewRecordStmt(COMP_DEPTH, component.GetName(), result, 10.0, "")
+		}
+		result = strings.Join(allDepByName, ", ")
+		return db.NewRecordStmt(COMP_DEPTH, component.GetName(), result, 10.0, "")
+
+	} else if doc.Spec().GetSpecType() == "cyclonedx" {
+		if component.GetPrimaryCompInfo().IsPresent() {
+			result = strings.Join(bsiGetAllPrimaryDepenciesByName, ", ")
+			score = 10.0
+			return db.NewRecordStmt(COMP_DEPTH, component.GetName(), result, score, "")
+		}
+		id := component.GetID()
+		dependencies = doc.GetRelationships(id)
+		if len(dependencies) == 0 {
+			if bsiPrimaryDependencies[id] {
+				return db.NewRecordStmt(COMP_DEPTH, component.GetName(), "included-in", 10.0, "")
+			}
+			return db.NewRecordStmt(COMP_DEPTH, component.GetName(), "no-relationship", 0.0, "")
+		}
+		allDepByName = common.GetDependenciesByName(dependencies, bsiCompIDWithName)
+		if bsiPrimaryDependencies[id] {
+			allDepByName = append([]string{"included-in"}, allDepByName...)
+			result = strings.Join(allDepByName, ", ")
+			return db.NewRecordStmt(COMP_DEPTH, component.GetName(), result, 10.0, "")
+		}
+		result = strings.Join(allDepByName, ", ")
+		return db.NewRecordStmt(COMP_DEPTH, component.GetName(), result, 10.0, "")
 	}
 
-	if fResults != nil {
-		result = strings.Join(fResults, ", ")
-	} else {
-		result += "no-relationships"
-	}
-
-	return newRecordStmt(COMP_DEPTH, component.GetName(), result, score)
+	return db.NewRecordStmt(COMP_DEPTH, component.GetName(), "no-relationships", 0.0, "")
 }
 
-func bsiComponentLicense(component sbom.GetComponent) *record {
+func bsiComponentLicense(component sbom.GetComponent) *db.Record {
 	licenses := component.Licenses()
 	score := 0.0
 
 	if len(licenses) == 0 {
-		return newRecordStmt(COMP_LICENSE, component.GetName(), "not-compliant", score)
+		// fmt.Printf("component %s : %s has no licenses\n", component.Name(), component.Version())
+		return db.NewRecordStmt(COMP_LICENSE, component.GetName(), "not-compliant", score, "")
 	}
 
 	var spdx, aboutcode, custom int
@@ -380,13 +442,13 @@ func bsiComponentLicense(component sbom.GetComponent) *record {
 
 	if total != len(licenses) {
 		score = 0.0
-		return newRecordStmt(COMP_LICENSE, component.GetName(), "not-compliant", score)
+		return db.NewRecordStmt(COMP_LICENSE, component.GetName(), "not-compliant", score, "")
 	}
 
-	return newRecordStmt(COMP_LICENSE, component.GetName(), "compliant", 10.0)
+	return db.NewRecordStmt(COMP_LICENSE, component.GetName(), "compliant", 10.0, "")
 }
 
-func bsiComponentSourceHash(component sbom.GetComponent) *record {
+func bsiComponentSourceHash(component sbom.GetComponent) *db.Record {
 	result := ""
 	score := 0.0
 
@@ -395,10 +457,10 @@ func bsiComponentSourceHash(component sbom.GetComponent) *record {
 		score = 10.0
 	}
 
-	return newRecordStmtOptional(COMP_SOURCE_HASH, component.GetName(), result, score)
+	return db.NewRecordStmtOptional(COMP_SOURCE_HASH, component.GetName(), result, score)
 }
 
-func bsiComponentOtherUniqIDs(component sbom.GetComponent) *record {
+func bsiComponentOtherUniqIDs(component sbom.GetComponent) *db.Record {
 	result := ""
 	score := 0.0
 
@@ -408,7 +470,7 @@ func bsiComponentOtherUniqIDs(component sbom.GetComponent) *record {
 		result = string(purl[0])
 		score = 10.0
 
-		return newRecordStmtOptional(COMP_OTHER_UNIQ_IDS, component.GetName(), result, score)
+		return db.NewRecordStmtOptional(COMP_OTHER_UNIQ_IDS, component.GetName(), result, score)
 	}
 
 	cpes := component.GetCpes()
@@ -417,32 +479,32 @@ func bsiComponentOtherUniqIDs(component sbom.GetComponent) *record {
 		result = string(cpes[0])
 		score = 10.0
 
-		return newRecordStmtOptional(COMP_OTHER_UNIQ_IDS, component.GetName(), result, score)
+		return db.NewRecordStmtOptional(COMP_OTHER_UNIQ_IDS, component.GetName(), result, score)
 	}
 
-	return newRecordStmtOptional(COMP_OTHER_UNIQ_IDS, component.GetName(), "", 0.0)
+	return db.NewRecordStmtOptional(COMP_OTHER_UNIQ_IDS, component.GetName(), "", 0.0)
 }
 
-func bsiComponentDownloadURL(component sbom.GetComponent) *record {
+func bsiComponentDownloadURL(component sbom.GetComponent) *db.Record {
 	result := component.GetDownloadLocationURL()
 
 	if result != "" {
-		return newRecordStmtOptional(COMP_DOWNLOAD_URL, component.GetName(), result, 10.0)
+		return db.NewRecordStmtOptional(COMP_DOWNLOAD_URL, component.GetName(), result, 10.0)
 	}
-	return newRecordStmtOptional(COMP_DOWNLOAD_URL, component.GetName(), "", 0.0)
+	return db.NewRecordStmtOptional(COMP_DOWNLOAD_URL, component.GetName(), "", 0.0)
 }
 
-func bsiComponentSourceCodeURL(component sbom.GetComponent) *record {
+func bsiComponentSourceCodeURL(component sbom.GetComponent) *db.Record {
 	result := component.SourceCodeURL()
 
 	if result != "" {
-		return newRecordStmtOptional(COMP_SOURCE_CODE_URL, component.GetName(), result, 10.0)
+		return db.NewRecordStmtOptional(COMP_SOURCE_CODE_URL, component.GetName(), result, 10.0)
 	}
 
-	return newRecordStmtOptional(COMP_SOURCE_CODE_URL, component.GetName(), "", 0.0)
+	return db.NewRecordStmtOptional(COMP_SOURCE_CODE_URL, component.GetName(), "", 0.0)
 }
 
-func bsiComponentHash(component sbom.GetComponent) *record {
+func bsiComponentHash(component sbom.GetComponent) *db.Record {
 	result := ""
 	algos := []string{"SHA256", "SHA-256", "sha256", "sha-256"}
 	score := 0.0
@@ -457,30 +519,30 @@ func bsiComponentHash(component sbom.GetComponent) *record {
 		}
 	}
 
-	return newRecordStmt(COMP_HASH, component.GetName(), result, score)
+	return db.NewRecordStmt(COMP_HASH, component.GetName(), result, score, "")
 }
 
-func bsiComponentVersion(component sbom.GetComponent) *record {
+func bsiComponentVersion(component sbom.GetComponent) *db.Record {
 	result := component.GetVersion()
 
 	if result != "" {
-		return newRecordStmt(COMP_VERSION, component.GetName(), result, 10.0)
+		return db.NewRecordStmt(COMP_VERSION, component.GetName(), result, 10.0, "")
 	}
 
-	return newRecordStmt(COMP_VERSION, component.GetName(), "", 0.0)
+	return db.NewRecordStmt(COMP_VERSION, component.GetName(), "", 0.0, "")
 }
 
-func bsiComponentName(component sbom.GetComponent) *record {
+func bsiComponentName(component sbom.GetComponent) *db.Record {
 	result := component.GetName()
 
 	if result != "" {
-		return newRecordStmt(COMP_NAME, component.GetName(), result, 10.0)
+		return db.NewRecordStmt(COMP_NAME, component.GetName(), result, 10.0, "")
 	}
 
-	return newRecordStmt(COMP_NAME, component.GetName(), "", 0.0)
+	return db.NewRecordStmt(COMP_NAME, component.GetName(), "", 0.0, "")
 }
 
-func bsiComponentCreator(component sbom.GetComponent) *record {
+func bsiComponentCreator(component sbom.GetComponent) *db.Record {
 	result := ""
 	score := 0.0
 
@@ -492,7 +554,7 @@ func bsiComponentCreator(component sbom.GetComponent) *record {
 		}
 
 		if result != "" {
-			return newRecordStmt(COMP_CREATOR, component.GetName(), result, score)
+			return db.NewRecordStmt(COMP_CREATOR, component.GetName(), result, score, "")
 		}
 
 		if supplier.GetURL() != "" {
@@ -501,20 +563,20 @@ func bsiComponentCreator(component sbom.GetComponent) *record {
 		}
 
 		if result != "" {
-			return newRecordStmt(COMP_CREATOR, component.GetName(), result, score)
+			return db.NewRecordStmt(COMP_CREATOR, component.GetName(), result, score, "")
 		}
 
 		if supplier.GetContacts() != nil {
 			for _, contact := range supplier.GetContacts() {
-				if contact.Email() != "" {
-					result = contact.Email()
+				if contact.GetEmail() != "" {
+					result = contact.GetEmail()
 					score = 10.0
 					break
 				}
 			}
 
 			if result != "" {
-				return newRecordStmt(COMP_CREATOR, component.GetName(), result, score)
+				return db.NewRecordStmt(COMP_CREATOR, component.GetName(), result, score, "")
 			}
 		}
 	}
@@ -528,7 +590,7 @@ func bsiComponentCreator(component sbom.GetComponent) *record {
 		}
 
 		if result != "" {
-			return newRecordStmt(COMP_CREATOR, component.GetName(), result, score)
+			return db.NewRecordStmt(COMP_CREATOR, component.GetName(), result, score, "")
 		}
 
 		if manufacturer.GetURL() != "" {
@@ -537,23 +599,23 @@ func bsiComponentCreator(component sbom.GetComponent) *record {
 		}
 
 		if result != "" {
-			return newRecordStmt(COMP_CREATOR, component.GetName(), result, score)
+			return db.NewRecordStmt(COMP_CREATOR, component.GetName(), result, score, "")
 		}
 
 		if manufacturer.GetContacts() != nil {
 			for _, contact := range manufacturer.GetContacts() {
-				if contact.Email() != "" {
-					result = contact.Email()
+				if contact.GetEmail() != "" {
+					result = contact.GetEmail()
 					score = 10.0
 					break
 				}
 			}
 
 			if result != "" {
-				return newRecordStmt(COMP_CREATOR, component.GetName(), result, score)
+				return db.NewRecordStmt(COMP_CREATOR, component.GetName(), result, score, "")
 			}
 		}
 	}
 
-	return newRecordStmt(COMP_CREATOR, component.GetName(), "", 0.0)
+	return db.NewRecordStmt(COMP_CREATOR, component.GetName(), "", 0.0, "")
 }

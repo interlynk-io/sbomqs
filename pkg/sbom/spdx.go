@@ -48,12 +48,12 @@ type SpdxDoc struct {
 	ctx              context.Context
 	SpdxSpec         *Specs
 	Comps            []GetComponent
-	authors          []GetAuthor
+	Auths            []GetAuthor
 	SpdxTools        []GetTool
 	Rels             []GetRelation
 	logs             []string
 	PrimaryComponent PrimaryComp
-	lifecycles       string
+	Lifecycle        string
 	Dependencies     map[string][]string
 	composition      map[string]string
 }
@@ -110,7 +110,7 @@ func (s SpdxDoc) Components() []GetComponent {
 }
 
 func (s SpdxDoc) Authors() []GetAuthor {
-	return s.authors
+	return s.Auths
 }
 
 func (s SpdxDoc) Tools() []GetTool {
@@ -126,7 +126,7 @@ func (s SpdxDoc) Logs() []string {
 }
 
 func (s SpdxDoc) Lifecycles() []string {
-	return []string{s.lifecycles}
+	return []string{s.Lifecycle}
 }
 
 func (s SpdxDoc) Manufacturer() Manufacturer {
@@ -141,16 +141,32 @@ func (s SpdxDoc) GetRelationships(componentID string) []string {
 	return s.Dependencies[componentID]
 }
 
+// Helper function to clean up keys
+func CleanKey(key string) string {
+	return strings.Trim(key, `"`)
+}
+
 func (s SpdxDoc) GetComposition(componentID string) string {
 	return s.composition[componentID]
 }
 
 func (s *SpdxDoc) parse() {
+	s.parseDoc()
 	s.parseSpec()
 	s.parseAuthors()
 	s.parseTool()
 	s.parsePrimaryCompAndRelationships()
 	s.parseComps()
+}
+
+func (s *SpdxDoc) parseDoc() {
+	if s.doc == nil {
+		s.addToLogs("cdx doc is not parsable")
+		return
+	}
+	if comment := s.doc.CreationInfo.CreatorComment; comment != "" {
+		s.Lifecycle = comment
+	}
 }
 
 func (s *SpdxDoc) parseSpec() {
@@ -210,11 +226,22 @@ func (s *SpdxDoc) parseComps() {
 		nc.isReqFieldsPresent = s.pkgRequiredFields(index)
 		nc.Purls = s.purls(index)
 		nc.Cpes = s.cpes(index)
+		nc.OmniID = nil
+		nc.Swhid = nil
+		nc.Swid = nil
 		nc.Checksums = s.checksums(index)
 		nc.ExternalRefs = s.externalRefs(index)
 		nc.licenses = s.licenses(index)
 		nc.ID = string(sc.PackageSPDXIdentifier)
 		nc.PackageLicenseConcluded = sc.PackageLicenseConcluded
+		if strings.Contains(s.PrimaryComponent.ID, string(sc.PackageSPDXIdentifier)) {
+			pc := PrimaryComp{}
+			pc.Name = sc.PackageName
+			pc.ID = string(sc.PackageSPDXIdentifier)
+			pc.Present = true
+			nc.isPrimary = true
+			nc.PrimaryCompt = pc
+		}
 
 		manu := s.getManufacturer(index)
 		if manu != nil {
@@ -263,7 +290,7 @@ func (s *SpdxDoc) parseComps() {
 }
 
 func (s *SpdxDoc) parseAuthors() {
-	s.authors = []GetAuthor{}
+	s.Auths = []GetAuthor{}
 
 	if s.doc.CreationInfo == nil {
 		return
@@ -281,13 +308,12 @@ func (s *SpdxDoc) parseAuthors() {
 			a.Name = entity.name
 			a.Email = entity.email
 			a.AuthorType = ctType
-			s.authors = append(s.authors, a)
+			s.Auths = append(s.Auths, a)
 		}
 	}
 }
 
 func (s *SpdxDoc) parsePrimaryCompAndRelationships() {
-	s.Rels = []GetRelation{}
 	s.Dependencies = make(map[string][]string)
 	var err error
 	var aBytes, bBytes []byte
@@ -295,13 +321,13 @@ func (s *SpdxDoc) parsePrimaryCompAndRelationships() {
 	var totalDependencies int
 
 	for _, r := range s.doc.Relationships {
-		// check relation type DESCRIBE
-		if strings.ToUpper(r.Relationship) == spdx_common.TypeRelationshipDescribe {
-			bBytes, err = r.RefB.ElementRefID.MarshalJSON()
+		// spdx_common.TypeRelationshipDescribe
+		if strings.ToUpper(r.Relationship) == "DESCRIBES" {
+			bBytes, err = r.RefB.MarshalJSON()
 			if err != nil {
 				continue
 			}
-			primaryComponent = string(bBytes)
+			primaryComponent = CleanKey(string(bBytes))
 			s.PrimaryComponent.ID = primaryComponent
 			s.PrimaryComponent.Present = true
 		}
@@ -313,28 +339,17 @@ func (s *SpdxDoc) parsePrimaryCompAndRelationships() {
 			if err != nil {
 				continue
 			}
-
-			if string(aBytes) == primaryComponent {
-				bBytes, err = r.RefB.MarshalJSON()
-				if err != nil {
-					continue
-				}
-
-				nr := Relation{
-					From: primaryComponent,
-					To:   string(bBytes),
-				}
+			bBytes, err = r.RefB.MarshalJSON()
+			if err != nil {
+				continue
+			}
+			if CleanKey(string(aBytes)) == s.PrimaryComponent.ID {
 				totalDependencies++
+				s.PrimaryComponent.HasDependency = true
+				s.Dependencies[CleanKey(string(aBytes))] = append(s.Dependencies[CleanKey(string(aBytes))], CleanKey(string(bBytes)))
 
-				s.Rels = append(s.Rels, nr)
-				s.Dependencies[primaryComponent] = append(s.Dependencies[primaryComponent], string(bBytes))
 			} else {
-				nr := Relation{
-					From: string(aBytes),
-					To:   string(bBytes),
-				}
-				s.Dependencies[string(aBytes)] = append(s.Dependencies[string(aBytes)], string(bBytes))
-				s.Rels = append(s.Rels, nr)
+				s.Dependencies[CleanKey(string(aBytes))] = append(s.Dependencies[CleanKey(string(aBytes))], CleanKey(string(bBytes)))
 			}
 		}
 	}
@@ -557,6 +572,7 @@ func (s *SpdxDoc) externalRefs(index int) []GetExternalReference {
 	for _, ext := range pkg.PackageExternalReferences {
 		extRef := ExternalReference{}
 		extRef.RefType = ext.RefType
+		extRef.RefLocator = ext.Locator
 		extRefs = append(extRefs, extRef)
 	}
 

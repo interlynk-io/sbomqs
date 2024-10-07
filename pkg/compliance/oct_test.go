@@ -3,6 +3,7 @@ package compliance
 import (
 	"testing"
 
+	"github.com/interlynk-io/sbomqs/pkg/compliance/db"
 	"github.com/interlynk-io/sbomqs/pkg/licenses"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 	"gotest.tools/assert"
@@ -82,20 +83,23 @@ type desired struct {
 func TestOctSbomPass(t *testing.T) {
 	doc := createDummyDocument()
 	testCases := []struct {
-		actual   *record
+		name     string
+		actual   *db.Record
 		expected desired
 	}{
 		{
+			name:   "octSpec",
 			actual: octSpec(doc),
 			expected: desired{
 				name:   "octSpec",
 				score:  10.0,
 				result: "spdx",
 				key:    SBOM_SPEC,
-				id:     "SBOM Format",
+				id:     "SPDX Elements",
 			},
 		},
 		{
+			name:   "octSbomName",
 			actual: octSbomName(doc),
 			expected: desired{
 				name:   "octSbomName",
@@ -106,26 +110,29 @@ func TestOctSbomPass(t *testing.T) {
 			},
 		},
 		{
+			name:   "octSbomNamespace",
 			actual: octSbomNamespace(doc),
 			expected: desired{
 				name:   "octSbomNamespace",
 				score:  10.0,
-				result: "https://anchore.com/syft/dir/sbomqs-6ec18b03-96cb-4951-b299-929890c1cfc8",
+				result: "https://anchore.com/syft/dir/sbomqs-6ec18b03-96cb-\n4951-b299-929890c1cfc8",
 				key:    SBOM_NAMESPACE,
 				id:     "SPDX Elements",
 			},
 		},
 		{
+			name:   "octSbomOrganization",
 			actual: octSbomOrganization(doc),
 			expected: desired{
 				name:   "octSbomOrganization",
 				score:  10.0,
 				result: "interlynk",
 				key:    SBOM_ORG,
-				id:     "SBOM Build Information",
+				id:     "SPDX Elements",
 			},
 		},
 		{
+			name:   "octSbomComment",
 			actual: octSbomComment(doc),
 			expected: desired{
 				name:   "octSbomComment",
@@ -136,16 +143,18 @@ func TestOctSbomPass(t *testing.T) {
 			},
 		},
 		{
+			name:   "octSbomTool",
 			actual: octSbomTool(doc),
 			expected: desired{
 				name:   "octSbomTool",
 				score:  10.0,
 				result: "syft",
 				key:    SBOM_TOOL,
-				id:     "SBOM Build Information",
+				id:     "SPDX Elements",
 			},
 		},
 		{
+			name:   "octSbomLicense",
 			actual: octSbomLicense(doc),
 			expected: desired{
 				name:   "octSbomLicense",
@@ -156,6 +165,7 @@ func TestOctSbomPass(t *testing.T) {
 			},
 		},
 		{
+			name:   "octSpecVersion",
 			actual: octSpecVersion(doc),
 			expected: desired{
 				name:   "octSpecVersion",
@@ -166,6 +176,7 @@ func TestOctSbomPass(t *testing.T) {
 			},
 		},
 		{
+			name:   "octCreatedTimestamp",
 			actual: octCreatedTimestamp(doc),
 			expected: desired{
 				name:   "octCreatedTimestamp",
@@ -176,6 +187,7 @@ func TestOctSbomPass(t *testing.T) {
 			},
 		},
 		{
+			name:   "octSpecSpdxID",
 			actual: octSpecSpdxID(doc),
 			expected: desired{
 				name:   "octSpecSpdxID",
@@ -185,28 +197,30 @@ func TestOctSbomPass(t *testing.T) {
 				id:     "SPDX Elements",
 			},
 		},
-
 		{
+			name:   "octMachineFormat",
 			actual: octMachineFormat(doc),
 			expected: desired{
 				name:   "octMachineFormat",
 				score:  10.0,
 				result: "spdx, json",
 				key:    SBOM_MACHINE_FORMAT,
-				id:     "Machine Readable Data Format",
+				id:     "SPDX Elements",
 			},
 		},
 		{
+			name:   "octHumanFormat",
 			actual: octHumanFormat(doc),
 			expected: desired{
 				name:   "octHumanFormat",
 				score:  10.0,
 				result: "json",
 				key:    SBOM_HUMAN_FORMAT,
-				id:     "Human Readable Data Format",
+				id:     "SPDX Elements",
 			},
 		},
 		{
+			name:   "octPackageName",
 			actual: octPackageName(doc.Components()[0]),
 			expected: desired{
 				name:   "octPackageName",
@@ -217,6 +231,7 @@ func TestOctSbomPass(t *testing.T) {
 			},
 		},
 		{
+			name:   "octPackageVersion",
 			actual: octPackageVersion(doc.Components()[0]),
 			expected: desired{
 				name:   "octPackageVersion",
@@ -227,6 +242,7 @@ func TestOctSbomPass(t *testing.T) {
 			},
 		},
 		{
+			name:   "octPackageSpdxID",
 			actual: octPackageSpdxID(doc.Components()[0]),
 			expected: desired{
 				name:   "octPackageSpdxID",
@@ -237,6 +253,7 @@ func TestOctSbomPass(t *testing.T) {
 			},
 		},
 		{
+			name:   "octPackageSupplier",
 			actual: octPackageSupplier(doc.Components()[0]),
 			expected: desired{
 				name:   "octPackageSupplier",
@@ -247,6 +264,7 @@ func TestOctSbomPass(t *testing.T) {
 			},
 		},
 		{
+			name:   "octPackageHash",
 			actual: octPackageHash(doc.Components()[0]),
 			expected: desired{
 				name:   "octPackageHash",
@@ -257,6 +275,7 @@ func TestOctSbomPass(t *testing.T) {
 			},
 		},
 		{
+			name:   "octPackageExternalRefs",
 			actual: octPackageExternalRefs(doc.Components()[0]),
 			expected: desired{
 				name:   "octPackageExternalRefs",
@@ -267,6 +286,7 @@ func TestOctSbomPass(t *testing.T) {
 			},
 		},
 		{
+			name:   "octPackageCopyright",
 			actual: octPackageCopyright(doc.Components()[0]),
 			expected: desired{
 				name:   "octPackageCopyright",
@@ -277,6 +297,7 @@ func TestOctSbomPass(t *testing.T) {
 			},
 		},
 		{
+			name:   "octPackageFileAnalyzed",
 			actual: octPackageFileAnalyzed(doc.Components()[0]),
 			expected: desired{
 				name:   "octPackageFileAnalyzed",
@@ -287,6 +308,7 @@ func TestOctSbomPass(t *testing.T) {
 			},
 		},
 		{
+			name:   "octPackageConLicense",
 			actual: octPackageConLicense(doc.Components()[0]),
 			expected: desired{
 				name:   "octPackageConLicense",
@@ -297,6 +319,7 @@ func TestOctSbomPass(t *testing.T) {
 			},
 		},
 		{
+			name:   "octPackageDecLicense",
 			actual: octPackageDecLicense(doc.Components()[0]),
 			expected: desired{
 				name:   "octPackageDecLicense",
@@ -307,11 +330,12 @@ func TestOctSbomPass(t *testing.T) {
 			},
 		},
 		{
+			name:   "octPackageDownloadURL",
 			actual: octPackageDownloadURL(doc.Components()[0]),
 			expected: desired{
 				name:   "octPackageDownloadURL",
 				score:  10.0,
-				result: "https://registry.npmjs.org/core-js/-/core-js-3.6.5.tgz",
+				result: "https://registry.npmjs.org/core-js/-/core-js-3.6.5\n.tgz",
 				key:    PACK_DOWNLOAD_URL,
 				id:     doc.Components()[0].GetName(),
 			},
@@ -319,10 +343,10 @@ func TestOctSbomPass(t *testing.T) {
 	}
 
 	for _, test := range testCases {
-		assert.Equal(t, test.expected.score, test.actual.score)
-		assert.Equal(t, test.expected.key, test.actual.checkKey)
-		assert.Equal(t, test.expected.id, test.actual.id)
-		assert.Equal(t, test.expected.result, test.actual.checkValue)
+		assert.Equal(t, test.expected.score, test.actual.Score, "Score mismatch for %s", test.name)
+		assert.Equal(t, test.expected.key, test.actual.CheckKey, "Key mismatch for %s", test.name)
+		assert.Equal(t, test.expected.id, test.actual.ID, "ID mismatch for %s", test.name)
+		assert.Equal(t, test.expected.result, test.actual.CheckValue, "Result mismatch for %s", test.name)
 	}
 }
 
@@ -392,7 +416,7 @@ func createFailureDummyDocument() sbom.Document {
 func TestOctSbomFail(t *testing.T) {
 	doc := createFailureDummyDocument()
 	testCases := []struct {
-		actual   *record
+		actual   *db.Record
 		expected desired
 	}{
 		{
@@ -401,7 +425,7 @@ func TestOctSbomFail(t *testing.T) {
 				score:  0.0,
 				result: "cyclonedx",
 				key:    SBOM_SPEC,
-				id:     "SBOM Format",
+				id:     "SPDX Elements",
 			},
 		},
 		{
@@ -428,7 +452,7 @@ func TestOctSbomFail(t *testing.T) {
 				score:  0.0,
 				result: "",
 				key:    SBOM_ORG,
-				id:     "SBOM Build Information",
+				id:     "SPDX Elements",
 			},
 		},
 		{
@@ -446,7 +470,7 @@ func TestOctSbomFail(t *testing.T) {
 				score:  0.0,
 				result: "",
 				key:    SBOM_TOOL,
-				id:     "SBOM Build Information",
+				id:     "SPDX Elements",
 			},
 		},
 		{
@@ -491,7 +515,7 @@ func TestOctSbomFail(t *testing.T) {
 				score:  0.0,
 				result: "cyclonedx, xml",
 				key:    SBOM_MACHINE_FORMAT,
-				id:     "Machine Readable Data Format",
+				id:     "SPDX Elements",
 			},
 		},
 		{
@@ -500,7 +524,7 @@ func TestOctSbomFail(t *testing.T) {
 				score:  0.0,
 				result: "xml",
 				key:    SBOM_HUMAN_FORMAT,
-				id:     "Human Readable Data Format",
+				id:     "SPDX Elements",
 			},
 		},
 		{
@@ -605,9 +629,9 @@ func TestOctSbomFail(t *testing.T) {
 	}
 
 	for _, test := range testCases {
-		assert.Equal(t, test.expected.score, test.actual.score)
-		assert.Equal(t, test.expected.key, test.actual.checkKey)
-		assert.Equal(t, test.expected.id, test.actual.id)
-		assert.Equal(t, test.expected.result, test.actual.checkValue)
+		assert.Equal(t, test.expected.score, test.actual.Score)
+		assert.Equal(t, test.expected.key, test.actual.CheckKey)
+		assert.Equal(t, test.expected.id, test.actual.ID)
+		assert.Equal(t, test.expected.result, test.actual.CheckValue)
 	}
 }

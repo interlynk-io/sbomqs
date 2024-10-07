@@ -1,5 +1,7 @@
 package compliance
 
+import "github.com/interlynk-io/sbomqs/pkg/compliance/db"
+
 type ntiaScoreResult struct {
 	id              string
 	requiredScore   float64
@@ -44,8 +46,8 @@ func (r *ntiaScoreResult) totalOptionalScore() float64 {
 	return r.optionalScore / float64(r.optionalRecords)
 }
 
-func ntiaKeyIDScore(db *db, key int, id string) *ntiaScoreResult {
-	records := db.getRecordsByKeyID(key, id)
+func ntiaKeyIDScore(db *db.DB, key int, id string) *ntiaScoreResult {
+	records := db.GetRecordsByKeyID(key, id)
 
 	if len(records) == 0 {
 		return newNtiaScoreResult(id)
@@ -58,11 +60,11 @@ func ntiaKeyIDScore(db *db, key int, id string) *ntiaScoreResult {
 	optionalRecs := 0
 
 	for _, r := range records {
-		if r.required {
-			requiredScore += r.score
+		if r.Required {
+			requiredScore += r.Score
 			requiredRecs++
 		} else {
-			optionalScore += r.score
+			optionalScore += r.Score
 			optionalRecs++
 		}
 	}
@@ -76,11 +78,11 @@ func ntiaKeyIDScore(db *db, key int, id string) *ntiaScoreResult {
 	}
 }
 
-func ntiaAggregateScore(db *db) *ntiaScoreResult {
+func ntiaAggregateScore(db *db.DB) *ntiaScoreResult {
 	var results []ntiaScoreResult
 	var finalResult ntiaScoreResult
 
-	ids := db.getAllIDs()
+	ids := db.GetAllIDs()
 	for _, id := range ids {
 		results = append(results, *ntiaIDScore(db, id))
 	}
@@ -95,8 +97,8 @@ func ntiaAggregateScore(db *db) *ntiaScoreResult {
 	return &finalResult
 }
 
-func ntiaIDScore(db *db, id string) *ntiaScoreResult {
-	records := db.getRecordsByID(id)
+func ntiaIDScore(db *db.DB, id string) *ntiaScoreResult {
+	records := db.GetRecordsByID(id)
 
 	if len(records) == 0 {
 		return newNtiaScoreResult(id)
@@ -109,11 +111,11 @@ func ntiaIDScore(db *db, id string) *ntiaScoreResult {
 	optionalRecs := 0
 
 	for _, r := range records {
-		if r.required {
-			requiredScore += r.score
+		if r.Required {
+			requiredScore += r.Score
 			requiredRecs++
 		} else {
-			optionalScore += r.score
+			optionalScore += r.Score
 			optionalRecs++
 		}
 	}

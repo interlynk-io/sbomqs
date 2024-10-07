@@ -13,7 +13,6 @@ linters:
     - stylecheck
     - staticcheck
     - unconvert
-    - whitespace
 
 linters-settings:
   unparam:

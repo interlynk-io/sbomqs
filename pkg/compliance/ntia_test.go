@@ -3,6 +3,7 @@ package compliance
 import (
 	"testing"
 
+	db "github.com/interlynk-io/sbomqs/pkg/compliance/db"
 	"github.com/interlynk-io/sbomqs/pkg/purl"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 	"gotest.tools/assert"
@@ -36,7 +37,10 @@ func createSpdxDummyDocumentNtia() sbom.Document {
 	}
 
 	var primary sbom.PrimaryComp
+	primary.ID = pack.ID
 	primary.Dependecies = 1
+	primary.Present = true
+	pack.PrimaryCompt = primary
 
 	var externalReferences []sbom.GetExternalReference
 	externalReferences = append(externalReferences, extRef)
@@ -46,9 +50,10 @@ func createSpdxDummyDocumentNtia() sbom.Document {
 	packages = append(packages, pack)
 
 	relationships := make(map[string][]string)
-	relationships["github/spdx/tools-golang@9db247b854b9634d0109153d515fd1a9efd5a1b1"] = append(relationships["github/spdx/tools-golang@9db247b854b9634d0109153d515fd1a9efd5a1b1"], "github/spdx/gordf@b735bd5aac89fe25cad4ef488a95bc00ea549edd")
+	relationships[sbom.CleanKey("github/spdx/tools-golang@9db247b854b9634d0109153d515fd1a9efd5a1b1")] = append(relationships[sbom.CleanKey("github/spdx/tools-golang@9db247b854b9634d0109153d515fd1a9efd5a1b1")], sbom.CleanKey("github/spdx/gordf@b735bd5aac89fe25cad4ef488a95bc00ea549edd"))
+	GetAllPrimaryDepenciesByName = []string{"gordf"}
 
-	CompIDWithName["github/spdx/gordf@b735bd5aac89fe25cad4ef488a95bc00ea549edd"] = "gordf"
+	compIDWithName["github/spdx/gordf@b735bd5aac89fe25cad4ef488a95bc00ea549edd"] = "gordf"
 	doc := sbom.SpdxDoc{
 		SpdxSpec:         s,
 		Comps:            packages,
@@ -70,7 +75,7 @@ func TestNtiaSpdxSbomPass(t *testing.T) {
 	doc := createSpdxDummyDocumentNtia()
 	testCases := []struct {
 		name     string
-		actual   *record
+		actual   *db.Record
 		expected desiredNtia
 	}{
 		{
@@ -168,10 +173,10 @@ func TestNtiaSpdxSbomPass(t *testing.T) {
 	}
 
 	for _, test := range testCases {
-		assert.Equal(t, test.expected.score, test.actual.score, "Score mismatch for %s", test.name)
-		assert.Equal(t, test.expected.key, test.actual.checkKey, "Key mismatch for %s", test.name)
-		assert.Equal(t, test.expected.id, test.actual.id, "ID mismatch for %s", test.name)
-		assert.Equal(t, test.expected.result, test.actual.checkValue, "Result mismatch for %s", test.name)
+		assert.Equal(t, test.expected.score, test.actual.Score, "Score mismatch for %s", test.name)
+		assert.Equal(t, test.expected.key, test.actual.CheckKey, "Key mismatch for %s", test.name)
+		assert.Equal(t, test.expected.id, test.actual.ID, "ID mismatch for %s", test.name)
+		assert.Equal(t, test.expected.result, test.actual.CheckValue, "Result mismatch for %s", test.name)
 	}
 }
 
@@ -219,7 +224,7 @@ func createCdxDummyDocumentNtia() sbom.Document {
 	var primary sbom.PrimaryComp
 	primary.Dependecies = 1
 
-	CompIDWithName["github/spdx/gordf@b735bd5aac89fe25cad4ef488a95bc00ea549edd"] = "gordf"
+	compIDWithName["github/spdx/gordf@b735bd5aac89fe25cad4ef488a95bc00ea549edd"] = "gordf"
 
 	doc := sbom.CdxDoc{
 		CdxSpec:          cdxSpec,
@@ -235,7 +240,7 @@ func TestNtiaCdxSbomPass(t *testing.T) {
 	doc := createCdxDummyDocumentNtia()
 	testCases := []struct {
 		name     string
-		actual   *record
+		actual   *db.Record
 		expected desiredNtia
 	}{
 		{
@@ -330,10 +335,10 @@ func TestNtiaCdxSbomPass(t *testing.T) {
 		},
 	}
 	for _, test := range testCases {
-		assert.Equal(t, test.expected.score, test.actual.score, "Score mismatch for %s", test.name)
-		assert.Equal(t, test.expected.key, test.actual.checkKey, "Key mismatch for %s", test.name)
-		assert.Equal(t, test.expected.id, test.actual.id, "ID mismatch for %s", test.name)
-		assert.Equal(t, test.expected.result, test.actual.checkValue, "Result mismatch for %s", test.name)
+		assert.Equal(t, test.expected.score, test.actual.Score, "Score mismatch for %s", test.name)
+		assert.Equal(t, test.expected.key, test.actual.CheckKey, "Key mismatch for %s", test.name)
+		assert.Equal(t, test.expected.id, test.actual.ID, "ID mismatch for %s", test.name)
+		assert.Equal(t, test.expected.result, test.actual.CheckValue, "Result mismatch for %s", test.name)
 	}
 }
 
@@ -390,7 +395,7 @@ func TestNTIASbomFail(t *testing.T) {
 	doc := createSpdxDummyDocumentFailNtia()
 	testCases := []struct {
 		name     string
-		actual   *record
+		actual   *db.Record
 		expected desiredNtia
 	}{
 		{
@@ -430,7 +435,7 @@ func TestNTIASbomFail(t *testing.T) {
 				score:  0.0,
 				result: "",
 				key:    COMP_CREATOR,
-				id:     doc.Components()[0].GetID(),
+				id:     doc.Components()[0].GetName(),
 			},
 		},
 
@@ -441,7 +446,7 @@ func TestNTIASbomFail(t *testing.T) {
 				score:  0.0,
 				result: "",
 				key:    COMP_NAME,
-				id:     doc.Components()[0].GetID(),
+				id:     doc.Components()[0].GetName(),
 			},
 		},
 		{
@@ -451,7 +456,7 @@ func TestNTIASbomFail(t *testing.T) {
 				score:  0.0,
 				result: "",
 				key:    COMP_VERSION,
-				id:     doc.Components()[0].GetID(),
+				id:     doc.Components()[0].GetName(),
 			},
 		},
 		{
@@ -461,15 +466,15 @@ func TestNTIASbomFail(t *testing.T) {
 				score:  0.0,
 				result: "",
 				key:    COMP_OTHER_UNIQ_IDS,
-				id:     doc.Components()[0].GetID(),
+				id:     doc.Components()[0].GetName(),
 			},
 		},
 	}
 
 	for _, test := range testCases {
-		assert.Equal(t, test.expected.score, test.actual.score, "Score mismatch for %s", test.name)
-		assert.Equal(t, test.expected.key, test.actual.checkKey, "Key mismatch for %s", test.name)
-		assert.Equal(t, test.expected.id, test.actual.id, "ID mismatch for %s", test.name)
-		assert.Equal(t, test.expected.result, test.actual.checkValue, "Result mismatch for %s", test.name)
+		assert.Equal(t, test.expected.score, test.actual.Score, "Score mismatch for %s", test.name)
+		assert.Equal(t, test.expected.key, test.actual.CheckKey, "Key mismatch for %s", test.name)
+		assert.Equal(t, test.expected.id, test.actual.ID, "ID mismatch for %s", test.name)
+		assert.Equal(t, test.expected.result, test.actual.CheckValue, "Result mismatch for %s", test.name)
 	}
 }

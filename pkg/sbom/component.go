@@ -18,7 +18,10 @@ package sbom
 import (
 	"github.com/interlynk-io/sbomqs/pkg/cpe"
 	"github.com/interlynk-io/sbomqs/pkg/licenses"
+	"github.com/interlynk-io/sbomqs/pkg/omniborid"
 	"github.com/interlynk-io/sbomqs/pkg/purl"
+	"github.com/interlynk-io/sbomqs/pkg/swhid"
+	"github.com/interlynk-io/sbomqs/pkg/swid"
 )
 
 type GetComponent interface {
@@ -27,6 +30,9 @@ type GetComponent interface {
 	GetVersion() string
 	GetCpes() []cpe.CPE
 	GetPurls() []purl.PURL
+	Swhids() []swhid.SWHID
+	OmniborIDs() []omniborid.OMNIBORID
+	Swids() []swid.SWID
 	Licenses() []licenses.License
 	GetChecksums() []GetChecksum
 	PrimaryPurpose() string
@@ -47,6 +53,7 @@ type GetComponent interface {
 	GetPackageLicenseConcluded() string
 	ExternalReferences() []GetExternalReference
 	GetComposition(string) string
+	GetPrimaryCompInfo() GetPrimaryComp
 }
 
 type Component struct {
@@ -54,6 +61,9 @@ type Component struct {
 	Version                 string
 	Cpes                    []cpe.CPE
 	Purls                   []purl.PURL
+	Swhid                   []swhid.SWHID
+	OmniID                  []omniborid.OMNIBORID
+	Swid                    []swid.SWID
 	licenses                []licenses.License
 	Checksums               []GetChecksum
 	purpose                 string
@@ -66,6 +76,7 @@ type Component struct {
 	DownloadLocation        string
 	sourceCodeHash          string
 	isPrimary               bool
+	PrimaryCompt            PrimaryComp
 	hasRelationships        bool
 	RelationshipState       string
 	Spdxid                  string
@@ -79,6 +90,10 @@ type Component struct {
 
 func NewComponent() *Component {
 	return &Component{}
+}
+
+func (c Component) GetPrimaryCompInfo() GetPrimaryComp {
+	return c.PrimaryCompt
 }
 
 func (c Component) GetName() string {
@@ -95,6 +110,18 @@ func (c Component) GetPurls() []purl.PURL {
 
 func (c Component) GetCpes() []cpe.CPE {
 	return c.Cpes
+}
+
+func (c Component) Swhids() []swhid.SWHID {
+	return c.Swhid
+}
+
+func (c Component) Swids() []swid.SWID {
+	return c.Swid
+}
+
+func (c Component) OmniborIDs() []omniborid.OMNIBORID {
+	return c.OmniID
 }
 
 func (c Component) Licenses() []licenses.License {
