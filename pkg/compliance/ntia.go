@@ -223,7 +223,7 @@ var (
 	compIDWithName               = make(map[string]string)
 	componentList                = make(map[string]bool)
 	primaryDependencies          = make(map[string]bool)
-	getAllPrimaryDepenciesByName = []string{}
+	GetAllPrimaryDepenciesByName = []string{}
 )
 
 // Required component stuffs
@@ -242,7 +242,7 @@ func ntiaComponents(doc sbom.Document) []*db.Record {
 	areAllDepesPresentInCompList := common.CheckPrimaryDependenciesInComponentList(dependencies, componentList)
 
 	if areAllDepesPresentInCompList {
-		getAllPrimaryDepenciesByName = common.GetDependenciesByName(dependencies, compIDWithName)
+		GetAllPrimaryDepenciesByName = common.GetDependenciesByName(dependencies, compIDWithName)
 	}
 
 	for _, component := range doc.Components() {
@@ -312,7 +312,7 @@ func ntiaComponentDependencies(doc sbom.Document, component sbom.GetComponent) *
 
 	if doc.Spec().GetSpecType() == "spdx" {
 		if component.GetPrimaryCompInfo().IsPresent() {
-			result = strings.Join(getAllPrimaryDepenciesByName, ", ")
+			result = strings.Join(GetAllPrimaryDepenciesByName, ", ")
 			score = 10.0
 			return db.NewRecordStmt(COMP_DEPTH, component.GetName(), result, score, "")
 		}
@@ -339,7 +339,7 @@ func ntiaComponentDependencies(doc sbom.Document, component sbom.GetComponent) *
 
 	} else if doc.Spec().GetSpecType() == "cyclonedx" {
 		if component.GetPrimaryCompInfo().IsPresent() {
-			result = strings.Join(getAllPrimaryDepenciesByName, ", ")
+			result = strings.Join(GetAllPrimaryDepenciesByName, ", ")
 			score = 10.0
 			return db.NewRecordStmt(COMP_DEPTH, component.GetName(), result, score, "")
 		}

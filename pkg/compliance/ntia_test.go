@@ -37,7 +37,10 @@ func createSpdxDummyDocumentNtia() sbom.Document {
 	}
 
 	var primary sbom.PrimaryComp
+	primary.ID = pack.ID
 	primary.Dependecies = 1
+	primary.Present = true
+	pack.PrimaryCompt = primary
 
 	var externalReferences []sbom.GetExternalReference
 	externalReferences = append(externalReferences, extRef)
@@ -47,7 +50,8 @@ func createSpdxDummyDocumentNtia() sbom.Document {
 	packages = append(packages, pack)
 
 	relationships := make(map[string][]string)
-	relationships["github/spdx/tools-golang@9db247b854b9634d0109153d515fd1a9efd5a1b1"] = append(relationships["github/spdx/tools-golang@9db247b854b9634d0109153d515fd1a9efd5a1b1"], "github/spdx/gordf@b735bd5aac89fe25cad4ef488a95bc00ea549edd")
+	relationships[sbom.CleanKey("github/spdx/tools-golang@9db247b854b9634d0109153d515fd1a9efd5a1b1")] = append(relationships[sbom.CleanKey("github/spdx/tools-golang@9db247b854b9634d0109153d515fd1a9efd5a1b1")], sbom.CleanKey("github/spdx/gordf@b735bd5aac89fe25cad4ef488a95bc00ea549edd"))
+	GetAllPrimaryDepenciesByName = []string{"gordf"}
 
 	compIDWithName["github/spdx/gordf@b735bd5aac89fe25cad4ef488a95bc00ea549edd"] = "gordf"
 	doc := sbom.SpdxDoc{
