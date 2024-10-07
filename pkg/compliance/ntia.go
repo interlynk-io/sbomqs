@@ -317,7 +317,7 @@ func ntiaComponentDependencies(doc sbom.Document, component sbom.GetComponent) *
 			return db.NewRecordStmt(COMP_DEPTH, component.GetName(), result, score, "")
 		}
 
-		dependencies = doc.GetRelationships(component.GetID())
+		dependencies = doc.GetRelationships(common.GetID(component.GetSpdxID()))
 		if dependencies == nil {
 
 			if primaryDependencies[common.GetID(component.GetSpdxID())] {

@@ -76,7 +76,7 @@ func octSpec(doc sbom.Document) *db.Record {
 		score = 0
 	}
 
-	return db.NewRecordStmt(SBOM_SPEC, "SBOM Format", result, score, "")
+	return db.NewRecordStmt(SBOM_SPEC, "SPDX Elements", result, score, "")
 }
 
 func octSpecVersion(doc sbom.Document) *db.Record {
@@ -127,7 +127,7 @@ func octSbomOrganization(doc sbom.Document) *db.Record {
 		result = org
 		score = 10.0
 	}
-	return db.NewRecordStmt(SBOM_ORG, "SBOM Build Information", result, score, "")
+	return db.NewRecordStmt(SBOM_ORG, "SPDX Elements", result, score, "")
 }
 
 func octSbomComment(doc sbom.Document) *db.Record {
@@ -141,6 +141,20 @@ func octSbomComment(doc sbom.Document) *db.Record {
 	return db.NewRecordStmt(SBOM_COMMENT, "SPDX Elements", result, score, "")
 }
 
+func breakLongString(s string, maxLength int) []string {
+	if len(s) <= maxLength {
+		return []string{s}
+	}
+
+	var result []string
+	for len(s) > maxLength {
+		result = append(result, s[:maxLength])
+		s = s[maxLength:]
+	}
+	result = append(result, s)
+	return result
+}
+
 func octSbomNamespace(doc sbom.Document) *db.Record {
 	result, score := "", 0.0
 
@@ -148,6 +162,9 @@ func octSbomNamespace(doc sbom.Document) *db.Record {
 		result = ns
 		score = 10.0
 	}
+	// Break the result into multiple lines if it's too long
+	brokenResult := breakLongString(result, 50)
+	result = strings.Join(brokenResult, "\n")
 
 	return db.NewRecordStmt(SBOM_NAMESPACE, "SPDX Elements", result, score, "")
 }
@@ -197,7 +214,7 @@ func octSbomTool(doc sbom.Document) *db.Record {
 		}
 	}
 
-	return db.NewRecordStmt(SBOM_TOOL, "SBOM Build Information", result, score, "")
+	return db.NewRecordStmt(SBOM_TOOL, "SPDX Elements", result, score, "")
 }
 
 func octMachineFormat(doc sbom.Document) *db.Record {
@@ -210,7 +227,7 @@ func octMachineFormat(doc sbom.Document) *db.Record {
 	} else {
 		result = spec + ", " + fileFormat
 	}
-	return db.NewRecordStmt(SBOM_MACHINE_FORMAT, "Machine Readable Data Format", result, score, "")
+	return db.NewRecordStmt(SBOM_MACHINE_FORMAT, "SPDX Elements", result, score, "")
 }
 
 func octHumanFormat(doc sbom.Document) *db.Record {
@@ -222,25 +239,25 @@ func octHumanFormat(doc sbom.Document) *db.Record {
 	} else {
 		result = fileFormat
 	}
-	return db.NewRecordStmt(SBOM_HUMAN_FORMAT, "Human Readable Data Format", result, score, "")
+	return db.NewRecordStmt(SBOM_HUMAN_FORMAT, "SPDX Elements", result, score, "")
 }
 
 func octSbomDeliveryMethod(_ sbom.Document) *db.Record {
 	result, score := "unknown", 0.0
 
-	return db.NewRecordStmt(SBOM_DELIVERY_METHOD, "Method of SBOM delivery", result, score, "")
+	return db.NewRecordStmt(SBOM_DELIVERY_METHOD, "SPDX Elements", result, score, "")
 }
 
 func octSbomDeliveryTime(_ sbom.Document) *db.Record {
 	result, score := "unknown", 0.0
 
-	return db.NewRecordStmt(SBOM_DELIVERY_TIME, "Timing of SBOM delivery", result, score, "")
+	return db.NewRecordStmt(SBOM_DELIVERY_TIME, "SPDX Elements", result, score, "")
 }
 
 func octSbomScope(_ sbom.Document) *db.Record {
 	result, score := "unknown", 0.0
 
-	return db.NewRecordStmt(SBOM_SCOPE, "SBOM Scope", result, score, "")
+	return db.NewRecordStmt(SBOM_SCOPE, "SPDX Elements", result, score, "")
 }
 
 func octComponents(doc sbom.Document) []*db.Record {
@@ -300,6 +317,8 @@ func octPackageSupplier(component sbom.GetComponent) *db.Record {
 
 func octPackageDownloadURL(component sbom.GetComponent) *db.Record {
 	if result := component.GetDownloadLocationURL(); result != "" {
+		brokenResult := breakLongString(result, 50)
+		result = strings.Join(brokenResult, "\n")
 		return db.NewRecordStmt(PACK_DOWNLOAD_URL, component.GetName(), result, 10.0, "")
 	}
 	return db.NewRecordStmt(PACK_DOWNLOAD_URL, component.GetName(), "", 0.0, "")
@@ -354,10 +373,24 @@ func octPackageCopyright(component sbom.GetComponent) *db.Record {
 	result := ""
 
 	if result = component.GetCopyRight(); result != "" && result != "NOASSERTION" && result != "NONE" {
+		result = strings.ReplaceAll(result, "\n", " ")
+		result = strings.ReplaceAll(result, "\t", " ")
+
+		brokenResult := breakLongString(result, 50)
+		result = strings.Join(brokenResult, "\n")
+
 		return db.NewRecordStmt(PACK_COPYRIGHT, component.GetName(), result, 10.0, "")
 	}
 
 	return db.NewRecordStmt(PACK_COPYRIGHT, component.GetName(), result, 0.0, "")
+}
+
+// Helper function to truncate content
+func truncateContent(s string, maxLength int) string {
+	if len(s) <= maxLength {
+		return s
+	}
+	return s[:maxLength] + "..."
 }
 
 func octPackageExternalRefs(component sbom.GetComponent) *db.Record {

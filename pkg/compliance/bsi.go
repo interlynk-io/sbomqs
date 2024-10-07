@@ -174,25 +174,25 @@ func bsiSbomDepth(doc sbom.Document) *db.Record {
 	}
 	result = fmt.Sprintf("doc has %d dependencies", totalDependencies)
 
-	if len(doc.Relations()) == 0 {
-		return db.NewRecordStmt(SBOM_DEPTH, "doc", "no-relationships", 0.0, "")
-	}
+	// if len(doc.Relations()) == 0 {
+	// 	return db.NewRecordStmt(SBOM_DEPTH, "doc", "no-relationships", 0.0, "")
+	// }
 
-	primary, _ := lo.Find(doc.Components(), func(c sbom.GetComponent) bool {
-		return c.IsPrimaryComponent()
-	})
+	// primary, _ := lo.Find(doc.Components(), func(c sbom.GetComponent) bool {
+	// 	return c.IsPrimaryComponent()
+	// })
 
-	if !primary.HasRelationShips() {
-		return db.NewRecordStmt(SBOM_DEPTH, "doc", "no-primary-relationships", 0.0, "")
-	}
+	// if !primary.HasRelationShips() {
+	// 	return db.NewRecordStmt(SBOM_DEPTH, "doc", "no-primary-relationships", 0.0, "")
+	// }
 
-	if primary.RelationShipState() == "complete" {
-		return db.NewRecordStmt(SBOM_DEPTH, "doc", "complete", 10.0, "")
-	}
+	// if primary.RelationShipState() == "complete" {
+	// 	return db.NewRecordStmt(SBOM_DEPTH, "doc", "complete", 10.0, "")
+	// }
 
-	if primary.HasRelationShips() {
-		return db.NewRecordStmt(SBOM_DEPTH, "doc", "unattested-has-relationships", 5.0, "")
-	}
+	// if primary.HasRelationShips() {
+	// 	return db.NewRecordStmt(SBOM_DEPTH, "doc", "unattested-has-relationships", 5.0, "")
+	// }
 
 	return db.NewRecordStmt(SBOM_DEPTH, "doc", result, score, "")
 }
@@ -302,7 +302,9 @@ func bsiSbomURI(doc sbom.Document) *db.Record {
 	uri := doc.Spec().URI()
 
 	if uri != "" {
-		return db.NewRecordStmt(SBOM_URI, "doc", uri, 10.0, "")
+		brokenResult := breakLongString(uri, 50)
+		result := strings.Join(brokenResult, "\n")
+		return db.NewRecordStmt(SBOM_URI, "doc", result, 10.0, "")
 	}
 
 	return db.NewRecordStmt(SBOM_URI, "doc", "", 0, "")
@@ -363,7 +365,7 @@ func bsiComponentDepth(doc sbom.Document, component sbom.GetComponent) *db.Recor
 			return db.NewRecordStmt(COMP_DEPTH, component.GetName(), result, score, "")
 		}
 
-		dependencies = doc.GetRelationships(component.GetID())
+		dependencies = doc.GetRelationships(common.GetID(component.GetSpdxID()))
 		if dependencies == nil {
 			if bsiPrimaryDependencies[common.GetID(component.GetSpdxID())] {
 				return db.NewRecordStmt(COMP_DEPTH, component.GetName(), "included-in", 10.0, "")

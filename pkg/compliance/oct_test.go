@@ -95,7 +95,7 @@ func TestOctSbomPass(t *testing.T) {
 				score:  10.0,
 				result: "spdx",
 				key:    SBOM_SPEC,
-				id:     "SBOM Format",
+				id:     "SPDX Elements",
 			},
 		},
 		{
@@ -115,7 +115,7 @@ func TestOctSbomPass(t *testing.T) {
 			expected: desired{
 				name:   "octSbomNamespace",
 				score:  10.0,
-				result: "https://anchore.com/syft/dir/sbomqs-6ec18b03-96cb-4951-b299-929890c1cfc8",
+				result: "https://anchore.com/syft/dir/sbomqs-6ec18b03-96cb-\n4951-b299-929890c1cfc8",
 				key:    SBOM_NAMESPACE,
 				id:     "SPDX Elements",
 			},
@@ -128,7 +128,7 @@ func TestOctSbomPass(t *testing.T) {
 				score:  10.0,
 				result: "interlynk",
 				key:    SBOM_ORG,
-				id:     "SBOM Build Information",
+				id:     "SPDX Elements",
 			},
 		},
 		{
@@ -150,7 +150,7 @@ func TestOctSbomPass(t *testing.T) {
 				score:  10.0,
 				result: "syft",
 				key:    SBOM_TOOL,
-				id:     "SBOM Build Information",
+				id:     "SPDX Elements",
 			},
 		},
 		{
@@ -205,7 +205,7 @@ func TestOctSbomPass(t *testing.T) {
 				score:  10.0,
 				result: "spdx, json",
 				key:    SBOM_MACHINE_FORMAT,
-				id:     "Machine Readable Data Format",
+				id:     "SPDX Elements",
 			},
 		},
 		{
@@ -216,7 +216,7 @@ func TestOctSbomPass(t *testing.T) {
 				score:  10.0,
 				result: "json",
 				key:    SBOM_HUMAN_FORMAT,
-				id:     "Human Readable Data Format",
+				id:     "SPDX Elements",
 			},
 		},
 		{
@@ -335,7 +335,7 @@ func TestOctSbomPass(t *testing.T) {
 			expected: desired{
 				name:   "octPackageDownloadURL",
 				score:  10.0,
-				result: "https://registry.npmjs.org/core-js/-/core-js-3.6.5.tgz",
+				result: "https://registry.npmjs.org/core-js/-/core-js-3.6.5\n.tgz",
 				key:    PACK_DOWNLOAD_URL,
 				id:     doc.Components()[0].GetName(),
 			},
@@ -425,7 +425,7 @@ func TestOctSbomFail(t *testing.T) {
 				score:  0.0,
 				result: "cyclonedx",
 				key:    SBOM_SPEC,
-				id:     "SBOM Format",
+				id:     "SPDX Elements",
 			},
 		},
 		{
@@ -452,7 +452,7 @@ func TestOctSbomFail(t *testing.T) {
 				score:  0.0,
 				result: "",
 				key:    SBOM_ORG,
-				id:     "SBOM Build Information",
+				id:     "SPDX Elements",
 			},
 		},
 		{
@@ -470,7 +470,7 @@ func TestOctSbomFail(t *testing.T) {
 				score:  0.0,
 				result: "",
 				key:    SBOM_TOOL,
-				id:     "SBOM Build Information",
+				id:     "SPDX Elements",
 			},
 		},
 		{
@@ -515,7 +515,7 @@ func TestOctSbomFail(t *testing.T) {
 				score:  0.0,
 				result: "cyclonedx, xml",
 				key:    SBOM_MACHINE_FORMAT,
-				id:     "Machine Readable Data Format",
+				id:     "SPDX Elements",
 			},
 		},
 		{
@@ -524,7 +524,7 @@ func TestOctSbomFail(t *testing.T) {
 				score:  0.0,
 				result: "xml",
 				key:    SBOM_HUMAN_FORMAT,
-				id:     "Human Readable Data Format",
+				id:     "SPDX Elements",
 			},
 		},
 		{
