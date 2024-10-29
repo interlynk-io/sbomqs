@@ -41,6 +41,12 @@ var complianceCmd = &cobra.Command{
 
   # Check a OpenChain Telco compliance against a SBOM in a JSON output
   sbomqs compliance --oct --json samples/sbomqs-spdx-syft.json
+
+  # Check a V3 Framing document compliance  against a SBOM in a table output
+  sbomqs compliance --fsct <sbom>
+
+  # Check a V3 Framing document compliance  against a SBOM in a JSON output
+  sbomqs compliance --fsct -j <sbom>
 `,
 	Args: func(cmd *cobra.Command, args []string) error {
 		if err := cobra.ExactArgs(1)(cmd, args); err != nil {
@@ -75,6 +81,7 @@ func setupEngineParams(cmd *cobra.Command, args []string) *engine.Params {
 	// engParams.Ntia, _ = cmd.Flags().GetBool("ntia")
 	engParams.Bsi, _ = cmd.Flags().GetBool("bsi")
 	engParams.Oct, _ = cmd.Flags().GetBool("oct")
+	engParams.Fsct, _ = cmd.Flags().GetBool("fsct")
 
 	engParams.Debug, _ = cmd.Flags().GetBool("debug")
 
@@ -101,4 +108,5 @@ func init() {
 	complianceCmd.Flags().BoolP("bsi", "c", false, "BSI TR-03183-2 v1.1 compliance")
 	// complianceCmd.MarkFlagsMutuallyExclusive("ntia", "cra")
 	complianceCmd.Flags().BoolP("oct", "t", false, "OpenChainTelco compliance")
+	complianceCmd.Flags().BoolP("fsct", "f", false, "V3 Framing document compliance")
 }

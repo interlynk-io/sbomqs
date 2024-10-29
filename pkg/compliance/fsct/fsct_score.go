@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package compliance
+package fsct
 
 import "github.com/interlynk-io/sbomqs/pkg/compliance/db"
 
-type bsiScoreResult struct {
+type fsctScoreResult struct {
 	id              string
 	requiredScore   float64
 	optionalScore   float64
@@ -24,11 +24,11 @@ type bsiScoreResult struct {
 	optionalRecords int
 }
 
-func newBsiScoreResult(id string) *bsiScoreResult {
-	return &bsiScoreResult{id: id}
+func newFsctScoreResult(id string) *fsctScoreResult {
+	return &fsctScoreResult{id: id}
 }
 
-func (r *bsiScoreResult) totalScore() float64 {
+func (r *fsctScoreResult) totalScore() float64 {
 	if r.requiredRecords == 0 && r.optionalRecords == 0 {
 		return 0.0
 	}
@@ -44,7 +44,7 @@ func (r *bsiScoreResult) totalScore() float64 {
 	return r.totalRequiredScore()
 }
 
-func (r *bsiScoreResult) totalRequiredScore() float64 {
+func (r *fsctScoreResult) totalRequiredScore() float64 {
 	if r.requiredRecords == 0 {
 		return 0.0
 	}
@@ -52,7 +52,7 @@ func (r *bsiScoreResult) totalRequiredScore() float64 {
 	return r.requiredScore / float64(r.requiredRecords)
 }
 
-func (r *bsiScoreResult) totalOptionalScore() float64 {
+func (r *fsctScoreResult) totalOptionalScore() float64 {
 	if r.optionalRecords == 0 {
 		return 0.0
 	}
@@ -60,11 +60,11 @@ func (r *bsiScoreResult) totalOptionalScore() float64 {
 	return r.optionalScore / float64(r.optionalRecords)
 }
 
-func bsiKeyIDScore(dtb *db.DB, key int, id string) *bsiScoreResult {
-	records := dtb.GetRecordsByKeyID(key, id)
+func fsctKeyIDScore(db *db.DB, key int, id string) *fsctScoreResult {
+	records := db.GetRecordsByKeyID(key, id)
 
 	if len(records) == 0 {
-		return newBsiScoreResult(id)
+		return newFsctScoreResult(id)
 	}
 
 	requiredScore := 0.0
@@ -83,7 +83,7 @@ func bsiKeyIDScore(dtb *db.DB, key int, id string) *bsiScoreResult {
 		}
 	}
 
-	return &bsiScoreResult{
+	return &fsctScoreResult{
 		id:              id,
 		requiredScore:   requiredScore,
 		optionalScore:   optionalScore,
@@ -92,11 +92,11 @@ func bsiKeyIDScore(dtb *db.DB, key int, id string) *bsiScoreResult {
 	}
 }
 
-func bsiIDScore(dtb *db.DB, id string) *bsiScoreResult {
-	records := dtb.GetRecordsByID(id)
+func fsctIDScore(db *db.DB, id string) *fsctScoreResult {
+	records := db.GetRecordsByID(id)
 
 	if len(records) == 0 {
-		return newBsiScoreResult(id)
+		return newFsctScoreResult(id)
 	}
 
 	requiredScore := 0.0
@@ -115,7 +115,7 @@ func bsiIDScore(dtb *db.DB, id string) *bsiScoreResult {
 		}
 	}
 
-	return &bsiScoreResult{
+	return &fsctScoreResult{
 		id:              id,
 		requiredScore:   requiredScore,
 		optionalScore:   optionalScore,
@@ -124,13 +124,13 @@ func bsiIDScore(dtb *db.DB, id string) *bsiScoreResult {
 	}
 }
 
-func bsiAggregateScore(dtb *db.DB) *bsiScoreResult {
-	var results []bsiScoreResult
-	var finalResult bsiScoreResult
+func fsctAggregateScore(db *db.DB) *fsctScoreResult {
+	var results []fsctScoreResult
+	var finalResult fsctScoreResult
 
-	ids := dtb.GetAllIDs()
+	ids := db.GetAllIDs()
 	for _, id := range ids {
-		results = append(results, *bsiIDScore(dtb, id))
+		results = append(results, *fsctIDScore(db, id))
 	}
 
 	for _, r := range results {

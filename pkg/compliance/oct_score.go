@@ -1,5 +1,7 @@
 package compliance
 
+import "github.com/interlynk-io/sbomqs/pkg/compliance/db"
+
 type octScoreResult struct {
 	id              string
 	requiredScore   float64
@@ -44,8 +46,8 @@ func (r *octScoreResult) totalOptionalScore() float64 {
 	return r.optionalScore / float64(r.optionalRecords)
 }
 
-func octKeyIDScore(db *db, key int, id string) *octScoreResult {
-	records := db.getRecordsByKeyID(key, id)
+func octKeyIDScore(dtb *db.DB, key int, id string) *octScoreResult {
+	records := dtb.GetRecordsByKeyID(key, id)
 
 	if len(records) == 0 {
 		return newOctScoreResult(id)
@@ -58,11 +60,11 @@ func octKeyIDScore(db *db, key int, id string) *octScoreResult {
 	optionalRecs := 0
 
 	for _, r := range records {
-		if r.required {
-			requiredScore += r.score
+		if r.Required {
+			requiredScore += r.Score
 			requiredRecs++
 		} else {
-			optionalScore += r.score
+			optionalScore += r.Score
 			optionalRecs++
 		}
 	}
@@ -76,13 +78,13 @@ func octKeyIDScore(db *db, key int, id string) *octScoreResult {
 	}
 }
 
-func octAggregateScore(db *db) *octScoreResult {
+func octAggregateScore(dtb *db.DB) *octScoreResult {
 	var results []octScoreResult
 	var finalResult octScoreResult
 
-	ids := db.getAllIDs()
+	ids := dtb.GetAllIDs()
 	for _, id := range ids {
-		results = append(results, *octIDScore(db, id))
+		results = append(results, *octIDScore(dtb, id))
 	}
 
 	for _, r := range results {
@@ -95,8 +97,8 @@ func octAggregateScore(db *db) *octScoreResult {
 	return &finalResult
 }
 
-func octIDScore(db *db, id string) *octScoreResult {
-	records := db.getRecordsByID(id)
+func octIDScore(dtb *db.DB, id string) *octScoreResult {
+	records := dtb.GetRecordsByID(id)
 
 	if len(records) == 0 {
 		return newOctScoreResult(id)
@@ -109,11 +111,11 @@ func octIDScore(db *db, id string) *octScoreResult {
 	optionalRecs := 0
 
 	for _, r := range records {
-		if r.required {
-			requiredScore += r.score
+		if r.Required {
+			requiredScore += r.Score
 			requiredRecs++
 		} else {
-			optionalScore += r.score
+			optionalScore += r.Score
 			optionalRecs++
 		}
 	}

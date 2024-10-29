@@ -42,6 +42,11 @@ type FakeAuthor struct {
 	invocationsMutex sync.RWMutex
 }
 
+func (fake *FakeAuthor) GetPhone() string {
+	// Implement the method as needed
+	return ""
+}
+
 func (fake *FakeAuthor) GetEmail() string {
 	fake.emailMutex.Lock()
 	ret, specificReturn := fake.emailReturnsOnCall[len(fake.emailArgsForCall)]
