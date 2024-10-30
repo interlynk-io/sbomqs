@@ -57,6 +57,8 @@ type Params struct {
 	Bsi  bool
 	Oct  bool
 	Fsct bool
+
+	Color bool
 }
 
 func Run(ctx context.Context, ep *Params) error {

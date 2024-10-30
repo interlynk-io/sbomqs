@@ -25,7 +25,7 @@ import (
 	"github.com/samber/lo"
 )
 
-func Result(ctx context.Context, doc sbom.Document, fileName string, outFormat string) {
+func Result(ctx context.Context, doc sbom.Document, fileName string, outFormat string, coloredOutput bool) {
 	log := logger.FromContext(ctx)
 	log.Debug("fsct compliance")
 
@@ -49,7 +49,7 @@ func Result(ctx context.Context, doc sbom.Document, fileName string, outFormat s
 	}
 
 	if outFormat == "detailed" {
-		fsctDetailedReport(dtb, fileName)
+		fsctDetailedReport(dtb, fileName, coloredOutput)
 	}
 }
 

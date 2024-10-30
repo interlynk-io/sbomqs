@@ -42,7 +42,7 @@ func validReportTypes() map[string]bool {
 }
 
 //nolint:revive,stylecheck
-func ComplianceResult(ctx context.Context, doc sbom.Document, reportType, fileName, outFormat string) error {
+func ComplianceResult(ctx context.Context, doc sbom.Document, reportType, fileName, outFormat string, coloredOutput bool) error {
 	log := logger.FromContext(ctx)
 	log.Debug("compliance.ComplianceResult()")
 
@@ -81,7 +81,7 @@ func ComplianceResult(ctx context.Context, doc sbom.Document, reportType, fileNa
 		octResult(ctx, doc, fileName, outFormat)
 
 	case reportType == FSCT_V3:
-		fsct.Result(ctx, doc, fileName, outFormat)
+		fsct.Result(ctx, doc, fileName, outFormat, coloredOutput)
 
 	default:
 		fmt.Println("No compliance type is provided")

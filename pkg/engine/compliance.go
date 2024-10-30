@@ -66,7 +66,9 @@ func ComplianceRun(ctx context.Context, ep *Params) error {
 		outFormat = "detailed"
 	}
 
-	err = compliance.ComplianceResult(ctx, *doc, reportType, ep.Path[0], outFormat)
+	coloredOutput := ep.Color
+
+	err = compliance.ComplianceResult(ctx, *doc, reportType, ep.Path[0], outFormat, coloredOutput)
 	if err != nil {
 		log.Debugf("compliance.ComplianceResult failed for file :%s\n", ep.Path[0])
 		fmt.Printf("failed to get compliance result for %s\n", ep.Path[0])
