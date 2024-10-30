@@ -94,19 +94,17 @@ func init() {
 	rootCmd.AddCommand(complianceCmd)
 
 	// Debug control
-	complianceCmd.Flags().BoolP("debug", "D", false, "enable debug logging")
+	complianceCmd.Flags().BoolP("debug", "D", false, "debug logging")
 
 	// Output control
-	complianceCmd.Flags().BoolP("json", "j", false, "output in json format")
-	complianceCmd.Flags().BoolP("basic", "b", false, "output in basic format")
-	complianceCmd.Flags().BoolP("detailed", "d", false, "output in detailed format")
-	// complianceCmd.Flags().BoolP("pdf", "p", false, "output in pdf format")
+	complianceCmd.Flags().BoolP("json", "j", false, "json format")
+	complianceCmd.Flags().BoolP("basic", "b", false, "basic format")
+	complianceCmd.Flags().BoolP("detailed", "d", false, "detailed format")
 	complianceCmd.MarkFlagsMutuallyExclusive("json", "basic", "detailed")
 
 	// Standards control
-	complianceCmd.Flags().BoolP("ntia", "n", false, "check for NTIA minimum elements compliance")
-	complianceCmd.Flags().BoolP("bsi", "c", false, "BSI TR-03183-2 v1.1 compliance")
-	// complianceCmd.MarkFlagsMutuallyExclusive("ntia", "cra")
-	complianceCmd.Flags().BoolP("oct", "t", false, "OpenChainTelco compliance")
-	complianceCmd.Flags().BoolP("fsct", "f", false, "V3 Framing document compliance")
+	complianceCmd.Flags().BoolP("ntia", "n", false, "NTIA minimum elements July 12, 2021")
+	complianceCmd.Flags().BoolP("bsi", "c", false, "BSI TR-03183-2 v1.1")
+	complianceCmd.Flags().BoolP("oct", "t", false, "OpenChain Telco SBOM v1.0")
+	complianceCmd.Flags().BoolP("fsct", "f", false, "Framing Software Component Transparency - v3")
 }
