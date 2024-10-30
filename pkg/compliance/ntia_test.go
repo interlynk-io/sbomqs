@@ -3,6 +3,7 @@ package compliance
 import (
 	"testing"
 
+	"github.com/interlynk-io/sbomqs/pkg/compliance/common"
 	db "github.com/interlynk-io/sbomqs/pkg/compliance/db"
 	"github.com/interlynk-io/sbomqs/pkg/purl"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
@@ -126,7 +127,7 @@ func TestNtiaSpdxSbomPass(t *testing.T) {
 				score:  10.0,
 				result: "hello@interlynk.io",
 				key:    COMP_CREATOR,
-				id:     doc.Components()[0].GetName(),
+				id:     common.UniqueElementID(doc.Components()[0]),
 			},
 		},
 
@@ -137,7 +138,7 @@ func TestNtiaSpdxSbomPass(t *testing.T) {
 				score:  10.0,
 				result: "tool-golang",
 				key:    COMP_NAME,
-				id:     doc.Components()[0].GetName(),
+				id:     common.UniqueElementID(doc.Components()[0]),
 			},
 		},
 		{
@@ -147,7 +148,7 @@ func TestNtiaSpdxSbomPass(t *testing.T) {
 				score:  10.0,
 				result: "v0.7.1",
 				key:    COMP_VERSION,
-				id:     doc.Components()[0].GetName(),
+				id:     common.UniqueElementID(doc.Components()[0]),
 			},
 		},
 		{
@@ -157,7 +158,7 @@ func TestNtiaSpdxSbomPass(t *testing.T) {
 				score:  10.0,
 				result: "purl:(1/1)",
 				key:    COMP_OTHER_UNIQ_IDS,
-				id:     doc.Components()[0].GetName(),
+				id:     common.UniqueElementID(doc.Components()[0]),
 			},
 		},
 		{
@@ -167,7 +168,7 @@ func TestNtiaSpdxSbomPass(t *testing.T) {
 				score:  10.0,
 				result: "gordf",
 				key:    COMP_DEPTH,
-				id:     doc.Components()[0].GetName(),
+				id:     common.UniqueElementID(doc.Components()[0]),
 			},
 		},
 	}
@@ -290,7 +291,7 @@ func TestNtiaCdxSbomPass(t *testing.T) {
 				score:  10.0,
 				result: "hello@interlynk.io",
 				key:    COMP_CREATOR,
-				id:     doc.Components()[0].GetName(),
+				id:     common.UniqueElementID(doc.Components()[0]),
 			},
 		},
 		{
@@ -300,7 +301,7 @@ func TestNtiaCdxSbomPass(t *testing.T) {
 				score:  10.0,
 				result: "tool-golang",
 				key:    COMP_NAME,
-				id:     doc.Components()[0].GetName(),
+				id:     common.UniqueElementID(doc.Components()[0]),
 			},
 		},
 		{
@@ -310,7 +311,7 @@ func TestNtiaCdxSbomPass(t *testing.T) {
 				score:  10.0,
 				result: "v0.7.1",
 				key:    COMP_VERSION,
-				id:     doc.Components()[0].GetName(),
+				id:     common.UniqueElementID(doc.Components()[0]),
 			},
 		},
 		{
@@ -320,7 +321,7 @@ func TestNtiaCdxSbomPass(t *testing.T) {
 				score:  10.0,
 				result: "vivek",
 				key:    COMP_OTHER_UNIQ_IDS,
-				id:     doc.Components()[0].GetName(),
+				id:     common.UniqueElementID(doc.Components()[0]),
 			},
 		},
 		{
@@ -330,7 +331,7 @@ func TestNtiaCdxSbomPass(t *testing.T) {
 				score:  10.0,
 				result: "gordf",
 				key:    COMP_DEPTH,
-				id:     doc.Components()[0].GetName(),
+				id:     common.UniqueElementID(doc.Components()[0]),
 			},
 		},
 	}
@@ -435,7 +436,7 @@ func TestNTIASbomFail(t *testing.T) {
 				score:  0.0,
 				result: "",
 				key:    COMP_CREATOR,
-				id:     doc.Components()[0].GetName(),
+				id:     common.UniqueElementID(doc.Components()[0]),
 			},
 		},
 
@@ -446,7 +447,7 @@ func TestNTIASbomFail(t *testing.T) {
 				score:  0.0,
 				result: "",
 				key:    COMP_NAME,
-				id:     doc.Components()[0].GetName(),
+				id:     common.UniqueElementID(doc.Components()[0]),
 			},
 		},
 		{
@@ -456,7 +457,7 @@ func TestNTIASbomFail(t *testing.T) {
 				score:  0.0,
 				result: "",
 				key:    COMP_VERSION,
-				id:     doc.Components()[0].GetName(),
+				id:     common.UniqueElementID(doc.Components()[0]),
 			},
 		},
 		{
@@ -466,7 +467,7 @@ func TestNTIASbomFail(t *testing.T) {
 				score:  0.0,
 				result: "",
 				key:    COMP_OTHER_UNIQ_IDS,
-				id:     doc.Components()[0].GetName(),
+				id:     common.UniqueElementID(doc.Components()[0]),
 			},
 		},
 	}

@@ -197,7 +197,7 @@ func fsctPackageName(component sbom.GetComponent) *db.Record {
 		score = 10.0
 		maturity = "Minimum"
 	}
-	return db.NewRecordStmt(COMP_NAME, component.GetName(), result, score, maturity)
+	return db.NewRecordStmt(COMP_NAME, common.UniqueElementID(component), result, score, maturity)
 }
 
 func fsctPackageVersion(component sbom.GetComponent) *db.Record {
@@ -208,7 +208,7 @@ func fsctPackageVersion(component sbom.GetComponent) *db.Record {
 		maturity = "Minimum"
 	}
 
-	return db.NewRecordStmt(COMP_VERSION, component.GetName(), result, score, maturity)
+	return db.NewRecordStmt(COMP_VERSION, common.UniqueElementID(component), result, score, maturity)
 }
 
 func fsctPackageSupplier(component sbom.GetComponent) *db.Record {
@@ -230,7 +230,7 @@ func fsctPackageSupplier(component sbom.GetComponent) *db.Record {
 		maturity = "None"
 	}
 
-	return db.NewRecordStmt(COMP_SUPPLIER, component.GetName(), result, score, maturity)
+	return db.NewRecordStmt(COMP_SUPPLIER, common.UniqueElementID(component), result, score, maturity)
 }
 
 func fsctPackageUniqIDs(component sbom.GetComponent) *db.Record {
@@ -274,7 +274,7 @@ func fsctPackageUniqIDs(component sbom.GetComponent) *db.Record {
 		maturity = "Minimum"
 		result = strings.Join(uniqIDResults, ", ")
 	}
-	return db.NewRecordStmt(COMP_UNIQ_ID, component.GetName(), result, score, maturity)
+	return db.NewRecordStmt(COMP_UNIQ_ID, common.UniqueElementID(component), result, score, maturity)
 }
 
 func fsctPackageHash(doc sbom.Document, component sbom.GetComponent) *db.Record {
@@ -308,7 +308,7 @@ func fsctPackageHash(doc sbom.Document, component sbom.GetComponent) *db.Record 
 		maturity = "None"
 	}
 
-	return db.NewRecordStmt(COMP_CHECKSUM, component.GetName(), result, score, maturity)
+	return db.NewRecordStmt(COMP_CHECKSUM, common.UniqueElementID(component), result, score, maturity)
 }
 
 func IsComponentPartOfPrimaryDependency(id string) bool {
@@ -329,7 +329,7 @@ func fsctPackageDependencies(doc sbom.Document, component sbom.GetComponent) *db
 			result = strings.Join(GetAllPrimaryDepenciesByName, ", ")
 			score = 10.0
 			maturity = "Minimum"
-			return db.NewRecordStmt(COMP_RELATIONSHIP, component.GetName(), result, score, maturity)
+			return db.NewRecordStmt(COMP_RELATIONSHIP, common.UniqueElementID(component), result, score, maturity)
 		}
 
 		// get dependencies for normal component
@@ -359,7 +359,7 @@ func fsctPackageDependencies(doc sbom.Document, component sbom.GetComponent) *db
 			result = strings.Join(GetAllPrimaryDepenciesByName, ", ")
 			score = 10.0
 			maturity = "Minimum"
-			return db.NewRecordStmt(COMP_RELATIONSHIP, component.GetName(), result, score, maturity)
+			return db.NewRecordStmt(COMP_RELATIONSHIP, common.UniqueElementID(component), result, score, maturity)
 		}
 
 		dependencies = doc.GetRelationships(component.GetID())
@@ -402,7 +402,7 @@ func fsctPackageDependencies(doc sbom.Document, component sbom.GetComponent) *db
 
 	}
 
-	return db.NewRecordStmt(COMP_RELATIONSHIP, component.GetName(), result, score, maturity)
+	return db.NewRecordStmt(COMP_RELATIONSHIP, common.UniqueElementID(component), result, score, maturity)
 }
 
 func fsctPackageLicense(component sbom.GetComponent) *db.Record {
@@ -410,7 +410,7 @@ func fsctPackageLicense(component sbom.GetComponent) *db.Record {
 
 	licenses := component.Licenses()
 	if len(licenses) == 0 {
-		return db.NewRecordStmt(COMP_LICENSE, component.GetName(), result, score, maturity)
+		return db.NewRecordStmt(COMP_LICENSE, common.UniqueElementID(component), result, score, maturity)
 	}
 
 	hasFullName, hasIdentifier, hasText, hasURL, hasSpdx := false, false, false, false, false
@@ -451,7 +451,7 @@ func fsctPackageLicense(component sbom.GetComponent) *db.Record {
 	// Truncate license content to 1-2 lines
 	_ = truncateContent(licenseContent, 100) // Adjust the length as needed
 
-	return db.NewRecordStmt(COMP_LICENSE, component.GetName(), result, score, maturity)
+	return db.NewRecordStmt(COMP_LICENSE, common.UniqueElementID(component), result, score, maturity)
 }
 
 // Helper function to truncate content
@@ -476,5 +476,5 @@ func fsctPackageCopyright(component sbom.GetComponent) *db.Record {
 		result = truncateContent(result, 50)
 	}
 
-	return db.NewRecordStmt(COMP_COPYRIGHT, component.GetName(), result, score, maturity)
+	return db.NewRecordStmt(COMP_COPYRIGHT, common.UniqueElementID(component), result, score, maturity)
 }

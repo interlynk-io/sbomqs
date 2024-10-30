@@ -257,9 +257,9 @@ func ntiaComponents(doc sbom.Document) []*db.Record {
 
 func ntiaComponentName(component sbom.GetComponent) *db.Record {
 	if result := component.GetName(); result != "" {
-		return db.NewRecordStmt(COMP_NAME, component.GetName(), result, SCORE_FULL, "")
+		return db.NewRecordStmt(COMP_NAME, common.UniqueElementID(component), result, SCORE_FULL, "")
 	}
-	return db.NewRecordStmt(COMP_NAME, component.GetName(), "", SCORE_ZERO, "")
+	return db.NewRecordStmt(COMP_NAME, common.UniqueElementID(component), "", SCORE_ZERO, "")
 }
 
 func ntiaComponentCreator(doc sbom.Document, component sbom.GetComponent) *db.Record {
@@ -292,17 +292,17 @@ func ntiaComponentCreator(doc sbom.Document, component sbom.GetComponent) *db.Re
 			}
 		}
 	}
-	return db.NewRecordStmt(COMP_CREATOR, component.GetName(), result, score, "")
+	return db.NewRecordStmt(COMP_CREATOR, common.UniqueElementID(component), result, score, "")
 }
 
 func ntiaComponentVersion(component sbom.GetComponent) *db.Record {
 	result := component.GetVersion()
 
 	if result != "" {
-		return db.NewRecordStmt(COMP_VERSION, component.GetName(), result, SCORE_FULL, "")
+		return db.NewRecordStmt(COMP_VERSION, common.UniqueElementID(component), result, SCORE_FULL, "")
 	}
 
-	return db.NewRecordStmt(COMP_VERSION, component.GetName(), "", SCORE_ZERO, "")
+	return db.NewRecordStmt(COMP_VERSION, common.UniqueElementID(component), "", SCORE_ZERO, "")
 }
 
 func ntiaComponentDependencies(doc sbom.Document, component sbom.GetComponent) *db.Record {
@@ -314,16 +314,16 @@ func ntiaComponentDependencies(doc sbom.Document, component sbom.GetComponent) *
 		if component.GetPrimaryCompInfo().IsPresent() {
 			result = strings.Join(GetAllPrimaryDepenciesByName, ", ")
 			score = 10.0
-			return db.NewRecordStmt(COMP_DEPTH, component.GetName(), result, score, "")
+			return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), result, score, "")
 		}
 
 		dependencies = doc.GetRelationships(common.GetID(component.GetSpdxID()))
 		if dependencies == nil {
 
 			if primaryDependencies[common.GetID(component.GetSpdxID())] {
-				return db.NewRecordStmt(COMP_DEPTH, component.GetName(), "included-in", 10.0, "")
+				return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), "included-in", 10.0, "")
 			}
-			return db.NewRecordStmt(COMP_DEPTH, component.GetName(), "no-relationship", 0.0, "")
+			return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), "no-relationship", 0.0, "")
 
 		}
 		allDepByName = common.GetDependenciesByName(dependencies, compIDWithName)
@@ -331,37 +331,37 @@ func ntiaComponentDependencies(doc sbom.Document, component sbom.GetComponent) *
 		if primaryDependencies[common.GetID(component.GetSpdxID())] {
 			allDepByName = append([]string{"included-in"}, allDepByName...)
 			result = strings.Join(allDepByName, ", ")
-			return db.NewRecordStmt(COMP_DEPTH, component.GetName(), result, 10.0, "")
+			return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), result, 10.0, "")
 		}
 
 		result = strings.Join(allDepByName, ", ")
-		return db.NewRecordStmt(COMP_DEPTH, component.GetName(), result, 10.0, "")
+		return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), result, 10.0, "")
 
 	} else if doc.Spec().GetSpecType() == "cyclonedx" {
 		if component.GetPrimaryCompInfo().IsPresent() {
 			result = strings.Join(GetAllPrimaryDepenciesByName, ", ")
 			score = 10.0
-			return db.NewRecordStmt(COMP_DEPTH, component.GetName(), result, score, "")
+			return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), result, score, "")
 		}
 		id := component.GetID()
 		dependencies = doc.GetRelationships(id)
 		if len(dependencies) == 0 {
 			if primaryDependencies[id] {
-				return db.NewRecordStmt(COMP_DEPTH, component.GetName(), "included-in", 10.0, "")
+				return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), "included-in", 10.0, "")
 			}
-			return db.NewRecordStmt(COMP_DEPTH, component.GetName(), "no-relationship", 0.0, "")
+			return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), "no-relationship", 0.0, "")
 		}
 		allDepByName = common.GetDependenciesByName(dependencies, compIDWithName)
 		if primaryDependencies[id] {
 			allDepByName = append([]string{"included-in"}, allDepByName...)
 			result = strings.Join(allDepByName, ", ")
-			return db.NewRecordStmt(COMP_DEPTH, component.GetName(), result, 10.0, "")
+			return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), result, 10.0, "")
 		}
 		result = strings.Join(allDepByName, ", ")
-		return db.NewRecordStmt(COMP_DEPTH, component.GetName(), result, 10.0, "")
+		return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), result, 10.0, "")
 
 	}
-	return db.NewRecordStmt(COMP_DEPTH, component.GetName(), result, score, "")
+	return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), result, score, "")
 }
 
 func ntiaComponentOtherUniqIDs(doc sbom.Document, component sbom.GetComponent) *db.Record {
@@ -384,7 +384,7 @@ func ntiaComponentOtherUniqIDs(doc sbom.Document, component sbom.GetComponent) *
 			x := fmt.Sprintf(":(%d/%d)", containPurlElement, totalElements)
 			result = result + x
 		}
-		return db.NewRecordStmt(COMP_OTHER_UNIQ_IDS, component.GetName(), result, score, "")
+		return db.NewRecordStmt(COMP_OTHER_UNIQ_IDS, common.UniqueElementID(component), result, score, "")
 	} else if spec == "cyclonedx" {
 		result := ""
 
@@ -393,7 +393,7 @@ func ntiaComponentOtherUniqIDs(doc sbom.Document, component sbom.GetComponent) *
 		if len(purl) > 0 {
 			result = string(purl[0])
 
-			return db.NewRecordStmtOptional(COMP_OTHER_UNIQ_IDS, component.GetName(), result, SCORE_FULL)
+			return db.NewRecordStmtOptional(COMP_OTHER_UNIQ_IDS, common.UniqueElementID(component), result, SCORE_FULL)
 		}
 
 		cpes := component.GetCpes()
@@ -401,10 +401,10 @@ func ntiaComponentOtherUniqIDs(doc sbom.Document, component sbom.GetComponent) *
 		if len(cpes) > 0 {
 			result = string(cpes[0])
 
-			return db.NewRecordStmtOptional(COMP_OTHER_UNIQ_IDS, component.GetName(), result, SCORE_FULL)
+			return db.NewRecordStmtOptional(COMP_OTHER_UNIQ_IDS, common.UniqueElementID(component), result, SCORE_FULL)
 		}
 
-		return db.NewRecordStmtOptional(COMP_OTHER_UNIQ_IDS, component.GetName(), "", SCORE_ZERO)
+		return db.NewRecordStmtOptional(COMP_OTHER_UNIQ_IDS, common.UniqueElementID(component), "", SCORE_ZERO)
 	}
-	return db.NewRecordStmt(COMP_OTHER_UNIQ_IDS, component.GetName(), "", SCORE_ZERO, "")
+	return db.NewRecordStmt(COMP_OTHER_UNIQ_IDS, common.UniqueElementID(component), "", SCORE_ZERO, "")
 }

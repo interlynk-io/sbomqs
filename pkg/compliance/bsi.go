@@ -362,50 +362,50 @@ func bsiComponentDepth(doc sbom.Document, component sbom.GetComponent) *db.Recor
 		if component.GetPrimaryCompInfo().IsPresent() {
 			result = strings.Join(bsiGetAllPrimaryDepenciesByName, ", ")
 			score = 10.0
-			return db.NewRecordStmt(COMP_DEPTH, component.GetName(), result, score, "")
+			return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), result, score, "")
 		}
 
 		dependencies = doc.GetRelationships(common.GetID(component.GetSpdxID()))
 		if dependencies == nil {
 			if bsiPrimaryDependencies[common.GetID(component.GetSpdxID())] {
-				return db.NewRecordStmt(COMP_DEPTH, component.GetName(), "included-in", 10.0, "")
+				return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), "included-in", 10.0, "")
 			}
-			return db.NewRecordStmt(COMP_DEPTH, component.GetName(), "no-relationship", 0.0, "")
+			return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), "no-relationship", 0.0, "")
 		}
 		allDepByName = common.GetDependenciesByName(dependencies, bsiCompIDWithName)
 		if bsiPrimaryDependencies[common.GetID(component.GetSpdxID())] {
 			allDepByName = append([]string{"included-in"}, allDepByName...)
 			result = strings.Join(allDepByName, ", ")
-			return db.NewRecordStmt(COMP_DEPTH, component.GetName(), result, 10.0, "")
+			return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), result, 10.0, "")
 		}
 		result = strings.Join(allDepByName, ", ")
-		return db.NewRecordStmt(COMP_DEPTH, component.GetName(), result, 10.0, "")
+		return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), result, 10.0, "")
 
 	} else if doc.Spec().GetSpecType() == "cyclonedx" {
 		if component.GetPrimaryCompInfo().IsPresent() {
 			result = strings.Join(bsiGetAllPrimaryDepenciesByName, ", ")
 			score = 10.0
-			return db.NewRecordStmt(COMP_DEPTH, component.GetName(), result, score, "")
+			return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), result, score, "")
 		}
 		id := component.GetID()
 		dependencies = doc.GetRelationships(id)
 		if len(dependencies) == 0 {
 			if bsiPrimaryDependencies[id] {
-				return db.NewRecordStmt(COMP_DEPTH, component.GetName(), "included-in", 10.0, "")
+				return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), "included-in", 10.0, "")
 			}
-			return db.NewRecordStmt(COMP_DEPTH, component.GetName(), "no-relationship", 0.0, "")
+			return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), "no-relationship", 0.0, "")
 		}
 		allDepByName = common.GetDependenciesByName(dependencies, bsiCompIDWithName)
 		if bsiPrimaryDependencies[id] {
 			allDepByName = append([]string{"included-in"}, allDepByName...)
 			result = strings.Join(allDepByName, ", ")
-			return db.NewRecordStmt(COMP_DEPTH, component.GetName(), result, 10.0, "")
+			return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), result, 10.0, "")
 		}
 		result = strings.Join(allDepByName, ", ")
-		return db.NewRecordStmt(COMP_DEPTH, component.GetName(), result, 10.0, "")
+		return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), result, 10.0, "")
 	}
 
-	return db.NewRecordStmt(COMP_DEPTH, component.GetName(), "no-relationships", 0.0, "")
+	return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), "no-relationships", 0.0, "")
 }
 
 func bsiComponentLicense(component sbom.GetComponent) *db.Record {
@@ -414,7 +414,7 @@ func bsiComponentLicense(component sbom.GetComponent) *db.Record {
 
 	if len(licenses) == 0 {
 		// fmt.Printf("component %s : %s has no licenses\n", component.Name(), component.Version())
-		return db.NewRecordStmt(COMP_LICENSE, component.GetName(), "not-compliant", score, "")
+		return db.NewRecordStmt(COMP_LICENSE, common.UniqueElementID(component), "not-compliant", score, "")
 	}
 
 	var spdx, aboutcode, custom int
@@ -442,10 +442,10 @@ func bsiComponentLicense(component sbom.GetComponent) *db.Record {
 
 	if total != len(licenses) {
 		score = 0.0
-		return db.NewRecordStmt(COMP_LICENSE, component.GetName(), "not-compliant", score, "")
+		return db.NewRecordStmt(COMP_LICENSE, common.UniqueElementID(component), "not-compliant", score, "")
 	}
 
-	return db.NewRecordStmt(COMP_LICENSE, component.GetName(), "compliant", 10.0, "")
+	return db.NewRecordStmt(COMP_LICENSE, common.UniqueElementID(component), "compliant", 10.0, "")
 }
 
 func bsiComponentSourceHash(component sbom.GetComponent) *db.Record {
@@ -457,7 +457,7 @@ func bsiComponentSourceHash(component sbom.GetComponent) *db.Record {
 		score = 10.0
 	}
 
-	return db.NewRecordStmtOptional(COMP_SOURCE_HASH, component.GetName(), result, score)
+	return db.NewRecordStmtOptional(COMP_SOURCE_HASH, common.UniqueElementID(component), result, score)
 }
 
 func bsiComponentOtherUniqIDs(component sbom.GetComponent) *db.Record {
@@ -470,7 +470,7 @@ func bsiComponentOtherUniqIDs(component sbom.GetComponent) *db.Record {
 		result = string(purl[0])
 		score = 10.0
 
-		return db.NewRecordStmtOptional(COMP_OTHER_UNIQ_IDS, component.GetName(), result, score)
+		return db.NewRecordStmtOptional(COMP_OTHER_UNIQ_IDS, common.UniqueElementID(component), result, score)
 	}
 
 	cpes := component.GetCpes()
@@ -479,29 +479,29 @@ func bsiComponentOtherUniqIDs(component sbom.GetComponent) *db.Record {
 		result = string(cpes[0])
 		score = 10.0
 
-		return db.NewRecordStmtOptional(COMP_OTHER_UNIQ_IDS, component.GetName(), result, score)
+		return db.NewRecordStmtOptional(COMP_OTHER_UNIQ_IDS, common.UniqueElementID(component), result, score)
 	}
 
-	return db.NewRecordStmtOptional(COMP_OTHER_UNIQ_IDS, component.GetName(), "", 0.0)
+	return db.NewRecordStmtOptional(COMP_OTHER_UNIQ_IDS, common.UniqueElementID(component), "", 0.0)
 }
 
 func bsiComponentDownloadURL(component sbom.GetComponent) *db.Record {
 	result := component.GetDownloadLocationURL()
 
 	if result != "" {
-		return db.NewRecordStmtOptional(COMP_DOWNLOAD_URL, component.GetName(), result, 10.0)
+		return db.NewRecordStmtOptional(COMP_DOWNLOAD_URL, common.UniqueElementID(component), result, 10.0)
 	}
-	return db.NewRecordStmtOptional(COMP_DOWNLOAD_URL, component.GetName(), "", 0.0)
+	return db.NewRecordStmtOptional(COMP_DOWNLOAD_URL, common.UniqueElementID(component), "", 0.0)
 }
 
 func bsiComponentSourceCodeURL(component sbom.GetComponent) *db.Record {
 	result := component.SourceCodeURL()
 
 	if result != "" {
-		return db.NewRecordStmtOptional(COMP_SOURCE_CODE_URL, component.GetName(), result, 10.0)
+		return db.NewRecordStmtOptional(COMP_SOURCE_CODE_URL, common.UniqueElementID(component), result, 10.0)
 	}
 
-	return db.NewRecordStmtOptional(COMP_SOURCE_CODE_URL, component.GetName(), "", 0.0)
+	return db.NewRecordStmtOptional(COMP_SOURCE_CODE_URL, common.UniqueElementID(component), "", 0.0)
 }
 
 func bsiComponentHash(component sbom.GetComponent) *db.Record {
@@ -519,27 +519,27 @@ func bsiComponentHash(component sbom.GetComponent) *db.Record {
 		}
 	}
 
-	return db.NewRecordStmt(COMP_HASH, component.GetName(), result, score, "")
+	return db.NewRecordStmt(COMP_HASH, common.UniqueElementID(component), result, score, "")
 }
 
 func bsiComponentVersion(component sbom.GetComponent) *db.Record {
 	result := component.GetVersion()
 
 	if result != "" {
-		return db.NewRecordStmt(COMP_VERSION, component.GetName(), result, 10.0, "")
+		return db.NewRecordStmt(COMP_VERSION, common.UniqueElementID(component), result, 10.0, "")
 	}
 
-	return db.NewRecordStmt(COMP_VERSION, component.GetName(), "", 0.0, "")
+	return db.NewRecordStmt(COMP_VERSION, common.UniqueElementID(component), "", 0.0, "")
 }
 
 func bsiComponentName(component sbom.GetComponent) *db.Record {
 	result := component.GetName()
 
 	if result != "" {
-		return db.NewRecordStmt(COMP_NAME, component.GetName(), result, 10.0, "")
+		return db.NewRecordStmt(COMP_NAME, common.UniqueElementID(component), result, 10.0, "")
 	}
 
-	return db.NewRecordStmt(COMP_NAME, component.GetName(), "", 0.0, "")
+	return db.NewRecordStmt(COMP_NAME, common.UniqueElementID(component), "", 0.0, "")
 }
 
 func bsiComponentCreator(component sbom.GetComponent) *db.Record {
@@ -554,7 +554,7 @@ func bsiComponentCreator(component sbom.GetComponent) *db.Record {
 		}
 
 		if result != "" {
-			return db.NewRecordStmt(COMP_CREATOR, component.GetName(), result, score, "")
+			return db.NewRecordStmt(COMP_CREATOR, common.UniqueElementID(component), result, score, "")
 		}
 
 		if supplier.GetURL() != "" {
@@ -563,7 +563,7 @@ func bsiComponentCreator(component sbom.GetComponent) *db.Record {
 		}
 
 		if result != "" {
-			return db.NewRecordStmt(COMP_CREATOR, component.GetName(), result, score, "")
+			return db.NewRecordStmt(COMP_CREATOR, common.UniqueElementID(component), result, score, "")
 		}
 
 		if supplier.GetContacts() != nil {
@@ -576,7 +576,7 @@ func bsiComponentCreator(component sbom.GetComponent) *db.Record {
 			}
 
 			if result != "" {
-				return db.NewRecordStmt(COMP_CREATOR, component.GetName(), result, score, "")
+				return db.NewRecordStmt(COMP_CREATOR, common.UniqueElementID(component), result, score, "")
 			}
 		}
 	}
@@ -590,7 +590,7 @@ func bsiComponentCreator(component sbom.GetComponent) *db.Record {
 		}
 
 		if result != "" {
-			return db.NewRecordStmt(COMP_CREATOR, component.GetName(), result, score, "")
+			return db.NewRecordStmt(COMP_CREATOR, common.UniqueElementID(component), result, score, "")
 		}
 
 		if manufacturer.GetURL() != "" {
@@ -599,7 +599,7 @@ func bsiComponentCreator(component sbom.GetComponent) *db.Record {
 		}
 
 		if result != "" {
-			return db.NewRecordStmt(COMP_CREATOR, component.GetName(), result, score, "")
+			return db.NewRecordStmt(COMP_CREATOR, common.UniqueElementID(component), result, score, "")
 		}
 
 		if manufacturer.GetContacts() != nil {
@@ -612,10 +612,10 @@ func bsiComponentCreator(component sbom.GetComponent) *db.Record {
 			}
 
 			if result != "" {
-				return db.NewRecordStmt(COMP_CREATOR, component.GetName(), result, score, "")
+				return db.NewRecordStmt(COMP_CREATOR, common.UniqueElementID(component), result, score, "")
 			}
 		}
 	}
 
-	return db.NewRecordStmt(COMP_CREATOR, component.GetName(), "", 0.0, "")
+	return db.NewRecordStmt(COMP_CREATOR, common.UniqueElementID(component), "", 0.0, "")
 }

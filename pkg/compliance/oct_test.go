@@ -3,6 +3,7 @@ package compliance
 import (
 	"testing"
 
+	"github.com/interlynk-io/sbomqs/pkg/compliance/common"
 	"github.com/interlynk-io/sbomqs/pkg/compliance/db"
 	"github.com/interlynk-io/sbomqs/pkg/licenses"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
@@ -227,7 +228,7 @@ func TestOctSbomPass(t *testing.T) {
 				score:  10.0,
 				result: "core-js",
 				key:    PACK_NAME,
-				id:     doc.Components()[0].GetName(),
+				id:     common.UniqueElementID(doc.Components()[0]),
 			},
 		},
 		{
@@ -238,7 +239,7 @@ func TestOctSbomPass(t *testing.T) {
 				score:  10.0,
 				result: "v0.7.1",
 				key:    PACK_VERSION,
-				id:     doc.Components()[0].GetName(),
+				id:     common.UniqueElementID(doc.Components()[0]),
 			},
 		},
 		{
@@ -249,7 +250,7 @@ func TestOctSbomPass(t *testing.T) {
 				score:  10.0,
 				result: "SPDXRef-npm-core-js-3.6.5",
 				key:    PACK_SPDXID,
-				id:     doc.Components()[0].GetName(),
+				id:     common.UniqueElementID(doc.Components()[0]),
 			},
 		},
 		{
@@ -260,7 +261,7 @@ func TestOctSbomPass(t *testing.T) {
 				score:  10.0,
 				result: "vivekkumarsahu650@gmail.com",
 				key:    PACK_SUPPLIER,
-				id:     doc.Components()[0].GetName(),
+				id:     common.UniqueElementID(doc.Components()[0]),
 			},
 		},
 		{
@@ -271,7 +272,7 @@ func TestOctSbomPass(t *testing.T) {
 				score:  10.0,
 				result: "ee1300ac533cebc2d070ce3765685d5f7fca2a5a78ca15068323f68ed63d4abf",
 				key:    PACK_HASH,
-				id:     doc.Components()[0].GetName(),
+				id:     common.UniqueElementID(doc.Components()[0]),
 			},
 		},
 		{
@@ -282,7 +283,7 @@ func TestOctSbomPass(t *testing.T) {
 				score:  10.0,
 				result: "purl:(1/1)",
 				key:    PACK_EXT_REF,
-				id:     doc.Components()[0].GetName(),
+				id:     common.UniqueElementID(doc.Components()[0]),
 			},
 		},
 		{
@@ -293,7 +294,7 @@ func TestOctSbomPass(t *testing.T) {
 				score:  10.0,
 				result: "Copyright 2001-2011 The Apache Software Foundation",
 				key:    PACK_COPYRIGHT,
-				id:     doc.Components()[0].GetName(),
+				id:     common.UniqueElementID(doc.Components()[0]),
 			},
 		},
 		{
@@ -304,7 +305,7 @@ func TestOctSbomPass(t *testing.T) {
 				score:  10.0,
 				result: "yes",
 				key:    PACK_FILE_ANALYZED,
-				id:     doc.Components()[0].GetName(),
+				id:     common.UniqueElementID(doc.Components()[0]),
 			},
 		},
 		{
@@ -315,7 +316,7 @@ func TestOctSbomPass(t *testing.T) {
 				score:  10.0,
 				result: "(LGPL-2.0-only OR LicenseRef-3)",
 				key:    PACK_LICENSE_CON,
-				id:     doc.Components()[0].GetName(),
+				id:     common.UniqueElementID(doc.Components()[0]),
 			},
 		},
 		{
@@ -326,7 +327,7 @@ func TestOctSbomPass(t *testing.T) {
 				score:  10.0,
 				result: "(LGPL-2.0-only AND LicenseRef-3)",
 				key:    PACK_LICENSE_DEC,
-				id:     doc.Components()[0].GetName(),
+				id:     common.UniqueElementID(doc.Components()[0]),
 			},
 		},
 		{
@@ -337,7 +338,7 @@ func TestOctSbomPass(t *testing.T) {
 				score:  10.0,
 				result: "https://registry.npmjs.org/core-js/-/core-js-3.6.5\n.tgz",
 				key:    PACK_DOWNLOAD_URL,
-				id:     doc.Components()[0].GetName(),
+				id:     common.UniqueElementID(doc.Components()[0]),
 			},
 		},
 	}
@@ -533,7 +534,7 @@ func TestOctSbomFail(t *testing.T) {
 				score:  0.0,
 				result: "",
 				key:    PACK_NAME,
-				id:     doc.Components()[0].GetName(),
+				id:     common.UniqueElementID(doc.Components()[0]),
 			},
 		},
 		{
@@ -542,7 +543,7 @@ func TestOctSbomFail(t *testing.T) {
 				score:  0.0,
 				result: "",
 				key:    PACK_VERSION,
-				id:     doc.Components()[0].GetName(),
+				id:     common.UniqueElementID(doc.Components()[0]),
 			},
 		},
 		{
@@ -551,7 +552,7 @@ func TestOctSbomFail(t *testing.T) {
 				score:  0.0,
 				result: "",
 				key:    PACK_SPDXID,
-				id:     doc.Components()[0].GetName(),
+				id:     common.UniqueElementID(doc.Components()[0]),
 			},
 		},
 		{
@@ -560,7 +561,7 @@ func TestOctSbomFail(t *testing.T) {
 				score:  0.0,
 				result: "",
 				key:    PACK_SUPPLIER,
-				id:     doc.Components()[0].GetName(),
+				id:     common.UniqueElementID(doc.Components()[0]),
 			},
 		},
 		{
@@ -569,7 +570,7 @@ func TestOctSbomFail(t *testing.T) {
 				score:  0.0,
 				result: "",
 				key:    PACK_HASH,
-				id:     doc.Components()[0].GetName(),
+				id:     common.UniqueElementID(doc.Components()[0]),
 			},
 		},
 		{
@@ -578,7 +579,7 @@ func TestOctSbomFail(t *testing.T) {
 				score:  0.0,
 				result: "cpe23Type",
 				key:    PACK_EXT_REF,
-				id:     doc.Components()[0].GetName(),
+				id:     common.UniqueElementID(doc.Components()[0]),
 			},
 		},
 		{
@@ -587,7 +588,7 @@ func TestOctSbomFail(t *testing.T) {
 				score:  0.0,
 				result: "NOASSERTION",
 				key:    PACK_COPYRIGHT,
-				id:     doc.Components()[0].GetName(),
+				id:     common.UniqueElementID(doc.Components()[0]),
 			},
 		},
 		{
@@ -596,7 +597,7 @@ func TestOctSbomFail(t *testing.T) {
 				score:  0.0,
 				result: "no",
 				key:    PACK_FILE_ANALYZED,
-				id:     doc.Components()[0].GetName(),
+				id:     common.UniqueElementID(doc.Components()[0]),
 			},
 		},
 		{
@@ -605,7 +606,7 @@ func TestOctSbomFail(t *testing.T) {
 				score:  0.0,
 				result: "NONE",
 				key:    PACK_LICENSE_CON,
-				id:     doc.Components()[0].GetName(),
+				id:     common.UniqueElementID(doc.Components()[0]),
 			},
 		},
 		{
@@ -614,7 +615,7 @@ func TestOctSbomFail(t *testing.T) {
 				score:  0.0,
 				result: "NOASSERTION",
 				key:    PACK_LICENSE_DEC,
-				id:     doc.Components()[0].GetName(),
+				id:     common.UniqueElementID(doc.Components()[0]),
 			},
 		},
 		{
@@ -623,7 +624,7 @@ func TestOctSbomFail(t *testing.T) {
 				score:  0.0,
 				result: "",
 				key:    PACK_DOWNLOAD_URL,
-				id:     doc.Components()[0].GetName(),
+				id:     common.UniqueElementID(doc.Components()[0]),
 			},
 		},
 	}
