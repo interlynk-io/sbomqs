@@ -98,9 +98,6 @@ func init() {
 	complianceCmd.Flags().BoolP("debug", "D", false, "debug logging")
 
 	// Output control
-	complianceCmd.Flags().BoolP("json", "j", false, "json format")
-	complianceCmd.Flags().BoolP("basic", "b", false, "basic format")
-	complianceCmd.Flags().BoolP("detailed", "d", false, "detailed format")
 	complianceCmd.Flags().BoolP("json", "j", false, "output in json format")
 	complianceCmd.Flags().BoolP("basic", "b", false, "output in basic format")
 	complianceCmd.Flags().BoolP("detailed", "d", false, "output in detailed format")
