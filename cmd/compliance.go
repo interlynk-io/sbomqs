@@ -103,8 +103,8 @@ func init() {
 	complianceCmd.MarkFlagsMutuallyExclusive("json", "basic", "detailed")
 
 	// Standards control
-	complianceCmd.Flags().BoolP("ntia", "n", false, "NTIA minimum elements July 12, 2021")
-	complianceCmd.Flags().BoolP("bsi", "c", false, "BSI TR-03183-2 v1.1")
-	complianceCmd.Flags().BoolP("oct", "t", false, "OpenChain Telco SBOM v1.0")
-	complianceCmd.Flags().BoolP("fsct", "f", false, "Framing Software Component Transparency - v3")
+	complianceCmd.Flags().BoolP("ntia", "n", false, "NTIA minimum elements (July 12, 2021)")
+	complianceCmd.Flags().BoolP("bsi", "c", false, "BSI TR-03183-2 (v1.1)")
+	complianceCmd.Flags().BoolP("oct", "t", false, "OpenChain Telco SBOM (v1.0)")
+	complianceCmd.Flags().BoolP("fsct", "f", false, "Framing Software Component Transparency (v3)")
 }
