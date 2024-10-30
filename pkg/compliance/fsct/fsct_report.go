@@ -80,10 +80,10 @@ type tool struct {
 	Vendor  string `json:"vendor"`
 }
 type Summary struct {
-	TotalScore         float64 `json:"total_score"`
-	MaxScore           float64 `json:"max_score"`
-	TotalRequiredScore float64 `json:"required_elements_score"`
-	TotalOptionalScore float64 `json:"optional_elements_score"`
+	TotalScore float64 `json:"total_score"`
+	MaxScore   float64 `json:"max_score"`
+	// TotalRequiredScore float64 `json:"required_elements_score"`
+	// TotalOptionalScore float64 `json:"optional_elements_score"`
 }
 
 type fsctComplianceReport struct {
@@ -98,7 +98,7 @@ type fsctComplianceReport struct {
 
 func newFsctJSONReport() *fsctComplianceReport {
 	return &fsctComplianceReport{
-		Name:     "V3 Framing Software Component Transparency",
+		Name:     "Framing Software Component Transparency (v3)",
 		Subtitle: "NTIA Minimum Elelments 3rd Edition",
 		Revision: "3rd Edition",
 		Run: run{
@@ -123,8 +123,8 @@ func fsctJSONReport(db *db.DB, fileName string) {
 	summary := Summary{}
 	summary.MaxScore = 10.0
 	summary.TotalScore = score.totalScore()
-	summary.TotalRequiredScore = score.totalRequiredScore()
-	summary.TotalOptionalScore = score.totalOptionalScore()
+	// summary.TotalRequiredScore = score.totalRequiredScore()
+	// summary.TotalOptionalScore = score.totalOptionalScore()
 
 	jr.Summary = summary
 	jr.Sections = fsctConstructSections(db)
@@ -191,8 +191,8 @@ func fsctDetailedReport(db *db.DB, fileName string) {
 	table := tablewriter.NewWriter(os.Stdout)
 	score := fsctAggregateScore(db)
 
-	fmt.Printf("V3 Framing Software Component Transparency\n")
-	fmt.Printf("Compliance score by Interlynk Score:%0.1f RequiredScore:%0.1f OptionalScore:%0.1f for %s\n", score.totalScore(), score.totalRequiredScore(), score.totalOptionalScore(), fileName)
+	fmt.Printf("Framing Software Component Transparency (v3)\n")
+	fmt.Printf("Compliance score by Interlynk Score:%0.1f for %s\n", score.totalScore(), fileName)
 	fmt.Printf("* indicates optional fields\n")
 	table.SetHeader([]string{"ElementId", "Section", "Datafield", "Element Result", "Score", "Maturity"})
 	table.SetRowLine(true)
@@ -251,6 +251,6 @@ func fsctDetailedReport(db *db.DB, fileName string) {
 
 func fsctBasicReport(db *db.DB, fileName string) {
 	score := fsctAggregateScore(db)
-	fmt.Printf("V3 Framing Software Component Transparency\n")
-	fmt.Printf("Score:%0.1f RequiredScore:%0.1f OptionalScore:%0.1f for %s\n", score.totalScore(), score.totalRequiredScore(), score.totalOptionalScore(), fileName)
+	fmt.Printf("Framing Software Component Transparency (v3)\n")
+	fmt.Printf("Score:%0.1f for %s\n", score.totalScore(), fileName)
 }
