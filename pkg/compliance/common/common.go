@@ -358,3 +358,7 @@ func GetDependenciesByName(dependencies []string, compIDWithName map[string]stri
 func GetID(componentID string) string {
 	return "SPDXRef-" + componentID
 }
+
+func UniqueElementID(component sbom.GetComponent) string {
+	return component.GetName() + "-" + component.GetVersion()
+}
