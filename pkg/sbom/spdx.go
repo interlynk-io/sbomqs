@@ -235,12 +235,7 @@ func (s *SpdxDoc) parseComps() {
 		nc.ID = string(sc.PackageSPDXIdentifier)
 		nc.PackageLicenseConcluded = sc.PackageLicenseConcluded
 		if strings.Contains(s.PrimaryComponent.ID, string(sc.PackageSPDXIdentifier)) {
-			pc := PrimaryComp{}
-			pc.Name = sc.PackageName
-			pc.ID = string(sc.PackageSPDXIdentifier)
-			pc.Present = true
-			nc.isPrimary = true
-			nc.PrimaryCompt = pc
+			nc.PrimaryCompt = s.PrimaryComponent
 		}
 
 		manu := s.getManufacturer(index)
@@ -330,7 +325,6 @@ func (s *SpdxDoc) parsePrimaryCompAndRelationships() {
 			primaryComponent = CleanKey(string(bBytes))
 			s.PrimaryComponent.ID = primaryComponent
 			s.PrimaryComponent.Present = true
-			s.PrimaryComponent.AllDependencies = append(s.PrimaryComponent.AllDependencies, CleanKey(string(bBytes)))
 			modified := strings.TrimPrefix(primaryComponent, "SPDXRef-")
 
 			for _, pack := range s.doc.Packages {
@@ -354,6 +348,7 @@ func (s *SpdxDoc) parsePrimaryCompAndRelationships() {
 			if CleanKey(string(aBytes)) == s.PrimaryComponent.ID {
 				totalDependencies++
 				s.PrimaryComponent.HasDependency = true
+				s.PrimaryComponent.AllDependencies = append(s.PrimaryComponent.AllDependencies, CleanKey(string(bBytes)))
 				s.Dependencies[CleanKey(string(aBytes))] = append(s.Dependencies[CleanKey(string(aBytes))], CleanKey(string(bBytes)))
 
 			} else {
