@@ -187,7 +187,7 @@ func fsctConstructSections(db *db.DB) []fsctSection {
 	return sortedSections
 }
 
-func fsctDetailedReport(db *db.DB, fileName string) {
+func fsctDetailedReport(db *db.DB, fileName string, coloredOutput bool) {
 	table := tablewriter.NewWriter(os.Stdout)
 	score := fsctAggregateScore(db)
 
@@ -198,53 +198,68 @@ func fsctDetailedReport(db *db.DB, fileName string) {
 	table.SetRowLine(true)
 	table.SetAutoMergeCellsByColumnIndex([]int{0})
 
-	// Set header colors
-	table.SetHeaderColor(
-		tablewriter.Colors{tablewriter.FgHiWhiteColor, tablewriter.Bold},
-		tablewriter.Colors{tablewriter.FgHiWhiteColor, tablewriter.Bold},
-		tablewriter.Colors{tablewriter.FgHiWhiteColor, tablewriter.Bold},
-		tablewriter.Colors{tablewriter.FgHiWhiteColor, tablewriter.Bold},
-		tablewriter.Colors{tablewriter.FgHiWhiteColor, tablewriter.Bold},
-		tablewriter.Colors{tablewriter.FgHiWhiteColor, tablewriter.Bold},
-	)
+	if coloredOutput {
+		// Set header colors if the colors flag is true
+		table.SetHeaderColor(
+			tablewriter.Colors{tablewriter.FgHiWhiteColor, tablewriter.Bold},
+			tablewriter.Colors{tablewriter.FgHiWhiteColor, tablewriter.Bold},
+			tablewriter.Colors{tablewriter.FgHiWhiteColor, tablewriter.Bold},
+			tablewriter.Colors{tablewriter.FgHiWhiteColor, tablewriter.Bold},
+			tablewriter.Colors{tablewriter.FgHiWhiteColor, tablewriter.Bold},
+			tablewriter.Colors{tablewriter.FgHiWhiteColor, tablewriter.Bold},
+		)
+	}
 
 	sections := fsctConstructSections(db)
 
 	for _, section := range sections {
 		sectionID := section.ID
 		if !section.Required {
-			sectionID = sectionID + "*"
+			sectionID += "*"
 		}
 
-		// Set color based on maturity level
+		// Define maturity color based on the flag
 		var maturityColor tablewriter.Colors
-		switch section.Maturity {
-		case "None":
-			maturityColor = tablewriter.Colors{tablewriter.FgRedColor, tablewriter.Bold}
-		case "Minimum":
-			maturityColor = tablewriter.Colors{tablewriter.FgGreenColor, tablewriter.Bold}
-		case "Recommended":
-			maturityColor = tablewriter.Colors{tablewriter.FgCyanColor, tablewriter.Bold}
-		case "Aspirational":
-			maturityColor = tablewriter.Colors{tablewriter.FgHiYellowColor, tablewriter.Bold}
-		default:
-			maturityColor = tablewriter.Colors{}
+		if coloredOutput {
+			switch section.Maturity {
+			case "None":
+				maturityColor = tablewriter.Colors{tablewriter.FgRedColor, tablewriter.Bold}
+			case "Minimum":
+				maturityColor = tablewriter.Colors{tablewriter.FgGreenColor, tablewriter.Bold}
+			case "Recommended":
+				maturityColor = tablewriter.Colors{tablewriter.FgCyanColor, tablewriter.Bold}
+			case "Aspirational":
+				maturityColor = tablewriter.Colors{tablewriter.FgHiYellowColor, tablewriter.Bold}
+			}
 		}
-		table.Rich([]string{
-			section.ElementID,
-			sectionID,
-			section.DataField,
-			section.ElementResult,
-			fmt.Sprintf("%0.1f", section.Score),
-			section.Maturity,
-		}, []tablewriter.Colors{
-			{tablewriter.FgHiMagentaColor, tablewriter.Bold},
-			{},
-			{tablewriter.FgHiBlueColor, tablewriter.Bold},
-			{tablewriter.FgHiWhiteColor, tablewriter.Bold},
-			maturityColor,
-			maturityColor,
-		})
+
+		// Use Rich() with color settings only if colors is true
+		if coloredOutput {
+			table.Rich([]string{
+				section.ElementID,
+				sectionID,
+				section.DataField,
+				section.ElementResult,
+				fmt.Sprintf("%0.1f", section.Score),
+				section.Maturity,
+			}, []tablewriter.Colors{
+				{tablewriter.FgHiMagentaColor, tablewriter.Bold},
+				{},
+				{tablewriter.FgHiBlueColor, tablewriter.Bold},
+				{tablewriter.FgHiWhiteColor, tablewriter.Bold},
+				maturityColor,
+				maturityColor,
+			})
+		} else {
+			table.Append([]string{
+				section.ElementID,
+				sectionID,
+				section.DataField,
+				section.ElementResult,
+				fmt.Sprintf("%0.1f", section.Score),
+				section.Maturity,
+			})
+		}
 	}
 	table.Render()
 }

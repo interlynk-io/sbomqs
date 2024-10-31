@@ -76,6 +76,7 @@ func setupEngineParams(cmd *cobra.Command, args []string) *engine.Params {
 	engParams.Basic, _ = cmd.Flags().GetBool("basic")
 	engParams.Detailed, _ = cmd.Flags().GetBool("detailed")
 	engParams.JSON, _ = cmd.Flags().GetBool("json")
+	engParams.Color, _ = cmd.Flags().GetBool("color")
 
 	engParams.Ntia, _ = cmd.Flags().GetBool("ntia")
 	// engParams.Ntia, _ = cmd.Flags().GetBool("ntia")
@@ -97,9 +98,12 @@ func init() {
 	complianceCmd.Flags().BoolP("debug", "D", false, "debug logging")
 
 	// Output control
-	complianceCmd.Flags().BoolP("json", "j", false, "json format")
-	complianceCmd.Flags().BoolP("basic", "b", false, "basic format")
-	complianceCmd.Flags().BoolP("detailed", "d", false, "detailed format")
+	complianceCmd.Flags().BoolP("json", "j", false, "output in json format")
+	complianceCmd.Flags().BoolP("basic", "b", false, "output in basic format")
+	complianceCmd.Flags().BoolP("detailed", "d", false, "output in detailed format")
+	complianceCmd.Flags().BoolP("color", "l", false, "output in colorful")
+
+	// complianceCmd.Flags().BoolP("pdf", "p", false, "output in pdf format")
 	complianceCmd.MarkFlagsMutuallyExclusive("json", "basic", "detailed")
 
 	// Standards control
