@@ -330,6 +330,7 @@ func (s *SpdxDoc) parsePrimaryCompAndRelationships() {
 			primaryComponent = CleanKey(string(bBytes))
 			s.PrimaryComponent.ID = primaryComponent
 			s.PrimaryComponent.Present = true
+			s.PrimaryComponent.AllDependencies = append(s.PrimaryComponent.AllDependencies, CleanKey(string(bBytes)))
 			modified := strings.TrimPrefix(primaryComponent, "SPDXRef-")
 
 			for _, pack := range s.doc.Packages {

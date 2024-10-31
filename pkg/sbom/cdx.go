@@ -333,13 +333,8 @@ func copyC(cdxc *cydx.Component, c *CdxDoc) *Component {
 		}
 	}
 
-	if cdxc.BOMRef == c.PrimaryComponent.ID {
-		pc := PrimaryComp{}
-		pc.Name = cdxc.Name
-		pc.ID = cdxc.BOMRef
-		pc.Present = true
-		nc.isPrimary = true
-		nc.PrimaryCompt = pc
+	if cdxc.Name == c.PrimaryComponent.Name {
+		nc.PrimaryCompt = c.PrimaryComponent
 	}
 	nc.ID = cdxc.BOMRef
 	return nc
@@ -581,6 +576,7 @@ func (c *CdxDoc) parsePrimaryCompAndRelationships() {
 			nr.To = d
 			if r.Ref == c.PrimaryComponent.ID {
 				c.PrimaryComponent.HasDependency = true
+				c.PrimaryComponent.AllDependencies = append(c.PrimaryComponent.AllDependencies, d)
 				totalDependencies++
 				c.rels = append(c.rels, nr)
 				c.Dependencies[c.PrimaryComponent.ID] = append(c.Dependencies[c.PrimaryComponent.ID], d)
