@@ -298,20 +298,7 @@ func ComponentsNamesMapToIDs(doc sbom.Document) map[string]string {
 
 // GetAllPrimaryComponentDependencies return all list of primary component dependencies by it's ID.
 func GetAllPrimaryComponentDependencies(doc sbom.Document) []string {
-	var dependencies []string
-	for _, component := range doc.Components() {
-		if doc.Spec().GetSpecType() == "spdx" {
-			if component.GetPrimaryCompInfo().IsPresent() {
-				id := "SPDXRef-" + component.GetSpdxID()
-				dependencies = doc.GetRelationships(id)
-			}
-		} else if doc.Spec().GetSpecType() == "cyclonedx" {
-			if component.GetPrimaryCompInfo().IsPresent() {
-				dependencies = doc.GetRelationships(component.GetID())
-			}
-		}
-	}
-	return dependencies
+	return doc.PrimaryComp().GetDependencies()
 }
 
 // MapPrimaryDependencies returns a map of all primary dependencies with bool.
@@ -361,4 +348,13 @@ func GetID(componentID string) string {
 
 func UniqueElementID(component sbom.GetComponent) string {
 	return component.GetName() + "-" + component.GetVersion()
+}
+
+func IsComponentPartOfPrimaryDependency(primaryCompDeps []string, comp string) bool {
+	for _, item := range primaryCompDeps {
+		if item == comp {
+			return true
+		}
+	}
+	return false
 }
