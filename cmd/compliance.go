@@ -23,30 +23,29 @@ import (
 )
 
 var complianceCmd = &cobra.Command{
-	Use:   "compliance <sbom file>",
+	Use:   "compliance [flags]",
 	Short: "compliance command checks an SBOM for compliance with SBOM standards",
-	Long: `Check if your SBOM complies with various SBOM standards like NTIA minimum elements, BSI TR-03183-2, OpenChain Telco.
-	Generate a compliance report for an SBOM file.
+	Long: `
+Check if our SBOM meets compliance requirements for various standards, such as NTIA minimum elements, 
+BSI TR-03183-2, Framing Software Component Transparency (v3) and OpenChain Telco.
 	`,
-	Example: ` sbomqs compliance --bsi|--oct  [--basic|--json] <SBOM file>
+	Example: ` sbomqs compliance <--ntia | --bsi | --fsct | --oct > [--basic | --json] <SBOM file>
+
+  # Check a NTIA minimum elements compliance against a SBOM in a table output
+  sbomqs compliance --ntia samples/sbomqs-spdx-syft.json
 
   # Check a BSI TR-03183-2 v1.1 compliance against a SBOM in a table output
   sbomqs compliance --bsi samples/sbomqs-spdx-syft.json
 
-  # Check a BSI TR-03183-2 v1.1 compliance against a SBOM in a JSON output
-  sbomqs compliance --bsi --json samples/sbomqs-spdx-syft.json
-
-  # Check a OpenChain Telco compliance against a SBOM in a table output
-  sbomqs compliance --oct samples/sbomqs-spdx-syft.json
+   # Check a Framing Software Component Transparency (v3) compliance against a SBOM in a table output
+  sbomqs compliance --fsct samples/sbomqs-spdx-syft.json
 
   # Check a OpenChain Telco compliance against a SBOM in a JSON output
   sbomqs compliance --oct --json samples/sbomqs-spdx-syft.json
 
-  # Check a V3 Framing document compliance  against a SBOM in a table output
-  sbomqs compliance --fsct <sbom>
+   # Check a Framing Software Component Transparency (v3) compliance against a SBOM in a table colorful output
+  sbomqs compliance --fsct --color samples/sbomqs-spdx-syft.json
 
-  # Check a V3 Framing document compliance  against a SBOM in a JSON output
-  sbomqs compliance --fsct -j <sbom>
 `,
 	Args: func(cmd *cobra.Command, args []string) error {
 		if err := cobra.ExactArgs(1)(cmd, args); err != nil {
@@ -100,7 +99,7 @@ func init() {
 	// Output control
 	complianceCmd.Flags().BoolP("json", "j", false, "output in json format")
 	complianceCmd.Flags().BoolP("basic", "b", false, "output in basic format")
-	complianceCmd.Flags().BoolP("detailed", "d", false, "output in detailed format")
+	complianceCmd.Flags().BoolP("detailed", "d", false, "output in detailed format(default)")
 	complianceCmd.Flags().BoolP("color", "l", false, "output in colorful")
 
 	// complianceCmd.Flags().BoolP("pdf", "p", false, "output in pdf format")
