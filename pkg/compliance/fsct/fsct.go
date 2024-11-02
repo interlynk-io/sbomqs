@@ -450,8 +450,8 @@ func fsctPackageCopyright(component sbom.GetComponent) *db.Record {
 	result, score, maturity := "", 0.0, "None"
 	isCopyrightPresent := false
 
-	if result = component.GetCopyRight(); result != "" {
-		_, isCopyrightPresent = common.CheckCopyright(result)
+	if cp := component.GetCopyRight(); cp != "" {
+		result, isCopyrightPresent = common.CheckCopyright(cp)
 	}
 
 	if isCopyrightPresent {

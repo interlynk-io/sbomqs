@@ -263,7 +263,10 @@ func ConvertMapToString(m map[string]string) string {
 }
 
 func CheckCopyright(cp string) (string, bool) {
-	return cp, cp != "NOASSERTION" && cp != "NONE"
+	if cp == "NOASSERTION" || cp == "NONE" {
+		return "", false
+	}
+	return cp, true
 }
 
 // ComponentsLists return component lists as a map
