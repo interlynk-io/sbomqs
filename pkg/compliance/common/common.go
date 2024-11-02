@@ -15,6 +15,7 @@
 package common
 
 import (
+	"path"
 	"strings"
 	"time"
 
@@ -347,7 +348,20 @@ func GetID(componentID string) string {
 }
 
 func UniqueElementID(component sbom.GetComponent) string {
-	return component.GetName() + "-" + component.GetVersion()
+	componentName := path.Base(component.GetName())
+
+	if len(componentName) > 20 {
+		// "org.jetbrains.kotlin:kotlin-stdlib-jdk7" would become "org.jetbrain...lib-jdk7"
+		componentName = componentName[:12] + "..." + componentName[len(componentName)-8:]
+	}
+
+	version := component.GetVersion()
+	if len(version) > 12 {
+		// "v0.0.0-20230321023759-10a507213a29" would become "v0.0.0...213a29"
+		version = version[:6] + "..." + version[len(version)-6:]
+	}
+
+	return componentName + "-" + version
 }
 
 func IsComponentPartOfPrimaryDependency(primaryCompDeps []string, comp string) bool {
