@@ -618,6 +618,16 @@ func compWithBigContentCopyright() sbom.GetComponent {
 	return comp
 }
 
+func compWithNoAssertion() sbom.GetComponent {
+	copyright := "NOASSERTION"
+	comp := sbom.NewComponent()
+	comp.CopyRight = copyright
+	comp.Name = "yaml.v2"
+	comp.Spdxid = "pkg:golang/gopkg.in/yaml.v2@v2.4.0"
+
+	return comp
+}
+
 func TestFsctComponentLevelOnSpdxAndCdx(t *testing.T) {
 	testCases := []struct {
 		name     string
@@ -754,6 +764,17 @@ func TestFsctComponentLevelOnSpdxAndCdx(t *testing.T) {
 				key:      COMP_COPYRIGHT,
 				id:       common.UniqueElementID(compWithBigContentCopyright()),
 				maturity: "Minimum",
+			},
+		},
+		{
+			name:   "spdxCompWithNoAssertionCopyright",
+			actual: fsctPackageCopyright(compWithNoAssertion()),
+			expected: desired{
+				score:    0.0,
+				result:   "",
+				key:      COMP_COPYRIGHT,
+				id:       common.UniqueElementID(compWithNoAssertion()),
+				maturity: "None",
 			},
 		},
 	}
