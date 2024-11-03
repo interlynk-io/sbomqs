@@ -148,12 +148,6 @@ func getDepByName(dependencies []string) []string {
 	return allDepByName
 }
 
-func areAllDependenciesPresentInCompList(dependencies []string) bool {
-	return lo.EveryBy(dependencies, func(id string) bool {
-		return ComponentList[id]
-	})
-}
-
 func Components(doc sbom.Document) []*db.Record {
 	records := []*db.Record{}
 
