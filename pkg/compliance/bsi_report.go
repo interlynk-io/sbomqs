@@ -18,7 +18,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"sort"
 	"time"
 
 	"github.com/google/uuid"
@@ -158,9 +157,6 @@ func constructSections(dtb *db.DB) []bsiSection {
 	var sortedSections []bsiSection
 	var sbomLevelSections []bsiSection
 	for elementID, group := range sectionsByElementID {
-		sort.Slice(group, func(i, j int) bool {
-			return group[i].ID < group[j].ID
-		})
 		if elementID == "SBOM" {
 			sbomLevelSections = group
 		} else {
@@ -186,14 +182,6 @@ func bsiDetailedReport(dtb *db.DB, fileName string) {
 	table.SetAutoMergeCellsByColumnIndex([]int{0})
 
 	sections := constructSections(dtb)
-
-	// Sort sections by ElementId and then by SectionId
-	sort.Slice(sections, func(i, j int) bool {
-		if sections[i].ElementID == sections[j].ElementID {
-			return sections[i].ID < sections[j].ID
-		}
-		return sections[i].ElementID < sections[j].ElementID
-	})
 
 	for _, section := range sections {
 		sectionID := section.ID
