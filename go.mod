@@ -34,7 +34,7 @@ require (
 require (
 	github.com/ProtonMail/go-crypto v1.0.0 // indirect
 	github.com/anchore/go-struct-converter v0.0.0-20240925125616-a0883641c664 // indirect
-	github.com/cloudflare/circl v1.4.0 // indirect
+	github.com/cloudflare/circl v1.5.0 // indirect
 	github.com/common-nighthawk/go-figure v0.0.0-20210622060536-734e95fb86be // indirect
 	github.com/go-git/go-billy/v5 v5.6.0
 	github.com/google/go-querystring v1.1.0 // indirect
