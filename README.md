@@ -54,6 +54,11 @@ sbomqs score <sbom-file>
 sbomqs compliance -c samples/photon.spdx.json
 ```
 
+## Compliance Report: Framing Software Component Transparency (v3)
+```sh
+sbomqs compliance -f samples/photon.spdx.json --color
+```
+
 ## Quality Score with a shareable link at [sbombenchmark.dev](https://sbombenchmark.dev/)
 
 ```sh
