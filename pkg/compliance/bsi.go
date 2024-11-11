@@ -27,7 +27,8 @@ import (
 )
 
 var (
-	validBsiSpdxVersions = []string{"SPDX-2.3", "SPDX-2.2", "SPDX-2.1"}
+	validBsiSpdxVersions = []string{"SPDX-2.3"}
+	validSpdxVersion     = []string{"SPDX-2.1", "SPDX-2.2", "SPDX-2.3"}
 	validBsiCdxVersions  = []string{"1.4", "1.5", "1.6"}
 )
 
@@ -134,9 +135,15 @@ func bsiSpecVersion(doc sbom.Document) *db.Record {
 
 	if spec == "spdx" {
 		count := lo.Count(validBsiSpdxVersions, version)
-		if count > 0 {
-			result = version
-			score = 10.0
+		validate := lo.Contains(validSpdxVersion, version)
+		if validate {
+			if count > 0 {
+				result = version
+				score = 10.0
+			} else {
+				result = version
+				score = 0.0
+			}
 		}
 	} else if spec == "cyclonedx" {
 		count := lo.Count(validBsiCdxVersions, version)
