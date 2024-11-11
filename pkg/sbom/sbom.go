@@ -36,7 +36,10 @@ const (
 	SBOMSpecUnknown SpecFormat = "unknown"
 )
 
-type FileFormat string
+type (
+	FileFormat    string
+	FormatVersion string
+)
 
 const (
 	FileFormatJSON     FileFormat = "json"
@@ -48,7 +51,8 @@ const (
 )
 
 type spdxbasic struct {
-	ID string `json:"SPDXID" yaml:"SPDXID"`
+	ID      string `json:"SPDXID" yaml:"SPDXID"`
+	Version string `json:"spdxVersion" yaml:"spdxVersion"`
 }
 
 type cdxbasic struct {
@@ -93,7 +97,7 @@ func SupportedPrimaryPurpose(f string) []string {
 	}
 }
 
-func detectSbomFormat(f io.ReadSeeker) (SpecFormat, FileFormat, error) {
+func detectSbomFormat(f io.ReadSeeker) (SpecFormat, FileFormat, FormatVersion, error) {
 	defer func() {
 		_, err := f.Seek(0, io.SeekStart)
 		if err != nil {
@@ -109,7 +113,7 @@ func detectSbomFormat(f io.ReadSeeker) (SpecFormat, FileFormat, error) {
 	var s spdxbasic
 	if err := json.NewDecoder(f).Decode(&s); err == nil {
 		if strings.HasPrefix(s.ID, "SPDX") {
-			return SBOMSpecSPDX, FileFormatJSON, nil
+			return SBOMSpecSPDX, FileFormatJSON, FormatVersion(s.Version), nil
 		}
 	}
 
@@ -121,7 +125,7 @@ func detectSbomFormat(f io.ReadSeeker) (SpecFormat, FileFormat, error) {
 	var cdx cdxbasic
 	if err := json.NewDecoder(f).Decode(&cdx); err == nil {
 		if cdx.BOMFormat == "CycloneDX" {
-			return SBOMSpecCDX, FileFormatJSON, nil
+			return SBOMSpecCDX, FileFormatJSON, "", nil
 		}
 	}
 
@@ -132,7 +136,7 @@ func detectSbomFormat(f io.ReadSeeker) (SpecFormat, FileFormat, error) {
 
 	if err := xml.NewDecoder(f).Decode(&cdx); err == nil {
 		if strings.HasPrefix(cdx.XMLNS, "http://cyclonedx.org") {
-			return SBOMSpecCDX, FileFormatXML, nil
+			return SBOMSpecCDX, FileFormatXML, "", nil
 		}
 	}
 	_, err = f.Seek(0, io.SeekStart)
@@ -142,7 +146,7 @@ func detectSbomFormat(f io.ReadSeeker) (SpecFormat, FileFormat, error) {
 
 	if sc := bufio.NewScanner(f); sc.Scan() {
 		if strings.HasPrefix(sc.Text(), "SPDX") {
-			return SBOMSpecSPDX, FileFormatTagValue, nil
+			return SBOMSpecSPDX, FileFormatTagValue, "", nil
 		}
 	}
 
@@ -154,17 +158,17 @@ func detectSbomFormat(f io.ReadSeeker) (SpecFormat, FileFormat, error) {
 	var y spdxbasic
 	if err := yaml.NewDecoder(f).Decode(&y); err == nil {
 		if strings.HasPrefix(y.ID, "SPDX") {
-			return SBOMSpecSPDX, FileFormatYAML, nil
+			return SBOMSpecSPDX, FileFormatYAML, FormatVersion(s.Version), nil
 		}
 	}
 
-	return SBOMSpecUnknown, FileFormatUnknown, nil
+	return SBOMSpecUnknown, FileFormatUnknown, "", nil
 }
 
 func NewSBOMDocument(ctx context.Context, f io.ReadSeeker) (Document, error) {
 	log := logger.FromContext(ctx)
 
-	spec, format, err := detectSbomFormat(f)
+	spec, format, version, err := detectSbomFormat(f)
 	if err != nil {
 		return nil, err
 	}
@@ -175,7 +179,7 @@ func NewSBOMDocument(ctx context.Context, f io.ReadSeeker) (Document, error) {
 
 	switch spec {
 	case SBOMSpecSPDX:
-		doc, err = newSPDXDoc(ctx, f, format)
+		doc, err = newSPDXDoc(ctx, f, format, version)
 	case SBOMSpecCDX:
 		doc, err = newCDXDoc(ctx, f, format)
 	default:
