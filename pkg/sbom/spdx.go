@@ -45,6 +45,7 @@ var (
 type SpdxDoc struct {
 	doc              *spdx.Document
 	format           FileFormat
+	version          FormatVersion
 	ctx              context.Context
 	SpdxSpec         *Specs
 	Comps            []GetComponent
@@ -58,7 +59,7 @@ type SpdxDoc struct {
 	composition      map[string]string
 }
 
-func newSPDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat) (Document, error) {
+func newSPDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat, version FormatVersion) (Document, error) {
 	_ = logger.FromContext(ctx)
 	var err error
 
@@ -87,9 +88,10 @@ func newSPDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat) (Docume
 	}
 
 	doc := &SpdxDoc{
-		doc:    d,
-		format: format,
-		ctx:    ctx,
+		doc:     d,
+		format:  format,
+		ctx:     ctx,
+		version: version,
 	}
 
 	doc.parse()
@@ -172,7 +174,7 @@ func (s *SpdxDoc) parseDoc() {
 func (s *SpdxDoc) parseSpec() {
 	sp := NewSpec()
 	sp.Format = string(s.format)
-	sp.Version = s.doc.SPDXVersion
+	sp.Version = string(s.version)
 
 	if s.doc.CreationInfo != nil {
 		for _, c := range s.doc.CreationInfo.Creators {

@@ -27,7 +27,7 @@ import (
 )
 
 var (
-	validBsiSpdxVersions = []string{"SPDX-2.3"}
+	validBsiSpdxVersions = []string{"SPDX-2.3", "SPDX-2.2", "SPDX-2.1"}
 	validBsiCdxVersions  = []string{"1.4", "1.5", "1.6"}
 )
 
