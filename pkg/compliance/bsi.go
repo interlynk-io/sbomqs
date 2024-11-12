@@ -295,13 +295,13 @@ func bsiCreator(doc sbom.Document) *db.Record {
 }
 
 func bsiTimestamp(doc sbom.Document) *db.Record {
-	score := 0.0
-	result := doc.Spec().GetCreationTimestamp()
+	result, score := "", 0.0
 
-	if result != "" {
-		score = 10.0
+	if result = doc.Spec().GetCreationTimestamp(); result != "" {
+		if _, isTimeCorrect := common.CheckTimestamp(result); isTimeCorrect {
+			score = 10.0
+		}
 	}
-
 	return db.NewRecordStmt(SBOM_TIMESTAMP, "doc", result, score, "")
 }
 
