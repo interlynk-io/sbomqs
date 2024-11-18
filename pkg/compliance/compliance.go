@@ -26,18 +26,20 @@ import (
 
 //nolint:revive,stylecheck
 const (
-	BSI_REPORT  = "BSI"
-	NTIA_REPORT = "NTIA"
-	OCT_TELCO   = "OCT"
-	FSCT_V3     = "FSCT"
+	BSI_REPORT    = "BSI"
+	BSI_V2_REPORT = "BSI-V2"
+	NTIA_REPORT   = "NTIA"
+	OCT_TELCO     = "OCT"
+	FSCT_V3       = "FSCT"
 )
 
 func validReportTypes() map[string]bool {
 	return map[string]bool{
-		BSI_REPORT:  true,
-		NTIA_REPORT: true,
-		OCT_TELCO:   true,
-		FSCT_V3:     true,
+		BSI_REPORT:    true,
+		BSI_V2_REPORT: true,
+		NTIA_REPORT:   true,
+		OCT_TELCO:     true,
+		FSCT_V3:       true,
 	}
 }
 
@@ -69,6 +71,10 @@ func ComplianceResult(ctx context.Context, doc sbom.Document, reportType, fileNa
 	switch {
 	case reportType == BSI_REPORT:
 		bsiResult(ctx, doc, fileName, outFormat)
+
+	case reportType == BSI_V2_REPORT:
+		fmt.Println("Future work: bsiV2Result() will execute")
+		// bsiV2Result(ctx, doc, fileName, outFormat)
 
 	case reportType == NTIA_REPORT:
 		ntiaResult(ctx, doc, fileName, outFormat)

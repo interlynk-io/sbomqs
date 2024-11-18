@@ -29,13 +29,16 @@ var complianceCmd = &cobra.Command{
 Check if our SBOM meets compliance requirements for various standards, such as NTIA minimum elements, 
 BSI TR-03183-2, Framing Software Component Transparency (v3) and OpenChain Telco.
 	`,
-	Example: ` sbomqs compliance <--ntia | --bsi | --fsct | --oct > [--basic | --json] <SBOM file>
+	Example: ` sbomqs compliance  < --ntia | --bsi | --bsi-v2 | --fsct | --oct >  [--basic | --json]   <SBOM file>
 
   # Check a NTIA minimum elements compliance against a SBOM in a table output
   sbomqs compliance --ntia samples/sbomqs-spdx-syft.json
 
   # Check a BSI TR-03183-2 v1.1 compliance against a SBOM in a table output
   sbomqs compliance --bsi samples/sbomqs-spdx-syft.json
+
+  # Check a BSI TR-03183-2 v2.0.0 compliance against a SBOM in a table output
+  sbomqs compliance --bsi-v2 samples/sbomqs-spdx-syft.json
 
    # Check a Framing Software Component Transparency (v3) compliance against a SBOM in a table output
   sbomqs compliance --fsct samples/sbomqs-spdx-syft.json
@@ -78,8 +81,8 @@ func setupEngineParams(cmd *cobra.Command, args []string) *engine.Params {
 	engParams.Color, _ = cmd.Flags().GetBool("color")
 
 	engParams.Ntia, _ = cmd.Flags().GetBool("ntia")
-	// engParams.Ntia, _ = cmd.Flags().GetBool("ntia")
 	engParams.Bsi, _ = cmd.Flags().GetBool("bsi")
+	engParams.BsiV2, _ = cmd.Flags().GetBool("bsi-v2")
 	engParams.Oct, _ = cmd.Flags().GetBool("oct")
 	engParams.Fsct, _ = cmd.Flags().GetBool("fsct")
 
@@ -108,6 +111,7 @@ func init() {
 	// Standards control
 	complianceCmd.Flags().BoolP("ntia", "n", false, "NTIA minimum elements (July 12, 2021)")
 	complianceCmd.Flags().BoolP("bsi", "c", false, "BSI TR-03183-2 (v1.1)")
+	complianceCmd.Flags().BoolP("bsi-v2", "s", false, "BSI TR-03183-2 (v2.0.0)")
 	complianceCmd.Flags().BoolP("oct", "t", false, "OpenChain Telco SBOM (v1.0)")
 	complianceCmd.Flags().BoolP("fsct", "f", false, "Framing Software Component Transparency (v3)")
 }

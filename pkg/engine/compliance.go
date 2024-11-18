@@ -47,6 +47,8 @@ func ComplianceRun(ctx context.Context, ep *Params) error {
 	switch {
 	case ep.Bsi:
 		reportType = "BSI"
+	case ep.BsiV2:
+		reportType = "BSI-V2"
 	case ep.Oct:
 		reportType = "OCT"
 	case ep.Fsct:
