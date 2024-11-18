@@ -83,11 +83,11 @@ type bsiComplianceReport struct {
 	Sections []bsiSection `json:"sections"`
 }
 
-func newJSONReport() *bsiComplianceReport {
+func newJSONReport(name, revision string) *bsiComplianceReport {
 	return &bsiComplianceReport{
-		Name:     "BSI TR-03183-2 v1.1 Compliance Report",
+		Name:     name,
 		Subtitle: "Part 2: Software Bill of Materials (SBOM)",
-		Revision: "TR-03183-2 (1.1)",
+		Revision: revision,
 		Run: run{
 			ID:            uuid.New().String(),
 			GeneratedAt:   time.Now().UTC().Format(time.RFC3339),
@@ -103,7 +103,9 @@ func newJSONReport() *bsiComplianceReport {
 }
 
 func bsiJSONReport(dtb *db.DB, fileName string) {
-	jr := newJSONReport()
+	name := "BSI TR-03183-2 v1.1 Compliance Report"
+	revision := "TR-03183-2 (1.1)"
+	jr := newJSONReport(name, revision)
 	jr.Run.FileName = fileName
 
 	score := bsiAggregateScore(dtb)
