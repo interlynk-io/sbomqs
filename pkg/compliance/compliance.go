@@ -73,8 +73,7 @@ func ComplianceResult(ctx context.Context, doc sbom.Document, reportType, fileNa
 		bsiResult(ctx, doc, fileName, outFormat)
 
 	case reportType == BSI_V2_REPORT:
-		fmt.Println("Future work: bsiV2Result() will execute")
-		// bsiV2Result(ctx, doc, fileName, outFormat)
+		bsiV2Result(ctx, doc, fileName, outFormat)
 
 	case reportType == NTIA_REPORT:
 		ntiaResult(ctx, doc, fileName, outFormat)
