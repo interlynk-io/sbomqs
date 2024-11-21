@@ -16,6 +16,7 @@ package compliance
 
 import (
 	"context"
+	"strings"
 
 	"github.com/interlynk-io/sbomqs/pkg/compliance/common"
 	db "github.com/interlynk-io/sbomqs/pkg/compliance/db"
@@ -138,10 +139,10 @@ func bsiV2Components(doc sbom.Document) []*db.Record {
 		records = append(records, bsiComponentSourceHash(component))
 		records = append(records, bsiComponentOtherUniqIDs(component))
 		// New Components fields
-		// records = append(records, bsiComponentFilename(component))
-		// records = append(records, bsiComponentExecutable(component))
-		// records = append(records, bsiComponentArchive(component))
-		// records = append(records, bsiComponentStructured(component))
+		records = append(records, bsiV2ComponentFilename(component))
+		records = append(records, bsiV2ComponentExecutable(doc, component))
+		records = append(records, bsiV2ComponentArchive(doc, component))
+		records = append(records, bsiV2ComponentStructured(doc, component))
 		// records = append(records, bsiComponentOtherUniqIDs(component))
 		// records = append(records, bsiComponentDeclaredLicense(component))
 		// records = append(records, bsiComponentConcludedLicense(component))
@@ -151,4 +152,74 @@ func bsiV2Components(doc sbom.Document) []*db.Record {
 	records = append(records, db.NewRecordStmt(SBOM_COMPONENTS, "doc", "present", 10.0, ""))
 
 	return records
+}
+
+func bsiV2ComponentStructured(doc sbom.Document, component sbom.GetComponent) *db.Record {
+	result, score := "", 0.0
+	var structureFiles []string
+	if component.ContainFile() {
+		files := component.GetFileNames()
+		for _, file := range files {
+			structureFiles = append(structureFiles, common.GetExecutableFiles(file, doc))
+		}
+	}
+
+	if structureFiles != nil {
+		score = 10.0
+	}
+
+	result = strings.Join(structureFiles, ",")
+	return db.NewRecordStmtOptional(COMP_STRUCTURED_FILE, common.UniqueElementID(component), result, score)
+}
+
+func bsiV2ComponentArchive(doc sbom.Document, component sbom.GetComponent) *db.Record {
+	result, score := "", 0.0
+	var archiveFiles []string
+	if component.ContainFile() {
+		files := component.GetFileNames()
+		for _, file := range files {
+			archiveFiles = append(archiveFiles, common.GetExecutableFiles(file, doc))
+		}
+	}
+
+	if archiveFiles != nil {
+		score = 10.0
+	}
+
+	result = strings.Join(archiveFiles, ",")
+	return db.NewRecordStmtOptional(COMP_ARCHIVE_FILE, common.UniqueElementID(component), result, score)
+}
+
+// bsiV2ComponentExecutable
+func bsiV2ComponentExecutable(doc sbom.Document, component sbom.GetComponent) *db.Record {
+	result, score := "", 0.0
+	var executableFiles []string
+	if component.ContainFile() {
+		files := component.GetFileNames()
+		for _, file := range files {
+			executableFiles = append(executableFiles, common.GetExecutableFiles(file, doc))
+		}
+	}
+
+	if executableFiles != nil {
+		score = 10.0
+	}
+
+	result = strings.Join(executableFiles, ",")
+	return db.NewRecordStmtOptional(COMP_EXECUTABLE_FILE, common.UniqueElementID(component), result, score)
+}
+
+func bsiV2ComponentFilename(component sbom.GetComponent) *db.Record {
+	result, score := "", 0.0
+	var filenames []string
+	if component.ContainFile() {
+		filenames = component.GetFileNames()
+	}
+
+	if filenames != nil {
+		score = 10.0
+	}
+
+	result = strings.Join(filenames, ",")
+	return db.NewRecordStmtOptional(COMP_FILENAMES, common.UniqueElementID(component), result, score)
 }

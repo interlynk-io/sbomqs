@@ -86,6 +86,8 @@ type Component struct {
 	PackageLicenseDeclared  string
 	ExternalRefs            []GetExternalReference
 	composition             map[string]string
+	HasAnyFiles             bool
+	FileName                []string
 }
 
 func NewComponent() *Component {
@@ -206,4 +208,12 @@ func (c Component) ExternalReferences() []GetExternalReference {
 
 func (c Component) GetComposition(componentID string) string {
 	return c.composition[componentID]
+}
+
+func (c Component) ContainFile() bool {
+	return c.HasAnyFiles
+}
+
+func (c Component) GetFileNames() []string {
+	return c.FileName
 }

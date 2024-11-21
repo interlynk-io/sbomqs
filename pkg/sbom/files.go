@@ -1,4 +1,4 @@
-// Copyright 2023 Interlynk.io
+// Copyright 2024 Interlynk.io
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,24 +14,32 @@
 
 package sbom
 
-//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
+type GetFile interface {
+	GetFileName() string
+	GetChecksum() string
+	GetAlgo() string
+	GetFileType() []string
+}
 
-//counterfeiter:generate . Document
-type Document interface {
-	Spec() Spec
-	Components() []GetComponent
-	Relations() []GetRelation
-	Authors() []GetAuthor
-	Tools() []GetTool
-	Logs() []string
+type File struct {
+	Name     string
+	Checksum string
+	Algo     string
+	FileType []string
+}
 
-	Lifecycles() []string
-	Manufacturer() Manufacturer
-	Supplier() GetSupplier
+func (f File) GetFileName() string {
+	return f.Name
+}
 
-	PrimaryComp() GetPrimaryComp
-	GetRelationships(string) []string
+func (f File) GetChecksum() string {
+	return f.Checksum
+}
 
-	Vulnerabilities() GetVulnerabilities
-	Files() []GetFile
+func (f File) GetAlgo() string {
+	return f.Algo
+}
+
+func (f File) GetFileType() []string {
+	return f.FileType
 }

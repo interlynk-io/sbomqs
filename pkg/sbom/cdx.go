@@ -56,6 +56,7 @@ type CdxDoc struct {
 	Dependencies     map[string][]string
 	composition      map[string]string
 	vuln             GetVulnerabilities
+	FileDetails      []GetFile
 }
 
 func newCDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat) (Document, error) {
@@ -147,6 +148,10 @@ func (s CdxDoc) Vulnerabilities() GetVulnerabilities {
 	return s.vuln
 }
 
+func (c CdxDoc) Files() []GetFile {
+	return c.FileDetails
+}
+
 func (c *CdxDoc) parse() {
 	c.parseDoc()
 	c.parseSpec()
@@ -158,6 +163,7 @@ func (c *CdxDoc) parse() {
 	c.parsePrimaryCompAndRelationships()
 	c.parseVulnerabilities()
 	c.parseComps()
+	c.parseFiles()
 }
 
 func (c *CdxDoc) addToLogs(log string) {
@@ -274,6 +280,10 @@ func copyC(cdxc *cydx.Component, c *CdxDoc) *Component {
 	nc.purpose = string(cdxc.Type)
 	nc.isReqFieldsPresent = c.pkgRequiredFields(cdxc)
 	nc.CopyRight = cdxc.Copyright
+	nc.HasAnyFiles = c.hasFiles(cdxc)
+	if nc.HasAnyFiles {
+		nc.FileName = c.allFiles(cdxc)
+	}
 	ncpe := cpe.NewCPE(cdxc.CPE)
 	if ncpe.Valid() {
 		nc.Cpes = []cpe.CPE{ncpe}
@@ -356,6 +366,48 @@ func copyC(cdxc *cydx.Component, c *CdxDoc) *Component {
 	}
 	nc.ID = cdxc.BOMRef
 	return nc
+}
+
+func (c *CdxDoc) allFiles(comp *cydx.Component) []string {
+	var allFiles []string
+
+	// does it contains sub-components of file type
+	if comp.Components != nil {
+		for _, subComp := range *comp.Components {
+			if subComp.Type == "file" {
+				allFiles = append(allFiles, subComp.Name)
+			}
+		}
+	}
+	return allFiles
+}
+
+func (c *CdxDoc) hasFiles(comp *cydx.Component) bool {
+	if comp.Components != nil {
+		return true
+	}
+	return false
+}
+
+func (c *CdxDoc) parseFiles() {
+	c.FileDetails = []GetFile{}
+
+	for _, comp := range *c.doc.Components {
+		if comp.Components != nil {
+			for _, subComp := range *comp.Components {
+				if subComp.Type == "file" {
+					file := File{}
+					file.Name = subComp.Name
+					for _, h := range *subComp.Hashes {
+						file.Algo = string(h.Algorithm)
+						file.Checksum = h.Value
+					}
+					// file.FileType = ?
+					c.FileDetails = append(c.FileDetails, file)
+				}
+			}
+		}
+	}
 }
 
 func (c *CdxDoc) parseComps() {

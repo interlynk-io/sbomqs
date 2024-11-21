@@ -375,3 +375,42 @@ func IsComponentPartOfPrimaryDependency(primaryCompDeps []string, comp string) b
 	}
 	return false
 }
+
+func GetExecutableFiles(fileName string, doc sbom.Document) string {
+	for _, file := range doc.Files() {
+		if file.GetFileName() == fileName {
+			for _, t := range file.GetFileType() {
+				if t == "BINARY" {
+					return fileName
+				}
+			}
+		}
+	}
+	return ""
+}
+
+func GetArchiveFiles(fileName string, doc sbom.Document) string {
+	for _, file := range doc.Files() {
+		if file.GetFileName() == fileName {
+			for _, t := range file.GetFileType() {
+				if t == "ARCHIVE" {
+					return fileName
+				}
+			}
+		}
+	}
+	return ""
+}
+
+func GetStructuredFiles(fileName string, doc sbom.Document) string {
+	for _, file := range doc.Files() {
+		if file.GetFileName() == fileName {
+			for _, t := range file.GetFileType() {
+				if t == "STRUCTURED" {
+					return fileName
+				}
+			}
+		}
+	}
+	return ""
+}

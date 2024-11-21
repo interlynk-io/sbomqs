@@ -58,6 +58,7 @@ type SpdxDoc struct {
 	Dependencies     map[string][]string
 	composition      map[string]string
 	vuln             GetVulnerabilities
+	FileDetails      []GetFile
 }
 
 func newSPDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat, version FormatVersion) (Document, error) {
@@ -157,6 +158,10 @@ func (s SpdxDoc) Vulnerabilities() GetVulnerabilities {
 	return s.vuln
 }
 
+func (s SpdxDoc) Files() []GetFile {
+	return s.FileDetails
+}
+
 func (s *SpdxDoc) parse() {
 	s.parseDoc()
 	s.parseSpec()
@@ -164,6 +169,7 @@ func (s *SpdxDoc) parse() {
 	s.parseTool()
 	s.parsePrimaryCompAndRelationships()
 	s.parseComps()
+	s.parseFiles()
 }
 
 func (s *SpdxDoc) parseDoc() {
@@ -242,6 +248,9 @@ func (s *SpdxDoc) parseComps() {
 		nc.licenses = s.licenses(index)
 		nc.ID = string(sc.PackageSPDXIdentifier)
 		nc.PackageLicenseConcluded = sc.PackageLicenseConcluded
+		nc.HasAnyFiles = sc.FilesAnalyzed
+		nc.FileName = nil
+		// nc.allFiles = sc.HasFiles
 		if strings.Contains(s.PrimaryComponent.ID, string(sc.PackageSPDXIdentifier)) {
 			nc.PrimaryCompt = s.PrimaryComponent
 		}
@@ -289,6 +298,21 @@ func (s *SpdxDoc) parseComps() {
 		nc.RelationshipState = "not-specified"
 
 		s.Comps = append(s.Comps, nc)
+	}
+}
+
+func (s *SpdxDoc) parseFiles() {
+	s.FileDetails = []GetFile{}
+
+	for _, f := range s.doc.Files {
+		file := File{}
+		file.Name = f.FileName
+		file.FileType = f.FileTypes
+		for _, c := range f.Checksums {
+			file.Algo = string(c.Algorithm)
+			file.Checksum = c.Value
+		}
+		s.FileDetails = append(s.FileDetails, file)
 	}
 }
 

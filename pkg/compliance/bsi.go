@@ -81,6 +81,10 @@ const (
 	SBOM_TYPE
 	PACK_EXT_REF
 	SBOM_VULNERABILITES
+	COMP_FILENAMES
+	COMP_STRUCTURED_FILE
+	COMP_EXECUTABLE_FILE
+	COMP_ARCHIVE_FILE
 )
 
 func bsiResult(ctx context.Context, doc sbom.Document, fileName string, outFormat string) {
