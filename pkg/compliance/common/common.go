@@ -15,6 +15,13 @@
 package common
 
 import (
+	"crypto"
+	"crypto/rsa"
+	"crypto/sha256"
+	"crypto/x509"
+	"encoding/pem"
+	"fmt"
+	"os"
 	"path"
 	"strings"
 	"time"
@@ -374,4 +381,55 @@ func IsComponentPartOfPrimaryDependency(primaryCompDeps []string, comp string) b
 		}
 	}
 	return false
+}
+
+func VerifySignature(publicKeyPath, sbomPath, signaturePath string) (bool, error) {
+	pubKeyData, err := os.ReadFile(publicKeyPath)
+	if err != nil {
+		return false, err
+	}
+
+	block, _ := pem.Decode(pubKeyData)
+	if block == nil || block.Type != "PUBLIC KEY" {
+		return false, fmt.Errorf("invalid public key")
+	}
+
+	pubKey, err := x509.ParsePKIXPublicKey(block.Bytes)
+	if err != nil {
+		return false, err
+	}
+
+	rsaPubKey, ok := pubKey.(*rsa.PublicKey)
+	if !ok {
+		return false, fmt.Errorf("not an RSA public key")
+	}
+
+	// Hash the SBOM
+	hash, err := HashSBOM(sbomPath)
+	if err != nil {
+		return false, err
+	}
+
+	// Load and decode the signature
+	sig, err := os.ReadFile(signaturePath)
+	if err != nil {
+		return false, err
+	}
+
+	// Verify the signature
+	err = rsa.VerifyPKCS1v15(rsaPubKey, crypto.SHA256, hash, sig)
+	if err != nil {
+		return false, err
+	}
+
+	return true, err
+}
+
+func HashSBOM(sbomPath string) ([]byte, error) {
+	sbomData, err := os.ReadFile(sbomPath)
+	if err != nil {
+		return nil, err
+	}
+	hash := sha256.Sum256(sbomData)
+	return hash[:], nil
 }
