@@ -86,6 +86,19 @@ func getSbomDocument(ctx context.Context, ep *Params) (*sbom.Document, error) {
 	log.Debugf("engine.getSbomDocument()")
 
 	path := ep.Path[0]
+
+	blob := ep.Path[0]
+	fmt.Println("Blob: ", blob)
+	signature := ep.Signature
+	fmt.Println("Signature: ", signature)
+	publicKey := ep.PublicKey
+	fmt.Println("PublicKey: ", publicKey)
+
+	sig := sbom.Signature{
+		SigValue:  signature,
+		PublicKey: publicKey,
+		Blob:      blob,
+	}
 	var doc sbom.Document
 
 	if IsURL(path) {
@@ -111,7 +124,7 @@ func getSbomDocument(ctx context.Context, ep *Params) (*sbom.Document, error) {
 			return nil, err
 		}
 
-		doc, err = sbom.NewSBOMDocument(ctx, f)
+		doc, err = sbom.NewSBOMDocument(ctx, f, sig)
 		if err != nil {
 			log.Fatalf("failed to parse SBOM document: %w", err)
 		}
@@ -130,7 +143,7 @@ func getSbomDocument(ctx context.Context, ep *Params) (*sbom.Document, error) {
 		}
 		defer f.Close()
 
-		doc, err = sbom.NewSBOMDocument(ctx, f)
+		doc, err = sbom.NewSBOMDocument(ctx, f, sig)
 		if err != nil {
 			log.Debugf("failed to create sbom document for  :%s\n", path)
 			log.Debugf("%s\n", err)
