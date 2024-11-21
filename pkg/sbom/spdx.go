@@ -89,11 +89,6 @@ func newSPDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat, version
 		return nil, err
 	}
 
-	// sig := Signature{
-	// 	SigValue:  "kkkkd",
-	// 	PublicKey: "kkkd",
-	// 	Blob:      "dkkddk",
-	// }
 	doc := &SpdxDoc{
 		doc:             d,
 		format:          format,
