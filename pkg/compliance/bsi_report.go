@@ -50,6 +50,7 @@ var bsiSectionDetails = map[int]bsiSection{
 	COMP_CONCLUDED_LICENSE:  {Title: "Additional components fields", ID: "5.3.2", Required: false, DataField: "concluded license"},
 	COMP_DECLARED_LICENSE:   {Title: "Optional components fields", ID: "5.4.1", Required: false, DataField: "declared license"},
 	SBOM_VULNERABILITES:     {Title: "Definition of SBOM", ID: "3.1", Required: true, DataField: "vuln"},
+	SBOM_SIGNATURE:          {Title: "Optional sboms fields", ID: "8.1.11", Required: false, DataField: "signature"},
 }
 
 type run struct {

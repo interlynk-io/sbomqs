@@ -85,6 +85,7 @@ const (
 	COMP_ASSOCIATED_LICENSE
 	COMP_CONCLUDED_LICENSE
 	COMP_DECLARED_LICENSE
+	SBOM_SIGNATURE
 )
 
 func bsiResult(ctx context.Context, doc sbom.Document, fileName string, outFormat string, colorOutput bool) {

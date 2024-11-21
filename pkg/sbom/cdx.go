@@ -56,9 +56,10 @@ type CdxDoc struct {
 	Dependencies     map[string][]string
 	composition      map[string]string
 	Vuln             []GetVulnerabilities
+	SignatureDetail  GetSignature
 }
 
-func newCDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat) (Document, error) {
+func newCDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat, sig Signature) (Document, error) {
 	var err error
 
 	_, err = f.Seek(0, io.SeekStart)
@@ -86,9 +87,10 @@ func newCDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat) (Documen
 	}
 
 	doc := &CdxDoc{
-		doc:    bom,
-		format: format,
-		ctx:    ctx,
+		doc:             bom,
+		format:          format,
+		ctx:             ctx,
+		SignatureDetail: &sig,
 	}
 	doc.parse()
 
@@ -145,6 +147,10 @@ func (c CdxDoc) GetComposition(componentID string) string {
 
 func (s CdxDoc) Vulnerabilities() []GetVulnerabilities {
 	return s.Vuln
+}
+
+func (c CdxDoc) Signature() GetSignature {
+	return c.SignatureDetail
 }
 
 func (c *CdxDoc) parse() {

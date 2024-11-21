@@ -33,4 +33,5 @@ type Document interface {
 	GetRelationships(string) []string
 
 	Vulnerabilities() []GetVulnerabilities
+	Signature() GetSignature
 }

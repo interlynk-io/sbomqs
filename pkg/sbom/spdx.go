@@ -58,9 +58,10 @@ type SpdxDoc struct {
 	Dependencies     map[string][]string
 	composition      map[string]string
 	Vuln             []GetVulnerabilities
+	SignatureDetail  GetSignature
 }
 
-func newSPDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat, version FormatVersion) (Document, error) {
+func newSPDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat, version FormatVersion, sig Signature) (Document, error) {
 	_ = logger.FromContext(ctx)
 	var err error
 
@@ -88,11 +89,17 @@ func newSPDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat, version
 		return nil, err
 	}
 
+	// sig := Signature{
+	// 	SigValue:  "kkkkd",
+	// 	PublicKey: "kkkd",
+	// 	Blob:      "dkkddk",
+	// }
 	doc := &SpdxDoc{
-		doc:     d,
-		format:  format,
-		ctx:     ctx,
-		version: version,
+		doc:             d,
+		format:          format,
+		ctx:             ctx,
+		version:         version,
+		SignatureDetail: &sig,
 	}
 
 	doc.parse()
@@ -155,6 +162,10 @@ func (s SpdxDoc) GetComposition(componentID string) string {
 
 func (s SpdxDoc) Vulnerabilities() []GetVulnerabilities {
 	return s.Vuln
+}
+
+func (c SpdxDoc) Signature() GetSignature {
+	return c.SignatureDetail
 }
 
 func (s *SpdxDoc) parse() {
