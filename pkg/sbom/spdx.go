@@ -168,8 +168,8 @@ func (s *SpdxDoc) parse() {
 	s.parseAuthors()
 	s.parseTool()
 	s.parsePrimaryCompAndRelationships()
-	s.parseComps()
 	s.parseFiles()
+	s.parseComps()
 }
 
 func (s *SpdxDoc) parseDoc() {
@@ -249,8 +249,9 @@ func (s *SpdxDoc) parseComps() {
 		nc.ID = string(sc.PackageSPDXIdentifier)
 		nc.PackageLicenseConcluded = sc.PackageLicenseConcluded
 		nc.HasAnyFiles = sc.FilesAnalyzed
-		nc.FileName = nil
-		// nc.allFiles = sc.HasFiles
+		if nc.HasAnyFiles {
+			nc.FileNames = s.getAllFiles(nc.Spdxid)
+		}
 		if strings.Contains(s.PrimaryComponent.ID, string(sc.PackageSPDXIdentifier)) {
 			nc.PrimaryCompt = s.PrimaryComponent
 		}
@@ -299,6 +300,34 @@ func (s *SpdxDoc) parseComps() {
 
 		s.Comps = append(s.Comps, nc)
 	}
+}
+
+func (s *SpdxDoc) getAllFiles(id string) []string {
+	id = "SPDXRef-" + id
+	var getFiles []string
+	for _, r := range s.doc.Relationships {
+		if strings.ToUpper(r.Relationship) == spdx_common.TypeRelationshipContains {
+			spdxElementId, err := r.RefA.MarshalJSON()
+			if err != nil {
+				continue
+			}
+
+			relatedSpdxElement, err := r.RefB.MarshalJSON()
+			if err != nil {
+				continue
+			}
+
+			if CleanKey(string(spdxElementId)) == id {
+				for _, file := range s.doc.Files {
+					fileId := "SPDXRef-" + string(file.FileSPDXIdentifier)
+					if fileId == CleanKey(string(relatedSpdxElement)) {
+						getFiles = append(getFiles, file.FileName)
+					}
+				}
+			}
+		}
+	}
+	return getFiles
 }
 
 func (s *SpdxDoc) parseFiles() {

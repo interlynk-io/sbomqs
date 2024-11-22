@@ -16,6 +16,7 @@ package sbom
 
 type GetFile interface {
 	GetFileName() string
+	GetID() string
 	GetChecksum() string
 	GetAlgo() string
 	GetFileType() []string
@@ -23,6 +24,7 @@ type GetFile interface {
 
 type File struct {
 	Name     string
+	ID       string
 	Checksum string
 	Algo     string
 	FileType []string
@@ -30,6 +32,10 @@ type File struct {
 
 func (f File) GetFileName() string {
 	return f.Name
+}
+
+func (f File) GetID() string {
+	return f.ID
 }
 
 func (f File) GetChecksum() string {

@@ -89,7 +89,6 @@ type Component struct {
 	ExternalRefs            []GetExternalReference
 	composition             map[string]string
 	HasAnyFiles             bool
-	FileName                []string
 	HasFiles                bool
 	FileNames               []string
 }
@@ -219,5 +218,5 @@ func (c Component) ContainFile() bool {
 }
 
 func (c Component) GetFileNames() []string {
-	return c.FileName
+	return c.FileNames
 }

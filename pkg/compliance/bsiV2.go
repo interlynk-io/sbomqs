@@ -156,56 +156,67 @@ func bsiV2Components(doc sbom.Document) []*db.Record {
 
 func bsiV2ComponentStructured(doc sbom.Document, component sbom.GetComponent) *db.Record {
 	result, score := "", 0.0
-	var structureFiles []string
+	structureFiles := []string{}
 	if component.ContainFile() {
 		files := component.GetFileNames()
 		for _, file := range files {
-			structureFiles = append(structureFiles, common.GetExecutableFiles(file, doc))
+			fileResult := common.GetExecutableFiles(file, doc)
+			if fileResult != "" {
+				structureFiles = append(structureFiles, fileResult)
+			}
 		}
 	}
 
-	if structureFiles != nil {
+	if len(structureFiles) > 0 {
 		score = 10.0
+		result = strings.Join(structureFiles, ", ")
 	}
 
-	result = strings.Join(structureFiles, ",")
 	return db.NewRecordStmtOptional(COMP_STRUCTURED_FILE, common.UniqueElementID(component), result, score)
 }
 
 func bsiV2ComponentArchive(doc sbom.Document, component sbom.GetComponent) *db.Record {
 	result, score := "", 0.0
-	var archiveFiles []string
+	archiveFiles := []string{}
+
 	if component.ContainFile() {
 		files := component.GetFileNames()
 		for _, file := range files {
-			archiveFiles = append(archiveFiles, common.GetExecutableFiles(file, doc))
+			fileResult := common.GetArchiveFiles(file, doc)
+			if fileResult != "" {
+				archiveFiles = append(archiveFiles, fileResult)
+			}
 		}
 	}
 
-	if archiveFiles != nil {
+	if len(archiveFiles) > 0 {
 		score = 10.0
+		result = strings.Join(archiveFiles, ", ")
 	}
 
-	result = strings.Join(archiveFiles, ",")
 	return db.NewRecordStmtOptional(COMP_ARCHIVE_FILE, common.UniqueElementID(component), result, score)
 }
 
 // bsiV2ComponentExecutable
 func bsiV2ComponentExecutable(doc sbom.Document, component sbom.GetComponent) *db.Record {
 	result, score := "", 0.0
-	var executableFiles []string
+	executableFiles := []string{}
 	if component.ContainFile() {
 		files := component.GetFileNames()
 		for _, file := range files {
-			executableFiles = append(executableFiles, common.GetExecutableFiles(file, doc))
+			fileResult := common.GetExecutableFiles(file, doc)
+			if fileResult != "" {
+				executableFiles = append(executableFiles, fileResult)
+			}
+
 		}
 	}
 
-	if executableFiles != nil {
+	if len(executableFiles) > 0 {
 		score = 10.0
+		result = strings.Join(executableFiles, ", ")
 	}
 
-	result = strings.Join(executableFiles, ",")
 	return db.NewRecordStmtOptional(COMP_EXECUTABLE_FILE, common.UniqueElementID(component), result, score)
 }
 
@@ -218,8 +229,8 @@ func bsiV2ComponentFilename(component sbom.GetComponent) *db.Record {
 
 	if filenames != nil {
 		score = 10.0
+		result = strings.Join(filenames, ", ")
 	}
 
-	result = strings.Join(filenames, ",")
 	return db.NewRecordStmtOptional(COMP_FILENAMES, common.UniqueElementID(component), result, score)
 }

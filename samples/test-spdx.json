@@ -1,0 +1,222 @@
+{
+    "SPDXID": "SPDXRef-DOCUMENT",
+    "spdxVersion": "SPDX-2.3",
+    "creationInfo": {
+      "created": "2024-11-22T04:44:07Z",
+      "creators": [
+        "Organization: cnc",
+        "Tool: FOSSA v0.12.0"
+      ],
+      "licenseListVersion": "3.23",
+      "documentDescribes": [
+        "SPDXRef-go-github.com-lucasb-eyer-go-colorful-v1.2.0",
+        "SPDXRef-go-github.com-rivo-uniseg-v0.4.7"
+      ]
+    },
+    "name": "42825/git@github.com:viveksahu26/stree.git-d286a050de4593fc16e0741f0cea79dfa3f28dc5",
+    "documentNamespace": "https://blob.fossa.io.s3.us-east-1.amazonaws.com/blob.fossa.io/FOSSA_BOMS/custom%2B42825%2Fgit%40github.com%3Aviveksahu26%2Fstree.git%24d286a050de4593fc16e0741f0cea79dfa3f28dc5",
+    "dataLicense": "CC0-1.0",
+    "packages": [
+      {
+        "SPDXID": "SPDXRef-custom-42825-git-github.com-viveksahu26-stree.git-d286a050de4593fc16e0741f0cea79dfa3f28dc5",
+        "name": "git@github.com:viveksahu26/stree.git",
+        "versionInfo": "d286a050de4593fc16e0741f0cea79dfa3f28dc5",
+        "filesAnalyzed": true,
+        "downloadLocation": "NOASSERTION",
+        "originator": "Organization: Custom (provided build)",
+        "supplier": "Organization: cnc",
+        "packageFileName": "custom+42825/git@github.com:viveksahu26/stree.git$d286a050de4593fc16e0741f0cea79dfa3f28dc5",
+        "licenseDeclared": "NONE",
+        "copyrightText": "NONE",
+        "licenseConcluded": "NOASSERTION",
+        "checksums": [
+          {
+            "algorithm": "MD5",
+            "checksumValue": "bb5c313c25e4d9680cfac98dbea77581"
+          },
+          {
+            "algorithm": "SHA1",
+            "checksumValue": "3b089e0f33344cb10ee197dafbeed08ef32af02a"
+          },
+          {
+            "algorithm": "SHA256",
+            "checksumValue": "139c348fc1e826be00a092eb69d42868dea94bf09eb563c65d5abb8373a928e7"
+          }
+        ],
+        "externalRefs": []
+      },
+      {
+        "SPDXID": "SPDXRef-go-github.com-lucasb-eyer-go-colorful-v1.2.0",
+        "name": "github.com/lucasb-eyer/go-colorful",
+        "versionInfo": "v1.2.0",
+        "filesAnalyzed": true,
+        "downloadLocation": "NOASSERTION",
+        "originator": "Organization: Golang",
+        "supplier": "NOASSERTION",
+        "hasFiles": [
+          "SPDXRef-go-github.com-lucasb-eyer-go-colorful-v1.2.0-LICENSE",
+          "SPDXRef-git-github.com-gdamore-tcell-d17cf8bb6b14eabb1b94ce17544b4bf0a622aed8-views-text.go"
+        ],
+        "licenseDeclared": "MIT",
+        "copyrightText": "2013 Lucas Beyer\n\t2006, 2008 Junio C Hamano",
+        "licenseConcluded": "NOASSERTION",
+        "checksums": [
+          {
+            "algorithm": "MD5",
+            "checksumValue": "7aa537fd3328d146e745c21c6813fbf3"
+          },
+          {
+            "algorithm": "SHA1",
+            "checksumValue": "5817b0cd3e945eaba78ce4db85c7b9182021116e"
+          },
+          {
+            "algorithm": "SHA256",
+            "checksumValue": "0d23739567cfdb93eb818c44cb4b2c7b1df2a6b47e50cee4c9b980acd1a6cd7e"
+          }
+        ],
+        "externalRefs": [
+          {
+            "referenceCategory": "PACKAGE-MANAGER",
+            "referenceType": "purl",
+            "referenceLocator": "pkg:golang/github.com/lucasb-eyer/go-colorful@v1.2.0"
+          }
+        ]
+      },
+      {
+        "SPDXID": "SPDXRef-go-github.com-rivo-uniseg-v0.4.7",
+        "name": "github.com/rivo/uniseg",
+        "versionInfo": "v0.4.7",
+        "filesAnalyzed": true,
+        "downloadLocation": "NOASSERTION",
+        "originator": "Organization: Golang",
+        "supplier": "NOASSERTION",
+        "hasFiles": [
+          "SPDXRef-go-github.com-rivo-uniseg-v0.4.7-README.md"
+        ],
+        "licenseDeclared": "MIT",
+        "copyrightText": "2019 Oliver Kuederle\n\t2006, 2008 Junio C Hamano",
+        "licenseConcluded": "NOASSERTION",
+        "checksums": [
+          {
+            "algorithm": "MD5",
+            "checksumValue": "0ce858ed54a1bcac226853f367d7d9ec"
+          },
+          {
+            "algorithm": "SHA1",
+            "checksumValue": "e1d8ba96afa97b78958fb4bc0889be4177429d85"
+          },
+          {
+            "algorithm": "SHA256",
+            "checksumValue": "8ddc66ee1cc5d3f67c15cd2dfc13c53a3b77d16a398dc756c04c5661961c21ac"
+          }
+        ],
+        "externalRefs": [
+          {
+            "referenceCategory": "PACKAGE-MANAGER",
+            "referenceType": "purl",
+            "referenceLocator": "pkg:golang/github.com/rivo/uniseg@v0.4.7"
+          }
+        ]
+      }
+      
+    ],
+    "hasExtractedLicensingInfos": [],
+    "relationships": [
+      {
+        "spdxElementId": "SPDXRef-DOCUMENT",
+        "relationshipType": "DESCRIBES",
+        "relatedSpdxElement": "SPDXRef-custom-42825-git-github.com-viveksahu26-stree.git-d286a050de4593fc16e0741f0cea79dfa3f28dc5"
+      },
+      {
+        "spdxElementId": "SPDXRef-go-github.com-lucasb-eyer-go-colorful-v1.2.0",
+        "relationshipType": "CONTAINS",
+        "relatedSpdxElement": "SPDXRef-go-github.com-lucasb-eyer-go-colorful-v1.2.0-LICENSE"
+      },
+      {
+        "spdxElementId": "SPDXRef-go-github.com-lucasb-eyer-go-colorful-v1.2.0",
+        "relationshipType": "CONTAINS",
+        "relatedSpdxElement": "SPDXRef-git-github.com-gdamore-tcell-d17cf8bb6b14eabb1b94ce17544b4bf0a622aed8-views-text.go"
+      },
+      {
+        "spdxElementId": "SPDXRef-go-github.com-rivo-uniseg-v0.4.7",
+        "relationshipType": "CONTAINS",
+        "relatedSpdxElement": "SPDXRef-go-github.com-rivo-uniseg-v0.4.7-README.md"
+      }
+     
+    ],
+    "files": [
+    {
+        "fileName": "LICENSE",
+        "SPDXID": "SPDXRef-go-github.com-lucasb-eyer-go-colorful-v1.2.0-LICENSE",
+        "comment": "extracted from SPDXRef-go-github.com-lucasb-eyer-go-colorful-v1.2.0",
+        "fileTypes" : ["STRUCTURED"],
+        "licenseConcluded": "MIT",
+        "licenseInfoInFile": [
+            "MIT"
+        ],
+        "checksums": [
+            {
+            "algorithm": "MD5",
+            "checksumValue": "00a5466a69069b14448ded7ed1f3125f"
+            },
+            {
+            "algorithm": "SHA1",
+            "checksumValue": "3db0b48008abcd20f9be0bf8d2deb8cae2e98aa7"
+            },
+            {
+            "algorithm": "SHA256",
+            "checksumValue": "1e4cf2a117516ec1b54041d68ed4f5d331878b04de3386f4790e7b5b9c04e1ec"
+            }
+        ]
+        },
+        
+        {
+        "fileName": "README.md",
+        "SPDXID": "SPDXRef-go-github.com-rivo-uniseg-v0.4.7-README.md",
+        "comment": "extracted from SPDXRef-go-github.com-rivo-uniseg-v0.4.7",
+        "licenseConcluded": "MIT",
+        "fileTypes" : ["ARCHIVE"],
+        "licenseInfoInFile": [
+            "MIT"
+        ],
+        "checksums": [
+            {
+            "algorithm": "MD5",
+            "checksumValue": "4393c339bf180cf6e188b6ea32d8b93c"
+            },
+            {
+            "algorithm": "SHA1",
+            "checksumValue": "f60d047cd34de4c91b3a045ebf117fe54b3c279e"
+            },
+            {
+            "algorithm": "SHA256",
+            "checksumValue": "a59885f5f0f3b3c07cf9444db5fe399b6f0791eac82055f7b85cc65500551039"
+            }
+        ]
+    },
+    {
+        "fileName": "text.go",
+        "SPDXID": "SPDXRef-git-github.com-gdamore-tcell-d17cf8bb6b14eabb1b94ce17544b4bf0a622aed8-views-text.go",
+        "comment": "extracted from SPDXRef-git-github.com-gdamore-tcell-d17cf8bb6b14eabb1b94ce17544b4bf0a622aed8",
+        "licenseConcluded": "Apache-2.0",
+        "fileTypes" : ["BINARY"],
+        "licenseInfoInFile": [
+          "Apache-2.0"
+        ],
+        "checksums": [
+          {
+            "algorithm": "MD5",
+            "checksumValue": "3b83ef96387f14655fc854ddc3c6bd57"
+          },
+          {
+            "algorithm": "SHA1",
+            "checksumValue": "2b8b815229aa8a61e483fb4ba0588b8b6c491890"
+          },
+          {
+            "algorithm": "SHA256",
+            "checksumValue": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+          }
+        ]
+      }
+    ]
+}

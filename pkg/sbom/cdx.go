@@ -162,8 +162,8 @@ func (c *CdxDoc) parse() {
 	c.parseCompositions()
 	c.parsePrimaryCompAndRelationships()
 	c.parseVulnerabilities()
-	c.parseComps()
 	c.parseFiles()
+	c.parseComps()
 }
 
 func (c *CdxDoc) addToLogs(log string) {
@@ -282,7 +282,7 @@ func copyC(cdxc *cydx.Component, c *CdxDoc) *Component {
 	nc.CopyRight = cdxc.Copyright
 	nc.HasAnyFiles = c.hasFiles(cdxc)
 	if nc.HasAnyFiles {
-		nc.FileName = c.allFiles(cdxc)
+		nc.FileNames = c.allFiles(cdxc)
 	}
 	ncpe := cpe.NewCPE(cdxc.CPE)
 	if ncpe.Valid() {
