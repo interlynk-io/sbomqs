@@ -371,7 +371,7 @@ func copyC(cdxc *cydx.Component, c *CdxDoc) *Component {
 func (c *CdxDoc) allFiles(comp *cydx.Component) []string {
 	var allFiles []string
 
-	// does it contains sub-components of file type
+	// does it contains sub-components of type "file"
 	if comp.Components != nil {
 		for _, subComp := range *comp.Components {
 			if subComp.Type == "file" {

@@ -54,6 +54,8 @@ type GetComponent interface {
 	ExternalReferences() []GetExternalReference
 	GetComposition(string) string
 	GetPrimaryCompInfo() GetPrimaryComp
+	ContainFile() bool
+	GetFileNames() []string
 }
 
 type Component struct {
@@ -88,6 +90,8 @@ type Component struct {
 	composition             map[string]string
 	HasAnyFiles             bool
 	FileName                []string
+	HasFiles                bool
+	FileNames               []string
 }
 
 func NewComponent() *Component {
