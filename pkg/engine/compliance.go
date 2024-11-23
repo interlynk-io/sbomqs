@@ -15,7 +15,9 @@
 package engine
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"os"
 
@@ -23,6 +25,7 @@ import (
 	"github.com/interlynk-io/sbomqs/pkg/logger"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 	"github.com/spf13/afero"
+	"github.com/tidwall/sjson"
 )
 
 func ComplianceRun(ctx context.Context, ep *Params) error {
@@ -94,10 +97,15 @@ func getSbomDocument(ctx context.Context, ep *Params) (*sbom.Document, error) {
 	publicKey := ep.PublicKey
 	fmt.Println("PublicKey: ", publicKey)
 
+	standaloneSBOMFile, err := CheckSbomHasSignature(blob)
+	if err != nil {
+		log.Fatalf("failed to get standalone SBOM: %w", err)
+	}
+
 	sig := sbom.Signature{
 		SigValue:  signature,
 		PublicKey: publicKey,
-		Blob:      blob,
+		Blob:      standaloneSBOMFile,
 	}
 	var doc sbom.Document
 
@@ -153,4 +161,49 @@ func getSbomDocument(ctx context.Context, ep *Params) (*sbom.Document, error) {
 	}
 
 	return &doc, nil
+}
+
+type SBOM struct {
+	Signature map[string]interface{} `json:"signature"`
+	OtherData map[string]interface{} `json:"-"` // Holds the remaining SBOM data
+}
+
+func CheckSbomHasSignature(sbomFile string) (string, error) {
+	data, err := os.ReadFile(sbomFile)
+	if err != nil {
+		return "", fmt.Errorf("error reading SBOM file: %w", err)
+	}
+
+	var sbom SBOM
+	if err := json.Unmarshal(data, &sbom); err != nil {
+		fmt.Println("Error parsing SBOM JSON:", err)
+		return "", fmt.Errorf("error unmarshalling SBOM JSON: %w", err)
+	}
+
+	// Extract and print the signature
+	if sbom.Signature == nil {
+		fmt.Println("No signature found in SBOM.")
+		return sbomFile, nil
+	}
+
+	// Remove the "signature" section
+	modifiedSBOM, err := sjson.DeleteBytes(data, "signature")
+	if err != nil {
+		fmt.Println("Error removing signature section:", err)
+	}
+
+	// Normalize JSON for consistency
+	var normalizedSBOM bytes.Buffer
+	if err := json.Indent(&normalizedSBOM, modifiedSBOM, "", "  "); err != nil {
+		fmt.Println("Error normalizing SBOM JSON:", err)
+	}
+
+	// Save the modified SBOM to a new file without a trailing newline
+	standaloneSBOMFile := "standalone_sbom.json"
+	if err := os.WriteFile(standaloneSBOMFile, bytes.TrimSuffix(normalizedSBOM.Bytes(), []byte("\n")), 0o644); err != nil {
+		return "", fmt.Errorf("error writing standalone SBOM file: %w", err)
+	}
+
+	fmt.Println("Standalone SBOM saved to:", standaloneSBOMFile)
+	return standaloneSBOMFile, nil
 }

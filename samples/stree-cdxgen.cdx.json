@@ -1,0 +1,486 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "serialNumber": "urn:uuid:de517446-d9eb-49d0-95fd-dd93c54a88d1",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2024-11-22T20:22:51Z",
+    "tools": {
+      "components": [
+        {
+          "group": "@cyclonedx",
+          "name": "cdxgen",
+          "version": "10.7.1",
+          "purl": "pkg:npm/%40cyclonedx/cdxgen@10.7.1",
+          "type": "application",
+          "bom-ref": "pkg:npm/@cyclonedx/cdxgen@10.7.1",
+          "author": "OWASP Foundation",
+          "publisher": "OWASP Foundation"
+        }
+      ]
+    },
+    "authors": [
+      {
+        "name": "OWASP Foundation"
+      }
+    ],
+    "lifecycles": [
+      {
+        "phase": "build"
+      }
+    ],
+    "component": {
+      "group": "",
+      "name": "github.com/viveksahu26/stree",
+      "version": "",
+      "purl": "pkg:golang/github.com/viveksahu26/stree",
+      "bom-ref": "pkg:golang/github.com/viveksahu26/stree",
+      "scope": "required",
+      "properties": [
+        {
+          "name": "SrcGoMod",
+          "value": "/home/linuzz/go/src/github.com/viveksahu26/stree/go.mod"
+        },
+        {
+          "name": "ModuleGoVersion",
+          "value": "1.21.4"
+        },
+        {
+          "name": "cdx:go:indirect",
+          "value": "false"
+        }
+      ],
+      "type": "application"
+    }
+  },
+  "components": [
+    {
+      "group": "",
+      "name": "github.com/spf13/pflag",
+      "version": "v1.0.5",
+      "scope": "optional",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "31c5df227251af3e026575593812dbd1b4d9a844e488084cf48c34cb7027d818"
+        }
+      ],
+      "purl": "pkg:golang/github.com/spf13/pflag@v1.0.5",
+      "type": "library",
+      "bom-ref": "pkg:golang/github.com/spf13/pflag@v1.0.5",
+      "properties": [
+        {
+          "name": "SrcGoMod",
+          "value": "/home/linuzz/go/pkg/mod/cache/download/github.com/spf13/pflag/@v/v1.0.5.mod"
+        },
+        {
+          "name": "ModuleGoVersion",
+          "value": "1.12"
+        },
+        {
+          "name": "cdx:go:indirect",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "group": "",
+      "name": "github.com/spf13/cobra",
+      "version": "v1.8.1",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "c07c4472e75faa62d86bc8937cbf8eb993db059926be588158a21eccdde40fd6"
+        }
+      ],
+      "purl": "pkg:golang/github.com/spf13/cobra@v1.8.1",
+      "type": "library",
+      "bom-ref": "pkg:golang/github.com/spf13/cobra@v1.8.1",
+      "properties": [
+        {
+          "name": "SrcGoMod",
+          "value": "/home/linuzz/go/pkg/mod/cache/download/github.com/spf13/cobra/@v/v1.8.1.mod"
+        },
+        {
+          "name": "ModuleGoVersion",
+          "value": "1.15"
+        },
+        {
+          "name": "cdx:go:indirect",
+          "value": "false"
+        }
+      ]
+    },
+    {
+      "group": "",
+      "name": "golang.org/x/text",
+      "version": "v0.14.0",
+      "scope": "optional",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "d7c64e4082a963c34956a624b0a1ed4dd8b7d47e62b45463079fea293358cd25"
+        }
+      ],
+      "purl": "pkg:golang/golang.org/x/text@v0.14.0",
+      "type": "library",
+      "bom-ref": "pkg:golang/golang.org/x/text@v0.14.0",
+      "properties": [
+        {
+          "name": "SrcGoMod",
+          "value": "/home/linuzz/go/pkg/mod/cache/download/golang.org/x/text/@v/v0.14.0.mod"
+        },
+        {
+          "name": "ModuleGoVersion",
+          "value": "1.18"
+        },
+        {
+          "name": "cdx:go:indirect",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "group": "",
+      "name": "github.com/gdamore/encoding",
+      "version": "v1.0.0",
+      "scope": "optional",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "6a5474a25df8738f4509204b8e1a2cc7370f1d06dfdadac3928a39765f95ac48"
+        }
+      ],
+      "purl": "pkg:golang/github.com/gdamore/encoding@v1.0.0",
+      "type": "library",
+      "bom-ref": "pkg:golang/github.com/gdamore/encoding@v1.0.0",
+      "properties": [
+        {
+          "name": "SrcGoMod",
+          "value": "/home/linuzz/go/pkg/mod/cache/download/github.com/gdamore/encoding/@v/v1.0.0.mod"
+        },
+        {
+          "name": "ModuleGoVersion",
+          "value": "1.9"
+        },
+        {
+          "name": "cdx:go:indirect",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "group": "",
+      "name": "github.com/gdamore/tcell/v2",
+      "version": "v2.7.1",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "7525ed5d348ad15b16d5b8b0eb90d92d9d8d2abee3d2a3ffd09ece366b2b6968"
+        }
+      ],
+      "purl": "pkg:golang/github.com/gdamore/tcell/v2@v2.7.1",
+      "type": "library",
+      "bom-ref": "pkg:golang/github.com/gdamore/tcell/v2@v2.7.1",
+      "properties": [
+        {
+          "name": "SrcGoMod",
+          "value": "/home/linuzz/go/pkg/mod/cache/download/github.com/gdamore/tcell/v2/@v/v2.7.1.mod"
+        },
+        {
+          "name": "ModuleGoVersion",
+          "value": "1.12"
+        },
+        {
+          "name": "cdx:go:indirect",
+          "value": "false"
+        }
+      ]
+    },
+    {
+      "group": "",
+      "name": "github.com/lucasb-eyer/go-colorful",
+      "version": "v1.2.0",
+      "scope": "optional",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "478752a2d391f4a32d6b2622d5eefb633baf78afa2eebbb3c86aadb629242f2d"
+        }
+      ],
+      "purl": "pkg:golang/github.com/lucasb-eyer/go-colorful@v1.2.0",
+      "type": "library",
+      "bom-ref": "pkg:golang/github.com/lucasb-eyer/go-colorful@v1.2.0",
+      "properties": [
+        {
+          "name": "SrcGoMod",
+          "value": "/home/linuzz/go/pkg/mod/cache/download/github.com/lucasb-eyer/go-colorful/@v/v1.2.0.mod"
+        },
+        {
+          "name": "ModuleGoVersion",
+          "value": "1.12"
+        },
+        {
+          "name": "cdx:go:indirect",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "group": "",
+      "name": "github.com/rivo/uniseg",
+      "version": "v0.4.7",
+      "scope": "optional",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "14ddd2beb33e65d8f5ea3c8b7e63a430d6e55cc72873c0df4c7aee08f51cc7cf"
+        }
+      ],
+      "purl": "pkg:golang/github.com/rivo/uniseg@v0.4.7",
+      "type": "library",
+      "bom-ref": "pkg:golang/github.com/rivo/uniseg@v0.4.7",
+      "properties": [
+        {
+          "name": "SrcGoMod",
+          "value": "/home/linuzz/go/pkg/mod/cache/download/github.com/rivo/uniseg/@v/v0.4.7.mod"
+        },
+        {
+          "name": "ModuleGoVersion",
+          "value": "1.18"
+        },
+        {
+          "name": "cdx:go:indirect",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "group": "",
+      "name": "github.com/mattn/go-runewidth",
+      "version": "v0.0.15",
+      "scope": "optional",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "25d7a98f6968ca2851ccca5d4b7e5793fcdd63c200607b21d79dea52819fdb7c"
+        }
+      ],
+      "purl": "pkg:golang/github.com/mattn/go-runewidth@v0.0.15",
+      "type": "library",
+      "bom-ref": "pkg:golang/github.com/mattn/go-runewidth@v0.0.15",
+      "properties": [
+        {
+          "name": "SrcGoMod",
+          "value": "/home/linuzz/go/pkg/mod/cache/download/github.com/mattn/go-runewidth/@v/v0.0.15.mod"
+        },
+        {
+          "name": "ModuleGoVersion",
+          "value": "1.9"
+        },
+        {
+          "name": "cdx:go:indirect",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "group": "",
+      "name": "golang.org/x/sys",
+      "version": "v0.17.0",
+      "scope": "optional",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "fd55217a989a24c414a78fa86bfed9af50f6de66ba5532c862338e4c564f51c0"
+        }
+      ],
+      "purl": "pkg:golang/golang.org/x/sys@v0.17.0",
+      "type": "library",
+      "bom-ref": "pkg:golang/golang.org/x/sys@v0.17.0",
+      "properties": [
+        {
+          "name": "SrcGoMod",
+          "value": "/home/linuzz/go/pkg/mod/cache/download/golang.org/x/sys/@v/v0.17.0.mod"
+        },
+        {
+          "name": "ModuleGoVersion",
+          "value": "1.18"
+        },
+        {
+          "name": "cdx:go:indirect",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "group": "",
+      "name": "golang.org/x/term",
+      "version": "v0.17.0",
+      "scope": "optional",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "94b4418c856e7a149b66568eb4631b70c9dc4fe6aa2cb2e62abb2336b520bb09"
+        }
+      ],
+      "purl": "pkg:golang/golang.org/x/term@v0.17.0",
+      "type": "library",
+      "bom-ref": "pkg:golang/golang.org/x/term@v0.17.0",
+      "properties": [
+        {
+          "name": "SrcGoMod",
+          "value": "/home/linuzz/go/pkg/mod/cache/download/golang.org/x/term/@v/v0.17.0.mod"
+        },
+        {
+          "name": "ModuleGoVersion",
+          "value": "1.18"
+        },
+        {
+          "name": "cdx:go:indirect",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "group": "",
+      "name": "github.com/rivo/tview",
+      "version": "v0.0.0-20240921122403-a64fc48d7654",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "d36885233ecafc0f63182beb8b32cfbe8aabe1c108c7bab9e111f942e764aecb"
+        }
+      ],
+      "purl": "pkg:golang/github.com/rivo/tview@v0.0.0-20240921122403-a64fc48d7654",
+      "type": "library",
+      "bom-ref": "pkg:golang/github.com/rivo/tview@v0.0.0-20240921122403-a64fc48d7654",
+      "properties": [
+        {
+          "name": "SrcGoMod",
+          "value": "/home/linuzz/go/pkg/mod/cache/download/github.com/rivo/tview/@v/v0.0.0-20240921122403-a64fc48d7654.mod"
+        },
+        {
+          "name": "ModuleGoVersion",
+          "value": "1.18"
+        },
+        {
+          "name": "cdx:go:indirect",
+          "value": "false"
+        }
+      ]
+    },
+    {
+      "group": "",
+      "name": "github.com/viveksahu26/stree",
+      "version": "",
+      "purl": "pkg:golang/github.com/viveksahu26/stree",
+      "type": "library",
+      "bom-ref": "pkg:golang/github.com/viveksahu26/stree",
+      "evidence": {
+        "identity": {
+          "field": "purl",
+          "confidence": 1,
+          "methods": [
+            {
+              "technique": "manifest-analysis",
+              "confidence": 1,
+              "value": "/home/linuzz/go/src/github.com/viveksahu26/stree/go.mod"
+            }
+          ]
+        }
+      },
+      "properties": [
+        {
+          "name": "SrcFile",
+          "value": "/home/linuzz/go/src/github.com/viveksahu26/stree/go.mod"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "pkg:golang/github.com/gdamore/encoding@v1.0.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:golang/github.com/gdamore/tcell/v2@v2.7.1",
+      "dependsOn": [
+        "pkg:golang/github.com/gdamore/encoding@v1.0.0",
+        "pkg:golang/github.com/lucasb-eyer/go-colorful@v1.2.0",
+        "pkg:golang/github.com/mattn/go-runewidth@v0.0.15",
+        "pkg:golang/golang.org/x/sys@v0.17.0",
+        "pkg:golang/golang.org/x/term@v0.17.0",
+        "pkg:golang/golang.org/x/text@v0.14.0"
+      ]
+    },
+    {
+      "ref": "pkg:golang/github.com/lucasb-eyer/go-colorful@v1.2.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:golang/github.com/mattn/go-runewidth@v0.0.15",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:golang/github.com/rivo/tview@v0.0.0-20240921122403-a64fc48d7654",
+      "dependsOn": [
+        "pkg:golang/github.com/gdamore/encoding@v1.0.0",
+        "pkg:golang/github.com/gdamore/tcell/v2@v2.7.1",
+        "pkg:golang/github.com/lucasb-eyer/go-colorful@v1.2.0",
+        "pkg:golang/github.com/mattn/go-runewidth@v0.0.15",
+        "pkg:golang/github.com/rivo/uniseg@v0.4.7",
+        "pkg:golang/golang.org/x/sys@v0.17.0",
+        "pkg:golang/golang.org/x/term@v0.17.0",
+        "pkg:golang/golang.org/x/text@v0.14.0"
+      ]
+    },
+    {
+      "ref": "pkg:golang/github.com/rivo/uniseg@v0.4.7",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:golang/github.com/spf13/cobra@v1.8.1",
+      "dependsOn": [
+        "pkg:golang/github.com/spf13/pflag@v1.0.5"
+      ]
+    },
+    {
+      "ref": "pkg:golang/github.com/spf13/pflag@v1.0.5",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:golang/github.com/viveksahu26/stree",
+      "dependsOn": [
+        "pkg:golang/github.com/gdamore/encoding@v1.0.0",
+        "pkg:golang/github.com/gdamore/tcell/v2@v2.7.1",
+        "pkg:golang/github.com/lucasb-eyer/go-colorful@v1.2.0",
+        "pkg:golang/github.com/mattn/go-runewidth@v0.0.15",
+        "pkg:golang/github.com/rivo/tview@v0.0.0-20240921122403-a64fc48d7654",
+        "pkg:golang/github.com/rivo/uniseg@v0.4.7",
+        "pkg:golang/github.com/spf13/cobra@v1.8.1",
+        "pkg:golang/github.com/spf13/pflag@v1.0.5",
+        "pkg:golang/golang.org/x/sys@v0.17.0",
+        "pkg:golang/golang.org/x/term@v0.17.0",
+        "pkg:golang/golang.org/x/text@v0.14.0"
+      ]
+    },
+    {
+      "ref": "pkg:golang/golang.org/x/sys@v0.17.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:golang/golang.org/x/term@v0.17.0",
+      "dependsOn": [
+        "pkg:golang/golang.org/x/sys@v0.17.0"
+      ]
+    },
+    {
+      "ref": "pkg:golang/golang.org/x/text@v0.14.0",
+      "dependsOn": []
+    }
+  ]
+}
