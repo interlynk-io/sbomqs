@@ -16,9 +16,15 @@ package sbom
 
 import (
 	"context"
+	"crypto/rsa"
+	"crypto/x509"
+	"encoding/base64"
+	"encoding/pem"
 	"fmt"
 	"io"
 	"log"
+	"math/big"
+	"os"
 	"strings"
 
 	cydx "github.com/CycloneDX/cyclonedx-go"
@@ -163,6 +169,9 @@ func (c *CdxDoc) parse() {
 	c.parseCompositions()
 	c.parsePrimaryCompAndRelationships()
 	c.parseVulnerabilities()
+	if c.Signature().GetPublicKey() == "" && c.Signature().GetPublicKey() == "" {
+		c.parseSignature()
+	}
 	c.parseComps()
 }
 
@@ -240,6 +249,109 @@ func (c *CdxDoc) parseVulnerabilities() {
 			}
 		}
 	}
+}
+
+func (c *CdxDoc) parseSignature() {
+	c.SignatureDetail = &Signature{}
+	if c.doc.Declarations != nil {
+		if c.doc.Declarations.Signature != nil {
+			sigAlgo := c.doc.Declarations.Signature.Algorithm
+			sigValue := c.doc.Declarations.Signature.Value
+			pubKeyAlgo := c.doc.Declarations.Signature.PublicKey.KTY
+			pubKeyModulus := c.doc.Declarations.Signature.PublicKey.N
+			pubKeyExponent := c.doc.Declarations.Signature.PublicKey.E
+
+			fmt.Println("Extracted Signature Section:")
+			fmt.Printf("Algorithm: %s\n", sigAlgo)
+			fmt.Printf("Value: %s\n", sigValue)
+			fmt.Printf("APublic Key lgorithm: %s\n", pubKeyAlgo)
+			fmt.Printf("Public Key Modulus (N): %s\n", pubKeyModulus)
+			fmt.Printf("Public Key Exponent (E): %s\n", pubKeyExponent)
+
+			// Decode the signature
+			signatureValue, err := base64.StdEncoding.DecodeString(sigValue)
+			if err != nil {
+				fmt.Println("Error decoding signature:", err)
+				return
+			}
+
+			// Write the signature to a file
+			if err := os.WriteFile("extracted_signature.bin", signatureValue, 0o644); err != nil {
+				fmt.Println("Error writing signature to file:", err)
+				return
+			}
+			fmt.Println("Signature written to file: extracted_signature.bin")
+
+			// Extract the public key modulus and exponent
+			modulus, err := base64.StdEncoding.DecodeString(pubKeyModulus)
+			if err != nil {
+				fmt.Println("Error decoding public key modulus:", err)
+				return
+			}
+
+			exponent := decodeBase64URLEncodingToInt(pubKeyExponent)
+			if exponent == 0 {
+				fmt.Println("Invalid public key exponent.")
+				return
+			}
+
+			// Create the RSA public key
+			pubKey := &rsa.PublicKey{
+				N: decodeBigInt(modulus),
+				E: int(exponent),
+			}
+
+			// Write the public key to a PEM file
+			pubKeyPEM := publicKeyToPEM(pubKey)
+			if err := os.WriteFile("extracted_public_key.pem", pubKeyPEM, 0o644); err != nil {
+				fmt.Println("Error writing public key to file:", err)
+				return
+			}
+
+			sig := Signature{}
+			sig.PublicKey = string(pubKeyPEM)
+			sig.SigValue = string(signatureValue)
+
+			c.SignatureDetail = &sig
+
+			fmt.Println("Public key written to file: extracted_public_key.pem")
+
+		}
+	}
+}
+
+func decodeBase64URLEncodingToInt(input string) int {
+	bytes, err := base64.StdEncoding.DecodeString(input)
+	if err != nil {
+		return 0
+	}
+	if len(bytes) == 0 {
+		return 0
+	}
+	result := 0
+	for _, b := range bytes {
+		result = result<<8 + int(b)
+	}
+	return result
+}
+
+func decodeBigInt(input []byte) *big.Int {
+	result := new(big.Int)
+	result.SetBytes(input)
+	return result
+}
+
+func publicKeyToPEM(pub *rsa.PublicKey) []byte {
+	pubASN1, err := x509.MarshalPKIXPublicKey(pub)
+	if err != nil {
+		fmt.Println("Error marshaling public key:", err)
+		return nil
+	}
+	pubPEM := pem.EncodeToMemory(&pem.Block{
+		Type:  "PUBLIC KEY",
+		Bytes: pubASN1,
+	})
+	return pubPEM
 }
 
 func (c *CdxDoc) requiredFields() bool {
