@@ -383,10 +383,7 @@ func (c *CdxDoc) allFiles(comp *cydx.Component) []string {
 }
 
 func (c *CdxDoc) hasFiles(comp *cydx.Component) bool {
-	if comp.Components != nil {
-		return true
-	}
-	return false
+	return comp.Components != nil
 }
 
 func (c *CdxDoc) parseFiles() {
