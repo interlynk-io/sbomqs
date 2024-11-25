@@ -57,6 +57,7 @@ type SpdxDoc struct {
 	Lifecycle        string
 	Dependencies     map[string][]string
 	composition      map[string]string
+	vuln             GetVulnerabilities
 }
 
 func newSPDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat, version FormatVersion) (Document, error) {
@@ -150,6 +151,10 @@ func CleanKey(key string) string {
 
 func (s SpdxDoc) GetComposition(componentID string) string {
 	return s.composition[componentID]
+}
+
+func (s SpdxDoc) Vulnerabilities() GetVulnerabilities {
+	return nil
 }
 
 func (s *SpdxDoc) parse() {

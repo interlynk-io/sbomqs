@@ -35,6 +35,7 @@ func bsiV2Result(ctx context.Context, doc sbom.Document, fileName string, outFor
 
 	dtb := db.NewDB()
 
+	dtb.AddRecord(bsiV2Vulnerabilities(doc))
 	dtb.AddRecord(bsiSpec(doc))
 	dtb.AddRecord(bsiV2SpecVersion(doc))
 	dtb.AddRecord(bsiBuildPhase(doc))
@@ -58,6 +59,21 @@ func bsiV2Result(ctx context.Context, doc sbom.Document, fileName string, outFor
 	if outFormat == "detailed" {
 		bsiV2DetailedReport(dtb, fileName)
 	}
+}
+
+func bsiV2Vulnerabilities(doc sbom.Document) *db.Record {
+	result, score := "no-vulnerability", 10.0
+
+	vuln := doc.Vulnerabilities()
+
+	if vuln != nil {
+		vulnId := vuln.GetID()
+		if vulnId != "" {
+			result = vulnId
+		}
+		score = 0.0
+	}
+	return db.NewRecordStmt(SBOM_VULNERABILITES, "doc", result, score, "")
 }
 
 func bsiV2SpecVersion(doc sbom.Document) *db.Record {

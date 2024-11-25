@@ -45,6 +45,7 @@ var bsiSectionDetails = map[int]bsiSection{
 	COMP_DOWNLOAD_URL:    {Title: "Additional fields components", ID: "5.3.2", Required: false, DataField: "URI of the executable form of the component"},
 	COMP_SOURCE_HASH:     {Title: "Additional fields components", ID: "5.3.2", Required: false, DataField: "Hash value of the source code of the component"},
 	COMP_OTHER_UNIQ_IDS:  {Title: "Additional fields components", ID: "5.3.2", Required: false, DataField: "Other unique identifiers"},
+	SBOM_VULNERABILITES:  {Title: "Definition of SBOM", ID: "3.1", Required: true, DataField: "vuln"},
 }
 
 type run struct {
