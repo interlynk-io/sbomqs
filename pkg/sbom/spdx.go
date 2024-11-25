@@ -154,7 +154,7 @@ func (s SpdxDoc) GetComposition(componentID string) string {
 }
 
 func (s SpdxDoc) Vulnerabilities() GetVulnerabilities {
-	return nil
+	return s.vuln
 }
 
 func (s *SpdxDoc) parse() {
@@ -214,6 +214,7 @@ func (s *SpdxDoc) parseSpec() {
 	if s.doc.DocumentNamespace != "" {
 		sp.uri = s.doc.DocumentNamespace
 	}
+	s.vuln = nil
 
 	s.SpdxSpec = sp
 }
