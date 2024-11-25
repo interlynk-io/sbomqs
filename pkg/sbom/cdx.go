@@ -55,6 +55,7 @@ type CdxDoc struct {
 	PrimaryComponent PrimaryComp
 	Dependencies     map[string][]string
 	composition      map[string]string
+	vuln             GetVulnerabilities
 }
 
 func newCDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat) (Document, error) {
@@ -142,6 +143,10 @@ func (c CdxDoc) GetComposition(componentID string) string {
 	return c.composition[componentID]
 }
 
+func (s CdxDoc) Vulnerabilities() GetVulnerabilities {
+	return s.vuln
+}
+
 func (c *CdxDoc) parse() {
 	c.parseDoc()
 	c.parseSpec()
@@ -151,6 +156,7 @@ func (c *CdxDoc) parse() {
 	c.parseTool()
 	c.parseCompositions()
 	c.parsePrimaryCompAndRelationships()
+	c.parseVulnerabilities()
 	c.parseComps()
 }
 
@@ -208,6 +214,16 @@ func (c *CdxDoc) parseSpec() {
 	}
 
 	c.CdxSpec = sp
+}
+
+func (c *CdxDoc) parseVulnerabilities() {
+	vuln := Vulnerability{}
+	for _, v := range *c.doc.Vulnerabilities {
+		if v.ID != "" {
+			vuln.Id = v.ID
+		}
+	}
+	c.vuln = vuln
 }
 
 func (c *CdxDoc) requiredFields() bool {

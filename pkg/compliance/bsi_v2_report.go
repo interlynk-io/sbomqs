@@ -23,16 +23,6 @@ import (
 	"github.com/olekukonko/tablewriter"
 )
 
-var bsiV2SectionDetails = map[int]bsiSection{
-	SBOM_SPEC:         {Title: "SBOM formats", ID: "4", Required: true, DataField: "specification"},
-	SBOM_SPEC_VERSION: {Title: "SBOM formats", ID: "4", Required: true, DataField: "specification version"},
-	SBOM_BUILD:        {Title: "Level of Detail", ID: "5.1", Required: true, DataField: "build process"},
-	SBOM_DEPTH:        {Title: "Level of Detail", ID: "5.1", Required: true, DataField: "depth"},
-	SBOM_CREATOR:      {Title: "Required fields sboms ", ID: "5.2.1", Required: true, DataField: "creator of sbom"},
-	SBOM_TIMESTAMP:    {Title: "Required fields sboms", ID: "5.2.1", Required: true, DataField: "timestamp"},
-	SBOM_URI:          {Title: "Additional fields sboms", ID: "5.3.1", Required: false, DataField: "SBOM-URI"},
-}
-
 func bsiV2JSONReport(dtb *db.DB, fileName string) {
 	name := "BSI TR-03183-2 v2.0.0 Compliance Report"
 	revision := "TR-03183-2 (2.0.0)"
