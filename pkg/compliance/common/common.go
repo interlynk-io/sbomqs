@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/interlynk-io/sbomqs/pkg/cpe"
+	"github.com/interlynk-io/sbomqs/pkg/licenses"
 	"github.com/interlynk-io/sbomqs/pkg/omniborid"
 	"github.com/interlynk-io/sbomqs/pkg/purl"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
@@ -461,4 +462,23 @@ func WrapText(input string, maxWidth int) string {
 	}
 	result = append(result, input)
 	return strings.Join(result, "\n")
+}
+
+func AreLicensesValid(licenses []licenses.License) bool {
+	var spdx, aboutcode, custom int
+
+	for _, license := range licenses {
+		switch license.Source() {
+		case "spdx":
+			spdx++
+		case "aboutcode":
+			aboutcode++
+		case "custom":
+			if strings.HasPrefix(license.ShortID(), "LicenseRef-") || strings.HasPrefix(license.Name(), "LicenseRef-") {
+				custom++
+			}
+		}
+	}
+
+	return spdx+aboutcode+custom == len(licenses)
 }

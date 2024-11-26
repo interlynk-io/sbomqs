@@ -246,6 +246,8 @@ func (s *SpdxDoc) parseComps() {
 		nc.Checksums = s.checksums(index)
 		nc.ExternalRefs = s.externalRefs(index)
 		nc.licenses = s.licenses(index)
+		nc.declaredLicense = s.declaredLicenses(index)
+		nc.concludedLicense = s.concludedLicenses(index)
 		nc.ID = string(sc.PackageSPDXIdentifier)
 		nc.PackageLicenseConcluded = sc.PackageLicenseConcluded
 		if strings.Contains(s.PrimaryComponent.ID, string(sc.PackageSPDXIdentifier)) {
@@ -617,6 +619,46 @@ func (s *SpdxDoc) licenses(index int) []licenses.License {
 		decLics := licenses.LookupExpression(pkg.PackageLicenseDeclared, otherLicenses)
 		if len(decLics) > 0 {
 			lics = append(lics, decLics...)
+			return lics
+		}
+	}
+
+	return lics
+}
+
+func (s *SpdxDoc) declaredLicenses(index int) []licenses.License {
+	lics := []licenses.License{}
+
+	pkg := s.doc.Packages[index]
+
+	otherLicenses := lo.Map(s.doc.OtherLicenses, func(l *spdx.OtherLicense, _ int) licenses.License {
+		return licenses.CreateCustomLicense(l.LicenseIdentifier, l.LicenseName)
+	})
+
+	if pkg.PackageLicenseDeclared != "" {
+		decLics := licenses.LookupExpression(pkg.PackageLicenseDeclared, otherLicenses)
+		if len(decLics) > 0 {
+			lics = append(lics, decLics...)
+			return lics
+		}
+	}
+
+	return lics
+}
+
+func (s *SpdxDoc) concludedLicenses(index int) []licenses.License {
+	lics := []licenses.License{}
+
+	pkg := s.doc.Packages[index]
+
+	otherLicenses := lo.Map(s.doc.OtherLicenses, func(l *spdx.OtherLicense, _ int) licenses.License {
+		return licenses.CreateCustomLicense(l.LicenseIdentifier, l.LicenseName)
+	})
+
+	if pkg.PackageLicenseConcluded != "" {
+		conLics := licenses.LookupExpression(pkg.PackageLicenseConcluded, otherLicenses)
+		if len(conLics) > 0 {
+			lics = append(lics, conLics...)
 			return lics
 		}
 	}

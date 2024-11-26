@@ -363,6 +363,11 @@ func copyC(cdxc *cydx.Component, c *CdxDoc) *Component {
 		nc.PrimaryCompt = c.PrimaryComponent
 	}
 	nc.ID = cdxc.BOMRef
+
+	// license->acknowlegement(1.6+): currently acknowlegement field doesn't support
+	nc.declaredLicense = nil
+	nc.concludedLicense = nil
+
 	return nc
 }
 
