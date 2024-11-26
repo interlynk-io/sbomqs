@@ -44,10 +44,10 @@ func bsiV2Result(ctx context.Context, doc sbom.Document, fileName string, outFor
 	dtb.AddRecord(bsiCreator(doc))
 	dtb.AddRecord(bsiTimestamp(doc))
 	dtb.AddRecord(bsiSbomURI(doc))
+	dtb.AddRecord(bsiV2SbomLinks(doc))
 	dtb.AddRecords(bsiV2Components(doc))
 	// New SBOM fields
 	// dtb.AddRecord(bsiSbomSignature(doc))
-	// dtb.AddRecord(bsiSbomLinks(doc))
 
 	if outFormat == "json" {
 		bsiV2JSONReport(dtb, fileName)
@@ -60,6 +60,18 @@ func bsiV2Result(ctx context.Context, doc sbom.Document, fileName string, outFor
 	if outFormat == "detailed" {
 		bsiV2DetailedReport(dtb, fileName)
 	}
+}
+
+func bsiV2SbomLinks(doc sbom.Document) *db.Record {
+	result, score := "", 0.0
+
+	bom := doc.Spec().GetExtDocRef()
+	if bom != nil {
+		result = strings.Join(bom, ", ")
+		score = 10.0
+	}
+
+	return db.NewRecordStmt(SBOM_BOM_LINKS, "doc", result, score, "")
 }
 
 func bsiV2Vulnerabilities(doc sbom.Document) *db.Record {

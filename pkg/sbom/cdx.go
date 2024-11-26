@@ -213,6 +213,14 @@ func (c *CdxDoc) parseSpec() {
 		sp.Uri = fmt.Sprintf("%s/%d", c.doc.SerialNumber, c.doc.Version)
 	}
 
+	if c.doc.ExternalReferences != nil {
+		for _, extRefs := range *c.doc.ExternalReferences {
+			if extRefs.Type == "bom" {
+				sp.ExternalDocReference = append(sp.ExternalDocReference, extRefs.URL)
+			}
+		}
+	}
+
 	c.CdxSpec = sp
 }
 

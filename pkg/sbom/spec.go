@@ -32,21 +32,23 @@ type Spec interface {
 	GetOrganization() string
 	GetComment() string
 	GetSpdxID() string
+	GetExtDocRef() []string
 }
 
 type Specs struct {
-	Version            string
-	Format             string
-	SpecType           string
-	Name               string
-	isReqFieldsPresent bool
-	Licenses           []licenses.License
-	CreationTimestamp  string
-	Namespace          string
-	Uri                string
-	Organization       string
-	Comment            string
-	Spdxid             string
+	Version              string
+	Format               string
+	SpecType             string
+	Name                 string
+	isReqFieldsPresent   bool
+	Licenses             []licenses.License
+	CreationTimestamp    string
+	Namespace            string
+	Uri                  string
+	Organization         string
+	Comment              string
+	Spdxid               string
+	ExternalDocReference []string
 }
 
 func NewSpec() *Specs {
@@ -103,4 +105,8 @@ func (s Specs) GetNamespace() string {
 
 func (s Specs) URI() string {
 	return s.Uri
+}
+
+func (s Specs) GetExtDocRef() []string {
+	return s.ExternalDocReference
 }
