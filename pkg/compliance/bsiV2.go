@@ -70,6 +70,8 @@ func bsiV2SbomLinks(doc sbom.Document) *db.Record {
 		result = strings.Join(bom, ", ")
 		score = 10.0
 	}
+	wrappedURL := common.WrapText(result, 80)
+	result = wrappedURL
 
 	return db.NewRecordStmt(SBOM_BOM_LINKS, "doc", result, score, "")
 }

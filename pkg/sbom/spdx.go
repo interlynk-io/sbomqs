@@ -199,7 +199,7 @@ func (s *SpdxDoc) parseSpec() {
 
 	if s.doc.ExternalDocumentReferences != nil {
 		for _, bom := range s.doc.ExternalDocumentReferences {
-			sp.ExternalDocReference = append(sp.ExternalDocReference, bom.DocumentRefID)
+			sp.ExternalDocReference = append(sp.ExternalDocReference, bom.URI)
 		}
 	}
 

@@ -15,7 +15,7 @@
     "externalDocumentRefs": [
     {
       "externalDocumentId": "DocumentRef-InterlynkSBOM",
-      "spdxDocumentNamespace": "https://interlynk.io/github.com%2Finterlynk-io%2Fsbomqs/0.0.15/qIP32aoJi0u5M_EjHeJHAg",
+      "spdxDocument": "https://interlynk.io/github.com%2Finterlynk-io%2Fsbomqs/0.0.15/qIP32aoJi0u5M_EjHeJHAg",
       "checksum": {
         "algorithm": "SHA256",
         "checksumValue": "09e46d45422cc6ab9a6dc1d57ad4d27687fc47fcfac5b732d8bb07327c11e8c3"
@@ -23,7 +23,7 @@
     },
     {
       "externalDocumentId": "DocumentRef-ToolsetX-v1.2",
-      "spdxDocumentNamespace": "https://example.com/spdx/docs/toolsetX-v1.2",
+      "spdxDocument": "https://example.com/spdx/docs/toolsetX-v1.2",
       "checksum": {
         "algorithm": "SHA256",
         "checksumValue": "4a9c983fd1ae8347dd53c897bc9c38df2f7d6ab98775bf8c36c1237cd123b4e6"
