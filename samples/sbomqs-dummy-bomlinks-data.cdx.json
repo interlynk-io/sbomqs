@@ -868,8 +868,8 @@
     "externalReferences": [
     {
       "type": "bom",
-      "url": "https://example.com/sbom/external-bom.cdx.json",
-      "comment": "This is a reference to an external SBOM for a related component"
+      "url" : "https://raw.githubusercontent.com/bomctl/bomctl-playground/main/examples/bomctl-container-image/app/bomctl_0.3.0_linux_amd64.tar.gz.spdx.json",
+      "comment": "This is a reference to an external SBOM for a related component for testing purpose."
     }
   ]
   }
