@@ -14,11 +14,11 @@
     },
     "externalDocumentRefs": [
     {
-      "externalDocumentId": "DocumentRef-LibraryA-v2.3",
-      "spdxDocumentNamespace": "https://example.com/spdx/docs/libraryA-v2.3",
+      "externalDocumentId": "DocumentRef-InterlynkSBOM",
+      "spdxDocumentNamespace": "https://interlynk.io/github.com%2Finterlynk-io%2Fsbomqs/0.0.15/qIP32aoJi0u5M_EjHeJHAg",
       "checksum": {
         "algorithm": "SHA256",
-        "checksumValue": "a3c123d8aebbbcf737bc5c41d04fb0f8c4d3285a29a3b94eabca3c123f6c6c35"
+        "checksumValue": "09e46d45422cc6ab9a6dc1d57ad4d27687fc47fcfac5b732d8bb07327c11e8c3"
       }
     },
     {
