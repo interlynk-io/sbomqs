@@ -197,6 +197,12 @@ func (s *SpdxDoc) parseSpec() {
 	sp.SpecType = string(SBOMSpecSPDX)
 	sp.Name = s.doc.DocumentName
 
+	if s.doc.ExternalDocumentReferences != nil {
+		for _, bom := range s.doc.ExternalDocumentReferences {
+			sp.ExternalDocReference = append(sp.ExternalDocReference, bom.DocumentRefID)
+		}
+	}
+
 	sp.isReqFieldsPresent = s.requiredFields()
 
 	if s.doc.CreationInfo != nil {
