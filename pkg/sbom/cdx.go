@@ -203,7 +203,7 @@ func (c *CdxDoc) parseSpec() {
 	if c.doc.Metadata != nil {
 		sp.CreationTimestamp = c.doc.Metadata.Timestamp
 		if c.doc.Metadata.Licenses != nil {
-			sp.Licenses = aggregateLicenses(*c.doc.Metadata.Licenses)
+			sp.Licenses = aggregateLicenses(*c.doc.Metadata.Licenses, "")
 		}
 	}
 	sp.Namespace = c.doc.SerialNumber
@@ -335,6 +335,8 @@ func copyC(cdxc *cydx.Component, c *CdxDoc) *Component {
 
 	nc.Checksums = c.checksums(cdxc)
 	nc.licenses = c.licenses(cdxc)
+	nc.declaredLicense = c.declaredLicenses(cdxc)
+	nc.concludedLicense = c.concludedLicenses(cdxc)
 
 	supplier := c.assignSupplier(cdxc)
 	if supplier != nil {
@@ -452,10 +454,18 @@ func (c *CdxDoc) checksums(comp *cydx.Component) []GetChecksum {
 }
 
 func (c *CdxDoc) licenses(comp *cydx.Component) []licenses.License {
-	return aggregateLicenses(lo.FromPtr(comp.Licenses))
+	return aggregateLicenses(lo.FromPtr(comp.Licenses), "")
 }
 
-func aggregateLicenses(clicenses cydx.Licenses) []licenses.License {
+func (c *CdxDoc) declaredLicenses(comp *cydx.Component) []licenses.License {
+	return aggregateLicenses(lo.FromPtr(comp.Licenses), "declared")
+}
+
+func (c *CdxDoc) concludedLicenses(comp *cydx.Component) []licenses.License {
+	return aggregateLicenses(lo.FromPtr(comp.Licenses), "concluded")
+}
+
+func aggregateLicenses(clicenses cydx.Licenses, filter string) []licenses.License {
 	if clicenses == nil {
 		return []licenses.License{}
 	}
@@ -467,13 +477,15 @@ func aggregateLicenses(clicenses cydx.Licenses) []licenses.License {
 	}
 
 	for _, cl := range clicenses {
-		if cl.Expression != "" {
+		if filter == "" && cl.Expression != "" {
 			lics = append(lics, getLicenses(cl.Expression)...)
 		} else if cl.License != nil {
-			if cl.License.ID != "" {
-				lics = append(lics, getLicenses(cl.License.ID)...)
-			} else if cl.License.Name != "" {
-				lics = append(lics, getLicenses(cl.License.Name)...)
+			if filter == "" || string(cl.License.Acknowledgement) == filter {
+				if cl.License.ID != "" {
+					lics = append(lics, getLicenses(cl.License.ID)...)
+				} else if cl.License.Name != "" {
+					lics = append(lics, getLicenses(cl.License.Name)...)
+				}
 			}
 		}
 	}

@@ -20,6 +20,7 @@ import (
 
 	"github.com/interlynk-io/sbomqs/pkg/compliance/common"
 	db "github.com/interlynk-io/sbomqs/pkg/compliance/db"
+	"github.com/interlynk-io/sbomqs/pkg/licenses"
 	"github.com/interlynk-io/sbomqs/pkg/logger"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 	"github.com/samber/lo"
@@ -150,7 +151,7 @@ func bsiV2Components(doc sbom.Document) []*db.Record {
 		records = append(records, bsiComponentName(component))
 		records = append(records, bsiComponentVersion(component))
 		records = append(records, bsiComponentDepth(doc, component))
-		records = append(records, bsiV2ComponentAssociatedLicense(component))
+		records = append(records, bsiV2ComponentAssociatedLicense(doc, component))
 		records = append(records, bsiComponentHash(component))
 		records = append(records, bsiComponentSourceCodeURL(component))
 		records = append(records, bsiComponentDownloadURL(component))
@@ -171,12 +172,18 @@ func bsiV2Components(doc sbom.Document) []*db.Record {
 	return records
 }
 
-func bsiV2ComponentAssociatedLicense(component sbom.GetComponent) *db.Record {
-	licenses := component.ConcludedLicenses()
-	score := 0.0
+func bsiV2ComponentAssociatedLicense(doc sbom.Document, component sbom.GetComponent) *db.Record {
+	spec := doc.Spec().GetSpecType()
+
+	var licenses []licenses.License
+	if spec == "cyclonedx" {
+		licenses = component.Licenses()
+	} else if spec == "spdx" {
+		licenses = component.ConcludedLicenses()
+	}
 
 	if len(licenses) == 0 {
-		return db.NewRecordStmt(COMP_ASSOCIATED_LICENSE, common.UniqueElementID(component), "not-compliant", score, "")
+		return db.NewRecordStmt(COMP_ASSOCIATED_LICENSE, common.UniqueElementID(component), "not-compliant", 0.0, "")
 	}
 
 	if !common.AreLicensesValid(licenses) {
@@ -202,7 +209,7 @@ func bsiV2ComponentConcludedLicense(component sbom.GetComponent) *db.Record {
 }
 
 func bsiV2ComponentDeclaredLicense(component sbom.GetComponent) *db.Record {
-	licenses := component.ConcludedLicenses()
+	licenses := component.DeclaredLicenses()
 	score := 0.0
 
 	if len(licenses) == 0 {
