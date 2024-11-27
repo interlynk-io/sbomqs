@@ -19,9 +19,9 @@ type GetVulnerabilities interface {
 }
 
 type Vulnerability struct {
-	Id string
+	ID string
 }
 
 func (v Vulnerability) GetID() string {
-	return v.Id
+	return v.ID
 }

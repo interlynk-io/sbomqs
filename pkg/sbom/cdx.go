@@ -151,8 +151,8 @@ func (c CdxDoc) GetComposition(componentID string) string {
 	return c.composition[componentID]
 }
 
-func (s CdxDoc) Vulnerabilities() GetVulnerabilities {
-	return s.vuln
+func (c CdxDoc) Vulnerabilities() GetVulnerabilities {
+	return c.vuln
 }
 
 func (c CdxDoc) Signature() GetSignature {
@@ -237,7 +237,7 @@ func (c *CdxDoc) parseVulnerabilities() {
 	if c.doc.Vulnerabilities != nil {
 		for _, v := range *c.doc.Vulnerabilities {
 			if v.ID != "" {
-				vuln.Id = v.ID
+				vuln.ID = v.ID
 			}
 		}
 		c.vuln = vuln
@@ -271,7 +271,7 @@ func (c *CdxDoc) parseSignature() {
 			}
 
 			// Write the signature to a file
-			if err := os.WriteFile("extracted_signature.bin", signatureValue, 0o644); err != nil {
+			if err := os.WriteFile("extracted_signature.bin", signatureValue, 0o600); err != nil {
 				fmt.Println("Error writing signature to file:", err)
 				return
 			}
@@ -293,12 +293,12 @@ func (c *CdxDoc) parseSignature() {
 			// Create the RSA public key
 			pubKey := &rsa.PublicKey{
 				N: decodeBigInt(modulus),
-				E: int(exponent),
+				E: exponent,
 			}
 
 			// Write the public key to a PEM file
 			pubKeyPEM := publicKeyToPEM(pubKey)
-			if err := os.WriteFile("extracted_public_key.pem", pubKeyPEM, 0o644); err != nil {
+			if err := os.WriteFile("extracted_public_key.pem", pubKeyPEM, 0o600); err != nil {
 				fmt.Println("Error writing public key to file:", err)
 				return
 			}
