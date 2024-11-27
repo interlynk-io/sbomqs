@@ -159,8 +159,8 @@ func (s SpdxDoc) Vulnerabilities() []GetVulnerabilities {
 	return s.Vuln
 }
 
-func (c SpdxDoc) Signature() GetSignature {
-	return c.SignatureDetail
+func (s SpdxDoc) Signature() GetSignature {
+	return s.SignatureDetail
 }
 
 func (s *SpdxDoc) parse() {
