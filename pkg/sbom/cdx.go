@@ -169,7 +169,8 @@ func (c *CdxDoc) parse() {
 	c.parseCompositions()
 	c.parsePrimaryCompAndRelationships()
 	c.parseVulnerabilities()
-	if c.Signature().GetPublicKey() == "" && c.Signature().GetPublicKey() == "" {
+	if c.Signature().GetSigValue() == "" && c.Signature().GetPublicKey() == "" {
+		fmt.Println("Extract public key and signature from SBOM")
 		c.parseSignature()
 	}
 	c.parseComps()
@@ -251,6 +252,8 @@ func (c *CdxDoc) parseVulnerabilities() {
 	}
 }
 
+// until and unless cyclondx-go library supports signature, this part is useless
+// So, we are using tech hack to parse signature directly from JSON sbom file
 func (c *CdxDoc) parseSignature() {
 	c.SignatureDetail = &Signature{}
 	if c.doc.Declarations != nil {
