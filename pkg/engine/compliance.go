@@ -17,8 +17,13 @@ package engine
 import (
 	"bytes"
 	"context"
+	"crypto/rsa"
+	"crypto/x509"
+	"encoding/base64"
 	"encoding/json"
+	"encoding/pem"
 	"fmt"
+	"math/big"
 	"os"
 
 	"github.com/interlynk-io/sbomqs/pkg/compliance"
@@ -89,23 +94,27 @@ func getSbomDocument(ctx context.Context, ep *Params) (*sbom.Document, error) {
 	log.Debugf("engine.getSbomDocument()")
 
 	path := ep.Path[0]
-
 	blob := ep.Path[0]
-	fmt.Println("Blob: ", blob)
 	signature := ep.Signature
-	fmt.Println("Signature: ", signature)
 	publicKey := ep.PublicKey
-	fmt.Println("PublicKey: ", publicKey)
 
-	standaloneSBOMFile, err := CheckSbomHasSignature(blob)
-	if err != nil {
-		log.Fatalf("failed to get standalone SBOM: %w", err)
+	if signature == "" && publicKey == "" {
+		standaloneSBOMFile, signatureRetrieved, publicKeyRetrieved, err := RetrieveSignatureFromSBOM(blob)
+		if err != nil {
+			log.Fatalf("failed to retrieve signature and public key from embedded sbom: %w", err)
+		}
+		blob = standaloneSBOMFile
+		signature = signatureRetrieved
+		publicKey = publicKeyRetrieved
 	}
+	fmt.Println("Blob: ", blob)
+	fmt.Println("Signature: ", signature)
+	fmt.Println("PublicKey: ", publicKey)
 
 	sig := sbom.Signature{
 		SigValue:  signature,
 		PublicKey: publicKey,
-		Blob:      standaloneSBOMFile,
+		Blob:      blob,
 	}
 	var doc sbom.Document
 
@@ -164,46 +173,130 @@ func getSbomDocument(ctx context.Context, ep *Params) (*sbom.Document, error) {
 }
 
 type SBOM struct {
-	Signature map[string]interface{} `json:"signature"`
+	Signature *Signature             `json:"signature"`
 	OtherData map[string]interface{} `json:"-"` // Holds the remaining SBOM data
 }
 
-func CheckSbomHasSignature(sbomFile string) (string, error) {
+type Signature struct {
+	Algorithm string     `json:"algorithm"`
+	Value     string     `json:"value"`
+	PublicKey *PublicKey `json:"publicKey"`
+}
+
+type PublicKey struct {
+	Kty string `json:"kty"`
+	N   string `json:"n"`
+	E   string `json:"e"`
+}
+
+func RetrieveSignatureFromSBOM(sbomFile string) (string, string, string, error) {
+	var err error
+
 	data, err := os.ReadFile(sbomFile)
 	if err != nil {
-		return "", fmt.Errorf("error reading SBOM file: %w", err)
+		return "", "", "", fmt.Errorf("error reading SBOM file: %w", err)
 	}
 
 	var sbom SBOM
+	extracted_signature := "extracted_signature.bin"
+	extracted_publick_key := "extracted_public_key.pem"
+
 	if err := json.Unmarshal(data, &sbom); err != nil {
 		fmt.Println("Error parsing SBOM JSON:", err)
-		return "", fmt.Errorf("error unmarshalling SBOM JSON: %w", err)
+		return "", "", "", fmt.Errorf("error unmarshalling SBOM JSON: %w", err)
 	}
 
 	// Extract and print the signature
 	if sbom.Signature == nil {
-		fmt.Println("No signature found in SBOM.")
-		return sbomFile, nil
+		fmt.Println("signature and public key are not present in the SBOM")
+		return sbomFile, "", "", nil
+	} else {
+		fmt.Println("signature and public key are present in the SBOM")
+
+		signatureValue, err := base64.StdEncoding.DecodeString(sbom.Signature.Value)
+		if err != nil {
+			return "", "", "", fmt.Errorf("Error decoding signature: %w", err)
+		}
+
+		if err := os.WriteFile(extracted_signature, signatureValue, 0o644); err != nil {
+			fmt.Println("Error writing signature to file:", err)
+		}
+		fmt.Println("Signature written to file: extracted_signature.bin")
+
+		// extract the public key modulus and exponent
+		modulus, err := base64.StdEncoding.DecodeString(sbom.Signature.PublicKey.N)
+		if err != nil {
+			return "", "", "", fmt.Errorf("Error decoding public key modulus: %w", err)
+		}
+		exponent := decodeBase64URLEncodingToInt(sbom.Signature.PublicKey.E)
+		if exponent == 0 {
+			fmt.Println("Invalid public key exponent.")
+		}
+
+		// create the RSA public key
+		pubKey := &rsa.PublicKey{
+			N: decodeBigInt(modulus),
+			E: int(exponent),
+		}
+
+		pubKeyPEM := publicKeyToPEM(pubKey)
+		if err := os.WriteFile(extracted_publick_key, pubKeyPEM, 0o644); err != nil {
+			fmt.Println("Error writing public key to file:", err)
+		}
+
 	}
 
-	// Remove the "signature" section
+	// remove the "signature" section
 	modifiedSBOM, err := sjson.DeleteBytes(data, "signature")
 	if err != nil {
 		fmt.Println("Error removing signature section:", err)
 	}
 
-	// Normalize JSON for consistency
 	var normalizedSBOM bytes.Buffer
 	if err := json.Indent(&normalizedSBOM, modifiedSBOM, "", "  "); err != nil {
 		fmt.Println("Error normalizing SBOM JSON:", err)
 	}
 
-	// Save the modified SBOM to a new file without a trailing newline
+	// save the modified SBOM to a new file without a trailing newline
 	standaloneSBOMFile := "standalone_sbom.json"
 	if err := os.WriteFile(standaloneSBOMFile, bytes.TrimSuffix(normalizedSBOM.Bytes(), []byte("\n")), 0o644); err != nil {
-		return "", fmt.Errorf("error writing standalone SBOM file: %w", err)
+		return "", "", "", fmt.Errorf("error writing standalone SBOM file: %w", err)
 	}
 
 	fmt.Println("Standalone SBOM saved to:", standaloneSBOMFile)
-	return standaloneSBOMFile, nil
+	return standaloneSBOMFile, extracted_signature, extracted_publick_key, nil
+}
+
+func decodeBase64URLEncodingToInt(input string) int {
+	bytes, err := base64.StdEncoding.DecodeString(input)
+	if err != nil {
+		return 0
+	}
+	if len(bytes) == 0 {
+		return 0
+	}
+	result := 0
+	for _, b := range bytes {
+		result = result<<8 + int(b)
+	}
+	return result
+}
+
+func decodeBigInt(input []byte) *big.Int {
+	result := new(big.Int)
+	result.SetBytes(input)
+	return result
+}
+
+func publicKeyToPEM(pub *rsa.PublicKey) []byte {
+	pubASN1, err := x509.MarshalPKIXPublicKey(pub)
+	if err != nil {
+		fmt.Println("Error marshaling public key:", err)
+		return nil
+	}
+	pubPEM := pem.EncodeToMemory(&pem.Block{
+		Type:  "PUBLIC KEY",
+		Bytes: pubASN1,
+	})
+	return pubPEM
 }
