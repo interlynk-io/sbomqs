@@ -218,12 +218,14 @@ func (c *CdxDoc) parseSpec() {
 
 func (c *CdxDoc) parseVulnerabilities() {
 	vuln := Vulnerability{}
-	for _, v := range *c.doc.Vulnerabilities {
-		if v.ID != "" {
-			vuln.Id = v.ID
+	if c.doc.Vulnerabilities != nil {
+		for _, v := range *c.doc.Vulnerabilities {
+			if v.ID != "" {
+				vuln.Id = v.ID
+			}
 		}
+		c.vuln = vuln
 	}
-	c.vuln = vuln
 }
 
 func (c *CdxDoc) requiredFields() bool {
