@@ -870,6 +870,11 @@
       "type": "bom",
       "url" : "https://raw.githubusercontent.com/bomctl/bomctl-playground/main/examples/bomctl-container-image/app/bomctl_0.3.0_linux_amd64.tar.gz.spdx.json",
       "comment": "This is a reference to an external SBOM for a related component for testing purpose."
+    },
+    {
+      "type": "bom",
+      "url" : "https://interlynk.io/github.com%2Finterlynk-io%2Fsbomqs/0.0.15/qIP32aoJi0u5M_EjHeJHAg",
+      "comment": "This is a reference to an external SBOM for a related component for testing purpose."
     }
   ]
   }
