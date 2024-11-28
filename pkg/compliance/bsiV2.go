@@ -68,13 +68,12 @@ func bsiV2Vulnerabilities(doc sbom.Document) *db.Record {
 	vulns := doc.Vulnerabilities()
 	var allVulnIDs []string
 
-	if vulns != nil {
-		for _, v := range vulns {
-			if vulnID := v.GetID(); vulnID != "" {
-				allVulnIDs = append(allVulnIDs, vulnID)
-			}
+	for _, v := range vulns {
+		if vulnID := v.GetID(); vulnID != "" {
+			allVulnIDs = append(allVulnIDs, vulnID)
 		}
 	}
+
 	if len(allVulnIDs) > 0 {
 		result = strings.Join(allVulnIDs, ", ")
 		score = 0.0
