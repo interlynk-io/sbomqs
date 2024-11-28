@@ -863,6 +863,10 @@
         "response": ["will_not_fix", "update"],
         "detail": "An optional explanation of why the application is not affected by the vulnerable component."
       }
+    },
+    {
+      "id": "CVE-2021-44228",
+      "description": " Apache Log4j logging library,"
     }
   ]
 }
