@@ -32,5 +32,5 @@ type Document interface {
 	PrimaryComp() GetPrimaryComp
 	GetRelationships(string) []string
 
-	Vulnerabilities() GetVulnerabilities
+	Vulnerabilities() []GetVulnerabilities
 }
