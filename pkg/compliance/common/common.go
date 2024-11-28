@@ -375,3 +375,17 @@ func IsComponentPartOfPrimaryDependency(primaryCompDeps []string, comp string) b
 	}
 	return false
 }
+
+func WrapText(input string, maxWidth int) string {
+	var result []string
+	for len(input) > maxWidth {
+		splitPoint := strings.LastIndex(input[:maxWidth], "/")
+		if splitPoint == -1 {
+			splitPoint = maxWidth
+		}
+		result = append(result, input[:splitPoint])
+		input = input[splitPoint:]
+	}
+	result = append(result, input)
+	return strings.Join(result, "\n")
+}
