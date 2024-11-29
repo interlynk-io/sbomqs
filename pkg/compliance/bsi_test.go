@@ -541,7 +541,22 @@ func compWithVersion() sbom.GetComponent {
 	return comp
 }
 
-func TestFsctComponentLevelOnSpdxAndCdx(t *testing.T) {
+func compWithChecksum() sbom.GetComponent {
+	var checksums []sbom.GetChecksum
+
+	checksum := sbom.Checksum{
+		Alg:     "SHA256",
+		Content: "ee1300ac533cebc2d070ce3765685d5f7fca2a5a78ca15068323f68ed63d4abf",
+	}
+	checksums = append(checksums, checksum)
+
+	comp := sbom.Component{
+		Checksums: checksums,
+	}
+	return comp
+}
+
+func TestBSIComponentLevelOnSpdxAndCdx(t *testing.T) {
 	testCases := []struct {
 		name     string
 		actual   *db.Record
@@ -565,6 +580,16 @@ func TestFsctComponentLevelOnSpdxAndCdx(t *testing.T) {
 				result: "v1.6.0",
 				key:    COMP_VERSION,
 				id:     common.UniqueElementID(compWithVersion()),
+			},
+		},
+		{
+			name:   "compWithChecksum",
+			actual: bsiComponentHash(compWithChecksum()),
+			expected: desired{
+				score:  10.0,
+				result: "ee1300ac533cebc2d070ce3765685d5f7fca2a5a78ca15068323f68ed63d4abf",
+				key:    COMP_HASH,
+				id:     common.UniqueElementID(compWithChecksum()),
 			},
 		},
 	}
