@@ -80,7 +80,8 @@ const (
 	PACK_INFO
 	SBOM_TYPE
 	PACK_EXT_REF
-	SBOM_VULNERABILITES
+	SBOM_VULNERABILITIES
+	SBOM_SIGNATURE
 )
 
 func bsiResult(ctx context.Context, doc sbom.Document, fileName string, outFormat string) {
