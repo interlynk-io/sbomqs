@@ -26,7 +26,7 @@ type Document interface {
 	Logs() []string
 
 	Lifecycles() []string
-	Manufacturer() Manufacturer
+	Manufacturer() GetManufacturer
 	Supplier() GetSupplier
 
 	PrimaryComp() GetPrimaryComp

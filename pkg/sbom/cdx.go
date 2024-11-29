@@ -49,8 +49,8 @@ type CdxDoc struct {
 	rels             []GetRelation
 	logs             []string
 	Lifecycle        []string
-	supplier         GetSupplier
-	manufacturer     Manufacturer
+	CdxSupplier      GetSupplier
+	CdxManufacturer  GetManufacturer
 	compositions     map[string]string
 	PrimaryComponent PrimaryComp
 	Dependencies     map[string][]string
@@ -128,11 +128,11 @@ func (c CdxDoc) Lifecycles() []string {
 }
 
 func (c CdxDoc) Supplier() GetSupplier {
-	return c.supplier
+	return c.CdxSupplier
 }
 
-func (c CdxDoc) Manufacturer() Manufacturer {
-	return c.manufacturer
+func (c CdxDoc) Manufacturer() GetManufacturer {
+	return c.CdxManufacturer
 }
 
 func (c CdxDoc) GetRelationships(componentID string) []string {
@@ -210,7 +210,7 @@ func (c *CdxDoc) parseSpec() {
 	sp.SpecType = string(SBOMSpecCDX)
 
 	if c.doc.SerialNumber != "" && strings.HasPrefix(sp.Namespace, "urn:uuid:") {
-		sp.uri = fmt.Sprintf("%s/%d", c.doc.SerialNumber, c.doc.Version)
+		sp.Uri = fmt.Sprintf("%s/%d", c.doc.SerialNumber, c.doc.Version)
 	}
 
 	c.CdxSpec = sp
@@ -541,7 +541,7 @@ func (c *CdxDoc) parseSupplier() {
 		}
 	}
 
-	c.supplier = supplier
+	c.CdxSupplier = supplier
 }
 
 func (c *CdxDoc) parseManufacturer() {
@@ -553,7 +553,7 @@ func (c *CdxDoc) parseManufacturer() {
 		return
 	}
 
-	m := manufacturer{}
+	m := Manufacturer{}
 
 	m.Name = c.doc.Metadata.Manufacture.Name
 	m.URL = lo.FromPtr(c.doc.Metadata.Manufacture.URL)[0]
@@ -567,7 +567,7 @@ func (c *CdxDoc) parseManufacturer() {
 		}
 	}
 
-	c.manufacturer = m
+	c.CdxManufacturer = m
 }
 
 func (c *CdxDoc) parsePrimaryCompAndRelationships() {
