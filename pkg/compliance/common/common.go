@@ -490,6 +490,8 @@ func AreLicensesValid(licenses []licenses.License) bool {
 }
 
 func VerifySignature(publicKeyPath, sbomPath, signaturePath string) (bool, error) {
+	filesToDelete := []string{publicKeyPath, sbomPath, signaturePath}
+	defer DeleteFiles(filesToDelete)
 	pubKeyData, err := os.ReadFile(publicKeyPath)
 	if err != nil {
 		return false, err
@@ -529,6 +531,16 @@ func VerifySignature(publicKeyPath, sbomPath, signaturePath string) (bool, error
 	}
 
 	return true, err
+}
+
+func DeleteFiles(files []string) {
+	for _, file := range files {
+		if err := os.Remove(file); err != nil {
+			fmt.Printf("Error deleting file %s: %v\n", file, err)
+		} else {
+			fmt.Printf("Deleted file: %s\n", file)
+		}
+	}
 }
 
 func HashSBOM(sbomPath string) ([]byte, error) {
