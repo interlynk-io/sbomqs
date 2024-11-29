@@ -138,7 +138,7 @@ func CheckSupplier(supplier sbom.GetSupplier) (string, bool) {
 	return finalResult, true
 }
 
-func CheckManufacturer(manufacturer sbom.Manufacturer) (string, bool) {
+func CheckManufacturer(manufacturer sbom.GetManufacturer) (string, bool) {
 	if email := manufacturer.GetEmail(); email != "" {
 		return email, true
 	}

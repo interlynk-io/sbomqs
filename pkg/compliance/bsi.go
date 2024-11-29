@@ -315,7 +315,7 @@ func bsiSbomURI(doc sbom.Document) *db.Record {
 		return db.NewRecordStmt(SBOM_URI, "doc", result, 10.0, "")
 	}
 
-	return db.NewRecordStmt(SBOM_URI, "doc", "", 0, "")
+	return db.NewRecordStmt(SBOM_URI, "doc", "", 0.0, "")
 }
 
 var (

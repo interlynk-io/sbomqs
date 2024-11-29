@@ -43,7 +43,7 @@ type Specs struct {
 	Licenses           []licenses.License
 	CreationTimestamp  string
 	Namespace          string
-	uri                string
+	Uri                string
 	Organization       string
 	Comment            string
 	Spdxid             string
@@ -102,5 +102,5 @@ func (s Specs) GetNamespace() string {
 }
 
 func (s Specs) URI() string {
-	return s.uri
+	return s.Uri
 }

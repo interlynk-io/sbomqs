@@ -132,7 +132,7 @@ func (s SpdxDoc) Lifecycles() []string {
 	return []string{s.Lifecycle}
 }
 
-func (s SpdxDoc) Manufacturer() Manufacturer {
+func (s SpdxDoc) Manufacturer() GetManufacturer {
 	return nil
 }
 
@@ -212,7 +212,7 @@ func (s *SpdxDoc) parseSpec() {
 	sp.Namespace = s.doc.DocumentNamespace
 
 	if s.doc.DocumentNamespace != "" {
-		sp.uri = s.doc.DocumentNamespace
+		sp.Uri = s.doc.DocumentNamespace
 	}
 	s.vuln = nil
 
@@ -618,7 +618,7 @@ func (s *SpdxDoc) licenses(index int) []licenses.License {
 	return lics
 }
 
-func (s *SpdxDoc) getManufacturer(index int) *manufacturer {
+func (s *SpdxDoc) getManufacturer(index int) *Manufacturer {
 	pkg := s.doc.Packages[index]
 
 	if pkg.PackageOriginator == nil {
@@ -634,7 +634,7 @@ func (s *SpdxDoc) getManufacturer(index int) *manufacturer {
 		return nil
 	}
 
-	return &manufacturer{
+	return &Manufacturer{
 		Name:  entity.name,
 		Email: entity.email,
 	}

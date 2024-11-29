@@ -147,7 +147,7 @@ func ntiaSbomCreator(doc sbom.Document) *db.Record {
 	return db.NewRecordStmt(SBOM_CREATOR, "SBOM Data Fields", result, score, "")
 }
 
-func getManufacturerInfo(manufacturer sbom.Manufacturer) (string, bool) {
+func getManufacturerInfo(manufacturer sbom.GetManufacturer) (string, bool) {
 	if manufacturer == nil {
 		return "", false
 	}
