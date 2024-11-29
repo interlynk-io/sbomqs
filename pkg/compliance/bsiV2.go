@@ -110,7 +110,7 @@ func bsiV2SbomSignature(doc sbom.Document) *db.Record {
 		valid, err := common.VerifySignature(pubKey, blob, sig)
 		if err != nil {
 			fmt.Printf("Verification failed: %v\n", err)
-			return db.NewRecordStmt(SBOM_SIGNATURE, "doc", "Verification failed", 0.0, "")
+			return db.NewRecordStmt(SBOM_SIGNATURE, "doc", "Verification failed!", 0.0, "")
 		}
 		if valid {
 			score = 10.0
