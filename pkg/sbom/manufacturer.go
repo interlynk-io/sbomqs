@@ -16,32 +16,32 @@ package sbom
 
 //counterfeiter:generate . Manufacturer
 
-type Manufacturer interface {
+type GetManufacturer interface {
 	GetName() string
 	GetURL() string
 	GetEmail() string
 	GetContacts() []Contact
 }
 
-type manufacturer struct {
+type Manufacturer struct {
 	Name     string
 	URL      string
 	Email    string
 	Contacts []Contact
 }
 
-func (m manufacturer) GetName() string {
+func (m Manufacturer) GetName() string {
 	return m.Name
 }
 
-func (m manufacturer) GetURL() string {
+func (m Manufacturer) GetURL() string {
 	return m.URL
 }
 
-func (m manufacturer) GetEmail() string {
+func (m Manufacturer) GetEmail() string {
 	return m.Email
 }
 
-func (m manufacturer) GetContacts() []Contact {
+func (m Manufacturer) GetContacts() []Contact {
 	return m.Contacts
 }
