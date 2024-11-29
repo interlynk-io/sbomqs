@@ -50,7 +50,7 @@ func cdxDocWithZeroVulnerability() sbom.Document {
 
 func cdxDocWithOneVulnerability() sbom.Document {
 	vuln := sbom.Vulnerability{
-		Id: "CVE-2018-7489",
+		ID: "CVE-2018-7489",
 	}
 
 	doc := sbom.CdxDoc{
@@ -61,10 +61,10 @@ func cdxDocWithOneVulnerability() sbom.Document {
 
 func cdxDocWithMultipleVulnerability() sbom.Document {
 	vuln1 := sbom.Vulnerability{
-		Id: "CVE-2018-7489",
+		ID: "CVE-2018-7489",
 	}
 	vuln2 := sbom.Vulnerability{
-		Id: "CVE-2021-44228",
+		ID: "CVE-2021-44228",
 	}
 
 	doc := sbom.CdxDoc{
@@ -265,6 +265,101 @@ func TestBSIV2CDXSbomBomLinks(t *testing.T) {
 				score:  10.0,
 				result: wrappedURL2,
 				key:    SBOM_BOM_LINKS,
+				id:     "doc",
+			},
+		},
+	}
+	for _, test := range testCases {
+		assert.Equal(t, test.expected.score, test.actual.Score, "Score mismatch for %s", test.name)
+		assert.Equal(t, test.expected.key, test.actual.CheckKey, "Key mismatch for %s", test.name)
+		assert.Equal(t, test.expected.id, test.actual.ID, "ID mismatch for %s", test.name)
+		assert.Equal(t, test.expected.result, test.actual.CheckValue, "Result mismatch for %s", test.name)
+	}
+}
+
+func spdxDocWithExternalSignatureVerificationSuccessfully() sbom.Document {
+	signature := "../../samples/signature-test-data/sbom.sig"
+	publicKey := "../../samples/signature-test-data/public_key.pem"
+	blob := "../../samples/signature-test-data/SPDXJSONExample-v2.3.spdx.json"
+	sig := sbom.Signature{
+		SigValue:  signature,
+		PublicKey: publicKey,
+		Blob:      blob,
+	}
+	doc := sbom.SpdxDoc{
+		SignatureDetail: &sig,
+	}
+	return doc
+}
+
+func spdxDocWithExternalSignatureVerificationFailed() sbom.Document {
+	signature := "../../samples/signature-test-data/sbom.sig"
+	publicKey := "../../samples/signature-test-data/public_key.pem"
+	blob := "../../samples/signature-test-data/SPDXJSONExample-v2.3.spdx.json"
+	sig := sbom.Signature{
+		SigValue:  signature,
+		PublicKey: publicKey,
+		Blob:      blob,
+	}
+	doc := sbom.SpdxDoc{
+		SignatureDetail: &sig,
+	}
+	return doc
+}
+
+func TestSpdxSBOMWithSignature(t *testing.T) {
+	testCases := []struct {
+		name     string
+		actual   *db.Record
+		expected desired
+	}{
+		{
+			name:   "SPDX SBOM with attested signatures",
+			actual: bsiV2SbomSignature(spdxDocWithExternalSignatureVerificationSuccessfully()),
+			expected: desired{
+				score:  10.0,
+				result: "Signature verification succeeded!",
+				key:    SBOM_SIGNATURE,
+				id:     "doc",
+			},
+		},
+	}
+	for _, test := range testCases {
+		assert.Equal(t, test.expected.score, test.actual.Score, "Score mismatch for %s", test.name)
+		assert.Equal(t, test.expected.key, test.actual.CheckKey, "Key mismatch for %s", test.name)
+		assert.Equal(t, test.expected.id, test.actual.ID, "ID mismatch for %s", test.name)
+		assert.Equal(t, test.expected.result, test.actual.CheckValue, "Result mismatch for %s", test.name)
+	}
+}
+
+func cdxDocWithEmbeddedSignature() sbom.Document {
+	sbomFile := "../../samples/signature-test-data/stree-cdxgen-signed-sbom.cdx.json"
+	standaloneSBOMFile, signatureRetrieved, publicKeyRetrieved, _ := common.RetrieveSignatureFromSBOM(sbomFile)
+
+	sig := sbom.Signature{
+		SigValue:  signatureRetrieved,
+		PublicKey: publicKeyRetrieved,
+		Blob:      standaloneSBOMFile,
+	}
+	doc := sbom.SpdxDoc{
+		SignatureDetail: &sig,
+	}
+	return doc
+}
+
+func TestCdxSBOMWithSignature(t *testing.T) {
+	testCases := []struct {
+		name     string
+		actual   *db.Record
+		expected desired
+	}{
+		{
+			name:   "CDX SBOM with attested signatures",
+			actual: bsiV2SbomSignature(cdxDocWithEmbeddedSignature()),
+			expected: desired{
+				score:  10.0,
+				result: "Signature verification succeeded!",
+				key:    SBOM_SIGNATURE,
 				id:     "doc",
 			},
 		},
