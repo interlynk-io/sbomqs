@@ -18,6 +18,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/interlynk-io/sbomqs/pkg/compliance/common"
 	db "github.com/interlynk-io/sbomqs/pkg/compliance/db"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 	"gotest.tools/assert"
@@ -513,6 +514,60 @@ func TestBSIWithURIField(t *testing.T) {
 		},
 	}
 
+	for _, test := range testCases {
+		assert.Equal(t, test.expected.score, test.actual.Score, "Score mismatch for %s", test.name)
+		assert.Equal(t, test.expected.key, test.actual.CheckKey, "Key mismatch for %s", test.name)
+		assert.Equal(t, test.expected.id, test.actual.ID, "ID mismatch for %s", test.name)
+		assert.Equal(t, test.expected.result, test.actual.CheckValue, "Result mismatch for %s", test.name)
+	}
+}
+
+func compWithName() sbom.GetComponent {
+	name := "cyclonedx-go"
+	comp := sbom.Component{
+		Name: name,
+	}
+	return comp
+}
+
+func compWithVersion() sbom.GetComponent {
+	name := "cyclonedx-go"
+	version := "v1.6.0"
+
+	comp := sbom.Component{
+		Name:    name,
+		Version: version,
+	}
+	return comp
+}
+
+func TestFsctComponentLevelOnSpdxAndCdx(t *testing.T) {
+	testCases := []struct {
+		name     string
+		actual   *db.Record
+		expected desired
+	}{
+		{
+			name:   "compWithName",
+			actual: bsiComponentName(compWithName()),
+			expected: desired{
+				score:  10.0,
+				result: "cyclonedx-go",
+				key:    COMP_NAME,
+				id:     common.UniqueElementID(compWithName()),
+			},
+		},
+		{
+			name:   "compWithVersion",
+			actual: bsiComponentVersion(compWithVersion()),
+			expected: desired{
+				score:  10.0,
+				result: "v1.6.0",
+				key:    COMP_VERSION,
+				id:     common.UniqueElementID(compWithVersion()),
+			},
+		},
+	}
 	for _, test := range testCases {
 		assert.Equal(t, test.expected.score, test.actual.Score, "Score mismatch for %s", test.name)
 		assert.Equal(t, test.expected.key, test.actual.CheckKey, "Key mismatch for %s", test.name)
