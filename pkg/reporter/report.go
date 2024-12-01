@@ -31,6 +31,7 @@ type Reporter struct {
 
 	// optional params
 	Format string
+	Color  bool
 }
 
 var ReportFormats = []string{"basic", "detailed", "json"}
@@ -40,6 +41,12 @@ type Option func(r *Reporter)
 func WithFormat(c string) Option {
 	return func(r *Reporter) {
 		r.Format = c
+	}
+}
+
+func WithColor(c bool) Option {
+	return func(r *Reporter) {
+		r.Color = c
 	}
 }
 

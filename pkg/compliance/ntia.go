@@ -38,7 +38,7 @@ const (
 	SCORE_ZERO = 0.0
 )
 
-func ntiaResult(ctx context.Context, doc sbom.Document, fileName string, outFormat string) {
+func ntiaResult(ctx context.Context, doc sbom.Document, fileName string, outFormat string, colorOutput bool) {
 	log := logger.FromContext(ctx)
 	log.Debug("compliance.ntiaResult()")
 
@@ -59,7 +59,7 @@ func ntiaResult(ctx context.Context, doc sbom.Document, fileName string, outForm
 	}
 
 	if outFormat == "detailed" {
-		ntiaDetailedReport(db, fileName)
+		ntiaDetailedReport(db, fileName, colorOutput)
 	}
 }
 

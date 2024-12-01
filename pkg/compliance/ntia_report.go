@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/interlynk-io/sbomqs/pkg/compliance/common"
 	"github.com/interlynk-io/sbomqs/pkg/compliance/db"
 	"github.com/olekukonko/tablewriter"
 	"sigs.k8s.io/release-utils/version"
@@ -136,7 +137,7 @@ func ntiaConstructSections(db *db.DB) []ntiaSection {
 	return sortedSections
 }
 
-func ntiaDetailedReport(db *db.DB, fileName string) {
+func ntiaDetailedReport(db *db.DB, fileName string, colorOutput bool) {
 	table := tablewriter.NewWriter(os.Stdout)
 	score := ntiaAggregateScore(db)
 
@@ -162,7 +163,23 @@ func ntiaDetailedReport(db *db.DB, fileName string) {
 		if !section.Required {
 			sectionID = sectionID + "*"
 		}
-		table.Append([]string{section.ElementID, sectionID, section.DataField, section.ElementResult, fmt.Sprintf("%0.1f", section.Score)})
+
+		if colorOutput {
+			// disable tablewriter's auto-wrapping
+			table.SetAutoWrapText(false)
+			columnWidth := 30
+			common.SetHeaderColor(table, 5)
+
+			table = common.ColorTable(table,
+				section.ElementID,
+				section.ID,
+				section.ElementResult,
+				section.DataField,
+				section.Score,
+				columnWidth)
+		} else {
+			table.Append([]string{section.ElementID, sectionID, section.DataField, section.ElementResult, fmt.Sprintf("%0.1f", section.Score)})
+		}
 	}
 	table.Render()
 }

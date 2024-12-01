@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/interlynk-io/sbomqs/pkg/compliance/common"
 	db "github.com/interlynk-io/sbomqs/pkg/compliance/db"
 	"github.com/olekukonko/tablewriter"
 	"sigs.k8s.io/release-utils/version"
@@ -173,7 +174,7 @@ func constructSections(dtb *db.DB) []bsiSection {
 	return sortedSections
 }
 
-func bsiDetailedReport(dtb *db.DB, fileName string) {
+func bsiDetailedReport(dtb *db.DB, fileName string, colorOutput bool) {
 	table := tablewriter.NewWriter(os.Stdout)
 	score := bsiAggregateScore(dtb)
 
@@ -189,9 +190,25 @@ func bsiDetailedReport(dtb *db.DB, fileName string) {
 	for _, section := range sections {
 		sectionID := section.ID
 		if !section.Required {
-			sectionID = sectionID + "*"
+			sectionID += "*"
 		}
-		table.Append([]string{section.ElementID, sectionID, section.DataField, section.ElementResult, fmt.Sprintf("%0.1f", section.Score)})
+
+		if colorOutput {
+			// disable tablewriter's auto-wrapping
+			table.SetAutoWrapText(false)
+			columnWidth := 30
+			common.SetHeaderColor(table, 5)
+
+			table = common.ColorTable(table,
+				section.ElementID,
+				section.ID,
+				section.ElementResult,
+				section.DataField,
+				section.Score,
+				columnWidth)
+		} else {
+			table.Append([]string{section.ElementID, sectionID, section.DataField, section.ElementResult, fmt.Sprintf("%0.1f", section.Score)})
+		}
 	}
 	table.Render()
 }

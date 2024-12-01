@@ -27,7 +27,7 @@ import (
 	"github.com/samber/lo"
 )
 
-func octResult(ctx context.Context, doc sbom.Document, fileName string, outFormat string) {
+func octResult(ctx context.Context, doc sbom.Document, fileName string, outFormat string, colorOutput bool) {
 	log := logger.FromContext(ctx)
 	log.Debug("compliance.octResult()")
 	dtb := db.NewDB()
@@ -58,7 +58,7 @@ func octResult(ctx context.Context, doc sbom.Document, fileName string, outForma
 	}
 
 	if outFormat == "detailed" {
-		octDetailedReport(dtb, fileName)
+		octDetailedReport(dtb, fileName, colorOutput)
 	}
 }
 

@@ -49,6 +49,7 @@ type userCmd struct {
 	json     bool
 	basic    bool
 	detailed bool
+	color    bool
 
 	// directory control
 	recurse bool
@@ -156,6 +157,7 @@ func toUserCmd(cmd *cobra.Command, args []string) *userCmd {
 	uCmd.json, _ = cmd.Flags().GetBool("json")
 	uCmd.basic, _ = cmd.Flags().GetBool("basic")
 	uCmd.detailed, _ = cmd.Flags().GetBool("detailed")
+	uCmd.color, _ = cmd.Flags().GetBool("color")
 
 	if reportFormat != "" {
 		uCmd.json = strings.ToLower(reportFormat) == "json"
@@ -177,6 +179,7 @@ func toEngineParams(uCmd *userCmd) *engine.Params {
 		JSON:       uCmd.json,
 		Basic:      uCmd.basic,
 		Detailed:   uCmd.detailed,
+		Color:      uCmd.color,
 		Recurse:    uCmd.recurse,
 		Debug:      uCmd.debug,
 		ConfigPath: uCmd.configPath,
@@ -241,6 +244,7 @@ func init() {
 	scoreCmd.Flags().BoolP("json", "j", false, "results in json")
 	scoreCmd.Flags().BoolP("detailed", "d", false, "results in table format, default")
 	scoreCmd.Flags().BoolP("basic", "b", false, "results in single line format")
+	scoreCmd.Flags().BoolP("color", "l", false, "output in colorful")
 
 	// Debug Control
 	scoreCmd.Flags().BoolP("debug", "D", false, "enable debug logging")

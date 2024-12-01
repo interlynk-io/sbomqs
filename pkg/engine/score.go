@@ -232,12 +232,13 @@ func handlePaths(ctx context.Context, ep *Params) error {
 	} else if ep.JSON {
 		reportFormat = "json"
 	}
+	coloredOutput := ep.Color
 
 	nr := reporter.NewReport(ctx,
 		docs,
 		scores,
 		paths,
-		reporter.WithFormat(strings.ToLower(reportFormat)))
+		reporter.WithFormat(strings.ToLower(reportFormat)), reporter.WithColor(coloredOutput))
 
 	nr.Report()
 
