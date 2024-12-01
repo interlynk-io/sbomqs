@@ -18,9 +18,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/interlynk-io/sbomqs/pkg/compliance/common"
 	db "github.com/interlynk-io/sbomqs/pkg/compliance/db"
 	"github.com/olekukonko/tablewriter"
 	"sigs.k8s.io/release-utils/version"
@@ -173,7 +175,7 @@ func constructSections(dtb *db.DB) []bsiSection {
 	return sortedSections
 }
 
-func bsiDetailedReport(dtb *db.DB, fileName string) {
+func bsiDetailedReport(dtb *db.DB, fileName string, colorOutput bool) {
 	table := tablewriter.NewWriter(os.Stdout)
 	score := bsiAggregateScore(dtb)
 
@@ -189,15 +191,66 @@ func bsiDetailedReport(dtb *db.DB, fileName string) {
 	for _, section := range sections {
 		sectionID := section.ID
 		if !section.Required {
-			sectionID = sectionID + "*"
+			sectionID += "*"
 		}
-		table.Append([]string{section.ElementID, sectionID, section.DataField, section.ElementResult, fmt.Sprintf("%0.1f", section.Score)})
+
+		if colorOutput {
+			// disable tablewriter's auto-wrapping
+			table.SetAutoWrapText(false)
+			columnWidth := 30
+			common.SetHeaderColor(table, 5)
+
+			table = common.ColorTable(table,
+				section.ElementID,
+				section.ID,
+				section.ElementResult,
+				section.DataField,
+				section.Score,
+				columnWidth)
+		} else {
+			table.Append([]string{section.ElementID, sectionID, section.DataField, section.ElementResult, fmt.Sprintf("%0.1f", section.Score)})
+		}
 	}
 	table.Render()
+}
+
+// Custom wrapping function to ensure consistent coloring.
+func wrapAndColoredContent(content string, width int, color int) string {
+	words := strings.Fields(content) // Split into words for wrapping
+	var wrappedContent []string
+	var currentLine string
+
+	for _, word := range words {
+		if len(currentLine)+len(word)+1 > width {
+			// Wrap the current line and color it
+			wrappedContent = append(wrappedContent, fmt.Sprintf("\033[%d;%dm%s\033[0m", 1, color, currentLine))
+			currentLine = word // Start a new line
+		} else {
+			if currentLine != "" {
+				currentLine += " "
+			}
+			currentLine += word
+		}
+	}
+	// Add the last line
+	if currentLine != "" {
+		wrappedContent = append(wrappedContent, fmt.Sprintf("\033[%d;%dm%s\033[0m", 1, color, currentLine))
+	}
+
+	return strings.Join(wrappedContent, "\n")
 }
 
 func bsiBasicReport(dtb *db.DB, fileName string) {
 	score := bsiAggregateScore(dtb)
 	fmt.Printf("BSI TR-03183-2 v1.1 Compliance Report\n")
 	fmt.Printf("Score:%0.1f RequiredScore:%0.1f OptionalScore:%0.1f for %s\n", score.totalScore(), score.totalRequiredScore(), score.totalOptionalScore(), fileName)
+}
+
+func getScoreColor(score float64) tablewriter.Colors {
+	if score == 0.0 {
+		return tablewriter.Colors{tablewriter.FgRedColor, tablewriter.Bold}
+	} else if score < 5.0 {
+		return tablewriter.Colors{tablewriter.FgHiYellowColor, tablewriter.Bold}
+	}
+	return tablewriter.Colors{tablewriter.FgGreenColor, tablewriter.Bold}
 }

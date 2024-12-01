@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/interlynk-io/sbomqs/pkg/compliance/common"
 	"github.com/interlynk-io/sbomqs/pkg/compliance/db"
 	"github.com/olekukonko/tablewriter"
 	"sigs.k8s.io/release-utils/version"
@@ -199,15 +200,7 @@ func fsctDetailedReport(db *db.DB, fileName string, coloredOutput bool) {
 	table.SetAutoMergeCellsByColumnIndex([]int{0})
 
 	if coloredOutput {
-		// Set header colors if the colors flag is true
-		table.SetHeaderColor(
-			tablewriter.Colors{tablewriter.FgHiWhiteColor, tablewriter.Bold},
-			tablewriter.Colors{tablewriter.FgHiWhiteColor, tablewriter.Bold},
-			tablewriter.Colors{tablewriter.FgHiWhiteColor, tablewriter.Bold},
-			tablewriter.Colors{tablewriter.FgHiWhiteColor, tablewriter.Bold},
-			tablewriter.Colors{tablewriter.FgHiWhiteColor, tablewriter.Bold},
-			tablewriter.Colors{tablewriter.FgHiWhiteColor, tablewriter.Bold},
-		)
+		common.SetHeaderColor(table, 6)
 	}
 
 	sections := fsctConstructSections(db)
@@ -218,23 +211,11 @@ func fsctDetailedReport(db *db.DB, fileName string, coloredOutput bool) {
 			sectionID += "*"
 		}
 
-		// Define maturity color based on the flag
-		var maturityColor tablewriter.Colors
 		if coloredOutput {
-			switch section.Maturity {
-			case "None":
-				maturityColor = tablewriter.Colors{tablewriter.FgRedColor, tablewriter.Bold}
-			case "Minimum":
-				maturityColor = tablewriter.Colors{tablewriter.FgGreenColor, tablewriter.Bold}
-			case "Recommended":
-				maturityColor = tablewriter.Colors{tablewriter.FgCyanColor, tablewriter.Bold}
-			case "Aspirational":
-				maturityColor = tablewriter.Colors{tablewriter.FgHiYellowColor, tablewriter.Bold}
-			}
-		}
 
-		// Use Rich() with color settings only if colors is true
-		if coloredOutput {
+			var maturityColor tablewriter.Colors
+			maturityColor = getMaturityColor(section.Maturity)
+
 			table.Rich([]string{
 				section.ElementID,
 				sectionID,
@@ -244,9 +225,9 @@ func fsctDetailedReport(db *db.DB, fileName string, coloredOutput bool) {
 				section.Maturity,
 			}, []tablewriter.Colors{
 				{tablewriter.FgHiMagentaColor, tablewriter.Bold},
-				{},
+				{tablewriter.FgHiCyanColor},
 				{tablewriter.FgHiBlueColor, tablewriter.Bold},
-				{tablewriter.FgHiWhiteColor, tablewriter.Bold},
+				{tablewriter.FgHiCyanColor, tablewriter.Bold},
 				maturityColor,
 				maturityColor,
 			})
@@ -268,4 +249,19 @@ func fsctBasicReport(db *db.DB, fileName string) {
 	score := fsctAggregateScore(db)
 	fmt.Printf("Framing Software Component Transparency (v3)\n")
 	fmt.Printf("Score:%0.1f for %s\n", score.totalScore(), fileName)
+}
+
+func getMaturityColor(maturity string) tablewriter.Colors {
+	switch maturity {
+	case "None":
+		return tablewriter.Colors{tablewriter.FgRedColor, tablewriter.Bold}
+	case "Minimum":
+		return tablewriter.Colors{tablewriter.FgGreenColor, tablewriter.Bold}
+	case "Recommended":
+		return tablewriter.Colors{tablewriter.FgCyanColor, tablewriter.Bold}
+	case "Aspirational":
+		return tablewriter.Colors{tablewriter.FgHiYellowColor, tablewriter.Bold}
+	default:
+		return tablewriter.Colors{}
+	}
 }

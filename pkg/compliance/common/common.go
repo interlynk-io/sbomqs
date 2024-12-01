@@ -15,6 +15,7 @@
 package common
 
 import (
+	"fmt"
 	"path"
 	"strings"
 	"time"
@@ -25,6 +26,7 @@ import (
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/pkg/swhid"
 	"github.com/interlynk-io/sbomqs/pkg/swid"
+	"github.com/olekukonko/tablewriter"
 	"github.com/samber/lo"
 )
 
@@ -374,4 +376,75 @@ func IsComponentPartOfPrimaryDependency(primaryCompDeps []string, comp string) b
 		}
 	}
 	return false
+}
+
+func SetHeaderColor(table *tablewriter.Table, header int) {
+	colors := make([]tablewriter.Colors, header)
+
+	// each column with same color and style
+	for i := 0; i < header; i++ {
+		colors[i] = tablewriter.Colors{tablewriter.FgHiWhiteColor, tablewriter.Bold}
+	}
+
+	table.SetHeaderColor(colors...)
+}
+
+func ColorTable(table *tablewriter.Table, elementID, id string, elementResult string, dataFields string, score float64, columnWidth int) *tablewriter.Table {
+	elementRe := wrapAndColoredContent(elementResult, columnWidth, tablewriter.FgHiCyanColor)
+	dataField := wrapAndColoredContent(dataFields, columnWidth, tablewriter.FgHiBlueColor)
+
+	scoreColor := GetScoreColor(score)
+
+	table.Rich([]string{
+		elementID,
+		id,
+		dataField,
+		elementRe,
+		fmt.Sprintf("%0.1f", score),
+	}, []tablewriter.Colors{
+		{tablewriter.FgHiMagentaColor, tablewriter.Bold},
+		{tablewriter.FgHiCyanColor},
+		{},
+		{},
+		scoreColor,
+	})
+	return table
+}
+
+// custom wrapping function to ensure consistent coloring instead of tablewritter's in-built wrapping
+// 1. split content into multiple lines, each fitting within the specified width
+// 2. each line of the content is formatted with color and bold styling using ANSI escape codes
+// 3. wrapped lines are joined together with newline characters (\n) to maintain proper multi-line formatting.
+func wrapAndColoredContent(content string, width int, color int) string {
+	words := strings.Fields(content)
+	var wrappedContent []string
+	var currentLine string
+
+	for _, word := range words {
+		if len(currentLine)+len(word)+1 > width {
+
+			// wrap the current line and color it
+			wrappedContent = append(wrappedContent, fmt.Sprintf("\033[%d;%dm%s\033[0m", 1, color, currentLine))
+			currentLine = word
+		} else {
+			if currentLine != "" {
+				currentLine += " "
+			}
+			currentLine += word
+		}
+	}
+	if currentLine != "" {
+		wrappedContent = append(wrappedContent, fmt.Sprintf("\033[%d;%dm%s\033[0m", 1, color, currentLine))
+	}
+
+	return strings.Join(wrappedContent, "\n")
+}
+
+func GetScoreColor(score float64) tablewriter.Colors {
+	if score == 0.0 {
+		return tablewriter.Colors{tablewriter.FgRedColor, tablewriter.Bold}
+	} else if score < 5.0 {
+		return tablewriter.Colors{tablewriter.FgHiYellowColor, tablewriter.Bold}
+	}
+	return tablewriter.Colors{tablewriter.FgGreenColor, tablewriter.Bold}
 }
