@@ -213,8 +213,7 @@ func fsctDetailedReport(db *db.DB, fileName string, coloredOutput bool) {
 
 		if coloredOutput {
 
-			var maturityColor tablewriter.Colors
-			maturityColor = getMaturityColor(section.Maturity)
+			maturityColor := getMaturityColor(section.Maturity)
 
 			table.Rich([]string{
 				section.ElementID,
