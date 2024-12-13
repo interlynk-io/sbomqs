@@ -98,23 +98,26 @@ func SupportedPrimaryPurpose(f string) []string {
 }
 
 func detectSbomFormat(f io.ReadSeeker) (SpecFormat, FileFormat, FormatVersion, error) {
+	var err error
 	defer func() {
-		_, err := f.Seek(0, io.SeekStart)
+		_, err = f.Seek(0, io.SeekStart)
 		if err != nil {
 			log.Printf("Failed to seek: %v", err)
 		}
 	}()
 
-	_, err := f.Seek(0, io.SeekStart)
+	_, err = f.Seek(0, io.SeekStart)
 	if err != nil {
 		log.Fatalf("Failed to seek: %v", err)
 	}
 
 	var s spdxbasic
-	if err := json.NewDecoder(f).Decode(&s); err == nil {
+	if err = json.NewDecoder(f).Decode(&s); err == nil {
 		if strings.HasPrefix(s.ID, "SPDX") {
 			return SBOMSpecSPDX, FileFormatJSON, FormatVersion(s.Version), nil
 		}
+	} else {
+		return SBOMSpecSPDX, FileFormatJSON, FormatVersion(s.Version), err
 	}
 
 	_, err = f.Seek(0, io.SeekStart)
@@ -123,10 +126,12 @@ func detectSbomFormat(f io.ReadSeeker) (SpecFormat, FileFormat, FormatVersion, e
 	}
 
 	var cdx cdxbasic
-	if err := json.NewDecoder(f).Decode(&cdx); err == nil {
+	if err = json.NewDecoder(f).Decode(&cdx); err == nil {
 		if cdx.BOMFormat == "CycloneDX" {
 			return SBOMSpecCDX, FileFormatJSON, "", nil
 		}
+	} else {
+		return SBOMSpecCDX, FileFormatJSON, "", err
 	}
 
 	_, err = f.Seek(0, io.SeekStart)
@@ -134,10 +139,12 @@ func detectSbomFormat(f io.ReadSeeker) (SpecFormat, FileFormat, FormatVersion, e
 		log.Printf("Failed to seek: %v", err)
 	}
 
-	if err := xml.NewDecoder(f).Decode(&cdx); err == nil {
+	if err = xml.NewDecoder(f).Decode(&cdx); err == nil {
 		if strings.HasPrefix(cdx.XMLNS, "http://cyclonedx.org") {
 			return SBOMSpecCDX, FileFormatXML, "", nil
 		}
+	} else {
+		return SBOMSpecCDX, FileFormatJSON, "", err
 	}
 	_, err = f.Seek(0, io.SeekStart)
 	if err != nil {
@@ -156,13 +163,15 @@ func detectSbomFormat(f io.ReadSeeker) (SpecFormat, FileFormat, FormatVersion, e
 	}
 
 	var y spdxbasic
-	if err := yaml.NewDecoder(f).Decode(&y); err == nil {
+	if err = yaml.NewDecoder(f).Decode(&y); err == nil {
 		if strings.HasPrefix(y.ID, "SPDX") {
 			return SBOMSpecSPDX, FileFormatYAML, FormatVersion(s.Version), nil
 		}
+	} else {
+		return SBOMSpecSPDX, FileFormatYAML, FormatVersion(s.Version), nil
 	}
 
-	return SBOMSpecUnknown, FileFormatUnknown, "", nil
+	return SBOMSpecUnknown, FileFormatUnknown, "", err
 }
 
 func NewSBOMDocument(ctx context.Context, f io.ReadSeeker) (Document, error) {
