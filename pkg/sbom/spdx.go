@@ -58,6 +58,7 @@ type SpdxDoc struct {
 	Dependencies     map[string][]string
 	composition      map[string]string
 	vuln             GetVulnerabilities
+	FileDetails      []GetFile
 }
 
 func newSPDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat, version FormatVersion) (Document, error) {
@@ -157,12 +158,17 @@ func (s SpdxDoc) Vulnerabilities() GetVulnerabilities {
 	return s.vuln
 }
 
+func (s SpdxDoc) Files() []GetFile {
+	return s.FileDetails
+}
+
 func (s *SpdxDoc) parse() {
 	s.parseDoc()
 	s.parseSpec()
 	s.parseAuthors()
 	s.parseTool()
 	s.parsePrimaryCompAndRelationships()
+	s.parseFiles()
 	s.parseComps()
 }
 
@@ -242,6 +248,10 @@ func (s *SpdxDoc) parseComps() {
 		nc.licenses = s.licenses(index)
 		nc.ID = string(sc.PackageSPDXIdentifier)
 		nc.PackageLicenseConcluded = sc.PackageLicenseConcluded
+		nc.HasAnyFiles = sc.FilesAnalyzed
+		if nc.HasAnyFiles {
+			nc.FileNames = s.getAllFiles(nc.Spdxid)
+		}
 		if strings.Contains(s.PrimaryComponent.ID, string(sc.PackageSPDXIdentifier)) {
 			nc.PrimaryCompt = s.PrimaryComponent
 		}
@@ -289,6 +299,49 @@ func (s *SpdxDoc) parseComps() {
 		nc.RelationshipState = "not-specified"
 
 		s.Comps = append(s.Comps, nc)
+	}
+}
+
+func (s *SpdxDoc) getAllFiles(id string) []string {
+	id = "SPDXRef-" + id
+	var getFiles []string
+	for _, r := range s.doc.Relationships {
+		if strings.ToUpper(r.Relationship) == spdx_common.TypeRelationshipContains {
+			spdxElementId, err := r.RefA.MarshalJSON()
+			if err != nil {
+				continue
+			}
+
+			relatedSpdxElement, err := r.RefB.MarshalJSON()
+			if err != nil {
+				continue
+			}
+
+			if CleanKey(string(spdxElementId)) == id {
+				for _, file := range s.doc.Files {
+					fileId := "SPDXRef-" + string(file.FileSPDXIdentifier)
+					if fileId == CleanKey(string(relatedSpdxElement)) {
+						getFiles = append(getFiles, file.FileName)
+					}
+				}
+			}
+		}
+	}
+	return getFiles
+}
+
+func (s *SpdxDoc) parseFiles() {
+	s.FileDetails = []GetFile{}
+
+	for _, f := range s.doc.Files {
+		file := File{}
+		file.Name = f.FileName
+		file.FileType = f.FileTypes
+		for _, c := range f.Checksums {
+			file.Algo = string(c.Algorithm)
+			file.Checksum = c.Value
+		}
+		s.FileDetails = append(s.FileDetails, file)
 	}
 }
 
