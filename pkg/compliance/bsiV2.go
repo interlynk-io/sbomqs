@@ -46,11 +46,10 @@ func bsiV2Result(ctx context.Context, doc sbom.Document, fileName string, outFor
 	dtb.AddRecord(bsiCreator(doc))
 	dtb.AddRecord(bsiTimestamp(doc))
 	dtb.AddRecord(bsiSbomURI(doc))
-	dtb.AddRecord(bsiV2SbomLinks(doc))
 	dtb.AddRecords(bsiV2Components(doc))
 	// New SBOM fields
 	dtb.AddRecord(bsiV2SbomSignature(doc))
-	// dtb.AddRecord(bsiSbomLinks(doc))
+	dtb.AddRecord(bsiV2SbomLinks(doc))
 
 	if outFormat == "json" {
 		bsiV2JSONReport(dtb, fileName)
