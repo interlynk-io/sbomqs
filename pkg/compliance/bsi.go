@@ -83,7 +83,7 @@ const (
 	SBOM_VULNERABILITES
 )
 
-func bsiResult(ctx context.Context, doc sbom.Document, fileName string, outFormat string) {
+func bsiResult(ctx context.Context, doc sbom.Document, fileName string, outFormat string, colorOutput bool) {
 	log := logger.FromContext(ctx)
 	log.Debug("compliance.bsiResult()")
 
@@ -107,7 +107,7 @@ func bsiResult(ctx context.Context, doc sbom.Document, fileName string, outForma
 	}
 
 	if outFormat == "detailed" {
-		bsiDetailedReport(dtb, fileName)
+		bsiDetailedReport(dtb, fileName, colorOutput)
 	}
 }
 

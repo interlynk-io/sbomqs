@@ -70,20 +70,20 @@ func ComplianceResult(ctx context.Context, doc sbom.Document, reportType, fileNa
 
 	switch {
 	case reportType == BSI_REPORT:
-		bsiResult(ctx, doc, fileName, outFormat)
+		bsiResult(ctx, doc, fileName, outFormat, coloredOutput)
 
 	case reportType == BSI_V2_REPORT:
 		bsiV2Result(ctx, doc, fileName, outFormat)
 
 	case reportType == NTIA_REPORT:
-		ntiaResult(ctx, doc, fileName, outFormat)
+		ntiaResult(ctx, doc, fileName, outFormat, coloredOutput)
 
 	case reportType == OCT_TELCO:
 		if doc.Spec().GetSpecType() != "spdx" {
 			fmt.Println("The Provided SBOM spec is other than SPDX. Open Chain Telco only support SPDX specs SBOMs.")
 			return nil
 		}
-		octResult(ctx, doc, fileName, outFormat)
+		octResult(ctx, doc, fileName, outFormat, coloredOutput)
 
 	case reportType == FSCT_V3:
 		fsct.Result(ctx, doc, fileName, outFormat, coloredOutput)
