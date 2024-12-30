@@ -539,3 +539,14 @@ func HashSBOM(sbomPath string) ([]byte, error) {
 	hash := sha256.Sum256(sbomData)
 	return hash[:], nil
 }
+
+func RemoveFileIfExists(filePath string) {
+	if _, err := os.Stat(filePath); err == nil {
+		err = os.Remove(filePath)
+		if err != nil {
+			fmt.Printf("Failed to delete file %s: %v\n", filePath, err)
+		}
+	} else if !os.IsNotExist(err) {
+		fmt.Printf("Error checking file %s: %v\n", filePath, err)
+	}
+}

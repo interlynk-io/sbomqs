@@ -258,34 +258,25 @@ func (c *CdxDoc) parseSignature() {
 	c.SignatureDetail = &Signature{}
 	if c.doc.Declarations != nil {
 		if c.doc.Declarations.Signature != nil {
-			sigAlgo := c.doc.Declarations.Signature.Algorithm
 			sigValue := c.doc.Declarations.Signature.Value
-			pubKeyAlgo := c.doc.Declarations.Signature.PublicKey.KTY
 			pubKeyModulus := c.doc.Declarations.Signature.PublicKey.N
 			pubKeyExponent := c.doc.Declarations.Signature.PublicKey.E
 
-			fmt.Println("Extracted Signature Section:")
-			fmt.Printf("Algorithm: %s\n", sigAlgo)
-			fmt.Printf("Value: %s\n", sigValue)
-			fmt.Printf("APublic Key lgorithm: %s\n", pubKeyAlgo)
-			fmt.Printf("Public Key Modulus (N): %s\n", pubKeyModulus)
-			fmt.Printf("Public Key Exponent (E): %s\n", pubKeyExponent)
-
-			// Decode the signature
+			// decode the signature
 			signatureValue, err := base64.StdEncoding.DecodeString(sigValue)
 			if err != nil {
 				fmt.Println("Error decoding signature:", err)
 				return
 			}
 
-			// Write the signature to a file
+			// write the signature to a file
 			if err := os.WriteFile("extracted_signature.bin", signatureValue, 0o600); err != nil {
 				fmt.Println("Error writing signature to file:", err)
 				return
 			}
-			fmt.Println("Signature written to file: extracted_signature.bin")
+			c.addToLogs(fmt.Sprintf("Signature written to file: extracted_signature.bin"))
 
-			// Extract the public key modulus and exponent
+			// extract the public key modulus and exponent
 			modulus, err := base64.StdEncoding.DecodeString(pubKeyModulus)
 			if err != nil {
 				fmt.Println("Error decoding public key modulus:", err)
@@ -298,13 +289,13 @@ func (c *CdxDoc) parseSignature() {
 				return
 			}
 
-			// Create the RSA public key
+			// create the RSA public key
 			pubKey := &rsa.PublicKey{
 				N: decodeBigInt(modulus),
 				E: exponent,
 			}
 
-			// Write the public key to a PEM file
+			// write the public key to a PEM file
 			pubKeyPEM := publicKeyToPEM(pubKey)
 			if err := os.WriteFile("extracted_public_key.pem", pubKeyPEM, 0o600); err != nil {
 				fmt.Println("Error writing public key to file:", err)
@@ -317,8 +308,7 @@ func (c *CdxDoc) parseSignature() {
 
 			c.SignatureDetail = &sig
 
-			fmt.Println("Public key written to file: extracted_public_key.pem")
-
+			c.addToLogs(fmt.Sprintf("Public key written to file: extracted_public_key.pem"))
 		}
 	}
 }
