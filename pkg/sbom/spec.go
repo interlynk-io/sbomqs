@@ -28,7 +28,7 @@ type Spec interface {
 	GetCreationTimestamp() string
 	GetLicenses() []licenses.License
 	GetNamespace() string
-	URI() string
+	GetURI() string
 	GetOrganization() string
 	GetComment() string
 	GetSpdxID() string
@@ -44,7 +44,7 @@ type Specs struct {
 	Licenses             []licenses.License
 	CreationTimestamp    string
 	Namespace            string
-	Uri                  string
+	URI                  string
 	Organization         string
 	Comment              string
 	Spdxid               string
@@ -103,8 +103,8 @@ func (s Specs) GetNamespace() string {
 	return s.Namespace
 }
 
-func (s Specs) URI() string {
-	return s.Uri
+func (s Specs) GetURI() string {
+	return s.URI
 }
 
 func (s Specs) GetExtDocRef() []string {

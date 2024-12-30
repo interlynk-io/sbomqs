@@ -165,7 +165,7 @@ func detectSbomFormat(f io.ReadSeeker) (SpecFormat, FileFormat, FormatVersion, e
 	return SBOMSpecUnknown, FileFormatUnknown, "", nil
 }
 
-func NewSBOMDocument(ctx context.Context, f io.ReadSeeker) (Document, error) {
+func NewSBOMDocument(ctx context.Context, f io.ReadSeeker, sig Signature) (Document, error) {
 	log := logger.FromContext(ctx)
 
 	spec, format, version, err := detectSbomFormat(f)
@@ -179,9 +179,9 @@ func NewSBOMDocument(ctx context.Context, f io.ReadSeeker) (Document, error) {
 
 	switch spec {
 	case SBOMSpecSPDX:
-		doc, err = newSPDXDoc(ctx, f, format, version)
+		doc, err = newSPDXDoc(ctx, f, format, version, sig)
 	case SBOMSpecCDX:
-		doc, err = newCDXDoc(ctx, f, format)
+		doc, err = newCDXDoc(ctx, f, format, sig)
 	default:
 		return nil, errors.New("unsupported sbom format")
 	}

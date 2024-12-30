@@ -16,9 +16,15 @@ package sbom
 
 import (
 	"context"
+	"crypto/rsa"
+	"crypto/x509"
+	"encoding/base64"
+	"encoding/pem"
 	"fmt"
 	"io"
 	"log"
+	"math/big"
+	"os"
 	"strings"
 
 	cydx "github.com/CycloneDX/cyclonedx-go"
@@ -56,9 +62,10 @@ type CdxDoc struct {
 	Dependencies     map[string][]string
 	composition      map[string]string
 	Vuln             []GetVulnerabilities
+	SignatureDetail  GetSignature
 }
 
-func newCDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat) (Document, error) {
+func newCDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat, sig Signature) (Document, error) {
 	var err error
 
 	_, err = f.Seek(0, io.SeekStart)
@@ -86,9 +93,10 @@ func newCDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat) (Documen
 	}
 
 	doc := &CdxDoc{
-		doc:    bom,
-		format: format,
-		ctx:    ctx,
+		doc:             bom,
+		format:          format,
+		ctx:             ctx,
+		SignatureDetail: &sig,
 	}
 	doc.parse()
 
@@ -143,8 +151,12 @@ func (c CdxDoc) GetComposition(componentID string) string {
 	return c.composition[componentID]
 }
 
-func (s CdxDoc) Vulnerabilities() []GetVulnerabilities {
-	return s.Vuln
+func (c CdxDoc) Vulnerabilities() []GetVulnerabilities {
+	return c.Vuln
+}
+
+func (c CdxDoc) Signature() GetSignature {
+	return c.SignatureDetail
 }
 
 func (c *CdxDoc) parse() {
@@ -157,6 +169,10 @@ func (c *CdxDoc) parse() {
 	c.parseCompositions()
 	c.parsePrimaryCompAndRelationships()
 	c.parseVulnerabilities()
+	if c.Signature().GetSigValue() == "" && c.Signature().GetPublicKey() == "" {
+		fmt.Println("Extract public key and signature from SBOM")
+		c.parseSignature()
+	}
 	c.parseComps()
 }
 
@@ -210,7 +226,7 @@ func (c *CdxDoc) parseSpec() {
 	sp.SpecType = string(SBOMSpecCDX)
 
 	if c.doc.SerialNumber != "" && strings.HasPrefix(sp.Namespace, "urn:uuid:") {
-		sp.Uri = fmt.Sprintf("%s/%d", c.doc.SerialNumber, c.doc.Version)
+		sp.URI = fmt.Sprintf("%s/%d", c.doc.SerialNumber, c.doc.Version)
 	}
 
 	if c.doc.ExternalReferences != nil {
@@ -229,11 +245,106 @@ func (c *CdxDoc) parseVulnerabilities() {
 		for _, v := range *c.doc.Vulnerabilities {
 			if v.ID != "" {
 				vuln := Vulnerability{}
-				vuln.Id = v.ID
+				vuln.ID = v.ID
 				c.Vuln = append(c.Vuln, vuln)
 			}
 		}
 	}
+}
+
+// until and unless cyclondx-go library supports signature, this part is useless
+// So, we are using tech hack to parse signature directly from JSON sbom file
+func (c *CdxDoc) parseSignature() {
+	c.SignatureDetail = &Signature{}
+	if c.doc.Declarations != nil {
+		if c.doc.Declarations.Signature != nil {
+			sigValue := c.doc.Declarations.Signature.Value
+			pubKeyModulus := c.doc.Declarations.Signature.PublicKey.N
+			pubKeyExponent := c.doc.Declarations.Signature.PublicKey.E
+
+			// decode the signature
+			signatureValue, err := base64.StdEncoding.DecodeString(sigValue)
+			if err != nil {
+				fmt.Println("Error decoding signature:", err)
+				return
+			}
+
+			// write the signature to a file
+			if err := os.WriteFile("extracted_signature.bin", signatureValue, 0o600); err != nil {
+				fmt.Println("Error writing signature to file:", err)
+				return
+			}
+			c.addToLogs("Signature written to file: extracted_signature.bin")
+
+			// extract the public key modulus and exponent
+			modulus, err := base64.StdEncoding.DecodeString(pubKeyModulus)
+			if err != nil {
+				fmt.Println("Error decoding public key modulus:", err)
+				return
+			}
+
+			exponent := decodeBase64URLEncodingToInt(pubKeyExponent)
+			if exponent == 0 {
+				fmt.Println("Invalid public key exponent.")
+				return
+			}
+
+			// create the RSA public key
+			pubKey := &rsa.PublicKey{
+				N: decodeBigInt(modulus),
+				E: exponent,
+			}
+
+			// write the public key to a PEM file
+			pubKeyPEM := publicKeyToPEM(pubKey)
+			if err := os.WriteFile("extracted_public_key.pem", pubKeyPEM, 0o600); err != nil {
+				fmt.Println("Error writing public key to file:", err)
+				return
+			}
+
+			sig := Signature{}
+			sig.PublicKey = string(pubKeyPEM)
+			sig.SigValue = string(signatureValue)
+
+			c.SignatureDetail = &sig
+
+			c.addToLogs("Public key written to file: extracted_public_key.pem")
+		}
+	}
+}
+
+func decodeBase64URLEncodingToInt(input string) int {
+	bytes, err := base64.StdEncoding.DecodeString(input)
+	if err != nil {
+		return 0
+	}
+	if len(bytes) == 0 {
+		return 0
+	}
+	result := 0
+	for _, b := range bytes {
+		result = result<<8 + int(b)
+	}
+	return result
+}
+
+func decodeBigInt(input []byte) *big.Int {
+	result := new(big.Int)
+	result.SetBytes(input)
+	return result
+}
+
+func publicKeyToPEM(pub *rsa.PublicKey) []byte {
+	pubASN1, err := x509.MarshalPKIXPublicKey(pub)
+	if err != nil {
+		fmt.Println("Error marshaling public key:", err)
+		return nil
+	}
+	pubPEM := pem.EncodeToMemory(&pem.Block{
+		Type:  "PUBLIC KEY",
+		Bytes: pubASN1,
+	})
+	return pubPEM
 }
 
 func (c *CdxDoc) requiredFields() bool {

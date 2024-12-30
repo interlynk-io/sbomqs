@@ -1,4 +1,4 @@
-// Copyright 2023 Interlynk.io
+// Copyright 2024 Interlynk.io
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,24 +14,26 @@
 
 package sbom
 
-//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
+type GetSignature interface {
+	GetSigValue() string
+	GetPublicKey() string
+	GetBlob() string
+}
 
-//counterfeiter:generate . Document
-type Document interface {
-	Spec() Spec
-	Components() []GetComponent
-	Relations() []GetRelation
-	Authors() []GetAuthor
-	Tools() []GetTool
-	Logs() []string
+type Signature struct {
+	SigValue  string
+	PublicKey string
+	Blob      string
+}
 
-	Lifecycles() []string
-	Manufacturer() GetManufacturer
-	Supplier() GetSupplier
+func (s *Signature) GetSigValue() string {
+	return s.SigValue
+}
 
-	PrimaryComp() GetPrimaryComp
-	GetRelationships(string) []string
+func (s *Signature) GetPublicKey() string {
+	return s.PublicKey
+}
 
-	Vulnerabilities() []GetVulnerabilities
-	Signature() GetSignature
+func (s *Signature) GetBlob() string {
+	return s.Blob
 }

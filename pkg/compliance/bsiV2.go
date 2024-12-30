@@ -16,6 +16,7 @@ package compliance
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"github.com/interlynk-io/sbomqs/pkg/compliance/common"
@@ -48,7 +49,8 @@ func bsiV2Result(ctx context.Context, doc sbom.Document, fileName string, outFor
 	dtb.AddRecord(bsiV2SbomLinks(doc))
 	dtb.AddRecords(bsiV2Components(doc))
 	// New SBOM fields
-	// dtb.AddRecord(bsiSbomSignature(doc))
+	dtb.AddRecord(bsiV2SbomSignature(doc))
+	// dtb.AddRecord(bsiSbomLinks(doc))
 
 	if outFormat == "json" {
 		bsiV2JSONReport(dtb, fileName)
@@ -93,7 +95,37 @@ func bsiV2Vulnerabilities(doc sbom.Document) *db.Record {
 		result = strings.Join(allVulnIDs, ", ")
 		score = 0.0
 	}
-	return db.NewRecordStmt(SBOM_VULNERABILITES, "doc", result, score, "")
+	return db.NewRecordStmt(SBOM_VULNERABILITIES, "doc", result, score, "")
+}
+
+// bsiV2SbomSignature
+func bsiV2SbomSignature(doc sbom.Document) *db.Record {
+	result, score := "", 0.0
+
+	if doc.Signature() != nil {
+		// verify signature
+		pubKey := doc.Signature().GetPublicKey()
+		blob := doc.Signature().GetBlob()
+		sig := doc.Signature().GetSigValue()
+		valid, err := common.VerifySignature(pubKey, blob, sig)
+		if err != nil {
+			fmt.Printf("Verification failed: %v\n", err)
+			return db.NewRecordStmt(SBOM_SIGNATURE, "doc", "Verification failed!", 0.0, "")
+		}
+		if valid {
+			score = 10.0
+			result = "Signature verification succeeded!"
+		} else {
+			score = 5.0
+			result = "Signature verification failed!"
+		}
+
+		common.RemoveFileIfExists("extracted_public_key.pem")
+		common.RemoveFileIfExists("extracted_signature.bin")
+		common.RemoveFileIfExists("standalone_sbom.json")
+	}
+
+	return db.NewRecordStmt(SBOM_SIGNATURE, "doc", result, score, "")
 }
 
 func bsiV2SpecVersion(doc sbom.Document) *db.Record {

@@ -475,7 +475,7 @@ func TestBSIWithTimestampField(t *testing.T) {
 func spdxDocWithURI() sbom.Document {
 	s := sbom.NewSpec()
 	documentNamespace := "https://interlynk.io/github.com%2Finterlynk-io%2Fsbomqs/0.0.15/qIP32aoJi0u5M_EjHeJHAg"
-	s.Uri = documentNamespace
+	s.URI = documentNamespace
 	doc := sbom.SpdxDoc{
 		SpdxSpec: s,
 	}
@@ -485,7 +485,7 @@ func spdxDocWithURI() sbom.Document {
 func cdxDocWithURI() sbom.Document {
 	s := sbom.NewSpec()
 	serialNumber := "urn:uuid:3337e3a3-62e6-4cbb-abf5-51284a43f9f2/1"
-	s.Uri = serialNumber
+	s.URI = serialNumber
 	doc := sbom.CdxDoc{
 		CdxSpec: s,
 	}

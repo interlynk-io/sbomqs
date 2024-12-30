@@ -58,9 +58,10 @@ type SpdxDoc struct {
 	Dependencies     map[string][]string
 	composition      map[string]string
 	Vuln             []GetVulnerabilities
+	SignatureDetail  GetSignature
 }
 
-func newSPDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat, version FormatVersion) (Document, error) {
+func newSPDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat, version FormatVersion, sig Signature) (Document, error) {
 	_ = logger.FromContext(ctx)
 	var err error
 
@@ -89,10 +90,11 @@ func newSPDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat, version
 	}
 
 	doc := &SpdxDoc{
-		doc:     d,
-		format:  format,
-		ctx:     ctx,
-		version: version,
+		doc:             d,
+		format:          format,
+		ctx:             ctx,
+		version:         version,
+		SignatureDetail: &sig,
 	}
 
 	doc.parse()
@@ -157,6 +159,10 @@ func (s SpdxDoc) Vulnerabilities() []GetVulnerabilities {
 	return s.Vuln
 }
 
+func (s SpdxDoc) Signature() GetSignature {
+	return s.SignatureDetail
+}
+
 func (s *SpdxDoc) parse() {
 	s.parseDoc()
 	s.parseSpec()
@@ -218,7 +224,7 @@ func (s *SpdxDoc) parseSpec() {
 	sp.Namespace = s.doc.DocumentNamespace
 
 	if s.doc.DocumentNamespace != "" {
-		sp.Uri = s.doc.DocumentNamespace
+		sp.URI = s.doc.DocumentNamespace
 	}
 	s.Vuln = nil
 

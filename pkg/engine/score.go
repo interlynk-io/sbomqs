@@ -59,7 +59,10 @@ type Params struct {
 	Oct   bool
 	Fsct  bool
 
-	Color bool
+	Color     bool
+	Signature string
+	PublicKey string
+	Blob      string
 }
 
 func Run(ctx context.Context, ep *Params) error {
@@ -172,7 +175,7 @@ func handlePaths(ctx context.Context, ep *Params) error {
 				return err
 			}
 
-			doc, err := sbom.NewSBOMDocument(ctx, f)
+			doc, err := sbom.NewSBOMDocument(ctx, f, sbom.Signature{})
 			if err != nil {
 				log.Fatalf("failed to parse SBOM document: %w", err)
 			}
@@ -259,7 +262,7 @@ func processFile(ctx context.Context, ep *Params, path string, fs billy.Filesyst
 		}
 		defer f.Close()
 
-		doc, err = sbom.NewSBOMDocument(ctx, f)
+		doc, err = sbom.NewSBOMDocument(ctx, f, sbom.Signature{})
 		if err != nil {
 			log.Debugf("failed to create sbom document for  :%s\n", path)
 			log.Debugf("%s\n", err)
@@ -281,7 +284,7 @@ func processFile(ctx context.Context, ep *Params, path string, fs billy.Filesyst
 		}
 		defer f.Close()
 
-		doc, err = sbom.NewSBOMDocument(ctx, f)
+		doc, err = sbom.NewSBOMDocument(ctx, f, sbom.Signature{})
 		if err != nil {
 			log.Debugf("failed to create sbom document for  :%s\n", path)
 			log.Debugf("%s\n", err)
