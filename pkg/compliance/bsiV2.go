@@ -16,6 +16,7 @@ package compliance
 
 import (
 	"context"
+	"strings"
 
 	"github.com/interlynk-io/sbomqs/pkg/compliance/common"
 	db "github.com/interlynk-io/sbomqs/pkg/compliance/db"
@@ -64,13 +65,17 @@ func bsiV2Result(ctx context.Context, doc sbom.Document, fileName string, outFor
 func bsiV2Vulnerabilities(doc sbom.Document) *db.Record {
 	result, score := "no-vulnerability", 10.0
 
-	vuln := doc.Vulnerabilities()
+	vulns := doc.Vulnerabilities()
+	var allVulnIDs []string
 
-	if vuln != nil {
-		vulnId := vuln.GetID()
-		if vulnId != "" {
-			result = vulnId
+	for _, v := range vulns {
+		if vulnID := v.GetID(); vulnID != "" {
+			allVulnIDs = append(allVulnIDs, vulnID)
 		}
+	}
+
+	if len(allVulnIDs) > 0 {
+		result = strings.Join(allVulnIDs, ", ")
 		score = 0.0
 	}
 	return db.NewRecordStmt(SBOM_VULNERABILITES, "doc", result, score, "")
