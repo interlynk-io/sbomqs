@@ -151,8 +151,8 @@ func (c CdxDoc) GetComposition(componentID string) string {
 	return c.composition[componentID]
 }
 
-func (s CdxDoc) Vulnerabilities() []GetVulnerabilities {
-	return s.Vuln
+func (c CdxDoc) Vulnerabilities() []GetVulnerabilities {
+	return c.Vuln
 }
 
 func (c CdxDoc) Signature() GetSignature {
@@ -226,7 +226,7 @@ func (c *CdxDoc) parseSpec() {
 	sp.SpecType = string(SBOMSpecCDX)
 
 	if c.doc.SerialNumber != "" && strings.HasPrefix(sp.Namespace, "urn:uuid:") {
-		sp.Uri = fmt.Sprintf("%s/%d", c.doc.SerialNumber, c.doc.Version)
+		sp.URI = fmt.Sprintf("%s/%d", c.doc.SerialNumber, c.doc.Version)
 	}
 
 	if c.doc.ExternalReferences != nil {
@@ -274,7 +274,7 @@ func (c *CdxDoc) parseSignature() {
 				fmt.Println("Error writing signature to file:", err)
 				return
 			}
-			c.addToLogs(fmt.Sprintf("Signature written to file: extracted_signature.bin"))
+			c.addToLogs("Signature written to file: extracted_signature.bin")
 
 			// extract the public key modulus and exponent
 			modulus, err := base64.StdEncoding.DecodeString(pubKeyModulus)
@@ -308,7 +308,7 @@ func (c *CdxDoc) parseSignature() {
 
 			c.SignatureDetail = &sig
 
-			c.addToLogs(fmt.Sprintf("Public key written to file: extracted_public_key.pem"))
+			c.addToLogs("Public key written to file: extracted_public_key.pem")
 		}
 	}
 }

@@ -80,7 +80,7 @@ const (
 	PACK_INFO
 	SBOM_TYPE
 	PACK_EXT_REF
-	SBOM_VULNERABILITES
+	SBOM_VULNERABILITIES
 	SBOM_BOM_LINKS
 	COMP_ASSOCIATED_LICENSE
 	COMP_CONCLUDED_LICENSE
@@ -312,7 +312,7 @@ func bsiTimestamp(doc sbom.Document) *db.Record {
 }
 
 func bsiSbomURI(doc sbom.Document) *db.Record {
-	uri := doc.Spec().URI()
+	uri := doc.Spec().GetURI()
 
 	if uri != "" {
 		brokenResult := breakLongString(uri, 50)

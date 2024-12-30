@@ -28,7 +28,7 @@ func TestBSIV2SPDXSbomVulnerability(t *testing.T) {
 			expected: desired{
 				score:  10.0,
 				result: "no-vulnerability",
-				key:    SBOM_VULNERABILITES,
+				key:    SBOM_VULNERABILITIES,
 				id:     "doc",
 			},
 		},
@@ -85,7 +85,7 @@ func TestBSIV2CDXSbomVulnerability(t *testing.T) {
 			expected: desired{
 				score:  10.0,
 				result: "no-vulnerability",
-				key:    SBOM_VULNERABILITES,
+				key:    SBOM_VULNERABILITIES,
 				id:     "doc",
 			},
 		},
@@ -95,7 +95,7 @@ func TestBSIV2CDXSbomVulnerability(t *testing.T) {
 			expected: desired{
 				score:  0.0,
 				result: "CVE-2018-7489",
-				key:    SBOM_VULNERABILITES,
+				key:    SBOM_VULNERABILITIES,
 				id:     "doc",
 			},
 		},
@@ -105,7 +105,7 @@ func TestBSIV2CDXSbomVulnerability(t *testing.T) {
 			expected: desired{
 				score:  0.0,
 				result: "CVE-2018-7489, CVE-2021-44228",
-				key:    SBOM_VULNERABILITES,
+				key:    SBOM_VULNERABILITIES,
 				id:     "doc",
 			},
 		},
@@ -292,6 +292,7 @@ func spdxDocWithExternalSignatureVerificationSuccessfully() sbom.Document {
 	return doc
 }
 
+// nolint:unused
 func spdxDocWithExternalSignatureVerificationFailed() sbom.Document {
 	signature := "../../samples/signature-test-data/sbom.sig"
 	publicKey := "../../samples/signature-test-data/public_key.pem"

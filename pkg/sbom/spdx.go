@@ -224,7 +224,7 @@ func (s *SpdxDoc) parseSpec() {
 	sp.Namespace = s.doc.DocumentNamespace
 
 	if s.doc.DocumentNamespace != "" {
-		sp.Uri = s.doc.DocumentNamespace
+		sp.URI = s.doc.DocumentNamespace
 	}
 	s.Vuln = nil
 

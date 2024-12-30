@@ -95,7 +95,7 @@ func bsiV2Vulnerabilities(doc sbom.Document) *db.Record {
 		result = strings.Join(allVulnIDs, ", ")
 		score = 0.0
 	}
-	return db.NewRecordStmt(SBOM_VULNERABILITES, "doc", result, score, "")
+	return db.NewRecordStmt(SBOM_VULNERABILITIES, "doc", result, score, "")
 }
 
 // bsiV2SbomSignature
