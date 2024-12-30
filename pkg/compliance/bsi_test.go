@@ -378,6 +378,16 @@ func TestBsiWithCreatorField(t *testing.T) {
 			},
 		},
 		{
+			name:   "cdxDocWithSbomAuthorAsPerson",
+			actual: bsiCreator(cdxDocWithSbomAuthorAsPerson()),
+			expected: desired{
+				score:  10.0,
+				result: "samantha.wright@example.com",
+				key:    SBOM_CREATOR,
+				id:     "doc",
+			},
+		},
+		{
 			name:   "cdxSbomWithManufacturer",
 			actual: bsiCreator(cdxDocWithSbomWithManufacturer()),
 			expected: desired{
