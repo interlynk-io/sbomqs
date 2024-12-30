@@ -82,6 +82,9 @@ const (
 	PACK_EXT_REF
 	SBOM_VULNERABILITES
 	SBOM_BOM_LINKS
+	COMP_ASSOCIATED_LICENSE
+	COMP_CONCLUDED_LICENSE
+	COMP_DECLARED_LICENSE
 )
 
 func bsiResult(ctx context.Context, doc sbom.Document, fileName string, outFormat string, colorOutput bool) {
@@ -422,36 +425,11 @@ func bsiComponentLicense(component sbom.GetComponent) *db.Record {
 	score := 0.0
 
 	if len(licenses) == 0 {
-		// fmt.Printf("component %s : %s has no licenses\n", component.Name(), component.Version())
 		return db.NewRecordStmt(COMP_LICENSE, common.UniqueElementID(component), "not-compliant", score, "")
 	}
 
-	var spdx, aboutcode, custom int
-
-	for _, license := range licenses {
-		if license.Source() == "spdx" {
-			spdx++
-			continue
-		}
-
-		if license.Source() == "aboutcode" {
-			aboutcode++
-			continue
-		}
-
-		if license.Source() == "custom" {
-			if strings.HasPrefix(license.ShortID(), "LicenseRef-") || strings.HasPrefix(license.Name(), "LicenseRef-") {
-				custom++
-				continue
-			}
-		}
-	}
-
-	total := spdx + aboutcode + custom
-
-	if total != len(licenses) {
-		score = 0.0
-		return db.NewRecordStmt(COMP_LICENSE, common.UniqueElementID(component), "not-compliant", score, "")
+	if !common.AreLicensesValid(licenses) {
+		return db.NewRecordStmt(COMP_LICENSE, common.UniqueElementID(component), "non-compliant", 0.0, "")
 	}
 
 	return db.NewRecordStmt(COMP_LICENSE, common.UniqueElementID(component), "compliant", 10.0, "")

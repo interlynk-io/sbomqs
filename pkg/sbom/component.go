@@ -34,6 +34,8 @@ type GetComponent interface {
 	OmniborIDs() []omniborid.OMNIBORID
 	Swids() []swid.SWID
 	Licenses() []licenses.License
+	DeclaredLicenses() []licenses.License
+	ConcludedLicenses() []licenses.License
 	GetChecksums() []GetChecksum
 	PrimaryPurpose() string
 	RequiredFields() bool
@@ -65,6 +67,8 @@ type Component struct {
 	OmniID                  []omniborid.OMNIBORID
 	Swid                    []swid.SWID
 	licenses                []licenses.License
+	declaredLicense         []licenses.License
+	concludedLicense        []licenses.License
 	Checksums               []GetChecksum
 	purpose                 string
 	isReqFieldsPresent      bool
@@ -125,6 +129,14 @@ func (c Component) OmniborIDs() []omniborid.OMNIBORID {
 }
 
 func (c Component) Licenses() []licenses.License {
+	return c.licenses
+}
+
+func (c Component) DeclaredLicenses() []licenses.License {
+	return c.licenses
+}
+
+func (c Component) ConcludedLicenses() []licenses.License {
 	return c.licenses
 }
 

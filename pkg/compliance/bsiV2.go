@@ -20,6 +20,7 @@ import (
 
 	"github.com/interlynk-io/sbomqs/pkg/compliance/common"
 	db "github.com/interlynk-io/sbomqs/pkg/compliance/db"
+	"github.com/interlynk-io/sbomqs/pkg/licenses"
 	"github.com/interlynk-io/sbomqs/pkg/logger"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 	"github.com/samber/lo"
@@ -149,8 +150,8 @@ func bsiV2Components(doc sbom.Document) []*db.Record {
 		records = append(records, bsiComponentCreator(component))
 		records = append(records, bsiComponentName(component))
 		records = append(records, bsiComponentVersion(component))
-		records = append(records, bsiComponentLicense(component))
 		records = append(records, bsiComponentDepth(doc, component))
+		records = append(records, bsiV2ComponentAssociatedLicense(doc, component))
 		records = append(records, bsiComponentHash(component))
 		records = append(records, bsiComponentSourceCodeURL(component))
 		records = append(records, bsiComponentDownloadURL(component))
@@ -162,12 +163,62 @@ func bsiV2Components(doc sbom.Document) []*db.Record {
 		// records = append(records, bsiComponentArchive(component))
 		// records = append(records, bsiComponentStructured(component))
 		// records = append(records, bsiComponentOtherUniqIDs(component))
-		// records = append(records, bsiComponentDeclaredLicense(component))
-		// records = append(records, bsiComponentConcludedLicense(component))
-
+		records = append(records, bsiV2ComponentConcludedLicense(component))
+		records = append(records, bsiV2ComponentDeclaredLicense(component))
 	}
 
 	records = append(records, db.NewRecordStmt(SBOM_COMPONENTS, "doc", "present", 10.0, ""))
 
 	return records
+}
+
+func bsiV2ComponentAssociatedLicense(doc sbom.Document, component sbom.GetComponent) *db.Record {
+	spec := doc.Spec().GetSpecType()
+
+	var licenses []licenses.License
+	if spec == "cyclonedx" {
+		licenses = component.Licenses()
+	} else if spec == "spdx" {
+		licenses = component.ConcludedLicenses()
+	}
+
+	if len(licenses) == 0 {
+		return db.NewRecordStmt(COMP_ASSOCIATED_LICENSE, common.UniqueElementID(component), "not-compliant", 0.0, "")
+	}
+
+	if !common.AreLicensesValid(licenses) {
+		return db.NewRecordStmt(COMP_ASSOCIATED_LICENSE, common.UniqueElementID(component), "non-compliant", 0.0, "")
+	}
+
+	return db.NewRecordStmt(COMP_ASSOCIATED_LICENSE, common.UniqueElementID(component), "compliant", 10.0, "")
+}
+
+func bsiV2ComponentConcludedLicense(component sbom.GetComponent) *db.Record {
+	licenses := component.ConcludedLicenses()
+	score := 0.0
+
+	if len(licenses) == 0 {
+		return db.NewRecordStmt(COMP_CONCLUDED_LICENSE, common.UniqueElementID(component), "not-compliant", score, "")
+	}
+
+	if !common.AreLicensesValid(licenses) {
+		return db.NewRecordStmt(COMP_CONCLUDED_LICENSE, common.UniqueElementID(component), "non-compliant", 0.0, "")
+	}
+
+	return db.NewRecordStmt(COMP_CONCLUDED_LICENSE, common.UniqueElementID(component), "compliant", 10.0, "")
+}
+
+func bsiV2ComponentDeclaredLicense(component sbom.GetComponent) *db.Record {
+	licenses := component.DeclaredLicenses()
+	score := 0.0
+
+	if len(licenses) == 0 {
+		return db.NewRecordStmt(COMP_DECLARED_LICENSE, common.UniqueElementID(component), "not-compliant", score, "")
+	}
+
+	if !common.AreLicensesValid(licenses) {
+		return db.NewRecordStmt(COMP_DECLARED_LICENSE, common.UniqueElementID(component), "non-compliant", 0.0, "")
+	}
+
+	return db.NewRecordStmt(COMP_DECLARED_LICENSE, common.UniqueElementID(component), "compliant", 10.0, "")
 }
