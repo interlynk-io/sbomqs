@@ -1,4 +1,4 @@
-// Copyright 2023 Interlynk.io
+// Copyright 2024 Interlynk.io
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,24 +14,14 @@
 
 package sbom
 
-//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
+type GetPedigree interface {
+	GetCommits() []GetCommit
+}
 
-//counterfeiter:generate . Document
-type Document interface {
-	Spec() Spec
-	Components() []GetComponent
-	Relations() []GetRelation
-	Authors() []GetAuthor
-	Tools() []GetTool
-	Logs() []string
+type Pedigree struct {
+	Commits []GetCommit
+}
 
-	Lifecycles() []string
-	Manufacturer() Manufacturer
-	Supplier() GetSupplier
-
-	PrimaryComp() GetPrimaryComp
-	GetRelationships(string) []string
-
-	Vulnerabilities() GetVulnerabilities
-	Signature() []GetSignature
+func (p Pedigree) GetCommits() []GetCommit {
+	return p.Commits
 }

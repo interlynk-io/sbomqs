@@ -1,4 +1,4 @@
-// Copyright 2023 Interlynk.io
+// Copyright 2024 Interlynk.io
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,24 +14,26 @@
 
 package sbom
 
-//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
+type GetCommitAuthor interface {
+	GetName() string
+	GetEmail() string
+	GetTimestamp() string
+}
 
-//counterfeiter:generate . Document
-type Document interface {
-	Spec() Spec
-	Components() []GetComponent
-	Relations() []GetRelation
-	Authors() []GetAuthor
-	Tools() []GetTool
-	Logs() []string
+type CommitAuthor struct {
+	Name      string `json:"name"`
+	Email     string `json:"email"`
+	Timestamp string `json:"date"`
+}
 
-	Lifecycles() []string
-	Manufacturer() Manufacturer
-	Supplier() GetSupplier
+func (cc CommitAuthor) GetName() string {
+	return cc.Name
+}
 
-	PrimaryComp() GetPrimaryComp
-	GetRelationships(string) []string
+func (cc CommitAuthor) GetEmail() string {
+	return cc.Email
+}
 
-	Vulnerabilities() GetVulnerabilities
-	Signature() []GetSignature
+func (cc CommitAuthor) GetTimestamp() string {
+	return cc.Timestamp
 }

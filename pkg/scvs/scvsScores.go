@@ -12,26 +12,42 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package sbom
+package scvs
 
-//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
+type ScvsScores interface {
+	Count() int
+	AvgScore() float64
+	ScoreList() []ScvsScore
+}
 
-//counterfeiter:generate . Document
-type Document interface {
-	Spec() Spec
-	Components() []GetComponent
-	Relations() []GetRelation
-	Authors() []GetAuthor
-	Tools() []GetTool
-	Logs() []string
+type scvsScores struct {
+	scs []ScvsScore
+}
 
-	Lifecycles() []string
-	Manufacturer() Manufacturer
-	Supplier() GetSupplier
+func newScvsScores() *scvsScores {
+	return &scvsScores{
+		scs: []ScvsScore{},
+	}
+}
 
-	PrimaryComp() GetPrimaryComp
-	GetRelationships(string) []string
+func (s *scvsScores) addScore(ss scvsScore) {
+	s.scs = append(s.scs, ss)
+}
 
-	Vulnerabilities() GetVulnerabilities
-	Signature() []GetSignature
+func (s scvsScores) Count() int {
+	return len(s.scs)
+}
+
+func (s scvsScores) AvgScore() float64 {
+	score := 0.0
+	for _, s := range s.scs {
+		if s.L1Score() == "✓" {
+			score++
+		}
+	}
+	return score / float64(s.Count())
+}
+
+func (s scvsScores) ScoreList() []ScvsScore {
+	return s.scs
 }
