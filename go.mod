@@ -5,19 +5,19 @@ go 1.23
 toolchain go1.23.1
 
 require (
-	github.com/CycloneDX/cyclonedx-go v0.9.1
-	github.com/DependencyTrack/client-go v0.13.0
+	github.com/CycloneDX/cyclonedx-go v0.9.2
+	github.com/DependencyTrack/client-go v0.14.0
 	github.com/Masterminds/semver/v3 v3.3.1
 	github.com/github/go-spdx/v2 v2.3.2
 	github.com/google/go-github/v52 v52.0.0
 	github.com/google/uuid v1.6.0
-	github.com/maxbrunsfeld/counterfeiter/v6 v6.10.0
+	github.com/maxbrunsfeld/counterfeiter/v6 v6.11.2
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/package-url/packageurl-go v0.1.3
 	github.com/samber/lo v1.47.0
 	github.com/spdx/tools-golang v0.5.5
 	github.com/spf13/cobra v1.8.1
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.10.0
 	go.uber.org/zap v1.27.0
 	gopkg.in/yaml.v2 v2.4.0
 	sigs.k8s.io/release-utils v0.8.5
@@ -48,13 +48,13 @@ require (
 	github.com/spf13/afero v1.11.0
 	github.com/spf13/pflag v1.0.5 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	golang.org/x/crypto v0.28.0 // indirect
-	golang.org/x/mod v0.21.0 // indirect
+	golang.org/x/crypto v0.31.0 // indirect
+	golang.org/x/mod v0.22.0 // indirect
 	golang.org/x/oauth2 v0.23.0 // indirect
-	golang.org/x/sync v0.8.0 // indirect
-	golang.org/x/sys v0.26.0 // indirect
-	golang.org/x/text v0.19.0 // indirect
-	golang.org/x/tools v0.26.0 // indirect
+	golang.org/x/sync v0.10.0 // indirect
+	golang.org/x/sys v0.28.0 // indirect
+	golang.org/x/text v0.21.0 // indirect
+	golang.org/x/tools v0.28.0 // indirect
 	gotest.tools v2.2.0+incompatible
 	sigs.k8s.io/yaml v1.4.0 // indirect
 )
