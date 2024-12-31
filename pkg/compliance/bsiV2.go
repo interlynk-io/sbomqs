@@ -16,7 +16,6 @@ package compliance
 
 import (
 	"context"
-	"fmt"
 	"strings"
 
 	"github.com/interlynk-io/sbomqs/pkg/compliance/common"
@@ -108,7 +107,6 @@ func bsiV2SbomSignature(doc sbom.Document) *db.Record {
 		sig := doc.Signature().GetSigValue()
 		valid, err := common.VerifySignature(pubKey, blob, sig)
 		if err != nil {
-			fmt.Printf("Verification failed: %v\n", err)
 			return db.NewRecordStmt(SBOM_SIGNATURE, "doc", "Verification failed!", 0.0, "")
 		}
 		if valid {

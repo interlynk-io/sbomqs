@@ -335,7 +335,7 @@ func TestSpdxSBOMWithSignature(t *testing.T) {
 
 func cdxDocWithEmbeddedSignature() sbom.Document {
 	sbomFile := "../../samples/signature-test-data/stree-cdxgen-signed-sbom.cdx.json"
-	standaloneSBOMFile, signatureRetrieved, publicKeyRetrieved, _ := common.RetrieveSignatureFromSBOM(sbomFile)
+	standaloneSBOMFile, signatureRetrieved, publicKeyRetrieved, _ := common.RetrieveSignatureFromSBOM(nil, sbomFile)
 
 	sig := sbom.Signature{
 		SigValue:  signatureRetrieved,
