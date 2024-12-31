@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"errors"
+	"fmt"
 	"io"
 	"log"
 	"strings"
@@ -101,47 +102,82 @@ func detectSbomFormat(f io.ReadSeeker) (SpecFormat, FileFormat, FormatVersion, e
 	defer func() {
 		_, err := f.Seek(0, io.SeekStart)
 		if err != nil {
-			log.Printf("Failed to seek: %v", err)
+			log.Printf("Failed to reset file pointer: %v", err)
 		}
 	}()
 
-	_, err := f.Seek(0, io.SeekStart)
+	formatGuess, err := guessFormat(f)
 	if err != nil {
-		log.Fatalf("Failed to seek: %v", err)
+		return SBOMSpecUnknown, FileFormatUnknown, "", fmt.Errorf("failed to guess file format: %w", err)
 	}
 
-	var s spdxbasic
-	if err := json.NewDecoder(f).Decode(&s); err == nil {
-		if strings.HasPrefix(s.ID, "SPDX") {
-			return SBOMSpecSPDX, FileFormatJSON, FormatVersion(s.Version), nil
+	switch formatGuess {
+	case FileFormatJSON:
+		log.Printf("format: %v", FileFormatJSON)
+
+		_, err = f.Seek(0, io.SeekStart)
+		if err != nil {
+			return SBOMSpecUnknown, FileFormatJSON, "", fmt.Errorf("failed to reset file pointer for SPDX JSON: %w", err)
+		}
+
+		var s spdxbasic
+		if err := json.NewDecoder(f).Decode(&s); err == nil {
+			if strings.HasPrefix(s.ID, "SPDX") {
+				return SBOMSpecSPDX, FileFormatJSON, FormatVersion(s.Version), nil
+			}
+		} else {
+			log.Printf("spdx-json sbom decoding failed: %v\n", err)
+		}
+
+		_, err = f.Seek(0, io.SeekStart)
+		if err != nil {
+			return SBOMSpecUnknown, FileFormatJSON, "", fmt.Errorf("failed to reset file pointer for CycloneDX JSON: %w", err)
+		}
+
+		var cdx cdxbasic
+		if err := json.NewDecoder(f).Decode(&cdx); err == nil {
+			if cdx.BOMFormat == "CycloneDX" {
+				return SBOMSpecCDX, FileFormatJSON, "", nil
+			}
+		} else {
+			log.Printf("cyclonedx-json sbom decoding failed: %v\n", err)
+		}
+
+		return SBOMSpecUnknown, FileFormatJSON, "", fmt.Errorf("failed to decode the SPDX or CycloneDX SBOM JSON content")
+
+	case FileFormatYAML:
+		log.Printf("format: %v", FileFormatYAML)
+
+		_, err = f.Seek(0, io.SeekStart)
+		if err != nil {
+			return SBOMSpecUnknown, FileFormatYAML, "", fmt.Errorf("failed to reset file pointer for SPDX YAML: %w", err)
+		}
+
+		var y spdxbasic
+		if err := yaml.NewDecoder(f).Decode(&y); err == nil {
+			if strings.HasPrefix(y.ID, "SPDX") {
+				return SBOMSpecSPDX, FileFormatYAML, FormatVersion(y.Version), nil
+			}
+		} else {
+			return SBOMSpecUnknown, FileFormatYAML, "", fmt.Errorf("failed to decode YAML content")
 		}
 	}
 
 	_, err = f.Seek(0, io.SeekStart)
 	if err != nil {
-		log.Printf("Failed to seek: %v", err)
+		return SBOMSpecUnknown, FileFormatUnknown, "", fmt.Errorf("failed to reset file pointer: %w", err)
 	}
 
 	var cdx cdxbasic
-	if err := json.NewDecoder(f).Decode(&cdx); err == nil {
-		if cdx.BOMFormat == "CycloneDX" {
-			return SBOMSpecCDX, FileFormatJSON, "", nil
-		}
-	}
-
-	_, err = f.Seek(0, io.SeekStart)
-	if err != nil {
-		log.Printf("Failed to seek: %v", err)
-	}
-
 	if err := xml.NewDecoder(f).Decode(&cdx); err == nil {
 		if strings.HasPrefix(cdx.XMLNS, "http://cyclonedx.org") {
 			return SBOMSpecCDX, FileFormatXML, "", nil
 		}
 	}
+
 	_, err = f.Seek(0, io.SeekStart)
 	if err != nil {
-		log.Printf("Failed to seek: %v", err)
+		return SBOMSpecUnknown, FileFormatUnknown, "", fmt.Errorf("failed to reset file pointer: %w", err)
 	}
 
 	if sc := bufio.NewScanner(f); sc.Scan() {
@@ -150,30 +186,42 @@ func detectSbomFormat(f io.ReadSeeker) (SpecFormat, FileFormat, FormatVersion, e
 		}
 	}
 
-	_, err = f.Seek(0, io.SeekStart)
-	if err != nil {
-		log.Printf("Failed to seek: %v", err)
-	}
-
-	var y spdxbasic
-	if err := yaml.NewDecoder(f).Decode(&y); err == nil {
-		if strings.HasPrefix(y.ID, "SPDX") {
-			return SBOMSpecSPDX, FileFormatYAML, FormatVersion(s.Version), nil
-		}
-	}
-
 	return SBOMSpecUnknown, FileFormatUnknown, "", nil
+}
+
+func guessFormat(f io.ReadSeeker) (FileFormat, error) {
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+		if strings.HasPrefix(line, "{") || strings.HasPrefix(line, "[") {
+			return FileFormatJSON, nil
+		}
+		if strings.Contains(line, ":") || strings.HasPrefix(line, "-") {
+			return FileFormatYAML, nil
+		}
+		break
+	}
+
+	if err := scanner.Err(); err != nil {
+		return FileFormatUnknown, fmt.Errorf("error scanning file: %w", err)
+	}
+
+	return FileFormatUnknown, nil
 }
 
 func NewSBOMDocument(ctx context.Context, f io.ReadSeeker, sig Signature) (Document, error) {
 	log := logger.FromContext(ctx)
 
 	spec, format, version, err := detectSbomFormat(f)
+	log.Debugf("SBOM detect spec:%s format:%s", spec, format)
 	if err != nil {
 		return nil, err
 	}
 
-	log.Debugf("SBOM detect spec:%s format:%s", spec, format)
+	// log.Debugf("SBOM detect spec:%s format:%s", spec, format)
 
 	var doc Document
 
