@@ -1,6 +1,7 @@
 package compliance
 
 import (
+	"context"
 	"testing"
 
 	"github.com/interlynk-io/sbomqs/pkg/compliance/common"
@@ -334,8 +335,9 @@ func TestSpdxSBOMWithSignature(t *testing.T) {
 }
 
 func cdxDocWithEmbeddedSignature() sbom.Document {
+	context := context.Background()
 	sbomFile := "../../samples/signature-test-data/stree-cdxgen-signed-sbom.cdx.json"
-	standaloneSBOMFile, signatureRetrieved, publicKeyRetrieved, _ := common.RetrieveSignatureFromSBOM(sbomFile)
+	standaloneSBOMFile, signatureRetrieved, publicKeyRetrieved, _ := common.RetrieveSignatureFromSBOM(context, sbomFile)
 
 	sig := sbom.Signature{
 		SigValue:  signatureRetrieved,
