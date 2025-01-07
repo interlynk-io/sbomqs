@@ -94,7 +94,7 @@ func getSbomDocument(ctx context.Context, ep *Params) (*sbom.Document, error) {
 	if signature == "" && publicKey == "" {
 		standaloneSBOMFile, signatureRetrieved, publicKeyRetrieved, err := common.RetrieveSignatureFromSBOM(ctx, blob)
 		if err != nil {
-			log.Fatalf("failed to retrieve signature and public key from embedded sbom: %w", err)
+			log.Debug("failed to retrieve signature and public key from embedded sbom: %w", err)
 		}
 		blob = standaloneSBOMFile
 		signature = signatureRetrieved
