@@ -16,6 +16,7 @@ package compliance
 
 import (
 	"context"
+	"os"
 	"strings"
 
 	"github.com/interlynk-io/sbomqs/pkg/compliance/common"
@@ -105,7 +106,13 @@ func bsiV2SbomSignature(doc sbom.Document) *db.Record {
 		pubKey := doc.Signature().GetPublicKey()
 		blob := doc.Signature().GetBlob()
 		sig := doc.Signature().GetSigValue()
-		valid, err := common.VerifySignature(pubKey, blob, sig)
+
+		pubKeyData, err := os.ReadFile(pubKey)
+		if err != nil {
+			return db.NewRecordStmt(SBOM_SIGNATURE, "doc", "Sig not detected!", 0.0, "")
+		}
+
+		valid, err := common.VerifySignature(pubKeyData, blob, sig)
 		if err != nil {
 			return db.NewRecordStmt(SBOM_SIGNATURE, "doc", "Verification failed!", 0.0, "")
 		}
@@ -114,7 +121,7 @@ func bsiV2SbomSignature(doc sbom.Document) *db.Record {
 			result = "Signature verification succeeded!"
 		} else {
 			score = 5.0
-			result = "Signature verification failed!"
+			result = "Signature provided but verification failed!"
 		}
 
 		common.RemoveFileIfExists("extracted_public_key.pem")

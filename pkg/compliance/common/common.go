@@ -489,12 +489,7 @@ func AreLicensesValid(licenses []licenses.License) bool {
 	return spdx+aboutcode+custom == len(licenses)
 }
 
-func VerifySignature(publicKeyPath, sbomPath, signaturePath string) (bool, error) {
-	pubKeyData, err := os.ReadFile(publicKeyPath)
-	if err != nil {
-		return false, err
-	}
-
+func VerifySignature(pubKeyData []byte, sbomPath, signaturePath string) (bool, error) {
 	block, _ := pem.Decode(pubKeyData)
 	if block == nil || block.Type != "PUBLIC KEY" {
 		return false, fmt.Errorf("invalid public key")
