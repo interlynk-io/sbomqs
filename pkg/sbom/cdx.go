@@ -31,6 +31,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/interlynk-io/sbomqs/pkg/cpe"
 	"github.com/interlynk-io/sbomqs/pkg/licenses"
+	"github.com/interlynk-io/sbomqs/pkg/logger"
 	"github.com/interlynk-io/sbomqs/pkg/omniborid"
 	"github.com/interlynk-io/sbomqs/pkg/purl"
 	"github.com/interlynk-io/sbomqs/pkg/swhid"
@@ -170,7 +171,7 @@ func (c *CdxDoc) parse() {
 	c.parsePrimaryCompAndRelationships()
 	c.parseVulnerabilities()
 	if c.Signature().GetSigValue() == "" && c.Signature().GetPublicKey() == "" {
-		fmt.Println("Extract public key and signature from SBOM")
+		c.addToLogs("extract public key and signature from cylonedx sbom itself")
 		c.parseSignature()
 	}
 	c.parseComps()
@@ -255,6 +256,8 @@ func (c *CdxDoc) parseVulnerabilities() {
 // until and unless cyclondx-go library supports signature, this part is useless
 // So, we are using tech hack to parse signature directly from JSON sbom file
 func (c *CdxDoc) parseSignature() {
+	log := logger.FromContext(c.ctx)
+	log.Debug("parseSignature()")
 	c.SignatureDetail = &Signature{}
 	if c.doc.Declarations != nil {
 		if c.doc.Declarations.Signature != nil {
@@ -265,13 +268,13 @@ func (c *CdxDoc) parseSignature() {
 			// decode the signature
 			signatureValue, err := base64.StdEncoding.DecodeString(sigValue)
 			if err != nil {
-				fmt.Println("Error decoding signature:", err)
+				log.Debug("Error decoding signature:", err)
 				return
 			}
 
 			// write the signature to a file
 			if err := os.WriteFile("extracted_signature.bin", signatureValue, 0o600); err != nil {
-				fmt.Println("Error writing signature to file:", err)
+				log.Debug("Error writing signature to file: %s", err)
 				return
 			}
 			c.addToLogs("Signature written to file: extracted_signature.bin")
@@ -279,13 +282,13 @@ func (c *CdxDoc) parseSignature() {
 			// extract the public key modulus and exponent
 			modulus, err := base64.StdEncoding.DecodeString(pubKeyModulus)
 			if err != nil {
-				fmt.Println("Error decoding public key modulus:", err)
+				log.Debug("Error decoding public key modulus:", err)
 				return
 			}
 
 			exponent := decodeBase64URLEncodingToInt(pubKeyExponent)
 			if exponent == 0 {
-				fmt.Println("Invalid public key exponent.")
+				c.addToLogs("Invalid public key exponent.")
 				return
 			}
 
@@ -298,7 +301,7 @@ func (c *CdxDoc) parseSignature() {
 			// write the public key to a PEM file
 			pubKeyPEM := publicKeyToPEM(pubKey)
 			if err := os.WriteFile("extracted_public_key.pem", pubKeyPEM, 0o600); err != nil {
-				fmt.Println("Error writing public key to file:", err)
+				log.Debug("Error writing public key to file:", err)
 				return
 			}
 
