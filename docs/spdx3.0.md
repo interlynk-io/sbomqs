@@ -18,7 +18,7 @@
 
 ## SBOM RootElement(type=software_Package)
 
-RootElement is primary component of the SBOM.
+RootElement is primary component of the SBOM. And RootElement is a package.
 
 - Package Name: `software_Package.name`
 - Package Version: `software_Package.software_packageVersion`
@@ -53,7 +53,6 @@ RootElement is primary component of the SBOM.
 - SpdxDocument Relationship with Primary Component
   - relationshipType: `describes`
 - Primary Component Relationship with it's elements
-
 
 ## Diff b/w 2.3 and 3.0
 
@@ -91,3 +90,4 @@ RootElement is primary component of the SBOM.
 - <https://docs.google.com/spreadsheets/d/1Xn6-BnDXRV0pLxLuj1-N_UvTGo6AUg4pSmX2UJ7VLbQ/edit?gid=0#gid=0>
 - <https://github.com/spdx/spdx-3-model/>
 - <https://youtu.be/foL8v1FMrrc?si=Z7gMuKI6o6xgEeJJ>
+- <https://www.youtube.com/playlist?list=PLKXIDTObsp41OEYqWzt37DdORUPdzTcAj>
