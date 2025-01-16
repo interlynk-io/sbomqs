@@ -1,0 +1,95 @@
+{
+    "@context": "https://spdx.org/rdf/3.0.0/spdx-context.jsonld",
+    "@graph": [
+        {
+            "type": "Person",
+            "spdxId": "http://github.com/interlynk-io/Person/VivekKumarSahu",
+            "name": "Vivek Kumar Sahu",
+            "creationInfo": "_:creationinfo",
+            "externalIdentifier": [
+                {
+                    "type": "ExternalIdentifier",
+                    "externalIdentifierType": "email",
+                    "identifier": "vivekkumarsahu650@gmail.com"
+                }
+            ]
+        },
+        {
+            "type": "CreationInfo",
+            "@id": "_:creationinfo",
+            "specVersion": "3.0.1",
+            "createdBy": [
+                "http://github.com/interlynk-io/Person/VivekKumarSahu"
+            ],
+            "created": "2025-01-16T00:00:00Z"
+        },
+        {
+            "type": "SpdxDocument",
+            "spdxId": "http://github.com/interlynk-io/sbomqs/Document1",
+            "creationInfo": "_:creationinfo",
+            "profileConformance": [
+                "core",
+                "software"
+            ],
+            "rootElement": [
+                "http://github.com/interlynk-io/sbomqs/BOM1"
+            ],
+            "element": [
+                "http://github.com/interlynk-io/sbomqsBOM1",
+                "http://github.com/interlynk-io/Agent/VivekKumarSahu",
+                "http://github.com/interlynk-io/sbomqs/Package1/myprogram",
+                "http://github.com/interlynk-io/sbomqs/Relationship/1"
+            ]
+        },
+        {
+            "type": "software_Package",
+            "spdxId": "http://github.com/interlynk-io/sbomqs/Package1",
+            "creationInfo": "_:creationinfo",
+            "name": "sbomqs",
+            "software_packageVersion": "1.0.0",
+            "software_downloadLocation": "https://github.com/interlynk-io/sbomqs/releases/download/v1.0.0/sbomqs-linux-amd64",
+            "builtTime": "2025-01-16T00:00:00Z",
+            "originatedBy": [
+                "http://github.com/interlynk-io/Person/VivekKumarSahu"
+            ],
+            "verifiedUsing": [
+                {
+                    "type": "Hash",
+                    "algorithm": "sha256",
+                    "hashValue": "9cf038f739563932af96b8a9b5ae055df45f414794d5a5f31afc9ad9963aabdd"
+                }
+            ],
+            "software_primaryPurpose": "executable",
+            "software_additionalPurpose": [
+                "application"
+            ],
+            "software_copyrightText": "Copyright 2023 Interlynk.io"
+        },
+        {
+            "type": "Relationship",
+            "spdxId": "http://github.com/interlynk-io/Relationship/1",
+            "creationInfo": "_:creationinfo",
+            "from": "http://spdx.example.com/Package1",
+            "relationshipType": "contains",
+            "to": [
+                "http://spdx.example.com/Package1/myprogram"
+            ],
+            "completeness": "complete"
+        },
+        {
+            "type": "software_Sbom",
+            "spdxId": "http://spdx.example.com/BOM1",
+            "creationInfo": "_:creationinfo",
+            "rootElement": [
+                "http://github.com/interlynk-io/sbomqs/BOM1"
+            ],
+            "element": [
+                "http://spdx.example.com/Package1/myprogram",
+                "http://spdx.example.com/Package1"
+            ],
+            "software_sbomType": [
+                "build"
+            ]
+        }
+    ]
+}
