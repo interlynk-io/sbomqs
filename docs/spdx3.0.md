@@ -1,29 +1,59 @@
 # SPDX:3.0 fields
 
-## SBOM Fields
+- SBOM specification: @context
 
-- SBOM specification: 
+## SBOM document(type=SpdxDocument)
+
+- SBOM SPDXID: `SpdxDocument.spdxId`
+- SBOM name: `SpdxDocument.name`
+- SBOM datalicense: `SpdxDocument.dataLicense`
+- SBOM primary element: `SpdxDocument.rootElement`
 - SBOM Specification Version: `CreationInfo.specVersion`
-- SBOM creator: `creationInfo.createdBy`
+- SBOM creator:
+  - Tool: `creationInfo.createdUsing`
+  - Person: `creationInfo.createdBy`
 - SBOM timestamp: `creationInfo.created`
-- SBOM Namespace: `externalIdentifier`
 
-### Package Fields
+<!-- - SBOM Namespace: `externalIdentifier` -->
 
-- Package Name: `name`
-- PackageSPDXID: `spdxId`
-- PackageVersion: `packageVersion`
-- PackageFileName: 
-- Package Dependencies: 
-- PackageChecksum: `verifiedUsing`
-- PackageSourceCodeURI: `sourceURI`
-- PackageSupplier: `suppliedBy`
-- PackageDownloadLocation: `downloadLocation`
-- FilesAnalyzed: (Removed from SPDX:3.0)
-- PackageLicenseConcluded: 
-- PackageLicenseDeclared
-- PackageCopyrightText: `copyrightText`
-- ExternalRef: `externalRef`
+## SBOM RootElement(type=software_Package)
+
+RootElement is primary component of the SBOM.
+
+- Package Name: `software_Package.name`
+- Package Version: `software_Package.software_packageVersion`
+- Package CopyRight: `software_Package.software_copyrightText`
+- Package Supplier: `software_Package.suppliedBy`
+  - `suppliedBy` is a `Agent`
+- Package VerificationCode: `software_Package.verifiedUsing`
+- Package licenseComments: `software_Package.comment`
+- Package downloadLocation: `software_Package.software_downloadLocation`
+- Package summary: `software_Package.summary`
+- Package Homepage: `software_Package.software_homePage`
+- Package originator: `software_Package.originatedBy`
+  - `originatedBy` is a `Agent`
+- Package License: `relationship`
+  - Package license are refered as a relationship of types:
+    - hasDeclaredLicense
+    - hasConcludedLicense
+- Package filesAnalyzed: This field has been removed
+- Package externalRefs(referenceType=purl): `software_Package.software_packageUrl`
+- Package Checksum: Checksum is seperated into Corresponding file for the package: `software_File.verifiedUsing`
+  - and file is reference as a relationship with the corresponding package with a relationship type `hasDistributionArtifact` and `completeness` as `complete`.
+
+## Relationship
+
+- Package Relationship with License
+  - relationshipType: `hasDeclaredLicense`
+  - relationshipType: `hasConcludedLicense`
+- Package Relationship with it's file with checksum
+  - relationshipType: `hasDistributionArtifact`
+- Package Relationship with other Package
+  - relationshipType: `contains`
+- SpdxDocument Relationship with Primary Component
+  - relationshipType: `describes`
+- Primary Component Relationship with it's elements
+
 
 ## Diff b/w 2.3 and 3.0
 
@@ -48,6 +78,10 @@
 - Serialization format changes:
   - JSON-LD format implemented.
   - Tag/Value, YAML, RDF/XML, and Spreadsheet formats no longer supported
+
+## To write your first SPDX:3.0 SBOM:
+
+- Follow this getting started material: <https://github.com/spdx/using/blob/main/docs/getting-started.md>
 
 ## References
 
