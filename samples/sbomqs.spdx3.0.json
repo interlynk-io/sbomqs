@@ -1,95 +1,505 @@
 {
-    "@context": "https://spdx.org/rdf/3.0.0/spdx-context.jsonld",
-    "@graph": [
-        {
-            "type": "Person",
-            "spdxId": "http://github.com/interlynk-io/Person/VivekKumarSahu",
-            "name": "Vivek Kumar Sahu",
-            "creationInfo": "_:creationinfo",
-            "externalIdentifier": [
-                {
-                    "type": "ExternalIdentifier",
-                    "externalIdentifierType": "email",
-                    "identifier": "vivekkumarsahu650@gmail.com"
-                }
-            ]
-        },
-        {
-            "type": "CreationInfo",
-            "@id": "_:creationinfo",
-            "specVersion": "3.0.1",
-            "createdBy": [
-                "http://github.com/interlynk-io/Person/VivekKumarSahu"
-            ],
-            "created": "2025-01-16T00:00:00Z"
-        },
-        {
-            "type": "SpdxDocument",
-            "spdxId": "http://github.com/interlynk-io/sbomqs/Document1",
-            "creationInfo": "_:creationinfo",
-            "profileConformance": [
-                "core",
-                "software"
-            ],
-            "rootElement": [
-                "http://github.com/interlynk-io/sbomqs/BOM1"
-            ],
-            "element": [
-                "http://github.com/interlynk-io/sbomqsBOM1",
-                "http://github.com/interlynk-io/Agent/VivekKumarSahu",
-                "http://github.com/interlynk-io/sbomqs/Package1/myprogram",
-                "http://github.com/interlynk-io/sbomqs/Relationship/1"
-            ]
-        },
-        {
-            "type": "software_Package",
-            "spdxId": "http://github.com/interlynk-io/sbomqs/Package1",
-            "creationInfo": "_:creationinfo",
-            "name": "sbomqs",
-            "software_packageVersion": "1.0.0",
-            "software_downloadLocation": "https://github.com/interlynk-io/sbomqs/releases/download/v1.0.0/sbomqs-linux-amd64",
-            "builtTime": "2025-01-16T00:00:00Z",
-            "originatedBy": [
-                "http://github.com/interlynk-io/Person/VivekKumarSahu"
-            ],
-            "verifiedUsing": [
-                {
-                    "type": "Hash",
-                    "algorithm": "sha256",
-                    "hashValue": "9cf038f739563932af96b8a9b5ae055df45f414794d5a5f31afc9ad9963aabdd"
-                }
-            ],
-            "software_primaryPurpose": "executable",
-            "software_additionalPurpose": [
-                "application"
-            ],
-            "software_copyrightText": "Copyright 2023 Interlynk.io"
-        },
-        {
-            "type": "Relationship",
-            "spdxId": "http://github.com/interlynk-io/Relationship/1",
-            "creationInfo": "_:creationinfo",
-            "from": "http://spdx.example.com/Package1",
-            "relationshipType": "contains",
-            "to": [
-                "http://spdx.example.com/Package1/myprogram"
-            ],
-            "completeness": "complete"
-        },
-        {
-            "type": "software_Sbom",
-            "spdxId": "http://spdx.example.com/BOM1",
-            "creationInfo": "_:creationinfo",
-            "rootElement": [
-                "http://github.com/interlynk-io/sbomqs/BOM1"
-            ],
-            "element": [
-                "http://spdx.example.com/Package1/myprogram",
-                "http://spdx.example.com/Package1"
-            ],
-            "software_sbomType": [
-                "build"
-            ]
-        }
-    ]
-}
+
+    "@context": "https://spdx.org/rdf/3.0.1/spdx-context.jsonld",
+    "@graph": [{
+        "type": "CreationInfo",
+        "@id": "_:creationinfo",
+        "createdBy": ["http://github.com/interlynk_io/Agent/Person-VivekKumarSahu", "http://github.com/interlynk_io/Agent/Organization-linuzz"],
+        "createdUsing": ["http://github.com/interlynk_io/Agent/Tool-fossa"],
+        "suppliedBy": [],
+        "specVersion": "3.0.1",
+        "created": "2024-03-06T00:00:00Z"
+    },{
+        "type": "Person",
+        "spdxId": "http://github.com/interlynk_io/Agent/Person-VivekKumarSahu",
+        "name": "VivekKumarSahu",
+        "creationInfo": "_:creationinfo",
+        "externalIdentifier": [{
+            "type": "ExternalIdentifier",
+            "externalIdentifierType": "email",
+            "identifier": "JPEWhacker@gmail.com"
+        }]
+    },{
+        "type": "Tool",
+        "spdxId": "http://github.com/interlynk_io/Agent/Tool-fossa",
+        "name": "FOSSA v0.12.0",
+        "creationInfo": "_:creationinfo"
+    },{
+        "type": "Organization",
+        "spdxId": "http://github.com/interlynk_io/Agent/Organization-linuzz",
+        "name": "linuzz",
+        "creationInfo": "_:creationinfo"
+    },{
+        "spdxId" : "https://github.com/DependencyTrack/client-go/Agent/Organization-git",
+        "type" : "Organization",
+        "name" : "Git",
+        "creationInfo" : "_:creationInfo_0"
+      },{
+        "type": "SpdxDocument",
+        "spdxId": "http://github.com/interlynk_io/SpdxDocument/sbomqs",
+        "creationInfo": "_:creationinfo",
+        "dataLicense": "https://github.com/interlynk_io/sbom/License-cc0-1-0",
+        "rootElement": [
+            "http://github.com/interlynk_io/Sbom/sbomqs"
+        ],
+        "import" : [ {
+            "type" : "ExternalMap",
+            "verifiedUsing" : [ {
+                "type" : "Hash",
+                "algorithm" : "SHA1",
+                "hashValue" : "d6a770ba38583ed4bb4525bd96e50461655d2759"
+            } ],
+            "externalSpdxId" : "https://s3.us-east-1.amazonaws.com/blob.fossa.io/FOSSA_BOMS/custom%2B46261%2Fgit%40github.com%3Aviveksahu26%2Fsbomqs.git%2414e7376fa2b00c102a9ba89fd5ccc7cf26f2f255#SPDXRef-DOCUMENT",
+            "locationHint" : "http://spdx.org/spdxdocs/spdx-tools-v1.2-3F2504E0-4F89-41D3-9A0C-0305E82C3301"
+        } ],
+        "profileConformance": [
+            "core",
+            "software"
+        ]
+    },{
+        "type": "software_Sbom",
+        "spdxId": "http://github.com/interlynk_io/Sbom/sbomqs",
+        "creationInfo": "_:creationinfo",
+        "rootElement": [
+            "SPDXRef-custom-46261-git-github.com-viveksahu26-sbomqs.git-14e7376fa2b00c102a9ba89fd5ccc7cf26f2f255"
+        ],
+        "software_sbomType": [
+            "build"
+        ]
+    },{
+        "type": "software_Package",
+        "spdxId": "SPDXRef-custom-46261-git-github.com-viveksahu26-sbomqs.git-14e7376fa2b00c102a9ba89fd5ccc7cf26f2f255",
+        "creationInfo": "_:creationinfo",
+        "name": "git@github.com:viveksahu26/sbomqs.git",
+        "software_packageVersion": "1.0.0",
+        "software_copyrightText": "Copyright 2023 Interlynk.io",
+        "software_downloadLocation": "https://github.com/interlynk-io/sbomqs/releases/download/v1.0.0/sbomqs-linux-amd64",
+        "software_primaryPurpose": "cli",
+        "software_packageUrl": "pkg:swid/Interlynk/interlynk.io/sbomqs@v0.1.9?tag_id=a54ede75-3a01-424e-b7a4-d327f60a6dd5",
+        "builtTime": "2024-03-06T00:00:00Z"
+    },{
+        "type": "software_Package",
+        "spdxId": "SPDXRef-git-github.com-DependencyTrack-client-go-2570042a517e97bc9ec0c617706a89a0edad4426",
+        "creationInfo": "_:creationinfo",
+        "name": "client-go",
+        "software_packageVersion": "2570042a517e97bc9ec0c617706a89a0edad4426",
+        "software_downloadLocation": "https://github.com/DependencyTrack/client-go/archive/2570042a517e97bc9ec0c617706a89a0edad4426.zip",
+        "originatedBy": ["https://github.com/DependencyTrack/client-go/Agent/Organization-git"],
+        "software_primaryPurpose": "library",
+        "software_packageUrl": "pkg:github/DependencyTrack/client-go@2570042a517e97bc9ec0c617706a89a0edad4426"
+    },{
+        "type": "software_Package",
+        "spdxId": "SPDXRef-git-github.com-spf13-cobra-e94f6d0dd9a5e5738dca6bce03c4b1207ffbc0ec",
+        "creationInfo": "_:creationinfo",
+        "name": "cobra",
+        "software_packageVersion": "e94f6d0dd9a5e5738dca6bce03c4b1207ffbc0ec",
+        "software_downloadLocation": "https://github.com/spf13/cobra/archive/e94f6d0dd9a5e5738dca6bce03c4b1207ffbc0ec.zip",
+        "originatedBy": ["https://github.com/DependencyTrack/client-go/Agent/Organization-git"],
+        "software_primaryPurpose": "application",
+        "software_packageUrl": "pkg:github/spf13/cobra@e94f6d0dd9a5e5738dca6bce03c4b1207ffbc0ec"
+    },{
+        "type": "software_Package",
+        "spdxId": "SPDXRef-git-github.com-CycloneDX-cyclonedx-go-98a070df0171240c53e7e1c3c46640eb9b257e08",
+        "creationInfo": "_:creationinfo",
+        "name": "cyclonedx-go",
+        "software_packageVersion": "98a070df0171240c53e7e1c3c46640eb9b257e08",
+        "software_downloadLocation": "https://github.com/CycloneDX/cyclonedx-go/archive/98a070df0171240c53e7e1c3c46640eb9b257e08.zip",
+        "originatedBy": ["https://github.com/DependencyTrack/client-go/Agent/Organization-git"],
+        "software_primaryPurpose": "liabrary",
+        "software_packageUrl": "pkg:github/CycloneDX/cyclonedx-go@98a070df0171240c53e7e1c3c46640eb9b257e08"
+    },{
+        "type": "software_Package",
+        "spdxId": "SPDXRef-git-github.com-google-go-github-0a6474043f9f14c77ba6fa77d1b377a7538a4c8c",
+        "creationInfo": "_:creationinfo",
+        "name": "go-github",
+        "software_copyrightText": "2013 The go-github AUTHORS. All rights reserved.",
+        "software_packageVersion": "0a6474043f9f14c77ba6fa77d1b377a7538a4c8c",
+        "software_downloadLocation": "https://github.com/google/go-github/archive/0a6474043f9f14c77ba6fa77d1b377a7538a4c8c.zip",
+        "originatedBy": ["https://github.com/DependencyTrack/client-go/Agent/Organization-git"],
+        "software_primaryPurpose": "library",
+        "software_packageUrl": "pkg:github/google/go-github@0a6474043f9f14c77ba6fa77d1b377a7538a4c8c"
+    },{
+        "type": "software_Package",
+        "spdxId": "SPDXRef-git-github.com-samber-lo-151a075ecca084ddbb519fafd513002df0632716",
+        "creationInfo": "_:creationinfo",
+        "name": "lo",
+        "software_copyrightText": "2022 Samuel Berthe\n\t2021 The Go Authors. All rights reserved.\n\t2008-2010 John Smith</text>\n\t2013 The Go Authors. All rights reserved.",
+        "software_packageVersion": "151a075ecca084ddbb519fafd513002df0632716",
+        "software_downloadLocation": "https://github.com/samber/lo/archive/151a075ecca084ddbb519fafd513002df0632716.zip",
+        "originatedBy": ["https://github.com/DependencyTrack/client-go/Agent/Organization-git"],
+        "software_primaryPurpose": "library",
+        "software_packageUrl": "pkg:github/samber/lo@151a075ecca084ddbb519fafd513002df0632716"
+    },{
+        "type": "software_Package",
+        "spdxId": "SPDXRef-git-github.com-package-url-packageurl-go-7cb81af9593b9512bb946c55c85609948c48aab9",
+        "creationInfo": "_:creationinfo",
+        "name": "packageurl-go",
+        "software_copyrightText": "the purl authors\n\t the purl authors",
+        "software_packageVersion": "7cb81af9593b9512bb946c55c85609948c48aab9",
+        "software_downloadLocation": "https://github.com/package-url/packageurl-go/archive/7cb81af9593b9512bb946c55c85609948c48aab9.zip",
+        "originatedBy": ["https://github.com/DependencyTrack/client-go/Agent/Organization-git"],
+        "software_primaryPurpose": "application",
+        "software_packageUrl": "pkg:github/package-url/packageurl-go@7cb81af9593b9512bb946c55c85609948c48aab9"
+    },{
+        "type": "software_Package",
+        "spdxId": "SPDXRef-git-github.com-kubernetes-sigs-release-utils-24b0b7a327387393fa4933add6b2c9f5718cade0",
+        "creationInfo": "_:creationinfo",
+        "name": "release-utils",
+        "software_copyrightText": "2019 The Kubernetes Authors.\n\t2011-2016 Canonical Ltd.",
+        "software_packageVersion": "24b0b7a327387393fa4933add6b2c9f5718cade0",
+        "software_downloadLocation": "https://github.com/kubernetes-sigs/release-utils/archive/24b0b7a327387393fa4933add6b2c9f5718cade0.zip",
+        "originatedBy": ["https://github.com/DependencyTrack/client-go/Agent/Organization-git"],
+        "software_primaryPurpose": "application",
+        "software_packageUrl": "pkg:github/kubernetes-sigs/release-utils@24b0b7a327387393fa4933add6b2c9f5718cade0"
+    },{
+        "type": "software_Package",
+        "spdxId": "SPDXRef-git-github.com-Masterminds-semver-e06051f8fcc4c8b4a4990c337b9862a2448722e5",
+        "creationInfo": "_:creationinfo",
+        "name": "semver",
+        "software_copyrightText": "2014-2019 Matt Butcher and Matt Farina",
+        "software_packageVersion": "e06051f8fcc4c8b4a4990c337b9862a2448722e5",
+        "software_downloadLocation": "https://github.com/Masterminds/semver/archive/e06051f8fcc4c8b4a4990c337b9862a2448722e5.zip",
+        "originatedBy": ["https://github.com/DependencyTrack/client-go/Agent/Organization-git"],
+        "software_packageUrl": "pkg:github/Masterminds/semver@e06051f8fcc4c8b4a4990c337b9862a2448722e5"
+    },{
+        "type": "software_Package",
+        "spdxId": "SPDXRef-git-github.com-olekukonko-tablewriter-c7d2a8a09b076b70918308a3cd95464b2ae3b5d8",
+        "creationInfo": "_:creationinfo",
+        "name": "tablewriter",
+        "software_copyrightText": "2014 by Oleku Konko",
+        "software_packageVersion": "c7d2a8a09b076b70918308a3cd95464b2ae3b5d8",
+        "software_downloadLocation": "https://github.com/olekukonko/tablewriter/archive/c7d2a8a09b076b70918308a3cd95464b2ae3b5d8.zip",
+        "originatedBy": ["https://github.com/DependencyTrack/client-go/Agent/Organization-git"],
+        "software_packageUrl": "pkg:github/olekukonko/tablewriter@c7d2a8a09b076b70918308a3cd95464b2ae3b5d8"
+    },{
+        "type": "software_Package",
+        "spdxId": "SPDXRef-git-github.com-spdx-tools-golang-9db247b854b9634d0109153d515fd1a9efd5a1b1",
+        "creationInfo": "_:creationinfo",
+        "name": "tools-golang",
+        "software_copyrightText": "2004, 2006 The Linux Foundation and its contributors.\n\t1989, 1991 Free Software Foundation, Inc.,\n\t the software, and\n\t interest in the program\n\t2004, 2006 The Linux Foundation and its contributors.\n\t2008-2010 John Smith</text>\n\t2014 Sam Ghods\n\t2014 Matthew Endsley",
+        "software_packageVersion": "9db247b854b9634d0109153d515fd1a9efd5a1b1",
+        "software_downloadLocation": "https://github.com/spdx/tools-golang/archive/9db247b854b9634d0109153d515fd1a9efd5a1b1.zip",
+        "originatedBy": ["https://github.com/DependencyTrack/client-go/Agent/Organization-git"],
+        "software_packageUrl": "pkg:github/spdx/tools-golang@9db247b854b9634d0109153d515fd1a9efd5a1b1"
+    },{
+        "type": "software_Package",
+        "spdxId": "SPDXRef-git-github.com-google-uuid-0f11ee6918f41a04c201eceeadf612a377bc7fbc",
+        "creationInfo": "_:creationinfo",
+        "name": "uuid",
+        "software_copyrightText": "2009,2014 Google Inc. All rights reserved.",
+        "software_packageVersion": "0f11ee6918f41a04c201eceeadf612a377bc7fbc",
+        "software_downloadLocation": "https://github.com/google/uuid/archive/0f11ee6918f41a04c201eceeadf612a377bc7fbc.zip",
+        "originatedBy": ["https://github.com/DependencyTrack/client-go/Agent/Organization-git"],
+        "software_packageUrl": "pkg:github/google/uuid@0f11ee6918f41a04c201eceeadf612a377bc7fbc"
+    },{
+        "type": "software_Package",
+        "spdxId": "SPDXRef-git-gopkg.in-yaml.v2-7649d4548cb53a614db133b2a8ac1f31859dda8c",
+        "creationInfo": "_:creationinfo",
+        "name": "yaml.v2",
+        "software_copyrightText": "2006 Kirill Simonov\n\t2011-2016 Canonical Ltd.",
+        "software_packageVersion": "7649d4548cb53a614db133b2a8ac1f31859dda8c",
+        "software_downloadLocation": "https://gopkg.in/yaml.v2",
+        "originatedBy": ["https://github.com/DependencyTrack/client-go/Agent/Organization-git"],
+        "software_packageUrl": ""
+    },{
+        "type": "software_Package",
+        "spdxId": "SPDXRef-git-github.com-uber-go-zap-fcf8ee58669e358bbd6460bef5c2ee7a53c0803a",
+        "creationInfo": "_:creationinfo",
+        "name": "zap",
+        "software_packageVersion": "fcf8ee58669e358bbd6460bef5c2ee7a53c0803a",
+        "software_downloadLocation": "https://github.com/uber-go/zap/archive/fcf8ee58669e358bbd6460bef5c2ee7a53c0803a.zip",
+        "originatedBy": ["https://github.com/DependencyTrack/client-go/Agent/Organization-git"],
+        "software_packageUrl": "pkg:github/uber-go/zap@fcf8ee58669e358bbd6460bef5c2ee7a53c0803a",
+        "software_copyrightText": "2016-2017 Uber Technologies, Inc."
+      },{
+        "type": "software_Package",
+        "spdxId": "SPDXRef-git-github.com-cloudflare-circl-75b28edc25ec569e6353a2b944b0b83d48a9c2e8",
+        "creationInfo": "_:creationinfo",
+        "name": "circl",
+        "software_packageVersion": "75b28edc25ec569e6353a2b944b0b83d48a9c2e8",
+        "software_downloadLocation": "https://github.com/cloudflare/circl/archive/75b28edc25ec569e6353a2b944b0b83d48a9c2e8.zip",
+        "originatedBy": ["https://github.com/DependencyTrack/client-go/Agent/Organization-git"],
+        "software_primaryPurpose": "library",
+        "software_packageUrl": "pkg:github/cloudflare/circl@75b28edc25ec569e6353a2b944b0b83d48a9c2e8",
+        "software_copyrightText": "2019 Cloudflare. All rights reserved.\n\t2018 Brendan McMillion. All rights reserved.\n\t2009 The Go Authors. All rights reserved."
+      },
+      {
+        "type": "software_Package",
+        "spdxId": "SPDXRef-git-go.googlesource.com-crypto-332fd656f4f013f66e643818fe8c759538456535",
+        "creationInfo": "_:creationinfo",
+        "name": "crypto",
+        "software_packageVersion": "332fd656f4f013f66e643818fe8c759538456535",
+        "software_downloadLocation": "https://go.googlesource.com/crypto",
+        "originatedBy": ["https://github.com/DependencyTrack/client-go/Agent/Organization-git"],
+        "software_primaryPurpose": "library",
+        "software_packageUrl": "",
+        "software_copyrightText": "2009 The Go Authors. All rights reserved.\n\t2019 The Go Authors. All rights reserved."
+      },
+      {
+        "type": "software_Package",
+        "spdxId": "SPDXRef-go-github.com-google-go-querystring-v1.1.0",
+        "creationInfo": "_:creationinfo",
+        "name": "github.com/google/go-querystring",
+        "software_packageVersion": "v1.1.0",
+        "software_downloadLocation": "NOASSERTION",
+        "originatedBy": ["https://github.com/DependencyTrack/client-go/Agent/Organization-git"],
+        "software_primaryPurpose": "library",
+        "software_packageUrl": "pkg:golang/github.com/google/go-querystring@v1.1.0",
+        "software_copyrightText": "2013 Google. All rights reserved."
+      },
+      {
+        "type": "software_Package",
+        "spdxId": "SPDXRef-git-github.com-ProtonMail-go-crypto-afb1ddc0824ce0052d72ac0d6917f144a1207424",
+        "creationInfo": "_:creationinfo",
+        "name": "go-crypto",
+        "software_packageVersion": "afb1ddc0824ce0052d72ac0d6917f144a1207424",
+        "software_downloadLocation": "https://github.com/ProtonMail/go-crypto/archive/afb1ddc0824ce0052d72ac0d6917f144a1207424.zip",
+        "originatedBy": ["https://github.com/DependencyTrack/client-go/Agent/Organization-git"],
+        "software_primaryPurpose": "library",
+        "software_packageUrl": "pkg:github/ProtonMail/go-crypto@afb1ddc0824ce0052d72ac0d6917f144a1207424",
+        "software_copyrightText": "2009 The Go Authors. All rights reserved.\n\t2014 Matthew Endsley"
+      },
+      {
+        "type": "software_Package",
+        "spdxId": "SPDXRef-git-github.com-common-nighthawk-go-figure-734e95fb86be9194fff173d46130cf717d719dd1",
+        "creationInfo": "_:creationinfo",
+        "name": "go-figure",
+        "software_packageVersion": "734e95fb86be9194fff173d46130cf717d719dd1",
+        "software_downloadLocation": "https://github.com/common-nighthawk/go-figure/archive/734e95fb86be9194fff173d46130cf717d719dd1.zip",
+        "originatedBy": ["https://github.com/DependencyTrack/client-go/Agent/Organization-git"],
+        "software_primaryPurpose": "library",
+        "software_packageUrl": "pkg:github/common-nighthawk/go-figure@734e95fb86be9194fff173d46130cf717d719dd1",
+        "software_copyrightText": "2018 Daniel Deutsch"
+      },
+      {
+        "type": "software_Package",
+        "spdxId": "SPDXRef-git-github.com-spdx-gordf-b735bd5aac89fe25cad4ef488a95bc00ea549edd",
+        "creationInfo": "_:creationinfo",
+        "name": "gordf",
+        "software_packageVersion": "b735bd5aac89fe25cad4ef488a95bc00ea549edd",
+        "software_downloadLocation": "https://github.com/spdx/gordf/archive/b735bd5aac89fe25cad4ef488a95bc00ea549edd.zip",
+        "originatedBy": ["https://github.com/DependencyTrack/client-go/Agent/Organization-git"],
+        "software_primaryPurpose": "library",
+        "software_packageUrl": "pkg:github/spdx/gordf@b735bd5aac89fe25cad4ef488a95bc00ea549edd",
+        "software_copyrightText": "2020 SPDX"
+      },
+      {
+        "type": "software_Package",
+        "spdxId": "SPDXRef-git-github.com-mattn-go-runewidth-44b7c5b4d67df8ca22917b6800c158a6d3be3560",
+        "creationInfo": "_:creationinfo",
+        "name": "go-runewidth",
+        "software_packageVersion": "44b7c5b4d67df8ca22917b6800c158a6d3be3560",
+        "software_downloadLocation": "https://github.com/mattn/go-runewidth/archive/44b7c5b4d67df8ca22917b6800c158a6d3be3560.zip",
+        "originatedBy": ["https://github.com/DependencyTrack/client-go/Agent/Organization-git"],
+        "software_primaryPurpose": "library",
+        "software_packageUrl": "pkg:github/mattn/go-runewidth@44b7c5b4d67df8ca22917b6800c158a6d3be3560",
+        "software_copyrightText": "2016 Yasuhiro Matsumoto"
+      },
+      {
+        "type": "software_Package",
+        "spdxId": "SPDXRef-git-github.com-anchore-go-struct-converter-c72ef8859ca9d1e1b86b1251a7da8b1ad6e7d8be",
+        "creationInfo": "_:creationinfo",
+        "name": "go-struct-converter",
+        "software_packageVersion": "c72ef8859ca9d1e1b86b1251a7da8b1ad6e7d8be",
+        "software_downloadLocation": "https://github.com/anchore/go-struct-converter/archive/c72ef8859ca9d1e1b86b1251a7da8b1ad6e7d8be.zip",
+        "originatedBy": ["https://github.com/DependencyTrack/client-go/Agent/Organization-git"],
+        "software_primaryPurpose": "library",
+        "software_packageUrl": "pkg:github/anchore/go-struct-converter@c72ef8859ca9d1e1b86b1251a7da8b1ad6e7d8be",
+        "software_copyrightText": "NONE"
+      },{
+        "type": "software_Package",
+        "spdxId": "SPDXRef-git-github.com-uber-go-multierr-de75ae527b39a27afcb50a84427ec7b84021d5f4",
+        "creationInfo": "_:creationinfo",
+        "name": "multierr",
+        "software_packageVersion": "de75ae527b39a27afcb50a84427ec7b84021d5f4",
+        "software_copyrightText": "2017-2021 Uber Technologies, Inc.",
+        "software_downloadLocation": "https://github.com/uber-go/multierr/archive/de75ae527b39a27afcb50a84427ec7b84021d5f4.zip",
+        "originatedBy": ["https://github.com/uber-go/multierr/Agent/Organization-git"],
+        "software_primaryPurpose": "library",
+        "software_packageUrl": "pkg:github/uber-go/multierr@de75ae527b39a27afcb50a84427ec7b84021d5f4"
+      },
+      {
+        "type": "software_Package",
+        "spdxId": "SPDXRef-git-go.googlesource.com-oauth2-5fd42413edb3b1699004a31b72e485e0e4ba1b13",
+        "creationInfo": "_:creationinfo",
+        "name": "oauth2",
+        "software_packageVersion": "5fd42413edb3b1699004a31b72e485e0e4ba1b13",
+        "software_copyrightText": "2009 The Go Authors. All rights reserved.",
+        "software_downloadLocation": "https://go.googlesource.com/oauth2",
+        "originatedBy": ["https://go.googlesource.com/oauth2/Agent/Organization-git"],
+        "software_primaryPurpose": "library",
+        "software_packageUrl": ""
+      },
+      {
+        "type": "software_Package",
+        "spdxId": "SPDXRef-git-github.com-spf13-pflag-2e9d26c8c37aae03e3f9d4e90b7116f5accb7cab",
+        "creationInfo": "_:creationinfo",
+        "name": "pflag",
+        "software_packageVersion": "2e9d26c8c37aae03e3f9d4e90b7116f5accb7cab",
+        "software_copyrightText": "2012 Alex Ogier. All rights reserved.\n\t2012 The Go Authors. All rights reserved.",
+        "software_downloadLocation": "https://github.com/spf13/pflag/archive/2e9d26c8c37aae03e3f9d4e90b7116f5accb7cab.zip",
+        "originatedBy": ["https://github.com/spf13/pflag/Agent/Organization-git"],
+        "software_packageUrl": "pkg:github/spf13/pflag@2e9d26c8c37aae03e3f9d4e90b7116f5accb7cab"
+      },
+      {
+        "type": "software_Package",
+        "spdxId": "SPDXRef-git-go.googlesource.com-sys-673e0f94c16da4b6d7f550d6af66fde0c69503e4",
+        "creationInfo": "_:creationinfo",
+        "name": "sys",
+        "software_packageVersion": "673e0f94c16da4b6d7f550d6af66fde0c69503e4",
+        "software_copyrightText": "2009 The Go Authors. All rights reserved.",
+        "software_downloadLocation": "https://go.googlesource.com/sys",
+        "originatedBy": ["https://go.googlesource.com/sys/Agent/Organization-git"],
+        "software_primaryPurpose": "",
+        "software_packageUrl": ""
+      },
+      {
+        "type": "software_Package",
+        "spdxId": "SPDXRef-git-go.googlesource.com-text-9c2f3a21352d1ff4e47776534e3f334b39ec0183",
+        "creationInfo": "_:creationinfo",
+        "name": "text",
+        "software_packageVersion": "9c2f3a21352d1ff4e47776534e3f334b39ec0183",
+        "software_copyrightText": "2009 The Go Authors. All rights reserved.\n\t2015 The Go Authors. All rights reserved.",
+        "software_downloadLocation": "https://go.googlesource.com/text",
+        "originatedBy": ["https://go.googlesource.com/text/Agent/Organization-git"],
+        "software_packageUrl": ""
+      },
+      {
+        "type": "software_Package",
+        "spdxId": "SPDXRef-git-github.com-rivo-uniseg-03509a98a092b522b2ff0de13e53513d18b3b837",
+        "creationInfo": "_:creationinfo",
+        "name": "uniseg",
+        "software_packageVersion": "03509a98a092b522b2ff0de13e53513d18b3b837",
+        "software_copyrightText": "2019 Oliver Kuederle",
+        "software_downloadLocation": "https://github.com/rivo/uniseg/archive/03509a98a092b522b2ff0de13e53513d18b3b837.zip",
+        "originatedBy": ["https://github.com/rivo/uniseg/Agent/Organization-git"],
+        "software_packageUrl": "pkg:github/rivo/uniseg@03509a98a092b522b2ff0de13e53513d18b3b837"
+      },
+      {
+        "type": "software_Package",
+        "spdxId": "SPDXRef-git-github.com-kubernetes-sigs-yaml-c3772b51db126345efe2dfe4ff8dac83b8141684",
+        "creationInfo": "_:creationinfo",
+        "name": "yaml",
+        "software_packageVersion": "c3772b51db126345efe2dfe4ff8dac83b8141684",
+        "software_copyrightText": "2014 Sam Ghods\n\t staring in 2011 when the project was ported over:\n\t2006-2010 Kirill Simonov\n\t2006-2011 Kirill Simonov\n\t2011-2019 Canonical Ltd\n\t2012 The Go Authors. All rights reserved.\n\t2006 Kirill Simonov\n\t2013 The Go Authors. All rights reserved.",
+        "software_downloadLocation": "https://github.com/kubernetes-sigs/yaml/archive/c3772b51db126345efe2dfe4ff8dac83b8141684.zip",
+        "originatedBy": ["https://github.com/kubernetes-sigs/yaml/Agent/Organization-git"],
+        "software_packageUrl": "pkg:github/kubernetes-sigs/yaml@c3772b51db126345efe2dfe4ff8dac83b8141684"
+      },{
+        "spdxId" : "https://github.com/interlynk_io/sbomqs/Relationship-describe",
+        "type" : "Relationship",
+        "relationshipType" : "describes",
+        "completeness" : "noAssertion",
+        "to" : [ "SPDXRef-custom-46261-git-github.com-viveksahu26-sbomqs.git-14e7376fa2b00c102a9ba89fd5ccc7cf26f2f255" ],
+        "from" : "http://github.com/interlynk_io/Sbom/sbomqs",
+        "creationInfo" : "_:creationInfo_0"
+    },{
+        "spdxId" : "https://github.com/interlynk_io/sbomqs/Relationship-dependsOn2",
+        "type" : "Relationship",
+        "relationshipType" : "dependsOn",
+        "completeness" : "noAssertion",
+        "to" : [ "SPDXRef-git-github.com-spf13-cobra-e94f6d0dd9a5e5738dca6bce03c4b1207ffbc0ec" ],
+        "from" : "http://github.com/interlynk_io/Sbom/sbomqs",
+        "creationInfo" : "_:creationInfo_0"
+    },{
+        "spdxId" : "https://github.com/interlynk_io/sbomqs/Relationship-dependsOn3",
+        "type" : "Relationship",
+        "relationshipType" : "dependsOn",
+        "completeness" : "noAssertion",
+        "to" : [ "SPDXRef-git-github.com-CycloneDX-cyclonedx-go-98a070df0171240c53e7e1c3c46640eb9b257e08" ],
+        "from" : "http://github.com/interlynk_io/Sbom/sbomqs",
+        "creationInfo" : "_:creationInfo_0"
+    },{
+        "spdxId" : "https://github.com/interlynk_io/sbomqs/Relationship-dependsOn2",
+        "type" : "Relationship",
+        "relationshipType" : "dependsOn",
+        "completeness" : "noAssertion",
+        "to" : [ "SPDXRef-git-github.com-CycloneDX-cyclonedx-go-98a070df0171240c53e7e1c3c46640eb9b257e08" ],
+        "from" : "http://github.com/interlynk_io/Sbom/sbomqs",
+        "creationInfo" : "_:creationInfo_0"
+    },{
+        "spdxId" : "https://github.com/interlynk_io/sbomqs/Relationship-hasDeclaredLicense",
+        "type" : "Relationship",
+        "relationshipType" : "hasDeclaredLicense",
+        "to" : ["https://github.com/interlynk_io/Package/sbomqs/License-apache2" ],
+        "from" : "SPDXRef-custom-46261-git-github.com-viveksahu26-sbomqs.git-14e7376fa2b00c102a9ba89fd5ccc7cf26f2f255",
+        "creationInfo" : "_:creationInfo_0"
+    },{
+        "spdxId" : "https://github.com/interlynk_io/sbomqs/Relationship-hasConcludedLicense",
+        "type" : "Relationship",
+        "relationshipType" : "hasConcludedLicense",
+        "to" : ["https://github.com/interlynk_io/Package/sbomqs/License-noassertion" ],
+        "from" : "SPDXRef-custom-46261-git-github.com-viveksahu26-sbomqs.git-14e7376fa2b00c102a9ba89fd5ccc7cf26f2f255",
+        "creationInfo" : "_:creationInfo_0"
+    },{
+        "spdxId" : "https://github.com/interlynk_io/sbom/License-cc0-1-0",
+        "type" : "simplelicensing_LicenseExpression",
+        "creationInfo" : "_:creationInfo_0",
+        "simplelicensing_licenseExpression" : "CC0-1.0"
+    },{
+        "spdxId" : "SPDXRef-git-github.com-DependencyTrack-client-go-2570042a517e97bc9ec0c617706a89a0edad4426/Relationship-hasDeclaredLicense",
+        "type" : "Relationship",
+        "relationshipType" : "hasDeclaredLicense",
+        "to" : ["https://github.com/interlynk_io/Package/sbomqs/License-apache2" ],
+        "from" : "SPDXRef-git-github.com-DependencyTrack-client-go-2570042a517e97bc9ec0c617706a89a0edad4426",
+        "creationInfo" : "_:creationInfo_0"
+    },
+    {
+        "spdxId" : "SPDXRef-git-github.com-spf13-cobra-e94f6d0dd9a5e5738dca6bce03c4b1207ffbc0ec/Relationship-hasDeclaredLicense",
+        "type" : "Relationship",
+        "relationshipType" : "hasDeclaredLicense",
+        "to" : ["https://github.com/interlynk_io/Package/sbomqs/License-apache2" ],
+        "from" : "SPDXRef-git-github.com-spf13-cobra-e94f6d0dd9a5e5738dca6bce03c4b1207ffbc0ec",
+        "creationInfo" : "_:creationInfo_0"
+    },
+    {
+        "spdxId" : "SPDXRef-git-github.com-CycloneDX-cyclonedx-go-98a070df0171240c53e7e1c3c46640eb9b257e08/Relationship-hasDeclaredLicense",
+        "type" : "Relationship",
+        "relationshipType" : "hasDeclaredLicense",
+        "to" : ["https://github.com/interlynk_io/Package/sbomqs/License-apache2" ],
+        "from" : "SPDXRef-git-github.com-CycloneDX-cyclonedx-go-98a070df0171240c53e7e1c3c46640eb9b257e08",
+        "creationInfo" : "_:creationInfo_0"
+    },
+    {
+        "spdxId" : "SPDXRef-git-github.com-google-go-github-0a6474043f9f14c77ba6fa77d1b377a7538a4c8c/Relationship-hasDeclaredLicense",
+        "type" : "Relationship",
+        "relationshipType" : "hasDeclaredLicense",
+        "to" : ["https://github.com/interlynk_io/License-BSD-3-Clause"],
+        "from" : "SPDXRef-git-github.com-google-go-github-0a6474043f9f14c77ba6fa77d1b377a7538a4c8c",
+        "creationInfo" : "_:creationInfo_0"
+    },
+    {
+        "spdxId" : "SPDXRef-git-github.com-github-go-spdx/Relationship-hasDeclaredLicense",
+        "type" : "Relationship",
+        "relationshipType" : "hasDeclaredLicense",
+        "to" : ["https://github.com/interlynk_io/License-MIT"],
+        "from" : "SPDXRef-git-github.com-google-go-github-0a6474043f9f14c77ba6fa77d1b377a7538a4c8c",
+        "creationInfo" : "_:creationInfo_0"
+    },
+    {
+        "spdxId" : "https://github.com/interlynk_io/Package/sbomqs/License-apache2",
+        "type" : "simplelicensing_LicenseExpression",
+        "creationInfo" : "_:creationInfo_0",
+        "simplelicensing_licenseExpression" : "Apache-2.0"
+    },{
+        "spdxId" : "https://github.com/interlynk_io/Package/sbomqs/License-noassertion",
+        "type" : "simplelicensing_LicenseExpression",
+        "creationInfo" : "_:creationInfo_0",
+        "simplelicensing_licenseExpression" : "NOASSERTION"
+    },{
+        "spdxId" : "https://github.com/interlynk_io/License-BSD-3-Clause",
+        "type" : "simplelicensing_LicenseExpression",
+        "creationInfo" : "_:creationInfo_0",
+        "simplelicensing_licenseExpression" : "BSD-3-Clause"
+    },{
+        "spdxId" : "https://github.com/interlynk_io/License-MIT",
+        "type" : "simplelicensing_LicenseExpression",
+        "creationInfo" : "_:creationInfo_0",
+        "simplelicensing_licenseExpression" : "MIT"
+    },{
+        "spdxId" : "SPDXRef-git-gopkg.in-yaml.v2-7649d4548cb53a614db133b2a8ac1f31859dda8c/License-MIT OR Apache-2.0",
+        "type" : "simplelicensing_LicenseExpression",
+        "creationInfo" : "_:creationInfo_0",
+        "simplelicensing_licenseExpression" : "MIT OR Apache-2.0"
+    }
+]}
