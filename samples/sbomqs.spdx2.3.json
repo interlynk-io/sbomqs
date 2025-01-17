@@ -1,0 +1,1356 @@
+{
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "spdxVersion": "SPDX-2.3",
+  "creationInfo": {
+    "created": "2024-07-24T02:12:09Z",
+    "creators": [
+      "Organization: linuzz",
+      "Tool: FOSSA v0.12.0",
+      "Person: Jane Doe"
+    ],
+    "comment": "This package has been shipped in source and binary form.\nThe binaries were created with gcc 4.5.1 and expect to link to\ncompatible system run time libraries.",
+    "licenseListVersion": "3.23",
+    "documentDescribes": [
+      "SPDXRef-git-github.com-DependencyTrack-client-go-2570042a517e97bc9ec0c617706a89a0edad4426",
+      "SPDXRef-git-github.com-spf13-cobra-e94f6d0dd9a5e5738dca6bce03c4b1207ffbc0ec",
+      "SPDXRef-git-github.com-CycloneDX-cyclonedx-go-98a070df0171240c53e7e1c3c46640eb9b257e08",
+      "SPDXRef-git-github.com-google-go-github-0a6474043f9f14c77ba6fa77d1b377a7538a4c8c",
+      "SPDXRef-git-github.com-github-go-spdx-eacf4f37582f0c1b8f0086816ad1afea74d1ac3f",
+      "SPDXRef-git-github.com-samber-lo-151a075ecca084ddbb519fafd513002df0632716",
+      "SPDXRef-git-github.com-package-url-packageurl-go-7cb81af9593b9512bb946c55c85609948c48aab9",
+      "SPDXRef-git-github.com-kubernetes-sigs-release-utils-24b0b7a327387393fa4933add6b2c9f5718cade0",
+      "SPDXRef-git-github.com-Masterminds-semver-e06051f8fcc4c8b4a4990c337b9862a2448722e5",
+      "SPDXRef-git-github.com-olekukonko-tablewriter-c7d2a8a09b076b70918308a3cd95464b2ae3b5d8",
+      "SPDXRef-git-github.com-spdx-tools-golang-9db247b854b9634d0109153d515fd1a9efd5a1b1",
+      "SPDXRef-git-github.com-google-uuid-0f11ee6918f41a04c201eceeadf612a377bc7fbc",
+      "SPDXRef-git-gopkg.in-yaml.v2-7649d4548cb53a614db133b2a8ac1f31859dda8c",
+      "SPDXRef-git-github.com-uber-go-zap-fcf8ee58669e358bbd6460bef5c2ee7a53c0803a",
+      "SPDXRef-git-github.com-cloudflare-circl-75b28edc25ec569e6353a2b944b0b83d48a9c2e8",
+      "SPDXRef-git-go.googlesource.com-crypto-332fd656f4f013f66e643818fe8c759538456535",
+      "SPDXRef-go-github.com-google-go-querystring-v1.1.0",
+      "SPDXRef-git-github.com-ProtonMail-go-crypto-afb1ddc0824ce0052d72ac0d6917f144a1207424",
+      "SPDXRef-git-github.com-common-nighthawk-go-figure-734e95fb86be9194fff173d46130cf717d719dd1",
+      "SPDXRef-git-github.com-spdx-gordf-b735bd5aac89fe25cad4ef488a95bc00ea549edd",
+      "SPDXRef-git-github.com-mattn-go-runewidth-44b7c5b4d67df8ca22917b6800c158a6d3be3560",
+      "SPDXRef-git-github.com-anchore-go-struct-converter-c72ef8859ca9d1e1b86b1251a7da8b1ad6e7d8be",
+      "SPDXRef-git-github.com-uber-go-multierr-de75ae527b39a27afcb50a84427ec7b84021d5f4",
+      "SPDXRef-git-go.googlesource.com-oauth2-5fd42413edb3b1699004a31b72e485e0e4ba1b13",
+      "SPDXRef-git-github.com-spf13-pflag-2e9d26c8c37aae03e3f9d4e90b7116f5accb7cab",
+      "SPDXRef-git-go.googlesource.com-sys-673e0f94c16da4b6d7f550d6af66fde0c69503e4",
+      "SPDXRef-git-go.googlesource.com-text-9c2f3a21352d1ff4e47776534e3f334b39ec0183",
+      "SPDXRef-git-github.com-rivo-uniseg-03509a98a092b522b2ff0de13e53513d18b3b837",
+      "SPDXRef-git-github.com-kubernetes-sigs-yaml-c3772b51db126345efe2dfe4ff8dac83b8141684"
+    ]
+  },
+  "externalDocumentRefs" : [ {
+    "externalDocumentId" : "DocumentRef-spdx-tool-1.2",
+    "checksum" : {
+      "algorithm" : "SHA1",
+      "checksumValue" : "d6a770ba38583ed4bb4525bd96e50461655d2759"
+    },
+    "spdxDocument" : "http://spdx.org/spdxdocs/spdx-tools-v1.2-3F2504E0-4F89-41D3-9A0C-0305E82C3301"
+  } ],
+  "name": "46261/git@github.com:viveksahu26/sbomqs.git-14e7376fa2b00c102a9ba89fd5ccc7cf26f2f255",
+  "documentNamespace": "https://s3.us-east-1.amazonaws.com/blob.fossa.io/FOSSA_BOMS/custom%2B46261%2Fgit%40github.com%3Aviveksahu26%2Fsbomqs.git%2414e7376fa2b00c102a9ba89fd5ccc7cf26f2f255",
+  "dataLicense": "CC0-1.0",
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-custom-46261-git-github.com-viveksahu26-sbomqs.git-14e7376fa2b00c102a9ba89fd5ccc7cf26f2f255",
+      "name": "git@github.com:viveksahu26/sbomqs.git",
+      "versionInfo": "14e7376fa2b00c102a9ba89fd5ccc7cf26f2f255",
+      "filesAnalyzed": true,
+      "downloadLocation": "NOASSERTION",
+      "supplier": "Organization: Interlynk",
+      "licenseDeclared": "Apache-2.0",
+      "copyrightText": "Copyright 2023 Interlynk.io",
+      "licenseConcluded": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:swid/Interlynk/interlynk.io/sbomqs@v0.1.9?tag_id=a54ede75-3a01-424e-b7a4-d327f60a6dd5"
+        }
+      ],
+      "checksums": [
+        {
+          "algorithm": "MD5",
+          "checksumValue": "920bb51bf0b87402ab7a41be1589dd6c"
+        },
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "05142cc9f0f8d5d05e7f6e546a37d158c0857ae8"
+        },
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "59304698d644083afafe277b503b6a13addb1bcada161d073c768441c71dea8a"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-git-github.com-DependencyTrack-client-go-2570042a517e97bc9ec0c617706a89a0edad4426",
+      "name": "client-go",
+      "versionInfo": "2570042a517e97bc9ec0c617706a89a0edad4426",
+      "filesAnalyzed": true,
+      "downloadLocation": "https://github.com/DependencyTrack/client-go/archive/2570042a517e97bc9ec0c617706a89a0edad4426.zip",
+      "originator": "Organization: Git",
+      "licenseDeclared": "Apache-2.0",
+      "copyrightText": "NONE",
+      "licenseConcluded": "NOASSERTION",
+      "primaryPackagePurpose": "library",
+      "checksums": [
+        {
+          "algorithm": "MD5",
+          "checksumValue": "89665ef70e9db5bfe92152bf1981a9b9"
+        },
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "019972a495add569010eeb19b12a587255f64257"
+        },
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "2d1ed4c9f1f133fa71dc1dbbccaeec6f4a23038aab4c7db537bdbd053cc18640"
+        }
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:github/DependencyTrack/client-go@2570042a517e97bc9ec0c617706a89a0edad4426"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-git-github.com-spf13-cobra-e94f6d0dd9a5e5738dca6bce03c4b1207ffbc0ec",
+      "name": "cobra",
+      "versionInfo": "e94f6d0dd9a5e5738dca6bce03c4b1207ffbc0ec",
+      "filesAnalyzed": true,
+      "downloadLocation": "https://github.com/spf13/cobra/archive/e94f6d0dd9a5e5738dca6bce03c4b1207ffbc0ec.zip",
+      "originator": "Organization: Git",
+      "licenseDeclared": "Apache-2.0",
+      "copyrightText": "2013-2023 The Cobra Authors",
+      "licenseConcluded": "NOASSERTION",
+      "primaryPackagePurpose": "application",
+      "checksums": [
+        {
+          "algorithm": "MD5",
+          "checksumValue": "eb9eeb7752e9f6c7bb49dbfd3adbddf4"
+        },
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "bd90295c6a2815e42990fe6fc0cdd8c02552758a"
+        },
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "cd197b7eb05e732e6b8a7c7fa61b5472ac8529c646e665b5d1ecbff72b3c9c8e"
+        }
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:github/spf13/cobra@e94f6d0dd9a5e5738dca6bce03c4b1207ffbc0ec"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-git-github.com-CycloneDX-cyclonedx-go-98a070df0171240c53e7e1c3c46640eb9b257e08",
+      "name": "cyclonedx-go",
+      "versionInfo": "98a070df0171240c53e7e1c3c46640eb9b257e08",
+      "filesAnalyzed": true,
+      "downloadLocation": "https://github.com/CycloneDX/cyclonedx-go/archive/98a070df0171240c53e7e1c3c46640eb9b257e08.zip",
+      "originator": "Organization: Git",
+      "licenseDeclared": "Apache-2.0",
+      "copyrightText": "OWASP Foundation. All Rights Reserved.",
+      "licenseConcluded": "NOASSERTION",
+      "primaryPackagePurpose": "library",
+      "checksums": [
+        {
+          "algorithm": "MD5",
+          "checksumValue": "6d8370bfb8bad929db9880eda18786d6"
+        },
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "875d4ee3d7bfc5283252b4e8c9b0e6c2e7ee58f0"
+        },
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "68a70313cffb2a66a8b69d506b12f7d26b8549a70a6140df3f0b2f39e44c6649"
+        }
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:github/CycloneDX/cyclonedx-go@98a070df0171240c53e7e1c3c46640eb9b257e08"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-git-github.com-google-go-github-0a6474043f9f14c77ba6fa77d1b377a7538a4c8c",
+      "name": "go-github",
+      "versionInfo": "0a6474043f9f14c77ba6fa77d1b377a7538a4c8c",
+      "filesAnalyzed": true,
+      "downloadLocation": "https://github.com/google/go-github/archive/0a6474043f9f14c77ba6fa77d1b377a7538a4c8c.zip",
+      "originator": "Organization: Git",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "2013 The go-github AUTHORS. All rights reserved.",
+      "licenseConcluded": "NOASSERTION",
+      "primaryPackagePurpose": "library",
+      "checksums": [
+        {
+          "algorithm": "MD5",
+          "checksumValue": "4ce4ddad4d52e6a2620391ac5e2db7e5"
+        },
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "3efcb28ec0b9b1f7204748ecc87aa9fbb7a6cfd3"
+        },
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "2e4a2bce049972bc3eb75b2096b1f8fab7eb93c11872d48fb8797936401aeed4"
+        }
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:github/google/go-github@0a6474043f9f14c77ba6fa77d1b377a7538a4c8c"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-git-github.com-github-go-spdx-eacf4f37582f0c1b8f0086816ad1afea74d1ac3f",
+      "name": "go-spdx",
+      "versionInfo": "eacf4f37582f0c1b8f0086816ad1afea74d1ac3f",
+      "filesAnalyzed": true,
+      "downloadLocation": "https://github.com/github/go-spdx/archive/eacf4f37582f0c1b8f0086816ad1afea74d1ac3f.zip",
+      "originator": "Organization: Git",
+      "licenseDeclared": "MIT",
+      "copyrightText": "2022 GitHub",
+      "licenseConcluded": "NOASSERTION",
+      "primaryPackagePurpose": "application",
+      "checksums": [
+        {
+          "algorithm": "MD5",
+          "checksumValue": "a2da2ed1454be2f20117beffcde472e6"
+        },
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "7672e199211e34ce90f429a94d08ea86c98b8183"
+        },
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "71a28e97e47bc657b77d317f5776ae0f5c7d688801f49a140d880d0c5f68b501"
+        }
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:github/github/go-spdx@eacf4f37582f0c1b8f0086816ad1afea74d1ac3f"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-git-github.com-samber-lo-151a075ecca084ddbb519fafd513002df0632716",
+      "name": "lo",
+      "versionInfo": "151a075ecca084ddbb519fafd513002df0632716",
+      "filesAnalyzed": true,
+      "downloadLocation": "https://github.com/samber/lo/archive/151a075ecca084ddbb519fafd513002df0632716.zip",
+      "originator": "Organization: Git",
+      "licenseDeclared": "MIT",
+      "primaryPackagePurpose": "library",
+      "copyrightText": "2022 Samuel Berthe\n\t2021 The Go Authors. All rights reserved.\n\t2008-2010 John Smith</text>\n\t2013 The Go Authors. All rights reserved.",
+      "licenseInfoFromFiles": [
+        "BSD-3-Clause"
+      ],
+      "licenseConcluded": "NOASSERTION",
+      "checksums": [
+        {
+          "algorithm": "MD5",
+          "checksumValue": "5c11471881aba96afcf62755accddab8"
+        },
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "d95b469e36b3f5f54439c8361aeb9dee004e4a19"
+        },
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "c557b73c1fb05ad44880408ff2718c39dd175a689e82a500bb9f3106469d0cdb"
+        }
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:github/samber/lo@151a075ecca084ddbb519fafd513002df0632716"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-git-github.com-package-url-packageurl-go-7cb81af9593b9512bb946c55c85609948c48aab9",
+      "name": "packageurl-go",
+      "versionInfo": "7cb81af9593b9512bb946c55c85609948c48aab9",
+      "filesAnalyzed": true,
+      "downloadLocation": "https://github.com/package-url/packageurl-go/archive/7cb81af9593b9512bb946c55c85609948c48aab9.zip",
+      "originator": "Organization: Git",
+      "licenseDeclared": "MIT",
+      "copyrightText": "the purl authors\n\t the purl authors",
+      "licenseConcluded": "NOASSERTION",
+      "primaryPackagePurpose": "application",
+      "checksums": [
+        {
+          "algorithm": "MD5",
+          "checksumValue": "40715b86b26e0b80fa9d7a315d733aed"
+        },
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "3307967d303a02e8fc5ade08b4deb9a72a2d1a4b"
+        },
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "5209d3fc9ccc51771a6587bac0049cbc84298507956d14b09a29c7f37b2dee0b"
+        }
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:github/package-url/packageurl-go@7cb81af9593b9512bb946c55c85609948c48aab9"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-git-github.com-kubernetes-sigs-release-utils-24b0b7a327387393fa4933add6b2c9f5718cade0",
+      "name": "release-utils",
+      "versionInfo": "24b0b7a327387393fa4933add6b2c9f5718cade0",
+      "filesAnalyzed": true,
+      "downloadLocation": "https://github.com/kubernetes-sigs/release-utils/archive/24b0b7a327387393fa4933add6b2c9f5718cade0.zip",
+      "originator": "Organization: Git",
+      "licenseDeclared": "Apache-2.0",
+      "copyrightText": "2019 The Kubernetes Authors.\n\t2011-2016 Canonical Ltd.",
+      "licenseConcluded": "NOASSERTION",
+      "checksums": [
+        {
+          "algorithm": "MD5",
+          "checksumValue": "4c187f7bea1e9ac51cf16d042020d90f"
+        },
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "79480f25a1da6f8978a74564a1204d7652214ed5"
+        },
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "7c486538797d193a9493741f9ffa69a37ce802cfff3356b7ebb107d8eeef6113"
+        }
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:github/kubernetes-sigs/release-utils@24b0b7a327387393fa4933add6b2c9f5718cade0"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-git-github.com-Masterminds-semver-e06051f8fcc4c8b4a4990c337b9862a2448722e5",
+      "name": "semver",
+      "versionInfo": "e06051f8fcc4c8b4a4990c337b9862a2448722e5",
+      "filesAnalyzed": true,
+      "downloadLocation": "https://github.com/Masterminds/semver/archive/e06051f8fcc4c8b4a4990c337b9862a2448722e5.zip",
+      "originator": "Organization: Git",
+      "licenseDeclared": "MIT",
+      "copyrightText": "2014-2019 Matt Butcher and Matt Farina",
+      "licenseConcluded": "NOASSERTION",
+      "checksums": [
+        {
+          "algorithm": "MD5",
+          "checksumValue": "424dd7cf7ead15133c4e3d43f91c1a2c"
+        },
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "19007c768cc10ebe2786e5d59ac9c04cea60e83f"
+        },
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "d8a96aa7af95adbbc4d35e463cb4ae2a7b5c11c92a91d9a1f1d22898b2e226c3"
+        }
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:github/Masterminds/semver@e06051f8fcc4c8b4a4990c337b9862a2448722e5"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-git-github.com-olekukonko-tablewriter-c7d2a8a09b076b70918308a3cd95464b2ae3b5d8",
+      "name": "tablewriter",
+      "versionInfo": "c7d2a8a09b076b70918308a3cd95464b2ae3b5d8",
+      "filesAnalyzed": true,
+      "downloadLocation": "https://github.com/olekukonko/tablewriter/archive/c7d2a8a09b076b70918308a3cd95464b2ae3b5d8.zip",
+      "originator": "Organization: Git",
+      "licenseDeclared": "MIT",
+      "copyrightText": "2014 by Oleku Konko",
+      "licenseConcluded": "NOASSERTION",
+      "checksums": [
+        {
+          "algorithm": "MD5",
+          "checksumValue": "fd841c0c513b76ece978fad5a8e3b04e"
+        },
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "974bd578859edacd5b7080491d7d9c9f7b52ff7e"
+        },
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "c2b77ef84209f300b6e245200bbd16f72531d81f2fea0b6efa37110130b0a6ba"
+        }
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:github/olekukonko/tablewriter@c7d2a8a09b076b70918308a3cd95464b2ae3b5d8"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-git-github.com-spdx-tools-golang-9db247b854b9634d0109153d515fd1a9efd5a1b1",
+      "name": "tools-golang",
+      "versionInfo": "9db247b854b9634d0109153d515fd1a9efd5a1b1",
+      "filesAnalyzed": true,
+      "downloadLocation": "https://github.com/spdx/tools-golang/archive/9db247b854b9634d0109153d515fd1a9efd5a1b1.zip",
+      "originator": "Organization: Git",
+      "licenseDeclared": "Apache-2.0 OR CC-BY-4.0 OR GPL-2.0-only",
+      "copyrightText": "2004, 2006 The Linux Foundation and its contributors.\n\t1989, 1991 Free Software Foundation, Inc.,\n\t the software, and\n\t interest in the program\n\t2004, 2006 The Linux Foundation and its contributors.\n\t2008-2010 John Smith</text>\n\t2014 Sam Ghods\n\t2014 Matthew Endsley",
+      "licenseInfoFromFiles": [
+        "GPL-2.0-or-later",
+        "MIT",
+        "ISC",
+        "BSD-3-Clause",
+        "BSD-2-Clause",
+        "Beerware",
+        "Apache-1.1"
+      ],
+      "licenseConcluded": "NOASSERTION",
+      "checksums": [
+        {
+          "algorithm": "MD5",
+          "checksumValue": "fca8d1ff678327d6a7483ca629c2867e"
+        },
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "bd9e2559625dce2a8ea2df00316d21e6f8f5f967"
+        },
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "e5d3763cfa3cc3d75274e6ef89d479641729849fd7c1024a2ee1479bfd89d54d"
+        }
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:github/spdx/tools-golang@9db247b854b9634d0109153d515fd1a9efd5a1b1"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-git-github.com-google-uuid-0f11ee6918f41a04c201eceeadf612a377bc7fbc",
+      "name": "uuid",
+      "versionInfo": "0f11ee6918f41a04c201eceeadf612a377bc7fbc",
+      "filesAnalyzed": true,
+      "downloadLocation": "https://github.com/google/uuid/archive/0f11ee6918f41a04c201eceeadf612a377bc7fbc.zip",
+      "originator": "Organization: Git",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "2009,2014 Google Inc. All rights reserved.",
+      "licenseConcluded": "NOASSERTION",
+      "checksums": [
+        {
+          "algorithm": "MD5",
+          "checksumValue": "94b112f775df98eeb2bea0a9447b9aa2"
+        },
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "75f4c4f623bcbadb6255caf74ab17ddf68d80584"
+        },
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "4fac6c00936d2d1f2728b594f8f730f5712a12582eb12e6449009626088361f8"
+        }
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:github/google/uuid@0f11ee6918f41a04c201eceeadf612a377bc7fbc"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-git-gopkg.in-yaml.v2-7649d4548cb53a614db133b2a8ac1f31859dda8c",
+      "name": "yaml.v2",
+      "versionInfo": "7649d4548cb53a614db133b2a8ac1f31859dda8c",
+      "filesAnalyzed": true,
+      "downloadLocation": "https://gopkg.in/yaml.v2",
+      "originator": "Organization: Git",
+      "licenseDeclared": "MIT OR Apache-2.0",
+      "copyrightText": "2006 Kirill Simonov\n\t2011-2016 Canonical Ltd.",
+      "licenseConcluded": "NOASSERTION",
+      "checksums": [
+        {
+          "algorithm": "MD5",
+          "checksumValue": "dd25e599cabac148d66be3c419747a30"
+        },
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "20689cb71ce30584d4d47814d0a645b38f3c5bf4"
+        },
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "2b4f69e7eacbf349cf1bce32b9be75e95399c55d27d87c830874d128111f433a"
+        }
+      ],
+      "externalRefs": []
+    },
+    {
+      "SPDXID": "SPDXRef-git-github.com-uber-go-zap-fcf8ee58669e358bbd6460bef5c2ee7a53c0803a",
+      "name": "zap",
+      "versionInfo": "fcf8ee58669e358bbd6460bef5c2ee7a53c0803a",
+      "filesAnalyzed": true,
+      "downloadLocation": "https://github.com/uber-go/zap/archive/fcf8ee58669e358bbd6460bef5c2ee7a53c0803a.zip",
+      "originator": "Organization: Git",
+      "licenseDeclared": "MIT",
+      "copyrightText": "2016-2017 Uber Technologies, Inc.",
+      "licenseConcluded": "NOASSERTION",
+      "checksums": [
+        {
+          "algorithm": "MD5",
+          "checksumValue": "fce28374539707d65241e8bbfe1c60d6"
+        },
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "c5a847ecb5a2f17b4a14f775bf0c0cba494ed5d0"
+        },
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "555d039289fc3c094fc2598a5a16e1a033ed16d71fed631b866824ff241ffe61"
+        }
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:github/uber-go/zap@fcf8ee58669e358bbd6460bef5c2ee7a53c0803a"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-git-github.com-cloudflare-circl-75b28edc25ec569e6353a2b944b0b83d48a9c2e8",
+      "name": "circl",
+      "versionInfo": "75b28edc25ec569e6353a2b944b0b83d48a9c2e8",
+      "filesAnalyzed": true,
+      "downloadLocation": "https://github.com/cloudflare/circl/archive/75b28edc25ec569e6353a2b944b0b83d48a9c2e8.zip",
+      "originator": "Organization: Git",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "2019 Cloudflare. All rights reserved.\n\t2018 Brendan McMillion. All rights reserved.\n\t2009 The Go Authors. All rights reserved.",
+      "licenseConcluded": "NOASSERTION",
+      "checksums": [
+        {
+          "algorithm": "MD5",
+          "checksumValue": "a4b01dc6384d7b9799553d2968b6d290"
+        },
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "b901baa81021f0da84367fa1d65cada43ed61a8e"
+        },
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "1f7f5c159af41d1fcdfd3b0c18174b0179f0c3497711881d610d10d90555c452"
+        }
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:github/cloudflare/circl@75b28edc25ec569e6353a2b944b0b83d48a9c2e8"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-git-go.googlesource.com-crypto-332fd656f4f013f66e643818fe8c759538456535",
+      "name": "crypto",
+      "versionInfo": "332fd656f4f013f66e643818fe8c759538456535",
+      "filesAnalyzed": true,
+      "downloadLocation": "https://go.googlesource.com/crypto",
+      "originator": "Organization: Git",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "2009 The Go Authors. All rights reserved.\n\t2019 The Go Authors. All rights reserved.",
+      "licenseInfoFromFiles": [
+        "LicenseRef-openssl-ssleay"
+      ],
+      "licenseConcluded": "NOASSERTION",
+      "checksums": [
+        {
+          "algorithm": "MD5",
+          "checksumValue": "164a36fcb4cf433df4ea9c71713ae0e0"
+        },
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "fe7a2d46b8aa76811aef242464b826635c192fed"
+        },
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "f38e4904ae10d3a79e2e47adda8d33f971224fb6cef5e0125fadbd142bebe473"
+        }
+      ],
+      "externalRefs": []
+    },
+    {
+      "SPDXID": "SPDXRef-go-github.com-google-go-querystring-v1.1.0",
+      "name": "github.com/google/go-querystring",
+      "versionInfo": "v1.1.0",
+      "filesAnalyzed": true,
+      "downloadLocation": "NOASSERTION",
+      "originator": "Organization: Golang",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "2013 Google. All rights reserved.",
+      "licenseConcluded": "NOASSERTION",
+      "checksums": [
+        {
+          "algorithm": "MD5",
+          "checksumValue": "ffc4843443cd24f1e80ef06e79d466ff"
+        },
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "863ddf0d3395ba3d0790b1662fb99768e4355a5a"
+        },
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "9032029ce1a6419f3289dbd1e31aa48a6f9ddc2433b115cb2e4e620b35338c62"
+        }
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/google/go-querystring@v1.1.0"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-git-github.com-ProtonMail-go-crypto-afb1ddc0824ce0052d72ac0d6917f144a1207424",
+      "name": "go-crypto",
+      "versionInfo": "afb1ddc0824ce0052d72ac0d6917f144a1207424",
+      "filesAnalyzed": true,
+      "downloadLocation": "https://github.com/ProtonMail/go-crypto/archive/afb1ddc0824ce0052d72ac0d6917f144a1207424.zip",
+      "originator": "Organization: Git",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "2009 The Go Authors. All rights reserved.\n\t2014 Matthew Endsley",
+      "licenseInfoFromFiles": [
+        "BSD-2-Clause"
+      ],
+      "licenseConcluded": "NOASSERTION",
+      "checksums": [
+        {
+          "algorithm": "MD5",
+          "checksumValue": "afe92f63f5e23b499265678114ce9f56"
+        },
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "8e936f0cb51c6e556b47f8beee5d1a0acbcbb1dc"
+        },
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "b646fd8a45fba2deb0f6f56c01e4c0288bcd8865ca9e20ba2d3ae13423177ea0"
+        }
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:github/ProtonMail/go-crypto@afb1ddc0824ce0052d72ac0d6917f144a1207424"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-git-github.com-common-nighthawk-go-figure-734e95fb86be9194fff173d46130cf717d719dd1",
+      "name": "go-figure",
+      "versionInfo": "734e95fb86be9194fff173d46130cf717d719dd1",
+      "filesAnalyzed": true,
+      "downloadLocation": "https://github.com/common-nighthawk/go-figure/archive/734e95fb86be9194fff173d46130cf717d719dd1.zip",
+      "originator": "Organization: Git",
+      "licenseDeclared": "MIT",
+      "copyrightText": "2018 Daniel Deutsch",
+      "licenseConcluded": "NOASSERTION",
+      "checksums": [
+        {
+          "algorithm": "MD5",
+          "checksumValue": "8a85fd581f7586e4758110b606f1448f"
+        },
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "e2b7ad4fed557bbf2b0a828fb3d351e3e62ef75c"
+        },
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "a83f2db586cccd169e69262067665ad1b972308d9e1ab7472bb9414ebacec101"
+        }
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:github/common-nighthawk/go-figure@734e95fb86be9194fff173d46130cf717d719dd1"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-git-github.com-spdx-gordf-b735bd5aac89fe25cad4ef488a95bc00ea549edd",
+      "name": "gordf",
+      "versionInfo": "b735bd5aac89fe25cad4ef488a95bc00ea549edd",
+      "filesAnalyzed": true,
+      "downloadLocation": "https://github.com/spdx/gordf/archive/b735bd5aac89fe25cad4ef488a95bc00ea549edd.zip",
+      "originator": "Organization: Git",
+      "licenseDeclared": "MIT",
+      "copyrightText": "2020 SPDX",
+      "licenseConcluded": "NOASSERTION",
+      "checksums": [
+        {
+          "algorithm": "MD5",
+          "checksumValue": "ee63927ca2b9de114c5902bed9827d5b"
+        },
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "dc8c45df4f5285a655b675be9d029e10b303d18e"
+        },
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "24ee5a6955ce42d8640cfdaedcf45caaeb2130159a79eb9b0a1b8e6f686235ef"
+        }
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:github/spdx/gordf@b735bd5aac89fe25cad4ef488a95bc00ea549edd"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-git-github.com-mattn-go-runewidth-44b7c5b4d67df8ca22917b6800c158a6d3be3560",
+      "name": "go-runewidth",
+      "versionInfo": "44b7c5b4d67df8ca22917b6800c158a6d3be3560",
+      "filesAnalyzed": true,
+      "downloadLocation": "https://github.com/mattn/go-runewidth/archive/44b7c5b4d67df8ca22917b6800c158a6d3be3560.zip",
+      "originator": "Organization: Git",
+      "licenseDeclared": "MIT",
+      "copyrightText": "2016 Yasuhiro Matsumoto",
+      "licenseConcluded": "NOASSERTION",
+      "checksums": [
+        {
+          "algorithm": "MD5",
+          "checksumValue": "c5dc6cfb600c7b2377f6fcb5733ccc09"
+        },
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "0b2aa424b45fcbdf3be345f148f2e803f1002254"
+        },
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "372f9b8181d89894dc4784a9399081276632ecba395f39919e0868d1a51d8cc3"
+        }
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:github/mattn/go-runewidth@44b7c5b4d67df8ca22917b6800c158a6d3be3560"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-git-github.com-anchore-go-struct-converter-c72ef8859ca9d1e1b86b1251a7da8b1ad6e7d8be",
+      "name": "go-struct-converter",
+      "versionInfo": "c72ef8859ca9d1e1b86b1251a7da8b1ad6e7d8be",
+      "filesAnalyzed": true,
+      "downloadLocation": "https://github.com/anchore/go-struct-converter/archive/c72ef8859ca9d1e1b86b1251a7da8b1ad6e7d8be.zip",
+      "originator": "Organization: Git",
+      "licenseDeclared": "Apache-2.0",
+      "copyrightText": "NONE",
+      "licenseConcluded": "NOASSERTION",
+      "checksums": [
+        {
+          "algorithm": "MD5",
+          "checksumValue": "590f2b62da8ad277eb804bfe7fd50d06"
+        },
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "6047104222ae20d4b490cf61d27192eae73bf0a9"
+        },
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "9f17a05a9bbd684f32613c29a5fd0efff9eaf95d2e6937a8edaea217d806c65c"
+        }
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:github/anchore/go-struct-converter@c72ef8859ca9d1e1b86b1251a7da8b1ad6e7d8be"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-git-github.com-uber-go-multierr-de75ae527b39a27afcb50a84427ec7b84021d5f4",
+      "name": "multierr",
+      "versionInfo": "de75ae527b39a27afcb50a84427ec7b84021d5f4",
+      "filesAnalyzed": true,
+      "downloadLocation": "https://github.com/uber-go/multierr/archive/de75ae527b39a27afcb50a84427ec7b84021d5f4.zip",
+      "originator": "Organization: Git",
+      "licenseDeclared": "MIT",
+      "copyrightText": "2017-2021 Uber Technologies, Inc.",
+      "licenseConcluded": "NOASSERTION",
+      "checksums": [
+        {
+          "algorithm": "MD5",
+          "checksumValue": "376e1438b12647046c41ba7d7351d36f"
+        },
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "5384048d634ad3125475d8f820514e19eb68372f"
+        },
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "1ae6f2f23d00ebefedc1199ecd5523dd05cf597da744fa3e56ed2533b2c21b27"
+        }
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:github/uber-go/multierr@de75ae527b39a27afcb50a84427ec7b84021d5f4"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-git-go.googlesource.com-oauth2-5fd42413edb3b1699004a31b72e485e0e4ba1b13",
+      "name": "oauth2",
+      "versionInfo": "5fd42413edb3b1699004a31b72e485e0e4ba1b13",
+      "filesAnalyzed": true,
+      "downloadLocation": "https://go.googlesource.com/oauth2",
+      "originator": "Organization: Git",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "2009 The Go Authors. All rights reserved.",
+      "licenseConcluded": "NOASSERTION",
+      "checksums": [
+        {
+          "algorithm": "MD5",
+          "checksumValue": "3b6a54d8a124c49c5310b89e2ae594b3"
+        },
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "bd4888cf4c69528f777aededf95baf4ce7cb017c"
+        },
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "e2b8b6e68b45426890d405534b5a9558d1168ff46ccc9bc9205d497db382f45d"
+        }
+      ],
+      "externalRefs": []
+    },
+    {
+      "SPDXID": "SPDXRef-git-github.com-spf13-pflag-2e9d26c8c37aae03e3f9d4e90b7116f5accb7cab",
+      "name": "pflag",
+      "versionInfo": "2e9d26c8c37aae03e3f9d4e90b7116f5accb7cab",
+      "filesAnalyzed": true,
+      "downloadLocation": "https://github.com/spf13/pflag/archive/2e9d26c8c37aae03e3f9d4e90b7116f5accb7cab.zip",
+      "originator": "Organization: Git",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "2012 Alex Ogier. All rights reserved.\n\t2012 The Go Authors. All rights reserved.",
+      "licenseConcluded": "NOASSERTION",
+      "checksums": [
+        {
+          "algorithm": "MD5",
+          "checksumValue": "e8ccc0cd854dff720781acecb5483010"
+        },
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "ea84cd9f42c1156215324e5383d6d995284122b6"
+        },
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "231235c17b0b4190121b8141154740fbbb3458918712e89fcc6a96cb62078bd7"
+        }
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:github/spf13/pflag@2e9d26c8c37aae03e3f9d4e90b7116f5accb7cab"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-git-go.googlesource.com-sys-673e0f94c16da4b6d7f550d6af66fde0c69503e4",
+      "name": "sys",
+      "versionInfo": "673e0f94c16da4b6d7f550d6af66fde0c69503e4",
+      "filesAnalyzed": true,
+      "downloadLocation": "https://go.googlesource.com/sys",
+      "originator": "Organization: Git",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "2009 The Go Authors. All rights reserved.",
+      "licenseConcluded": "NOASSERTION",
+      "checksums": [
+        {
+          "algorithm": "MD5",
+          "checksumValue": "2bf1f0433cf2424b98b45ad1fa6e1a2c"
+        },
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "d166b39c95fd63d103503060384dfb587009f88b"
+        },
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "b8309368b8aa97089911c05f2dc8c3681f39e989ab3ed3293ffae1e14c217608"
+        }
+      ],
+      "externalRefs": []
+    },
+    {
+      "SPDXID": "SPDXRef-git-go.googlesource.com-text-9c2f3a21352d1ff4e47776534e3f334b39ec0183",
+      "name": "text",
+      "versionInfo": "9c2f3a21352d1ff4e47776534e3f334b39ec0183",
+      "filesAnalyzed": true,
+      "downloadLocation": "https://go.googlesource.com/text",
+      "originator": "Organization: Git",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "2009 The Go Authors. All rights reserved.\n\t2015 The Go Authors. All rights reserved.",
+      "licenseInfoFromFiles": [
+        "CC-BY-SA-3.0",
+        "CC-BY-SA-2.0",
+        "CC-BY-SA-2.5",
+        "CC-BY-SA-1.0"
+      ],
+      "licenseConcluded": "NOASSERTION",
+      "checksums": [
+        {
+          "algorithm": "MD5",
+          "checksumValue": "e3d7cb615eedf93a861d86ee90541768"
+        },
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "9535c3413d793f60d4582d2cc0bf133efd8f0669"
+        },
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "b0049a7db63e0577af843ac3d0241bf57c9eeed4b562cd788264b9a1b7cc9de8"
+        }
+      ],
+      "externalRefs": []
+    },
+    {
+      "SPDXID": "SPDXRef-git-github.com-rivo-uniseg-03509a98a092b522b2ff0de13e53513d18b3b837",
+      "name": "uniseg",
+      "versionInfo": "03509a98a092b522b2ff0de13e53513d18b3b837",
+      "filesAnalyzed": true,
+      "downloadLocation": "https://github.com/rivo/uniseg/archive/03509a98a092b522b2ff0de13e53513d18b3b837.zip",
+      "originator": "Organization: Git",
+      "licenseDeclared": "MIT",
+      "copyrightText": "2019 Oliver Kuederle",
+      "licenseConcluded": "NOASSERTION",
+      "checksums": [
+        {
+          "algorithm": "MD5",
+          "checksumValue": "57ec0d1a117085bae09946793c3f8bbd"
+        },
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "aa4bd135f6ada907194a75711da960c7945d06f6"
+        },
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "ea612e1985e751f0e21e9a8af0b88fb62ea9ebd3f7f750be41094e5d1462fbcc"
+        }
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:github/rivo/uniseg@03509a98a092b522b2ff0de13e53513d18b3b837"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-git-github.com-kubernetes-sigs-yaml-c3772b51db126345efe2dfe4ff8dac83b8141684",
+      "name": "yaml",
+      "versionInfo": "c3772b51db126345efe2dfe4ff8dac83b8141684",
+      "filesAnalyzed": true,
+      "downloadLocation": "https://github.com/kubernetes-sigs/yaml/archive/c3772b51db126345efe2dfe4ff8dac83b8141684.zip",
+      "originator": "Organization: Git",
+      "licenseDeclared": "Apache-2.0 OR MIT",
+      "copyrightText": "2014 Sam Ghods\n\t staring in 2011 when the project was ported over:\n\t2006-2010 Kirill Simonov\n\t2006-2011 Kirill Simonov\n\t2011-2019 Canonical Ltd\n\t2012 The Go Authors. All rights reserved.\n\t2006 Kirill Simonov\n\t2013 The Go Authors. All rights reserved.",
+      "licenseInfoFromFiles": [
+        "BSD-3-Clause"
+      ],
+      "licenseConcluded": "NOASSERTION",
+      "checksums": [
+        {
+          "algorithm": "MD5",
+          "checksumValue": "d2d3d9f7bea2e6c16fbc7972a0d7989d"
+        },
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "c81ffe3b6b81e68655976cd34e501a1f62b4d459"
+        },
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "900c97c18324149d1baf541d24069f86630008754176a46ef76de3b81d8de707"
+        }
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:github/kubernetes-sigs/yaml@c3772b51db126345efe2dfe4ff8dac83b8141684"
+        }
+      ]
+    }
+  ],
+  "hasExtractedLicensingInfos": [
+    {
+      "licenseId": "LicenseRef-openssl-ssleay",
+      "name": "openssl-ssleay",
+      "extractedText": "LICENSE ISSUES\n\t  ==============\n\t\n\t  The OpenSSL toolkit stays under a dual license, i.e. both the conditions of\n\t  the OpenSSL License and the original SSLeay license apply to the toolkit.\n\t  See below for the actual license texts. Actually both licenses are BSD-style\n\t  Open Source licenses. In case of any license issues related to OpenSSL\n\t  please contact openssl-core@openssl.org.\n\t\n\t  OpenSSL License\n\t  ---------------\n\t\n\tRedistribution and use in source and binary forms, with or without\n\tmodification, are permitted provided that the following conditions\n\tare met:\n\t\n\t1. Redistributions of source code must retain the above copyright\n\t   notice, this list of conditions and the following disclaimer. \n\t\n\t2. Redistributions in binary form must reproduce the above copyright\n\t   notice, this list of conditions and the following disclaimer in\n\t   the documentation and/or other materials provided with the\n\t   distribution.\n\t\n\t3. All advertising materials mentioning features or use of this\n\t   software must display the following acknowledgment:\n\t   \"This product includes software developed by the OpenSSL Project\n\t   for use in the OpenSSL Toolkit. (http://www.openssl.org/)\"\n\t\n\t4. The names \"OpenSSL Toolkit\" and \"OpenSSL Project\" must not be used to\n\t   endorse or promote products derived from this software without\n\t   prior written permission. For written permission, please contact\n\t   openssl-core@openssl.org.\n\t\n\t5. Products derived from this software may not be called \"OpenSSL\"\n\t   nor may \"OpenSSL\" appear in their names without prior written\n\t   permission of the OpenSSL Project.\n\t\n\t6. Redistributions of any form whatsoever must retain the following\n\t   acknowledgment:\n\t   \"This product includes software developed by the OpenSSL Project\n\t   for use in the OpenSSL Toolkit (http://www.openssl.org/)\"\n\t\n\tTHIS SOFTWARE IS PROVIDED BY THE OpenSSL PROJECT ``AS IS'' AND ANY\n\tEXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE\n\tIMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR\n\tPURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE OpenSSL PROJECT OR\n\tITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,\n\tSPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT\n\tNOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;\n\tLOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)\n\tHOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,\n\tSTRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)\n\tARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED\n\tOF THE POSSIBILITY OF SUCH DAMAGE.\n\t\n\t\n\tThis product includes cryptographic software written by Eric Young\n\t(eay@cryptsoft.com).  This product includes software written by Tim\n\tHudson (tjh@cryptsoft.com).\n\t\n\t\n\t Original SSLeay License\n\t -----------------------\n\t\n\tCopyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)\n\tAll rights reserved.\n\t\n\tThis package is an SSL implementation written\n\tby Eric Young (eay@cryptsoft.com).\n\tThe implementation was written so as to conform with Netscapes SSL.\n\t\n\tThis library is free for commercial and non-commercial use as long as\n\tthe following conditions are aheared to.  The following conditions\n\tapply to all code found in this distribution, be it the RC4, RSA,\n\tlhash, DES, etc., code; not just the SSL code.  The SSL documentation\n\tincluded with this distribution is covered by the same copyright terms\n\texcept that the holder is Tim Hudson (tjh@cryptsoft.com).\n\t\n\tCopyright remains Eric Young's, and as such any Copyright notices in\n\tthe code are not to be removed.\n\tIf this package is used in a product, Eric Young should be given attribution\n\tas the author of the parts of the library used.\n\tThis can be in the form of a textual message at program startup or\n\tin documentation (online or textual) provided with the package.\n\t\n\tRedistribution and use in source and binary forms, with or without\n\tmodification, are permitted provided that the following conditions\n\tare met:\n\t1. Redistributions of source code must retain the copyright\n\t   notice, this list of conditions and the following disclaimer.\n\t2. Redistributions in binary form must reproduce the above copyright\n\t   notice, this list of conditions and the following disclaimer in the\n\t   documentation and/or other materials provided with the distribution.\n\t3. All advertising materials mentioning features or use of this software\n\t   must display the following acknowledgement:\n\t   \"This product includes cryptographic software written by\n\t    Eric Young (eay@cryptsoft.com)\"\n\t   The word 'cryptographic' can be left out if the rouines from the library\n\t   being used are not cryptographic related :-).\n\t4. If you include any Windows specific code (or a derivative thereof) from \n\t   the apps directory (application code) you must include an acknowledgement:\n\t   \"This product includes software written by Tim Hudson (tjh@cryptsoft.com)\"\n\t\n\tTHIS SOFTWARE IS PROVIDED BY ERIC YOUNG ``AS IS'' AND\n\tANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE\n\tIMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE\n\tARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE\n\tFOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL\n\tDAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS\n\tOR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)\n\tHOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT\n\tLIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY\n\tOUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF\n\tSUCH DAMAGE.\n\t\n\tThe licence and distribution terms for any publically available version or\n\tderivative of this code cannot be changed.  i.e. this code cannot simply be\n\tcopied and put under another distribution licence\n\t[including the GNU Public Licence.]\n"
+    }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relationshipType": "DESCRIBES",
+      "relatedSpdxElement": "SPDXRef-custom-46261-git-github.com-viveksahu26-sbomqs.git-14e7376fa2b00c102a9ba89fd5ccc7cf26f2f255"
+    },
+    {
+      "spdxElementId": "SPDXRef-custom-46261-git-github.com-viveksahu26-sbomqs.git-14e7376fa2b00c102a9ba89fd5ccc7cf26f2f255",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-git-github.com-DependencyTrack-client-go-2570042a517e97bc9ec0c617706a89a0edad4426"
+    },
+    {
+      "spdxElementId": "SPDXRef-git-github.com-DependencyTrack-client-go-2570042a517e97bc9ec0c617706a89a0edad4426",
+      "relationshipType": "DEPENDENCY_OF",
+      "relatedSpdxElement": "SPDXRef-custom-46261-git-github.com-viveksahu26-sbomqs.git-14e7376fa2b00c102a9ba89fd5ccc7cf26f2f255"
+    },
+    {
+      "spdxElementId": "SPDXRef-custom-46261-git-github.com-viveksahu26-sbomqs.git-14e7376fa2b00c102a9ba89fd5ccc7cf26f2f255",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-git-github.com-kubernetes-sigs-release-utils-24b0b7a327387393fa4933add6b2c9f5718cade0"
+    },
+    {
+      "spdxElementId": "SPDXRef-git-github.com-kubernetes-sigs-release-utils-24b0b7a327387393fa4933add6b2c9f5718cade0",
+      "relationshipType": "DEPENDENCY_OF",
+      "relatedSpdxElement": "SPDXRef-custom-46261-git-github.com-viveksahu26-sbomqs.git-14e7376fa2b00c102a9ba89fd5ccc7cf26f2f255"
+    },
+    {
+      "spdxElementId": "SPDXRef-custom-46261-git-github.com-viveksahu26-sbomqs.git-14e7376fa2b00c102a9ba89fd5ccc7cf26f2f255",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-git-github.com-spf13-cobra-e94f6d0dd9a5e5738dca6bce03c4b1207ffbc0ec"
+    },
+    {
+      "spdxElementId": "SPDXRef-git-github.com-spf13-cobra-e94f6d0dd9a5e5738dca6bce03c4b1207ffbc0ec",
+      "relationshipType": "DEPENDENCY_OF",
+      "relatedSpdxElement": "SPDXRef-custom-46261-git-github.com-viveksahu26-sbomqs.git-14e7376fa2b00c102a9ba89fd5ccc7cf26f2f255"
+    },
+    {
+      "spdxElementId": "SPDXRef-custom-46261-git-github.com-viveksahu26-sbomqs.git-14e7376fa2b00c102a9ba89fd5ccc7cf26f2f255",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-git-github.com-CycloneDX-cyclonedx-go-98a070df0171240c53e7e1c3c46640eb9b257e08"
+    },
+    {
+      "spdxElementId": "SPDXRef-git-github.com-CycloneDX-cyclonedx-go-98a070df0171240c53e7e1c3c46640eb9b257e08",
+      "relationshipType": "DEPENDENCY_OF",
+      "relatedSpdxElement": "SPDXRef-custom-46261-git-github.com-viveksahu26-sbomqs.git-14e7376fa2b00c102a9ba89fd5ccc7cf26f2f255"
+    },
+    {
+      "spdxElementId": "SPDXRef-custom-46261-git-github.com-viveksahu26-sbomqs.git-14e7376fa2b00c102a9ba89fd5ccc7cf26f2f255",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-git-github.com-google-go-github-0a6474043f9f14c77ba6fa77d1b377a7538a4c8c"
+    },
+    {
+      "spdxElementId": "SPDXRef-git-github.com-google-go-github-0a6474043f9f14c77ba6fa77d1b377a7538a4c8c",
+      "relationshipType": "DEPENDENCY_OF",
+      "relatedSpdxElement": "SPDXRef-custom-46261-git-github.com-viveksahu26-sbomqs.git-14e7376fa2b00c102a9ba89fd5ccc7cf26f2f255"
+    },
+    {
+      "spdxElementId": "SPDXRef-custom-46261-git-github.com-viveksahu26-sbomqs.git-14e7376fa2b00c102a9ba89fd5ccc7cf26f2f255",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-git-github.com-github-go-spdx-eacf4f37582f0c1b8f0086816ad1afea74d1ac3f"
+    },
+    {
+      "spdxElementId": "SPDXRef-git-github.com-github-go-spdx-eacf4f37582f0c1b8f0086816ad1afea74d1ac3f",
+      "relationshipType": "DEPENDENCY_OF",
+      "relatedSpdxElement": "SPDXRef-custom-46261-git-github.com-viveksahu26-sbomqs.git-14e7376fa2b00c102a9ba89fd5ccc7cf26f2f255"
+    },
+    {
+      "spdxElementId": "SPDXRef-custom-46261-git-github.com-viveksahu26-sbomqs.git-14e7376fa2b00c102a9ba89fd5ccc7cf26f2f255",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-git-github.com-samber-lo-151a075ecca084ddbb519fafd513002df0632716"
+    },
+    {
+      "spdxElementId": "SPDXRef-git-github.com-samber-lo-151a075ecca084ddbb519fafd513002df0632716",
+      "relationshipType": "DEPENDENCY_OF",
+      "relatedSpdxElement": "SPDXRef-custom-46261-git-github.com-viveksahu26-sbomqs.git-14e7376fa2b00c102a9ba89fd5ccc7cf26f2f255"
+    },
+    {
+      "spdxElementId": "SPDXRef-custom-46261-git-github.com-viveksahu26-sbomqs.git-14e7376fa2b00c102a9ba89fd5ccc7cf26f2f255",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-git-github.com-package-url-packageurl-go-7cb81af9593b9512bb946c55c85609948c48aab9"
+    },
+    {
+      "spdxElementId": "SPDXRef-git-github.com-package-url-packageurl-go-7cb81af9593b9512bb946c55c85609948c48aab9",
+      "relationshipType": "DEPENDENCY_OF",
+      "relatedSpdxElement": "SPDXRef-custom-46261-git-github.com-viveksahu26-sbomqs.git-14e7376fa2b00c102a9ba89fd5ccc7cf26f2f255"
+    },
+    {
+      "spdxElementId": "SPDXRef-custom-46261-git-github.com-viveksahu26-sbomqs.git-14e7376fa2b00c102a9ba89fd5ccc7cf26f2f255",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-git-github.com-Masterminds-semver-e06051f8fcc4c8b4a4990c337b9862a2448722e5"
+    },
+    {
+      "spdxElementId": "SPDXRef-git-github.com-Masterminds-semver-e06051f8fcc4c8b4a4990c337b9862a2448722e5",
+      "relationshipType": "DEPENDENCY_OF",
+      "relatedSpdxElement": "SPDXRef-custom-46261-git-github.com-viveksahu26-sbomqs.git-14e7376fa2b00c102a9ba89fd5ccc7cf26f2f255"
+    },
+    {
+      "spdxElementId": "SPDXRef-custom-46261-git-github.com-viveksahu26-sbomqs.git-14e7376fa2b00c102a9ba89fd5ccc7cf26f2f255",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-git-github.com-olekukonko-tablewriter-c7d2a8a09b076b70918308a3cd95464b2ae3b5d8"
+    },
+    {
+      "spdxElementId": "SPDXRef-git-github.com-olekukonko-tablewriter-c7d2a8a09b076b70918308a3cd95464b2ae3b5d8",
+      "relationshipType": "DEPENDENCY_OF",
+      "relatedSpdxElement": "SPDXRef-custom-46261-git-github.com-viveksahu26-sbomqs.git-14e7376fa2b00c102a9ba89fd5ccc7cf26f2f255"
+    },
+    {
+      "spdxElementId": "SPDXRef-custom-46261-git-github.com-viveksahu26-sbomqs.git-14e7376fa2b00c102a9ba89fd5ccc7cf26f2f255",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-git-github.com-spdx-tools-golang-9db247b854b9634d0109153d515fd1a9efd5a1b1"
+    },
+    {
+      "spdxElementId": "SPDXRef-git-github.com-spdx-tools-golang-9db247b854b9634d0109153d515fd1a9efd5a1b1",
+      "relationshipType": "DEPENDENCY_OF",
+      "relatedSpdxElement": "SPDXRef-custom-46261-git-github.com-viveksahu26-sbomqs.git-14e7376fa2b00c102a9ba89fd5ccc7cf26f2f255"
+    },
+    {
+      "spdxElementId": "SPDXRef-custom-46261-git-github.com-viveksahu26-sbomqs.git-14e7376fa2b00c102a9ba89fd5ccc7cf26f2f255",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-git-github.com-google-uuid-0f11ee6918f41a04c201eceeadf612a377bc7fbc"
+    },
+    {
+      "spdxElementId": "SPDXRef-git-github.com-google-uuid-0f11ee6918f41a04c201eceeadf612a377bc7fbc",
+      "relationshipType": "DEPENDENCY_OF",
+      "relatedSpdxElement": "SPDXRef-custom-46261-git-github.com-viveksahu26-sbomqs.git-14e7376fa2b00c102a9ba89fd5ccc7cf26f2f255"
+    },
+    {
+      "spdxElementId": "SPDXRef-custom-46261-git-github.com-viveksahu26-sbomqs.git-14e7376fa2b00c102a9ba89fd5ccc7cf26f2f255",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-git-gopkg.in-yaml.v2-7649d4548cb53a614db133b2a8ac1f31859dda8c"
+    },
+    {
+      "spdxElementId": "SPDXRef-git-gopkg.in-yaml.v2-7649d4548cb53a614db133b2a8ac1f31859dda8c",
+      "relationshipType": "DEPENDENCY_OF",
+      "relatedSpdxElement": "SPDXRef-custom-46261-git-github.com-viveksahu26-sbomqs.git-14e7376fa2b00c102a9ba89fd5ccc7cf26f2f255"
+    },
+    {
+      "spdxElementId": "SPDXRef-custom-46261-git-github.com-viveksahu26-sbomqs.git-14e7376fa2b00c102a9ba89fd5ccc7cf26f2f255",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-git-github.com-uber-go-zap-fcf8ee58669e358bbd6460bef5c2ee7a53c0803a"
+    },
+    {
+      "spdxElementId": "SPDXRef-git-github.com-uber-go-zap-fcf8ee58669e358bbd6460bef5c2ee7a53c0803a",
+      "relationshipType": "DEPENDENCY_OF",
+      "relatedSpdxElement": "SPDXRef-custom-46261-git-github.com-viveksahu26-sbomqs.git-14e7376fa2b00c102a9ba89fd5ccc7cf26f2f255"
+    },
+    {
+      "spdxElementId": "SPDXRef-git-github.com-kubernetes-sigs-release-utils-24b0b7a327387393fa4933add6b2c9f5718cade0",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-git-github.com-spf13-cobra-e94f6d0dd9a5e5738dca6bce03c4b1207ffbc0ec"
+    },
+    {
+      "spdxElementId": "SPDXRef-git-github.com-spf13-cobra-e94f6d0dd9a5e5738dca6bce03c4b1207ffbc0ec",
+      "relationshipType": "DEPENDENCY_OF",
+      "relatedSpdxElement": "SPDXRef-git-github.com-kubernetes-sigs-release-utils-24b0b7a327387393fa4933add6b2c9f5718cade0"
+    },
+    {
+      "spdxElementId": "SPDXRef-git-github.com-kubernetes-sigs-release-utils-24b0b7a327387393fa4933add6b2c9f5718cade0",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-git-github.com-common-nighthawk-go-figure-734e95fb86be9194fff173d46130cf717d719dd1"
+    },
+    {
+      "spdxElementId": "SPDXRef-git-github.com-common-nighthawk-go-figure-734e95fb86be9194fff173d46130cf717d719dd1",
+      "relationshipType": "DEPENDENCY_OF",
+      "relatedSpdxElement": "SPDXRef-git-github.com-kubernetes-sigs-release-utils-24b0b7a327387393fa4933add6b2c9f5718cade0"
+    },
+    {
+      "spdxElementId": "SPDXRef-git-github.com-DependencyTrack-client-go-2570042a517e97bc9ec0c617706a89a0edad4426",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-git-github.com-google-uuid-0f11ee6918f41a04c201eceeadf612a377bc7fbc"
+    },
+    {
+      "spdxElementId": "SPDXRef-git-github.com-google-uuid-0f11ee6918f41a04c201eceeadf612a377bc7fbc",
+      "relationshipType": "DEPENDENCY_OF",
+      "relatedSpdxElement": "SPDXRef-git-github.com-DependencyTrack-client-go-2570042a517e97bc9ec0c617706a89a0edad4426"
+    },
+    {
+      "spdxElementId": "SPDXRef-git-github.com-google-go-github-0a6474043f9f14c77ba6fa77d1b377a7538a4c8c",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-git-github.com-ProtonMail-go-crypto-afb1ddc0824ce0052d72ac0d6917f144a1207424"
+    },
+    {
+      "spdxElementId": "SPDXRef-git-github.com-ProtonMail-go-crypto-afb1ddc0824ce0052d72ac0d6917f144a1207424",
+      "relationshipType": "DEPENDENCY_OF",
+      "relatedSpdxElement": "SPDXRef-git-github.com-google-go-github-0a6474043f9f14c77ba6fa77d1b377a7538a4c8c"
+    },
+    {
+      "spdxElementId": "SPDXRef-git-github.com-google-go-github-0a6474043f9f14c77ba6fa77d1b377a7538a4c8c",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-go-github.com-google-go-querystring-v1.1.0"
+    },
+    {
+      "spdxElementId": "SPDXRef-go-github.com-google-go-querystring-v1.1.0",
+      "relationshipType": "DEPENDENCY_OF",
+      "relatedSpdxElement": "SPDXRef-git-github.com-google-go-github-0a6474043f9f14c77ba6fa77d1b377a7538a4c8c"
+    },
+    {
+      "spdxElementId": "SPDXRef-git-github.com-google-go-github-0a6474043f9f14c77ba6fa77d1b377a7538a4c8c",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-git-go.googlesource.com-oauth2-5fd42413edb3b1699004a31b72e485e0e4ba1b13"
+    },
+    {
+      "spdxElementId": "SPDXRef-git-go.googlesource.com-oauth2-5fd42413edb3b1699004a31b72e485e0e4ba1b13",
+      "relationshipType": "DEPENDENCY_OF",
+      "relatedSpdxElement": "SPDXRef-git-github.com-google-go-github-0a6474043f9f14c77ba6fa77d1b377a7538a4c8c"
+    },
+    {
+      "spdxElementId": "SPDXRef-git-github.com-ProtonMail-go-crypto-afb1ddc0824ce0052d72ac0d6917f144a1207424",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-git-github.com-cloudflare-circl-75b28edc25ec569e6353a2b944b0b83d48a9c2e8"
+    },
+    {
+      "spdxElementId": "SPDXRef-git-github.com-cloudflare-circl-75b28edc25ec569e6353a2b944b0b83d48a9c2e8",
+      "relationshipType": "DEPENDENCY_OF",
+      "relatedSpdxElement": "SPDXRef-git-github.com-ProtonMail-go-crypto-afb1ddc0824ce0052d72ac0d6917f144a1207424"
+    },
+    {
+      "spdxElementId": "SPDXRef-git-github.com-ProtonMail-go-crypto-afb1ddc0824ce0052d72ac0d6917f144a1207424",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-git-go.googlesource.com-crypto-332fd656f4f013f66e643818fe8c759538456535"
+    },
+    {
+      "spdxElementId": "SPDXRef-git-go.googlesource.com-crypto-332fd656f4f013f66e643818fe8c759538456535",
+      "relationshipType": "DEPENDENCY_OF",
+      "relatedSpdxElement": "SPDXRef-git-github.com-ProtonMail-go-crypto-afb1ddc0824ce0052d72ac0d6917f144a1207424"
+    },
+    {
+      "spdxElementId": "SPDXRef-git-github.com-spdx-tools-golang-9db247b854b9634d0109153d515fd1a9efd5a1b1",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-git-github.com-spdx-gordf-b735bd5aac89fe25cad4ef488a95bc00ea549edd"
+    },
+    {
+      "spdxElementId": "SPDXRef-git-github.com-spdx-gordf-b735bd5aac89fe25cad4ef488a95bc00ea549edd",
+      "relationshipType": "DEPENDENCY_OF",
+      "relatedSpdxElement": "SPDXRef-git-github.com-spdx-tools-golang-9db247b854b9634d0109153d515fd1a9efd5a1b1"
+    },
+    {
+      "spdxElementId": "SPDXRef-git-github.com-spdx-tools-golang-9db247b854b9634d0109153d515fd1a9efd5a1b1",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-git-github.com-anchore-go-struct-converter-c72ef8859ca9d1e1b86b1251a7da8b1ad6e7d8be"
+    },
+    {
+      "spdxElementId": "SPDXRef-git-github.com-anchore-go-struct-converter-c72ef8859ca9d1e1b86b1251a7da8b1ad6e7d8be",
+      "relationshipType": "DEPENDENCY_OF",
+      "relatedSpdxElement": "SPDXRef-git-github.com-spdx-tools-golang-9db247b854b9634d0109153d515fd1a9efd5a1b1"
+    },
+    {
+      "spdxElementId": "SPDXRef-git-github.com-spdx-tools-golang-9db247b854b9634d0109153d515fd1a9efd5a1b1",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-git-github.com-kubernetes-sigs-yaml-c3772b51db126345efe2dfe4ff8dac83b8141684"
+    },
+    {
+      "spdxElementId": "SPDXRef-git-github.com-kubernetes-sigs-yaml-c3772b51db126345efe2dfe4ff8dac83b8141684",
+      "relationshipType": "DEPENDENCY_OF",
+      "relatedSpdxElement": "SPDXRef-git-github.com-spdx-tools-golang-9db247b854b9634d0109153d515fd1a9efd5a1b1"
+    },
+    {
+      "spdxElementId": "SPDXRef-git-github.com-olekukonko-tablewriter-c7d2a8a09b076b70918308a3cd95464b2ae3b5d8",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-git-github.com-mattn-go-runewidth-44b7c5b4d67df8ca22917b6800c158a6d3be3560"
+    },
+    {
+      "spdxElementId": "SPDXRef-git-github.com-mattn-go-runewidth-44b7c5b4d67df8ca22917b6800c158a6d3be3560",
+      "relationshipType": "DEPENDENCY_OF",
+      "relatedSpdxElement": "SPDXRef-git-github.com-olekukonko-tablewriter-c7d2a8a09b076b70918308a3cd95464b2ae3b5d8"
+    },
+    {
+      "spdxElementId": "SPDXRef-git-github.com-uber-go-zap-fcf8ee58669e358bbd6460bef5c2ee7a53c0803a",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-git-github.com-uber-go-multierr-de75ae527b39a27afcb50a84427ec7b84021d5f4"
+    },
+    {
+      "spdxElementId": "SPDXRef-git-github.com-uber-go-multierr-de75ae527b39a27afcb50a84427ec7b84021d5f4",
+      "relationshipType": "DEPENDENCY_OF",
+      "relatedSpdxElement": "SPDXRef-git-github.com-uber-go-zap-fcf8ee58669e358bbd6460bef5c2ee7a53c0803a"
+    },
+    {
+      "spdxElementId": "SPDXRef-git-github.com-spf13-cobra-e94f6d0dd9a5e5738dca6bce03c4b1207ffbc0ec",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-git-github.com-spf13-pflag-2e9d26c8c37aae03e3f9d4e90b7116f5accb7cab"
+    },
+    {
+      "spdxElementId": "SPDXRef-git-github.com-spf13-pflag-2e9d26c8c37aae03e3f9d4e90b7116f5accb7cab",
+      "relationshipType": "DEPENDENCY_OF",
+      "relatedSpdxElement": "SPDXRef-git-github.com-spf13-cobra-e94f6d0dd9a5e5738dca6bce03c4b1207ffbc0ec"
+    },
+    {
+      "spdxElementId": "SPDXRef-git-go.googlesource.com-crypto-332fd656f4f013f66e643818fe8c759538456535",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-git-go.googlesource.com-sys-673e0f94c16da4b6d7f550d6af66fde0c69503e4"
+    },
+    {
+      "spdxElementId": "SPDXRef-git-go.googlesource.com-sys-673e0f94c16da4b6d7f550d6af66fde0c69503e4",
+      "relationshipType": "DEPENDENCY_OF",
+      "relatedSpdxElement": "SPDXRef-git-go.googlesource.com-crypto-332fd656f4f013f66e643818fe8c759538456535"
+    },
+    {
+      "spdxElementId": "SPDXRef-git-github.com-cloudflare-circl-75b28edc25ec569e6353a2b944b0b83d48a9c2e8",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-git-go.googlesource.com-sys-673e0f94c16da4b6d7f550d6af66fde0c69503e4"
+    },
+    {
+      "spdxElementId": "SPDXRef-git-go.googlesource.com-sys-673e0f94c16da4b6d7f550d6af66fde0c69503e4",
+      "relationshipType": "DEPENDENCY_OF",
+      "relatedSpdxElement": "SPDXRef-git-github.com-cloudflare-circl-75b28edc25ec569e6353a2b944b0b83d48a9c2e8"
+    },
+    {
+      "spdxElementId": "SPDXRef-git-github.com-samber-lo-151a075ecca084ddbb519fafd513002df0632716",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-git-go.googlesource.com-text-9c2f3a21352d1ff4e47776534e3f334b39ec0183"
+    },
+    {
+      "spdxElementId": "SPDXRef-git-go.googlesource.com-text-9c2f3a21352d1ff4e47776534e3f334b39ec0183",
+      "relationshipType": "DEPENDENCY_OF",
+      "relatedSpdxElement": "SPDXRef-git-github.com-samber-lo-151a075ecca084ddbb519fafd513002df0632716"
+    },
+    {
+      "spdxElementId": "SPDXRef-git-github.com-mattn-go-runewidth-44b7c5b4d67df8ca22917b6800c158a6d3be3560",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-git-github.com-rivo-uniseg-03509a98a092b522b2ff0de13e53513d18b3b837"
+    },
+    {
+      "spdxElementId": "SPDXRef-git-github.com-rivo-uniseg-03509a98a092b522b2ff0de13e53513d18b3b837",
+      "relationshipType": "DEPENDENCY_OF",
+      "relatedSpdxElement": "SPDXRef-git-github.com-mattn-go-runewidth-44b7c5b4d67df8ca22917b6800c158a6d3be3560"
+    }
+  ]
+}
