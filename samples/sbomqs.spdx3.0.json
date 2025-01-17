@@ -418,13 +418,6 @@
         "from" : "http://github.com/interlynk_io/Sbom/sbomqs",
         "creationInfo" : "_:creationInfo_0"
     },{
-        "spdxId" : "https://github.com/interlynk_io/sbomqs/Relationship-hasDeclaredLicense",
-        "type" : "Relationship",
-        "relationshipType" : "hasDeclaredLicense",
-        "to" : ["https://github.com/interlynk_io/Package/sbomqs/License-apache2" ],
-        "from" : "SPDXRef-custom-46261-git-github.com-viveksahu26-sbomqs.git-14e7376fa2b00c102a9ba89fd5ccc7cf26f2f255",
-        "creationInfo" : "_:creationInfo_0"
-    },{
         "spdxId" : "https://github.com/interlynk_io/sbomqs/Relationship-hasConcludedLicense",
         "type" : "Relationship",
         "relationshipType" : "hasConcludedLicense",
@@ -437,69 +430,482 @@
         "creationInfo" : "_:creationInfo_0",
         "simplelicensing_licenseExpression" : "CC0-1.0"
     },{
-        "spdxId" : "SPDXRef-git-github.com-DependencyTrack-client-go-2570042a517e97bc9ec0c617706a89a0edad4426/Relationship-hasDeclaredLicense",
-        "type" : "Relationship",
-        "relationshipType" : "hasDeclaredLicense",
-        "to" : ["https://github.com/interlynk_io/Package/sbomqs/License-apache2" ],
-        "from" : "SPDXRef-git-github.com-DependencyTrack-client-go-2570042a517e97bc9ec0c617706a89a0edad4426",
-        "creationInfo" : "_:creationInfo_0"
+        "spdxId": "SPDXRef-custom-46261-git-github.com-viveksahu26-sbomqs.git-14e7376fa2b00c102a9ba89fd5ccc7cf26f2f255/Relationship-hasDeclaredLicense",
+        "type": "Relationship",
+        "relationshipType": "hasDeclaredLicense",
+        "to": [
+            "SPDXRef-custom-46261-git-github.com-viveksahu26-sbomqs.git-14e7376fa2b00c102a9ba89fd5ccc7cf26f2f255/License-licenseDeclared"
+        ],
+        "from": "SPDXRef-custom-46261-git-github.com-viveksahu26-sbomqs.git-14e7376fa2b00c102a9ba89fd5ccc7cf26f2f255",
+        "creationInfo": "_:creationInfo_0"
     },
     {
-        "spdxId" : "SPDXRef-git-github.com-spf13-cobra-e94f6d0dd9a5e5738dca6bce03c4b1207ffbc0ec/Relationship-hasDeclaredLicense",
-        "type" : "Relationship",
-        "relationshipType" : "hasDeclaredLicense",
-        "to" : ["https://github.com/interlynk_io/Package/sbomqs/License-apache2" ],
-        "from" : "SPDXRef-git-github.com-spf13-cobra-e94f6d0dd9a5e5738dca6bce03c4b1207ffbc0ec",
-        "creationInfo" : "_:creationInfo_0"
+        "spdxId": "SPDXRef-git-github.com-DependencyTrack-client-go-2570042a517e97bc9ec0c617706a89a0edad4426/Relationship-hasDeclaredLicense",
+        "type": "Relationship",
+        "relationshipType": "hasDeclaredLicense",
+        "to": [
+            "SPDXRef-git-github.com-DependencyTrack-client-go-2570042a517e97bc9ec0c617706a89a0edad4426/License-licenseDeclared"
+        ],
+        "from": "SPDXRef-git-github.com-DependencyTrack-client-go-2570042a517e97bc9ec0c617706a89a0edad4426",
+        "creationInfo": "_:creationInfo_0"
     },
     {
-        "spdxId" : "SPDXRef-git-github.com-CycloneDX-cyclonedx-go-98a070df0171240c53e7e1c3c46640eb9b257e08/Relationship-hasDeclaredLicense",
-        "type" : "Relationship",
-        "relationshipType" : "hasDeclaredLicense",
-        "to" : ["https://github.com/interlynk_io/Package/sbomqs/License-apache2" ],
-        "from" : "SPDXRef-git-github.com-CycloneDX-cyclonedx-go-98a070df0171240c53e7e1c3c46640eb9b257e08",
-        "creationInfo" : "_:creationInfo_0"
+        "spdxId": "SPDXRef-git-github.com-spf13-cobra-e94f6d0dd9a5e5738dca6bce03c4b1207ffbc0ec/Relationship-hasDeclaredLicense",
+        "type": "Relationship",
+        "relationshipType": "hasDeclaredLicense",
+        "to": [
+            "SPDXRef-git-github.com-spf13-cobra-e94f6d0dd9a5e5738dca6bce03c4b1207ffbc0ec/License-licenseDeclared"
+        ],
+        "from": "SPDXRef-git-github.com-spf13-cobra-e94f6d0dd9a5e5738dca6bce03c4b1207ffbc0ec",
+        "creationInfo": "_:creationInfo_0"
     },
     {
-        "spdxId" : "SPDXRef-git-github.com-google-go-github-0a6474043f9f14c77ba6fa77d1b377a7538a4c8c/Relationship-hasDeclaredLicense",
-        "type" : "Relationship",
-        "relationshipType" : "hasDeclaredLicense",
-        "to" : ["https://github.com/interlynk_io/License-BSD-3-Clause"],
-        "from" : "SPDXRef-git-github.com-google-go-github-0a6474043f9f14c77ba6fa77d1b377a7538a4c8c",
-        "creationInfo" : "_:creationInfo_0"
+        "spdxId": "SPDXRef-git-github.com-CycloneDX-cyclonedx-go-98a070df0171240c53e7e1c3c46640eb9b257e08/Relationship-hasDeclaredLicense",
+        "type": "Relationship",
+        "relationshipType": "hasDeclaredLicense",
+        "to": [
+            "SPDXRef-git-github.com-CycloneDX-cyclonedx-go-98a070df0171240c53e7e1c3c46640eb9b257e08/License-licenseDeclared"
+        ],
+        "from": "SPDXRef-git-github.com-CycloneDX-cyclonedx-go-98a070df0171240c53e7e1c3c46640eb9b257e08",
+        "creationInfo": "_:creationInfo_0"
     },
     {
-        "spdxId" : "SPDXRef-git-github.com-github-go-spdx/Relationship-hasDeclaredLicense",
-        "type" : "Relationship",
-        "relationshipType" : "hasDeclaredLicense",
-        "to" : ["https://github.com/interlynk_io/License-MIT"],
-        "from" : "SPDXRef-git-github.com-google-go-github-0a6474043f9f14c77ba6fa77d1b377a7538a4c8c",
-        "creationInfo" : "_:creationInfo_0"
+        "spdxId": "SPDXRef-git-github.com-google-go-github-0a6474043f9f14c77ba6fa77d1b377a7538a4c8c/Relationship-hasDeclaredLicense",
+        "type": "Relationship",
+        "relationshipType": "hasDeclaredLicense",
+        "to": [
+            "SPDXRef-git-github.com-google-go-github-0a6474043f9f14c77ba6fa77d1b377a7538a4c8c/License-licenseDeclared"
+        ],
+        "from": "SPDXRef-git-github.com-google-go-github-0a6474043f9f14c77ba6fa77d1b377a7538a4c8c",
+        "creationInfo": "_:creationInfo_0"
     },
     {
-        "spdxId" : "https://github.com/interlynk_io/Package/sbomqs/License-apache2",
-        "type" : "simplelicensing_LicenseExpression",
-        "creationInfo" : "_:creationInfo_0",
-        "simplelicensing_licenseExpression" : "Apache-2.0"
+        "spdxId": "SPDXRef-git-github.com-github-go-spdx-eacf4f37582f0c1b8f0086816ad1afea74d1ac3f/Relationship-hasDeclaredLicense",
+        "type": "Relationship",
+        "relationshipType": "hasDeclaredLicense",
+        "to": [
+            "SPDXRef-git-github.com-github-go-spdx-eacf4f37582f0c1b8f0086816ad1afea74d1ac3f/License-licenseDeclared"
+        ],
+        "from": "SPDXRef-git-github.com-github-go-spdx-eacf4f37582f0c1b8f0086816ad1afea74d1ac3f",
+        "creationInfo": "_:creationInfo_0"
+    },
+    {
+        "spdxId": "SPDXRef-git-github.com-samber-lo-151a075ecca084ddbb519fafd513002df0632716/Relationship-hasDeclaredLicense",
+        "type": "Relationship",
+        "relationshipType": "hasDeclaredLicense",
+        "to": [
+            "SPDXRef-git-github.com-samber-lo-151a075ecca084ddbb519fafd513002df0632716/License-licenseDeclared"
+        ],
+        "from": "SPDXRef-git-github.com-samber-lo-151a075ecca084ddbb519fafd513002df0632716",
+        "creationInfo": "_:creationInfo_0"
+    },
+    {
+        "spdxId": "SPDXRef-git-github.com-package-url-packageurl-go-7cb81af9593b9512bb946c55c85609948c48aab9/Relationship-hasDeclaredLicense",
+        "type": "Relationship",
+        "relationshipType": "hasDeclaredLicense",
+        "to": [
+            "SPDXRef-git-github.com-package-url-packageurl-go-7cb81af9593b9512bb946c55c85609948c48aab9/License-licenseDeclared"
+        ],
+        "from": "SPDXRef-git-github.com-package-url-packageurl-go-7cb81af9593b9512bb946c55c85609948c48aab9",
+        "creationInfo": "_:creationInfo_0"
+    },
+    {
+        "spdxId": "SPDXRef-git-github.com-kubernetes-sigs-release-utils-24b0b7a327387393fa4933add6b2c9f5718cade0/Relationship-hasDeclaredLicense",
+        "type": "Relationship",
+        "relationshipType": "hasDeclaredLicense",
+        "to": [
+            "SPDXRef-git-github.com-kubernetes-sigs-release-utils-24b0b7a327387393fa4933add6b2c9f5718cade0/License-licenseDeclared"
+        ],
+        "from": "SPDXRef-git-github.com-kubernetes-sigs-release-utils-24b0b7a327387393fa4933add6b2c9f5718cade0",
+        "creationInfo": "_:creationInfo_0"
+    },
+    {
+        "spdxId": "SPDXRef-git-github.com-Masterminds-semver-e06051f8fcc4c8b4a4990c337b9862a2448722e5/Relationship-hasDeclaredLicense",
+        "type": "Relationship",
+        "relationshipType": "hasDeclaredLicense",
+        "to": [
+            "SPDXRef-git-github.com-Masterminds-semver-e06051f8fcc4c8b4a4990c337b9862a2448722e5/License-licenseDeclared"
+        ],
+        "from": "SPDXRef-git-github.com-Masterminds-semver-e06051f8fcc4c8b4a4990c337b9862a2448722e5",
+        "creationInfo": "_:creationInfo_0"
+    },
+    {
+        "spdxId": "SPDXRef-git-github.com-olekukonko-tablewriter-c7d2a8a09b076b70918308a3cd95464b2ae3b5d8/Relationship-hasDeclaredLicense",
+        "type": "Relationship",
+        "relationshipType": "hasDeclaredLicense",
+        "to": [
+            "SPDXRef-git-github.com-olekukonko-tablewriter-c7d2a8a09b076b70918308a3cd95464b2ae3b5d8/License-licenseDeclared"
+        ],
+        "from": "SPDXRef-git-github.com-olekukonko-tablewriter-c7d2a8a09b076b70918308a3cd95464b2ae3b5d8",
+        "creationInfo": "_:creationInfo_0"
+    },
+    {
+        "spdxId": "SPDXRef-git-github.com-spdx-tools-golang-9db247b854b9634d0109153d515fd1a9efd5a1b1/Relationship-hasDeclaredLicense",
+        "type": "Relationship",
+        "relationshipType": "hasDeclaredLicense",
+        "to": [
+            "SPDXRef-git-github.com-spdx-tools-golang-9db247b854b9634d0109153d515fd1a9efd5a1b1/License-licenseDeclared"
+        ],
+        "from": "SPDXRef-git-github.com-spdx-tools-golang-9db247b854b9634d0109153d515fd1a9efd5a1b1",
+        "creationInfo": "_:creationInfo_0"
+    },
+    {
+        "spdxId": "SPDXRef-git-github.com-google-uuid-0f11ee6918f41a04c201eceeadf612a377bc7fbc/Relationship-hasDeclaredLicense",
+        "type": "Relationship",
+        "relationshipType": "hasDeclaredLicense",
+        "to": [
+            "SPDXRef-git-github.com-google-uuid-0f11ee6918f41a04c201eceeadf612a377bc7fbc/License-licenseDeclared"
+        ],
+        "from": "SPDXRef-git-github.com-google-uuid-0f11ee6918f41a04c201eceeadf612a377bc7fbc",
+        "creationInfo": "_:creationInfo_0"
     },{
-        "spdxId" : "https://github.com/interlynk_io/Package/sbomqs/License-noassertion",
-        "type" : "simplelicensing_LicenseExpression",
-        "creationInfo" : "_:creationInfo_0",
-        "simplelicensing_licenseExpression" : "NOASSERTION"
-    },{
-        "spdxId" : "https://github.com/interlynk_io/License-BSD-3-Clause",
-        "type" : "simplelicensing_LicenseExpression",
-        "creationInfo" : "_:creationInfo_0",
-        "simplelicensing_licenseExpression" : "BSD-3-Clause"
-    },{
-        "spdxId" : "https://github.com/interlynk_io/License-MIT",
-        "type" : "simplelicensing_LicenseExpression",
-        "creationInfo" : "_:creationInfo_0",
-        "simplelicensing_licenseExpression" : "MIT"
-    },{
-        "spdxId" : "SPDXRef-git-gopkg.in-yaml.v2-7649d4548cb53a614db133b2a8ac1f31859dda8c/License-MIT OR Apache-2.0",
-        "type" : "simplelicensing_LicenseExpression",
-        "creationInfo" : "_:creationInfo_0",
-        "simplelicensing_licenseExpression" : "MIT OR Apache-2.0"
+        "spdxId": "SPDXRef-git-gopkg.in-yaml.v2-7649d4548cb53a614db133b2a8ac1f31859dda8c/Relationship-hasDeclaredLicense",
+        "type": "Relationship",
+        "relationshipType": "hasDeclaredLicense",
+        "to": [
+            "SPDXRef-git-gopkg.in-yaml.v2-7649d4548cb53a614db133b2a8ac1f31859dda8c/License-licenseDeclared"
+        ],
+        "from": "SPDXRef-git-gopkg.in-yaml.v2-7649d4548cb53a614db133b2a8ac1f31859dda8c",
+        "creationInfo": "_:creationInfo_0"
+    },
+    {
+        "spdxId": "SPDXRef-git-github.com-uber-go-zap-fcf8ee58669e358bbd6460bef5c2ee7a53c0803a/Relationship-hasDeclaredLicense",
+        "type": "Relationship",
+        "relationshipType": "hasDeclaredLicense",
+        "to": [
+            "SPDXRef-git-github.com-uber-go-zap-fcf8ee58669e358bbd6460bef5c2ee7a53c0803a/License-licenseDeclared"
+        ],
+        "from": "SPDXRef-git-github.com-uber-go-zap-fcf8ee58669e358bbd6460bef5c2ee7a53c0803a",
+        "creationInfo": "_:creationInfo_0"
+    },
+    {
+        "spdxId": "SPDXRef-git-github.com-cloudflare-circl-75b28edc25ec569e6353a2b944b0b83d48a9c2e8/Relationship-hasDeclaredLicense",
+        "type": "Relationship",
+        "relationshipType": "hasDeclaredLicense",
+        "to": [
+            "SPDXRef-git-github.com-cloudflare-circl-75b28edc25ec569e6353a2b944b0b83d48a9c2e8/License-licenseDeclared"
+        ],
+        "from": "SPDXRef-git-github.com-cloudflare-circl-75b28edc25ec569e6353a2b944b0b83d48a9c2e8",
+        "creationInfo": "_:creationInfo_0"
+    },
+    {
+        "spdxId": "SPDXRef-git-go.googlesource.com-crypto-332fd656f4f013f66e643818fe8c759538456535/Relationship-hasDeclaredLicense",
+        "type": "Relationship",
+        "relationshipType": "hasDeclaredLicense",
+        "to": [
+            "SPDXRef-git-go.googlesource.com-crypto-332fd656f4f013f66e643818fe8c759538456535/License-licenseDeclared"
+        ],
+        "from": "SPDXRef-git-go.googlesource.com-crypto-332fd656f4f013f66e643818fe8c759538456535",
+        "creationInfo": "_:creationInfo_0"
+    },
+    {
+        "spdxId": "SPDXRef-go-github.com-google-go-querystring-v1.1.0/Relationship-hasDeclaredLicense",
+        "type": "Relationship",
+        "relationshipType": "hasDeclaredLicense",
+        "to": [
+            "SPDXRef-go-github.com-google-go-querystring-v1.1.0/License-licenseDeclared"
+        ],
+        "from": "SPDXRef-go-github.com-google-go-querystring-v1.1.0",
+        "creationInfo": "_:creationInfo_0"
+    },
+    {
+        "spdxId": "SPDXRef-git-github.com-ProtonMail-go-crypto-afb1ddc0824ce0052d72ac0d6917f144a1207424/Relationship-hasDeclaredLicense",
+        "type": "Relationship",
+        "relationshipType": "hasDeclaredLicense",
+        "to": [
+            "SPDXRef-git-github.com-ProtonMail-go-crypto-afb1ddc0824ce0052d72ac0d6917f144a1207424/License-licenseDeclared"
+        ],
+        "from": "SPDXRef-git-github.com-ProtonMail-go-crypto-afb1ddc0824ce0052d72ac0d6917f144a1207424",
+        "creationInfo": "_:creationInfo_0"
+    },
+    {
+        "spdxId": "SPDXRef-git-github.com-common-nighthawk-go-figure-734e95fb86be9194fff173d46130cf717d719dd1/Relationship-hasDeclaredLicense",
+        "type": "Relationship",
+        "relationshipType": "hasDeclaredLicense",
+        "to": [
+            "SPDXRef-git-github.com-common-nighthawk-go-figure-734e95fb86be9194fff173d46130cf717d719dd1/License-licenseDeclared"
+        ],
+        "from": "SPDXRef-git-github.com-common-nighthawk-go-figure-734e95fb86be9194fff173d46130cf717d719dd1",
+        "creationInfo": "_:creationInfo_0"
+    },
+    {
+        "spdxId": "SPDXRef-git-github.com-spdx-gordf-b735bd5aac89fe25cad4ef488a95bc00ea549edd/Relationship-hasDeclaredLicense",
+        "type": "Relationship",
+        "relationshipType": "hasDeclaredLicense",
+        "to": [
+            "SPDXRef-git-github.com-spdx-gordf-b735bd5aac89fe25cad4ef488a95bc00ea549edd/License-licenseDeclared"
+        ],
+        "from": "SPDXRef-git-github.com-spdx-gordf-b735bd5aac89fe25cad4ef488a95bc00ea549edd",
+        "creationInfo": "_:creationInfo_0"
+    },
+    {
+        "spdxId": "SPDXRef-git-github.com-mattn-go-runewidth-44b7c5b4d67df8ca22917b6800c158a6d3be3560/Relationship-hasDeclaredLicense",
+        "type": "Relationship",
+        "relationshipType": "hasDeclaredLicense",
+        "to": [
+            "SPDXRef-git-github.com-mattn-go-runewidth-44b7c5b4d67df8ca22917b6800c158a6d3be3560/License-licenseDeclared"
+        ],
+        "from": "SPDXRef-git-github.com-mattn-go-runewidth-44b7c5b4d67df8ca22917b6800c158a6d3be3560",
+        "creationInfo": "_:creationInfo_0"
+    },
+    {
+        "spdxId": "SPDXRef-git-github.com-anchore-go-struct-converter-c72ef8859ca9d1e1b86b1251a7da8b1ad6e7d8be/Relationship-hasDeclaredLicense",
+        "type": "Relationship",
+        "relationshipType": "hasDeclaredLicense",
+        "to": [
+            "SPDXRef-git-github.com-anchore-go-struct-converter-c72ef8859ca9d1e1b86b1251a7da8b1ad6e7d8be/License-licenseDeclared"
+        ],
+        "from": "SPDXRef-git-github.com-anchore-go-struct-converter-c72ef8859ca9d1e1b86b1251a7da8b1ad6e7d8be",
+        "creationInfo": "_:creationInfo_0"
+    },
+    {
+        "spdxId": "SPDXRef-git-github.com-uber-go-multierr-de75ae527b39a27afcb50a84427ec7b84021d5f4/Relationship-hasDeclaredLicense",
+        "type": "Relationship",
+        "relationshipType": "hasDeclaredLicense",
+        "to": [
+            "SPDXRef-git-github.com-uber-go-multierr-de75ae527b39a27afcb50a84427ec7b84021d5f4/License-licenseDeclared"
+        ],
+        "from": "SPDXRef-git-github.com-uber-go-multierr-de75ae527b39a27afcb50a84427ec7b84021d5f4",
+        "creationInfo": "_:creationInfo_0"
+    },
+    {
+        "spdxId": "SPDXRef-git-go.googlesource.com-oauth2-5fd42413edb3b1699004a31b72e485e0e4ba1b13/Relationship-hasDeclaredLicense",
+        "type": "Relationship",
+        "relationshipType": "hasDeclaredLicense",
+        "to": [
+            "SPDXRef-git-go.googlesource.com-oauth2-5fd42413edb3b1699004a31b72e485e0e4ba1b13/License-licenseDeclared"
+        ],
+        "from": "SPDXRef-git-go.googlesource.com-oauth2-5fd42413edb3b1699004a31b72e485e0e4ba1b13",
+        "creationInfo": "_:creationInfo_0"
+    },
+    {
+        "spdxId": "SPDXRef-git-github.com-spf13-pflag-2e9d26c8c37aae03e3f9d4e90b7116f5accb7cab/Relationship-hasDeclaredLicense",
+        "type": "Relationship",
+        "relationshipType": "hasDeclaredLicense",
+        "to": [
+            "SPDXRef-git-github.com-spf13-pflag-2e9d26c8c37aae03e3f9d4e90b7116f5accb7cab/License-licenseDeclared"
+        ],
+        "from": "SPDXRef-git-github.com-spf13-pflag-2e9d26c8c37aae03e3f9d4e90b7116f5accb7cab",
+        "creationInfo": "_:creationInfo_0"
+    },
+    {
+        "spdxId": "SPDXRef-git-go.googlesource.com-sys-673e0f94c16da4b6d7f550d6af66fde0c69503e4/Relationship-hasDeclaredLicense",
+        "type": "Relationship",
+        "relationshipType": "hasDeclaredLicense",
+        "to": [
+            "SPDXRef-git-go.googlesource.com-sys-673e0f94c16da4b6d7f550d6af66fde0c69503e4/License-licenseDeclared"
+        ],
+        "from": "SPDXRef-git-go.googlesource.com-sys-673e0f94c16da4b6d7f550d6af66fde0c69503e4",
+        "creationInfo": "_:creationInfo_0"
+    },
+    {
+        "spdxId": "SPDXRef-git-go.googlesource.com-text-9c2f3a21352d1ff4e47776534e3f334b39ec0183/Relationship-hasDeclaredLicense",
+        "type": "Relationship",
+        "relationshipType": "hasDeclaredLicense",
+        "to": [
+            "SPDXRef-git-go.googlesource.com-text-9c2f3a21352d1ff4e47776534e3f334b39ec0183/License-licenseDeclared"
+        ],
+        "from": "SPDXRef-git-go.googlesource.com-text-9c2f3a21352d1ff4e47776534e3f334b39ec0183",
+        "creationInfo": "_:creationInfo_0"
+    },
+    {
+        "spdxId": "SPDXRef-git-github.com-rivo-uniseg-03509a98a092b522b2ff0de13e53513d18b3b837/Relationship-hasDeclaredLicense",
+        "type": "Relationship",
+        "relationshipType": "hasDeclaredLicense",
+        "to": [
+            "SPDXRef-git-github.com-rivo-uniseg-03509a98a092b522b2ff0de13e53513d18b3b837/License-licenseDeclared"
+        ],
+        "from": "SPDXRef-git-github.com-rivo-uniseg-03509a98a092b522b2ff0de13e53513d18b3b837",
+        "creationInfo": "_:creationInfo_0"
+    },
+    {
+        "spdxId": "SPDXRef-git-github.com-kubernetes-sigs-yaml-c3772b51db126345efe2dfe4ff8dac83b8141684/Relationship-hasDeclaredLicense",
+        "type": "Relationship",
+        "relationshipType": "hasDeclaredLicense",
+        "to": [
+            "SPDXRef-git-github.com-kubernetes-sigs-yaml-c3772b51db126345efe2dfe4ff8dac83b8141684/License-licenseDeclared"
+        ],
+        "from": "SPDXRef-git-github.com-kubernetes-sigs-yaml-c3772b51db126345efe2dfe4ff8dac83b8141684",
+        "creationInfo": "_:creationInfo_0"
+    },
+    {
+        "spdxId": "SPDXRef-custom-46261-git-github.com-viveksahu26-sbomqs.git-14e7376fa2b00c102a9ba89fd5ccc7cf26f2f255/License-licenseDeclared",
+        "type": "simplelicensing_LicenseExpression",
+        "creationInfo": "_:creationInfo_0",
+        "simplelicensing_licenseExpression": "Apache-2.0"
+    },
+    {
+        "spdxId": "SPDXRef-git-github.com-DependencyTrack-client-go-2570042a517e97bc9ec0c617706a89a0edad4426/License-licenseDeclared",
+        "type": "simplelicensing_LicenseExpression",
+        "creationInfo": "_:creationInfo_0",
+        "simplelicensing_licenseExpression": "Apache-2.0"
+    },
+    {
+        "spdxId": "SPDXRef-git-github.com-spf13-cobra-e94f6d0dd9a5e5738dca6bce03c4b1207ffbc0ec/License-licenseDeclared",
+        "type": "simplelicensing_LicenseExpression",
+        "creationInfo": "_:creationInfo_0",
+        "simplelicensing_licenseExpression": "Apache-2.0"
+    },
+    {
+        "spdxId": "SPDXRef-git-github.com-CycloneDX-cyclonedx-go-98a070df0171240c53e7e1c3c46640eb9b257e08/License-licenseDeclared",
+        "type": "simplelicensing_LicenseExpression",
+        "creationInfo": "_:creationInfo_0",
+        "simplelicensing_licenseExpression": "Apache-2.0"
+    },
+    {
+        "spdxId": "SPDXRef-git-github.com-google-go-github-0a6474043f9f14c77ba6fa77d1b377a7538a4c8c/License-licenseDeclared",
+        "type": "simplelicensing_LicenseExpression",
+        "creationInfo": "_:creationInfo_0",
+        "simplelicensing_licenseExpression": "BSD-3-Clause"
+    },
+    {
+        "spdxId": "SPDXRef-git-github.com-github-go-spdx-eacf4f37582f0c1b8f0086816ad1afea74d1ac3f/License-licenseDeclared",
+        "type": "simplelicensing_LicenseExpression",
+        "creationInfo": "_:creationInfo_0",
+        "simplelicensing_licenseExpression": "MIT"
+    },
+    {
+        "spdxId": "SPDXRef-git-github.com-samber-lo-151a075ecca084ddbb519fafd513002df0632716/License-licenseDeclared",
+        "type": "simplelicensing_LicenseExpression",
+        "creationInfo": "_:creationInfo_0",
+        "simplelicensing_licenseExpression": "MIT"
+    },
+    {
+        "spdxId": "SPDXRef-git-github.com-package-url-packageurl-go-7cb81af9593b9512bb946c55c85609948c48aab9/License-licenseDeclared",
+        "type": "simplelicensing_LicenseExpression",
+        "creationInfo": "_:creationInfo_0",
+        "simplelicensing_licenseExpression": "MIT"
+    },
+    {
+        "spdxId": "SPDXRef-git-github.com-kubernetes-sigs-release-utils-24b0b7a327387393fa4933add6b2c9f5718cade0/License-licenseDeclared",
+        "type": "simplelicensing_LicenseExpression",
+        "creationInfo": "_:creationInfo_0",
+        "simplelicensing_licenseExpression": "Apache-2.0"
+    },
+    {
+        "spdxId": "SPDXRef-git-github.com-Masterminds-semver-e06051f8fcc4c8b4a4990c337b9862a2448722e5/License-licenseDeclared",
+        "type": "simplelicensing_LicenseExpression",
+        "creationInfo": "_:creationInfo_0",
+        "simplelicensing_licenseExpression": "MIT"
+    },
+    {
+        "spdxId": "SPDXRef-git-github.com-olekukonko-tablewriter-c7d2a8a09b076b70918308a3cd95464b2ae3b5d8/License-licenseDeclared",
+        "type": "simplelicensing_LicenseExpression",
+        "creationInfo": "_:creationInfo_0",
+        "simplelicensing_licenseExpression": "MIT"
+    },
+    {
+        "spdxId": "SPDXRef-git-github.com-spdx-tools-golang-9db247b854b9634d0109153d515fd1a9efd5a1b1/License-licenseDeclared",
+        "type": "simplelicensing_LicenseExpression",
+        "creationInfo": "_:creationInfo_0",
+        "simplelicensing_licenseExpression": "Apache-2.0 OR CC-BY-4.0 OR GPL-2.0-only"
+    },
+    {
+        "spdxId": "SPDXRef-git-github.com-google-uuid-0f11ee6918f41a04c201eceeadf612a377bc7fbc/License-licenseDeclared",
+        "type": "simplelicensing_LicenseExpression",
+        "creationInfo": "_:creationInfo_0",
+        "simplelicensing_licenseExpression": "BSD-3-Clause"
+    },
+    {
+        "spdxId": "SPDXRef-git-gopkg.in-yaml.v2-7649d4548cb53a614db133b2a8ac1f31859dda8c/License-licenseDeclared",
+        "type": "simplelicensing_LicenseExpression",
+        "creationInfo": "_:creationInfo_0",
+        "simplelicensing_licenseExpression": "MIT OR Apache-2.0"
+    },
+    {
+        "spdxId": "SPDXRef-git-github.com-uber-go-zap-fcf8ee58669e358bbd6460bef5c2ee7a53c0803a/License-licenseDeclared",
+        "type": "simplelicensing_LicenseExpression",
+        "creationInfo": "_:creationInfo_0",
+        "simplelicensing_licenseExpression": "MIT"
+    },
+    {
+        "spdxId": "SPDXRef-git-github.com-cloudflare-circl-75b28edc25ec569e6353a2b944b0b83d48a9c2e8/License-licenseDeclared",
+        "type": "simplelicensing_LicenseExpression",
+        "creationInfo": "_:creationInfo_0",
+        "simplelicensing_licenseExpression": "BSD-3-Clause"
+    },
+    {
+        "spdxId": "SPDXRef-git-go.googlesource.com-crypto-332fd656f4f013f66e643818fe8c759538456535/License-licenseDeclared",
+        "type": "simplelicensing_LicenseExpression",
+        "creationInfo": "_:creationInfo_0",
+        "simplelicensing_licenseExpression": "BSD-3-Clause"
+    },
+    {
+        "spdxId": "SPDXRef-go-github.com-google-go-querystring-v1.1.0/License-licenseDeclared",
+        "type": "simplelicensing_LicenseExpression",
+        "creationInfo": "_:creationInfo_0",
+        "simplelicensing_licenseExpression": "BSD-3-Clause"
+    },
+    {
+        "spdxId": "SPDXRef-git-github.com-ProtonMail-go-crypto-afb1ddc0824ce0052d72ac0d6917f144a1207424/License-licenseDeclared",
+        "type": "simplelicensing_LicenseExpression",
+        "creationInfo": "_:creationInfo_0",
+        "simplelicensing_licenseExpression": "BSD-3-Clause"
+    },
+    {
+        "spdxId": "SPDXRef-git-github.com-common-nighthawk-go-figure-734e95fb86be9194fff173d46130cf717d719dd1/License-licenseDeclared",
+        "type": "simplelicensing_LicenseExpression",
+        "creationInfo": "_:creationInfo_0",
+        "simplelicensing_licenseExpression": "MIT"
+    },
+    {
+        "spdxId": "SPDXRef-git-github.com-spdx-gordf-b735bd5aac89fe25cad4ef488a95bc00ea549edd/License-licenseDeclared",
+        "type": "simplelicensing_LicenseExpression",
+        "creationInfo": "_:creationInfo_0",
+        "simplelicensing_licenseExpression": "MIT"
+    },
+    {
+        "spdxId": "SPDXRef-git-github.com-mattn-go-runewidth-44b7c5b4d67df8ca22917b6800c158a6d3be3560/License-licenseDeclared",
+        "type": "simplelicensing_LicenseExpression",
+        "creationInfo": "_:creationInfo_0",
+        "simplelicensing_licenseExpression": "MIT"
+    },
+    {
+        "spdxId": "SPDXRef-git-github.com-anchore-go-struct-converter-c72ef8859ca9d1e1b86b1251a7da8b1ad6e7d8be/License-licenseDeclared",
+        "type": "simplelicensing_LicenseExpression",
+        "creationInfo": "_:creationInfo_0",
+        "simplelicensing_licenseExpression": "Apache-2.0"
+    },
+    {
+        "spdxId": "SPDXRef-git-github.com-uber-go-multierr-de75ae527b39a27afcb50a84427ec7b84021d5f4/License-licenseDeclared",
+        "type": "simplelicensing_LicenseExpression",
+        "creationInfo": "_:creationInfo_0",
+        "simplelicensing_licenseExpression": "MIT"
+    },
+    {
+        "spdxId": "SPDXRef-git-go.googlesource.com-oauth2-5fd42413edb3b1699004a31b72e485e0e4ba1b13/License-licenseDeclared",
+        "type": "simplelicensing_LicenseExpression",
+        "creationInfo": "_:creationInfo_0",
+        "simplelicensing_licenseExpression": "BSD-3-Clause"
+    },
+    {
+        "spdxId": "SPDXRef-git-github.com-spf13-pflag-2e9d26c8c37aae03e3f9d4e90b7116f5accb7cab/License-licenseDeclared",
+        "type": "simplelicensing_LicenseExpression",
+        "creationInfo": "_:creationInfo_0",
+        "simplelicensing_licenseExpression": "BSD-3-Clause"
+    },
+    {
+        "spdxId": "SPDXRef-git-go.googlesource.com-sys-673e0f94c16da4b6d7f550d6af66fde0c69503e4/License-licenseDeclared",
+        "type": "simplelicensing_LicenseExpression",
+        "creationInfo": "_:creationInfo_0",
+        "simplelicensing_licenseExpression": "BSD-3-Clause"
+    },
+    {
+        "spdxId": "SPDXRef-git-go.googlesource.com-text-9c2f3a21352d1ff4e47776534e3f334b39ec0183/License-licenseDeclared",
+        "type": "simplelicensing_LicenseExpression",
+        "creationInfo": "_:creationInfo_0",
+        "simplelicensing_licenseExpression": "BSD-3-Clause"
+    },
+    {
+        "spdxId": "SPDXRef-git-github.com-rivo-uniseg-03509a98a092b522b2ff0de13e53513d18b3b837/License-licenseDeclared",
+        "type": "simplelicensing_LicenseExpression",
+        "creationInfo": "_:creationInfo_0",
+        "simplelicensing_licenseExpression": "MIT"
+    },
+    {
+        "spdxId": "SPDXRef-git-github.com-kubernetes-sigs-yaml-c3772b51db126345efe2dfe4ff8dac83b8141684/License-licenseDeclared",
+        "type": "simplelicensing_LicenseExpression",
+        "creationInfo": "_:creationInfo_0",
+        "simplelicensing_licenseExpression": "Apache-2.0 OR MIT"
     }
 ]}
