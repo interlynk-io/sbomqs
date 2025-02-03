@@ -20,7 +20,7 @@ require (
 	github.com/stretchr/testify v1.10.0
 	go.uber.org/zap v1.27.0
 	gopkg.in/yaml.v2 v2.4.0
-	sigs.k8s.io/release-utils v0.9.0
+	sigs.k8s.io/release-utils v0.11.0
 )
 
 require (
