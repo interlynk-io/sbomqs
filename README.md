@@ -34,7 +34,6 @@ Other [installation options](#installation).
 
 Our SBOM Automation Platform has a new free tier that provides a comprehensive solution to manage SBOMs (Software Bill of Materials) effortlessly. From centralized SBOM storage, built-in SBOM editor, continuous vulnerability mapping and assessment, and support for organizational policies, all while ensuring compliance and enhancing software supply chain security using integrated SBOM quality scores. The free tier is ideal for small teams. [Sign up](https://app.interlynk.io/)
 
-
 # SBOM Card
 
 [![SBOMCard](https://api.interlynk.io/api/v1/badges.svg?type=hcard&project_group_id=7f52093e-3d78-49cb-aeb1-6c977de9442e
@@ -55,6 +54,7 @@ sbomqs compliance -c samples/photon.spdx.json
 ```
 
 ## Compliance Report: Framing Software Component Transparency (v3)
+
 ```sh
 sbomqs compliance -f samples/photon.spdx.json --color
 ```
@@ -374,9 +374,10 @@ We look forward to your contributions, below are a few guidelines on how to subm
 # Other Open Source Software tools for SBOMs
 
 - [SBOM Assembler](https://github.com/interlynk-io/sbomasm) - A tool to compose a single SBOM by combining other SBOMs or parts of them
-- [SBOM Quality Score](https://github.com/interlynk-io/sbomqs) - A tool for evaluating the quality and completeness of SBOMs
-- [SBOM Search Tool](https://github.com/interlynk-io/sbomagr) - A tool to grep style semantic search in SBOMs
+- [Automated SBOM Transfer](https://github.com/interlynk-io/sbommv) - A primary tool to transfer SBOM's between different systems.
+- [SBOM Search Tool](https://github.com/interlynk-io/sbomgr) - A tool to grep style semantic search in SBOMs
 - [SBOM Explorer](https://github.com/interlynk-io/sbomex) - A tool for discovering and downloading SBOMs from a public repository
+- [SBOM Benchmark](https://www.sbombenchmark.dev) is a repository of SBOM and quality score for most popular containers and repositories
 
 # Contact
 
