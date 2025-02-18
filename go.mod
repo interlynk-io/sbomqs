@@ -16,7 +16,7 @@ require (
 	github.com/package-url/packageurl-go v0.1.3
 	github.com/samber/lo v1.49.1
 	github.com/spdx/tools-golang v0.5.5
-	github.com/spf13/cobra v1.8.1
+	github.com/spf13/cobra v1.9.1
 	github.com/stretchr/testify v1.10.0
 	go.uber.org/zap v1.27.0
 	gopkg.in/yaml.v2 v2.4.0
