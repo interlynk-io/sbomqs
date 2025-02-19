@@ -658,25 +658,35 @@ func (c *CdxDoc) parseAuthors() {
 }
 
 func (c *CdxDoc) parseSupplier() {
-	if c.doc.Metadata == nil {
+	// Early return if required nested fields are nil
+	if c.doc.Metadata == nil || c.doc.Metadata.Supplier == nil {
 		return
 	}
 
-	if c.doc.Metadata.Supplier == nil {
-		return
+	// Initialize supplier with known fields
+	supplier := Supplier{
+		Name: c.doc.Metadata.Supplier.Name,
 	}
 
-	supplier := Supplier{}
+	// Safely handle URL
+	if urls := lo.FromPtr(c.doc.Metadata.Supplier.URL); len(urls) > 0 {
+		supplier.URL = urls[0]
+	}
 
-	supplier.Name = c.doc.Metadata.Supplier.Name
-	supplier.URL = lo.FromPtr(c.doc.Metadata.Supplier.URL)[0]
-
+	// Handle contacts array
 	if c.doc.Metadata.Supplier.Contact != nil {
-		for _, cydxContact := range lo.FromPtr(c.doc.Metadata.Supplier.Contact) {
-			ctt := Contact{}
-			ctt.Name = cydxContact.Name
-			ctt.Email = cydxContact.Email
-			supplier.Contacts = append(supplier.Contacts, ctt)
+		contacts := lo.FromPtr(c.doc.Metadata.Supplier.Contact)
+		if len(contacts) > 0 {
+			// Pre-allocate contacts slice with known capacity
+			supplier.Contacts = make([]Contact, 0, len(contacts))
+
+			// Process each contact
+			for _, cydxContact := range contacts {
+				supplier.Contacts = append(supplier.Contacts, Contact{
+					Name:  cydxContact.Name,
+					Email: cydxContact.Email,
+				})
+			}
 		}
 	}
 
@@ -684,29 +694,28 @@ func (c *CdxDoc) parseSupplier() {
 }
 
 func (c *CdxDoc) parseManufacturer() {
-	if c.doc.Metadata == nil {
+	if c.doc.Metadata == nil || c.doc.Metadata.Manufacture == nil {
 		return
 	}
 
-	if c.doc.Metadata.Manufacture == nil {
-		return
+	manufacturer := Manufacturer{Name: c.doc.Metadata.Manufacture.Name}
+
+	if urls := lo.FromPtr(c.doc.Metadata.Manufacture.URL); len(urls) > 0 {
+		manufacturer.URL = urls[0]
 	}
 
-	m := Manufacturer{}
-
-	m.Name = c.doc.Metadata.Manufacture.Name
-	m.URL = lo.FromPtr(c.doc.Metadata.Manufacture.URL)[0]
-
-	if c.doc.Metadata.Manufacture.Contact != nil {
-		for _, cydxContact := range lo.FromPtr(c.doc.Metadata.Manufacture.Contact) {
-			ctt := Contact{}
-			ctt.Name = cydxContact.Name
-			ctt.Email = cydxContact.Email
-			m.Contacts = append(m.Contacts, ctt)
+	contacts := lo.FromPtr(c.doc.Metadata.Manufacture.Contact)
+	if len(contacts) > 0 {
+		manufacturer.Contacts = make([]Contact, len(contacts))
+		for i, contact := range contacts {
+			manufacturer.Contacts[i] = Contact{
+				Name:  contact.Name,
+				Email: contact.Email,
+			}
 		}
 	}
 
-	c.CdxManufacturer = m
+	c.CdxManufacturer = manufacturer
 }
 
 func (c *CdxDoc) parsePrimaryCompAndRelationships() {
@@ -746,71 +755,26 @@ func (c *CdxDoc) parsePrimaryCompAndRelationships() {
 	c.PrimaryComponent.Dependecies = totalDependencies
 }
 
-// nolint
-func (c *CdxDoc) parseComposition() {
-	if c.doc.Metadata == nil {
-		return
-	}
-	if c.doc.Compositions == nil {
-		return
-	}
-	c.composition = make(map[string]string)
-
-	for _, cp := range lo.FromPtr(c.doc.Compositions) {
-		state := compNormalise(cp.BOMRef)
-		c.composition[cp.BOMRef] = state
-	}
-}
-
-// nolint
-func compNormalise(compID string) string {
-	switch cydx.CompositionAggregate(compID) {
-	case cydx.CompositionAggregateComplete:
-		return "complete"
-	case cydx.CompositionAggregateIncomplete:
-		return "incomplete"
-	case cydx.CompositionAggregateIncompleteFirstPartyOnly:
-		return "incomplete-first-party-only"
-	case cydx.CompositionAggregateIncompleteFirstPartyOpenSourceOnly:
-		return "incomplete-first-party-open-source-only"
-	case cydx.CompositionAggregateIncompleteFirstPartyProprietaryOnly:
-		return "incomplete-first-party-proprietary-only"
-	case cydx.CompositionAggregateIncompleteThirdPartyOnly:
-		return "incomplete-third-party-only"
-	case cydx.CompositionAggregateIncompleteThirdPartyOpenSourceOnly:
-		return "incomplete-third-party-open-source-only"
-	case cydx.CompositionAggregateIncompleteThirdPartyProprietaryOnly:
-		return "incomplete-third-party-proprietary-only"
-	case cydx.CompositionAggregateNotSpecified:
-		return "not-specified"
-	case cydx.CompositionAggregateUnknown:
-		return "unknown"
-	}
-	return "not-specified"
-}
-
 func (c *CdxDoc) assignSupplier(comp *cydx.Component) *Supplier {
 	if comp.Supplier == nil {
 		c.addToLogs(fmt.Sprintf("cdx doc comp %s no supplier found", comp.Name))
 		return nil
 	}
 
-	supplier := Supplier{}
+	supplier := Supplier{Name: comp.Supplier.Name}
 
-	if comp.Supplier.Name != "" {
-		supplier.Name = comp.Supplier.Name
+	if urls := lo.FromPtr(comp.Supplier.URL); len(urls) > 0 {
+		supplier.URL = urls[0]
 	}
 
-	if comp.Supplier.URL != nil && len(lo.FromPtr(comp.Supplier.URL)) > 0 {
-		supplier.URL = lo.FromPtr(comp.Supplier.URL)[0]
-	}
-
-	if comp.Supplier.Contact != nil {
-		for _, cydxContact := range lo.FromPtr(comp.Supplier.Contact) {
-			ctt := Contact{}
-			ctt.Name = cydxContact.Name
-			ctt.Email = cydxContact.Email
-			supplier.Contacts = append(supplier.Contacts, ctt)
+	contacts := lo.FromPtr(comp.Supplier.Contact)
+	if len(contacts) > 0 {
+		supplier.Contacts = make([]Contact, len(contacts))
+		for i, contact := range contacts {
+			supplier.Contacts[i] = Contact{
+				Name:  contact.Name,
+				Email: contact.Email,
+			}
 		}
 	}
 
@@ -818,18 +782,20 @@ func (c *CdxDoc) assignSupplier(comp *cydx.Component) *Supplier {
 }
 
 func (c *CdxDoc) parseCompositions() {
+	c.compositions = make(map[string]string)
+
 	if c.doc.Compositions == nil {
-		c.compositions = map[string]string{}
 		return
 	}
 
-	for _, comp := range lo.FromPtr(c.doc.Compositions) {
-		if comp.Assemblies == nil {
+	for _, composition := range lo.FromPtr(c.doc.Compositions) {
+		assemblies := lo.FromPtr(composition.Assemblies)
+		if len(assemblies) == 0 {
 			continue
 		}
 
-		for _, assembly := range lo.FromPtr(comp.Assemblies) {
-			c.compositions[string(assembly)] = string(comp.Aggregate)
+		for _, assembly := range assemblies {
+			c.compositions[string(assembly)] = string(composition.Aggregate)
 		}
 	}
 }
