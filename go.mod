@@ -1,8 +1,7 @@
 module github.com/interlynk-io/sbomqs
 
 go 1.23
-
-toolchain go1.23.1
+toolchain go1.24.1
 
 require (
 	github.com/CycloneDX/cyclonedx-go v0.9.2
@@ -48,16 +47,16 @@ require (
 	github.com/mattn/go-runewidth v0.0.16 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/spdx/gordf v0.0.0-20250128162952-000978ccd6fb // indirect
-	github.com/spf13/afero v1.12.0
+	github.com/spf13/afero v1.14.0
 	github.com/spf13/pflag v1.0.6 // indirect
 	github.com/tidwall/sjson v1.2.5
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/crypto v0.33.0 // indirect
 	golang.org/x/mod v0.23.0 // indirect
 	golang.org/x/oauth2 v0.26.0 // indirect
-	golang.org/x/sync v0.11.0 // indirect
+	golang.org/x/sync v0.12.0 // indirect
 	golang.org/x/sys v0.30.0 // indirect
-	golang.org/x/text v0.22.0 // indirect
+	golang.org/x/text v0.23.0 // indirect
 	golang.org/x/tools v0.30.0 // indirect
 	gotest.tools v2.2.0+incompatible
 	sigs.k8s.io/yaml v1.4.0 // indirect
