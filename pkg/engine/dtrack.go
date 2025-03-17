@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	dtrack "github.com/DependencyTrack/client-go"
 	"github.com/google/uuid"
@@ -39,6 +40,7 @@ type DtParams struct {
 	Detailed bool
 
 	TagProjectWithScore bool
+	Timeout             int // handle cutom timeout
 }
 
 func DtrackScore(ctx context.Context, dtP *DtParams) error {
@@ -47,8 +49,12 @@ func DtrackScore(ctx context.Context, dtP *DtParams) error {
 
 	log.Debugf("Config: %+v", dtP)
 
+	timeout := time.Duration(dtP.Timeout) * time.Second
+
+	log.Debug("Timeout set to: ", timeout)
+
 	dTrackClient, err := dtrack.NewClient(dtP.URL,
-		dtrack.WithAPIKey(dtP.APIKey), dtrack.WithDebug(false))
+		dtrack.WithAPIKey(dtP.APIKey), dtrack.WithTimeout(timeout), dtrack.WithDebug(false))
 	if err != nil {
 		log.Fatalf("Failed to create Dependency-Track client: %s", err)
 	}
