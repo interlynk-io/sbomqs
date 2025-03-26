@@ -54,7 +54,7 @@ func RetrieveSignatureFromSBOM(ctx context.Context, sbomFile string) (string, st
 
 	data, err := os.ReadFile(sbomFile)
 	if err != nil {
-		log.Debug("error reading SBOM file: %w", err)
+		log.Debug("error reading SBOM file: ", err)
 		return "", "", "", fmt.Errorf("error reading SBOM file: %w", err)
 	}
 
@@ -67,7 +67,7 @@ func RetrieveSignatureFromSBOM(ctx context.Context, sbomFile string) (string, st
 	extracted_publick_key := "extracted_public_key.pem"
 
 	if err := json.Unmarshal(data, &sbom); err != nil {
-		log.Debug("Error parsing SBOM JSON: %w", err)
+		log.Debug("Error parsing SBOM JSON: ", err)
 		return "", "", "", fmt.Errorf("error unmarshalling SBOM JSON: %w", err)
 	}
 
@@ -79,7 +79,7 @@ func RetrieveSignatureFromSBOM(ctx context.Context, sbomFile string) (string, st
 
 	signatureValue, err := base64.StdEncoding.DecodeString(sbom.Signature.Value)
 	if err != nil {
-		log.Debug("error decoding signature: %w", err)
+		log.Debug("error decoding signature: ", err)
 		return "", "", "", fmt.Errorf("error decoding signature: %w", err)
 	}
 
@@ -106,18 +106,18 @@ func RetrieveSignatureFromSBOM(ctx context.Context, sbomFile string) (string, st
 
 	pubKeyPEM := PublicKeyToPEM(pubKey)
 	if err := os.WriteFile(extracted_publick_key, pubKeyPEM, 0o600); err != nil {
-		log.Debug("error writing public key to file: %w", err)
+		log.Debug("error writing public key to file: ", err)
 	}
 
 	// remove the "signature" section
 	modifiedSBOM, err := sjson.DeleteBytes(data, "signature")
 	if err != nil {
-		log.Debug("Error removing signature section: %w", err)
+		log.Debug("Error removing signature section: ", err)
 	}
 
 	var normalizedSBOM bytes.Buffer
 	if err := json.Indent(&normalizedSBOM, modifiedSBOM, "", "  "); err != nil {
-		log.Debug("Error normalizing SBOM JSON: %w", err)
+		log.Debug("Error normalizing SBOM JSON: ", err)
 	}
 
 	// save the modified SBOM to a new file without a trailing newline
