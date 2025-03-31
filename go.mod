@@ -2,8 +2,6 @@ module github.com/interlynk-io/sbomqs
 
 go 1.23
 
-toolchain go1.23.1
-
 require (
 	github.com/CycloneDX/cyclonedx-go v0.9.2
 	github.com/DependencyTrack/client-go v0.15.0
@@ -20,7 +18,7 @@ require (
 	github.com/stretchr/testify v1.10.0
 	go.uber.org/zap v1.27.0
 	gopkg.in/yaml.v2 v2.4.0
-	sigs.k8s.io/release-utils v0.11.0
+	sigs.k8s.io/release-utils v0.11.1
 )
 
 require (
