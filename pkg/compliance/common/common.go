@@ -470,6 +470,17 @@ func WrapText(input string, maxWidth int) string {
 	return strings.Join(result, "\n")
 }
 
+// convert long text into multiple lines
+func WrapLongTextIntoMulti(input string, maxWidth int) string {
+	var result []string
+	for len(input) > maxWidth {
+		result = append(result, input[:maxWidth])
+		input = input[maxWidth:]
+	}
+	result = append(result, input)
+	return strings.Join(result, "\n")
+}
+
 func AreLicensesValid(licenses []licenses.License) bool {
 	var spdx, aboutcode, custom int
 

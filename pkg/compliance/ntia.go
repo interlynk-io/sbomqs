@@ -392,7 +392,7 @@ func ntiaComponentOtherUniqIDs(doc sbom.Document, component sbom.GetComponent) *
 
 		if len(purl) > 0 {
 			result = string(purl[0])
-
+			result = common.WrapLongTextIntoMulti(result, 100)
 			return db.NewRecordStmtOptional(COMP_OTHER_UNIQ_IDS, common.UniqueElementID(component), result, SCORE_FULL)
 		}
 
@@ -400,7 +400,7 @@ func ntiaComponentOtherUniqIDs(doc sbom.Document, component sbom.GetComponent) *
 
 		if len(cpes) > 0 {
 			result = string(cpes[0])
-
+			result = common.WrapLongTextIntoMulti(result, 100)
 			return db.NewRecordStmtOptional(COMP_OTHER_UNIQ_IDS, common.UniqueElementID(component), result, SCORE_FULL)
 		}
 
