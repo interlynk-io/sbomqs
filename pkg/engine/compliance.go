@@ -15,6 +15,7 @@
 package engine
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"os"
@@ -23,7 +24,6 @@ import (
 	"github.com/interlynk-io/sbomqs/pkg/compliance/common"
 	"github.com/interlynk-io/sbomqs/pkg/logger"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
-	"github.com/spf13/afero"
 )
 
 func ComplianceRun(ctx context.Context, ep *Params) error {
@@ -104,26 +104,22 @@ func getSbomDocument(ctx context.Context, ep *Params) (*sbom.Document, error) {
 
 	if IsURL(path) {
 		log.Debugf("Processing Git URL path :%s\n", path)
-		url, sbomFilePath := path, path
+		url := path
 		var err error
 
 		if IsGit(url) {
-			sbomFilePath, url, err = handleURL(path)
+			_, url, err = handleURL(path)
 			if err != nil {
 				log.Fatal("failed to get sbomFilePath, rawURL: %w", err)
 			}
 		}
-		fs := afero.NewMemMapFs()
 
-		file, err := fs.Create(sbomFilePath)
+		data, err := downloadURL(url)
 		if err != nil {
 			return nil, err
 		}
 
-		f, err := ProcessURL(url, file)
-		if err != nil {
-			return nil, err
-		}
+		f := bytes.NewReader(data)
 
 		doc, err = sbom.NewSBOMDocument(ctx, f, sig)
 		if err != nil {
