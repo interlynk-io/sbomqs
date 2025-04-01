@@ -30,8 +30,8 @@ import (
 	"github.com/interlynk-io/sbomqs/pkg/logger"
 	"github.com/interlynk-io/sbomqs/pkg/reporter"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
+	"github.com/interlynk-io/sbomqs/pkg/sbomqs"
 	"github.com/interlynk-io/sbomqs/pkg/scorer"
-	"github.com/spf13/afero"
 )
 
 type Params struct {
@@ -116,7 +116,7 @@ func IsGit(in string) bool {
 	return regexp.MustCompile("^(http|https)://github.com").MatchString(in)
 }
 
-func ProcessURL(url string, file afero.File) (afero.File, error) {
+func downloadURL(url string) ([]byte, error) {
 	//nolint: gosec
 	resp, err := http.Get(url)
 	if err != nil {
@@ -128,21 +128,16 @@ func ProcessURL(url string, file afero.File) (afero.File, error) {
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("failed to download file: %s", resp.Status)
 	}
-	_, err = io.Copy(file, resp.Body)
+	data, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("failed to copy in file: %w", err)
+		return nil, fmt.Errorf("failed to read response body: %w", err)
 	}
 
-	// Check if the file is empty
-	info, err := file.Stat()
-	if err != nil {
-		return nil, fmt.Errorf("failed to stat file: %w", err)
-	}
-	if info.Size() == 0 {
-		return nil, fmt.Errorf("downloaded file is empty: %v", info.Size())
+	if len(data) == 0 {
+		return nil, fmt.Errorf("downloaded data is empty")
 	}
 
-	return file, err
+	return data, err
 }
 
 func handlePaths(ctx context.Context, ep *Params) error {
@@ -168,6 +163,13 @@ func handlePaths(ctx context.Context, ep *Params) error {
 	var paths []string
 	var scores []scorer.Scores
 
+	// Convert Params to sbomqs.Config
+	config := sbomqs.Config{
+		Categories: ep.Categories,
+		Features:   ep.Features,
+		ConfigPath: ep.ConfigPath,
+	}
+
 	for _, path := range ep.Path {
 		if IsURL(path) {
 			log.Debugf("Processing Git URL path :%s\n", path)
@@ -181,28 +183,20 @@ func handlePaths(ctx context.Context, ep *Params) error {
 					log.Fatal("failed to get sbomFilePath, rawURL: %w", err)
 				}
 			}
-			fs := afero.NewMemMapFs()
 
-			file, err := fs.Create(sbomFilePath)
+			data, err := downloadURL(url)
 			if err != nil {
 				return err
 			}
 
-			f, err := ProcessURL(url, file)
+			result, err := sbomqs.ScoreSBOMData(ctx, data, config)
 			if err != nil {
+				log.Debugf("failed to score SBOM from URL %s: %v\n", url, err)
 				return err
 			}
 
-			doc, err := sbom.NewSBOMDocument(ctx, f, sig)
-			if err != nil {
-				log.Fatalf("failed to parse SBOM document: %w", err)
-			}
-
-			sr := scorer.NewScorer(ctx, doc)
-			score := sr.Score()
-
-			docs = append(docs, doc)
-			scores = append(scores, score)
+			docs = append(docs, result.Document())
+			scores = append(scores, result.RawScores())
 			paths = append(paths, sbomFilePath)
 		} else {
 			log.Debugf("Processing path :%s\n", path)
@@ -226,23 +220,25 @@ func handlePaths(ctx context.Context, ep *Params) error {
 						continue
 					}
 					path := filepath.Join(path, file.Name())
-					doc, scs, err := processFile(ctx, ep, path, nil, sig)
+					result, err := sbomqs.ScoreSBOM(ctx, path, config)
 					if err != nil {
+						log.Debugf("failed to score file %s: %v\n", path, err)
 						continue
 					}
-					docs = append(docs, doc)
-					scores = append(scores, scs)
+					docs = append(docs, result.Document())
+					scores = append(scores, result.RawScores())
 					paths = append(paths, path)
 				}
 				continue
 			}
 
-			doc, scs, err := processFile(ctx, ep, path, nil, sig)
+			result, err := sbomqs.ScoreSBOM(ctx, path, config)
 			if err != nil {
+				log.Debugf("failed to score file %s: %v\n", path, err)
 				continue
 			}
-			docs = append(docs, doc)
-			scores = append(scores, scs)
+			docs = append(docs, result.Document())
+			scores = append(scores, result.RawScores())
 			paths = append(paths, path)
 		}
 	}
