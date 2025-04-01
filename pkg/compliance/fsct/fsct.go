@@ -241,30 +241,35 @@ func fsctPackageUniqIDs(component sbom.GetComponent) *db.Record {
 	if purl := component.GetPurls(); len(purl) > 0 {
 		if uniqIDResult, uniqIDPresent := common.CheckPurls(purl); uniqIDPresent {
 			uniqIDCount++
+			uniqIDResult = common.WrapLongTextIntoMulti(uniqIDResult, 100)
 			uniqIDResults = append(uniqIDResults, uniqIDResult)
 		}
 	}
 	if cpe := component.GetCpes(); len(cpe) > 0 {
 		if uniqIDResult, uniqIDPresent := common.CheckCpes(cpe); uniqIDPresent {
 			uniqIDCount++
+			uniqIDResult = common.WrapLongTextIntoMulti(uniqIDResult, 100)
 			uniqIDResults = append(uniqIDResults, uniqIDResult)
 		}
 	}
 	if omni := component.OmniborIDs(); len(omni) > 0 {
 		if uniqIDResult, uniqIDPresent := common.CheckOmnibor(omni); uniqIDPresent {
 			uniqIDCount++
+			uniqIDResult = common.WrapLongTextIntoMulti(uniqIDResult, 100)
 			uniqIDResults = append(uniqIDResults, uniqIDResult)
 		}
 	}
 	if swhid := component.Swhids(); len(swhid) > 0 {
 		if uniqIDResult, uniqIDPresent := common.CheckSwhid(swhid); uniqIDPresent {
 			uniqIDCount++
+			uniqIDResult = common.WrapLongTextIntoMulti(uniqIDResult, 100)
 			uniqIDResults = append(uniqIDResults, uniqIDResult)
 		}
 	}
 	if swids := component.Swids(); len(swids) > 0 {
 		if uniqIDResult, uniqIDPresent := common.CheckSwid(swids); uniqIDPresent {
 			uniqIDCount++
+			uniqIDResult = common.WrapLongTextIntoMulti(uniqIDResult, 100)
 			uniqIDResults = append(uniqIDResults, uniqIDResult)
 		}
 	}

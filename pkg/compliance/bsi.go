@@ -456,6 +456,7 @@ func bsiComponentOtherUniqIDs(component sbom.GetComponent) *db.Record {
 
 	if len(purl) > 0 {
 		result = string(purl[0])
+		result := common.WrapLongTextIntoMulti(result, 100)
 		score = 10.0
 
 		return db.NewRecordStmtOptional(COMP_OTHER_UNIQ_IDS, common.UniqueElementID(component), result, score)
@@ -465,6 +466,7 @@ func bsiComponentOtherUniqIDs(component sbom.GetComponent) *db.Record {
 
 	if len(cpes) > 0 {
 		result = string(cpes[0])
+		result := common.WrapLongTextIntoMulti(result, 100)
 		score = 10.0
 
 		return db.NewRecordStmtOptional(COMP_OTHER_UNIQ_IDS, common.UniqueElementID(component), result, score)
