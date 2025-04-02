@@ -47,12 +47,13 @@ func ComponentsListResult(ctx context.Context, features []string, doc sbom.Docum
 	feature := features[0]
 	result.Feature = feature
 
-	// Determine if the feature is component-based or SBOM-based
+	// determine if the feature is component-based or SBOM-based
 	if strings.HasPrefix(feature, "comp_") {
-		// Component-based feature
+
+		// component-based feature
 		result.Components = []ComponentResult{}
 
-		// Evaluate the feature for each component
+		// evaluate the feature for each component
 		for _, comp := range doc.Components() {
 			hasFeature, err := evaluateComponentFeature(feature, comp)
 			if err != nil {
@@ -70,6 +71,7 @@ func ComponentsListResult(ctx context.Context, features []string, doc sbom.Docum
 			}
 		}
 	} else if strings.HasPrefix(feature, "sbom_") {
+
 		// SBOM-based feature
 		hasFeature, value, err := evaluateSBOMFeature(feature, doc)
 		if err != nil {
@@ -112,24 +114,23 @@ func evaluateComponentFeature(feature string, comp sbom.GetComponent) (bool, err
 	case "comp_with_uniq_ids":
 		return comp.GetID() != "", nil
 	case "comp_valid_licenses":
-		// Assuming a method to check if the license is valid (simplified for now)
 		licenses := comp.Licenses()
 		return len(licenses) > 0 && licenses[0].Name() != "NOASSERTION", nil
 	case "comp_with_any_vuln_lookup_id":
-		// Simplified: assuming a method to check for vulnerability lookup IDs
-		return false, nil // Placeholder
+		// TODO: Implement logic to check for any vulnerability lookup ID
+		return false, nil
 	case "comp_with_deprecated_licenses":
-		// Simplified: assuming a method to check for deprecated licenses
-		return false, nil // Placeholder
+		// TODO: Implement logic to check for any deprecated licenses
+		return false, nil
 	case "comp_with_multi_vuln_lookup_id":
-		// Simplified: assuming a method to check for multiple vulnerability lookup IDs
-		return false, nil // Placeholder
+		// TODO: Implement logic to check for any multi vulnerability lookup ID
+		return false, nil
 	case "comp_with_primary_purpose":
-		// Simplified: assuming a method to check for primary purpose
-		return false, nil // Placeholder
+		// TODO: Implement logic to check for any primary purpose
+		return false, nil
 	case "comp_with_restrictive_licenses":
-		// Simplified: assuming a method to check for restrictive licenses
-		return false, nil // Placeholder
+		// TODO: Implement logic to check for any restrictive licenses
+		return false, nil
 	case "comp_with_checksums":
 		return len(comp.GetChecksums()) > 0, nil
 	case "comp_with_licenses":
@@ -152,7 +153,7 @@ func evaluateSBOMFeature(feature string, doc sbom.Document) (bool, string, error
 		if hasAuthors {
 			authorNames := make([]string, len(authors))
 			for i, author := range authors {
-				authorNames[i] = author.GetName() // Assuming GetName() retrieves the author's name as a string
+				authorNames[i] = author.GetName()
 			}
 			value = strings.Join(authorNames, ", ")
 		}
@@ -176,13 +177,13 @@ func evaluateSBOMFeature(feature string, doc sbom.Document) (bool, string, error
 		}
 		return false, "", nil
 	case "sbom_required_fields":
-		// Simplified: assuming required fields are always present if the document is parsed
+		// TODO: Implement logic to check for sbom_required_fields
 		return true, "Document fields present", nil
 	case "sbom_sharable":
-		// Simplified: assuming a method to check for a sharable license
-		return false, "", nil // Placeholder
+		// TODO: Implement logic to check for a sharable license
+		return false, "", nil
 	case "sbom_parsable":
-		// Assuming the document is parsable if it was successfully parsed
+		// TODO: Implement logic to check for parsability
 		return true, "SBOM is parsable", nil
 	case "sbom_spec":
 		return doc.Spec().GetSpecType() != "", doc.Spec().GetSpecType(), nil
