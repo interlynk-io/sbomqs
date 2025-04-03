@@ -57,14 +57,22 @@ func ListRun(ctx context.Context, ep *Params) error {
 		return err
 	}
 
-	result, err := list.ComponentsListResult(ctx, ep.Features, doc, path, ep.Missing)
+	listParams := list.ListParams{
+		Path:     ep.Path,
+		Features: ep.Features,
+		JSON:     ep.JSON,
+		Basic:    ep.Basic,
+		Detailed: ep.Detailed,
+		Color:    ep.Color,
+		Missing:  ep.Missing,
+		Debug:    ep.Debug,
+	}
+	_, err = list.ComponentsListResult(ctx, listParams, doc)
 	if err != nil {
 		log.Debugf("ListComponents failed for SBOM document :%s\n", ep.Path[0])
 		fmt.Printf("failed to list components for SBOM document :%s\n", ep.Path[0])
 		return err
 	}
 
-	fmt.Println("Components: ", result.Components)
-	fmt.Println("Properties: ", result.DocumentProperty.Value)
 	return nil
 }

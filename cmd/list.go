@@ -35,7 +35,10 @@ type userListCmd struct {
 	missing bool
 
 	// Output control
-	basic bool
+	basic    bool
+	json     bool
+	detailed bool
+	color    bool
 
 	// Debug control
 	debug bool
@@ -106,6 +109,16 @@ func parseListParams(cmd *cobra.Command, args []string) *userListCmd {
 	basic, _ := cmd.Flags().GetBool("basic")
 	uCmd.basic = basic
 
+	json, _ := cmd.Flags().GetBool("json")
+	uCmd.json = json
+
+	detailed, _ := cmd.Flags().GetBool("detailed")
+
+	uCmd.detailed = detailed
+
+	color, _ := cmd.Flags().GetBool("color")
+	uCmd.color = color
+
 	// Debug control
 	debug, _ := cmd.Flags().GetBool("debug")
 	uCmd.debug = debug
@@ -119,6 +132,9 @@ func fromListToEngineParams(uCmd *userListCmd) *engine.Params {
 		Features: []string{uCmd.feature},
 		Missing:  uCmd.missing,
 		Basic:    uCmd.basic,
+		JSON:     uCmd.json,
+		Detailed: uCmd.detailed,
+		Color:    uCmd.color,
 		Debug:    uCmd.debug,
 	}
 }
@@ -133,7 +149,9 @@ func init() {
 
 	// Output Control
 	listCmd.Flags().BoolP("basic", "b", true, "results in single-line format")
-
+	listCmd.Flags().BoolP("json", "j", false, "results in json")
+	listCmd.Flags().BoolP("detailed", "d", false, "results in table format, default")
+	listCmd.Flags().BoolP("color", "l", false, "output in colorful")
 	// Debug Control
 	listCmd.Flags().BoolP("debug", "D", false, "enable debug logging")
 }
@@ -155,7 +173,6 @@ func validateparsedListCmd(uCmd *userListCmd) error {
 	// 3. --feature="comp_with_name comp_with_version" ---> this is not fine as it has 2 features
 	// 4. --feature="comp_with_name, comp_with_version" ---> this is also not fine as it has 2 features
 
-	fmt.Println("Feature: ", uCmd.feature)
 	feature := strings.TrimSpace(uCmd.feature)
 	if feature == "" {
 		fmt.Println("Error: feature cannot be empty")

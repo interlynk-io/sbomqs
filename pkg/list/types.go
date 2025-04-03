@@ -18,8 +18,9 @@ type ListResult struct {
 	FilePath         string
 	Feature          string
 	Missing          bool
-	Components       []ComponentResult      // For component-based features
-	DocumentProperty DocumentPropertyResult // For SBOM-based features
+	TotalComponents  int
+	Components       []ComponentResult // For component-based features
+	DocumentProperty DocumentResult    // For SBOM-based features
 	Errors           []string
 }
 
@@ -29,8 +30,25 @@ type ComponentResult struct {
 	Values  string
 }
 
-type DocumentPropertyResult struct {
-	Property string // e.g., "Authors", "Creation Timestamp"
-	Value    string // e.g., "John Doe", "2023-01-12T22:06:03Z"
-	Present  bool   // Indicates if the property is present
+type DocumentResult struct {
+	Key     string // e.g., "Authors", "Creation Timestamp"
+	Value   string // e.g., "John Doe", "2023-01-12T22:06:03Z"
+	Present bool   // Indicates if the property is present
+}
+
+type ListParams struct {
+	Path []string
+
+	// input control
+	Features []string
+
+	// output control
+	JSON     bool
+	Basic    bool
+	Detailed bool
+	Color    bool
+
+	Missing bool
+
+	Debug bool
 }

@@ -24,13 +24,13 @@ import (
 	"github.com/samber/lo" // Added for lo.Contains
 )
 
-func ComponentsListResult(ctx context.Context, features []string, doc sbom.Document, path string, missing bool) (*ListResult, error) {
+func ComponentsListResult(ctx context.Context, ep ListParams, doc sbom.Document) (*ListResult, error) {
 	log := logger.FromContext(ctx)
 	log.Debug("list.ComponentsListResult()")
 
 	result := &ListResult{
-		FilePath: path,
-		Missing:  missing,
+		FilePath: ep.Path[0],
+		Missing:  ep.Missing,
 	}
 
 	if doc == nil {
@@ -39,22 +39,22 @@ func ComponentsListResult(ctx context.Context, features []string, doc sbom.Docum
 	}
 
 	// Validate the feature
-	if len(features) != 1 {
+	if len(ep.Features) != 1 {
 		log.Debug("exactly one feature must be specified")
 		result.Errors = append(result.Errors, "exactly one feature must be specified")
 		return result, fmt.Errorf("exactly one feature must be specified")
 	}
 
-	feature := features[0]
+	feature := ep.Features[0]
 
 	result.Feature = feature
-	strings.TrimSpace(feature)
 
 	// determine if the feature is component-based or SBOM-based
 	if strings.HasPrefix(feature, "comp_") {
 
 		// component-based feature
 		result.Components = []ComponentResult{}
+		var totalComponents int
 
 		// evaluate the feature for each component
 		for _, comp := range doc.Components() {
@@ -68,7 +68,7 @@ func ComponentsListResult(ctx context.Context, features []string, doc sbom.Docum
 				continue
 			}
 
-			matchesCriteria := (hasFeature && !missing) || (!hasFeature && missing)
+			matchesCriteria := (hasFeature && !ep.Missing) || (!hasFeature && ep.Missing)
 			if matchesCriteria {
 				result.Components = append(result.Components, ComponentResult{
 					Name:    comp.GetName(),
@@ -76,7 +76,10 @@ func ComponentsListResult(ctx context.Context, features []string, doc sbom.Docum
 					Values:  value,
 				})
 			}
+			totalComponents++
 		}
+		result.TotalComponents = totalComponents
+
 	} else if strings.HasPrefix(feature, "sbom_") {
 
 		// SBOM-based feature
@@ -87,10 +90,11 @@ func ComponentsListResult(ctx context.Context, features []string, doc sbom.Docum
 			return result, err
 		}
 
-		matchesCriteria := (hasFeature && !missing) || (!hasFeature && missing)
-		result.DocumentProperty = DocumentPropertyResult{
-			Property: featureToPropertyName(feature),
-			Present:  hasFeature,
+		matchesCriteria := (hasFeature && !ep.Missing) || (!hasFeature && ep.Missing)
+		result.DocumentProperty = DocumentResult{
+			Key:     featureToPropertyName(feature),
+			Present: hasFeature,
+			Value:   value,
 		}
 
 		if matchesCriteria {
@@ -106,6 +110,20 @@ func ComponentsListResult(ctx context.Context, features []string, doc sbom.Docum
 		return result, fmt.Errorf("feature %s must start with 'comp_' or 'sbom_'", feature)
 	}
 
+	reportFormat := "basic"
+	if ep.Detailed {
+		reportFormat = "detailed"
+	} else if ep.JSON {
+		reportFormat = "json"
+	}
+	coloredOutput := ep.Color
+
+	var listResult []*ListResult
+	listResult = append(listResult, result)
+	// lnr := NewListReport(ctx, listResult, WithFormat(strings.ToLower(reportFormat)), WithColor(coloredOutput))
+	lnr := NewListReport(ctx, listResult, WithFormat(strings.ToLower(reportFormat)), WithColor(coloredOutput))
+
+	lnr.Report()
 	return result, nil
 }
 
