@@ -16,7 +16,9 @@ package cmd
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/interlynk-io/sbomqs/pkg/engine"
 	"github.com/interlynk-io/sbomqs/pkg/logger"
@@ -44,7 +46,9 @@ var listCmd = &cobra.Command{
 	Use:          "list",
 	Short:        "List components or SBOM properties based on features",
 	SilenceUsage: true,
-	Example: `  # List all components with suppliers
+	Example: `  sbomqs list --feature <feature> --option  <path-to-sbom-file> 
+	
+  # List all components with suppliers
   sbomqs list --feature comp_with_supplier samples/sbomqs-spdx-syft.json
 
   # List all components missing suppliers
@@ -73,8 +77,15 @@ var listCmd = &cobra.Command{
 
 		ctx := logger.WithLogger(context.Background())
 		uCmd := parseListParams(cmd, args)
+		validateparsedListCmd(uCmd)
+		if err := validateparsedListCmd(uCmd); err != nil {
+			logger.FromContext(ctx).Errorf("Invalid command parameters: %v", err)
+			return err
+		}
 
 		engParams := fromListToEngineParams(uCmd)
+		logger.FromContext(ctx).Debugf("Parsed command: %s", cmd.CommandPath())
+		logger.FromContext(ctx).Debugf("Parsed user command: %+v", uCmd)
 		return engine.ListRun(ctx, engParams)
 	},
 }
@@ -125,4 +136,55 @@ func init() {
 
 	// Debug Control
 	listCmd.Flags().BoolP("debug", "D", false, "enable debug logging")
+}
+
+func validateparsedListCmd(uCmd *userListCmd) error {
+	if len(uCmd.path) == 0 {
+		fmt.Println("Error: path is required")
+		return errors.New("path is required")
+	}
+
+	if len(uCmd.feature) == 0 {
+		fmt.Println("Error: feature is required")
+		return errors.New("feature is required")
+	}
+
+	// we want to cover these cases:
+	// 1. --feature=" comp_with_name" ---> this is totally fine as it has only 1 feature
+	// 2. --feature=" comp_with_name " ---> this is also fine as it has only 1 feature
+	// 3. --feature="comp_with_name comp_with_version" ---> this is not fine as it has 2 features
+	// 4. --feature="comp_with_name, comp_with_version" ---> this is also not fine as it has 2 features
+
+	fmt.Println("Feature: ", uCmd.feature)
+	feature := strings.TrimSpace(uCmd.feature)
+	if feature == "" {
+		fmt.Println("Error: feature cannot be empty")
+		return errors.New("feature cannot be empty")
+	}
+
+	features := strings.Split(feature, ",")
+
+	if len(features) > 1 {
+		fmt.Println("Error: only one feature is allowed")
+		return errors.New("only one feature is allowed")
+	}
+
+	uCmd.feature = feature
+
+	// TODO: validation of feature
+	// // Check if the feature is valid
+	// validFeatures := []string{"comp_with_supplier", "comp_valid_licenses", "sbom_authors"}
+	// featureFound := false
+	// for _, validFeature := range validFeatures {
+	// 	if strings.TrimSpace(uCmd.feature) == validFeature {
+	// 		featureFound = true
+	// 		break
+	// 	}
+	// }
+	// if !featureFound {
+	// 	fmt.Printf("Error: invalid feature '%s'. Valid features are: %v\n", uCmd.feature, validFeatures)
+	// 	return fmt.Errorf("invalid feature '%s'", uCmd.feature)
+	// }
+
+	return nil
 }

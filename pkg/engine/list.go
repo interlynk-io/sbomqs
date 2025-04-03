@@ -25,8 +25,6 @@ import (
 )
 
 func ListRun(ctx context.Context, ep *Params) error {
-	path := ep.Path[0]
-
 	log := logger.FromContext(ctx)
 	log.Debug("engine.ListRun()")
 
@@ -34,7 +32,7 @@ func ListRun(ctx context.Context, ep *Params) error {
 		log.Fatal("path is required")
 	}
 
-	log.Debugf("Config: %+v", ep)
+	path := ep.Path[0]
 
 	if _, err := os.Stat(path); err != nil {
 		log.Debugf("os.Stat failed for file :%s\n", path)
@@ -50,21 +48,23 @@ func ListRun(ctx context.Context, ep *Params) error {
 	}
 	defer f.Close()
 
+	// parse SBOM file into SBOM document
 	doc, err := sbom.NewSBOMDocument(ctx, f, sbom.Signature{})
 	if err != nil {
-		log.Debugf("failed to create sbom document for  :%s\n", path)
+		log.Debugf("failed to create sbom document for  SBOM file path:%s\n", path)
 		log.Debugf("%s\n", err)
-		fmt.Printf("failed to parse %s : %s\n", path, err)
+		fmt.Printf("failed to parse sbom document from SBOM file path %s: %s\n", path, err)
 		return err
 	}
 
 	result, err := list.ComponentsListResult(ctx, ep.Features, doc, path, ep.Missing)
 	if err != nil {
-		log.Debugf("ListComponents failed for file :%s\n", ep.Path[0])
-		fmt.Printf("failed to list components for %s\n", ep.Path[0])
+		log.Debugf("ListComponents failed for SBOM document :%s\n", ep.Path[0])
+		fmt.Printf("failed to list components for SBOM document :%s\n", ep.Path[0])
 		return err
 	}
 
 	fmt.Println("Components: ", result.Components)
+	fmt.Println("Properties: ", result.DocumentProperty.Value)
 	return nil
 }

@@ -26,6 +26,7 @@ type ListResult struct {
 type ComponentResult struct {
 	Name    string
 	Version string
+	Values  string
 }
 
 type DocumentPropertyResult struct {
