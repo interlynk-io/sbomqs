@@ -21,8 +21,8 @@ import (
 	"github.com/interlynk-io/sbomqs/pkg/logger"
 )
 
-func parseListParams(ep *Params) *list.ListParams {
-	return &list.ListParams{
+func parseListParams(ep *Params) *list.Params {
+	return &list.Params{
 		Path:     ep.Path,
 		Features: ep.Features,
 		JSON:     ep.JSON,

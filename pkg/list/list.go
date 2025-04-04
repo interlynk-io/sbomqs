@@ -27,7 +27,7 @@ import (
 )
 
 // ComponentsListResult lists components or SBOM properties based on the specified features for multiple local SBOMs
-func ComponentsListResult(ctx context.Context, ep *ListParams) (*ListResult, error) {
+func ComponentsListResult(ctx context.Context, ep *Params) (*Result, error) {
 	log := logger.FromContext(ctx)
 	log.Debug("list.ComponentsListResult()")
 
@@ -53,9 +53,9 @@ func ComponentsListResult(ctx context.Context, ep *ListParams) (*ListResult, err
 }
 
 // processPaths processes all local paths (files, directories) and generates ListResult for each SBOM and feature
-func processPaths(ctx context.Context, ep *ListParams) ([]*ListResult, error) {
+func processPaths(ctx context.Context, ep *Params) ([]*Result, error) {
 	log := logger.FromContext(ctx)
-	var results []*ListResult
+	var results []*Result
 
 	for _, path := range ep.Path {
 		// Get all file paths (handles files and directories)
@@ -139,7 +139,7 @@ func parseSBOMDocument(ctx context.Context, filePath string) (sbom.Document, err
 }
 
 // processFeatureForSBOM processes a single feature for an SBOM document and returns a ListResult
-func processFeatureForSBOM(ctx context.Context, ep *ListParams, doc sbom.Document, filePath, feature string) (*ListResult, error) {
+func processFeatureForSBOM(ctx context.Context, ep *Params, doc sbom.Document, filePath, feature string) (*Result, error) {
 	log := logger.FromContext(ctx)
 	feature = strings.TrimSpace(feature)
 
@@ -149,7 +149,7 @@ func processFeatureForSBOM(ctx context.Context, ep *ListParams, doc sbom.Documen
 		return nil, fmt.Errorf("feature cannot be empty")
 	}
 
-	result := &ListResult{
+	result := &Result{
 		FilePath: filePath,
 		Feature:  feature,
 		Missing:  ep.Missing,
@@ -168,7 +168,7 @@ func processFeatureForSBOM(ctx context.Context, ep *ListParams, doc sbom.Documen
 }
 
 // processComponentFeature processes a component-based feature for an SBOM document
-func processComponentFeature(ctx context.Context, ep *ListParams, doc sbom.Document, result *ListResult) (*ListResult, error) {
+func processComponentFeature(ctx context.Context, ep *Params, doc sbom.Document, result *Result) (*Result, error) {
 	log := logger.FromContext(ctx)
 	result.Components = []ComponentResult{}
 	var totalComponents int
@@ -199,7 +199,7 @@ func processComponentFeature(ctx context.Context, ep *ListParams, doc sbom.Docum
 }
 
 // processSBOMFeature processes an SBOM-based feature for an SBOM document
-func processSBOMFeature(ctx context.Context, ep *ListParams, doc sbom.Document, result *ListResult) (*ListResult, error) {
+func processSBOMFeature(ctx context.Context, ep *Params, doc sbom.Document, result *Result) (*Result, error) {
 	log := logger.FromContext(ctx)
 
 	// SBOM-based feature
@@ -228,7 +228,7 @@ func processSBOMFeature(ctx context.Context, ep *ListParams, doc sbom.Document, 
 }
 
 // generateReport generates the report for the list command results
-func generateReport(ctx context.Context, results []*ListResult, ep *ListParams) error {
+func generateReport(ctx context.Context, results []*Result, ep *Params) error {
 	// log := logger.FromContext(ctx)
 
 	reportFormat := "basic"

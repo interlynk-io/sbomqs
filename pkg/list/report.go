@@ -28,10 +28,10 @@ import (
 	"sigs.k8s.io/release-utils/version"
 )
 
-type OptionList func(r *ListReport)
+type OptionList func(r *Report)
 
-func NewListReport(ctx context.Context, results []*ListResult, opts ...OptionList) *ListReport {
-	r := &ListReport{
+func NewListReport(ctx context.Context, results []*Result, opts ...OptionList) *Report {
+	r := &Report{
 		Ctx:     ctx,
 		Results: results,
 	}
@@ -43,27 +43,27 @@ func NewListReport(ctx context.Context, results []*ListResult, opts ...OptionLis
 }
 
 func WithFormat(c string) OptionList {
-	return func(r *ListReport) {
+	return func(r *Report) {
 		r.Format = c
 	}
 }
 
 func WithColor(c bool) OptionList {
-	return func(r *ListReport) {
+	return func(r *Report) {
 		r.Color = c
 	}
 }
 
 // listReport holds the state for reporting the list command results
-type ListReport struct {
+type Report struct {
 	Ctx     context.Context
-	Results []*ListResult
+	Results []*Result
 	Format  string
 	Color   bool
 }
 
 // Report renders the list command results in the specified format
-func (r *ListReport) Report() {
+func (r *Report) Report() {
 	if r.Format == "basic" {
 		r.basicReport()
 	} else if r.Format == "detailed" {
@@ -76,7 +76,7 @@ func (r *ListReport) Report() {
 }
 
 // basicReport renders the list command results in basic format
-func (r *ListReport) basicReport() {
+func (r *Report) basicReport() {
 	for _, result := range r.Results {
 		presence := "present"
 		if result.Missing {
@@ -91,7 +91,7 @@ func (r *ListReport) basicReport() {
 }
 
 // detailedReport renders the list command results in detailed (table) format
-func (r *ListReport) detailedReport() {
+func (r *Report) detailedReport() {
 	for _, result := range r.Results {
 		presence := "present"
 		if result.Missing {
@@ -194,7 +194,7 @@ func newJSONReport() *jsonReport {
 }
 
 // jsonReport renders the list command results in JSON format
-func (r *ListReport) jsonReport() {
+func (r *Report) jsonReport() {
 	jr := newJSONReport()
 	for _, result := range r.Results {
 		f := file{

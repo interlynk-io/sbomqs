@@ -14,7 +14,7 @@
 
 package list
 
-type ListResult struct {
+type Result struct {
 	FilePath         string
 	Feature          string
 	Missing          bool
@@ -36,7 +36,7 @@ type DocumentResult struct {
 	Present bool   // Indicates if the property is present
 }
 
-type ListParams struct {
+type Params struct {
 	Path []string
 
 	// input control

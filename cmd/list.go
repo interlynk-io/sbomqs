@@ -81,7 +81,6 @@ var listCmd = &cobra.Command{
 
 		ctx := logger.WithLogger(context.Background())
 		uCmd := parseListParams(cmd, args)
-		validateparsedListCmd(uCmd)
 		if err := validateparsedListCmd(uCmd); err != nil {
 			logger.FromContext(ctx).Errorf("Invalid command parameters: %v", err)
 			return err
@@ -147,7 +146,10 @@ func init() {
 
 	// Filter Control
 	listCmd.Flags().StringP("features", "f", "", "filter by feature (e.g. 'sbom_authors',  'comp_with_name', 'sbom_creation_timestamp') ")
-	listCmd.MarkFlagRequired("features")
+	err := listCmd.MarkFlagRequired("features")
+	if err != nil {
+		log.Fatal(err)
+	}
 	listCmd.Flags().BoolP("missing", "m", false, "list components or properties missing the specified feature")
 
 	// Output Control
