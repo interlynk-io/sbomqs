@@ -16,48 +16,13 @@ package engine
 
 import (
 	"context"
-	"fmt"
-	"os"
 
 	"github.com/interlynk-io/sbomqs/pkg/list"
 	"github.com/interlynk-io/sbomqs/pkg/logger"
-	"github.com/interlynk-io/sbomqs/pkg/sbom"
 )
 
-func ListRun(ctx context.Context, ep *Params) error {
-	log := logger.FromContext(ctx)
-	log.Debug("engine.ListRun()")
-
-	if len(ep.Path) <= 0 {
-		log.Fatal("path is required")
-	}
-
-	path := ep.Path[0]
-
-	if _, err := os.Stat(path); err != nil {
-		log.Debugf("os.Stat failed for file :%s\n", path)
-		fmt.Printf("failed to stat %s\n", path)
-		return err
-	}
-
-	f, err := os.Open(path)
-	if err != nil {
-		log.Debugf("os.Open failed for file :%s\n", path)
-		fmt.Printf("failed to open %s\n", path)
-		return err
-	}
-	defer f.Close()
-
-	// parse SBOM file into SBOM document
-	doc, err := sbom.NewSBOMDocument(ctx, f, sbom.Signature{})
-	if err != nil {
-		log.Debugf("failed to create sbom document for  SBOM file path:%s\n", path)
-		log.Debugf("%s\n", err)
-		fmt.Printf("failed to parse sbom document from SBOM file path %s: %s\n", path, err)
-		return err
-	}
-
-	listParams := list.ListParams{
+func parseListParams(ep *Params) *list.ListParams {
+	return &list.ListParams{
 		Path:     ep.Path,
 		Features: ep.Features,
 		JSON:     ep.JSON,
@@ -67,10 +32,18 @@ func ListRun(ctx context.Context, ep *Params) error {
 		Missing:  ep.Missing,
 		Debug:    ep.Debug,
 	}
-	_, err = list.ComponentsListResult(ctx, listParams, doc)
+}
+
+func ListRun(ctx context.Context, ep *Params) error {
+	log := logger.FromContext(ctx)
+	log.Debug("engine.ListRun()")
+
+	lep := parseListParams(ep)
+
+	// Process the SBOMs and features
+	_, err := list.ComponentsListResult(ctx, lep)
 	if err != nil {
-		log.Debugf("ListComponents failed for SBOM document :%s\n", ep.Path[0])
-		fmt.Printf("failed to list components for SBOM document :%s\n", ep.Path[0])
+		log.Debugf("failed to process SBOMs: %v", err)
 		return err
 	}
 

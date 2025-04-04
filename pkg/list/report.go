@@ -97,7 +97,7 @@ func (r *ListReport) detailedReport() {
 		if result.Missing {
 			presence = "missing"
 		}
-		fmt.Printf("File: %s\nFeature: %s (%s)\n", result.FilePath, result.Feature, presence)
+		fmt.Printf("File: %s\tFeature: %s (%s)\n", result.FilePath, result.Feature, presence)
 
 		// Initialize tablewriter
 		table := tablewriter.NewWriter(os.Stdout)
@@ -146,6 +146,7 @@ func (r *ListReport) detailedReport() {
 		table.SetColWidth(50)                          // Adjust width to accommodate "Feature" column content
 		table.SetAutoMergeCellsByColumnIndex([]int{0}) // Merge "Feature" column for consecutive rows
 		table.Render()
+		fmt.Println()
 	}
 }
 

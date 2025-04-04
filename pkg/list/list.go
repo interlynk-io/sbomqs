@@ -17,6 +17,8 @@ package list
 import (
 	"context"
 	"fmt"
+	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/interlynk-io/sbomqs/pkg/logger"
@@ -24,91 +26,210 @@ import (
 	"github.com/samber/lo" // Added for lo.Contains
 )
 
-func ComponentsListResult(ctx context.Context, ep ListParams, doc sbom.Document) (*ListResult, error) {
+// ComponentsListResult lists components or SBOM properties based on the specified features for multiple local SBOMs
+func ComponentsListResult(ctx context.Context, ep *ListParams) (*ListResult, error) {
 	log := logger.FromContext(ctx)
 	log.Debug("list.ComponentsListResult()")
 
+	// Process paths and generate results for each SBOM and feature
+	results, err := processPaths(ctx, ep)
+	if err != nil {
+		log.Debugf("failed to process paths: %v", err)
+		return nil, err
+	}
+
+	// Generate the report
+	if err := generateReport(ctx, results, ep); err != nil {
+		log.Debugf("failed to generate report: %v", err)
+		return nil, err
+	}
+
+	// Return the first result for backward compatibility
+	if len(results) > 0 {
+		return results[0], nil
+	}
+
+	return nil, nil
+}
+
+// processPaths processes all local paths (files, directories) and generates ListResult for each SBOM and feature
+func processPaths(ctx context.Context, ep *ListParams) ([]*ListResult, error) {
+	log := logger.FromContext(ctx)
+	var results []*ListResult
+
+	for _, path := range ep.Path {
+		// Get all file paths (handles files and directories)
+		paths, err := getFilePaths(ctx, path)
+		if err != nil {
+			log.Debugf("failed to get file paths for %s: %v", path, err)
+			continue
+		}
+
+		// Process each file path
+		for _, filePath := range paths {
+			// Parse the SBOM document
+			currentDoc, err := parseSBOMDocument(ctx, filePath)
+			if err != nil {
+				log.Debugf("failed to parse SBOM document for %s: %v", filePath, err)
+				continue
+			}
+			// Process each feature for the current SBOM
+			for _, feature := range ep.Features {
+				featureResult, err := processFeatureForSBOM(ctx, ep, currentDoc, filePath, feature)
+				if err != nil {
+					log.Debugf("failed to process feature %s for %s: %v", feature, filePath, err)
+					continue
+				}
+				results = append(results, featureResult)
+			}
+		}
+	}
+
+	return results, nil
+}
+
+// getFilePaths returns a list of local file paths to process (handles files and directories)
+func getFilePaths(ctx context.Context, path string) ([]string, error) {
+	log := logger.FromContext(ctx)
+	var paths []string
+
+	log.Debugf("Processing path: %s", path)
+	pathInfo, err := os.Stat(path)
+	if err != nil {
+		return nil, fmt.Errorf("failed to stat path %s: %w", path, err)
+	}
+
+	if pathInfo.IsDir() {
+		// Process all files in the directory
+		files, err := os.ReadDir(path)
+		if err != nil {
+			return nil, fmt.Errorf("failed to read directory %s: %w", path, err)
+		}
+		for _, file := range files {
+			if file.IsDir() {
+				continue
+			}
+			filePath := filepath.Join(path, file.Name())
+			paths = append(paths, filePath)
+		}
+	} else {
+		// Single file
+		paths = append(paths, path)
+	}
+
+	return paths, nil
+}
+
+// parseSBOMDocument parses an SBOM document from a local file path
+func parseSBOMDocument(ctx context.Context, filePath string) (sbom.Document, error) {
+	// log := logger.FromContext(ctx)
+
+	f, err := os.Open(filePath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open file %s: %w", filePath, err)
+	}
+	defer f.Close()
+
+	currentDoc, err := sbom.NewSBOMDocument(ctx, f, sbom.Signature{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to create SBOM document for %s: %w", filePath, err)
+	}
+
+	return currentDoc, nil
+}
+
+// processFeatureForSBOM processes a single feature for an SBOM document and returns a ListResult
+func processFeatureForSBOM(ctx context.Context, ep *ListParams, doc sbom.Document, filePath, feature string) (*ListResult, error) {
+	log := logger.FromContext(ctx)
+	feature = strings.TrimSpace(feature)
+
+	// Validate the feature
+	if feature == "" {
+		log.Debug("feature cannot be empty")
+		return nil, fmt.Errorf("feature cannot be empty")
+	}
+
 	result := &ListResult{
-		FilePath: ep.Path[0],
+		FilePath: filePath,
+		Feature:  feature,
 		Missing:  ep.Missing,
 	}
 
-	if doc == nil {
-		log.Debugf("sbom document is nil\n")
-		return result, fmt.Errorf("sbom document is nil")
-	}
-
-	// Validate the feature
-	if len(ep.Features) != 1 {
-		log.Debug("exactly one feature must be specified")
-		result.Errors = append(result.Errors, "exactly one feature must be specified")
-		return result, fmt.Errorf("exactly one feature must be specified")
-	}
-
-	feature := ep.Features[0]
-
-	result.Feature = feature
-
-	// determine if the feature is component-based or SBOM-based
+	// Determine if the feature is component-based or SBOM-based
 	if strings.HasPrefix(feature, "comp_") {
-
-		// component-based feature
-		result.Components = []ComponentResult{}
-		var totalComponents int
-
-		// evaluate the feature for each component
-		for _, comp := range doc.Components() {
-			log.Debugf("evaluating feature %s for component %s", feature, comp.GetName())
-
-			// evaluate the feature for the component
-			hasFeature, value, err := evaluateComponentFeature(feature, comp, doc)
-			if err != nil {
-				log.Debugf("failed to evaluate feature %s for component: %v", feature, err)
-				result.Errors = append(result.Errors, fmt.Sprintf("failed to evaluate feature %s for component: %v", feature, err))
-				continue
-			}
-
-			matchesCriteria := (hasFeature && !ep.Missing) || (!hasFeature && ep.Missing)
-			if matchesCriteria {
-				result.Components = append(result.Components, ComponentResult{
-					Name:    comp.GetName(),
-					Version: comp.GetVersion(),
-					Values:  value,
-				})
-			}
-			totalComponents++
-		}
-		result.TotalComponents = totalComponents
-
+		return processComponentFeature(ctx, ep, doc, result)
 	} else if strings.HasPrefix(feature, "sbom_") {
-
-		// SBOM-based feature
-		hasFeature, value, err := evaluateSBOMFeature(feature, doc)
-		if err != nil {
-			log.Debugf("failed to evaluate feature %s for document: %v", feature, err)
-			result.Errors = append(result.Errors, fmt.Sprintf("failed to evaluate feature %s for document: %v", feature, err))
-			return result, err
-		}
-
-		matchesCriteria := (hasFeature && !ep.Missing) || (!hasFeature && ep.Missing)
-		result.DocumentProperty = DocumentResult{
-			Key:     featureToPropertyName(feature),
-			Present: hasFeature,
-			Value:   value,
-		}
-
-		if matchesCriteria {
-			if hasFeature {
-				result.DocumentProperty.Value = value
-			} else {
-				result.DocumentProperty.Value = "Not present"
-			}
-		}
-	} else {
-		log.Debugf("feature %s must start with 'comp_' or 'sbom_'", feature)
-		result.Errors = append(result.Errors, fmt.Sprintf("feature %s must start with 'comp_' or 'sbom_'", feature))
-		return result, fmt.Errorf("feature %s must start with 'comp_' or 'sbom_'", feature)
+		return processSBOMFeature(ctx, ep, doc, result)
 	}
+
+	log.Debugf("feature %s must start with 'comp_' or 'sbom_'", feature)
+	result.Errors = append(result.Errors, fmt.Sprintf("feature %s must start with 'comp_' or 'sbom_'", feature))
+	return result, fmt.Errorf("feature %s must start with 'comp_' or 'sbom_'", feature)
+}
+
+// processComponentFeature processes a component-based feature for an SBOM document
+func processComponentFeature(ctx context.Context, ep *ListParams, doc sbom.Document, result *ListResult) (*ListResult, error) {
+	log := logger.FromContext(ctx)
+	result.Components = []ComponentResult{}
+	var totalComponents int
+
+	// Evaluate the feature for each component
+	for _, comp := range doc.Components() {
+		log.Debugf("evaluating feature %s for component %s", result.Feature, comp.GetName())
+
+		// Evaluate the feature for the component
+		hasFeature, value, err := evaluateComponentFeature(result.Feature, comp, doc)
+		if err != nil {
+			log.Debugf("failed to evaluate feature %s for component: %v", result.Feature, err)
+			result.Errors = append(result.Errors, fmt.Sprintf("failed to evaluate feature %s for component: %v", result.Feature, err))
+			continue
+		}
+		matchesCriteria := (hasFeature && !ep.Missing) || (!hasFeature && ep.Missing)
+		if matchesCriteria {
+			result.Components = append(result.Components, ComponentResult{
+				Name:    comp.GetName(),
+				Version: comp.GetVersion(),
+				Values:  value,
+			})
+		}
+		totalComponents++
+	}
+	result.TotalComponents = totalComponents
+	return result, nil
+}
+
+// processSBOMFeature processes an SBOM-based feature for an SBOM document
+func processSBOMFeature(ctx context.Context, ep *ListParams, doc sbom.Document, result *ListResult) (*ListResult, error) {
+	log := logger.FromContext(ctx)
+
+	// SBOM-based feature
+	hasFeature, value, err := evaluateSBOMFeature(result.Feature, doc)
+	if err != nil {
+		log.Debugf("failed to evaluate feature %s for document: %v", result.Feature, err)
+		result.Errors = append(result.Errors, fmt.Sprintf("failed to evaluate feature %s for document: %v", result.Feature, err))
+		return result, err
+	}
+
+	matchesCriteria := (hasFeature && !ep.Missing) || (!hasFeature && ep.Missing)
+	result.DocumentProperty = DocumentResult{
+		Key:     featureToPropertyName(result.Feature),
+		Present: hasFeature,
+		Value:   value,
+	}
+	if matchesCriteria {
+		if hasFeature {
+			result.DocumentProperty.Value = value
+		} else {
+			result.DocumentProperty.Value = "Not present"
+		}
+	}
+
+	return result, nil
+}
+
+// generateReport generates the report for the list command results
+func generateReport(ctx context.Context, results []*ListResult, ep *ListParams) error {
+	// log := logger.FromContext(ctx)
 
 	reportFormat := "basic"
 	if ep.Detailed {
@@ -118,13 +239,9 @@ func ComponentsListResult(ctx context.Context, ep ListParams, doc sbom.Document)
 	}
 	coloredOutput := ep.Color
 
-	var listResult []*ListResult
-	listResult = append(listResult, result)
-	// lnr := NewListReport(ctx, listResult, WithFormat(strings.ToLower(reportFormat)), WithColor(coloredOutput))
-	lnr := NewListReport(ctx, listResult, WithFormat(strings.ToLower(reportFormat)), WithColor(coloredOutput))
-
+	lnr := NewListReport(ctx, results, WithFormat(strings.ToLower(reportFormat)), WithColor(coloredOutput))
 	lnr.Report()
-	return result, nil
+	return nil
 }
 
 // evaluateComponentFeature evaluates a component-based feature for a single component

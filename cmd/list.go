@@ -18,6 +18,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/interlynk-io/sbomqs/pkg/engine"
@@ -28,11 +29,11 @@ import (
 // userListCmd holds the configuration for the list command
 type userListCmd struct {
 	// Input control
-	path string
+	path []string
 
 	// Filter control
-	feature string
-	missing bool
+	features []string
+	missing  bool
 
 	// Output control
 	basic    bool
@@ -97,11 +98,13 @@ func parseListParams(cmd *cobra.Command, args []string) *userListCmd {
 	uCmd := &userListCmd{}
 
 	// Input control
-	uCmd.path = args[0]
+	uCmd.path = args
 
 	// Filter control
-	feature, _ := cmd.Flags().GetString("feature")
-	uCmd.feature = feature
+	feature, _ := cmd.Flags().GetString("features")
+	features := strings.Split(feature, ",")
+	uCmd.features = features
+
 	missing, _ := cmd.Flags().GetBool("missing")
 	uCmd.missing = missing
 
@@ -128,8 +131,8 @@ func parseListParams(cmd *cobra.Command, args []string) *userListCmd {
 
 func fromListToEngineParams(uCmd *userListCmd) *engine.Params {
 	return &engine.Params{
-		Path:     []string{uCmd.path},
-		Features: []string{uCmd.feature},
+		Path:     uCmd.path,
+		Features: uCmd.features,
 		Missing:  uCmd.missing,
 		Basic:    uCmd.basic,
 		JSON:     uCmd.json,
@@ -143,50 +146,36 @@ func init() {
 	rootCmd.AddCommand(listCmd)
 
 	// Filter Control
-	listCmd.Flags().StringP("feature", "f", "", "filter by feature (e.g., 'comp_with_supplier', 'sbom_authors')")
-	listCmd.MarkFlagRequired("feature")
+	listCmd.Flags().StringP("features", "f", "", "filter by feature (e.g. 'sbom_authors',  'comp_with_name', 'sbom_creation_timestamp') ")
+	listCmd.MarkFlagRequired("features")
 	listCmd.Flags().BoolP("missing", "m", false, "list components or properties missing the specified feature")
 
 	// Output Control
-	listCmd.Flags().BoolP("basic", "b", true, "results in single-line format")
+	listCmd.Flags().BoolP("basic", "b", false, "results in single-line format")
 	listCmd.Flags().BoolP("json", "j", false, "results in json")
-	listCmd.Flags().BoolP("detailed", "d", false, "results in table format, default")
+	listCmd.Flags().BoolP("detailed", "d", true, "results in table format, default")
 	listCmd.Flags().BoolP("color", "l", false, "output in colorful")
+
 	// Debug Control
 	listCmd.Flags().BoolP("debug", "D", false, "enable debug logging")
 }
 
 func validateparsedListCmd(uCmd *userListCmd) error {
-	if len(uCmd.path) == 0 {
+	if len(uCmd.path) <= 0 {
 		fmt.Println("Error: path is required")
 		return errors.New("path is required")
 	}
 
-	if len(uCmd.feature) == 0 {
+	if len(uCmd.features) == 0 {
 		fmt.Println("Error: feature is required")
-		return errors.New("feature is required")
-	}
+		log.Fatal("at least one feature must be specified")
 
+	}
 	// we want to cover these cases:
 	// 1. --feature=" comp_with_name" ---> this is totally fine as it has only 1 feature
 	// 2. --feature=" comp_with_name " ---> this is also fine as it has only 1 feature
 	// 3. --feature="comp_with_name comp_with_version" ---> this is not fine as it has 2 features
 	// 4. --feature="comp_with_name, comp_with_version" ---> this is also not fine as it has 2 features
-
-	feature := strings.TrimSpace(uCmd.feature)
-	if feature == "" {
-		fmt.Println("Error: feature cannot be empty")
-		return errors.New("feature cannot be empty")
-	}
-
-	features := strings.Split(feature, ",")
-
-	if len(features) > 1 {
-		fmt.Println("Error: only one feature is allowed")
-		return errors.New("only one feature is allowed")
-	}
-
-	uCmd.feature = feature
 
 	// TODO: validation of feature
 	// // Check if the feature is valid
