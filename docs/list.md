@@ -10,7 +10,7 @@ sbomqs list [flags] <SBOM file>
 
 ### Flags
 
-- `--feature, -f <feature>`: Specifies the feature to list (required). See supported features below.
+- `--features, -f <feature>`: Specifies the feature to list (required). See supported features below.
 - `--missing, -m`: Lists components or properties that do not have the specified feature (default: false).
 - `--basic, -b`: Outputs results in a single-line format (default: false).
 - `--detailed, -d`: Outputs results in a detailed table format (default: true).
@@ -59,7 +59,7 @@ These features evaluate document-level properties of the SBOM:
 ### 1. List Components with Suppliers (Basic Format)
 
 ```bash
-$ sbomqs list --feature comp_with_supplier --basic samples/photon.spdx.json
+$ sbomqs list --features comp_with_supplier --basic samples/photon.spdx.json
 
 samples/photon.spdx.json:	 comp_with_supplier 	(present):	 0/39 components
 ```
@@ -67,7 +67,7 @@ samples/photon.spdx.json:	 comp_with_supplier 	(present):	 0/39 components
 ### 2. List Components Missing Suppliers (Detailed Format)
 
 ```bash
-$ sbomqs list --feature comp_with_supplier --missing samples/photon.spdx.json
+$ sbomqs list --features comp_with_supplier --missing samples/photon.spdx.json
 
 File: samples/photon.spdx.json
 Feature: comp_with_supplier (missing)
@@ -87,7 +87,7 @@ Feature: comp_with_supplier (missing)
 ### 3. List SBOM Authors (JSON Format)
 
 ```bash
-$ sbomqs list --feature sbom_authors --json samples/photon.spdx.json
+$ sbomqs list --features sbom_authors --json samples/photon.spdx.json
 
 {
   "run_id": "8af142e2-822f-4005-9612-42ddeb9394bf",

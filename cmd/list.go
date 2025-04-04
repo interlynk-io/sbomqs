@@ -50,19 +50,27 @@ var listCmd = &cobra.Command{
 	Use:          "list",
 	Short:        "List components or SBOM properties based on features",
 	SilenceUsage: true,
-	Example: `  sbomqs list --feature <feature> --option  <path-to-sbom-file> 
+	Example: `  sbomqs list --features <features> --option  <path-to-sbom-file> 
 	
   # List all components with suppliers
-  sbomqs list --feature comp_with_supplier samples/sbomqs-spdx-syft.json
+  sbomqs list --features comp_with_supplier samples/sbomqs-spdx-syft.json
 
   # List all components missing suppliers
-  sbomqs list --feature comp_with_supplier --missing samples/sbomqs-spdx-syft.json
+  sbomqs list --features comp_with_supplier --missing samples/sbomqs-spdx-syft.json
 
   # List all components with valid licenses
-  sbomqs list --feature comp_valid_licenses samples/sbomqs-spdx-syft.json
+  sbomqs list --features comp_valid_licenses samples/sbomqs-spdx-syft.json
 
   # List all components with invalid licenses
-  sbomqs list --feature comp_valid_licenses --missing samples/sbomqs-spdx-syft.json
+  sbomqs list --features comp_valid_licenses --missing samples/sbomqs-spdx-syft.json
+
+  # List all components of SBOM with comp_with_licenses as well as comp_with_version
+  sbomqs list --features="comp_with_licenses,comp_with_version"  samples/photon.spdx.json
+
+# List all components for both SBOM with comp_with_licenses as well as comp_with_version
+  sbomqs list --features="comp_with_licenses,comp_with_version"  samples/photon.spdx.json samples/sbomqs-cdx-cgomod.json
+
+  # 
 `,
 
 	Args: func(_ *cobra.Command, args []string) error {
