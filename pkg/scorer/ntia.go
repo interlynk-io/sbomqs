@@ -116,7 +116,10 @@ func compWithUniqIDCheck(d sbom.Document, c *check) score {
 
 func docWithDepedenciesCheck(d sbom.Document, c *check) score {
 	s := newScoreFromCheck(c)
-	totalDependencies := d.PrimaryComp().GetTotalNoOfDependencies()
+	var totalDependencies int
+	if d.PrimaryComp() != nil {
+		totalDependencies = d.PrimaryComp().GetTotalNoOfDependencies()
+	}
 	if totalDependencies > 0 {
 		s.setScore(10.0)
 	}

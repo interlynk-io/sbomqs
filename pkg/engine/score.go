@@ -48,6 +48,7 @@ type Params struct {
 	Cdx  bool
 
 	Recurse bool
+	Missing bool
 
 	Debug bool
 
