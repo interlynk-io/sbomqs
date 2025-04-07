@@ -231,9 +231,9 @@ func processSBOMFeature(ctx context.Context, ep *Params, doc sbom.Document, resu
 func generateReport(ctx context.Context, results []*Result, ep *Params) error {
 	// log := logger.FromContext(ctx)
 
-	reportFormat := "basic"
-	if ep.Detailed {
-		reportFormat = "detailed"
+	reportFormat := "detailed"
+	if ep.Basic {
+		reportFormat = "basic"
 	} else if ep.JSON {
 		reportFormat = "json"
 	}
