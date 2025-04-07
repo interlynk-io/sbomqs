@@ -107,20 +107,17 @@ func (r *Report) detailedReport() {
 			featureCol := fmt.Sprintf("%s (%d/%d)", result.Feature, len(result.Components), result.TotalComponents)
 			if len(result.Components) == 0 {
 				// No components to display
-				if r.Color {
-					featureCol = color.New(color.FgHiCyan).Sprint(featureCol)
-					table.Append([]string{featureCol, "(none)", ""})
-				} else {
-					table.Append([]string{featureCol, "(none)", ""})
-				}
+				fmt.Println("\n No components found")
+				os.Exit(0)
+
 			} else {
 				// List components
 				for _, comp := range result.Components {
 					if r.Color {
-						featureCol = color.New(color.FgHiCyan).Sprint(featureCol)
-						nameCol := color.New(color.FgHiBlue).Sprint(comp.Name)
-						versionCol := color.New(color.FgHiBlue).Sprint(comp.Version)
-						table.Append([]string{featureCol, nameCol, versionCol})
+						featureCol1 := color.New(color.FgHiMagenta).Sprint(featureCol)
+						nameCol := color.New(color.FgHiCyan).Sprint(comp.Name)
+						versionCol := color.New(color.FgHiGreen).Sprint(comp.Version)
+						table.Append([]string{featureCol1, nameCol, versionCol})
 					} else {
 						table.Append([]string{featureCol, comp.Name, comp.Version})
 					}
@@ -130,10 +127,10 @@ func (r *Report) detailedReport() {
 			// SBOM-based feature
 			featureCol := fmt.Sprintf("%s (%s)", result.Feature, presence)
 			if r.Color {
-				featureCol = color.New(color.FgHiCyan).Sprint(featureCol)
+				featureCol1 := color.New(color.FgHiCyan).Sprint(featureCol)
 				propertyCol := color.New(color.FgHiBlue).Sprint(result.DocumentProperty.Key)
 				valueCol := color.New(color.FgHiBlue).Sprint(result.DocumentProperty.Value)
-				table.Append([]string{featureCol, propertyCol, valueCol})
+				table.Append([]string{featureCol1, propertyCol, valueCol})
 			} else {
 				table.Append([]string{featureCol, result.DocumentProperty.Key, result.DocumentProperty.Value})
 			}
@@ -142,9 +139,8 @@ func (r *Report) detailedReport() {
 		// Configure table settings
 		table.SetHeader([]string{"Feature", "Key/Component Name", "Value/Version"})
 		table.SetRowLine(true)
-		// Set column widths to prevent distortion
-		table.SetColWidth(50)                          // Adjust width to accommodate "Feature" column content
-		table.SetAutoMergeCellsByColumnIndex([]int{0}) // Merge "Feature" column for consecutive rows
+		table.SetColWidth(50)
+		table.SetAutoMergeCellsByColumnIndex([]int{0})
 		table.Render()
 		fmt.Println()
 	}
