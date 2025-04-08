@@ -67,10 +67,17 @@ var listCmd = &cobra.Command{
   # List all components of SBOM with comp_with_licenses as well as comp_with_version
   sbomqs list --features="comp_with_licenses,comp_with_version"  samples/photon.spdx.json
 
-# List all components for both SBOM with comp_with_licenses as well as comp_with_version
+  # List all components for both SBOM with comp_with_licenses as well as comp_with_version
   sbomqs list --features="comp_with_licenses,comp_with_version"  samples/photon.spdx.json samples/sbomqs-cdx-cgomod.json
 
-  # 
+  # component features: 
+  [comp_with_name, comp_with_version, comp_with_supplier, comp_with_uniq_ids, comp_valid_licenses, comp_with_any_vuln_lookup_id, 
+  comp_with_deprecated_licenses, comp_with_multi_vuln_lookup_id, comp_with_primary_purpose, comp_with_restrictive_licenses, 
+  comp_with_checksums, comp_with_licenses]
+  
+  # sbom features:
+  [sbom_creation_timestamp, sbom_authors, sbom_with_creator_and_version, sbom_with_primary_component, sbom_dependencies, 
+  sbom_sharable, sbom_parsable, sbom_spec, sbom_spec_file_format, sbom_spec_version ]
 `,
 
 	Args: func(_ *cobra.Command, args []string) error {
