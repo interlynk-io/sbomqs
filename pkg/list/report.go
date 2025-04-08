@@ -107,9 +107,9 @@ func (r *Report) detailedReport() {
 			featureCol := fmt.Sprintf("%s (%d/%d)", result.Feature, len(result.Components), result.TotalComponents)
 			if len(result.Components) == 0 {
 				// No components to display
-				fmt.Println("\n No components found")
-				os.Exit(0)
-
+				fmt.Println(" No components found")
+				fmt.Println()
+				continue
 			} else {
 				// List components
 				for _, comp := range result.Components {
@@ -132,7 +132,11 @@ func (r *Report) detailedReport() {
 				valueCol := color.New(color.FgHiBlue).Sprint(result.DocumentProperty.Value)
 				table.Append([]string{featureCol1, propertyCol, valueCol})
 			} else {
-				table.Append([]string{featureCol, result.DocumentProperty.Key, result.DocumentProperty.Value})
+				if result.DocumentProperty.Present {
+					table.Append([]string{featureCol, result.DocumentProperty.Key, result.DocumentProperty.Value})
+				} else {
+					table.Append([]string{featureCol, result.DocumentProperty.Key, "N/A"})
+				}
 			}
 		}
 
