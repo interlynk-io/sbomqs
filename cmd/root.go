@@ -50,7 +50,7 @@ func init() {
 }
 
 func checkIfLatestRelease() {
-	if os.Getenv("INTERLYNK_DISABLE_VERSION_CHECK") != "" {
+	if os.Getenv("INTERLYNK_DISABLE_VERSION_CHECK") == "" {
 		return
 	}
 
