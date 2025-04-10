@@ -110,19 +110,19 @@ func (r *Report) detailedReport() {
 				fmt.Println(" No components found")
 				fmt.Println()
 				continue
-			} else {
-				// List components
-				for _, comp := range result.Components {
-					if r.Color {
-						featureCol1 := color.New(color.FgHiMagenta).Sprint(featureCol)
-						nameCol := color.New(color.FgHiCyan).Sprint(comp.Name)
-						versionCol := color.New(color.FgHiGreen).Sprint(comp.Version)
-						table.Append([]string{featureCol1, nameCol, versionCol})
-					} else {
-						table.Append([]string{featureCol, comp.Name, comp.Version})
-					}
-				}
 			}
+			// List components
+			for _, comp := range result.Components {
+				if r.Color {
+					featureCol1 := color.New(color.FgHiMagenta).Sprint(featureCol)
+					nameCol := color.New(color.FgHiCyan).Sprint(comp.Name)
+					versionCol := color.New(color.FgHiGreen).Sprint(comp.Version)
+					table.Append([]string{featureCol1, nameCol, versionCol})
+				}
+				table.Append([]string{featureCol, comp.Name, comp.Version})
+
+			}
+
 		} else {
 			// SBOM-based feature
 			featureCol := fmt.Sprintf("%s (%s)", result.Feature, presence)

@@ -171,7 +171,7 @@ func init() {
 	listCmd.Flags().BoolP("debug", "D", false, "Enable debug logging")
 
 	// Register flag completion for --feature
-	listCmd.RegisterFlagCompletionFunc("feature", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	err = listCmd.RegisterFlagCompletionFunc("feature", func(_ *cobra.Command, _ []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		var completions []string
 		for feature := range isFeaturePresent {
 			if strings.HasPrefix(feature, toComplete) {
@@ -180,6 +180,9 @@ func init() {
 		}
 		return completions, cobra.ShellCompDirectiveNoFileComp
 	})
+	if err != nil {
+		log.Fatalf("Failed to register flag completion for --feature: %v", err)
+	}
 }
 
 func validateparsedListCmd(uCmd *userListCmd) error {
