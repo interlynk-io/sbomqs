@@ -8,6 +8,61 @@ The `sbomqs list` command allows users to list components or SBOM fileds based o
 sbomqs list [flags] <SBOM file>
 ```
 
+### Autocompletion for `--feature` Flag
+
+- **For Bash**:
+
+  ```bash
+  sbomqs completion bash > sbomqs_completion.sh
+  ```
+
+- **For Zsh**:
+
+  ```bash
+  sbomqs completion zsh > sbomqs_completion.sh
+  ```
+
+This creates a file (`sbomqs_completion.sh`) with the completion logic.
+
+To enable autocompletion, source the script in your shell session:
+
+- **Temporary (Current Session)**:
+
+  ```bash
+  source sbomqs_completion.sh
+  ```
+
+- **Permanent (All Sessions)**:
+
+  - Move the script to a directory in your shell’s path:
+
+    ```bash
+    mv sbomqs_completion.sh ~/.zsh/  # For Zsh, or ~/.bash/ for Bash
+    ```
+
+  - Add it to your shell configuration:
+    - **Bash**: Edit `~/.bashrc` or `~/.bash_profile`:
+  
+      ```bash
+      echo "source ~/.bash/sbomqs_completion.sh" >> ~/.bashrc
+      source ~/.bashrc
+      ```
+
+    - **Zsh**: Edit `~/.zshrc`:
+
+      ```bash
+      echo "source ~/.zsh/sbomqs_completion.sh" >> ~/.zshrc
+      source ~/.zshrc
+      ```
+
+For Zsh, ensure completion is initialized by adding `autoload -Uz compinit && compinit` to `~/.zshrc` if not already present.
+
+Run the following command and press `<Tab>`:
+
+```bash
+sbomqs list --feature=<Tab>
+```
+
 ### Flags
 
 - `--features, -f <feature>`: Specifies the feature to list (required). See supported features below.
