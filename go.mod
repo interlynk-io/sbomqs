@@ -6,7 +6,7 @@ toolchain go1.23.1
 
 require (
 	github.com/CycloneDX/cyclonedx-go v0.9.2
-	github.com/DependencyTrack/client-go v0.15.0
+	github.com/DependencyTrack/client-go v0.16.0
 	github.com/Masterminds/semver/v3 v3.3.1
 	github.com/github/go-spdx/v2 v2.3.2
 	github.com/google/go-github/v52 v52.0.0
@@ -14,7 +14,7 @@ require (
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.11.2
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/package-url/packageurl-go v0.1.3
-	github.com/samber/lo v1.49.1
+	github.com/samber/lo v1.50.0
 	github.com/spdx/tools-golang v0.5.5
 	github.com/spf13/cobra v1.9.1
 	github.com/stretchr/testify v1.10.0
@@ -25,7 +25,7 @@ require (
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/google/go-cmp v0.6.0 // indirect
+	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
@@ -37,9 +37,9 @@ require (
 )
 
 require (
-	github.com/ProtonMail/go-crypto v1.1.5 // indirect
+	github.com/ProtonMail/go-crypto v1.2.0 // indirect
 	github.com/anchore/go-struct-converter v0.0.0-20250211213226-cce56d595160 // indirect
-	github.com/cloudflare/circl v1.6.0 // indirect
+	github.com/cloudflare/circl v1.6.1 // indirect
 	github.com/common-nighthawk/go-figure v0.0.0-20210622060536-734e95fb86be // indirect
 	github.com/fatih/color v1.18.0
 	github.com/go-git/go-billy/v5 v5.6.2
@@ -52,13 +52,13 @@ require (
 	github.com/spf13/pflag v1.0.6 // indirect
 	github.com/tidwall/sjson v1.2.5
 	go.uber.org/multierr v1.11.0 // indirect
-	golang.org/x/crypto v0.35.0 // indirect
-	golang.org/x/mod v0.23.0 // indirect
-	golang.org/x/oauth2 v0.26.0 // indirect
-	golang.org/x/sync v0.12.0 // indirect
-	golang.org/x/sys v0.30.0 // indirect
-	golang.org/x/text v0.23.0 // indirect
-	golang.org/x/tools v0.30.0 // indirect
+	golang.org/x/crypto v0.37.0 // indirect
+	golang.org/x/mod v0.24.0 // indirect
+	golang.org/x/oauth2 v0.29.0 // indirect
+	golang.org/x/sync v0.13.0 // indirect
+	golang.org/x/sys v0.32.0 // indirect
+	golang.org/x/text v0.24.0 // indirect
+	golang.org/x/tools v0.32.0 // indirect
 	gotest.tools v2.2.0+incompatible
 	sigs.k8s.io/yaml v1.4.0 // indirect
 )
