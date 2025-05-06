@@ -2,11 +2,9 @@ package engine
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"testing"
 
-	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -91,13 +89,7 @@ func TestProcessURL(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			fs := afero.NewMemMapFs()
-			file, err := fs.Create("testfile.txt")
-			if err != nil {
-				log.Fatalf("error: %v", err)
-			}
-
-			_, err = ProcessURL(tt.url, file)
+			_, err := downloadURL(tt.url)
 			if tt.expectedError {
 				assert.EqualError(t, err, tt.expectedErrorMessage.Error())
 			} else {
