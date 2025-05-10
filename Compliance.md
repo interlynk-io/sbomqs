@@ -114,7 +114,7 @@ The [OpenChain Telco](https://github.com/OpenChain-Project/Reference-Material/bl
 
 ## NTIA minimum elements: SBOM Requirements for NTIA
 
-The [NTIA](https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/Publications/TechGuidelines/TR03183/BSI-TR-03183-2.pdf) specifies mandatory properties for an SBOM. Below is how we have derived all the values.
+The [NTIA](https://www.ntia.doc.gov/files/ntia/publications/sbom_minimum_elements_report.pdf) specifies mandatory properties for an SBOM. Below is how we have derived all the values.
 
 - Released:
 - Contact:
