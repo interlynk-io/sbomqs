@@ -358,7 +358,7 @@ func (s *SpdxDoc) parsePrimaryCompAndRelationships() {
 	}
 
 	for _, r := range s.doc.Relationships {
-		if strings.ToUpper(r.Relationship) == spdx_common.TypeRelationshipDependsOn {
+		if strings.ToUpper(r.Relationship) == spdx_common.TypeRelationshipContains {
 			aBytes, err = r.RefA.MarshalJSON()
 			if err != nil {
 				continue
