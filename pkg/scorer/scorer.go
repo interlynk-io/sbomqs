@@ -16,7 +16,6 @@ package scorer
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 )
@@ -70,12 +69,10 @@ func (s *Scorer) Score() Scores {
 	}
 
 	if len(s.featFilter) > 0 {
-		fmt.Println("featureScores()")
 		return s.featureScores()
 	}
 
 	if len(s.catFilter) > 0 {
-		fmt.Println("catScores()")
 		return s.catScores()
 	}
 

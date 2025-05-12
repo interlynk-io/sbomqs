@@ -57,13 +57,6 @@ func sentToBenchmark(js string) (string, error) {
 		Body: io.NopCloser(strings.NewReader(js)),
 	}
 
-	// // Save a copy of this request for debugging.
-	///	requestDump, err := httputil.DumpRequest(req, true)
-	//	if err != nil {
-	//		fmt.Println(err)
-	///	}
-	//		fmt.Println(string(requestDump))
-
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return "", err
