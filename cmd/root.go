@@ -14,14 +14,9 @@
 package cmd
 
 import (
-	"context"
-	"fmt"
 	"os"
 
-	"github.com/Masterminds/semver/v3"
-	"github.com/google/go-github/v52/github"
 	"github.com/spf13/cobra"
-	version "sigs.k8s.io/release-utils/version"
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -38,7 +33,6 @@ an assessment of a SBOM acceptance risk based on their personal risk tolerance.
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
-	checkIfLatestRelease()
 	err := rootCmd.Execute()
 	if err != nil {
 		os.Exit(1)
@@ -47,35 +41,4 @@ func Execute() {
 
 func init() {
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-}
-
-func checkIfLatestRelease() {
-	if os.Getenv("INTERLYNK_DISABLE_VERSION_CHECK") == "" {
-		return
-	}
-
-	client := github.NewClient(nil)
-	rr, resp, err := client.Repositories.GetLatestRelease(context.Background(), "interlynk-io", "sbomqs")
-	if err != nil {
-		panic(err)
-	}
-
-	if resp.StatusCode != 200 {
-		return
-	}
-
-	verLatest, err := semver.NewVersion(version.GetVersionInfo().GitVersion)
-	if err != nil {
-		return
-	}
-
-	verInstalled, err := semver.NewVersion(rr.GetTagName())
-	if err != nil {
-		return
-	}
-
-	result := verInstalled.Compare(verLatest)
-	if result < 0 {
-		fmt.Printf("\nA new version of sbomqs is available %s.\n\n", rr.GetTagName())
-	}
 }
