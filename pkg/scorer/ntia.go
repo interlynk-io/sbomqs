@@ -16,7 +16,6 @@ package scorer
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 	"github.com/samber/lo"
@@ -99,13 +98,15 @@ func compWithUniqIDCheck(d sbom.Document, c *check) score {
 	}
 
 	compIDs := lo.FilterMap(d.Components(), func(c sbom.GetComponent, _ int) (string, bool) {
-		if c.GetID() == "" {
-			return "", false
+		if extRefs := c.ExternalReferences(); extRefs != nil {
+			for _, extRef := range extRefs {
+				if extRef.GetRefType() == "purl" {
+					return extRef.GetRefLocator(), true
+				}
+			}
 		}
-		return strings.Join([]string{d.Spec().GetNamespace(), c.GetID()}, ""), true
+		return "", false
 	})
-
-	// uniqComps := lo.Uniq(compIDs)
 
 	if totalComponents > 0 {
 		s.setScore((float64(len(compIDs)) / float64(totalComponents)) * 10.0)
