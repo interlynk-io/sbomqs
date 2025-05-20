@@ -425,7 +425,7 @@ func evaluateSBOMFeature(feature string, doc sbom.Document) (bool, string, error
 
 	case "sbom_with_primary_component":
 		if doc.PrimaryComp() != nil {
-			return true, doc.PrimaryComp().GetName(), nil
+			return true, doc.PrimaryComp().GetName() + "  " + doc.PrimaryComp().GetVersion(), nil
 		}
 		return false, "", nil
 
@@ -490,7 +490,7 @@ func featureToPropertyName(feature string) string {
 		return "Creator and Version"
 
 	case "sbom_with_primary_component":
-		return "Primary Component"
+		return "Primary Component and Version"
 
 	case "sbom_dependencies":
 		return "Dependencies"

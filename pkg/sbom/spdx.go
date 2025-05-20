@@ -352,6 +352,7 @@ func (s *SpdxDoc) parsePrimaryCompAndRelationships() {
 			for _, pack := range s.doc.Packages {
 				if string(pack.PackageSPDXIdentifier) == modified {
 					s.PrimaryComponent.Name = pack.PackageName
+					s.PrimaryComponent.Version = pack.PackageVersion
 				}
 			}
 		}
