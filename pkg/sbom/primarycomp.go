@@ -18,6 +18,7 @@ type GetPrimaryComp interface {
 	IsPresent() bool
 	GetID() string
 	GetName() string
+	GetVersion() string
 	GetTotalNoOfDependencies() int
 	HasDependencies() bool
 	GetDependencies() []string
@@ -29,6 +30,7 @@ type PrimaryComp struct {
 	Dependecies     int
 	HasDependency   bool
 	Name            string
+	Version         string
 	AllDependencies []string
 }
 
@@ -42,6 +44,10 @@ func (pc PrimaryComp) GetID() string {
 
 func (pc PrimaryComp) GetName() string {
 	return pc.Name
+}
+
+func (pc PrimaryComp) GetVersion() string {
+	return pc.Version
 }
 
 func (pc PrimaryComp) GetTotalNoOfDependencies() int {
