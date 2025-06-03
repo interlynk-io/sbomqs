@@ -36,6 +36,7 @@ type spdxLicenseDetail struct {
 	SeeAlso            []string `json:"seeAlso"`
 	IsOsiApproved      bool     `json:"isOsiApproved"`
 	IsFsfLibre         bool     `json:"isFsfLibre"`
+	IsFreeAnyUse       bool     `json:"isFreeAnyUse"`
 }
 
 type aboutCodeLicenseDetail struct {
@@ -78,7 +79,7 @@ func loadSpdxLicense() error {
 			fsfLibre:    l.IsFsfLibre,
 			restrictive: false,
 			exception:   false,
-			freeAnyUse:  false,
+			freeAnyUse:  l.IsFreeAnyUse,
 			source:      "spdx",
 		}
 	}

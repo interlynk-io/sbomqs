@@ -12,7 +12,8 @@
         "http://landley.net/toybox/license.html",
         "https://opensource.org/licenses/0BSD"
       ],
-      "isOsiApproved": true
+      "isOsiApproved": true,
+      "isFreeAnyUse":true
     },
     {
       "reference": "https://spdx.org/licenses/3D-Slicer-1.0.html",
@@ -2018,7 +2019,8 @@
         "https://creativecommons.org/publicdomain/zero/1.0/legalcode"
       ],
       "isOsiApproved": false,
-      "isFsfLibre": true
+      "isFsfLibre": true,
+      "isFreeAnyUse": true
     },
     {
       "reference": "https://spdx.org/licenses/CDDL-1.0.html",
@@ -7850,7 +7852,8 @@
         "https://unlicense.org/"
       ],
       "isOsiApproved": true,
-      "isFsfLibre": true
+      "isFsfLibre": true,
+      "isFreeAnyUse": true
     },
     {
       "reference": "https://spdx.org/licenses/UPL-1.0.html",
