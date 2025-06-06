@@ -64,4 +64,4 @@ jobs:
 
       - name: Upload SBOM
         run: |
-          python3 ${{ env.PYLYNK_TEMP_DIR }}/pylynk.py --verbose upload --prod ${{env.TOOL_NAME}} --env ${{ env.SBOM_ENV }} --sbom ${{ env.SBOM_FILE_PATH }} --token ${{ secrets.INTERLYNK_SECURITY_TOKEN }}
+          python3 ${{ env.PYLYNK_TEMP_DIR }}/pylynk.py --verbose upload --prod ${{env.TOOL_NAME}} --env ${{ env.SBOM_ENV }} --sbom ${{ env.SBOM_FILE_PATH }} --token ${{ secrets.INTERLYNK_PACKAGE_TOKEN }}
