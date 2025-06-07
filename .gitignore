@@ -20,3 +20,4 @@ version.txt
 dist/
 
 .vscode/
+.claude/
