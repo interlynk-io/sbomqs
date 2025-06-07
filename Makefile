@@ -41,7 +41,8 @@ PKG ?= sigs.k8s.io/release-utils/version
 LDFLAGS=-buildid= -X $(PKG).gitVersion=$(GIT_VERSION) \
         -X $(PKG).gitCommit=$(GIT_HASH) \
         -X $(PKG).gitTreeState=$(GIT_TREESTATE) \
-        -X $(PKG).buildDate=$(BUILD_DATE)
+        -X $(PKG).buildDate=$(BUILD_DATE) \
+		-s -w
 
 
 BUILD_DIR = ./build
