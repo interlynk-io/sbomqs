@@ -116,6 +116,8 @@ func bsiResult(ctx context.Context, doc sbom.Document, fileName string, outForma
 	}
 }
 
+// bsiSpec returns the spec type of the SBOM document.
+// spec type can be either SPDX or CycloneDX.
 func bsiSpec(doc sbom.Document) *db.Record {
 	v := doc.Spec().GetSpecType()
 	vToLower := strings.Trim(strings.ToLower(v), " ")
