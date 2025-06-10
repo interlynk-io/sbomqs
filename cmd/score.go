@@ -76,6 +76,9 @@ var scoreCmd = &cobra.Command{
 
   # Get a score against a SBOM in a JSON output
   sbomqs score --json samples/sbomqs-spdx-syft.json
+
+  # Get a score for a 'BSI TR-03183-2' category against a SBOM in a table output
+  sbomqs score -c bsi-v1 samples/sbomqs-spdx-syft.json
  
   # Get a score for a 'NTIA-minimum-elements' category against a SBOM in a table output
   sbomqs score --category NTIA-minimum-elements samples/sbomqs-spdx-syft.json
@@ -214,7 +217,7 @@ func init() {
 	scoreCmd.Flags().StringP("configpath", "", "", "scoring based on config path")
 
 	// Filter Control
-	scoreCmd.Flags().StringP("category", "c", "", "filter by category (e.g. 'NTIA-minimum-elements', 'Quality', 'Semantic', 'Sharing', 'Structural')")
+	scoreCmd.Flags().StringP("category", "c", "", "filter by category (e.g. 'bsi-v1', 'NTIA-minimum-elements', 'Quality', 'Semantic', 'Sharing', 'Structural')")
 	scoreCmd.Flags().StringP("feature", "f", "", "filter by feature (e.g. 'sbom_authors',  'comp_with_name', 'sbom_creation_timestamp') ")
 
 	// Spec Control

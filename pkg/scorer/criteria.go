@@ -26,6 +26,7 @@ const (
 	semantic   category = "Semantic"
 	quality    category = "Quality"
 	sharing    category = "Sharing"
+	bsiv1      category = "bsi-v1"
 )
 
 type check struct {
@@ -51,6 +52,22 @@ var checks = []check{
 	{string(ntiam), "sbom_dependencies", false, "sbom has dependencies", docWithDepedenciesCheck},
 	{string(ntiam), "sbom_authors", false, "sbom has authors", docWithAuthorsCheck},
 	{string(ntiam), "sbom_creation_timestamp", false, "sbom has creation timestamp", docWithTimeStampCheck},
+
+	// bsi-v1
+	{string(bsiv1), "comp_with_name", false, "components have a name", compWithNameCheck},
+	{string(bsiv1), "comp_with_version", false, "components have a version", compWithVersionCheck},
+	{string(bsiv1), "comp_with_uniq_ids", false, "components have uniq ids", bsiCompWithUniqIDCheck},
+	{string(bsiv1), "comp_with_supplier", false, "components have suppliers", compSupplierCheck},
+	{string(bsiv1), "comp_with_licenses", false, "components have licenses", bsiCompWithLicensesCheck},
+	{string(bsiv1), "comp_with_checksums", false, "components have checksums", bsiCompWithChecksumsCheck},
+	{string(bsiv1), "comp_with_source_code_uri", false, "components have source code URI", compWithSourceCodeURICheck},
+	{string(bsiv1), "comp_with_source_code_hash", false, "components have source code hash", compWithSourceCodeHashCheck},
+	{string(bsiv1), "comp_with_executable_uri", false, "components have executable URI", compWithExecutableURICheck},
+	{string(bsiv1), "spec_compliant", false, "SBOM Specification", bsiSpecCheck},
+	{string(bsiv1), "sbom_authors", false, "sbom has authors", docWithAuthorsCheck},
+	{string(bsiv1), "sbom_creation_timestamp", false, "sbom has creation timestamp", docWithTimeStampCheck},
+	{string(bsiv1), "sbom_dependencies", false, "sbom has dependencies", docWithDepedenciesCheck},
+	{string(bsiv1), "sbom_with_uri", false, "sbom has URI", docWithURICheck},
 
 	// semantic
 	{string(semantic), "sbom_required_fields", false, "sbom has all required fields", docWithRequiredFieldCheck},

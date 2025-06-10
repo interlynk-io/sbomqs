@@ -21,6 +21,7 @@ import (
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 )
 
+// specCheck checks for spdx or cyclonedx
 func specCheck(d sbom.Document, c *check) score {
 	s := newScoreFromCheck(c)
 

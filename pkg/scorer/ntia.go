@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/interlynk-io/sbomqs/pkg/compliance/common"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 	"github.com/samber/lo"
 )
@@ -145,11 +146,16 @@ func docWithAuthorsCheck(d sbom.Document, c *check) score {
 
 func docWithTimeStampCheck(d sbom.Document, c *check) score {
 	s := newScoreFromCheck(c)
+	timestamp := d.Spec().GetCreationTimestamp()
 
-	if d.Spec().GetCreationTimestamp() != "" {
-		s.setScore(10.0)
+	if timestamp != "" {
+		if _, isTimeCorrect := common.CheckTimestamp(timestamp); isTimeCorrect {
+			s.setScore(10.0)
+			s.setDesc(fmt.Sprintf("doc has creation timestamp %s", d.Spec().GetCreationTimestamp()))
+		} else {
+			s.setScore(0.0)
+			s.setDesc(fmt.Sprintf("doc has creation timestamp %s, but it is not in correct format", timestamp))
+		}
 	}
-
-	s.setDesc(fmt.Sprintf("doc has creation timestamp %s", d.Spec().GetCreationTimestamp()))
 	return *s
 }

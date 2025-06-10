@@ -296,7 +296,7 @@ func processFile(ctx context.Context, ep *Params, path string, fs billy.Filesyst
 
 	sr := scorer.NewScorer(ctx, doc)
 
-	if len(ep.Categories) > 0 {
+	if len(ep.Categories[0]) > 0 {
 		for _, category := range ep.Categories {
 			if len(category) <= 0 {
 				continue
@@ -305,7 +305,7 @@ func processFile(ctx context.Context, ep *Params, path string, fs billy.Filesyst
 		}
 	}
 
-	if len(ep.Features) > 0 {
+	if len(ep.Features[0]) > 0 {
 		for _, feature := range ep.Features {
 			if len(feature) <= 0 {
 				continue
