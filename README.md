@@ -47,6 +47,44 @@ Our SBOM Automation Platform has a free community tier that provides a comprehen
 sbomqs score <sbom-file>
 ```
 
+## Use programatically to score SBOMs using sbomqs library
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"os"
+
+	"github.com/interlynk-io/sbomqs/pkg/sbomqs"
+)
+
+func main() {
+	filePath := "samples/photon.spdx.json"
+	ctx := context.Background()
+
+	cfg := sbomqs.Config{}
+	score, err := sbomqs.ScoreSBOM(ctx, filePath, cfg)
+	if err != nil {
+		fmt.Println("Error:", err)
+		os.Exit(1)
+	}
+	fmt.Println("SBOM Quality Score:", score.AvgScore)
+
+	cfg = sbomqs.Config{
+		Categories: []string{"NTIA-minimum-elements"},
+	}
+
+	score, err = sbomqs.ScoreSBOM(ctx, filePath, cfg)
+	if err != nil {
+		fmt.Println("Error:", err)
+		os.Exit(1)
+	}
+	fmt.Println("SBOM Quality Score For NTIA-minimum-elements Category only:", score.AvgScore)
+}
+```
+
 ## Compliance Report: BSI TR-03183-2
 
 ```sh
