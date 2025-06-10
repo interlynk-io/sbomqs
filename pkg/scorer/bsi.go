@@ -24,7 +24,6 @@ import (
 
 var (
 	validBsiSpdxVersions = []string{"SPDX-2.3"}
-	validSpdxVersion     = []string{"SPDX-2.1", "SPDX-2.2", "SPDX-2.3"}
 	validBsiCdxVersions  = []string{"1.4", "1.5", "1.6"}
 )
 
@@ -62,10 +61,10 @@ func docWithURICheck(doc sbom.Document, c *check) score {
 	s := newScoreFromCheck(c)
 
 	if doc.Spec().GetURI() == "" {
-		s.setDesc(fmt.Sprintf("doc has no URI "))
+		s.setDesc("doc has no URI ")
 		s.setScore(0.0)
 	} else {
-		s.setDesc(fmt.Sprintf("doc has URI "))
+		s.setDesc("doc has URI ")
 		s.setScore(10.0)
 	}
 
