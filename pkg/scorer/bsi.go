@@ -29,8 +29,9 @@ var (
 	validBsiCdxVersions  = []string{"1.4", "1.5", "1.6"}
 )
 
-// specCheck checks for spdx or cyclonedx
-func bsiSpecCheck(d sbom.Document, c *check) score {
+// check whether provided spec is supported or not
+// and also check provided spec version is supported or not wrt BSI spec
+func specWithVersionCompliant(d sbom.Document, c *check) score {
 	s := newScoreFromCheck(c)
 
 	version := d.Spec().GetVersion()
@@ -59,7 +60,7 @@ func bsiSpecCheck(d sbom.Document, c *check) score {
 	return *s
 }
 
-func docWithURICheck(doc sbom.Document, c *check) score {
+func sbomWithURICheck(doc sbom.Document, c *check) score {
 	s := newScoreFromCheck(c)
 
 	if doc.Spec().GetURI() == "" {
@@ -98,7 +99,8 @@ func bsiCompWithUniqIDCheck(d sbom.Document, c *check) score {
 	return *s
 }
 
-func bsiCompWithLicensesCheck(d sbom.Document, c *check) score {
+// check whether provided license is compliant or non-compliant
+func compWithLicensesCompliantCheck(d sbom.Document, c *check) score {
 	s := newScoreFromCheck(c)
 
 	totalComponents := len(d.Components())
@@ -121,7 +123,33 @@ func bsiCompWithLicensesCheck(d sbom.Document, c *check) score {
 	return *s
 }
 
-func bsiCompWithChecksumsCheck(d sbom.Document, c *check) score {
+func compWithDependencyCheck(d sbom.Document, c *check) score {
+	s := newScoreFromCheck(c)
+
+	totalComponents := len(d.Components())
+	if totalComponents == 0 {
+		s.setScore(0.0)
+		s.setDesc("N/A (no components)")
+		s.setIgnore(true)
+		return *s
+	}
+
+	withDependencies := lo.CountBy(d.Components(), func(c sbom.GetComponent) bool {
+		return c.HasRelationShips()
+	})
+
+	if totalComponents > 0 {
+		s.setScore((float64(withDependencies) / float64(totalComponents)) * 10.0)
+	}
+
+	s.setDesc(fmt.Sprintf("%d/%d have dependencies", withDependencies, totalComponents))
+
+	return *s
+}
+
+// checks whether components have sha256 checksums
+// this is a BSI requirement
+func compWithSHA256ChecksumsCheck(d sbom.Document, c *check) score {
 	s := newScoreFromCheck(c)
 	algos := []string{"SHA256", "SHA-256", "sha256", "sha-256"}
 
@@ -232,7 +260,7 @@ func compWithSourceCodeHashCheck(d sbom.Document, c *check) score {
 }
 
 // v2.1
-func bsiVulnCheck(doc sbom.Document, c *check) score {
+func sbomWithVulnCheck(doc sbom.Document, c *check) score {
 	s := newScoreFromCheck(c)
 
 	vulns := doc.Vulnerabilities()
@@ -247,7 +275,7 @@ func bsiVulnCheck(doc sbom.Document, c *check) score {
 
 	if len(allVulnIDs) > 0 {
 		s.setScore(0.0)
-		s.setDesc(fmt.Sprintf("vulnerabilities found:") + strings.Join(allVulnIDs, ", "))
+		s.setDesc("vulnerabilities found" + strings.Join(allVulnIDs, ", "))
 	} else {
 		s.setScore(10.0)
 		s.setDesc("no vulnerabilities found")
@@ -257,7 +285,7 @@ func bsiVulnCheck(doc sbom.Document, c *check) score {
 }
 
 // docBuildProcessCheck
-func docBuildPhaseCheck(doc sbom.Document, c *check) score {
+func sbomBuildLifecycleCheck(doc sbom.Document, c *check) score {
 	s := newScoreFromCheck(c)
 
 	lifecycles := doc.Lifecycles()
@@ -274,7 +302,7 @@ func docBuildPhaseCheck(doc sbom.Document, c *check) score {
 	return *s
 }
 
-func docWithSignatureCheck(doc sbom.Document, c *check) score {
+func sbomWithSignatureCheck(doc sbom.Document, c *check) score {
 	s := newScoreFromCheck(c)
 
 	if doc.Signature() != nil {
@@ -310,7 +338,9 @@ func docWithSignatureCheck(doc sbom.Document, c *check) score {
 	return *s
 }
 
-func bsiCompWithAssociatedLicensesCheck(d sbom.Document, c *check) score {
+// compWithAssociatedLicensesCheck checks whether components have associated licenses
+// this is a BSI requirement
+func compWithAssociatedLicensesCheck(d sbom.Document, c *check) score {
 	s := newScoreFromCheck(c)
 
 	totalComponents := len(d.Components())
@@ -342,7 +372,9 @@ func bsiCompWithAssociatedLicensesCheck(d sbom.Document, c *check) score {
 	return *s
 }
 
-func bsiCompWithConcludedLicensesCheck(d sbom.Document, c *check) score {
+// compWithConcludedLicensesCheck checks whether components have concluded licenses
+// this is a BSI requirement
+func compWithConcludedLicensesCheck(d sbom.Document, c *check) score {
 	s := newScoreFromCheck(c)
 
 	totalComponents := len(d.Components())
@@ -366,7 +398,9 @@ func bsiCompWithConcludedLicensesCheck(d sbom.Document, c *check) score {
 	return *s
 }
 
-func bsiCompWithDeclaredLicensesCheck(d sbom.Document, c *check) score {
+// compWithDeclaredLicensesCheck checks whether components have declared licenses
+// this is a BSI requirement
+func compWithDeclaredLicensesCheck(d sbom.Document, c *check) score {
 	s := newScoreFromCheck(c)
 
 	totalComponents := len(d.Components())
