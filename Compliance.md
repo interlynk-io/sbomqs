@@ -6,7 +6,7 @@ Our mapping of the various requirements to CycloneDX's and SPDX's SBOM format ta
 
 ## TR-03183-2: Technical Guideline for SBOMs by BSI
 
-BSI's technical guideline TR-03183-2 follows a transitional system: To comply with TR-03183-2, SBOMs must be generated using its most recent version, though the previous version is still allowed for six months after a new version was published, and SBOMs remain compliant indefinitely when based on a version of TR-03183-2 valid at their delivery date.
+TR-03183-2 by the German Federal Office for Information Security (BSI) follows a transitional system: To comply with BSI TR-03183-2, SBOMs must be generated using its most recent version, though the previous version is still allowed for six months after a new version was published, and SBOMs remain compliant indefinitely when based on a version of TR-03183-2 valid at their delivery date.
 
 ### [BSI TR-03183-2 v2.0.0](https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/Publications/TechGuidelines/TR03183/BSI-TR-03183-2-2_0_0.pdf)
 
