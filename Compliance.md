@@ -1,6 +1,6 @@
 # Compliance Reports
 
-`sbomqs` helps generating compliance reports for your SBOMs.  We support industry standard regulations/guidelines like NTIA minimum elements, BSI TR-03183-2 v1.1 & v2.0 and Openchain Telco.  The goal of these compliance reports is to assess to which extent an SBOM file adheres to these standards, before it is distributed.
+`sbomqs` helps generating compliance reports for your SBOMs.  We support industry standard regulations/guidelines like NTIA minimum elements, BSI TR-03183-2 v1.1 & v2.0 and OpenChain Telco.  The goal of these compliance reports is to assess to which extent an SBOM file adheres to these standards, before it is distributed.
 
 Our mapping of the various requirements to CycloneDX's and SPDX's SBOM format tags is documented below.
 
