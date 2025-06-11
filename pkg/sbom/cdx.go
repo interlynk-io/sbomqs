@@ -483,8 +483,21 @@ func copyC(cdxc *cydx.Component, c *CdxDoc) *Component {
 	// license->acknowlegement(1.6+): currently acknowlegement field doesn't support
 	nc.declaredLicense = nil
 	nc.concludedLicense = nil
+	nc.hasRelationships = getComponentRelationship(c, nc.ID)
 
 	return nc
+}
+
+// return true if a component has relationship
+func getComponentRelationship(c *CdxDoc, compID string) bool {
+	for _, rel := range *c.doc.Dependencies {
+		if rel.Ref == compID {
+			if len(lo.FromPtr(rel.Dependencies)) > 0 {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func (c *CdxDoc) parseComps() {
