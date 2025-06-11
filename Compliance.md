@@ -1,20 +1,19 @@
 # Compliance Reports
 
-`sbomqs` helps generating compliance reports for your SBOMs. We support industry standard regulations/guidelines
-like NTIA minimum elements, BSI TR-03183 v1.1/v2.0 and Openchain Telco. The goal of compliance reports is to verify if the sbom file adheres to these standard, before they are distributed.
+`sbomqs` helps generating compliance reports for your SBOMs.  We support industry standard regulations/guidelines like NTIA minimum elements, BSI TR-03183-2 v1.1 & v2.0 and Openchain Telco.  The goal of these compliance reports is to assess to which extent an SBOM file adheres to these standards, before it is distributed.
 
-Below is how we map the various requirements to SBOM's of CycloneDX & SPDX formats
+Our mapping of the various requirements to CycloneDX's and SPDX's SBOM format tags is documented below.
 
-## TR-03183: SBOM Technical Guidelines by BSI
+## TR-03183-2: Technical Guideline for SBOMs by BSI
 
-BSI guidelines follows a transitional system, to comply with the Technical Guideline, SBOMs must be generated using the most recent version, though the previous version is allowed for six months after an update, and SBOMs remain compliant based on the guideline valid at their delivery date.
+BSI's technical guideline TR-03183-2 follows a transitional system: To comply with TR-03183-2, SBOMs must be generated using its most recent version, though the previous version is still allowed for six months after a new version was published, and SBOMs remain compliant indefinitely when based on a version of TR-03183-2 valid at their delivery date.
 
-### [BSI TR-03183-2 v2.0](https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/Publications/TechGuidelines/TR03183/BSI-TR-03183-2-2_0_0.pdf)
+### [BSI TR-03183-2 v2.0.0](https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/Publications/TechGuidelines/TR03183/BSI-TR-03183-2-2_0_0.pdf)
 
 - Released: September 20th 2024
 - Contact: TR03183@bsi.bund.de
 
-| TR-03183-2                                    | TR-03183-2 field             | CycloneDx                                                              | SPDX(2.2.1)                                                                | SPDX(3.0) | Notes                                                                                                                                          |
+| TR-03183-2                                    | TR-03183-2 field             | CycloneDX                                                              | SPDX(2.2.1)                                                                | SPDX(3.0) | Notes                                                                                                                                          |
 | :-------------------------------------------- | :--------------------------- | :--------------------------------------------------------------------- | :------------------------------------------------------------------------- | :-------- | :--------------------------------------------------------------------------------------------------------------------------------------------- |
 | 3.1 Definition of SBOM                        | `vuln`                       | vulnerabilities                                                        | non-deterministic                                                          | TBD       | Presence of Vuln Info is non-compliant, for SPDX package->externalReference->comment could be used, but non-determinstic                       |
 | 4. SBOM formats                               | `specification`              | BomFormat                                                              | SPDXversion                                                                | TBD       | CycloneDX and SPDX only                                                                                                                        |
