@@ -16,6 +16,8 @@ package scorer
 
 import (
 	"fmt"
+	"os"
+	"strings"
 
 	"github.com/interlynk-io/sbomqs/pkg/compliance/common"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
@@ -226,5 +228,164 @@ func compWithSourceCodeHashCheck(d sbom.Document, c *check) score {
 	}
 
 	s.setDesc(fmt.Sprintf("%d/%d have source code hash", withSourceCodeHash, totalComponents))
+	return *s
+}
+
+// v2.1
+func bsiVulnCheck(doc sbom.Document, c *check) score {
+	s := newScoreFromCheck(c)
+
+	vulns := doc.Vulnerabilities()
+
+	var allVulnIDs []string
+
+	for _, v := range vulns {
+		if vulnID := v.GetID(); vulnID != "" {
+			allVulnIDs = append(allVulnIDs, vulnID)
+		}
+	}
+
+	if len(allVulnIDs) > 0 {
+		s.setScore(0.0)
+		s.setDesc(fmt.Sprintf("vulnerabilities found:") + strings.Join(allVulnIDs, ", "))
+	} else {
+		s.setScore(10.0)
+		s.setDesc("no vulnerabilities found")
+	}
+
+	return *s
+}
+
+// docBuildProcessCheck
+func docBuildPhaseCheck(doc sbom.Document, c *check) score {
+	s := newScoreFromCheck(c)
+
+	lifecycles := doc.Lifecycles()
+
+	found := lo.Count(lifecycles, "build")
+	if found > 0 {
+		s.setScore(10.0)
+		s.setDesc("doc has build phase in lifecycle")
+	} else {
+		s.setScore(0.0)
+		s.setDesc("doc has no build phase in lifecycle")
+	}
+
+	return *s
+}
+
+func docWithSignatureCheck(doc sbom.Document, c *check) score {
+	s := newScoreFromCheck(c)
+
+	if doc.Signature() != nil {
+		// verify signature
+		pubKey := doc.Signature().GetPublicKey()
+		blob := doc.Signature().GetBlob()
+		sig := doc.Signature().GetSigValue()
+
+		pubKeyData, err := os.ReadFile(pubKey)
+		if err != nil {
+			s.setScore(0.0)
+			s.setDesc("Signature verification failed!")
+		}
+
+		valid, err := common.VerifySignature(pubKeyData, blob, sig)
+		if err != nil {
+			s.setScore(0.0)
+			s.setDesc("Signature verification failed!")
+		}
+		if valid {
+			s.setScore(10.0)
+			s.setDesc("Signature verification succeeded!")
+		} else {
+			s.setScore(5.0)
+			s.setDesc("Signature provided but verification failed!")
+		}
+	} else {
+		s.setScore(0.0)
+		s.setDesc("No signature provided")
+		s.setIgnore(true)
+	}
+
+	return *s
+}
+
+func bsiCompWithAssociatedLicensesCheck(d sbom.Document, c *check) score {
+	s := newScoreFromCheck(c)
+
+	totalComponents := len(d.Components())
+	if totalComponents == 0 {
+		s.setScore(0.0)
+		s.setDesc("N/A (no components)")
+		s.setIgnore(true)
+		return *s
+	}
+
+	var withLicenses int
+	spec := d.Spec().GetSpecType()
+	if spec == "spdx" {
+		withLicenses = lo.CountBy(d.Components(), func(c sbom.GetComponent) bool {
+			return common.AreLicensesValid(c.ConcludedLicenses())
+		})
+	} else if spec == "cyclonedx" {
+		withLicenses = lo.CountBy(d.Components(), func(c sbom.GetComponent) bool {
+			return common.AreLicensesValid(c.Licenses())
+		})
+	}
+
+	if totalComponents > 0 {
+		s.setScore((float64(withLicenses) / float64(totalComponents)) * 10.0)
+	}
+
+	s.setDesc(fmt.Sprintf("%d/%d have compliant licenses", withLicenses, totalComponents))
+
+	return *s
+}
+
+func bsiCompWithConcludedLicensesCheck(d sbom.Document, c *check) score {
+	s := newScoreFromCheck(c)
+
+	totalComponents := len(d.Components())
+	if totalComponents == 0 {
+		s.setScore(0.0)
+		s.setDesc("N/A (no components)")
+		s.setIgnore(true)
+		return *s
+	}
+
+	withLicenses := lo.CountBy(d.Components(), func(c sbom.GetComponent) bool {
+		return common.AreLicensesValid(c.ConcludedLicenses())
+	})
+
+	if totalComponents > 0 {
+		s.setScore((float64(withLicenses) / float64(totalComponents)) * 10.0)
+	}
+
+	s.setDesc(fmt.Sprintf("%d/%d have compliant licenses", withLicenses, totalComponents))
+
+	return *s
+}
+
+func bsiCompWithDeclaredLicensesCheck(d sbom.Document, c *check) score {
+	s := newScoreFromCheck(c)
+
+	totalComponents := len(d.Components())
+	if totalComponents == 0 {
+		s.setScore(0.0)
+		s.setDesc("N/A (no components)")
+		s.setIgnore(true)
+		return *s
+	}
+
+	withLicenses := lo.CountBy(d.Components(), func(c sbom.GetComponent) bool {
+		return common.AreLicensesValid(c.DeclaredLicenses())
+	})
+
+	if totalComponents > 0 {
+		s.setScore((float64(withLicenses) / float64(totalComponents)) * 10.0)
+	}
+
+	s.setDesc(fmt.Sprintf("%d/%d have compliant licenses", withLicenses, totalComponents))
+
 	return *s
 }

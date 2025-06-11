@@ -27,6 +27,7 @@ const (
 	quality    category = "Quality"
 	sharing    category = "Sharing"
 	bsiv1      category = "bsi-v1.1.0"
+	bsiv2      category = "bsi-v2.0.0"
 )
 
 type check struct {
@@ -68,6 +69,31 @@ var checks = []check{
 	{string(bsiv1), "sbom_creation_timestamp", false, "sbom has creation timestamp", docWithTimeStampCheck},
 	{string(bsiv1), "sbom_dependencies", false, "sbom has dependencies", docWithDepedenciesCheck},
 	{string(bsiv1), "sbom_with_uri", false, "sbom has URI", docWithURICheck},
+
+	// bsi-v1
+	{string(bsiv2), "comp_with_name", false, "components have a name", compWithNameCheck},
+	{string(bsiv2), "comp_with_version", false, "components have a version", compWithVersionCheck},
+	{string(bsiv2), "comp_with_uniq_ids", false, "components have uniq ids", bsiCompWithUniqIDCheck},
+	{string(bsiv2), "comp_with_supplier", false, "components have suppliers", compSupplierCheck},
+
+	{string(bsiv2), "comp_with_associated_license", false, "components have associated licenses", bsiCompWithAssociatedLicensesCheck},
+	{string(bsiv2), "comp_with_concluded_license", false, "components have concluded licenses", bsiCompWithConcludedLicensesCheck},
+	{string(bsiv2), "comp_with_declared_license", false, "components have declared licenses", bsiCompWithDeclaredLicensesCheck},
+	// {string(bsiv2), "comp_with_dependencies", false, "components have dependencies", bsiCompWithDependencyCheck},
+
+	{string(bsiv2), "comp_with_source_code_uri", false, "components have source code URI", compWithSourceCodeURICheck},
+	{string(bsiv2), "comp_with_source_code_hash", false, "components have source code hash", compWithSourceCodeHashCheck},
+	{string(bsiv2), "comp_with_executable_uri", false, "components have executable URI", compWithExecutableURICheck},
+	{string(bsiv2), "comp_with_executable_hash", false, "components have executable checksums", bsiCompWithChecksumsCheck},
+
+	{string(bsiv2), "sbom_with_vuln", false, "SBOM has vulnerability", bsiVulnCheck},
+	{string(bsiv2), "spec_compliant", false, "SBOM Specification", bsiSpecCheck},
+	{string(bsiv2), "sbom_build_process", false, "SBOM build process", docBuildPhaseCheck},
+	{string(bsiv2), "sbom_authors", false, "sbom has authors", docWithAuthorsCheck},
+	{string(bsiv2), "sbom_creation_timestamp", false, "sbom has creation timestamp", docWithTimeStampCheck},
+	{string(bsiv2), "sbom_dependencies", false, "primary comp has dependencies", docWithDepedenciesCheck},
+	{string(bsiv2), "sbom_with_uri", false, "sbom has URI", docWithURICheck},
+	{string(bsiv2), "sbom_with_signature", false, "sbom has signature", docWithSignatureCheck},
 
 	// semantic
 	{string(semantic), "sbom_required_fields", false, "sbom has all required fields", docWithRequiredFieldCheck},

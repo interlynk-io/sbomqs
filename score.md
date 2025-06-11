@@ -34,10 +34,10 @@ SBOM Quality by Interlynk Score:8.5	components:38	samples/photon.spdx.json
 +-----------------------+-------------------------+-----------+--------------------------------+
 ```
 
-## BSI-V1(Incomming)
+## BSI-V1.0.0
 
 ```bash
-$ sbomqs score -c bsi-v1 sbom.json 
+$ sbomqs score -c bsi-v1.0.0 sbom.json 
 ```
 
 o/p would be:
@@ -81,4 +81,69 @@ SBOM Quality by Interlynk Score:7.1     components:279  sbom.json
 |                       | comp_with_source_code_hash | 0.0/10.0  | no-deterministic-field for cdx            |
 |                       |                            |           | 20/279 have package verification code(spdx|
 +-----------------------+----------------------------+-----------+-------------------------------------------+
+```
+
+## BSI:v2.0.0
+
+```bash
+$ sbomqs score --category bsi-v2.0.0  samples/photon.spdx.json
+```
+
+o/p would be:
+
+```bash
+SBOM Quality by Interlynk Score:7.1     components:279  sbom.json
++-----------------------+------------------------------+-----------+-------------------------------------------+
+|       CATEGORY        |         FEATURE              |   SCORE   |                  DESC                     |
++-----------------------+------------------------------+-----------+-------------------------------------------+
+|          BSI-V2       | sbom_with_vuln               | 10.0/10.0 | doc has no vulnerability                  |
++                       +------------------------------+-----------+-------------------------------------------+
+|                       | spec_compliant               | 5.0/10.0  | SPDX/CycloneDX version exists, but format |
++                       +------------------------------+-----------+-------------------------------------------+
+|                       | sbom_build_process           | 0.0/10.0  | doc build process is build type           |
++                       +------------------------------+-----------+-------------------------------------------+
+|                       | sbom_authors                 | 10.0/10.0 | doc has 1 author with email or URL        |
++                       +------------------------------+-----------+-------------------------------------------+
+|                       | sbom_creation_timestamp      | 10.0/10.0 | doc has creation timestamp                |
+|                       |                              |           | 2023-01-12T22:06:03Z                      |
++                       +------------------------------+-----------+-------------------------------------------+
+|                       | sbom_dependencies            | 0.0/10.0  | primary comp has 10 dependencies          |
++                       +------------------------------+-----------+-------------------------------------------+
+|                       | sbom_with_uri                | 0.0/10.0  | doc has 1 namespace(spdx)  or             |
+|                       |                              |           | doc has 1 bom-links(cdx)                  | 
++                       +------------------------------+-----------+-------------------------------------------+
+|                       | sbom_with_bomlinks           | 0.0/10.0  | doc has 1 namespace(spdx)  or             |
+|                       |                              |           | doc has 1 bom-links(cdx)                  | 
++                       +------------------------------+-----------+-------------------------------------------+
+|                       | sbom_signature               | 0.0/10.0  | doc has no signature                      |
++                       +------------------------------+-----------+-------------------------------------------+
+|                       | comp_with_name               | 10.0/10.0 | 279/279 have names                        |
++                       +------------------------------+-----------+-------------------------------------------+
+|                       | comp_with_uniq_ids           | 10.0/10.0 | 279/279 have PURLs or CPEs                |
++                       +------------------------------+-----------+-------------------------------------------+
+|                       | comp_with_version            | 10.0/10.0 | 279/279 have versions                     |
++                       +------------------------------+-----------+-------------------------------------------+
+|                       | comp_with_supplier           | 10.0/10.0 | 27/279 have supplier names                |
++                       +------------------------------+-----------+-------------------------------------------+
+|                       | comp_with_associated_license | 5.0/10.0  | 100/279 have license compliant            |
++                       +------------------------------+-----------+-------------------------------------------+
+|                       | comp_with_concluded_license  | 5.0/10.0  | 100/279 have license compliant            |
++                       +------------------------------+-----------+-------------------------------------------+
+|                       | comp_with_declared_license   | 5.0/10.0  | 100/279 have license compliant            |
++                       +------------------------------+-----------+-------------------------------------------+
+|                       | comp_with_dependencies       | 7.5/10.0  | 200/279 have at least 1 deps              |
++                       +------------------------------+-----------+-------------------------------------------+
+|                       | comp_with_hashes             | 7.5/10.0  | 200/279 have checksum values              |
++                       +------------------------------+-----------+-------------------------------------------+
+|                       | comp_with_source_code_uri    | 0.0/10.0  | 0/279 have extRef of type vcs(cdx) or     |
+|                       |                              |           | no-deterministic-field (spdx)             |
++                       +------------------------------+-----------+-------------------------------------------+
+|                       | comp_with_executable_hash    | 7.5/10.0  | 200/279 have executable checksum values   |
++                       +------------------------------+-----------+-------------------------------------------+
+|                       | comp_with_executable_uri     | 0.0/10.0  | 0/279 have extRef of type distribution(cdx|
+|                       |                              |           | 22/279 have comp download location(spdx)  |
++                       +------------------------------+-----------+-------------------------------------------+
+|                       | comp_with_source_code_hash   | 0.0/10.0  | no-deterministic-field for cdx            |
+|                       |                              |           | 20/279 have package verification code(spdx|
++-----------------------+------------------------------+-----------+-------------------------------------------+
 ```
