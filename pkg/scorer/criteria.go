@@ -26,7 +26,7 @@ const (
 	semantic   category = "Semantic"
 	quality    category = "Quality"
 	sharing    category = "Sharing"
-	bsiv1      category = "bsi-v1"
+	bsiv1      category = "bsi-v1.1.0"
 )
 
 type check struct {
