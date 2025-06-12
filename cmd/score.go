@@ -78,10 +78,10 @@ var scoreCmd = &cobra.Command{
   sbomqs score --json samples/sbomqs-spdx-syft.json
 
   # Get a score for a 'BSI TR-03183-2 v1.1' category against a SBOM in a table output
-  sbomqs score -c bsi-v1.1.0 samples/sbomqs-spdx-syft.json
+  sbomqs score -c bsi-v1.1 samples/sbomqs-spdx-syft.json
 
   # Get a score for a 'BSI TR-03183-2 v2.0' category against a SBOM in a table output
-  sbomqs score -c bsi-v2.0.0 samples/sbomqs-spdx-syft.json
+  sbomqs score -c bsi-v2.0 samples/sbomqs-spdx-syft.json
  
   # Get a score for a 'NTIA-minimum-elements' category against a SBOM in a table output
   sbomqs score --category NTIA-minimum-elements samples/sbomqs-spdx-syft.json

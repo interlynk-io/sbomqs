@@ -263,6 +263,12 @@ func compWithSourceCodeHashCheck(d sbom.Document, c *check) score {
 func sbomWithVulnCheck(doc sbom.Document, c *check) score {
 	s := newScoreFromCheck(c)
 
+	if doc.Spec().GetSpecType() == "spdx" {
+		s.setScore(10.0)
+		s.setDesc("no-deterministic-field in spdx")
+		return *s
+	}
+
 	vulns := doc.Vulnerabilities()
 
 	var allVulnIDs []string
@@ -288,6 +294,13 @@ func sbomWithVulnCheck(doc sbom.Document, c *check) score {
 func sbomBuildLifecycleCheck(doc sbom.Document, c *check) score {
 	s := newScoreFromCheck(c)
 
+	if doc.Spec().GetSpecType() == "spdx" {
+		s.setScore(0.0)
+		s.setDesc("no-deterministic-field in spdx")
+		s.setIgnore(true)
+		return *s
+	}
+
 	lifecycles := doc.Lifecycles()
 
 	found := lo.Count(lifecycles, "build")
@@ -305,7 +318,7 @@ func sbomBuildLifecycleCheck(doc sbom.Document, c *check) score {
 func sbomWithSignatureCheck(doc sbom.Document, c *check) score {
 	s := newScoreFromCheck(c)
 
-	if doc.Signature() != nil {
+	if doc.Signature().GetSigValue() != "" && doc.Signature().GetPublicKey() != "" {
 		// verify signature
 		pubKey := doc.Signature().GetPublicKey()
 		blob := doc.Signature().GetBlob()
