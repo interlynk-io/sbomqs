@@ -318,7 +318,7 @@ func sbomBuildLifecycleCheck(doc sbom.Document, c *check) score {
 func sbomWithSignatureCheck(doc sbom.Document, c *check) score {
 	s := newScoreFromCheck(c)
 
-	if doc.Signature().GetSigValue() != "" && doc.Signature().GetPublicKey() != "" {
+	if doc.Signature() != nil {
 		// verify signature
 		pubKey := doc.Signature().GetPublicKey()
 		blob := doc.Signature().GetBlob()
@@ -327,13 +327,16 @@ func sbomWithSignatureCheck(doc sbom.Document, c *check) score {
 		pubKeyData, err := os.ReadFile(pubKey)
 		if err != nil {
 			s.setScore(0.0)
-			s.setDesc("Signature verification failed!")
+			s.setDesc("No signature provided or public key not found!")
+			// s.setIgnore(true)
+			return *s
 		}
 
 		valid, err := common.VerifySignature(pubKeyData, blob, sig)
 		if err != nil {
 			s.setScore(0.0)
 			s.setDesc("Signature verification failed!")
+			return *s
 		}
 		if valid {
 			s.setScore(10.0)
@@ -342,6 +345,9 @@ func sbomWithSignatureCheck(doc sbom.Document, c *check) score {
 			s.setScore(5.0)
 			s.setDesc("Signature provided but verification failed!")
 		}
+		common.RemoveFileIfExists("extracted_public_key.pem")
+		common.RemoveFileIfExists("extracted_signature.bin")
+		common.RemoveFileIfExists("standalone_sbom.json")
 	} else {
 		s.setScore(0.0)
 		s.setDesc("No signature provided")

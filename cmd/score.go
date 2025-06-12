@@ -59,6 +59,9 @@ type userCmd struct {
 
 	// config control
 	configPath string
+
+	signature string
+	publicKey string
 }
 
 // scoreCmd represents the score command
@@ -82,6 +85,9 @@ var scoreCmd = &cobra.Command{
 
   # Get a score for a 'BSI TR-03183-2 v2.0' category against a SBOM in a table output
   sbomqs score -c bsi-v2.0 samples/sbomqs-spdx-syft.json
+
+  # To verify signature of a SBOM, use the --sig and --pub flags
+  sbomqs score -c bsi-v2.0 --sig samples/signature-test-data/sbom.sig --pub samples/signature-test-data/public_key.pem samples/signature-test-data/SPDXJSONExample-v2.3.spdx.json
  
   # Get a score for a 'NTIA-minimum-elements' category against a SBOM in a table output
   sbomqs score --category NTIA-minimum-elements samples/sbomqs-spdx-syft.json
@@ -164,6 +170,8 @@ func toUserCmd(cmd *cobra.Command, args []string) *userCmd {
 	uCmd.basic, _ = cmd.Flags().GetBool("basic")
 	uCmd.detailed, _ = cmd.Flags().GetBool("detailed")
 	uCmd.color, _ = cmd.Flags().GetBool("color")
+	uCmd.signature, _ = cmd.Flags().GetString("sig")
+	uCmd.publicKey, _ = cmd.Flags().GetString("pub")
 
 	if reportFormat != "" {
 		uCmd.json = strings.ToLower(reportFormat) == "json"
@@ -189,6 +197,8 @@ func toEngineParams(uCmd *userCmd) *engine.Params {
 		Recurse:    uCmd.recurse,
 		Debug:      uCmd.debug,
 		ConfigPath: uCmd.configPath,
+		Signature:  uCmd.signature,
+		PublicKey:  uCmd.publicKey,
 	}
 }
 
@@ -280,4 +290,7 @@ func init() {
 		// Handle the error appropriately, such as logging it or returning it
 		log.Fatalf("Failed to mark flag as deprecated: %v", err)
 	}
+
+	scoreCmd.Flags().StringP("sig", "v", "", "signature of sbom")
+	scoreCmd.Flags().StringP("pub", "p", "", "public key of sbom")
 }

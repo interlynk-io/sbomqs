@@ -34,7 +34,7 @@ func ShareRun(ctx context.Context, ep *Params) error {
 		log.Fatal("path is required")
 	}
 
-	doc, scores, err := processFile(ctx, ep, ep.Path[0], nil)
+	doc, scores, err := processFile(ctx, ep, ep.Path[0], nil, sbom.Signature{})
 	if err != nil {
 		return err
 	}

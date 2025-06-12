@@ -25,6 +25,7 @@ import (
 	"fmt"
 	"math/big"
 	"os"
+	"strings"
 
 	"github.com/interlynk-io/sbomqs/pkg/logger"
 	"github.com/tidwall/sjson"
@@ -72,7 +73,7 @@ func RetrieveSignatureFromSBOM(ctx context.Context, sbomFile string) (string, st
 	}
 
 	if sbom.Signature == nil {
-		log.Debug("signature and public key are not present in the SBOM")
+		log.Debug("signature and public key are not embedded in the SBOM")
 		return sbomFile, "", "", nil
 	}
 	log.Debug("signature and public key are present in the SBOM")
@@ -162,4 +163,56 @@ func PublicKeyToPEM(pub *rsa.PublicKey) []byte {
 		Bytes: pubASN1,
 	})
 	return pubPEM
+}
+
+func GetSignatureBundle(ctx context.Context, sbomFile, signature, publicKey string) (string, string, string, error) {
+	log := logger.FromContext(ctx)
+	log.Debugf("common.GetSignatureBundle()")
+
+	// detect SBOM format for signature handling
+	format, err := detectSBOMFormatDirectlyFromSBOMFile(ctx, sbomFile)
+	if err != nil {
+		log.Debugf("failed to detect SBOM format: %w", err)
+		return "", "", "", fmt.Errorf("cannot determine SBOM format for %s: %w", sbomFile, err)
+	}
+
+	// handle signature extraction based on format
+	if format == "cyclonedx" {
+		log.Debug("CycloneDX SBOM detected, attempting to retrieve signature and public key from embedded SBOM")
+		standaloneSBOMFile, signatureRetrieved, publicKeyRetrieved, err := RetrieveSignatureFromSBOM(ctx, sbomFile)
+		if err != nil {
+			log.Debug("failed to retrieve signature and public key from embedded sbom: %w", err)
+		}
+		return standaloneSBOMFile, signatureRetrieved, publicKeyRetrieved, nil
+	} else if format == "spdx" {
+		return sbomFile, signature, publicKey, nil
+	}
+	log.Debugf("Unknown SBOM format: %s", format)
+
+	return "", "", "", nil
+}
+
+// detectSBOMFormat attempts to determine if the SBOM is SPDX or CycloneDX by inspecting the file
+func detectSBOMFormatDirectlyFromSBOMFile(ctx context.Context, path string) (string, error) {
+	log := logger.FromContext(ctx)
+	var content []byte
+	var err error
+
+	content, err = os.ReadFile(path)
+	if err != nil {
+		return "", fmt.Errorf("failed to read file %s: %w", path, err)
+	}
+
+	// check for key fields:
+	contentStr := strings.ToLower(string(content))
+	if strings.Contains(contentStr, `"bomformat": "cyclonedx"`) || strings.Contains(contentStr, `"specversion"`) {
+		log.Debugf("Detected CycloneDX SBOM")
+		return "cyclonedx", nil
+	}
+	if strings.Contains(contentStr, "spdxversion") || strings.Contains(contentStr, "spdxid") {
+		log.Debugf("Detected SPDX SBOM")
+		return "spdx", nil
+	}
+
+	return "", nil
 }
