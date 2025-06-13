@@ -249,145 +249,40 @@ func evaluateComponentFeature(feature string, comp sbom.GetComponent, doc sbom.D
 	switch feature {
 
 	case "comp_with_name":
-		return comp.GetName() != "", comp.GetName(), nil
+		return evaluateCompWithName(comp)
 
 	case "comp_with_version":
-		return comp.GetVersion() != "", comp.GetVersion(), nil
+		return evaluateCompWithVersion(comp)
 
 	case "comp_with_supplier":
-		return comp.Suppliers().IsPresent(), comp.Suppliers().GetName(), nil
+		return evaluateCompWithSupplier(comp)
 
 	case "comp_with_uniq_ids":
-		return comp.GetID() != "", comp.GetID(), nil
+		return evaluateCompWithUniqID(comp)
 
 	case "comp_valid_licenses":
-		licenses := comp.Licenses()
-		if len(licenses) == 0 {
-			return false, "", nil
-		}
-
-		// check if at least one license is a valid SPDX license
-		for _, l := range licenses {
-			if l != nil && l.Spdx() {
-				return true, l.Name(), nil
-			}
-		}
-		return false, "", nil
+		return evaluateCompWithValidLicenses(comp)
 
 	case "comp_with_any_vuln_lookup_id":
-		cpes := comp.GetCpes()
-		purls := comp.GetPurls()
-		hasFeature := len(cpes) > 0 || len(purls) > 0
-		value := ""
-		if hasFeature {
-			allIDs := make([]string, 0, len(cpes)+len(purls))
-			for _, cpe := range cpes {
-				allIDs = append(allIDs, cpe.String()) // Assuming cpe.CPE has a String() method
-			}
-			for _, purl := range purls {
-				allIDs = append(allIDs, purl.String()) // Assuming purl.PURL has a String() method
-			}
-			value = strings.Join(allIDs, ",")
-		}
-		return hasFeature, value, nil
+		return evaluateCompWithAnyVulnLookupID(comp)
 
 	case "comp_with_deprecated_licenses":
-		licenses := comp.Licenses()
-		if len(licenses) == 0 {
-			return false, "", nil
-		}
-		deprecatedLicenses := []string{}
-		licenseNames := make([]string, 0, len(licenses))
-		for _, l := range licenses {
-			if l != nil {
-				licenseNames = append(licenseNames, l.Name())
-				if l.Deprecated() {
-					deprecatedLicenses = append(deprecatedLicenses, l.Name())
-				}
-			}
-		}
-		hasFeature := len(deprecatedLicenses) > 0
-		value := ""
-		if hasFeature {
-			value = strings.Join(deprecatedLicenses, ",")
-		} else {
-			value = strings.Join(licenseNames, ",")
-		}
-		return hasFeature, value, nil
+		return evaluateCompWithDeprecatedLicenses(comp)
 
 	case "comp_with_multi_vuln_lookup_id":
-		cpes := comp.GetCpes()
-		purls := comp.GetPurls()
-		hasFeature := len(cpes) > 0 && len(purls) > 0
-		value := ""
-		if hasFeature {
-			allIDs := make([]string, 0, len(cpes)+len(purls))
-			for _, cpe := range cpes {
-				allIDs = append(allIDs, cpe.String()) // Assuming cpe.CPE has a String() method
-			}
-			for _, purl := range purls {
-				allIDs = append(allIDs, purl.String()) // Assuming purl.PURL has a String() method
-			}
-			value = strings.Join(allIDs, ",")
-		}
-		return hasFeature, value, nil
+		return evaluateCompWithMultiVulnLookupID(comp)
 
 	case "comp_with_primary_purpose":
-		purpose := comp.PrimaryPurpose()
-		hasFeature := purpose != "" && lo.Contains(sbom.SupportedPrimaryPurpose(doc.Spec().GetSpecType()), strings.ToLower(purpose))
-		return hasFeature, purpose, nil
+		return evaluateCompWithPrimaryPurpose(doc, comp)
 
 	case "comp_with_restrictive_licenses":
-		licenses := comp.Licenses()
-		if len(licenses) == 0 {
-			return false, "", nil
-		}
-		restrictiveLicenses := []string{}
-		licenseNames := make([]string, 0, len(licenses))
-
-		for _, l := range licenses {
-			if l != nil {
-				licenseNames = append(licenseNames, l.Name())
-				if l.Restrictive() {
-					restrictiveLicenses = append(restrictiveLicenses, l.Name())
-				}
-			}
-		}
-		hasFeature := len(restrictiveLicenses) > 0
-		value := ""
-		if hasFeature {
-			value = strings.Join(restrictiveLicenses, ",")
-		} else {
-			value = strings.Join(licenseNames, ",")
-		}
-		return hasFeature, value, nil
+		return evaluateCompWithRestrictedLicenses(doc, comp)
 
 	case "comp_with_checksums":
-		checksums := comp.GetChecksums()
-		hasFeature := len(checksums) > 0
-		value := ""
-		if hasFeature {
-			checksumValues := make([]string, 0, len(checksums))
-			for _, checksum := range checksums {
-				checksumValues = append(checksumValues, checksum.GetAlgo()) // Assuming sbom.GetChecksum has a Value() method
-			}
-			value = strings.Join(checksumValues, ",")
-		}
-		return hasFeature, value, nil
+		return evaluateCompWithChecksums(comp)
 
 	case "comp_with_licenses":
-		licenses := comp.Licenses()
-		hasFeature := len(licenses) > 0
-		licenseNames := make([]string, 0, len(licenses))
-
-		for _, l := range licenses {
-			licenseNames = append(licenseNames, l.Name())
-		}
-		value := ""
-		if hasFeature {
-			value = strings.Join(licenseNames, ",")
-		}
-		return hasFeature, value, nil
+		return evaluateCompWithLicenses(comp)
 
 	default:
 		return false, "", fmt.Errorf("unsupported component feature: %s", feature)
@@ -403,73 +298,31 @@ func evaluateSBOMFeature(feature string, doc sbom.Document) (bool, string, error
 		return timestamp != "", timestamp, nil
 
 	case "sbom_authors":
-		authors := doc.Authors()
-		hasAuthors := len(authors) > 0
-		value := ""
-		if hasAuthors {
-			authorNames := make([]string, len(authors))
-			for i, author := range authors {
-				authorNames[i] = author.GetName()
-			}
-			value = strings.Join(authorNames, ", ")
-		}
-		return hasAuthors, value, nil
+		return evaluateSBOMAuthors(doc)
 
 	case "sbom_with_creator_and_version":
-		if len(doc.Tools()) > 0 {
-			tool := doc.Tools()[0]
-			value := fmt.Sprintf("%s v%s", tool.GetName(), tool.GetVersion())
-			return true, value, nil
-		}
-		return false, "", nil
+		return evaluateSBOMWithCreatorAndVersion(doc)
 
 	case "sbom_with_primary_component":
-		if doc.PrimaryComp() != nil {
-			return true, doc.PrimaryComp().GetName() + "  " + doc.PrimaryComp().GetVersion(), nil
-		}
-		return false, "", nil
+		return evaluateSBOMPrimaryComponent(doc)
 
 	case "sbom_dependencies":
-		if doc.PrimaryComp() != nil {
-			count := doc.PrimaryComp().GetTotalNoOfDependencies()
-			return count > 0, fmt.Sprintf("%d dependencies", count), nil
-		}
-		return false, "", nil
+		return evaluateSBOMDependencies(doc)
 
 	case "sbom_sharable":
-		lics := doc.Spec().GetLicenses()
-		if len(lics) == 0 {
-			return false, "", nil
-		}
-
-		licenseNames := make([]string, 0, len(lics))
-		freeLicCount := 0
-		for _, l := range lics {
-			if l != nil {
-				licenseNames = append(licenseNames, l.Name())
-				if l.FreeAnyUse() {
-					freeLicCount++
-				}
-			}
-		}
-		hasFeature := len(lics) > 0 && freeLicCount == len(lics)
-		value := strings.Join(licenseNames, ",")
-		if !hasFeature {
-			value = "Not present"
-		}
-		return hasFeature, value, nil
+		return evaluateSBOMSharable(doc)
 
 	case "sbom_parsable":
-		return doc.Spec().Parsable(), "SBOM is parsable", nil
+		return evaluateSBOMParsable(doc)
 
 	case "sbom_spec":
-		return doc.Spec().GetSpecType() != "", doc.Spec().GetSpecType(), nil
+		return evaluateSBOMSpec(doc)
 
 	case "sbom_spec_file_format":
-		return doc.Spec().FileFormat() != "", doc.Spec().FileFormat(), nil
+		return evaluateSBOMSpecFileFormat(doc)
 
 	case "sbom_spec_version":
-		return doc.Spec().GetVersion() != "", doc.Spec().GetVersion(), nil
+		return evaluateSBOMSpecVersion(doc)
 
 	default:
 		return false, "", fmt.Errorf("unsupported SBOM feature: %s", feature)
@@ -516,4 +369,284 @@ func featureToPropertyName(feature string) string {
 	default:
 		return strings.ReplaceAll(strings.TrimPrefix(feature, "sbom_"), "_", " ")
 	}
+}
+
+// evaluate comp with name
+func evaluateCompWithName(comp sbom.GetComponent) (bool, string, error) {
+	return comp.GetName() != "", comp.GetName(), nil
+}
+
+// evaluateCompWithVersion evaluates if the component has a version
+func evaluateCompWithVersion(comp sbom.GetComponent) (bool, string, error) {
+	return comp.GetVersion() != "", comp.GetVersion(), nil
+}
+
+// evaluateCompWithSupplier evaluates if the component has a supplier
+func evaluateCompWithSupplier(comp sbom.GetComponent) (bool, string, error) {
+	return comp.Suppliers().IsPresent(), comp.Suppliers().GetName() + "," + comp.Suppliers().GetEmail(), nil
+}
+
+// evaluateCompWithUniqID evaluates if the component has a unique ID
+func evaluateCompWithUniqID(comp sbom.GetComponent) (bool, string, error) {
+	return comp.GetID() != "", comp.GetID(), nil
+}
+
+// evaluateCompWithValidLicenses evaluates if the component has valid licenses
+func evaluateCompWithValidLicenses(comp sbom.GetComponent) (bool, string, error) {
+	licenses := comp.Licenses()
+	if len(licenses) == 0 {
+		return false, "", nil
+	}
+
+	validLicenses := make([]string, 0, len(licenses))
+	for _, l := range licenses {
+		if l != nil && l.Spdx() {
+			validLicenses = append(validLicenses, l.Name())
+		}
+	}
+
+	if len(validLicenses) == 0 {
+		return false, "", nil
+	}
+	return true, strings.Join(validLicenses, ","), nil
+}
+
+// evaluateCompWithAnyVulnLookupID evaluates if the component has any vulnerability lookup ID
+func evaluateCompWithAnyVulnLookupID(comp sbom.GetComponent) (bool, string, error) {
+	cpes := comp.GetCpes()
+	purls := comp.GetPurls()
+
+	if len(cpes) == 0 || len(purls) == 0 {
+		return false, "", nil
+	}
+
+	allIDs := make([]string, 0, len(cpes)+len(purls))
+	for _, cpe := range cpes {
+		allIDs = append(allIDs, cpe.String()) // Assuming cpe.CPE has a String() method
+	}
+	for _, purl := range purls {
+		allIDs = append(allIDs, purl.String()) // Assuming purl.PURL has a String() method
+	}
+
+	return true, strings.Join(allIDs, ","), nil
+}
+
+// evaluateCompWithMultiVulnLookupID evaluates if the component has multiple vulnerability lookup IDs
+func evaluateCompWithMultiVulnLookupID(comp sbom.GetComponent) (bool, string, error) {
+	cpes := comp.GetCpes()
+	purls := comp.GetPurls()
+
+	hasFeature := len(cpes) > 0 && len(purls) > 0
+
+	if len(cpes) == 0 && len(purls) == 0 {
+		return false, "", nil
+	}
+
+	allIDs := make([]string, 0, len(cpes)+len(purls))
+	for _, cpe := range cpes {
+		allIDs = append(allIDs, cpe.String()) // Assuming cpe.CPE has a String() method
+	}
+	for _, purl := range purls {
+		allIDs = append(allIDs, purl.String()) // Assuming purl.PURL has a String() method
+	}
+
+	return hasFeature, strings.Join(allIDs, ","), nil
+}
+
+// evaluateCompWithDeprecatedLicenses evaluates if the component has any deprecated licenses
+func evaluateCompWithDeprecatedLicenses(comp sbom.GetComponent) (bool, string, error) {
+	licenses := comp.Licenses()
+	if len(licenses) == 0 {
+		return false, "", nil
+	}
+
+	deprecatedLicenses := make([]string, 0, len(licenses))
+	licenseNames := make([]string, 0, len(licenses))
+
+	for _, l := range licenses {
+		if l != nil {
+			licenseNames = append(licenseNames, l.Name())
+			if l.Deprecated() {
+				deprecatedLicenses = append(deprecatedLicenses, l.Name())
+			}
+		}
+	}
+
+	if len(deprecatedLicenses) == 0 {
+		return false, strings.Join(licenseNames, ","), nil
+	}
+	return true, strings.Join(deprecatedLicenses, ","), nil
+}
+
+// evaluateCompWithPrimaryPurpose evaluates if the component has a primary purpose
+func evaluateCompWithPrimaryPurpose(doc sbom.Document, comp sbom.GetComponent) (bool, string, error) {
+	purpose := comp.PrimaryPurpose()
+	hasFeature := purpose != "" && lo.Contains(sbom.SupportedPrimaryPurpose(doc.Spec().GetSpecType()), strings.ToLower(purpose))
+	return hasFeature, purpose, nil
+}
+
+// evaluateCompWithRestrictedLicenses evaluates if the component has any restrictive licenses
+func evaluateCompWithRestrictedLicenses(doc sbom.Document, comp sbom.GetComponent) (bool, string, error) {
+	licenses := comp.Licenses()
+	if len(licenses) == 0 {
+		return false, "", nil
+	}
+
+	restrictiveLicenses := make([]string, 0, len(licenses))
+	licenseNames := make([]string, 0, len(licenses))
+
+	for _, l := range licenses {
+		if l != nil {
+			licenseNames = append(licenseNames, l.Name())
+			if l.Restrictive() {
+				restrictiveLicenses = append(restrictiveLicenses, l.Name())
+			}
+		}
+	}
+
+	if len(restrictiveLicenses) == 0 {
+		return false, strings.Join(licenseNames, ","), nil
+	}
+
+	return true, strings.Join(restrictiveLicenses, ","), nil
+}
+
+// evaluateCompWithChecksums evaluates if the component has checksums
+func evaluateCompWithChecksums(comp sbom.GetComponent) (bool, string, error) {
+	checksums := comp.GetChecksums()
+	if len(checksums) == 0 {
+		return false, "", nil
+	}
+
+	checksumValues := make([]string, 0, len(checksums))
+	for _, checksum := range checksums {
+		checksumValues = append(checksumValues, checksum.GetAlgo()) // Assuming sbom.GetChecksum has a GetAlgo() method
+	}
+	return true, strings.Join(checksumValues, ","), nil
+}
+
+// evaluateCompWithLicenses
+func evaluateCompWithLicenses(comp sbom.GetComponent) (bool, string, error) {
+	licenses := comp.Licenses()
+	if len(licenses) == 0 {
+		return false, "", nil
+	}
+
+	licenseNames := make([]string, 0, len(licenses))
+	for _, l := range licenses {
+		if l != nil {
+			licenseNames = append(licenseNames, l.Name())
+		}
+	}
+
+	return true, strings.Join(licenseNames, ","), nil
+}
+
+// evaluateSBOMAuthors evaluates if the SBOM has authors
+func evaluateSBOMAuthors(doc sbom.Document) (bool, string, error) {
+	authors := doc.Authors()
+	if len(authors) == 0 {
+		return false, "", nil
+	}
+
+	authorNames := make([]string, 0, len(authors))
+	for _, author := range authors {
+		if author != nil {
+			if author.GetEmail() != "" {
+				authorNames = append(authorNames, author.GetName()+","+author.GetEmail())
+			} else {
+				authorNames = append(authorNames, author.GetName())
+			}
+		}
+	}
+
+	return true, strings.Join(authorNames, ", "), nil
+}
+
+// evaluateSBOMWithCreatorAndVersion evaluates if the SBOM has a creator and version
+func evaluateSBOMWithCreatorAndVersion(doc sbom.Document) (bool, string, error) {
+	if len(doc.Tools()) > 0 {
+		tool := doc.Tools()[0]
+		value := fmt.Sprintf("%s v%s", tool.GetName(), tool.GetVersion())
+		return true, value, nil
+	}
+	return false, "", nil
+}
+
+// evaluateSBOMPrimaryComponent evaluates if the SBOM has a primary component
+func evaluateSBOMPrimaryComponent(doc sbom.Document) (bool, string, error) {
+	if doc.PrimaryComp() != nil {
+		value := fmt.Sprintf("%s v%s", doc.PrimaryComp().GetName(), doc.PrimaryComp().GetVersion())
+		return true, value, nil
+	}
+	return false, "", nil
+}
+
+// evaluateSBOMDependencies evaluates if the SBOM has dependencies
+func evaluateSBOMDependencies(doc sbom.Document) (bool, string, error) {
+	if doc.PrimaryComp() != nil {
+		count := doc.PrimaryComp().GetTotalNoOfDependencies()
+		values := doc.PrimaryComp().GetDependencies()
+		if count > 0 {
+			return true, fmt.Sprintf("%d dependencies: %s", count, strings.Join(values, ", ")), nil
+		}
+	}
+	return false, "", nil
+}
+
+// evaluateSBOMSharable evaluates if the SBOM is sharable
+func evaluateSBOMSharable(doc sbom.Document) (bool, string, error) {
+	lics := doc.Spec().GetLicenses()
+	if len(lics) == 0 {
+		return false, "", nil
+	}
+	licenseNames := make([]string, 0, len(lics))
+	freeLicCount := 0
+	for _, l := range lics {
+		if l != nil {
+			licenseNames = append(licenseNames, l.Name())
+			if l.FreeAnyUse() {
+				freeLicCount++
+			}
+		}
+	}
+	if freeLicCount > 0 {
+		return true, fmt.Sprintf("Sharable under licenses: %s", strings.Join(licenseNames, ", ")), nil
+	}
+	return false, "", nil
+}
+
+// evaluateSBOMParsable evaluates if the SBOM is parsable
+func evaluateSBOMParsable(doc sbom.Document) (bool, string, error) {
+	if doc.Spec().Parsable() {
+		return true, "SBOM is parsable", nil
+	}
+	return false, "SBOM is not parsable", nil
+}
+
+// evaluateSBOMSpec evaluates if the SBOM has a specification
+func evaluateSBOMSpec(doc sbom.Document) (bool, string, error) {
+	specType := doc.Spec().GetSpecType()
+	if specType != "" {
+		return true, specType, nil
+	}
+	return false, "", nil
+}
+
+// evaluateSBOMSpecFileFormat evaluates if the SBOM has a file format
+func evaluateSBOMSpecFileFormat(doc sbom.Document) (bool, string, error) {
+	fileFormat := doc.Spec().FileFormat()
+	if fileFormat != "" {
+		return true, fileFormat, nil
+	}
+	return false, "", nil
+}
+
+// evaluateSBOMSpecVersion evaluates if the SBOM has a specification version
+func evaluateSBOMSpecVersion(doc sbom.Document) (bool, string, error) {
+	version := doc.Spec().GetVersion()
+	if version != "" {
+		return true, version, nil
+	}
+	return false, "", nil
 }
