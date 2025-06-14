@@ -26,6 +26,11 @@ import (
 	"github.com/samber/lo" // Added for lo.Contains
 )
 
+var (
+	validBsiSpdxVersions      = []string{"SPDX-2.3"}
+	validBsiCycloneDXVersions = []string{"1.4", "1.5", "1.6"}
+)
+
 // ComponentsListResult lists components or SBOM properties based on the specified features for multiple local SBOMs
 func ComponentsListResult(ctx context.Context, ep *Params) (*Result, error) {
 	log := logger.FromContext(ctx)
@@ -263,6 +268,33 @@ func evaluateComponentFeature(feature string, comp sbom.GetComponent, doc sbom.D
 	case "comp_valid_licenses":
 		return evaluateCompWithValidLicenses(comp)
 
+	case "comp_with_checksums_sha256":
+		return evaluateCompWithSHA256Checksums(comp)
+
+	case "comp_with_source_code_uri":
+		return evaluateCompWithSourceCodeURI(doc, comp)
+
+	case "comp_with_source_code_hash":
+		return evaluateCompWithSourceCodeHash(doc, comp)
+
+	case "comp_with_executable_uri":
+		return evaluateCompWithExecutableURI(comp)
+
+	// case "comp_with_executable_hash":
+	// 	return evaluateCompWithExecutableHash(comp)
+
+	case "comp_with_associated_license":
+		return evaluateCompWithAssociatedLicense(doc, comp)
+
+	case "comp_with_concluded_license":
+		return evaluateCompWithConcludedLicense(doc, comp)
+
+	case "comp_with_declared_license":
+		return evaluateCompWithDeclaredLicense(doc, comp)
+
+	case "comp_with_dependencies":
+		return evaluateCompWithDependencies(doc, comp)
+
 	case "comp_with_any_vuln_lookup_id":
 		return evaluateCompWithAnyVulnLookupID(comp)
 
@@ -323,6 +355,21 @@ func evaluateSBOMFeature(feature string, doc sbom.Document) (bool, string, error
 
 	case "sbom_spec_version":
 		return evaluateSBOMSpecVersion(doc)
+
+	case "spec_with_version_compliant":
+		return evaluateSBOMSpecVersionCompliant(doc)
+
+	case "sbom_with_uri":
+		return evaluateSBOMWithURI(doc)
+
+	case "sbom_with_vuln":
+		return evaluateSBOMWithVulnerability(doc)
+
+	case "sbom_build_process":
+		return evaluateSBOMBuildLifeCycle(doc)
+
+	// case "sbom_with_signature":
+	// 	return evaluateSBOMWithSignature(doc)
 
 	default:
 		return false, "", fmt.Errorf("unsupported SBOM feature: %s", feature)
@@ -542,6 +589,141 @@ func evaluateCompWithLicenses(comp sbom.GetComponent) (bool, string, error) {
 	return true, strings.Join(licenseNames, ","), nil
 }
 
+// evaluateCompWithSHA256Checksums evaluates if the component has SHA-256 checksums
+func evaluateCompWithSHA256Checksums(comp sbom.GetComponent) (bool, string, error) {
+	algos := []string{"SHA256", "SHA-256", "sha256", "sha-256"}
+
+	checksums := comp.GetChecksums()
+	if len(checksums) == 0 {
+		return false, "", nil
+	}
+
+	sha256Checksums := make([]string, 0, len(checksums))
+	for _, checksum := range checksums {
+		if lo.Contains(algos, checksum.GetAlgo()) {
+			sha256Checksums = append(sha256Checksums, checksum.GetAlgo()) // Assuming sbom.GetChecksum has a GetValue() method
+		}
+	}
+
+	if len(sha256Checksums) == 0 {
+		return false, "", nil
+	}
+	return true, strings.Join(sha256Checksums, ","), nil
+}
+
+// evaluateCompWithSourceCodeURI evaluates if the component has a source code URI
+func evaluateCompWithSourceCodeURI(doc sbom.Document, comp sbom.GetComponent) (bool, string, error) {
+	if doc.Spec().GetSpecType() == "spdx" {
+		return false, "source code URI is not supported for SPDX documents", nil
+	}
+
+	sourceCodeURI := comp.SourceCodeURL()
+	if sourceCodeURI != "" {
+		return true, sourceCodeURI, nil
+	}
+	return false, "", nil
+}
+
+// evaluateCompWithSourceCodeHash evaluates if the component has a source code hash
+func evaluateCompWithSourceCodeHash(doc sbom.Document, comp sbom.GetComponent) (bool, string, error) {
+	if doc.Spec().GetSpecType() == "cyclonedx" {
+		return false, "no-deterministic-field in cdx", nil
+	}
+
+	sourceCodeHash := comp.SourceCodeHash()
+	if sourceCodeHash != "" {
+		return true, sourceCodeHash, nil
+	}
+	return false, "", nil
+}
+
+// evaluateCompWithExecutableURI evaluates if the component has an executable URI
+func evaluateCompWithExecutableURI(comp sbom.GetComponent) (bool, string, error) {
+	executableURI := comp.GetDownloadLocationURL()
+	if executableURI != "" {
+		return true, executableURI, nil
+	}
+	return false, "", nil
+}
+
+// evaluateCompWithAssociatedLicense evaluates if the component has an associated license
+func evaluateCompWithAssociatedLicense(doc sbom.Document, comp sbom.GetComponent) (bool, string, error) {
+	// associatedLicense := comp.AssociatedLicense()
+	spec := doc.Spec().GetSpecType()
+
+	if spec == "spdx" {
+		var associatedLicense []string
+		for _, l := range comp.ConcludedLicenses() {
+			if l != nil {
+				associatedLicense = append(associatedLicense, l.Name())
+			}
+		}
+
+		if len(associatedLicense) == 0 {
+			return false, "", nil
+		}
+		return true, strings.Join(associatedLicense, ","), nil
+	} else if spec == "cyclonedx" {
+		var associatedLicense []string
+
+		for _, l := range comp.Licenses() {
+			if l != nil {
+				associatedLicense = append(associatedLicense, l.Name())
+			}
+		}
+
+		if len(associatedLicense) == 0 {
+			return false, "", nil
+		}
+		return true, strings.Join(associatedLicense, ","), nil
+	}
+	return false, "", nil
+}
+
+// evaluateCompWithConcludedLicense evaluates if the component has a concluded license
+func evaluateCompWithConcludedLicense(doc sbom.Document, comp sbom.GetComponent) (bool, string, error) {
+	var concludedLicense []string
+	for _, l := range comp.ConcludedLicenses() {
+		if l != nil {
+			concludedLicense = append(concludedLicense, l.Name())
+		}
+	}
+
+	if len(concludedLicense) == 0 {
+		return false, "", nil
+	}
+	return true, strings.Join(concludedLicense, ","), nil
+}
+
+// evaluateCompWithDeclaredLicense evaluates if the component has a declared license
+func evaluateCompWithDeclaredLicense(doc sbom.Document, comp sbom.GetComponent) (bool, string, error) {
+	var declaredLicense []string
+	for _, l := range comp.DeclaredLicenses() {
+		if l != nil {
+			declaredLicense = append(declaredLicense, l.Name())
+		}
+	}
+
+	if len(declaredLicense) == 0 {
+		return false, "", nil
+	}
+	return true, strings.Join(declaredLicense, ","), nil
+}
+
+// evaluateCompWithDependencies evaluates if the component has dependencies
+func evaluateCompWithDependencies(doc sbom.Document, comp sbom.GetComponent) (bool, string, error) {
+	if comp == nil {
+		return false, "", fmt.Errorf("component is nil")
+	}
+
+	dependencies := comp.HasRelationShips()
+	if !dependencies {
+		return false, "no-dependencies", nil
+	}
+
+	return true, fmt.Sprint("contains dependencies"), nil
+}
+
 // evaluateSBOMAuthors evaluates if the SBOM has authors
 func evaluateSBOMAuthors(doc sbom.Document) (bool, string, error) {
 	authors := doc.Authors()
@@ -649,4 +831,73 @@ func evaluateSBOMSpecVersion(doc sbom.Document) (bool, string, error) {
 		return true, version, nil
 	}
 	return false, "", nil
+}
+
+// evaluateSBOMSpecVersionCompliant evaluates if the SBOM specification version is compliant
+func evaluateSBOMSpecVersionCompliant(doc sbom.Document) (bool, string, error) {
+	specVersion := doc.Spec().GetVersion()
+	spec := doc.Spec().GetSpecType()
+
+	if spec == "spdx" {
+		count := lo.Count(validBsiSpdxVersions, specVersion)
+		if count == 0 {
+			return false, "", fmt.Errorf("SBOM spec version %s is not compliant with BSI SPDX versions", specVersion)
+		}
+		return true, specVersion, nil
+	} else if spec == "cyclonedx" {
+
+		count := lo.Count(validBsiCycloneDXVersions, specVersion)
+		if count == 0 {
+			return false, "", fmt.Errorf("SBOM spec version %s is not compliant with CycloneDX versions", specVersion)
+		}
+		return true, specVersion, nil
+	}
+
+	return false, "", nil
+}
+
+// evaluateSBOMWithURI evaluates if the SBOM has a URI
+func evaluateSBOMWithURI(doc sbom.Document) (bool, string, error) {
+	uri := doc.Spec().GetURI()
+	if uri != "" {
+		return true, uri, nil
+	}
+	return false, "", nil
+}
+
+// evaluateSBOMWithVulnerability evaluates if the SBOM has any vulnerabilities
+func evaluateSBOMWithVulnerability(doc sbom.Document) (bool, string, error) {
+	if doc.Spec().GetSpecType() == "spdx" {
+		return true, "", nil
+	}
+
+	vulns := doc.Vulnerabilities()
+
+	if len(vulns) == 0 {
+		return true, "", nil
+	}
+
+	var allVulnIDs []string
+	for _, v := range vulns {
+		if vulnID := v.GetID(); vulnID != "" {
+			allVulnIDs = append(allVulnIDs, vulnID)
+		}
+	}
+
+	return false, strings.Join(allVulnIDs, ", "), nil
+}
+
+// evaluateSBOMBuildProcess evaluates if the SBOM has a build process
+func evaluateSBOMBuildLifeCycle(doc sbom.Document) (bool, string, error) {
+	if doc.Spec().GetSpecType() == "spdx" {
+		return false, "no-deterministic-field in spdx", nil
+	}
+
+	lifecycles := doc.Lifecycles()
+	found := lo.Count(lifecycles, "build")
+	if found == 0 {
+		return false, "no build lifecycle found", nil
+	}
+
+	return true, lifecycles[found-1], nil
 }
