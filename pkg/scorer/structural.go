@@ -21,6 +21,7 @@ import (
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 )
 
+// specCheck checks for spdx or cyclonedx
 func specCheck(d sbom.Document, c *check) score {
 	s := newScoreFromCheck(c)
 
@@ -50,7 +51,7 @@ func specVersionCheck(d sbom.Document, c *check) score {
 	return *s
 }
 
-func specFileFormatCheck(d sbom.Document, c *check) score {
+func sbomFileFormatCheck(d sbom.Document, c *check) score {
 	s := newScoreFromCheck(c)
 
 	formats := sbom.SupportedSBOMFileFormats(d.Spec().GetSpecType())

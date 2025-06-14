@@ -21,7 +21,7 @@ import (
 	"github.com/samber/lo"
 )
 
-func docWithRequiredFieldCheck(d sbom.Document, c *check) score {
+func sbomWithRequiredFieldCheck(d sbom.Document, c *check) score {
 	s := newScoreFromCheck(c)
 
 	totalComponents := len(d.Components())

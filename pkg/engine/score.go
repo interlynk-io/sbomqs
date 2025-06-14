@@ -26,6 +26,7 @@ import (
 	"strings"
 
 	"github.com/go-git/go-billy/v5"
+	"github.com/interlynk-io/sbomqs/pkg/compliance/common"
 	"github.com/interlynk-io/sbomqs/pkg/logger"
 	"github.com/interlynk-io/sbomqs/pkg/reporter"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
@@ -147,6 +148,21 @@ func handlePaths(ctx context.Context, ep *Params) error {
 	log := logger.FromContext(ctx)
 	log.Debug("engine.handlePaths()")
 
+	path := ep.Path[0]
+
+	blob, signature, publicKey, err := common.GetSignatureBundle(ctx, path, ep.Signature, ep.PublicKey)
+	if err != nil {
+		log.Debugf("common.GetSignatureBundle failed for file :%s\n", path)
+		fmt.Printf("failed to get signature bundle for %s\n", path)
+		return err
+	}
+
+	sig := sbom.Signature{
+		SigValue:  signature,
+		PublicKey: publicKey,
+		Blob:      blob,
+	}
+
 	var docs []sbom.Document
 	var paths []string
 	var scores []scorer.Scores
@@ -176,7 +192,7 @@ func handlePaths(ctx context.Context, ep *Params) error {
 				return err
 			}
 
-			doc, err := sbom.NewSBOMDocument(ctx, f, sbom.Signature{})
+			doc, err := sbom.NewSBOMDocument(ctx, f, sig)
 			if err != nil {
 				log.Fatalf("failed to parse SBOM document: %w", err)
 			}
@@ -209,7 +225,7 @@ func handlePaths(ctx context.Context, ep *Params) error {
 						continue
 					}
 					path := filepath.Join(path, file.Name())
-					doc, scs, err := processFile(ctx, ep, path, nil)
+					doc, scs, err := processFile(ctx, ep, path, nil, sig)
 					if err != nil {
 						continue
 					}
@@ -220,7 +236,7 @@ func handlePaths(ctx context.Context, ep *Params) error {
 				continue
 			}
 
-			doc, scs, err := processFile(ctx, ep, path, nil)
+			doc, scs, err := processFile(ctx, ep, path, nil, sig)
 			if err != nil {
 				continue
 			}
@@ -249,7 +265,7 @@ func handlePaths(ctx context.Context, ep *Params) error {
 	return nil
 }
 
-func processFile(ctx context.Context, ep *Params, path string, fs billy.Filesystem) (sbom.Document, scorer.Scores, error) {
+func processFile(ctx context.Context, ep *Params, path string, fs billy.Filesystem, sig sbom.Signature) (sbom.Document, scorer.Scores, error) {
 	log := logger.FromContext(ctx)
 	log.Debugf("Processing file :%s\n", path)
 	var doc sbom.Document
@@ -263,7 +279,7 @@ func processFile(ctx context.Context, ep *Params, path string, fs billy.Filesyst
 		}
 		defer f.Close()
 
-		doc, err = sbom.NewSBOMDocument(ctx, f, sbom.Signature{})
+		doc, err = sbom.NewSBOMDocument(ctx, f, sig)
 		if err != nil {
 			log.Debugf("failed to create sbom document for  :%s\n", path)
 			log.Debugf("%s\n", err)
@@ -285,7 +301,7 @@ func processFile(ctx context.Context, ep *Params, path string, fs billy.Filesyst
 		}
 		defer f.Close()
 
-		doc, err = sbom.NewSBOMDocument(ctx, f, sbom.Signature{})
+		doc, err = sbom.NewSBOMDocument(ctx, f, sig)
 		if err != nil {
 			log.Debugf("failed to create sbom document for  :%s\n", path)
 			log.Debugf("%s\n", err)
@@ -296,7 +312,7 @@ func processFile(ctx context.Context, ep *Params, path string, fs billy.Filesyst
 
 	sr := scorer.NewScorer(ctx, doc)
 
-	if len(ep.Categories) > 0 {
+	if len(ep.Categories[0]) > 0 {
 		for _, category := range ep.Categories {
 			if len(category) <= 0 {
 				continue
@@ -305,7 +321,7 @@ func processFile(ctx context.Context, ep *Params, path string, fs billy.Filesyst
 		}
 	}
 
-	if len(ep.Features) > 0 {
+	if len(ep.Features[0]) > 0 {
 		for _, feature := range ep.Features {
 			if len(feature) <= 0 {
 				continue

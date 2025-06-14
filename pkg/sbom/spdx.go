@@ -290,17 +290,18 @@ func (s *SpdxDoc) parseComps() {
 
 		nc.isPrimary = s.PrimaryComponent.ID == string(sc.PackageSPDXIdentifier)
 
-		fromRelsPresent := func(rels []GetRelation, id string) bool {
-			for _, r := range rels {
-				if strings.Contains(r.GetFrom(), id) {
-					return true
-				}
-			}
-			return false
-		}
+		// fromRelsPresent := func(rels []GetRelation, id string) bool {
+		// 	for _, r := range rels {
+		// 		if strings.Contains(r.GetFrom(), id) {
+		// 			return true
+		// 		}
+		// 	}
+		// 	return false
+		// }
 
-		nc.hasRelationships = fromRelsPresent(s.Rels, string(sc.PackageSPDXIdentifier))
-		nc.RelationshipState = "not-specified"
+		// nc.hasRelationships = fromRelsPresent(s.Rels, string(sc.PackageSPDXIdentifier))
+		// nc.RelationshipState = "not-specified"
+		nc.hasRelationships = getComponentDependencies(s, nc.Spdxid)
 
 		s.Comps = append(s.Comps, nc)
 	}
@@ -328,6 +329,25 @@ func (s *SpdxDoc) parseAuthors() {
 			s.Auths = append(s.Auths, a)
 		}
 	}
+}
+
+// return true if a component has DEPENDS_ON relationship
+func getComponentDependencies(s *SpdxDoc, componentID string) bool {
+	newID := "SPDXRef-" + componentID
+
+	for _, r := range s.doc.Relationships {
+		if strings.ToUpper(r.Relationship) == "DEPENDS_ON" {
+			aBytes, err := r.RefA.MarshalJSON()
+			if err != nil {
+				continue
+			}
+
+			if CleanKey(string(aBytes)) == newID {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func (s *SpdxDoc) parsePrimaryCompAndRelationships() {

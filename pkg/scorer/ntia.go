@@ -18,11 +18,12 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/interlynk-io/sbomqs/pkg/compliance/common"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 	"github.com/samber/lo"
 )
 
-func compSupplierCheck(d sbom.Document, c *check) score {
+func compWithSupplierCheck(d sbom.Document, c *check) score {
 	s := newScoreFromCheck(c)
 
 	totalComponents := len(d.Components())
@@ -114,7 +115,7 @@ func compWithUniqIDCheck(d sbom.Document, c *check) score {
 	return *s
 }
 
-func docWithDepedenciesCheck(d sbom.Document, c *check) score {
+func sbomWithDepedenciesCheck(d sbom.Document, c *check) score {
 	s := newScoreFromCheck(c)
 	var totalDependencies int
 	if d.PrimaryComp() != nil {
@@ -123,11 +124,11 @@ func docWithDepedenciesCheck(d sbom.Document, c *check) score {
 	if totalDependencies > 0 {
 		s.setScore(10.0)
 	}
-	s.setDesc(fmt.Sprintf("doc has %d dependencies ", totalDependencies))
+	s.setDesc(fmt.Sprintf("primary comp has %d dependencies ", totalDependencies))
 	return *s
 }
 
-func docWithAuthorsCheck(d sbom.Document, c *check) score {
+func sbomWithAuthorsCheck(d sbom.Document, c *check) score {
 	s := newScoreFromCheck(c)
 
 	noOfAuthors := len(d.Authors())
@@ -143,13 +144,18 @@ func docWithAuthorsCheck(d sbom.Document, c *check) score {
 	return *s
 }
 
-func docWithTimeStampCheck(d sbom.Document, c *check) score {
+func sbomWithTimeStampCheck(d sbom.Document, c *check) score {
 	s := newScoreFromCheck(c)
+	timestamp := d.Spec().GetCreationTimestamp()
 
-	if d.Spec().GetCreationTimestamp() != "" {
-		s.setScore(10.0)
+	if timestamp != "" {
+		if _, isTimeCorrect := common.CheckTimestamp(timestamp); isTimeCorrect {
+			s.setScore(10.0)
+			s.setDesc(fmt.Sprintf("doc has creation timestamp %s", d.Spec().GetCreationTimestamp()))
+		} else {
+			s.setScore(0.0)
+			s.setDesc(fmt.Sprintf("doc has creation timestamp %s, but it is not in correct format", timestamp))
+		}
 	}
-
-	s.setDesc(fmt.Sprintf("doc has creation timestamp %s", d.Spec().GetCreationTimestamp()))
 	return *s
 }
