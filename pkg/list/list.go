@@ -721,7 +721,7 @@ func evaluateCompWithDependencies(doc sbom.Document, comp sbom.GetComponent) (bo
 		return false, "no-dependencies", nil
 	}
 
-	return true, fmt.Sprint("contains dependencies"), nil
+	return true, "contains dependencies", nil
 }
 
 // evaluateSBOMAuthors evaluates if the SBOM has authors
