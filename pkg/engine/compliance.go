@@ -87,18 +87,12 @@ func getSbomDocument(ctx context.Context, ep *Params) (*sbom.Document, error) {
 	log.Debugf("engine.getSbomDocument()")
 
 	path := ep.Path[0]
-	blob := ep.Path[0]
-	signature := ep.Signature
-	publicKey := ep.PublicKey
 
-	if signature == "" && publicKey == "" {
-		standaloneSBOMFile, signatureRetrieved, publicKeyRetrieved, err := common.RetrieveSignatureFromSBOM(ctx, blob)
-		if err != nil {
-			log.Debug("failed to retrieve signature and public key from embedded sbom: %w", err)
-		}
-		blob = standaloneSBOMFile
-		signature = signatureRetrieved
-		publicKey = publicKeyRetrieved
+	blob, signature, publicKey, err := common.GetSignatureBundle(ctx, path, ep.Signature, ep.PublicKey)
+	if err != nil {
+		log.Debugf("common.GetSignatureBundle failed for file :%s\n", path)
+		fmt.Printf("failed to get signature bundle for %s\n", path)
+		return nil, err
 	}
 
 	sig := sbom.Signature{

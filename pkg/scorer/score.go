@@ -16,6 +16,7 @@ package scorer
 
 import "math"
 
+// Score represent individual score, description for particular category and feature.
 type Score interface {
 	Category() string
 	Feature() string
@@ -60,14 +61,18 @@ func (s *score) setIgnore(i bool) {
 	s.ignore = i
 }
 
+// Category returns particular category.
+// It contains collection of features within it.
 func (s score) Category() string {
 	return s.category
 }
 
+// Feature represent particulat data-field of the compliance.
 func (s score) Feature() string {
 	return s.feature
 }
 
+// Score represent score for the feature.
 func (s score) Score() float64 {
 	return s.score
 }

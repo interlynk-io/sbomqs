@@ -212,7 +212,7 @@ func compWithMultipleIDCheck(d sbom.Document, c *check) score {
 	return *s
 }
 
-func docWithCreatorCheck(d sbom.Document, c *check) score {
+func sbomWithCreatorCheck(d sbom.Document, c *check) score {
 	s := newScoreFromCheck(c)
 
 	totalTools := len(d.Tools())
@@ -228,7 +228,7 @@ func docWithCreatorCheck(d sbom.Document, c *check) score {
 	return *s
 }
 
-func docWithPrimaryComponentCheck(d sbom.Document, c *check) score {
+func sbomWithPrimaryComponentCheck(d sbom.Document, c *check) score {
 	s := newScoreFromCheck(c)
 
 	if d.PrimaryComp().IsPresent() {

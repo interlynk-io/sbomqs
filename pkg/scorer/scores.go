@@ -14,6 +14,7 @@
 
 package scorer
 
+// Scores represent list of all the score
 type Scores interface {
 	Count() int
 	AvgScore() float64
@@ -38,6 +39,7 @@ func (s scores) Count() int {
 	return len(s.scs)
 }
 
+// total score is the sum of all scores divided by the number of scores
 func (s scores) AvgScore() float64 {
 	score := 0.0
 	for _, s := range s.scs {
