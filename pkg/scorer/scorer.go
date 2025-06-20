@@ -16,6 +16,7 @@ package scorer
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 )
@@ -27,11 +28,13 @@ type filterType int
 const (
 	Feature filterType = iota
 	Category
+	Mix
 )
 
 type Filter struct {
-	Name  string
-	Ftype filterType
+	Name     string
+	Ftype    filterType
+	Category string
 }
 
 type Scorer struct {
@@ -41,6 +44,7 @@ type Scorer struct {
 	// optional params
 	featFilter map[string]bool
 	catFilter  map[string]bool
+	mixFilter  map[string]map[string]bool
 }
 
 func NewScorer(ctx context.Context, doc sbom.Document) *Scorer {
@@ -49,17 +53,26 @@ func NewScorer(ctx context.Context, doc sbom.Document) *Scorer {
 		doc:        doc,
 		featFilter: make(map[string]bool),
 		catFilter:  make(map[string]bool),
+		mixFilter:  make(map[string]map[string]bool),
 	}
 
 	return scorer
 }
 
-func (s *Scorer) AddFilter(nm string, ftype filterType) {
-	switch ftype {
+// enable filtering by feature, category, or mix of both
+// for scoring checks
+func (s *Scorer) AddFilter(f Filter) {
+	switch f.Ftype {
 	case Feature:
-		s.featFilter[nm] = true
+		s.featFilter[f.Name] = true
 	case Category:
-		s.catFilter[nm] = true
+		s.catFilter[f.Name] = true
+	case Mix:
+		fmt.Println("Adding mix filter:", f.Name, "in category", f.Category)
+		if s.mixFilter[f.Category] == nil {
+			s.mixFilter[f.Category] = make(map[string]bool)
+		}
+		s.mixFilter[f.Category][f.Name] = true
 	}
 }
 
@@ -74,6 +87,10 @@ func (s *Scorer) Score() Scores {
 
 	if len(s.catFilter) > 0 {
 		return s.catScores()
+	}
+
+	if len(s.mixFilter) > 0 {
+		return s.featureAndCatScores()
 	}
 
 	return s.AllScores()
@@ -93,10 +110,29 @@ func (s *Scorer) catScores() Scores {
 }
 
 func (s *Scorer) featureScores() Scores {
+	fmt.Println("Scoring features with filters:", s.featFilter)
+	scores := newScores()
+
+	checkMap := make(map[string]bool)
+
+	for _, c := range checks {
+		if _, exists := checkMap[c.Key]; exists {
+			continue // Skip if the feature has already been processed
+		}
+		if s.featFilter[c.Key] {
+			scores.addScore(c.evaluate(s.doc, &c)) //nolint:gosec
+		}
+	}
+
+	return scores
+}
+
+// featureAndCatScores returns scores for both features and categories
+func (s *Scorer) featureAndCatScores() Scores {
 	scores := newScores()
 
 	for _, c := range checks {
-		if s.featFilter[c.Key] {
+		if s.mixFilter[c.Category][c.Key] {
 			scores.addScore(c.evaluate(s.doc, &c)) //nolint:gosec
 		}
 	}

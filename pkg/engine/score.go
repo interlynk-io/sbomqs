@@ -312,21 +312,45 @@ func processFile(ctx context.Context, ep *Params, path string, fs billy.Filesyst
 
 	sr := scorer.NewScorer(ctx, doc)
 
-	if len(ep.Categories[0]) > 0 {
+	if len(ep.Features[0]) > 0 && len(ep.Categories[0]) > 0 {
+		fmt.Println("Adding mix of features and categories")
+		for _, cat := range ep.Categories {
+			if len(cat) <= 0 {
+				continue
+			}
+			for _, feat := range ep.Features {
+				if len(feat) <= 0 {
+					continue
+				}
+				filter := scorer.Filter{
+					Name:     feat,
+					Ftype:    scorer.Mix,
+					Category: cat,
+				}
+				sr.AddFilter(filter)
+			}
+		}
+	} else if len(ep.Categories[0]) > 0 {
 		for _, category := range ep.Categories {
 			if len(category) <= 0 {
 				continue
 			}
-			sr.AddFilter(category, scorer.Category)
+			filter := scorer.Filter{
+				Name:  category,
+				Ftype: scorer.Category,
+			}
+			sr.AddFilter(filter)
 		}
-	}
-
-	if len(ep.Features[0]) > 0 {
+	} else if len(ep.Features[0]) > 0 {
 		for _, feature := range ep.Features {
 			if len(feature) <= 0 {
 				continue
 			}
-			sr.AddFilter(feature, scorer.Feature)
+			filter := scorer.Filter{
+				Name:  feature,
+				Ftype: scorer.Feature,
+			}
+			sr.AddFilter(filter)
 		}
 	}
 
@@ -341,7 +365,7 @@ func processFile(ctx context.Context, ep *Params, path string, fs billy.Filesyst
 		}
 
 		for _, filter := range filters {
-			sr.AddFilter(filter.Name, filter.Ftype)
+			sr.AddFilter(filter)
 		}
 	}
 
