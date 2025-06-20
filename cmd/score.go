@@ -99,7 +99,7 @@ var scoreCmd = &cobra.Command{
   sbomqs score --feature comp_with_name,comp_with_uniq_ids,sbom_authors,sbom_creation_timestamp  samples/sbomqs-spdx-syft.json 
 
   # Get a score for multiple categories
-  sbomqs score --category NTIA-minimum-elements,Structural,Semantic,Sharing   samples/sbomqs-spdx-syft.json
+  sbomqs score --category NTIA-minimum-elements or ntia,bsi-v1.1,bsi-v2.0,Structural,Semantic,Sharing,Quality   samples/sbomqs-spdx-syft.json
 `,
 
 	Args: func(_ *cobra.Command, args []string) error {
@@ -111,6 +111,16 @@ var scoreCmd = &cobra.Command{
 		return nil
 	},
 	RunE: processScore,
+}
+
+var categoryAliases = map[string]string{
+	"ntia":                  "NTIA-minimum-elements",
+	"NTIA":                  "NTIA-minimum-elements",
+	"ntia-minimum-elements": "NTIA-minimum-elements",
+	"structural":            "Structural",
+	"sharing":               "Sharing",
+	"semantic":              "Semantic",
+	"quality":               "Quality",
 }
 
 func processScore(cmd *cobra.Command, args []string) error {
@@ -157,7 +167,15 @@ func toUserCmd(cmd *cobra.Command, args []string) *userCmd {
 	// filter control
 	if category == "" {
 		c, _ := cmd.Flags().GetString("category")
-		uCmd.categories = strings.Split(c, ",")
+		cList := strings.Split(c, ",")
+		for i, val := range cList {
+			if fullName, ok := categoryAliases[val]; ok {
+				cList[i] = fullName
+			} else {
+				cList[i] = val
+			}
+		}
+		uCmd.categories = cList
 	}
 
 	if feature == "" {
