@@ -68,7 +68,6 @@ func (s *Scorer) AddFilter(f Filter) {
 	case Category:
 		s.catFilter[f.Name] = true
 	case Mix:
-		fmt.Println("Adding mix filter:", f.Name, "in category", f.Category)
 		if s.mixFilter[f.Category] == nil {
 			s.mixFilter[f.Category] = make(map[string]bool)
 		}

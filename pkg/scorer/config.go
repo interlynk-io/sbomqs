@@ -15,7 +15,6 @@
 package scorer
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"time"
@@ -166,7 +165,6 @@ func ReadConfigFile(path string) ([]Filter, error) {
 
 		for _, f := range cat.Features {
 			if f.Disabled {
-				fmt.Println("Skipping disabled feature:", f.Name)
 				continue
 			}
 
