@@ -20,6 +20,8 @@ type Config struct {
 
 	// Optional path to a config file for filters
 	ConfigPath string
+
+	SignatureBundle sbom.Signature
 }
 
 type ScoreResult struct {
@@ -87,7 +89,7 @@ func ScoreSBOMData(ctx context.Context, data []byte, config Config) (ScoreResult
 	reader := bytes.NewReader(data)
 
 	// Parse the SBOM from raw data
-	doc, err := sbom.NewSBOMDocument(ctx, reader, sbom.Signature{})
+	doc, err := sbom.NewSBOMDocument(ctx, reader, config.SignatureBundle)
 	if err != nil {
 		log.Debugf("failed to create sbom document from data: %v\n", err)
 		result.Errors = append(result.Errors, fmt.Sprintf("failed to parse SBOM data: %v", err))
@@ -110,7 +112,11 @@ func ScoreSBOMData(ctx context.Context, data []byte, config Config) (ScoreResult
 			if len(category) <= 0 {
 				continue
 			}
-			sr.AddFilter(category, scorer.Category)
+			filter := scorer.Filter{
+				Name:  category,
+				Ftype: scorer.Category,
+			}
+			sr.AddFilter(filter)
 		}
 	}
 
@@ -119,7 +125,11 @@ func ScoreSBOMData(ctx context.Context, data []byte, config Config) (ScoreResult
 			if len(feature) <= 0 {
 				continue
 			}
-			sr.AddFilter(feature, scorer.Feature)
+			filter := scorer.Filter{
+				Name:  feature,
+				Ftype: scorer.Feature,
+			}
+			sr.AddFilter(filter)
 		}
 	}
 
@@ -137,8 +147,12 @@ func ScoreSBOMData(ctx context.Context, data []byte, config Config) (ScoreResult
 			return result, fmt.Errorf("no enabled filters found in config file %s", config.ConfigPath)
 		}
 
-		for _, filter := range filters {
-			sr.AddFilter(filter.Name, filter.Ftype)
+		for _, f := range filters {
+			filter := scorer.Filter{
+				Name:  f.Name,
+				Ftype: f.Ftype,
+			}
+			sr.AddFilter(filter)
 		}
 	}
 

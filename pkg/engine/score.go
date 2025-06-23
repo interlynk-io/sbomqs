@@ -164,9 +164,10 @@ func handlePaths(ctx context.Context, ep *Params) error {
 
 	// Convert Params to sbomqs.Config
 	config := sbomqs.Config{
-		Categories: ep.Categories,
-		Features:   ep.Features,
-		ConfigPath: ep.ConfigPath,
+		Categories:      ep.Categories,
+		Features:        ep.Features,
+		ConfigPath:      ep.ConfigPath,
+		SignatureBundle: sig,
 	}
 
 	for _, path := range ep.Path {
