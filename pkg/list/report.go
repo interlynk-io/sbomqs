@@ -54,12 +54,19 @@ func WithColor(c bool) OptionList {
 	}
 }
 
+func WithValues(s bool) OptionList {
+	return func(r *Report) {
+		r.Show = s
+	}
+}
+
 // listReport holds the state for reporting the list command results
 type Report struct {
 	Ctx     context.Context
 	Results []*Result
 	Format  string
 	Color   bool
+	Show    bool // show values for corresponding features
 }
 
 // Report renders the list command results in the specified format
@@ -97,13 +104,21 @@ func (r *Report) detailedReport() {
 		if result.Missing {
 			presence = "missing"
 		}
+		show := r.Show
+		fmt.Println()
 		fmt.Printf("File: %s\tFeature: %s (%s)\n", result.FilePath, result.Feature, presence)
 
 		// Initialize tablewriter
 		table := tablewriter.NewWriter(os.Stdout)
 		if strings.HasPrefix(result.Feature, "comp_") {
+
+			if show {
+				table.SetHeader([]string{"Feature", "Component Name", "Version", "Value"})
+			} else {
+				table.SetHeader([]string{"Feature", "Component Name", "Version"})
+			}
+
 			// Component-based feature
-			table.SetHeader([]string{"Feature", "Component Name", "Version"})
 			featureCol := fmt.Sprintf("%s (%d/%d)", result.Feature, len(result.Components), result.TotalComponents)
 			if len(result.Components) == 0 {
 				// No components to display
@@ -119,13 +134,18 @@ func (r *Report) detailedReport() {
 					versionCol := color.New(color.FgHiGreen).Sprint(comp.Version)
 					table.Append([]string{featureCol1, nameCol, versionCol})
 				}
-				table.Append([]string{featureCol, comp.Name, comp.Version})
-
+				if show {
+					table.Append([]string{featureCol, comp.Name, comp.Version, comp.Values})
+				} else {
+					table.Append([]string{featureCol, comp.Name, comp.Version})
+				}
 			}
 
 		} else {
 			// SBOM-based feature
 			featureCol := fmt.Sprintf("%s (%s)", result.Feature, presence)
+			table.SetHeader([]string{"Feature", "SBOM Feature", "Value"})
+
 			if r.Color {
 				featureCol1 := color.New(color.FgHiCyan).Sprint(featureCol)
 				propertyCol := color.New(color.FgHiBlue).Sprint(result.DocumentProperty.Key)
@@ -133,15 +153,19 @@ func (r *Report) detailedReport() {
 				table.Append([]string{featureCol1, propertyCol, valueCol})
 			} else {
 				if result.DocumentProperty.Present {
+					if result.DocumentProperty.Value == "" {
+						result.DocumentProperty.Value = "N/A"
+					}
 					table.Append([]string{featureCol, result.DocumentProperty.Key, result.DocumentProperty.Value})
 				} else {
-					table.Append([]string{featureCol, result.DocumentProperty.Key, "N/A"})
+					if result.DocumentProperty.Value == "" {
+						result.DocumentProperty.Value = "N/A"
+					}
+					table.Append([]string{featureCol, result.DocumentProperty.Key, result.DocumentProperty.Value})
 				}
 			}
 		}
 
-		// Configure table settings
-		table.SetHeader([]string{"Feature", "Key/Component Name", "Value/Version"})
 		table.SetRowLine(true)
 		table.SetColWidth(50)
 		table.SetAutoMergeCellsByColumnIndex([]int{0})

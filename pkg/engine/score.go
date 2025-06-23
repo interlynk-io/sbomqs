@@ -52,6 +52,7 @@ type Params struct {
 	Missing bool
 
 	Debug bool
+	Show  bool
 
 	ConfigPath string
 
