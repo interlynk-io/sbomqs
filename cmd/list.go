@@ -85,13 +85,20 @@ var listCmd = &cobra.Command{
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		// Initialize logger based on debug flag
-		if debug, _ := cmd.Flags().GetBool("debug"); debug {
+		debug, _ := cmd.Flags().GetBool("debug")
+
+		if debug {
 			logger.InitDebugLogger()
 		} else {
 			logger.InitProdLogger()
 		}
 
+		defer logger.DeinitLogger()
+
 		ctx := logger.WithLogger(context.Background())
+		x := logger.FromContext(ctx)
+		x.Debugf("Running command: %s", cmd.CommandPath())
+
 		uCmd := parseListParams(cmd, args)
 		if err := validateparsedListCmd(uCmd); err != nil {
 			return err

@@ -64,7 +64,7 @@ func TestHandleURL(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			sbomFilePath, rawURL, err := handleURL(tc.input)
+			sbomFilePath, rawURL, err := handleURL(nil, tc.input)
 			if tc.expectedError {
 				assert.Error(t, err)
 				assert.Equal(t, tc.expectedPath, sbomFilePath)

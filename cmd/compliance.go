@@ -59,15 +59,21 @@ BSI TR-03183-2, Framing Software Component Transparency (v3) and OpenChain Telco
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		debug, _ := cmd.Flags().GetBool("debug")
+
 		if debug {
 			logger.InitDebugLogger()
 		} else {
 			logger.InitProdLogger()
 		}
 
+		defer logger.DeinitLogger()
+
 		ctx := logger.WithLogger(context.Background())
+		logger.LogDebug(ctx, "Starting transferSBOM")
 
 		engParams := setupEngineParams(cmd, args)
+		logger.LogDebug(ctx, "Parsed command", "values", cmd.CommandPath())
+		logger.LogDebug(ctx, "Parsed engine parameters", "values", engParams)
 		return engine.ComplianceRun(ctx, engParams)
 	},
 }

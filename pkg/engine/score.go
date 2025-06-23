@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -68,9 +69,7 @@ type Params struct {
 }
 
 func Run(ctx context.Context, ep *Params) error {
-	log := logger.FromContext(ctx)
-	log.Debug("engine.Run()")
-	log.Debug(ep)
+	logger.LogDebug(ctx, "Starting engine.Run", "params", ep)
 
 	if len(ep.Path) <= 0 {
 		log.Fatal("path is required")
@@ -79,7 +78,8 @@ func Run(ctx context.Context, ep *Params) error {
 	return handlePaths(ctx, ep)
 }
 
-func handleURL(path string) (string, string, error) {
+func handleURL(ctx context.Context, path string) (string, string, error) {
+	logger.LogDebug(ctx, "handleURL", "path", path)
 	u, err := url.Parse(path)
 	if err != nil {
 		return "", "", fmt.Errorf("failed to parse urlPath: %w", err)
@@ -104,6 +104,7 @@ func handleURL(path string) (string, string, error) {
 	rawURL := strings.Replace(path, "github.com", "raw.githubusercontent.com", 1)
 	rawURL = strings.Replace(rawURL, "/blob/", "/", 1)
 
+	logger.LogDebug(ctx, "handleURL", "sbomFilePath", sbomFilePath, "rawURL", rawURL)
 	return sbomFilePath, rawURL, err
 }
 
@@ -145,14 +146,13 @@ func ProcessURL(url string, file afero.File) (afero.File, error) {
 }
 
 func handlePaths(ctx context.Context, ep *Params) error {
-	log := logger.FromContext(ctx)
-	log.Debug("engine.handlePaths()")
+	logger.LogDebug(ctx, "Processing paths", "paths", ep.Path)
 
 	path := ep.Path[0]
 
 	blob, signature, publicKey, err := common.GetSignatureBundle(ctx, path, ep.Signature, ep.PublicKey)
 	if err != nil {
-		log.Debugf("common.GetSignatureBundle failed for file :%s\n", path)
+		logger.LogDebug(ctx, "common.GetSignatureBundle failed", "path", path, "error", err)
 		fmt.Printf("failed to get signature bundle for %s\n", path)
 		return err
 	}
@@ -169,13 +169,13 @@ func handlePaths(ctx context.Context, ep *Params) error {
 
 	for _, path := range ep.Path {
 		if IsURL(path) {
-			log.Debugf("Processing Git URL path :%s\n", path)
+			logger.LogDebug(ctx, "Processing Git URL", "path", path)
 
 			url, sbomFilePath := path, path
 			var err error
 
 			if IsGit(url) {
-				sbomFilePath, url, err = handleURL(path)
+				sbomFilePath, url, err = handleURL(ctx, path)
 				if err != nil {
 					log.Fatal("failed to get sbomFilePath, rawURL: %w", err)
 				}
@@ -204,23 +204,21 @@ func handlePaths(ctx context.Context, ep *Params) error {
 			scores = append(scores, score)
 			paths = append(paths, sbomFilePath)
 		} else {
-			log.Debugf("Processing path :%s\n", path)
+			logger.LogDebug(ctx, "Processing local path", "path", path)
 			pathInfo, err := os.Stat(path)
 			if err != nil {
-				log.Debugf("os.Stat failed for path:%s\n", path)
-				log.Infof("%s\n", err)
+				logger.LogInfo(ctx, "os.Stat failed", "path", path, "error", err)
 				continue
 			}
 
 			if pathInfo.IsDir() {
 				files, err := os.ReadDir(path)
 				if err != nil {
-					log.Debugf("os.ReadDir failed for path:%s\n", path)
-					log.Debugf("%s\n", err)
+					logger.LogDebug(ctx, "os.ReadDir failed", "path", path, "error", err)
 					continue
 				}
 				for _, file := range files {
-					log.Debugf("Processing file :%s\n", file.Name())
+					logger.LogDebug(ctx, "Processing file in directory", "file", file.Name())
 					if file.IsDir() {
 						continue
 					}
@@ -266,14 +264,13 @@ func handlePaths(ctx context.Context, ep *Params) error {
 }
 
 func processFile(ctx context.Context, ep *Params, path string, fs billy.Filesystem, sig sbom.Signature) (sbom.Document, scorer.Scores, error) {
-	log := logger.FromContext(ctx)
-	log.Debugf("Processing file :%s\n", path)
+	logger.LogDebug(ctx, "Processing file", "path", path)
 	var doc sbom.Document
 
 	if fs != nil {
 		f, err := fs.Open(path)
 		if err != nil {
-			log.Debugf("os.Open failed for file :%s\n", path)
+			logger.LogDebug(ctx, "fs.Open failed for file", "path", path, "error", err)
 			fmt.Printf("failed to open %s\n", path)
 			return nil, nil, err
 		}
@@ -281,21 +278,20 @@ func processFile(ctx context.Context, ep *Params, path string, fs billy.Filesyst
 
 		doc, err = sbom.NewSBOMDocument(ctx, f, sig)
 		if err != nil {
-			log.Debugf("failed to create sbom document for  :%s\n", path)
-			log.Debugf("%s\n", err)
+			logger.LogDebug(ctx, "failed to create sbom document", "path", path, "error", err)
 			fmt.Printf("failed to parse %s : %s\n", path, err)
 			return nil, nil, err
 		}
 	} else {
 		if _, err := os.Stat(path); err != nil {
-			log.Debugf("os.Stat failed for file :%s\n", path)
+			logger.LogDebug(ctx, "os.Stat failed for file", "path", path, "error", err)
 			fmt.Printf("failed to stat %s\n", path)
 			return nil, nil, err
 		}
 
 		f, err := os.Open(path)
 		if err != nil {
-			log.Debugf("os.Open failed for file :%s\n", path)
+			logger.LogDebug(ctx, "os.Open failed for file", "path", path, "error", err)
 			fmt.Printf("failed to open %s\n", path)
 			return nil, nil, err
 		}
@@ -303,8 +299,7 @@ func processFile(ctx context.Context, ep *Params, path string, fs billy.Filesyst
 
 		doc, err = sbom.NewSBOMDocument(ctx, f, sig)
 		if err != nil {
-			log.Debugf("failed to create sbom document for  :%s\n", path)
-			log.Debugf("%s\n", err)
+			logger.LogDebug(ctx, "failed to create sbom document", "path", path, "error", err)
 			fmt.Printf("failed to parse %s : %s\n", path, err)
 			return nil, nil, err
 		}

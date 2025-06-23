@@ -50,6 +50,8 @@ For more information, please visit https://sbombenchmark.dev
 			logger.InitProdLogger()
 		}
 
+		defer logger.DeinitLogger()
+
 		ctx := logger.WithLogger(context.Background())
 		sbomFileName := args[0]
 
@@ -62,6 +64,6 @@ For more information, please visit https://sbombenchmark.dev
 func init() {
 	rootCmd.AddCommand(shareCmd)
 
-	//Debug Control
+	// Debug Control
 	shareCmd.Flags().BoolP("debug", "D", false, "enable debug logging")
 }

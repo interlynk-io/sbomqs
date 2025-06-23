@@ -33,11 +33,14 @@ var dtrackScoreCmd = &cobra.Command{
 	Args:         cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		debug, _ := cmd.Flags().GetBool("debug")
+
 		if debug {
 			logger.InitDebugLogger()
 		} else {
 			logger.InitProdLogger()
 		}
+
+		defer logger.DeinitLogger()
 		ctx := logger.WithLogger(context.Background())
 
 		dtParams, err := extractArgs(cmd, args)
