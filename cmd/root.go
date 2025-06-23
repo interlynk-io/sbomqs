@@ -14,8 +14,10 @@
 package cmd
 
 import (
+	"context"
 	"os"
 
+	"github.com/charmbracelet/fang"
 	"github.com/spf13/cobra"
 )
 
@@ -33,12 +35,14 @@ an assessment of a SBOM acceptance risk based on their personal risk tolerance.
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
-	err := rootCmd.Execute()
-	if err != nil {
+	if err := fang.Execute(
+		context.Background(),
+		rootCmd,
+	); err != nil {
 		os.Exit(1)
 	}
 }
 
-func init() {
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-}
+// func init() {
+// 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+// }
