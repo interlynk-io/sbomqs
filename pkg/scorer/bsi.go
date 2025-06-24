@@ -88,7 +88,6 @@ func bsiCompWithUniqIDCheck(d sbom.Document, c *check) score {
 	compIDs := lo.CountBy(d.Components(), func(c sbom.GetComponent) bool {
 		purl := c.GetPurls()
 		cpes := c.GetCpes()
-
 		return len(purl) > 0 || len(cpes) > 0
 	})
 
