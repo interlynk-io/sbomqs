@@ -69,6 +69,7 @@ var checks = []check{
 	{string(bsiv1_1), "sbom_creation_timestamp", false, "sbom has creation timestamp", sbomWithTimeStampCheck},
 	{string(bsiv1_1), "sbom_dependencies", false, "sbom has dependencies", sbomWithDepedenciesCheck},
 	{string(bsiv1_1), "sbom_with_uri", false, "sbom has URI", sbomWithURICheck},
+	{string(bsiv1_1), "comp_with_dependencies", false, "components have dependencies", compWithDependencyCheck},
 
 	// bsi-v2.0.0
 	{string(bsiv2_0), "comp_with_name", false, "components have a name", compWithNameCheck},

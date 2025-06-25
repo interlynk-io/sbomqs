@@ -482,6 +482,9 @@ func WrapLongTextIntoMulti(input string, maxWidth int) string {
 }
 
 func AreLicensesValid(licenses []licenses.License) bool {
+	if len(licenses) == 0 {
+		return false
+	}
 	var spdx, aboutcode, custom int
 
 	for _, license := range licenses {
