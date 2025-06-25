@@ -131,7 +131,12 @@ func processScore(cmd *cobra.Command, args []string) error {
 		logger.InitProdLogger()
 	}
 
+	defer logger.DeinitLogger()
+
 	ctx := logger.WithLogger(context.Background())
+
+	logger.LogDebug(ctx, "Starting score command")
+
 	uCmd := toUserCmd(cmd, args)
 
 	if err := validateFlags(uCmd); err != nil {
@@ -139,6 +144,8 @@ func processScore(cmd *cobra.Command, args []string) error {
 	}
 
 	engParams := toEngineParams(uCmd)
+	logger.LogDebug(ctx, "Parsed engine parameters", "values", engParams)
+
 	return engine.Run(ctx, engParams)
 }
 

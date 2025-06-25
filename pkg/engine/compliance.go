@@ -108,7 +108,7 @@ func getSbomDocument(ctx context.Context, ep *Params) (*sbom.Document, error) {
 		var err error
 
 		if IsGit(url) {
-			sbomFilePath, url, err = handleURL(path)
+			sbomFilePath, url, err = handleURL(ctx, path)
 			if err != nil {
 				log.Fatal("failed to get sbomFilePath, rawURL: %w", err)
 			}

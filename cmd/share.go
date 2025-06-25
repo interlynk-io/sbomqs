@@ -50,6 +50,8 @@ For more information, please visit https://sbombenchmark.dev
 			logger.InitProdLogger()
 		}
 
+		defer logger.DeinitLogger()
+
 		ctx := logger.WithLogger(context.Background())
 		sbomFileName := args[0]
 
