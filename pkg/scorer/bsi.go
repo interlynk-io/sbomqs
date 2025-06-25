@@ -258,6 +258,20 @@ func compWithSourceCodeHashCheck(d sbom.Document, c *check) score {
 	return *s
 }
 
+func sbomWithBomLinksCheck(doc sbom.Document, c *check) score {
+	s := newScoreFromCheck(c)
+	bom := doc.Spec().GetExtDocRef()
+	if len(bom) == 0 {
+		s.setScore(0.0)
+		s.setDesc("no bom links found")
+		// s.setIgnore(true)
+		return *s
+	}
+	s.setScore(10.0)
+	s.setDesc(fmt.Sprintf("found %d bom links", len(bom)))
+	return *s
+}
+
 // v2.1
 func sbomWithVulnCheck(doc sbom.Document, c *check) score {
 	s := newScoreFromCheck(c)
@@ -326,7 +340,7 @@ func sbomWithSignatureCheck(doc sbom.Document, c *check) score {
 		pubKeyData, err := os.ReadFile(pubKey)
 		if err != nil {
 			s.setScore(0.0)
-			s.setDesc("No signature provided or public key not found!")
+			s.setDesc("No signature or public key provided!")
 			// s.setIgnore(true)
 			return *s
 		}
