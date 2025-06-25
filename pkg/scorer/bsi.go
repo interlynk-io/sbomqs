@@ -261,7 +261,7 @@ func compWithSourceCodeHashCheck(d sbom.Document, c *check) score {
 func sbomWithBomLinksCheck(doc sbom.Document, c *check) score {
 	s := newScoreFromCheck(c)
 	bom := doc.Spec().GetExtDocRef()
-	if bom == nil || len(bom) == 0 {
+	if len(bom) == 0 {
 		s.setScore(0.0)
 		s.setDesc("no bom links found")
 		// s.setIgnore(true)

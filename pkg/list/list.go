@@ -917,9 +917,7 @@ func evaluateSBOMWithBomLinks(doc sbom.Document) (bool, string, error) {
 	}
 
 	linkValues := make([]string, 0, len(bomLinks))
-	for _, link := range bomLinks {
-		linkValues = append(linkValues, link)
-	}
+	linkValues = append(linkValues, bomLinks...)
 
 	return true, strings.Join(linkValues, ", "), nil
 }
