@@ -40,6 +40,7 @@ type userListCmd struct {
 	json     bool
 	detailed bool
 	color    bool
+	show     bool
 
 	// Debug control
 	debug bool
@@ -67,11 +68,13 @@ var listCmd = &cobra.Command{
   # Component features: 
   [comp_with_name, comp_with_version, comp_with_supplier, comp_with_uniq_ids, comp_valid_licenses, comp_with_any_vuln_lookup_id, 
   comp_with_deprecated_licenses, comp_with_multi_vuln_lookup_id, comp_with_primary_purpose, comp_with_restrictive_licenses, 
-  comp_with_checksums, comp_with_licenses]
+  comp_with_checksums, comp_with_licenses, comp_with_checksums_sha256, comp_with_source_code_uri, comp_with_source_code_hash, 
+  comp_with_executable_uri, comp_with_associated_license, comp_with_concluded_license, comp_with_declared_license]
   
   # SBOM features:
   [sbom_creation_timestamp, sbom_authors, sbom_with_creator_and_version, sbom_with_primary_component, sbom_dependencies, 
-  sbom_sharable, sbom_parsable, sbom_spec, sbom_spec_file_format, sbom_spec_version]
+  sbom_sharable, sbom_parsable, sbom_spec, sbom_file_format, sbom_spec_version, spec_with_version_compliant, sbom_with_uri,
+  sbom_with_vuln, sbom_build_process]
 `,
 
 	Args: func(_ *cobra.Command, args []string) error {
@@ -130,6 +133,9 @@ func parseListParams(cmd *cobra.Command, args []string) *userListCmd {
 	color, _ := cmd.Flags().GetBool("color")
 	uCmd.color = color
 
+	show, _ := cmd.Flags().GetBool("show")
+	uCmd.show = show
+
 	// Debug control
 	debug, _ := cmd.Flags().GetBool("debug")
 	uCmd.debug = debug
@@ -147,6 +153,7 @@ func fromListToEngineParams(uCmd *userListCmd) *engine.Params {
 		Detailed: uCmd.detailed,
 		Color:    uCmd.color,
 		Debug:    uCmd.debug,
+		Show:     uCmd.show,
 	}
 }
 
@@ -166,6 +173,7 @@ func init() {
 	listCmd.Flags().BoolP("json", "j", false, "Results in JSON")
 	listCmd.Flags().BoolP("detailed", "d", true, "Results in table format, default")
 	listCmd.Flags().BoolP("color", "l", false, "Output in color")
+	listCmd.Flags().BoolP("show", "s", false, "Show values of features, (default: false)")
 
 	// Debug Control
 	listCmd.Flags().BoolP("debug", "D", false, "Enable debug logging")

@@ -47,6 +47,7 @@ type Params struct {
 	Basic    bool
 	Detailed bool
 	Color    bool
+	Show     bool
 
 	Missing bool
 

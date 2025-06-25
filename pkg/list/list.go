@@ -146,6 +146,8 @@ func parseSBOMDocument(ctx context.Context, filePath string) (sbom.Document, err
 // processFeatureForSBOM processes a single feature for an SBOM document and returns a ListResult
 func processFeatureForSBOM(ctx context.Context, ep *Params, doc sbom.Document, filePath, feature string) (*Result, error) {
 	log := logger.FromContext(ctx)
+	log.Debug("list.processFeatureForSBOM()")
+	log.Debug("processing feature: ", feature)
 	feature = strings.TrimSpace(feature)
 
 	// Validate the feature
@@ -175,6 +177,7 @@ func processFeatureForSBOM(ctx context.Context, ep *Params, doc sbom.Document, f
 // processComponentFeature processes a component-based feature for an SBOM document
 func processComponentFeature(ctx context.Context, ep *Params, doc sbom.Document, result *Result) (*Result, error) {
 	log := logger.FromContext(ctx)
+	log.Debug("processing component feature: ", result.Feature)
 	result.Components = []ComponentResult{}
 	var totalComponents int
 
@@ -243,8 +246,9 @@ func generateReport(ctx context.Context, results []*Result, ep *Params) error {
 		reportFormat = "json"
 	}
 	coloredOutput := ep.Color
+	show := ep.Show
 
-	lnr := NewListReport(ctx, results, WithFormat(strings.ToLower(reportFormat)), WithColor(coloredOutput))
+	lnr := NewListReport(ctx, results, WithFormat(strings.ToLower(reportFormat)), WithColor(coloredOutput), WithValues(show))
 	lnr.Report()
 	return nil
 }

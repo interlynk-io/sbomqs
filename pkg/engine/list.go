@@ -31,6 +31,7 @@ func parseListParams(ep *Params) *list.Params {
 		Color:    ep.Color,
 		Missing:  ep.Missing,
 		Debug:    ep.Debug,
+		Show:     ep.Show,
 	}
 }
 
