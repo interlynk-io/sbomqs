@@ -64,6 +64,7 @@ func bsiV2Result(ctx context.Context, doc sbom.Document, fileName string, outFor
 	}
 }
 
+// bomlinks
 func bsiV2SbomLinks(doc sbom.Document) *db.Record {
 	result, score := "", 0.0
 

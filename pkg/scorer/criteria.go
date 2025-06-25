@@ -84,6 +84,7 @@ var checks = []check{
 	{string(bsiv2_0), "sbom_build_process", false, "SBOM build process", sbomBuildLifecycleCheck},
 	{string(bsiv2_0), "sbom_with_uri", false, "sbom has URI", sbomWithURICheck},
 	{string(bsiv2_0), "sbom_dependencies", false, "primary comp has dependencies", sbomWithDepedenciesCheck},
+	{string(bsiv2_0), "sbom_with_bomlinks", false, "sbom has bomlinks", sbomWithBomLinksCheck},
 	{string(bsiv2_0), "sbom_with_vuln", false, "SBOM has vulnerability", sbomWithVulnCheck},
 	{string(bsiv2_0), "sbom_with_signature", false, "sbom has signature", sbomWithSignatureCheck},
 

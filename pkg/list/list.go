@@ -372,6 +372,9 @@ func evaluateSBOMFeature(feature string, doc sbom.Document) (bool, string, error
 	case "sbom_build_process":
 		return evaluateSBOMBuildLifeCycle(doc)
 
+	case "sbom_with_bomlinks":
+		return evaluateSBOMWithBomLinks(doc)
+
 	// case "sbom_with_signature":
 	// 	return evaluateSBOMWithSignature(doc)
 
@@ -904,4 +907,19 @@ func evaluateSBOMBuildLifeCycle(doc sbom.Document) (bool, string, error) {
 	}
 
 	return true, lifecycles[found-1], nil
+}
+
+// evaluateSBOMWithBomLinks evaluates if the SBOM has BOM links
+func evaluateSBOMWithBomLinks(doc sbom.Document) (bool, string, error) {
+	bomLinks := doc.Spec().GetExtDocRef()
+	if len(bomLinks) == 0 {
+		return false, "", nil
+	}
+
+	linkValues := make([]string, 0, len(bomLinks))
+	for _, link := range bomLinks {
+		linkValues = append(linkValues, link)
+	}
+
+	return true, strings.Join(linkValues, ", "), nil
 }

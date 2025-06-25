@@ -74,7 +74,7 @@ var listCmd = &cobra.Command{
   # SBOM features:
   [sbom_creation_timestamp, sbom_authors, sbom_with_creator_and_version, sbom_with_primary_component, sbom_dependencies, 
   sbom_sharable, sbom_parsable, sbom_spec, sbom_file_format, sbom_spec_version, spec_with_version_compliant, sbom_with_uri,
-  sbom_with_vuln, sbom_build_process]
+  sbom_with_vuln, sbom_build_process, sbom_with_bomlinks]
 `,
 
 	Args: func(_ *cobra.Command, args []string) error {
@@ -267,5 +267,6 @@ var isFeaturePresent = map[string]bool{
 	"sbom_with_uri":                 true,
 	"sbom_with_vuln":                true,
 	"sbom_build_process":            true,
+	"sbom_with_bomlinks":            true,
 	// "sbom_with_signature":           true,
 }
