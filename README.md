@@ -47,16 +47,34 @@ Our SBOM Automation Platform has a free community tier that provides a comprehen
 sbomqs score <sbom-file>
 ```
 
-## Compliance Report: BSI TR-03183-2
+## Compliance Report: BSI TR-03183-2 v2.0.0
 
 ```sh
-sbomqs compliance -c samples/photon.spdx.json
+sbomqs compliance --bsi-v2 samples/photon.spdx.json
+```
+
+## Compliance Report: BSI TR-03183-2 v1.1 (legacy)
+
+```sh
+sbomqs compliance --bsi samples/photon.spdx.json
 ```
 
 ## Compliance Report: Framing Software Component Transparency (v3)
 
 ```sh
-sbomqs compliance -f samples/photon.spdx.json --color
+sbomqs compliance --fsct samples/photon.spdx.json --color
+```
+
+## List Components by Feature
+
+```sh
+sbomqs list samples/julia.spdx.json --feature comp_with_supplier
+```
+
+## List Components with Values
+
+```sh
+sbomqs list samples/julia.spdx.json --feature comp_valid_licenses --show
 ```
 
 ## Quality Score with a shareable link at [sbombenchmark.dev](https://sbombenchmark.dev/)
@@ -124,6 +142,39 @@ Status: Downloaded newer image for ghcr.io/interlynk-io/sbomqs:latest
   },
 ```
 
+# List Command
+
+The `list` command allows you to list and filter components based on specific features.
+
+## List components with a feature
+
+```sh
+sbomqs list samples/julia.spdx.json --feature comp_with_supplier
+```
+
+## List components missing a feature
+
+```sh
+sbomqs list samples/julia.spdx.json --feature comp_with_licenses --missing
+```
+
+## Show feature values
+
+```sh
+sbomqs list samples/julia.spdx.json --feature comp_valid_licenses --show
+```
+
+### Available features for listing:
+- `comp_with_supplier` - Components with supplier information
+- `comp_with_licenses` - Components with license information
+- `comp_valid_licenses` - Components with valid SPDX licenses
+- `comp_with_version` - Components with version information
+- `comp_with_purls` - Components with Package URLs
+- `comp_with_cpes` - Components with CPE identifiers
+- `comp_with_checksums` - Components with checksums
+- `sbom_authors` - SBOM author information
+- `sbom_creation_timestamp` - SBOM creation timestamp
+
 # What is a high quality SBOM
 
 A high quality SBOM should aptly support managing software assets, license information and Intellectual Property as well as provide a base for configuration management, vulnerability handling and incident response.
@@ -190,6 +241,17 @@ We have categorized our current features as follows:
 - **Quality**: Helps to determine the quality of the data in an SBOM.
 - **Sharing**: Helps to determine if an SBOM can be shared.
 - [OWASP BOM Maturity Model](https://docs.google.com/spreadsheets/d/1wu6KbgwuokC5357ikrhFN-QkwQ7Pyb6z0zE80sTNNus/edit#gid=0): Work in progress
+
+### Category Aliases
+
+You can use these convenient aliases when specifying categories:
+- `ntia` or `NTIA` → `NTIA-minimum-elements`
+- `structural` → `Structural`
+- `sharing` → `Sharing`
+- `semantic` → `Semantic`
+- `quality` → `Quality`
+- `bsi-v1.1` → BSI TR-03183-2 v1.1 scoring
+- `bsi-v2.0` → BSI TR-03183-2 v2.0.0 scoring
 
 ## Feature Scoring
 
@@ -275,18 +337,20 @@ sbomqs can produce compliance reports for industry standard requirements. Detail
 
 ## Reports
 
-- [BSI TR-03183-2 v1.1](https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/Publications/TechGuidelines/TR03183/BSI-TR-03183-2.pdf)
+- [BSI TR-03183-2 v2.0.0](https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/Publications/TechGuidelines/TR03183/BSI-TR-03183-2.pdf) (September 2024)
+- [BSI TR-03183-2 v1.1](https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/Publications/TechGuidelines/TR03183/BSI-TR-03183-2.pdf) (legacy)
+- [Framing Software Component Transparency v3](https://www.cisa.gov/sites/default/files/2024-11/Framing-Software-Component-Transparency-V3-508c.pdf)
 - [OpenChain Telco SBOM Guide Version 1.0](https://github.com/OpenChain-Project/Reference-Material/blob/master/SBOM-Quality/Version-1/OpenChain-Telco-SBOM-Guide_EN.md)
 - [NTIA minimum element](https://www.ntia.doc.gov/files/ntia/publications/sbom_minimum_elements_report.pdf) - Coming soon.
 - [OWASP SCVS](https://scvs.owasp.org/bom-maturity-model/) - Coming soon.
 
-Example of a BSI report
+Example of a BSI v2.0.0 report
 
 ```json
 {
   "report_name": "Cyber Resilience Requirements for Manufacturers and Products Report",
   "subtitle": "Part 2: Software Bill of Materials (SBOM)",
-  "revision": "TR-03183-2 (1.1)",
+  "revision": "TR-03183-2 (2.0.0)",
   "run": {
     "id": "375c288b-0928-4066-9e3a-b8655ac29f91",
     "generated_at": "2024-04-18T03:22:56Z",
