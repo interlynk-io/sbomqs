@@ -41,11 +41,13 @@ The **community tier is ideal for small teams**. Learn more about [free communit
 
 👉 **[Installation](https://github.com/interlynk-io/sbomqs?tab=readme-ov-file#installation)**
 
-👉 **[Sbomqs command usage](https://github.com/interlynk-io/sbomqs?tab=readme-ov-file#usage)**
+👉 **[Quickstart](https://github.com/interlynk-io/sbomqs?tab=readme-ov-file#quickstart)**
 
 👉 **[Read on - what defines high quality SBOMs](https://github.com/interlynk-io/sbomqs/blob/main/docs/sbom-quality.md)**
 
-👉 **[Other OSS SBOM Toolings](https://github.com/interlynk-io/sbomqs?tab=readme-ov-file#other-open-source-software-tools-for-sboms)**
+👉 **[Contributions guide](https://github.com/interlynk-io/sbomqs?tab=readme-ov-file#contributions)**
+
+👉 **[Other OSS SBOM Tools](https://github.com/interlynk-io/sbomqs?tab=readme-ov-file#other-open-source-software-tools-for-sboms)**
 
 👉 **[Have Question: join our community](https://github.com/interlynk-io/sbomqs?tab=readme-ov-file#contact)**
 
@@ -76,15 +78,6 @@ go install github.com/interlynk-io/sbomqs@latest
 docker pull ghcr.io/interlynk-io/sbomqs:latest
 ```
 
-**Example**:
-
-```sh
-docker run -v <path_of_sbom_file>:/app/inputfile ghcr.io/interlynk-io/sbomqs score /app/inputfile
-
-# Example
-docker run -v $(pwd)/samples/sbomqs-cdx-cgomod.json:/app/inputfile ghcr.io/interlynk-io/sbomqs score /app/inputfile
-```
-
 ### Developer Installation
 
 ```console
@@ -95,7 +88,7 @@ docker run -v $(pwd)/samples/sbomqs-cdx-cgomod.json:/app/inputfile ghcr.io/inter
 5. sbomqs version
 ```
 
-## Usage
+## Quickstart
 
 ### 1. Summarized Scoring for Single SBOM
 
@@ -103,7 +96,10 @@ Scoring is categorized in various categories such as `ntia`, `bsi-v1.1`, `bsi-v2
 Each category has collection of features.
 
 ```sh
-# summarized score for NTIA-minimum-elements(ntia)
+# summarized score for all categories
+sbomqs score <sbom_file>
+
+# summarized score for NTIA-minimum-elements(ntia) category
 sbomqs score -c ntia <sbom_file> category
 
 # summarized score for bsi-v1.1 category
@@ -111,17 +107,11 @@ sbomqs score -c bsi-v1.1 <sbom_file>
 
 # summarized score for bsi-v2.0 category
 sbomqs score -c bsi-v2.0 <sbom_file>
-
-# summarized score for quality category
-sbomqs score -c quality <sbom_file>
-
-# summarized score for all categories
-sbomqs score <sbom_file>
 ```
 
-### 2. Compliance Report for a Single SBOM 
+### 2. Compliance Report for a Single SBOM
 
-sbomqs compliance command gives a detailed evaluation of a SBOM against compliance.
+sbomqs compliance command gives a detailed evaluation of a SBOM against compliances such as NTIA, BSI, OCT, FSCT, etc.
 
 ```sh
 # compliance report for ntia
@@ -142,60 +132,60 @@ sbomqs compliance --fsct samples/photon.spdx.json
 
 ### 3. List Components by Feature
 
-The `list` command is useful to see the list of components that has provided feature.
+The `list` command is useful to see the list of all components in the SBOM that has the provided feature.
 
 ```sh
-# list all the components containing feature `comp_with_name`
+# list of all components containing feature comp_with_name
 sbomqs list --feature comp_with_name samples/photon.spdx.json
 
-# list the doc element with feature `sbom_with_primary_component`
+# list the doc element with feature sbom_with_primary_component
 sbomqs list --feature sbom_with_primary_component  samples/photon.spdx.json
 
-# list all the components containing feature `comp_with_supplier`
+# list of all components containing feature comp_with_supplier
 sbomqs list --feature comp_with_supplier samples/photon.spdx.json
 
-# list all the components missing the feature `comp_with_supplier`
+# list of all components missing the feature comp_with_supplier
 sbomqs list --feature comp_with_supplier samples/photon.spdx.json --missing
-
-# get the doc element with feature `sbom_creation_timestamp`
-sbomqs list --feature sbom_creation_timestamp samples/photon.spdx.json
-
-```
-
-#### Components with corresponding feature values
-
-To see what values does components have corresponding to that feature, add `--show` flag.
-
-```sh
-# list all the components with their corresponding values for a feature `comp_valid_licenses`
-sbomqs list --feature comp_valid_licenses samples/photon.spdx.json  --show
-
-# list all the components with their uniq IDs(purls, cpe, etc) for a feature `comp_with_uniq_ids`
-sbomqs list --feature comp_with_uniq_ids  samples/photon.spdx.json  --show
 ```
 
 **NOTE**:
 
 To see all the features that we support, jump [here](https://github.com/interlynk-io/sbomqs/blob/main/docs/list.md#supported-features)
 
-### Share Score of a SBOM using a shareable link at [sbombenchmark.dev](https://sbombenchmark.dev/)
+#### Components with corresponding feature values
+
+To see what values does that components have corresponding to that feature, add `--show` flag.
+
+```sh
+# list of all components with their corresponding values for a feature comp_valid_licenses
+sbomqs list --feature comp_valid_licenses samples/photon.spdx.json  --show
+
+# list of all components with their uniq IDs(purls, cpe, etc) for a feature comp_with_uniq_ids
+sbomqs list --feature comp_with_uniq_ids  samples/photon.spdx.json  --show
+```
+
+### 4. Share Score of a SBOM using a shareable link at [sbombenchmark.dev](https://sbombenchmark.dev/)
 
 sbomqs `share` is useful to share the score of your SBOM using a sharable link.
 
 ```sh
 sbomqs share <sbom-file>
+```
 
-# Example:
+**Example**:
+
+```sh
 sbomqs share cdxgen-9.5.1_alpine-latest.cdx.json
 
-# o/p is:
 5.9 cdxgen-9.5.1_alpine-latest.cdx.json
 ShareLink: https://sbombenchmark.dev/user/score?id=a97af1bf-4c9d-4a55-8524-3d4bcee0b9a4
 ```
 
-### Quality Score for your dependency track projects
+Now you can share this link <https://sbombenchmark.dev/user/score?id=a97af1bf-4c9d-4a55-8524-3d4bcee0b9a4> with anyone.
 
-If your SBOM is present in DependencyTrack platform and to check the score of it, `dtrackScore` command is helpful:
+### 5. Check the Score of SBOM present in Dependency Track
+
+If your SBOM is present in DependencyTrack platform, sbomqs supports `dtrackScore` to directly check score of it.
 
 ```sh
 sbomqs dtrackScore  -u <dt-host-url> -k <dt-api-key> <project-uuid>
@@ -206,12 +196,21 @@ sbomqs dtrackScore  -u "http://localhost:8080/" -k "IIcfPA9qc1F4IkQFa2FqQJoTwcfQ
 
 o/p:
 
-![alt text](./images/dt.png "Depedency Track with sbomqs score")
+  ![alt text](./images/dt.png "Depedency Track with sbomqs score")
 
-### Quality Score in an AirGapped Environment
+### 6. Check Score in an AirGapped Environment
 
 ```sh
 INTERLYNK_DISABLE_VERSION_CHECK=true ./build/sbomqs score ~/wrk/sbom*/samples/*.json  -b
+```
+
+### 7. Run sbomqs using docker container
+
+```sh
+docker run -v <path_of_sbom_file>:/app/inputfile ghcr.io/interlynk-io/sbomqs score /app/inputfile
+
+
+docker run -v $(pwd)/samples/sbomqs-cdx-cgomod.json:/app/inputfile ghcr.io/interlynk-io/sbomqs score /app/inputfile
 ```
 
 ## Contributions
