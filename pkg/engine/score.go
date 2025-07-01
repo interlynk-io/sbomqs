@@ -324,34 +324,35 @@ func processFile(ctx context.Context, ep *Params, path string, fs billy.Filesyst
 
 	sr := scorer.NewScorer(ctx, doc)
 
-	if len(ep.Features) > 0 && len(ep.Categories) > 0 {
-		fmt.Println("Using both features and categories, scoring will be done with mix of both")
-		for _, cat := range ep.Categories {
-			if len(cat) <= 0 {
-				continue
-			}
-			for _, feat := range ep.Features {
-				if len(feat) <= 0 {
+	if len(ep.Categories) > 0 {
+		if len(ep.Features) == 0 {
+			for _, category := range ep.Categories {
+				if len(category) <= 0 {
 					continue
 				}
 				filter := scorer.Filter{
-					Name:     feat,
-					Ftype:    scorer.Mix,
-					Category: cat,
+					Name:  category,
+					Ftype: scorer.Category,
 				}
 				sr.AddFilter(filter)
 			}
-		}
-	} else if len(ep.Categories) > 0 {
-		for _, category := range ep.Categories {
-			if len(category) <= 0 {
-				continue
+		} else if len(ep.Features) > 0 {
+			for _, cat := range ep.Categories {
+				if len(cat) <= 0 {
+					continue
+				}
+				for _, feat := range ep.Features {
+					if len(feat) <= 0 {
+						continue
+					}
+					filter := scorer.Filter{
+						Name:     feat,
+						Ftype:    scorer.Mix,
+						Category: cat,
+					}
+					sr.AddFilter(filter)
+				}
 			}
-			filter := scorer.Filter{
-				Name:  category,
-				Ftype: scorer.Category,
-			}
-			sr.AddFilter(filter)
 		}
 	} else if len(ep.Features) > 0 {
 		for _, feature := range ep.Features {
