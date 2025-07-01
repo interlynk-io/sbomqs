@@ -26,9 +26,16 @@
 [![SBOMCard](https://api.interlynk.io/api/v1/badges.svg?type=hcard&project_group_id=7f52093e-3d78-49cb-aeb1-6c977de9442e
 )](https://app.interlynk.io/customer/products?id=7f52093e-3d78-49cb-aeb1-6c977de9442e&signed_url_params=eyJfcmFpbHMiOnsibWVzc2FnZSI6IklqUmhPRGRoTjJNNExXSXpZekl0TkdVeE9TMDVNRGxoTFRKbFpHRmlPR1ZoWldReVl5ST0iLCJleHAiOm51bGwsInB1ciI6InNoYXJlX2x5bmsvc2hhcmVfbHluayJ9fQ==--daf6585ecf8013a0b2713a5cebb28c140d29eed904b15c84c0566b9ddd334e71)
 
-## SBOM Platform - Free Community Tier
+## [SBOM Platform](https://www.interlynk.io/) - [Free Community Tier](https://www.interlynk.io/community-tier)
 
-Our SBOM Automation Platform has a free community tier that provides a comprehensive solution to manage SBOMs (Software Bill of Materials) effortlessly. From centralized SBOM storage, built-in SBOM editor, continuous vulnerability mapping and assessment, and support for organizational policies, all while ensuring compliance and enhancing software supply chain security using integrated SBOM quality scores. The community tier is ideal for small teams. Learn more [here](https://www.interlynk.io/community-tier) or [Sign up](https://app.interlynk.io/auth)
+Our SBOM Automation Platform has a free community tier that provides a comprehensive solution to manage SBOMs (Software Bill of Materials) effortlessly with following features:
+
+- centralized SBOM storage,
+- built-in SBOM editor,
+- continuous vulnerability mapping and assessment, and
+- support for organizational policies, all while ensuring compliance and enhancing software supply chain security using integrated SBOM quality scores.
+
+The **community tier is ideal for small teams**. Learn more about [free community tier](https://www.interlynk.io/community-tier) or directly [Sign up](https://app.interlynk.io/auth).
 
 ## Documentation
 
