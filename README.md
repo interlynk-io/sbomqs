@@ -51,13 +51,13 @@ The **community tier is ideal for small teams**. Learn more about [free communit
 
 ## Installation
 
-### Using Prebuilt binaries
+### Quick Install (Linux/macOS)
 
 ```console
-https://github.com/interlynk-io/sbomqs/releases
+curl -sSfL https://raw.githubusercontent.com/interlynk-io/sbomqs/main/install.sh | sh
 ```
 
-### Using Homebrew
+### Using Homebrew (macOS/Linux with Homebrew installed)
 
 ```console
 brew tap interlynk-io/interlynk
@@ -76,7 +76,7 @@ go install github.com/interlynk-io/sbomqs@latest
 docker pull ghcr.io/interlynk-io/sbomqs:latest
 ```
 
-Example:
+**Example**:
 
 ```sh
 docker run -v <path_of_sbom_file>:/app/inputfile ghcr.io/interlynk-io/sbomqs score /app/inputfile
@@ -85,14 +85,15 @@ docker run -v <path_of_sbom_file>:/app/inputfile ghcr.io/interlynk-io/sbomqs sco
 docker run -v $(pwd)/samples/sbomqs-cdx-cgomod.json:/app/inputfile ghcr.io/interlynk-io/sbomqs score /app/inputfile
 ```
 
-### Using repo
+### Developer Installation
 
-This approach involves cloning the repo and building it.
-
-1. Clone the repo `git clone git@github.com:interlynk-io/sbomqs.git`
-2. `cd` into `sbomqs` folder
+```console
+1. git clone git@github.com:interlynk-io/sbomqs.git
+2. cd sbomqs
 3. make build
-4. To test if the build was successful run the following command `./build/sbomqs version`
+4. mv ./build/sbomqs /usr/local/bin
+5. sbomqs version
+```
 
 ## Usage
 
