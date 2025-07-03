@@ -74,7 +74,7 @@ func Run(ctx context.Context, ep *Params) error {
 	return executeScoring(ctx, ep)
 }
 
-func parseSbomqsConfig(ep *Params) sbomqs.Config {
+func buildConfigFromEngineParams(ep *Params) sbomqs.Config {
 	return sbomqs.Config{
 		Categories:      ep.Categories,
 		Features:        ep.Features,
@@ -88,111 +88,18 @@ func executeScoring(ctx context.Context, ep *Params) error {
 	log.Debug("engine.executeScoring()")
 
 	// convert ep params to sbomqs.Config
-	config := parseSbomqsConfig(ep)
-
-	// results, err := sbomqs.ScoreSBOM(ctx, config, ep.Path)
-	// path := ep.Path
-
-	// blob, signature, publicKey, err := common.GetSignatureBundle(ctx, path[0], ep.Signature, ep.PublicKey)
-	// if err != nil {
-	// 	log.Debugf("common.GetSignatureBundle failed for file :%s\n", path[0])
-	// 	fmt.Printf("failed to get signature bundle for %s\n", path[0])
-	// 	// return err
-	// }
-
-	// // sig := sbom.Signature{}
-
-	// var docs []sbom.Document
-	// var paths []string
-	// var scores []scorer.Scores
-
-	// // Convert Params to sbomqs.Config
-	// config := sbomqs.Config{
-	// 	Categories: ep.Categories,
-	// 	Features:   ep.Features,
-	// 	ConfigFile: ep.ConfigPath,
-	// 	// SignatureBundle: sig,
-	// }
-
-	// for _, path := range ep.Path {
-	// 	if utils.IsURL(path) {
-	// 		log.Debugf("Processing Git URL path :%s\n", path)
-
-	// 		url, sbomFilePath := path, path
-	// 		var err error
-
-	// 		if utils.IsGit(url) {
-	// 			sbomFilePath, url, err = utils.HandleURL(path)
-	// 			if err != nil {
-	// 				log.Fatal("failed to get sbomFilePath, rawURL: %w", err)
-	// 			}
-	// 		}
-
-	// 		data, err := utils.DownloadURL(url)
-	// 		if err != nil {
-	// 			return err
-	// 		}
-
-	// 		result, err := sbomqs.ScoreSBOMData(ctx, data, config)
-	// 		if err != nil {
-	// 			log.Debugf("failed to score SBOM from URL %s: %v\n", url, err)
-	// 			return err
-	// 		}
-
-	// 		docs = append(docs, result.Document())
-	// 		scores = append(scores, result.RawScores())
-	// 		paths = append(paths, sbomFilePath)
-	// 	} else {
-	// 		log.Debugf("Processing path :%s\n", path)
-	// 		pathInfo, err := os.Stat(path)
-	// 		if err != nil {
-	// 			log.Debugf("os.Stat failed for path:%s\n", path)
-	// 			log.Infof("%s\n", err)
-	// 			continue
-	// 		}
-
-	// 		if pathInfo.IsDir() {
-	// 			files, err := os.ReadDir(path)
-	// 			if err != nil {
-	// 				log.Debugf("os.ReadDir failed for path:%s\n", path)
-	// 				log.Debugf("%s\n", err)
-	// 				continue
-	// 			}
-	// 			for _, file := range files {
-	// 				log.Debugf("Processing file :%s\n", file.Name())
-	// 				if file.IsDir() {
-	// 					continue
-	// 				}
-	// 				path := filepath.Join(path, file.Name())
-	// 				result, err := sbomqs.Score(ctx, path, config)
-	// 				if err != nil {
-	// 					log.Debugf("failed to score file %s: %v\n", path, err)
-	// 					continue
-	// 				}
-	// 				docs = append(docs, result.Document())
-	// 				scores = append(scores, result.RawScores())
-	// 				paths = append(paths, path)
-	// 			}
-	// 			continue
-	// 		}
-
-	// 		result, err := sbomqs.Score(ctx, path, config)
-	// 		if err != nil {
-	// 			log.Debugf("failed to score file %s: %v\n", path, err)
-	// 			continue
-	// 		}
-	// 		docs = append(docs, result.Document())
-	// 		scores = append(scores, result.RawScores())
-	// 		paths = append(paths, path)
-	// 	}
-	// }
+	config := buildConfigFromEngineParams(ep)
+	log.Debugf("sbomqs config: %+v", config)
 
 	reportFormat := "detailed"
-	if ep.Basic {
+
+	switch {
+	case ep.Basic:
 		reportFormat = "basic"
-	} else if ep.JSON {
+	case ep.JSON:
 		reportFormat = "json"
 	}
+
 	coloredOutput := ep.Color
 
 	results, err := sbomqs.ScoreSBOM(ctx, config, ep.Path)

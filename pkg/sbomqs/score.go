@@ -1,12 +1,10 @@
 package sbomqs
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"os"
 
-	"github.com/interlynk-io/sbomqs/pkg/compliance/common"
 	"github.com/interlynk-io/sbomqs/pkg/logger"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/pkg/scorer"
@@ -50,147 +48,12 @@ func (r *ScoreResult) RawScores() scorer.Scores {
 }
 
 type ScoreDetail struct {
-	Category    string  // e.g., "NTIA-minimum-elements"
-	Feature     string  // e.g., "comp_with_name"
-	Score       float64 // e.g., 10.0
-	MaxScore    float64 // e.g., 10.0
-	Description string  // e.g., "38/38 have names"
-	Ignored     bool    // e.g., false
-}
-
-func Score(ctx context.Context, path string, config Config) (ScoreResult, error) {
-	log := logger.FromContext(ctx)
-	log.Debugf("Processing file :%s\n", path)
-
-	var result ScoreResult
-	result.FileName = path
-
-	if _, err := os.Stat(path); err != nil {
-		log.Debugf("os.Stat failed for file: %s\n", path)
-		result.Errors = append(result.Errors, fmt.Sprintf("failed to stat %s: %v", path, err))
-		return result, err
-	}
-
-	f, err := os.ReadFile(path)
-	if err != nil {
-		log.Debugf("os.ReadFile failed for file: %s\n", path)
-		result.Errors = append(result.Errors, fmt.Sprintf("failed to read %s: %v", path, err))
-
-	}
-
-	blob, signature, publicKey, err := common.GetSignatureBundle(ctx, path, config.SignatureBundle.SigValue, config.SignatureBundle.PublicKey)
-	if err != nil {
-		log.Debugf("common.GetSignatureBundle failed for file :%s\n", path)
-		fmt.Printf("failed to get signature bundle for %s\n", path)
-		// return err
-	}
-
-	sig := sbom.Signature{
-		SigValue:  signature,
-		PublicKey: publicKey,
-		Blob:      blob,
-	}
-	config.SignatureBundle = sig
-
-	return ScoreSBOMData(ctx, f, config)
-}
-
-func ScoreSBOMData(ctx context.Context, data []byte, config Config) (ScoreResult, error) {
-	log := logger.FromContext(ctx)
-	log.Debug("Processing SBOM data")
-
-	var result ScoreResult
-	result.FileName = "in-memory-data"
-
-	reader := bytes.NewReader(data)
-
-	// Parse the SBOM from raw data
-	doc, err := sbom.NewSBOMDocument(ctx, reader, config.SignatureBundle)
-	if err != nil {
-		log.Debugf("failed to create sbom document from data: %v\n", err)
-		result.Errors = append(result.Errors, fmt.Sprintf("failed to parse SBOM data: %v", err))
-		return result, err
-	}
-
-	// Populate metadata
-	result.document = doc
-	result.Spec = doc.Spec().GetSpecType()
-	result.SpecVersion = doc.Spec().GetVersion()
-	result.FileFormat = doc.Spec().FileFormat()
-	result.NumComponents = len(doc.Components())
-	result.CreationTime = doc.Spec().GetCreationTimestamp()
-
-	// Create a scorer and apply filters
-	sr := scorer.NewScorer(ctx, doc)
-
-	if len(config.Categories) > 0 {
-		for _, category := range config.Categories {
-			if len(category) <= 0 {
-				continue
-			}
-			filter := scorer.Filter{
-				Name:  category,
-				Ftype: scorer.Category,
-			}
-			sr.AddFilter(filter)
-		}
-	}
-
-	if len(config.Features) > 0 {
-		for _, feature := range config.Features {
-			if len(feature) <= 0 {
-				continue
-			}
-			filter := scorer.Filter{
-				Name:  feature,
-				Ftype: scorer.Feature,
-			}
-			sr.AddFilter(filter)
-		}
-	}
-
-	if config.ConfigFile != "" {
-		filters, err := scorer.ReadConfigFile(config.ConfigFile)
-		if err != nil {
-			log.Debugf("failed to read config file %s: %v\n", config.ConfigFile, err)
-			result.Errors = append(result.Errors, fmt.Sprintf("failed to read config file %s: %v", config.ConfigFile, err))
-			return result, err
-		}
-
-		if len(filters) <= 0 {
-			log.Debugf("no enabled filters found in config file %s\n", config.ConfigFile)
-			result.Errors = append(result.Errors, fmt.Sprintf("no enabled filters found in config file %s", config.ConfigFile))
-			return result, fmt.Errorf("no enabled filters found in config file %s", config.ConfigFile)
-		}
-
-		for _, f := range filters {
-			filter := scorer.Filter{
-				Name:  f.Name,
-				Ftype: f.Ftype,
-			}
-			sr.AddFilter(filter)
-		}
-	}
-
-	// Score the SBOM
-	scrs := sr.Score()
-	result.rawScores = scrs
-	result.AvgScore = scrs.AvgScore()
-
-	// Populate detailed scores
-	result.Scores = make([]ScoreDetail, 0, len(scrs.ScoreList()))
-	for _, s := range scrs.ScoreList() {
-		result.Scores = append(result.Scores, ScoreDetail{
-			Category:    s.Category(),
-			Feature:     s.Feature(),
-			Score:       s.Score(),
-			MaxScore:    s.MaxScore(),
-			Description: s.Descr(),
-			Ignored:     s.Ignore(),
-		})
-	}
-
-	return result, nil
+	Category    string
+	Feature     string
+	Score       float64
+	MaxScore    float64
+	Description string
+	Ignored     bool
 }
 
 func ScoreSBOM(ctx context.Context, config Config, paths []string) ([]ScoreResult, error) {
@@ -266,7 +129,6 @@ func ScoreSBOM(ctx context.Context, config Config, paths []string) ([]ScoreResul
 			results = append(results, result)
 		}
 
-		// let's write a seperate funtion to validate paths
 		return results, nil
 	}
 	return results, fmt.Errorf("no valid SBOM files processed")
@@ -331,7 +193,6 @@ func applyFilterToScore(ctx context.Context, sr *scorer.Scorer, doc sbom.Documen
 	config.Features = removeEmptyStrings(config.Features)
 	config.Categories = removeEmptyStrings(config.Categories)
 	if len(config.Features) > 0 && len(config.Categories) > 0 {
-		fmt.Println("Adding mix of features and categories")
 		for _, cat := range config.Categories {
 			if len(cat) <= 0 {
 				continue
@@ -386,8 +247,6 @@ func applyFilterToScore(ctx context.Context, sr *scorer.Scorer, doc sbom.Documen
 			sr.AddFilter(filter)
 		}
 	}
-
-	// scores := sr.Score()
 
 	return sr, nil
 }

@@ -89,7 +89,6 @@ func processURLInput(ctx context.Context, url string, config Config) (*os.File, 
 	log := logger.FromContext(ctx)
 	log.Debugf("Processing URL: %s", url)
 
-	// If it's a Git repo URL, resolve to raw SBOM URL
 	if utils.IsGit(url) {
 		_, rawURL, err := utils.HandleURL(url)
 		if err != nil {
@@ -98,19 +97,18 @@ func processURLInput(ctx context.Context, url string, config Config) (*os.File, 
 		url = rawURL
 	}
 
-	// Download SBOM data from the URL
+	// download SBOM data from the URL
 	data, err := utils.DownloadURL(url)
 	if err != nil {
 		return nil, sbom.Signature{}, fmt.Errorf("failed to download SBOM from URL %s: %w", url, err)
 	}
 
-	// Create a temporary file to store the SBOM
+	// create a temporary file to store the SBOM
 	tmpFile, err := os.CreateTemp("", "sbomqs-url-*.json")
 	if err != nil {
 		return nil, sbom.Signature{}, fmt.Errorf("failed to create temp file for SBOM: %w", err)
 	}
 
-	// Write SBOM data into the file
 	if _, err := tmpFile.Write(data); err != nil {
 		tmpFile.Close()
 		os.Remove(tmpFile.Name())
@@ -124,7 +122,6 @@ func processURLInput(ctx context.Context, url string, config Config) (*os.File, 
 		return nil, sbom.Signature{}, fmt.Errorf("failed to reset temp file pointer: %w", err)
 	}
 
-	// Use provided signature fields if present (optional, based on design)
 	sig := sbom.Signature{
 		SigValue:  config.SignatureBundle.SigValue,
 		PublicKey: config.SignatureBundle.PublicKey,
@@ -139,12 +136,12 @@ func normalizeAndValidateCategories(ctx context.Context, categories []string) ([
 
 	for _, c := range categories {
 
-		// Step 1: Normalize using alias
+		// normalize using alias
 		if alias, ok := utils.CategoryAliases[c]; ok {
 			c = alias
 		}
 
-		// Step 2: Validate if it's a supported category
+		// validate if it's a supported category
 		if !utils.SupportedCategories[c] {
 			log.Warnf("unsupported category: %s", c)
 			continue
