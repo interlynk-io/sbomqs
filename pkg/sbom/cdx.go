@@ -258,8 +258,8 @@ func (c *CdxDoc) parseVulnerabilities() {
 func (c *CdxDoc) parseSignature() {
 	log := logger.FromContext(c.ctx)
 	log.Debug("parseSignature()")
-	c.SignatureDetail = &Signature{}
 	if c.doc.Declarations != nil {
+		log.Debugf("declaration not nil, checking for signature")
 		if c.doc.Declarations.Signature != nil {
 			sigValue := c.doc.Declarations.Signature.Value
 			pubKeyModulus := c.doc.Declarations.Signature.PublicKey.N
@@ -490,6 +490,10 @@ func copyC(cdxc *cydx.Component, c *CdxDoc) *Component {
 
 // return true if a component has relationship
 func getComponentRelationship(c *CdxDoc, compID string) bool {
+	if c.doc.Dependencies == nil {
+		c.addToLogs(fmt.Sprintf("cdx doc component %s has no dependencies", compID))
+		return false
+	}
 	for _, rel := range *c.doc.Dependencies {
 		if rel.Ref == compID {
 			if len(lo.FromPtr(rel.Dependencies)) > 0 {

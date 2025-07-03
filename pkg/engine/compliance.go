@@ -24,6 +24,7 @@ import (
 	"github.com/interlynk-io/sbomqs/pkg/compliance/common"
 	"github.com/interlynk-io/sbomqs/pkg/logger"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
+	"github.com/interlynk-io/sbomqs/pkg/utils"
 )
 
 func ComplianceRun(ctx context.Context, ep *Params) error {
@@ -102,19 +103,19 @@ func getSbomDocument(ctx context.Context, ep *Params) (*sbom.Document, error) {
 	}
 	var doc sbom.Document
 
-	if IsURL(path) {
+	if utils.IsURL(path) {
 		log.Debugf("Processing Git URL path :%s\n", path)
 		url := path
 		var err error
 
-		if IsGit(url) {
-			_, url, err = handleURL(path)
+		if utils.IsGit(url) {
+			_, url, err = utils.HandleURL(path)
 			if err != nil {
 				log.Fatal("failed to get sbomFilePath, rawURL: %w", err)
 			}
 		}
 
-		data, err := downloadURL(url)
+		data, err := utils.DownloadURL(url)
 		if err != nil {
 			return nil, err
 		}

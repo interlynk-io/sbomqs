@@ -19,6 +19,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/interlynk-io/sbomqs/pkg/utils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -62,7 +63,7 @@ func TestHandleURL(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			sbomFilePath, rawURL, err := handleURL(tc.input)
+			sbomFilePath, rawURL, err := utils.HandleURL(tc.input)
 			if tc.expectedError {
 				assert.Error(t, err)
 				assert.Equal(t, tc.expectedPath, sbomFilePath)
@@ -103,7 +104,7 @@ func TestProcessURL(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := downloadURL(tt.url)
+			_, err := utils.DownloadURL(tt.url)
 			if tt.expectedError {
 				assert.EqualError(t, err, tt.expectedErrorMessage.Error())
 			} else {
