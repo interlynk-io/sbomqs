@@ -3,20 +3,20 @@ package sbomqs
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
-	"strings"
 
 	"github.com/interlynk-io/sbomqs/pkg/logger"
 	"github.com/interlynk-io/sbomqs/pkg/utils"
 )
 
 // validatePaths returns the valid paths.
-func validatePaths(paths []string) []string {
+func validatePaths(ctx context.Context, paths []string) []string {
+	log := logger.FromContext(ctx)
+	log.Debug("validating paths")
 	var validPaths []string
 	for _, path := range paths {
 		if _, err := os.Stat(path); err != nil {
-			log.Printf("skipping invalid path: %s, error: %v", path, err)
+			log.Debugf("skipping invalid path: %s, error: %v", path, err)
 			continue
 		}
 		validPaths = append(validPaths, path)
@@ -24,9 +24,9 @@ func validatePaths(paths []string) []string {
 	return validPaths
 }
 
-func validateConfig(ctx context.Context, config Config) error {
+func validateConfig(ctx context.Context, config *Config) error {
 	log := logger.FromContext(ctx)
-	log.Debug("Validating SBOM configuration")
+	log.Debug("validating configuration")
 
 	if config.ConfigFile != "" {
 		if _, err := os.Stat(config.ConfigFile); err != nil {
@@ -35,9 +35,8 @@ func validateConfig(ctx context.Context, config Config) error {
 	}
 	config.Categories = removeEmptyStrings(config.Categories)
 
-	fmt.Println("length of categories:", len(config.Categories))
 	if len(config.Categories) > 0 {
-		log.Debugf("Validating categories: %v", config.Categories)
+		log.Debugf("validating categories: %v", config.Categories)
 		normCategories, err := normalizeAndValidateCategories(ctx, config.Categories)
 		if err != nil {
 			return fmt.Errorf("failed to normalize and validate categories: %w", err)
@@ -45,10 +44,9 @@ func validateConfig(ctx context.Context, config Config) error {
 		config.Categories = normCategories
 	}
 
-	fmt.Println("length of features:", len(config.Features))
 	config.Features = removeEmptyStrings(config.Features)
 	if len(config.Features) > 0 {
-		log.Debugf("Validating features: %v", config.Features)
+		log.Debugf("validating features: %v", config.Features)
 		validFeatures, err := validateFeatures(ctx, config.Features)
 		if err != nil {
 			return fmt.Errorf("failed to validate features: %w", err)
@@ -57,16 +55,6 @@ func validateConfig(ctx context.Context, config Config) error {
 	}
 
 	return nil
-}
-
-func removeEmptyStrings(input []string) []string {
-	var result []string
-	for _, s := range input {
-		if trimmed := strings.TrimSpace(s); trimmed != "" {
-			result = append(result, trimmed)
-		}
-	}
-	return result
 }
 
 func validateFeatures(ctx context.Context, features []string) ([]string, error) {

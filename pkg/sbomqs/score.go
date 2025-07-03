@@ -61,13 +61,13 @@ func ScoreSBOM(ctx context.Context, config Config, paths []string) ([]ScoreResul
 	var results []ScoreResult
 
 	// 1. Validate paths
-	validPaths := validatePaths(paths)
+	validPaths := validatePaths(ctx, paths)
 	if len(validPaths) == 0 {
 		return nil, fmt.Errorf("no valid paths provided")
 	}
 
 	// 2. Validate config
-	if err := validateConfig(ctx, config); err != nil {
+	if err := validateConfig(ctx, &config); err != nil {
 		return nil, fmt.Errorf("failed to validate SBOM configuration: %w", err)
 	}
 
@@ -99,7 +99,6 @@ func ScoreSBOM(ctx context.Context, config Config, paths []string) ([]ScoreResul
 			results = append(results, dirResults...)
 
 		default:
-			// Is local file or folder
 			_, err := os.Stat(path)
 			if err != nil {
 				log.Warnf("cannot stat path: %s: %v", path, err)
@@ -136,7 +135,7 @@ func ScoreSBOM(ctx context.Context, config Config, paths []string) ([]ScoreResul
 
 func processSBOMInput(ctx context.Context, sbomFile *os.File, sig sbom.Signature, config Config, path string) (ScoreResult, error) {
 	log := logger.FromContext(ctx)
-	log.Debug("Processing SBOM input data")
+	log.Debug("processing SBOM input data")
 
 	doc, err := processSBOMDocument(ctx, sbomFile, sig)
 	if err != nil {
@@ -145,7 +144,7 @@ func processSBOMInput(ctx context.Context, sbomFile *os.File, sig sbom.Signature
 
 	sr := scorer.NewScorer(ctx, doc)
 
-	sr, err = applyFilterToScore(ctx, sr, doc, config)
+	sr, err = filterScorerByConfig(ctx, sr, doc, config)
 	if err != nil {
 		return ScoreResult{}, fmt.Errorf("failed to filter score: %w", err)
 	}
@@ -184,14 +183,10 @@ func constructResult(ctx context.Context, doc sbom.Document, scores scorer.Score
 	return result
 }
 
-func applyFilterToScore(ctx context.Context, sr *scorer.Scorer, doc sbom.Document, config Config) (*scorer.Scorer, error) {
-	// sr := scorer.NewScorer(ctx, doc)
-
+func filterScorerByConfig(ctx context.Context, sr *scorer.Scorer, doc sbom.Document, config Config) (*scorer.Scorer, error) {
 	log := logger.FromContext(ctx)
-	log.Debug("Applying filters to score")
+	log.Debug("applying filters to score")
 
-	config.Features = removeEmptyStrings(config.Features)
-	config.Categories = removeEmptyStrings(config.Categories)
 	if len(config.Features) > 0 && len(config.Categories) > 0 {
 		for _, cat := range config.Categories {
 			if len(cat) <= 0 {
@@ -201,12 +196,14 @@ func applyFilterToScore(ctx context.Context, sr *scorer.Scorer, doc sbom.Documen
 				if len(feat) <= 0 {
 					continue
 				}
-				filter := scorer.Filter{
-					Name:     feat,
-					Ftype:    scorer.Mix,
-					Category: cat,
+				if featuresInCategory[cat][feat] {
+					filter := scorer.Filter{
+						Name:     feat,
+						Ftype:    scorer.Mix,
+						Category: cat,
+					}
+					sr.AddFilter(filter)
 				}
-				sr.AddFilter(filter)
 			}
 		}
 	} else if len(config.Categories) > 0 {
