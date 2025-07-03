@@ -23,6 +23,7 @@ import (
 	"github.com/interlynk-io/sbomqs/pkg/engine"
 	"github.com/interlynk-io/sbomqs/pkg/logger"
 	"github.com/interlynk-io/sbomqs/pkg/reporter"
+	"github.com/interlynk-io/sbomqs/pkg/utils"
 	"github.com/samber/lo"
 
 	"github.com/spf13/cobra"
@@ -113,16 +114,6 @@ var scoreCmd = &cobra.Command{
 	RunE: processScore,
 }
 
-var categoryAliases = map[string]string{
-	"ntia":                  "NTIA-minimum-elements",
-	"NTIA":                  "NTIA-minimum-elements",
-	"ntia-minimum-elements": "NTIA-minimum-elements",
-	"structural":            "Structural",
-	"sharing":               "Sharing",
-	"semantic":              "Semantic",
-	"quality":               "Quality",
-}
-
 func processScore(cmd *cobra.Command, args []string) error {
 	debug, _ := cmd.Flags().GetBool("debug")
 	if debug {
@@ -169,7 +160,7 @@ func toUserCmd(cmd *cobra.Command, args []string) *userCmd {
 		c, _ := cmd.Flags().GetString("category")
 		cList := strings.Split(c, ",")
 		for i, val := range cList {
-			if fullName, ok := categoryAliases[val]; ok {
+			if fullName, ok := utils.CategoryAliases[val]; ok {
 				cList[i] = fullName
 			} else {
 				cList[i] = val

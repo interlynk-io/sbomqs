@@ -17,21 +17,15 @@ package engine
 import (
 	"context"
 	"fmt"
-	"io"
-	"net/http"
-	"net/url"
 	"os"
-	"path/filepath"
-	"regexp"
 	"strings"
 
 	"github.com/go-git/go-billy/v5"
-	"github.com/interlynk-io/sbomqs/pkg/compliance/common"
 	"github.com/interlynk-io/sbomqs/pkg/logger"
 	"github.com/interlynk-io/sbomqs/pkg/reporter"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
+	"github.com/interlynk-io/sbomqs/pkg/sbomqs"
 	"github.com/interlynk-io/sbomqs/pkg/scorer"
-	"github.com/spf13/afero"
 )
 
 type Params struct {
@@ -77,183 +71,43 @@ func Run(ctx context.Context, ep *Params) error {
 		log.Fatal("path is required")
 	}
 
-	return handlePaths(ctx, ep)
+	return executeScoring(ctx, ep)
 }
 
-func handleURL(path string) (string, string, error) {
-	u, err := url.Parse(path)
-	if err != nil {
-		return "", "", fmt.Errorf("failed to parse urlPath: %w", err)
+func buildConfigFromEngineParams(ep *Params) sbomqs.Config {
+	return sbomqs.Config{
+		Categories:      ep.Categories,
+		Features:        ep.Features,
+		ConfigFile:      ep.ConfigPath,
+		SignatureBundle: sbom.Signature{SigValue: ep.Signature, PublicKey: ep.PublicKey, Blob: ep.Blob},
 	}
-
-	parts := strings.Split(u.Path, "/")
-	containSlash := strings.HasSuffix(u.Path, "/")
-	var sbomFilePath string
-
-	if containSlash {
-		if len(parts) < 7 {
-			return "", "", fmt.Errorf("invalid GitHub URL: %v", path)
-		}
-		sbomFilePath = strings.Join(parts[5:len(parts)-1], "/")
-	} else {
-		if len(parts) < 6 {
-			return "", "", fmt.Errorf("invalid GitHub URL: %v", path)
-		}
-		sbomFilePath = strings.Join(parts[5:], "/")
-	}
-
-	rawURL := strings.Replace(path, "github.com", "raw.githubusercontent.com", 1)
-	rawURL = strings.Replace(rawURL, "/blob/", "/", 1)
-
-	return sbomFilePath, rawURL, err
 }
 
-func IsURL(in string) bool {
-	return regexp.MustCompile("^(http|https)://").MatchString(in)
-}
-
-func IsGit(in string) bool {
-	return regexp.MustCompile("^(http|https)://github.com").MatchString(in)
-}
-
-func ProcessURL(url string, file afero.File) (afero.File, error) {
-	//nolint: gosec
-	resp, err := http.Get(url)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get data: %w", err)
-	}
-	defer resp.Body.Close()
-
-	// Ensure the response is OK
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("failed to download file: %s", resp.Status)
-	}
-	_, err = io.Copy(file, resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("failed to copy in file: %w", err)
-	}
-
-	// Check if the file is empty
-	info, err := file.Stat()
-	if err != nil {
-		return nil, fmt.Errorf("failed to stat file: %w", err)
-	}
-	if info.Size() == 0 {
-		return nil, fmt.Errorf("downloaded file is empty: %v", info.Size())
-	}
-
-	return file, err
-}
-
-func handlePaths(ctx context.Context, ep *Params) error {
+func executeScoring(ctx context.Context, ep *Params) error {
 	log := logger.FromContext(ctx)
-	log.Debug("engine.handlePaths()")
+	log.Debug("engine.executeScoring()")
 
-	path := ep.Path[0]
-
-	blob, signature, publicKey, err := common.GetSignatureBundle(ctx, path, ep.Signature, ep.PublicKey)
-	if err != nil {
-		log.Debugf("common.GetSignatureBundle failed for file :%s\n", path)
-		fmt.Printf("failed to get signature bundle for %s\n", path)
-		return err
-	}
-
-	sig := sbom.Signature{
-		SigValue:  signature,
-		PublicKey: publicKey,
-		Blob:      blob,
-	}
-
-	var docs []sbom.Document
-	var paths []string
-	var scores []scorer.Scores
-
-	for _, path := range ep.Path {
-		if IsURL(path) {
-			log.Debugf("Processing Git URL path :%s\n", path)
-
-			url, sbomFilePath := path, path
-			var err error
-
-			if IsGit(url) {
-				sbomFilePath, url, err = handleURL(path)
-				if err != nil {
-					log.Fatal("failed to get sbomFilePath, rawURL: %w", err)
-				}
-			}
-			fs := afero.NewMemMapFs()
-
-			file, err := fs.Create(sbomFilePath)
-			if err != nil {
-				return err
-			}
-
-			f, err := ProcessURL(url, file)
-			if err != nil {
-				return err
-			}
-
-			doc, err := sbom.NewSBOMDocument(ctx, f, sig)
-			if err != nil {
-				log.Fatalf("failed to parse SBOM document: %w", err)
-			}
-
-			sr := scorer.NewScorer(ctx, doc)
-			score := sr.Score()
-
-			docs = append(docs, doc)
-			scores = append(scores, score)
-			paths = append(paths, sbomFilePath)
-		} else {
-			log.Debugf("Processing path :%s\n", path)
-			pathInfo, err := os.Stat(path)
-			if err != nil {
-				log.Debugf("os.Stat failed for path:%s\n", path)
-				log.Infof("%s\n", err)
-				continue
-			}
-
-			if pathInfo.IsDir() {
-				files, err := os.ReadDir(path)
-				if err != nil {
-					log.Debugf("os.ReadDir failed for path:%s\n", path)
-					log.Debugf("%s\n", err)
-					continue
-				}
-				for _, file := range files {
-					log.Debugf("Processing file :%s\n", file.Name())
-					if file.IsDir() {
-						continue
-					}
-					path := filepath.Join(path, file.Name())
-					doc, scs, err := processFile(ctx, ep, path, nil, sig)
-					if err != nil {
-						continue
-					}
-					docs = append(docs, doc)
-					scores = append(scores, scs)
-					paths = append(paths, path)
-				}
-				continue
-			}
-
-			doc, scs, err := processFile(ctx, ep, path, nil, sig)
-			if err != nil {
-				continue
-			}
-			docs = append(docs, doc)
-			scores = append(scores, scs)
-			paths = append(paths, path)
-		}
-	}
+	// convert ep params to sbomqs.Config
+	config := buildConfigFromEngineParams(ep)
+	log.Debugf("sbomqs config: %+v", config)
 
 	reportFormat := "detailed"
-	if ep.Basic {
+
+	switch {
+	case ep.Basic:
 		reportFormat = "basic"
-	} else if ep.JSON {
+	case ep.JSON:
 		reportFormat = "json"
 	}
+
 	coloredOutput := ep.Color
+
+	results, err := sbomqs.ScoreSBOM(ctx, config, ep.Path)
+	if err != nil {
+		log.Fatalf("failed to score SBOMs: %v", err)
+	}
+
+	docs, scores, paths := ConvertScoreResults(ctx, results)
 
 	nr := reporter.NewReport(ctx,
 		docs,
@@ -264,6 +118,22 @@ func handlePaths(ctx context.Context, ep *Params) error {
 	nr.Report()
 
 	return nil
+}
+
+func ConvertScoreResults(ctx context.Context, results []sbomqs.ScoreResult) (docs []sbom.Document, scores []scorer.Scores, paths []string) {
+	log := logger.FromContext(ctx)
+	log.Debug("Converting ScoreResults to Documents, Scores, and Paths")
+
+	for _, result := range results {
+		doc := result.Document()
+		score := result.RawScores()
+
+		docs = append(docs, doc)
+		scores = append(scores, score)
+		paths = append(paths, result.FileName)
+	}
+
+	return docs, scores, paths
 }
 
 func processFile(ctx context.Context, ep *Params, path string, fs billy.Filesystem, sig sbom.Signature) (sbom.Document, scorer.Scores, error) {

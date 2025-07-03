@@ -23,6 +23,7 @@ import (
 
 	"github.com/interlynk-io/sbomqs/pkg/engine"
 	"github.com/interlynk-io/sbomqs/pkg/logger"
+	"github.com/interlynk-io/sbomqs/pkg/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -219,9 +220,9 @@ func validateparsedListCmd(uCmd *userListCmd) error {
 	uCmd.feature = cleaned
 
 	// Validate against supported features
-	if _, ok := isFeaturePresent[cleaned]; !ok {
+	if _, ok := utils.ValidateFeatures[cleaned]; !ok {
 		var supportedFeatures []string
-		for f := range isFeaturePresent {
+		for f := range utils.ValidateFeatures {
 			supportedFeatures = append(supportedFeatures, f)
 		}
 		return fmt.Errorf("feature %q is not supported; supported features are: %s", cleaned, strings.Join(supportedFeatures, ", "))
