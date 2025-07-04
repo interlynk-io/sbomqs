@@ -47,7 +47,7 @@ The **community tier is ideal for small teams**. Learn more about [free communit
 
 👉 **[Contributions guide](https://github.com/interlynk-io/sbomqs?tab=readme-ov-file#contributions)**
 
-👉 **[Other OSS SBOM Tools](https://github.com/interlynk-io/sbomqs?tab=readme-ov-file#other-open-source-software-tools-for-sboms)**
+👉 **[Other OSS SBOM Tools](https://github.com/interlynk-io/sbomqs?tab=readme-ov-file#other-open-source-software-tools-for-sboms-)**
 
 👉 **[Have Question: join our community](https://github.com/interlynk-io/sbomqs?tab=readme-ov-file#contact)**
 
@@ -201,7 +201,7 @@ o/p:
 ### 6. Check Score in an AirGapped Environment
 
 ```sh
-INTERLYNK_DISABLE_VERSION_CHECK=true ./build/sbomqs score ~/wrk/sbom*/samples/*.json  -b
+./build/sbomqs score ~/wrk/sbom*/samples/*.json  -b
 ```
 
 ### 7. Run sbomqs using docker container
