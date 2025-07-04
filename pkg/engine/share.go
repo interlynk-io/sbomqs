@@ -17,6 +17,7 @@ package engine
 import (
 	"context"
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/interlynk-io/sbomqs/pkg/logger"
@@ -34,7 +35,19 @@ func ShareRun(ctx context.Context, ep *Params) error {
 		log.Fatal("path is required")
 	}
 
-	doc, scores, err := processFile(ctx, ep, ep.Path[0], nil, sbom.Signature{})
+	if ep.Path != nil {
+		pathInfo, err := os.Stat(ep.Path[0])
+		if err != nil {
+			return nil
+		}
+
+		if pathInfo.IsDir() {
+			// log.Fatal("Sharing directories is not supported. Please provide a file path.")
+			return fmt.Errorf("Sharing doesn't support directories. Please provide a file path %s, it's not a file", ep.Path[0])
+		}
+	}
+
+	doc, scores, err := processFile(ctx, ep, ep.Path[0], nil)
 	if err != nil {
 		return err
 	}

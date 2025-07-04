@@ -139,7 +139,59 @@ func processScore(cmd *cobra.Command, args []string) error {
 	}
 
 	engParams := toEngineParams(uCmd)
+	err := validateEngineParams(ctx, engParams)
+	if err != nil {
+		return fmt.Errorf("failed to validate engine params: %w", err)
+	}
+
 	return engine.Run(ctx, engParams)
+}
+
+func validateEngineParams(ctx context.Context, ep *engine.Params) error {
+	log := logger.FromContext(ctx)
+	log.Debug("validating engine parameters")
+
+	validPaths := validatePaths(ctx, ep.Path)
+	if len(validPaths) == 0 {
+		return fmt.Errorf("no valid paths provided")
+	}
+	ep.Path = validPaths
+
+	if ep.ConfigPath != "" {
+		if _, err := os.Stat(ep.ConfigPath); err != nil {
+			return fmt.Errorf("invalid config path: %s: %w", ep.ConfigPath, err)
+		}
+	}
+
+	ep.Categories = removeEmptyStrings(ep.Categories)
+	ep.Features = removeEmptyStrings(ep.Features)
+
+	return nil
+}
+
+func removeEmptyStrings(input []string) []string {
+	var result []string
+	for _, s := range input {
+		if trimmed := strings.TrimSpace(s); trimmed != "" {
+			result = append(result, trimmed)
+		}
+	}
+	return result
+}
+
+// validatePaths returns the valid paths.
+func validatePaths(ctx context.Context, paths []string) []string {
+	log := logger.FromContext(ctx)
+	log.Debug("validating paths")
+	var validPaths []string
+	for _, path := range paths {
+		if _, err := os.Stat(path); err != nil {
+			log.Debugf("skipping invalid path: %s, error: %v", path, err)
+			continue
+		}
+		validPaths = append(validPaths, path)
+	}
+	return validPaths
 }
 
 func toUserCmd(cmd *cobra.Command, args []string) *userCmd {
