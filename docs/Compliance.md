@@ -11,7 +11,7 @@ TR-03183-2 by the German Federal Office for Information Security (BSI) follows a
 ### [BSI TR-03183-2 v2.0.0](https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/Publications/TechGuidelines/TR03183/BSI-TR-03183-2-2_0_0.pdf)
 
 - Released: September 20th 2024
-- Contact: TR03183@bsi.bund.de
+- Contact: <TR03183@bsi.bund.de>
 
 | TR-03183-2                                    | TR-03183-2 field             | CycloneDX                                                              | SPDX(2.2.1)                                                                | SPDX(3.0) | Notes                                                                                                                                          |
 | :-------------------------------------------- | :--------------------------- | :--------------------------------------------------------------------- | :------------------------------------------------------------------------- | :-------- | :--------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -48,7 +48,7 @@ TR-03183-2 by the German Federal Office for Information Security (BSI) follows a
 ### [BSI TR-03183-2 v1.1](https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/Publications/TechGuidelines/TR03183/BSI-TR-03183-2.pdf)
 
 - Released: Nov 28th 2023
-- Contact: TR03183@bsi.bund.de
+- Contact: <TR03183@bsi.bund.de>
 
 | TR-03183-2                        | TR-03183-2 field             | CycloneDx                                                              | SPDX(2.3)                                       | Notes                                                                                                                          |
 | :-------------------------------- | :--------------------------- | :--------------------------------------------------------------------- | :---------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------- |
@@ -70,8 +70,6 @@ TR-03183-2 by the German Federal Office for Information Security (BSI) follows a
 |                                   | `URI of the executable form` | component->externalReferences->type (distribution/distribution-intake) | PackageDownloadLocation                         |                                                                                                                                |
 |                                   | `hash of source code`        | no-deterministic-field                                                 | package->PackageVerificationCode                |                                                                                                                                |
 |                                   | `other uniq identifiers`     | component->cpe, component->purl                                        | package->externalReference->security (cpe/purl) |                                                                                                                                |
-
----
 
 ## OpenChain Telco: SBOM Requirements
 
