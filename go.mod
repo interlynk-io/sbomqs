@@ -7,7 +7,7 @@ toolchain go1.23.1
 require (
 	github.com/CycloneDX/cyclonedx-go v0.9.2
 	github.com/DependencyTrack/client-go v0.17.0
-	github.com/charmbracelet/fang v0.1.0
+	github.com/charmbracelet/fang v0.2.0
 	github.com/github/go-spdx/v2 v2.3.3
 	github.com/google/uuid v1.6.0
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.11.2
@@ -63,7 +63,7 @@ require (
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/mod v0.24.0 // indirect
 	golang.org/x/sync v0.13.0 // indirect
-	golang.org/x/sys v0.32.0 // indirect
+	golang.org/x/sys v0.33.0 // indirect
 	golang.org/x/text v0.24.0 // indirect
 	golang.org/x/tools v0.32.0 // indirect
 	gotest.tools v2.2.0+incompatible
