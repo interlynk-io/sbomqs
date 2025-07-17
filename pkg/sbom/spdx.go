@@ -185,7 +185,7 @@ func (s *SpdxDoc) parseDoc() {
 func (s *SpdxDoc) parseSpec() {
 	sp := NewSpec()
 	sp.Format = string(s.format)
-	sp.Version = string(s.version)
+	sp.Version = s.doc.SPDXVersion
 
 	if s.doc.CreationInfo != nil {
 		for _, c := range s.doc.CreationInfo.Creators {
