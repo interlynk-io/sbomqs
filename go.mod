@@ -10,7 +10,7 @@ require (
 	github.com/charmbracelet/fang v0.2.0
 	github.com/github/go-spdx/v2 v2.3.3
 	github.com/google/uuid v1.6.0
-	github.com/maxbrunsfeld/counterfeiter/v6 v6.11.2
+	github.com/maxbrunsfeld/counterfeiter/v6 v6.11.3
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/package-url/packageurl-go v0.1.3
 	github.com/samber/lo v1.51.0
@@ -61,11 +61,11 @@ require (
 	github.com/spf13/pflag v1.0.6 // indirect
 	github.com/tidwall/sjson v1.2.5
 	go.uber.org/multierr v1.11.0 // indirect
-	golang.org/x/mod v0.24.0 // indirect
-	golang.org/x/sync v0.13.0 // indirect
-	golang.org/x/sys v0.33.0 // indirect
-	golang.org/x/text v0.24.0 // indirect
-	golang.org/x/tools v0.32.0 // indirect
+	golang.org/x/mod v0.26.0 // indirect
+	golang.org/x/sync v0.16.0 // indirect
+	golang.org/x/sys v0.34.0 // indirect
+	golang.org/x/text v0.27.0 // indirect
+	golang.org/x/tools v0.35.0 // indirect
 	gotest.tools v2.2.0+incompatible
 	sigs.k8s.io/yaml v1.4.0 // indirect
 )
