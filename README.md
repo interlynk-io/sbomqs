@@ -14,7 +14,6 @@
  limitations under the License.
 -->
 
-# `sbomqs`: Quality metrics for SBOMs
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/interlynk-io/sbomqs.svg)](https://pkg.go.dev/github.com/interlynk-io/sbomqs)
 [![Go Report Card](https://goreportcard.com/badge/github.com/interlynk-io/sbomqs)](https://goreportcard.com/report/github.com/interlynk-io/sbomqs)
