@@ -17,6 +17,7 @@ env:
   MS_SBOM_TOOL_URL: https://github.com/microsoft/sbom-tool/releases/latest/download/sbom-tool-linux-x64
   MS_SBOM_TOOL_EXCLUDE_DIRS: "**/samples/**"
   INTERLYNK_API_URL: ${{ vars.INTERLYNK_API_URL }}
+  INTERLYNK_SECURITY_TOKEN: ${{ secrets.INTERLYNK_SECURITY_TOKEN }}
 
 jobs:
   build-sbom:
@@ -68,4 +69,5 @@ jobs:
 
       - name: Upload SBOM
         run: |
-          python3 ${{ env.PYLYNK_TEMP_DIR }}/pylynk.py --verbose upload --prod ${{env.TOOL_NAME}} --env ${{ env.SBOM_ENV }} --sbom ${{ env.SBOM_FILE_PATH }} --token ${{ secrets.INTERLYNK_SECURITY_TOKEN }}
+          python3 ${{ env.PYLYNK_TEMP_DIR }}/pylynk.py --verbose prods
+          python3 ${{ env.PYLYNK_TEMP_DIR }}/pylynk.py --verbose upload --prod ${{env.TOOL_NAME}} --env ${{ env.SBOM_ENV }} --sbom ${{ env.SBOM_FILE_PATH }}
