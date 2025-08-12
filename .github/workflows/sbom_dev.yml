@@ -2,11 +2,7 @@ name: Dev | Build SBOM
 
 on:
   push:
-    branches-ignore:
-      - "main"
   pull_request:
-    branches-ignore:
-      - "main"
   workflow_dispatch:
 
 env:
