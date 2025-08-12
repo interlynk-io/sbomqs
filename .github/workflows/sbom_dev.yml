@@ -16,8 +16,8 @@ env:
   SBOM_FILE_PATH: $RUNNER_TEMP/sbom/_manifest/spdx_2.2/manifest.spdx.json
   MS_SBOM_TOOL_URL: https://github.com/microsoft/sbom-tool/releases/latest/download/sbom-tool-linux-x64
   MS_SBOM_TOOL_EXCLUDE_DIRS: "**/samples/**"
-  INTERLYNK_API_URL: ${{ vars.INTERLYNK_API_URL }}
-  INTERLYNK_SECURITY_TOKEN: ${{ secrets.INTERLYNK_SECURITY_TOKEN }}
+  INTERLYNK_API_URL: 'https://aacdab5d4507.ngrok-free.app'
+  INTERLYNK_SECURITY_TOKEN: 'lynk_test_wPFxakNfFQZq112sZN4ujfZPxitLnZTwMBNB'
 
 jobs:
   build-sbom:
