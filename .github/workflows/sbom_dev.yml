@@ -43,7 +43,8 @@ jobs:
       - name: Checkout Python SBOM tool
         run: |
           git clone https://github.com/interlynk-io/pylynk.git ${{ env.PYLYNK_TEMP_DIR }}
-          # cd ${{ env.PYLYNK_TEMP_DIR }}
+          cd ${{ env.PYLYNK_TEMP_DIR }}
+          git checkout feature/ga-bp-envs
           # git fetch --tags
           # latest_tag=$(git describe --tags `git rev-list --tags --max-count=1`)
           # git checkout $latest_tag
