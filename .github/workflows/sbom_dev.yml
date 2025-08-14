@@ -2,11 +2,7 @@ name: Dev | Build SBOM
 
 on:
   push:
-    branches-ignore:
-      - "main"
   pull_request:
-    branches-ignore:
-      - "main"
   workflow_dispatch:
 
 env:
@@ -20,6 +16,7 @@ env:
   SBOM_FILE_PATH: $RUNNER_TEMP/sbom/_manifest/spdx_2.2/manifest.spdx.json
   MS_SBOM_TOOL_URL: https://github.com/microsoft/sbom-tool/releases/latest/download/sbom-tool-linux-x64
   MS_SBOM_TOOL_EXCLUDE_DIRS: "**/samples/**"
+  INTERLYNK_API_URL: ${{ vars.INTERLYNK_API_URL }}
 
 jobs:
   build-sbom:
@@ -46,11 +43,11 @@ jobs:
       - name: Checkout Python SBOM tool
         run: |
           git clone https://github.com/interlynk-io/pylynk.git ${{ env.PYLYNK_TEMP_DIR }}
-          cd ${{ env.PYLYNK_TEMP_DIR }}
-          git fetch --tags
-          latest_tag=$(git describe --tags `git rev-list --tags --max-count=1`)
-          git checkout $latest_tag
-          echo "Checked out pylynk at tag: $latest_tag"
+          # cd ${{ env.PYLYNK_TEMP_DIR }}
+          # git fetch --tags
+          # latest_tag=$(git describe --tags `git rev-list --tags --max-count=1`)
+          # git checkout $latest_tag
+          # echo "Checked out pylynk at tag: $latest_tag"
 
       - name: Install Python dependencies
         run: |

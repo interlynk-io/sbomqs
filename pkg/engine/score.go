@@ -149,21 +149,6 @@ func handlePaths(ctx context.Context, ep *Params) error {
 	log := logger.FromContext(ctx)
 	log.Debug("engine.handlePaths()")
 
-	path := ep.Path[0]
-
-	blob, signature, publicKey, err := common.GetSignatureBundle(ctx, path, ep.Signature, ep.PublicKey)
-	if err != nil {
-		log.Debugf("common.GetSignatureBundle failed for file :%s\n", path)
-		fmt.Printf("failed to get signature bundle for %s\n", path)
-		return err
-	}
-
-	sig := sbom.Signature{
-		SigValue:  signature,
-		PublicKey: publicKey,
-		Blob:      blob,
-	}
-
 	var docs []sbom.Document
 	var paths []string
 	var scores []scorer.Scores
@@ -191,6 +176,19 @@ func handlePaths(ctx context.Context, ep *Params) error {
 			f, err := ProcessURL(url, file)
 			if err != nil {
 				return err
+			}
+
+			blob, signature, publicKey, err := common.GetSignatureBundle(ctx, path, ep.Signature, ep.PublicKey)
+			if err != nil {
+				log.Debugf("common.GetSignatureBundle failed for file :%s\n", path)
+				fmt.Printf("failed to get signature bundle for %s\n", path)
+				return err
+			}
+
+			sig := sbom.Signature{
+				SigValue:  signature,
+				PublicKey: publicKey,
+				Blob:      blob,
 			}
 
 			doc, err := sbom.NewSBOMDocument(ctx, f, sig)
@@ -226,7 +224,7 @@ func handlePaths(ctx context.Context, ep *Params) error {
 						continue
 					}
 					path := filepath.Join(path, file.Name())
-					doc, scs, err := processFile(ctx, ep, path, nil, sig)
+					doc, scs, err := processFile(ctx, ep, path, nil)
 					if err != nil {
 						continue
 					}
@@ -237,7 +235,7 @@ func handlePaths(ctx context.Context, ep *Params) error {
 				continue
 			}
 
-			doc, scs, err := processFile(ctx, ep, path, nil, sig)
+			doc, scs, err := processFile(ctx, ep, path, nil)
 			if err != nil {
 				continue
 			}
@@ -266,10 +264,23 @@ func handlePaths(ctx context.Context, ep *Params) error {
 	return nil
 }
 
-func processFile(ctx context.Context, ep *Params, path string, fs billy.Filesystem, sig sbom.Signature) (sbom.Document, scorer.Scores, error) {
+func processFile(ctx context.Context, ep *Params, path string, fs billy.Filesystem) (sbom.Document, scorer.Scores, error) {
 	log := logger.FromContext(ctx)
 	log.Debugf("Processing file :%s\n", path)
 	var doc sbom.Document
+
+	blob, signature, publicKey, err := common.GetSignatureBundle(ctx, path, ep.Signature, ep.PublicKey)
+	if err != nil {
+		log.Debugf("common.GetSignatureBundle failed for file :%s\n", path)
+		fmt.Printf("failed to get signature bundle for %s\n", path)
+		return nil, nil, err
+	}
+
+	sig := sbom.Signature{
+		SigValue:  signature,
+		PublicKey: publicKey,
+		Blob:      blob,
+	}
 
 	if fs != nil {
 		f, err := fs.Open(path)
@@ -313,36 +324,37 @@ func processFile(ctx context.Context, ep *Params, path string, fs billy.Filesyst
 
 	sr := scorer.NewScorer(ctx, doc)
 
-	if len(ep.Features[0]) > 0 && len(ep.Categories[0]) > 0 {
-		fmt.Println("Adding mix of features and categories")
-		for _, cat := range ep.Categories {
-			if len(cat) <= 0 {
-				continue
-			}
-			for _, feat := range ep.Features {
-				if len(feat) <= 0 {
+	if len(ep.Categories) > 0 {
+		if len(ep.Features) == 0 {
+			for _, category := range ep.Categories {
+				if len(category) <= 0 {
 					continue
 				}
 				filter := scorer.Filter{
-					Name:     feat,
-					Ftype:    scorer.Mix,
-					Category: cat,
+					Name:  category,
+					Ftype: scorer.Category,
 				}
 				sr.AddFilter(filter)
 			}
-		}
-	} else if len(ep.Categories[0]) > 0 {
-		for _, category := range ep.Categories {
-			if len(category) <= 0 {
-				continue
+		} else if len(ep.Features) > 0 {
+			for _, cat := range ep.Categories {
+				if len(cat) <= 0 {
+					continue
+				}
+				for _, feat := range ep.Features {
+					if len(feat) <= 0 {
+						continue
+					}
+					filter := scorer.Filter{
+						Name:     feat,
+						Ftype:    scorer.Mix,
+						Category: cat,
+					}
+					sr.AddFilter(filter)
+				}
 			}
-			filter := scorer.Filter{
-				Name:  category,
-				Ftype: scorer.Category,
-			}
-			sr.AddFilter(filter)
 		}
-	} else if len(ep.Features[0]) > 0 {
+	} else if len(ep.Features) > 0 {
 		for _, feature := range ep.Features {
 			if len(feature) <= 0 {
 				continue

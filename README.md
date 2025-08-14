@@ -1,5 +1,6 @@
 # sbomqs: The Comprehensive SBOM Quality & Compliance Tool
 
+
 [![Go Reference](https://pkg.go.dev/badge/github.com/interlynk-io/sbomqs.svg)](https://pkg.go.dev/github.com/interlynk-io/sbomqs)
 [![Go Report Card](https://goreportcard.com/badge/github.com/interlynk-io/sbomqs)](https://goreportcard.com/report/github.com/interlynk-io/sbomqs)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/interlynk-io/sbomqs/badge)](https://securityscorecards.dev/viewer/?uri=github.com/interlynk-io/sbomqs)
@@ -438,6 +439,7 @@ Available through multiple package managers for easy installation:
 - Docker Hub & GitHub Container Registry
 - Uniget tools repository
 
+
 ### Compliance Standards
 
 Trusted for validating compliance with major standards:
@@ -448,6 +450,7 @@ Trusted for validating compliance with major standards:
 
 ## Other SBOM Open Source tools
 
+
 Interlynk provides a comprehensive suite of SBOM tools:
 
 - [**SBOM Assembler**](https://github.com/interlynk-io/sbomasm) - Merge and edit SBOMs conditionally
@@ -455,6 +458,7 @@ Interlynk provides a comprehensive suite of SBOM tools:
 - [**SBOM Search Tool**](https://github.com/interlynk-io/sbomgr) - Context-aware SBOM repository search
 - [**SBOM Seamless Transfer**](https://github.com/interlynk-io/sbommv) - Transfer SBOMs between systems
 - [**SBOM Benchmark**](https://www.sbombenchmark.dev) - Repository of SBOM quality scores for popular containers
+
 
 ## Contact
 
@@ -465,6 +469,7 @@ We're here to help! Reach out through:
 - 📧 [Email](mailto:hello@interlynk.io) - Direct support
 - 🐛 [GitHub Issues](https://github.com/interlynk-io/sbomqs/issues) - Report bugs or request features
 - 🐦 [Follow us on X](https://twitter.com/InterlynkIo) - Latest updates
+=
 
 ## Stargazers
 

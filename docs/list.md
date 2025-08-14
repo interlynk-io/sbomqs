@@ -81,18 +81,25 @@ The list command supports the following features, categorized into **component-b
 
 These features evaluate individual components in the SBOM:
 
-- `comp_with_name`: Lists components with a name.
-- `comp_with_version`: Lists components with a version.
-- `comp_with_supplier`: Lists components with a supplier.
-- `comp_with_uniq_ids`: Lists components with unique IDs.
-- `comp_valid_licenses`: Lists components with at least one valid SPDX license.
-- `comp_with_any_vuln_lookup_id`: Lists components with any vulnerability lookup ID (CPE or PURL).
-- `comp_with_deprecated_licenses`: Lists components with deprecated licenses.
-- `comp_with_multi_vuln_lookup_id`: Lists components with both CPE and PURL (multiple vulnerability lookup IDs).
-- `comp_with_primary_purpose`: Lists components with a supported primary purpose.
-- `comp_with_restrictive_licenses`: Lists components with restrictive licenses.
-- `comp_with_checksums`: Lists components with checksums.
-- `comp_with_licenses`: Lists components with licenses.
+- `comp_with_name`: component with a name.
+- `comp_with_version`: component with a version.
+- `comp_with_supplier`: component with a supplier.
+- `comp_with_uniq_ids`: component with unique IDs.
+- `comp_valid_licenses`: component with at least one valid SPDX license.
+- `comp_with_any_vuln_lookup_id`: component with any vulnerability lookup ID (CPE or PURL).
+- `comp_with_deprecated_licenses`: component with deprecated licenses.
+- `comp_with_multi_vuln_lookup_id`: component with both CPE and PURL (multiple vulnerability lookup IDs).
+- `comp_with_primary_purpose`: component with a supported primary purpose.
+- `comp_with_restrictive_licenses`: component with restrictive licenses.
+- `comp_with_checksums`: component with checksums.
+- `comp_with_licenses`: component with licenses.
+- `comp_with_checksums_sha256`: component with checksum algo SHA256
+- `comp_with_source_code_uri`: component with source code URI
+- `comp_with_source_code_hash`: component with source code hash
+- `comp_with_executable_uri`: component with executable URI
+- `comp_with_associated_license`: component with associated license
+- `comp_with_concluded_license`: component with concluded license
+- `comp_with_declared_license`: component with declared license
 
 #### SBOM-Based Features (sbom_)
 
@@ -108,6 +115,11 @@ These features evaluate document-level properties of the SBOM:
 - `sbom_spec`: Lists the SBOM specification (e.g., SPDX, CycloneDX).
 - `sbom_spec_file_format`: Lists the SBOM file format (e.g., JSON, YAML).
 - `sbom_spec_version`: Lists the SBOM specification version (e.g., SPDX-2.2).
+- `spec_with_version_compliant`: List the SBOM specification compliant with specific version.
+- `sbom_with_uri`: List the SBOM with URIs.
+- `sbom_with_vuln`: List the SBOM cntaining vulnerability information.
+- `sbom_build_process`: List the SBOM build process.
+- `sbom_with_bomlinks`: List the SBOM bomlinks.
 
 ## Examples
 
