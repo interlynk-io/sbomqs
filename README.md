@@ -411,6 +411,41 @@ Please ensure:
 
 [📖 Contributing Guidelines](./CONTRIBUTING.md)
 
+## Community Recognition
+
+sbomqs has gained significant adoption across the industry for SBOM quality assessment and compliance validation:
+
+### Enterprise Adoptions
+
+- **[Harness Software Supply Chain Assurance (SSCA)](https://developer.harness.io/docs/software-supply-chain-assurance/sbom/sbom-score/)** - Harness, the leader in AI-powered Modern CI/CD, uses sbomqs to power their SBOM quality scoring, providing quality scores from 1-10 for generated SBOMs with SBOM drift detection capabilities.
+
+- **[SBOM Benchmark Platform](https://sbombenchmark.dev)** - Uses the sbomqs engine for scoring CycloneDX and SPDX SBOMs, providing shareable quality reports without requiring SBOM uploads.
+
+### CI/CD Integrations
+
+sbomqs integrates seamlessly with major CI/CD platforms:
+
+- **GitHub Actions** - Native Docker support via `ghcr.io/interlynk-io/sbomqs`
+- **Jenkins** - Feature request for Dependency-Track plugin integration
+- **Docker/Kubernetes** - Official container image for containerized workflows
+- **GitLab CI, Azure DevOps, CircleCI** - Compatible via Docker or command-line execution
+
+### Package Manager Support
+
+Available through multiple package managers for easy installation:
+- Homebrew (`brew install sbomqs`)
+- Go modules (`go install`)
+- Docker Hub & GitHub Container Registry
+- Uniget tools repository
+
+### Compliance Standards
+
+Trusted for validating compliance with major standards:
+- NTIA Minimum Elements
+- BSI TR-03183-2 (v1.1 & v2.0)
+- OpenChain Telco (OCT)
+- Framing Software Component Transparency (FSCT v3)
+
 ## Other SBOM Open Source tools
 
 Interlynk provides a comprehensive suite of SBOM tools:
