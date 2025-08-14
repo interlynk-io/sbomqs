@@ -1,4 +1,4 @@
-# sbomqs: The Comprehensive SBOM Quality & Compliance Platform
+# sbomqs: The Comprehensive SBOM Quality & Compliance Tool
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/interlynk-io/sbomqs.svg)](https://pkg.go.dev/github.com/interlynk-io/sbomqs)
 [![Go Report Card](https://goreportcard.com/badge/github.com/interlynk-io/sbomqs)](https://goreportcard.com/report/github.com/interlynk-io/sbomqs)
