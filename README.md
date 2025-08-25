@@ -63,6 +63,11 @@ In today's software landscape, understanding and managing your software supply c
 ✅ **Shareable Reports**: Generate public quality score links  
 ✅ **Air-Gapped Support**: Works in isolated environments  
 
+## sbomqs Blog
+
+- [What’s Missing in Your SBOM? sbomqs list can help you in inspecting...](https://www.linkedin.com/pulse/whats-missing-your-sbom-sbomqs-list-can-help-you-inspecting-sahu-e6rcc/)
+- [sbomqs scoring support for BSI-1.1 and BSI-2.0 in a summarized way](https://www.linkedin.com/pulse/sbomqs-scoring-support-bsi-11-bsi-20-summarized-way-vivek-kumar-sahu-apc8c/)
+
 ## Getting Started
 
 ### Basic Usage
