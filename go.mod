@@ -16,7 +16,7 @@ require (
 	github.com/samber/lo v1.51.0
 	github.com/spdx/tools-golang v0.5.5
 	github.com/spf13/cobra v1.9.1
-	github.com/stretchr/testify v1.10.0
+	github.com/stretchr/testify v1.11.0
 	go.uber.org/zap v1.27.0
 	gopkg.in/yaml.v2 v2.4.0
 	sigs.k8s.io/release-utils v0.11.1
