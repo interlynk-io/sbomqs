@@ -25,6 +25,7 @@ sbomqs score your-sbom.json
 
 - [Why sbomqs?](#why-sbomqs)
 - [Key Features](#key-features)
+- [sbomqs Blog](#sbomqs-blog)
 - [Getting Started](#getting-started)
   - [Basic Usage](#basic-usage)
   - [Essential Commands](#essential-commands)
