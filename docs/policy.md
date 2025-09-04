@@ -192,3 +192,48 @@ This defines a blacklist policy where:
 
 - Supplier must have some values
 - It must be NOASSERTION
+
+## sbomqs policy flowchart
+
+```mermaid
+graph TD
+A[Start sbomqs apply] --> B{Has -f ?}
+B -->|yes| C[Load policies from YAML]
+B -->|no| D[Build policy from CLI flags]
+C --> E[Load SBOM input]
+D --> E
+E --> F{Detect format}
+F -->|SPDX| G[Normalize SPDX to model]
+F -->|CycloneDX| H[Normalize CycloneDX to model]
+G --> I[Create extractor]
+H --> I
+I --> J{For each policy}
+J --> K{For each component}
+K --> L{For each rule}
+L -->|required| M[ok = HasField]
+L -->|whitelist| N[ok = any match]
+L -->|blacklist| O[ok = not any match]
+M --> P{ok?}
+N --> P
+O --> P
+P -->|no| Q[Record violation]
+P -->|yes| R[Rule passed]
+Q --> S{More rules?}
+R --> S
+S -->|yes| L
+S -->|no| T[AND across rules]
+T --> U{More components?}
+U -->|yes| K
+U -->|no| V[Decide policy outcome]
+V --> W{More policies?}
+W -->|yes| J
+W -->|no| X[Aggregate results]
+X --> Y{Output format?}
+Y -->|table| Z1[Print table]
+Y -->|json| Z2[Print JSON]
+Y -->|yaml| Z3[Print YAML]
+Z1 --> AA[Set exit code]
+Z2 --> AA
+Z3 --> AA
+AA --> AB[End]
+```
