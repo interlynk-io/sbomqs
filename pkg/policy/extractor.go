@@ -15,6 +15,8 @@
 package policy
 
 import (
+	"strings"
+
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 )
 
@@ -207,4 +209,38 @@ func nilOrSlice(s []string) []string {
 		return nil
 	}
 	return s
+}
+
+// Values returns a slice of string values for the given field on the
+// provided component. Lookup rules:
+//   - If field starts with "sbom_" → resolve against doc-level getters only.
+//   - Otherwise → resolve against component-level getters only.
+//
+// Field name is normalized to lowercase.
+func (e *Extractor) Values(comp sbom.GetComponent, field string) []string {
+	if e == nil {
+		return nil
+	}
+	f := strings.ToLower(strings.TrimSpace(field))
+
+	// document-level
+	if strings.HasPrefix(f, "sbom_") {
+		if getDocField, ok := e.docGetters[f]; ok {
+			return getDocField(e.Doc)
+		}
+		return nil
+	}
+
+	// component-level
+	if getCompField, ok := e.compGetters[f]; ok {
+		return getCompField(comp)
+	}
+	return nil
+}
+
+// HasField returns true if the given field exists and has at least one
+// non-empty value. Uses the same prefix rules as Values().
+func (e *Extractor) HasField(comp sbom.GetComponent, field string) bool {
+	vals := e.Values(comp, field)
+	return len(vals) > 0
 }
