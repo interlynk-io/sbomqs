@@ -73,20 +73,29 @@ type Result struct {
 }
 
 type Violation struct {
-	ComponentID string   `json:"component_id"`
-	Field       string   `json:"field"`
-	Actual      []string `json:"actual,omitempty"`
-	Reason      string   `json:"reason"`
+	ComponentName string   `json:"component_name"`
+	Field         string   `json:"field"`
+	Actual        []string `json:"actual,omitempty"`
+	Reason        string   `json:"reason"`
+}
+
+func NewResult(p Policy) *Result {
+	return &Result{
+		Policy: p.Name,
+		Type:   p.Type,
+		Action: p.Action,
+	}
 }
 
 // LoadPoliciesFromFile reads a YAML policy file and unmarshals it into policies.
 func LoadPoliciesFromFile(path string) ([]Policy, error) {
-	b, err := os.ReadFile(path)
+	policyBytes, err := os.ReadFile(path)
 	if err != nil {
 		return nil, fmt.Errorf("read policy file: %w", err)
 	}
+
 	var pf PolicyFile
-	if err := yaml.Unmarshal(b, &pf); err != nil {
+	if err := yaml.Unmarshal(policyBytes, &pf); err != nil {
 		return nil, fmt.Errorf("unmarshal policy yaml: %w", err)
 	}
 
@@ -100,14 +109,15 @@ func LoadPoliciesFromFile(path string) ([]Policy, error) {
 }
 
 // BuildPolicyFromCLI builds a single Policy from CLI flags (name, type, action, rules)
-// ruleStrings are in form: "field=license,values=MIT,Apache-2.0" or "field=supplier,patterns=^Acme$"
-func BuildPolicyFromCLI(name, ptype, action string, ruleStrings []string) (Policy, error) {
+// policyRules are in form: "field=license,values=MIT,Apache-2.0" or "field=supplier,patterns=^Acme$"
+func BuildPolicyFromCLI(name, ptype, action string, policyRules []string) (Policy, error) {
 	p := Policy{
 		Name:   name,
 		Type:   ptype,
 		Action: action,
 	}
-	for _, s := range ruleStrings {
+
+	for _, s := range policyRules {
 		r, err := parseRuleString(s)
 		if err != nil {
 			return Policy{}, fmt.Errorf("parse rule %q: %w", s, err)

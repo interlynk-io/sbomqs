@@ -20,25 +20,41 @@ import (
 	"os"
 	"strings"
 
+	"github.com/interlynk-io/sbomqs/pkg/logger"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 )
 
-func Engine(ctx context.Context, cfg Params, doc sbom.Document, policies []Policy) error {
+func Engine(ctx context.Context, policyConfig *Params, policies []Policy) error {
+	//
+	log := logger.FromContext(ctx)
+	log.Debugf("Starting Engine...")
+
+	f, err := os.Open(policyConfig.SBOMFile)
+	if err != nil {
+		return fmt.Errorf("failed to open input %s: %w", policyConfig.SBOMFile, err)
+	}
+
+	// Parse SBOM
+	doc, err := sbom.NewSBOMDocument(ctx, f, sbom.Signature{})
+	if err != nil {
+		return fmt.Errorf("failed to load SBOM: %w", err)
+	}
+
 	// Create extractor
-	ex := NewExtractor(doc)
+	fieldExtractor := NewExtractor(doc)
 
 	// Evaluate policies
 	var results []Result
 	for _, p := range policies {
-		res, err := EvalPolicy(p, doc, ex)
+		result, err := EvalPolicy(ctx, p, doc, fieldExtractor)
 		if err != nil {
 			return fmt.Errorf("policy %s evaluation failed: %w", p.Name, err)
 		}
-		results = append(results, res)
+		results = append(results, result)
 	}
 
 	// Reporting
-	switch strings.ToLower(cfg.OutputFmt) {
+	switch strings.ToLower(policyConfig.OutputFmt) {
 	case "json":
 		if err := ReportJSON(os.Stdout, results); err != nil {
 			return fmt.Errorf("failed to write json output: %w", err)

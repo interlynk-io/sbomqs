@@ -14,10 +14,24 @@
 
 package policy
 
-import "github.com/interlynk-io/sbomqs/pkg/sbom"
+import (
+	"context"
+	"time"
+
+	"github.com/interlynk-io/sbomqs/pkg/sbom"
+)
 
 // EvalPolicy evaluates a single policy against a document using an extractor.
-func EvalPolicy(p Policy, doc sbom.Document, ex interface{}) (Result, error) {
+func EvalPolicy(ctx context.Context, p Policy, doc sbom.Document, fieldExtractor interface{}) (Result, error) {
 	// TODO: implement evaluation logic
+
+	result := NewResult(p)
+	result.GeneratedAt = time.Now().UTC()
+
+	components := doc.Components()
+	result.TotalChecked = len(components)
+
+	violations := []Violation{}
+
 	return Result{}, nil
 }

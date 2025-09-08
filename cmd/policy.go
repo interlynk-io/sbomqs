@@ -18,12 +18,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/interlynk-io/sbomqs/pkg/logger"
 	"github.com/interlynk-io/sbomqs/pkg/policy"
-	"github.com/interlynk-io/sbomqs/pkg/sbom"
 	"github.com/spf13/cobra"
 )
 
@@ -96,28 +94,17 @@ var policyCmd = &cobra.Command{
 				return fmt.Errorf("failed to load policy file %s: %w", cfg.policyFile, err)
 			}
 		} else {
-			p, err := policy.BuildPolicyFromCLI(cfg.policyName, cfg.policyType, cfg.policyAction, cfg.ruleFlags)
+			p, err := policy.BuildPolicyFromCLI(cfg.policyName, cfg.policyType, cfg.policyAction, cfg.policyRules)
 			if err != nil {
 				return fmt.Errorf("failed to build policy from CLI: %w", err)
 			}
 			policies = []policy.Policy{p}
 		}
 
-		f, err := os.Open(cfg.inputPath)
-		if err != nil {
-			return fmt.Errorf("failed to open input %s: %w", cfg.inputPath, err)
-		}
-
-		// Parse SBOM
-		doc, err := sbom.NewSBOMDocument(ctx, f, sbom.Signature{})
-		if err != nil {
-			return fmt.Errorf("failed to load SBOM: %w", err)
-		}
-
 		policyConfig := convertPolicyCmdToEngineParams(cfg)
 
 		// Hand-off to policy engine
-		if err := policy.Engine(ctx, policyConfig, doc, policies); err != nil {
+		if err := policy.Engine(ctx, policyConfig, policies); err != nil {
 			return fmt.Errorf("policy engine failed: %w", err)
 		}
 
