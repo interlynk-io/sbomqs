@@ -15,7 +15,7 @@ require (
 	github.com/package-url/packageurl-go v0.1.3
 	github.com/samber/lo v1.51.0
 	github.com/spdx/tools-golang v0.5.5
-	github.com/spf13/cobra v1.9.1
+	github.com/spf13/cobra v1.10.1
 	github.com/stretchr/testify v1.11.1
 	go.uber.org/zap v1.27.0
 	gopkg.in/yaml.v2 v2.4.0
@@ -60,7 +60,7 @@ require (
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/spdx/gordf v0.0.0-20250128162952-000978ccd6fb // indirect
 	github.com/spf13/afero v1.14.0
-	github.com/spf13/pflag v1.0.7 // indirect
+	github.com/spf13/pflag v1.0.9 // indirect
 	github.com/tidwall/sjson v1.2.5
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/mod v0.27.0 // indirect
