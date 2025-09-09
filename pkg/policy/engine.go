@@ -33,22 +33,27 @@ func Engine(ctx context.Context, policyConfig *Params, policies []Policy) error 
 	if err != nil {
 		return fmt.Errorf("failed to open input %s: %w", policyConfig.SBOMFile, err)
 	}
+	log.Debugf("open SBOM file")
 
 	// Parse SBOM
 	doc, err := sbom.NewSBOMDocument(ctx, f, sbom.Signature{})
 	if err != nil {
 		return fmt.Errorf("failed to load SBOM: %w", err)
 	}
+	log.Debugf("SBOM is parsed")
 
 	// Create extractor
 	fieldExtractor := NewExtractor(doc)
+	log.Debugf("field mapping done via extractor")
+
+	var results []Result
 
 	// Evaluate policies
-	var results []Result
-	for _, p := range policies {
-		result, err := EvalPolicy(ctx, p, doc, fieldExtractor)
+	for _, policy := range policies {
+		log.Debugf("Evaluating policy: ", policy.Name)
+		result, err := EvalPolicy(ctx, policy, doc, fieldExtractor)
 		if err != nil {
-			return fmt.Errorf("policy %s evaluation failed: %w", p.Name, err)
+			return fmt.Errorf("policy %s evaluation failed: %w", policy.Name, err)
 		}
 		results = append(results, result)
 	}
@@ -56,15 +61,15 @@ func Engine(ctx context.Context, policyConfig *Params, policies []Policy) error 
 	// Reporting
 	switch strings.ToLower(policyConfig.OutputFmt) {
 	case "json":
-		if err := ReportJSON(os.Stdout, results); err != nil {
+		if err := ReportJSON(ctx, results); err != nil {
 			return fmt.Errorf("failed to write json output: %w", err)
 		}
-	case "yaml":
-		if err := ReportYAML(os.Stdout, results); err != nil {
+	case "table":
+		if err := ReportTable(ctx, results); err != nil {
 			return fmt.Errorf("failed to write yaml output: %w", err)
 		}
 	default:
-		if err := ReportTable(os.Stdout, results); err != nil {
+		if err := ReportBasic(ctx, results); err != nil {
 			return fmt.Errorf("failed to write table output: %w", err)
 		}
 	}

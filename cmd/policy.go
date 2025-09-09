@@ -83,17 +83,25 @@ var policyCmd = &cobra.Command{
 			return err
 		}
 
-		logger.FromContext(ctx).Debugf("Parsed Policy command: %+v", cfg)
+		cfg.inputPath = args[0]
+
+		log := logger.FromContext(ctx)
+		log.Debugf("Parsed Policy command: %+v", cfg)
 
 		// Load policies
 		var policies []policy.Policy
 		var err error
+
 		if cfg.policyFile != "" {
+			log.Debugf("loading policy from file")
+
 			policies, err = policy.LoadPoliciesFromFile(cfg.policyFile)
 			if err != nil {
 				return fmt.Errorf("failed to load policy file %s: %w", cfg.policyFile, err)
 			}
 		} else {
+			logger.FromContext(ctx).Debugf("loading policy from inline commands")
+
 			p, err := policy.BuildPolicyFromCLI(cfg.policyName, cfg.policyType, cfg.policyAction, cfg.policyRules)
 			if err != nil {
 				return fmt.Errorf("failed to build policy from CLI: %w", err)
@@ -102,8 +110,9 @@ var policyCmd = &cobra.Command{
 		}
 
 		policyConfig := convertPolicyCmdToEngineParams(cfg)
+		log.Debugf("policies: %s", policies)
 
-		// Hand-off to policy engine
+		// proceed with policy engine
 		if err := policy.Engine(ctx, policyConfig, policies); err != nil {
 			return fmt.Errorf("policy engine failed: %w", err)
 		}
@@ -158,7 +167,7 @@ func init() {
 	policyCmd.Flags().String("type", "", "policy type: whitelist|blacklist|required")
 	policyCmd.Flags().StringArray("rules", []string{}, "rule (repeatable). e.g. 'field=license,values=MIT,Apache-2.0'")
 	policyCmd.Flags().String("action", "warn", "policy action on violation: fail|warn|pass")
-	policyCmd.Flags().StringP("output", "o", "table", "output format: table|json|yaml")
+	policyCmd.Flags().StringP("output", "o", "basic", "output format: table|json|basic")
 	policyCmd.Flags().BoolP("debug", "D", false, "Enable debug logging")
 }
 
@@ -187,7 +196,7 @@ func validatePolicyParams(cfg *policyCmdConfig) error {
 
 	// Validate output format
 	o := strings.ToLower(cfg.outputFmt)
-	if o != "table" && o != "json" && o != "yaml" {
+	if o != "table" && o != "json" && o != "basic" {
 		return fmt.Errorf("unsupported output format: %s", cfg.outputFmt)
 	}
 

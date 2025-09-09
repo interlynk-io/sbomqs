@@ -14,22 +14,96 @@
 
 package policy
 
-import "io"
+import (
+	"context"
+	"fmt"
+	"os"
+	"sort"
+	"strings"
+	"time"
+
+	"github.com/interlynk-io/sbomqs/pkg/logger"
+	"github.com/olekukonko/tablewriter"
+)
 
 // ReportJSON writes results as JSON.
-func ReportJSON(w io.Writer, results []Result) error {
+func ReportJSON(ctx context.Context, results []Result) error {
 	// TODO: implement JSON reporting
 	return nil
 }
 
-// ReportYAML writes results as YAML.
-func ReportYAML(w io.Writer, results []Result) error {
-	// TODO: implement YAML reporting
+// ReportBasic writes results in a human-friendly basic format.
+func ReportBasic(ctx context.Context, results []Result) error {
+	log := logger.FromContext(ctx)
+	log.Debugf("Basic Report....")
+
+	// Sort results by policy name for deterministic output
+	sorted := make([]Result, len(results))
+	copy(sorted, results)
+	sort.Slice(sorted, func(i, j int) bool { return sorted[i].Policy < sorted[j].Policy })
+
+	// === Summary Table ===
+	summary := tablewriter.NewWriter(os.Stdout)
+	summary.SetHeader([]string{"POLICY", "TYPE", "ACTION", "OUTCOME", "CHECKED", "VIOLATIONS", "GENERATED_AT"})
+
+	for _, r := range sorted {
+		summary.Append([]string{
+			r.Policy,
+			r.Type,
+			r.Action,
+			r.Outcome,
+			fmt.Sprintf("%d", r.TotalChecked),
+			fmt.Sprintf("%d", r.ViolationCnt),
+			r.GeneratedAt.Format(time.RFC3339),
+		})
+	}
+	summary.Render() // prints the table
+
 	return nil
 }
 
-// ReportTable writes results in a table format.
-func ReportTable(w io.Writer, results []Result) error {
-	// TODO: implement table reporting
+// ReportTable writes results in a per-policy, per-violation detail table format.
+func ReportTable(ctx context.Context, results []Result) error {
+	log := logger.FromContext(ctx)
+	log.Debugf("Table Report...")
+
+	sorted := make([]Result, len(results))
+	copy(sorted, results)
+
+	// sort out by policy
+	sort.Slice(sorted, func(i, j int) bool { return sorted[i].Policy < sorted[j].Policy })
+
+	// === Detailed Violations ===
+	fmt.Fprintln(os.Stdout, "\nDetailed Violations:")
+
+	for _, r := range sorted {
+		if len(r.Violations) == 0 {
+			continue
+		}
+		fmt.Fprintf(os.Stdout, "\nPolicy: %s (outcome=%s, violations=%d)\n", r.Policy, r.Outcome, len(r.Violations))
+
+		violations := tablewriter.NewWriter(os.Stdout)
+		violations.SetHeader([]string{"COMPONENT", "FIELD", "ACTUAL", "REASON"})
+
+		// sort violations
+		vcopy := make([]Violation, len(r.Violations))
+		copy(vcopy, r.Violations)
+		sort.Slice(vcopy, func(i, j int) bool {
+			if vcopy[i].ComponentName == vcopy[j].ComponentName {
+				return vcopy[i].Field < vcopy[j].Field
+			}
+			return vcopy[i].ComponentName < vcopy[j].ComponentName
+		})
+
+		for _, v := range vcopy {
+			actual := ""
+			if len(v.Actual) > 0 {
+				actual = strings.Join(v.Actual, ", ")
+			}
+			violations.Append([]string{v.ComponentName, v.Field, actual, v.Reason})
+		}
+
+		violations.Render()
+	}
 	return nil
 }

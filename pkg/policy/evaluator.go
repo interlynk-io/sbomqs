@@ -27,7 +27,7 @@ import (
 // EvalPolicy evaluates a single policy against a document using an extractor.
 func EvalPolicy(ctx context.Context, p Policy, doc sbom.Document, fieldExtractor *Extractor) (Result, error) {
 	log := logger.FromContext(ctx)
-	log.Debugf("Evaluating policy: %s", p.Name)
+	log.Debugf("processing policy evaluation: %s", p.Name, p.Type)
 
 	result := NewResult(p)
 	result.GeneratedAt = time.Now().UTC()
@@ -87,7 +87,7 @@ func EvalPolicy(ctx context.Context, p Policy, doc sbom.Document, fieldExtractor
 					})
 				}
 			default:
-				// unknown type handled by validation earlier; skip quietly
+				// unknown type
 			}
 		}
 	}
