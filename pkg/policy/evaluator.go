@@ -20,12 +20,14 @@ import (
 	"regexp"
 	"time"
 
+	"github.com/interlynk-io/sbomqs/pkg/logger"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 )
 
 // EvalPolicy evaluates a single policy against a document using an extractor.
-func EvalPolicy(ctx context.Context, p Policy, doc sbom.Document, fieldExtractor interface{}) (Result, error) {
-	// TODO: implement evaluation logic
+func EvalPolicy(ctx context.Context, p Policy, doc sbom.Document, fieldExtractor *Extractor) (Result, error) {
+	log := logger.FromContext(ctx)
+	log.Debugf("Evaluating policy: %s", p.Name)
 
 	result := NewResult(p)
 	result.GeneratedAt = time.Now().UTC()
@@ -33,46 +35,59 @@ func EvalPolicy(ctx context.Context, p Policy, doc sbom.Document, fieldExtractor
 	components := doc.Components()
 	result.TotalChecked = len(components)
 
+	compiledRules, err := compileRule(p)
+	if err != nil {
+		return Result{}, err
+	}
+
 	violations := []Violation{}
 
 	// evaluate per component
 	for _, comp := range components {
-		fmt.Println("comp: ", comp)
-		for _, rule := range p.Rules {
-			values := fieldExtractor.Values(comp, rule.Field)
+		for _, compileRule := range compiledRules {
+			rule := compileRule.Rule
+			field := rule.Field
+			declaredValues := rule.Values
+
+			actualValues := fieldExtractor.Values(comp, field)
 
 			if p.Type == "required" {
-				ok := fieldExtractor.HasField(comp, rule.Field)
+				ok := fieldExtractor.HasField(comp, field)
 				if !ok {
 					violations = append(violations, Violation{
 						ComponentName: comp.GetName(),
-						Field:         rule.Field,
-						Actual:        rule.Values,
+						Field:         field,
+						Actual:        actualValues,
 						Reason:        "missing field",
 					})
 				}
 
 			}
 
-			matched := anyMatch(values, rule.Values, rule.Patterns)
-			if p.Type == "whitelist" {
+			// for whitelist/blacklist evaluate values + patterns
+			matched := anyMatch(actualValues, declaredValues, compileRule.Patterns)
+
+			switch p.Type {
+			case "whitelist":
 				if !matched {
 					violations = append(violations, Violation{
 						ComponentName: comp.GetName(),
-						Field:         rule.Field,
-						Actual:        rule.Values,
+						Field:         field,
+						Actual:        actualValues,
 						Reason:        "value not in whitelist",
 					})
 				}
-			} else if p.Type == "blacklist" {
+			case "blacklist":
 				if matched {
 					violations = append(violations, Violation{
 						ComponentName: comp.GetName(),
-						Field:         rule.Field,
-						Actual:        rule.Values,
+						Field:         field,
+						Actual:        actualValues,
 						Reason:        "value in blacklist",
 					})
 				}
+			default:
+				// unknown type handled by validation earlier; skip quietly
 			}
 		}
 	}
@@ -97,26 +112,69 @@ func EvalPolicy(ctx context.Context, p Policy, doc sbom.Document, fieldExtractor
 	return *result, nil
 }
 
-// anyMatch checks exact value matches or regex matches
-func anyMatch(values []string, allowed []string, patterns []*regexp.Regexp) bool {
-	if len(values) == 0 {
+// anyMatch returns true if at least one of the actual values
+// matches either an allowed literal value or a regex pattern.
+//
+// - actualValues: values extracted from the SBOM (e.g. component licenses)
+// - declaredValues: literal values from the policy rule (exact match only)
+// - regexPatterns: compiled regex patterns from the policy rule
+func anyMatch(actualValues []string, declaredValues []string, regexPatterns []*regexp.Regexp) bool {
+	// No values to check against
+	if len(actualValues) == 0 {
 		return false
 	}
-	allowedSet := make(map[string]struct{}, len(allowed))
-	for _, a := range allowed {
-		allowedSet[a] = struct{}{}
+
+	// Build a set for quick exact-match lookups
+	declaredSet := make(map[string]struct{}, len(declaredValues))
+	for _, value := range declaredValues {
+		declaredSet[value] = struct{}{}
 	}
-	for _, v := range values {
-		if _, ok := allowedSet[v]; ok {
+
+	// 1. Check for exact value matches
+	for _, actual := range actualValues {
+		if _, exists := declaredSet[actual]; exists {
 			return true
 		}
 	}
-	for _, re := range patterns {
-		for _, v := range values {
-			if re.MatchString(v) {
+
+	// 2. Check for regex pattern matches
+	for _, pattern := range regexPatterns {
+		for _, actual := range actualValues {
+			if pattern.MatchString(actual) {
 				return true
 			}
 		}
 	}
+
+	// 3. Nothing matched
 	return false
+}
+
+// Precompile regex patterns per rule (do once)
+type compiledRule struct {
+	Rule     Rule
+	Patterns []*regexp.Regexp
+}
+
+func compileRule(policy Policy) ([]compiledRule, error) {
+	compiledRules := make([]compiledRule, 0, len(policy.Rules))
+
+	for _, rule := range policy.Rules {
+		compileRule := compiledRule{Rule: rule}
+
+		// compile each regex pattern in the rule
+		if len(rule.Patterns) > 0 {
+			// compile each patterns values
+			for _, pattern := range rule.Patterns {
+				regexPattern, err := regexp.Compile(pattern)
+				if err != nil {
+					return nil, fmt.Errorf("invalid pattern %q in policy %s: %w", pattern, policy.Name, err)
+				}
+				compileRule.Patterns = append(compileRule.Patterns, regexPattern)
+			}
+		}
+		compiledRules = append(compiledRules, compileRule)
+	}
+
+	return compiledRules, nil
 }
