@@ -40,6 +40,7 @@ type GetComponent interface {
 	PrimaryPurpose() string
 	RequiredFields() bool
 	Suppliers() GetSupplier
+	Authors() []GetAuthor
 	Manufacturer() GetManufacturer
 	CountOfDependencies() int
 	SourceCodeURL() string
@@ -73,6 +74,7 @@ type Component struct {
 	purpose                 string
 	isReqFieldsPresent      bool
 	ID                      string
+	Athrs                   []GetAuthor
 	Supplier                Supplier
 	manufacturer            Manufacturer
 	dependenciesCount       int
@@ -162,6 +164,10 @@ func (c Component) Manufacturer() GetManufacturer {
 
 func (c Component) Suppliers() GetSupplier {
 	return c.Supplier
+}
+
+func (c Component) Authors() []GetAuthor {
+	return c.Athrs
 }
 
 func (c Component) CountOfDependencies() int {

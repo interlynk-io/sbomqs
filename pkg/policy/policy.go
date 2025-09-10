@@ -62,7 +62,7 @@ type Rule struct {
 
 // Result represent the evaluation result of policay against SBOM
 type Result struct {
-	Policy       string      `json:"policy"`
+	Name         string      `json:"name,omitempty"`
 	Type         string      `json:"type,omitempty"`
 	Action       string      `json:"action,omitempty"`
 	Outcome      string      `json:"outcome"`
@@ -81,7 +81,7 @@ type Violation struct {
 
 func NewResult(p Policy) *Result {
 	return &Result{
-		Policy: p.Name,
+		Name:   p.Name,
 		Type:   p.Type,
 		Action: p.Action,
 	}

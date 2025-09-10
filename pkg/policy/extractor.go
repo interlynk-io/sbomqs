@@ -15,8 +15,11 @@
 package policy
 
 import (
+	"context"
+	"fmt"
 	"strings"
 
+	"github.com/interlynk-io/sbomqs/pkg/logger"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 )
 
@@ -29,7 +32,10 @@ type Extractor struct {
 }
 
 // NewExtractor creates an Extractor for SBOM fields.
-func NewExtractor(doc sbom.Document) *Extractor {
+func NewExtractor(ctx context.Context, doc sbom.Document) *Extractor {
+	log := logger.FromContext(ctx)
+	log.Debugf("Extracting fields...")
+
 	extractor := &Extractor{
 		Doc:         doc,
 		compGetters: map[string]func(sbom.GetComponent) []string{},
@@ -38,6 +44,7 @@ func NewExtractor(doc sbom.Document) *Extractor {
 
 	// component-level mappings (canonical keys are lowercase)
 	extractor.compGetters["name"] = func(c sbom.GetComponent) []string {
+		log.Debugf("exracted field: name")
 		if s := c.GetName(); s != "" {
 			return []string{s}
 		}
@@ -48,6 +55,8 @@ func NewExtractor(doc sbom.Document) *Extractor {
 	extractor.compGetters["component_name"] = extractor.compGetters["name"]
 
 	extractor.compGetters["version"] = func(c sbom.GetComponent) []string {
+		log.Debugf("exracted field: version")
+
 		if s := c.GetVersion(); s != "" {
 			return []string{s}
 		}
@@ -55,6 +64,8 @@ func NewExtractor(doc sbom.Document) *Extractor {
 	}
 
 	extractor.compGetters["license"] = func(c sbom.GetComponent) []string {
+		log.Debugf("exracted field: license")
+
 		licenses := []string{}
 		for _, l := range c.Licenses() {
 			if ln := l.Name(); ln != "" {
@@ -65,6 +76,8 @@ func NewExtractor(doc sbom.Document) *Extractor {
 	}
 
 	extractor.compGetters["purl"] = func(c sbom.GetComponent) []string {
+		log.Debugf("exracted field: purl")
+
 		purls := []string{}
 		for _, p := range c.GetPurls() {
 			if s := p.String(); s != "" {
@@ -75,6 +88,8 @@ func NewExtractor(doc sbom.Document) *Extractor {
 	}
 
 	extractor.compGetters["cpe"] = func(c sbom.GetComponent) []string {
+		log.Debugf("exracted field: cpe")
+
 		cpes := []string{}
 		for _, cp := range c.GetCpes() {
 			if s := cp.String(); s != "" {
@@ -85,6 +100,8 @@ func NewExtractor(doc sbom.Document) *Extractor {
 	}
 
 	extractor.compGetters["copyright"] = func(c sbom.GetComponent) []string {
+		log.Debugf("exracted field: copyright")
+
 		if s := c.GetCopyRight(); s != "" {
 			return []string{s}
 		}
@@ -93,6 +110,8 @@ func NewExtractor(doc sbom.Document) *Extractor {
 
 	// keep canonical key lowercase: "downloadlocation" to avoid special chars in lookups
 	extractor.compGetters["downloadlocation"] = func(c sbom.GetComponent) []string {
+		log.Debugf("exracted field: downloadlocation")
+
 		if s := c.GetDownloadLocationURL(); s != "" {
 			return []string{s}
 		}
@@ -101,6 +120,8 @@ func NewExtractor(doc sbom.Document) *Extractor {
 
 	// canonical "type" (primary purpose)
 	extractor.compGetters["type"] = func(c sbom.GetComponent) []string {
+		log.Debugf("exracted field: type")
+
 		if s := c.PrimaryPurpose(); s != "" {
 			return []string{s}
 		}
@@ -109,6 +130,8 @@ func NewExtractor(doc sbom.Document) *Extractor {
 
 	// supplier: aggregate common supplier fields
 	extractor.compGetters["supplier"] = func(c sbom.GetComponent) []string {
+		log.Debugf("exracted field: supplier")
+
 		suppliers := []string{}
 		if sup := c.Suppliers(); sup != nil {
 			if name := sup.GetName(); name != "" {
@@ -122,6 +145,32 @@ func NewExtractor(doc sbom.Document) *Extractor {
 			}
 		}
 		return nilOrSlice(suppliers)
+	}
+
+	// author: aggregate common author fields
+	extractor.compGetters["author"] = func(c sbom.GetComponent) []string {
+		log.Debugf("exracted field: author")
+
+		authors := []string{}
+
+		if c != nil {
+			for _, a := range c.Authors() {
+				authors = append(authors, a.GetName())
+				authors = append(authors, a.GetEmail())
+			}
+		}
+		return nilOrSlice(authors)
+	}
+
+	// author: aggregate common author fields
+	extractor.compGetters["checksum"] = func(c sbom.GetComponent) []string {
+		log.Debugf("exracted field: checksum")
+
+		var cheksums []string
+		for _, chk := range c.GetChecksums() {
+			cheksums = append(cheksums, chk.GetContent())
+		}
+		return nilOrSlice(cheksums)
 	}
 
 	// ---------------------
@@ -242,5 +291,6 @@ func (e *Extractor) Values(comp sbom.GetComponent, field string) []string {
 // non-empty value. Uses the same prefix rules as Values().
 func (e *Extractor) HasField(comp sbom.GetComponent, field string) bool {
 	vals := e.Values(comp, field)
+	fmt.Println("values: ", vals)
 	return len(vals) > 0
 }

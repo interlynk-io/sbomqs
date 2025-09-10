@@ -270,6 +270,11 @@ func (s *SpdxDoc) parseComps() {
 			nc.Supplier = *supp
 		}
 
+		auth := s.getAuthor(index)
+		if supp != nil {
+			nc.Athrs = auth
+		}
+
 		// https://github.com/spdx/ntia-conformance-checker/issues/100
 		// Add spdx support to check both supplier and originator
 		if supp == nil && manu != nil {
@@ -713,6 +718,31 @@ func (s *SpdxDoc) getManufacturer(index int) *Manufacturer {
 		Name:  entity.name,
 		Email: entity.email,
 	}
+}
+
+func (s *SpdxDoc) getAuthor(index int) []GetAuthor {
+	authors := []GetAuthor{}
+	var a Author
+	pkg := s.doc.Packages[index]
+
+	if pkg.PackageOriginator == nil {
+		return nil
+	}
+
+	if strings.ToLower(pkg.PackageOriginator.Originator) == "noassertion" {
+		return nil
+	}
+
+	entity := parseEntity(fmt.Sprintf("%s: %s", pkg.PackageOriginator.OriginatorType, pkg.PackageOriginator.Originator))
+	if entity == nil {
+		return nil
+	}
+
+	a.Name = entity.name
+	a.Email = entity.email
+
+	authors = append(authors, a)
+	return authors
 }
 
 // https://github.com/spdx/ntia-conformance-checker/issues/100

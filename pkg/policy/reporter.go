@@ -40,7 +40,7 @@ func ReportBasic(ctx context.Context, results []Result) error {
 	// Sort results by policy name for deterministic output
 	sorted := make([]Result, len(results))
 	copy(sorted, results)
-	sort.Slice(sorted, func(i, j int) bool { return sorted[i].Policy < sorted[j].Policy })
+	sort.Slice(sorted, func(i, j int) bool { return sorted[i].Name < sorted[j].Name })
 
 	// === Summary Table ===
 	summary := tablewriter.NewWriter(os.Stdout)
@@ -48,7 +48,7 @@ func ReportBasic(ctx context.Context, results []Result) error {
 
 	for _, r := range sorted {
 		summary.Append([]string{
-			r.Policy,
+			r.Name,
 			r.Type,
 			r.Action,
 			r.Outcome,
@@ -71,16 +71,26 @@ func ReportTable(ctx context.Context, results []Result) error {
 	copy(sorted, results)
 
 	// sort out by policy
-	sort.Slice(sorted, func(i, j int) bool { return sorted[i].Policy < sorted[j].Policy })
+	sort.Slice(sorted, func(i, j int) bool { return sorted[i].Name < sorted[j].Name })
+
+	// total violations across all policies
+	totalViolations := 0
+	for _, r := range results {
+		totalViolations += r.ViolationCnt
+	}
+
+	if totalViolations == 0 {
+		return noViolationFmt(results)
+	}
 
 	// === Detailed Violations ===
-	fmt.Fprintln(os.Stdout, "\nDetailed Violations:")
+	fmt.Fprintln(os.Stdout, "\n--- Detailed Violations Report ---")
 
 	for _, r := range sorted {
 		if len(r.Violations) == 0 {
 			continue
 		}
-		fmt.Fprintf(os.Stdout, "\nPolicy: %s (outcome=%s, violations=%d)\n", r.Policy, r.Outcome, len(r.Violations))
+		fmt.Fprintf(os.Stdout, "\nPolicy: %s (outcome=%s, violations=%d)\n", r.Name, r.Outcome, len(r.Violations))
 
 		violations := tablewriter.NewWriter(os.Stdout)
 		violations.SetHeader([]string{"COMPONENT", "FIELD", "ACTUAL", "REASON"})
@@ -105,5 +115,17 @@ func ReportTable(ctx context.Context, results []Result) error {
 
 		violations.Render()
 	}
+	return nil
+}
+
+// when no violations at all, print a concise friendly message and return.
+func noViolationFmt(results []Result) error {
+	fmt.Fprintln(os.Stdout, "\nNo violations found — all policies passed.")
+	fmt.Fprintf(os.Stdout, "Policies evaluated: %d\n", len(results))
+
+	for _, result := range results {
+		fmt.Fprintf(os.Stdout, " - policy=%s, \toutcome=%s, \tchecked=%d\n", result.Name, result.Outcome, result.TotalChecked)
+	}
+
 	return nil
 }

@@ -43,7 +43,7 @@ func Engine(ctx context.Context, policyConfig *Params, policies []Policy) error 
 	log.Debugf("SBOM is parsed")
 
 	// Create extractor
-	fieldExtractor := NewExtractor(doc)
+	fieldExtractor := NewExtractor(ctx, doc)
 	log.Debugf("field mapping done via extractor")
 
 	var results []Result
