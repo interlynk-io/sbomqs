@@ -16,6 +16,7 @@ package policy
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"os"
 	"sort"
@@ -26,9 +27,20 @@ import (
 	"github.com/olekukonko/tablewriter"
 )
 
-// ReportJSON writes results as JSON.
+// ReportJSON writes results as pretty-printed JSON to stdout.
 func ReportJSON(ctx context.Context, results []Result) error {
-	// TODO: implement JSON reporting
+	log := logger.FromContext(ctx)
+	log.Debugf("JSON Report...")
+
+	sorted := make([]Result, len(results))
+	copy(sorted, results)
+	sort.Slice(sorted, func(i, j int) bool { return sorted[i].Name < sorted[j].Name })
+
+	enc := json.NewEncoder(os.Stdout)
+	enc.SetIndent("", "  ")
+	if err := enc.Encode(sorted); err != nil {
+		return fmt.Errorf("encode results to json: %w", err)
+	}
 	return nil
 }
 

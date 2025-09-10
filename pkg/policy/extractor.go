@@ -16,7 +16,6 @@ package policy
 
 import (
 	"context"
-	"fmt"
 	"strings"
 
 	"github.com/interlynk-io/sbomqs/pkg/logger"
@@ -291,6 +290,5 @@ func (e *Extractor) Values(comp sbom.GetComponent, field string) []string {
 // non-empty value. Uses the same prefix rules as Values().
 func (e *Extractor) HasField(comp sbom.GetComponent, field string) bool {
 	vals := e.Values(comp, field)
-	fmt.Println("values: ", vals)
 	return len(vals) > 0
 }
