@@ -3,19 +3,19 @@
 A policy file is a YAML document containing one or more policies.
 Each policy defines:
 
-- name --> unique name of the policy
-- type --> whitelist, blacklist or required
-- rules --> list of field checks
-- action --> fail, warn, or pass
+- `name` --> unique name of the policy
+- `type` --> `whitelist`, `blacklist` or `required`
+- `rules` --> list of field checks
+- `action` --> `fail`, `warn`, or `pass`
 
 ## Policy Types
 
-It represent inclusion of specific fields and values.
-It is of 3 types:
+It represent **inclusion** of specific fields and values.
+It has 3 types:
 
 ### 1. Whitelist
 
-Ensures that SBOM field values must belong to the allowed set.
+Ensures that SBOM field values(actual) must belong to the allowed/declared set.
 
 - Different fields → AND (all must pass).
 - Multiple values within one field → OR (any match passes).
@@ -34,6 +34,7 @@ policy:
 ```
 
 - ✔ A component passes if its license is one of the listed values.
+- ✔ An SBOM passes if it's all components has one of the listed license values.
 
 ### 2. Blacklist
 
@@ -49,7 +50,7 @@ policy:
   - name: banned_components
     type: blacklist
     rules:
-      - field: component_name
+      - field: name
         patterns:
           - "log4j-1.*"
           - "commons-collections-3.2.1"
@@ -58,6 +59,7 @@ policy:
 ```
 
 - ✔ A component fails if its component_name matches any of the patterns.
+- ✔ An SBOM fails if any of it's component matches any of the patterns.
 
 ### 3. Required
 
@@ -79,6 +81,7 @@ policy:
 ```
 
 - ✔ A component fails if any of these fields are missing.
+- ✔ An SBOM fails if any component has missing any of these fields.
 
 ## Actions
 
@@ -93,7 +96,7 @@ Based on the inclusion result, 3 types of actions:
 1. For each policy:
    1. Apply all rules.
    2. Different fields → AND logic.
-   3. Multiple values/patterns within one field → OR logic.
+   3. Multiple values/patterns within a field → OR logic.
 2. Determine policy outcome (pass/warn/fail).
 3. Aggregate results into a final compliance report.
 
@@ -202,13 +205,14 @@ B -->|yes| C[Load policies from YAML]
 B -->|no| D[Build policy from CLI flags]
 C --> E[Load SBOM input]
 D --> E
-E --> F{Detect format}
+E --> F{Get SBOM Document}
 F -->|SPDX| G[Normalize SPDX to model]
 F -->|CycloneDX| H[Normalize CycloneDX to model]
 G --> I[Create extractor]
 H --> I
 I --> J{For each policy}
-J --> K{For each component}
+J --> K{Aginst SBOM, 
+For each component}
 K --> L{For each rule}
 L -->|required| M[ok = HasField]
 L -->|whitelist| N[ok = any match]

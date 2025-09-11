@@ -3,7 +3,5 @@ policy:
     type: whitelist
     rules:
       - field: license
-        values: [MIT License, Apache License 2.0, BSD 3-Clause "New" or "Revised" License]
+        values: [MIT, Apache-2.0, BSD-3-Clause]
     action: fail
-
-#         values: [MIT License, Apache License 2.0, BSD 3-Clause "New" or "Revised" License, ISC License, BSD Zero Clause License, BSD 2-Clause "Simplified" License]

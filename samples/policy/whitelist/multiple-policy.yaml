@@ -1,0 +1,22 @@
+policy:
+  - name: approved_licenses
+    type: whitelist
+    rules:
+      - field: license
+        values: [MIT, Apache-2.0, BSD-3-Clause]
+    action: fail
+
+  - name: banned_components
+    type: blacklist
+    rules:
+      - field: component_name
+        patterns: ["log4j-1.*", "commons-collections-3.2.1"]
+    action: fail
+
+  - name: required_metadata
+    type: required
+    rules:
+      - field: supplier
+      - field: version
+      - field: license
+    action: fail

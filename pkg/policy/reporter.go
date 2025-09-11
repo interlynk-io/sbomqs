@@ -102,7 +102,7 @@ func ReportTable(ctx context.Context, results []Result) error {
 		if len(r.Violations) == 0 {
 			continue
 		}
-		fmt.Fprintf(os.Stdout, "\nPolicy: %s (outcome=%s, violations=%d)\n", r.Name, r.Result, len(r.Violations))
+		fmt.Fprintf(os.Stdout, "\nPolicy: %s (outcome=%s, total components=%d, violations=%d)\n", r.Name, r.Result, r.TotalChecked, len(r.Violations))
 
 		violations := tablewriter.NewWriter(os.Stdout)
 		violations.SetHeader([]string{"COMPONENT", "FIELD", "ACTUAL", "REASON"})
