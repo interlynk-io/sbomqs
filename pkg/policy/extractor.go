@@ -70,7 +70,8 @@ func (extractor *Extractor) MapFieldWithFunction(ctx context.Context) {
 
 		licenses := []string{}
 		for _, l := range c.Licenses() {
-			if ln := l.Name(); ln != "" {
+			// preferring ID instead of Name, coz, user prefer ID over names.
+			if ln := l.ShortID(); ln != "" {
 				licenses = append(licenses, ln)
 			}
 		}

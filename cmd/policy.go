@@ -57,7 +57,7 @@ var policyCmd = &cobra.Command{
     --type whitelist \
     --rules "field=license,values=MIT,Apache-2.0" \
     --action fail \
-    samples/sbom.json
+	samples/sbom.cdx.json
 `,
 	Args: func(_ *cobra.Command, args []string) error {
 		if len(args) < 1 {
@@ -135,6 +135,7 @@ func parsePolicyParams(cmd *cobra.Command) *policyCmdConfig {
 
 	// extract policy rules
 	ruleFlags, _ := cmd.Flags().GetStringArray("rules")
+
 	cfg.policyRules = ruleFlags
 
 	// // extract policy action
@@ -165,7 +166,7 @@ func init() {
 	policyCmd.Flags().StringP("file", "f", "", "policy file (yaml)")
 	policyCmd.Flags().String("name", "", "policy name (when using CLI inline rules)")
 	policyCmd.Flags().String("type", "", "policy type: whitelist|blacklist|required")
-	policyCmd.Flags().StringArray("rules", []string{}, "rule (repeatable). e.g. 'field=license,values=MIT,Apache-2.0'")
+	policyCmd.Flags().StringArrayP("rules", "r", nil, "Rule (repeatable): field=...,values=v1,v2")
 	policyCmd.Flags().String("action", "warn", "policy action on violation: fail|warn|pass")
 	policyCmd.Flags().StringP("output", "o", "basic", "output format: table|json|basic")
 	policyCmd.Flags().BoolP("debug", "D", false, "Enable debug logging")

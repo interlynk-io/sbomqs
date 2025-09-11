@@ -17,6 +17,7 @@ package policy
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/stretchr/testify/assert/yaml"
 )
@@ -69,29 +70,44 @@ func LoadPoliciesFromFile(path string) ([]Policy, error) {
 		if err := ValidatePolicy(&pf.Policy[i]); err != nil {
 			return nil, fmt.Errorf("policy[%d] invalid: %w", i, err)
 		}
+
+		// update the values for license field
 	}
 	return pf.Policy, nil
 }
 
-// BuildPolicyFromCLI builds a single Policy from CLI flags (name, type, action, rules)
-// policyRules are in form: "field=license,values=MIT,Apache-2.0" or "field=supplier,patterns=^Acme$"
-func BuildPolicyFromCLI(name, ptype, action string, policyRules []string) (Policy, error) {
+// BuildPolicyFromCLI builds a Policy from CLI flags.
+// where each element is ONE full rule string, e.g. "field=license,values=MIT,Apache-2.0".
+func BuildPolicyFromCLI(name, ptype, action string, ruleFlags []string) (Policy, error) {
 	p := Policy{
 		Name:   name,
 		Type:   ptype,
 		Action: action,
+		Rules:  []Rule{},
 	}
 
-	for _, s := range policyRules {
-		r, err := parseRuleString(s)
+	if len(ruleFlags) == 0 {
+		return p, fmt.Errorf("no rules provided")
+	}
+
+	for _, rf := range ruleFlags {
+
+		rule, err := parseRuleString(rf)
 		if err != nil {
-			return Policy{}, fmt.Errorf("parse rule %q: %w", s, err)
+			// include the raw input in the error for easy debugging
+			return Policy{}, fmt.Errorf("parse rule %q: %w", rf, err)
 		}
-		p.Rules = append(p.Rules, r)
+
+		rule.Field = strings.ToLower(strings.TrimSpace(rule.Field))
+
+		p.Rules = append(p.Rules, rule)
 	}
+
+	// Optionally run ValidatePolicy here (your existing function)
 	if err := ValidatePolicy(&p); err != nil {
-		return Policy{}, err
+		return Policy{}, fmt.Errorf("policy validation failed: %w", err)
 	}
+
 	return p, nil
 }
 
