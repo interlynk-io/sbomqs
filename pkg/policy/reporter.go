@@ -56,14 +56,14 @@ func ReportBasic(ctx context.Context, results []Result) error {
 
 	// === Summary Table ===
 	summary := tablewriter.NewWriter(os.Stdout)
-	summary.SetHeader([]string{"POLICY", "TYPE", "ACTION", "OUTCOME", "CHECKED", "VIOLATIONS", "GENERATED_AT"})
+	summary.SetHeader([]string{"POLICY", "TYPE", "ACTION", "RESULT", "CHECKED", "VIOLATIONS", "GENERATED_AT"})
 
 	for _, r := range sorted {
 		summary.Append([]string{
 			r.Name,
 			r.Type,
 			r.Action,
-			r.Outcome,
+			r.Result,
 			fmt.Sprintf("%d", r.TotalChecked),
 			fmt.Sprintf("%d", r.ViolationCnt),
 			r.GeneratedAt.Format(time.RFC3339),
@@ -102,7 +102,7 @@ func ReportTable(ctx context.Context, results []Result) error {
 		if len(r.Violations) == 0 {
 			continue
 		}
-		fmt.Fprintf(os.Stdout, "\nPolicy: %s (outcome=%s, violations=%d)\n", r.Name, r.Outcome, len(r.Violations))
+		fmt.Fprintf(os.Stdout, "\nPolicy: %s (outcome=%s, violations=%d)\n", r.Name, r.Result, len(r.Violations))
 
 		violations := tablewriter.NewWriter(os.Stdout)
 		violations.SetHeader([]string{"COMPONENT", "FIELD", "ACTUAL", "REASON"})
@@ -136,7 +136,7 @@ func noViolationFmt(results []Result) error {
 	fmt.Fprintf(os.Stdout, "Policies evaluated: %d\n", len(results))
 
 	for _, result := range results {
-		fmt.Fprintf(os.Stdout, " - policy=%s, \toutcome=%s, \tchecked=%d\n", result.Name, result.Outcome, result.TotalChecked)
+		fmt.Fprintf(os.Stdout, " - policy=%s, \toutcome=%s, \tchecked=%d\n", result.Name, result.Result, result.TotalChecked)
 	}
 
 	return nil

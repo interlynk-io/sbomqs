@@ -25,10 +25,10 @@ import (
 )
 
 func Engine(ctx context.Context, policyConfig *Params, policies []Policy) error {
-	//
 	log := logger.FromContext(ctx)
 	log.Debugf("Starting Engine...")
 
+	// Load SBOM File
 	f, err := os.Open(policyConfig.SBOMFile)
 	if err != nil {
 		return fmt.Errorf("failed to open input %s: %w", policyConfig.SBOMFile, err)
@@ -42,16 +42,21 @@ func Engine(ctx context.Context, policyConfig *Params, policies []Policy) error 
 	}
 	log.Debugf("SBOM is parsed")
 
-	// Create extractor
-	fieldExtractor := NewExtractor(ctx, doc)
+	// Create extractor: for quick mapping
+	fieldExtractor := NewExtractor(doc)
+	fieldExtractor.MapFieldWithFunction(ctx)
+
 	log.Debugf("field mapping done via extractor")
 
 	var results []Result
 
+	log.Debugf("Evaluation of policy against SBOM begins...")
+
 	// Evaluate policies
 	for _, policy := range policies {
 		log.Debugf("Evaluating policy: ", policy.Name)
-		result, err := EvalPolicy(ctx, policy, doc, fieldExtractor)
+
+		result, err := EvaluatePolicyAgainstSBOMs(ctx, policy, doc, fieldExtractor)
 		if err != nil {
 			return fmt.Errorf("policy %s evaluation failed: %w", policy.Name, err)
 		}

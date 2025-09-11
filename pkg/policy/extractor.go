@@ -30,16 +30,19 @@ type Extractor struct {
 	docGetters  map[string]func(sbom.Document) []string
 }
 
-// NewExtractor creates an Extractor for SBOM fields.
-func NewExtractor(ctx context.Context, doc sbom.Document) *Extractor {
-	log := logger.FromContext(ctx)
-	log.Debugf("Extracting fields...")
-
-	extractor := &Extractor{
+func NewExtractor(doc sbom.Document) *Extractor {
+	return &Extractor{
 		Doc:         doc,
 		compGetters: map[string]func(sbom.GetComponent) []string{},
 		docGetters:  map[string]func(sbom.Document) []string{},
 	}
+}
+
+// MapFieldWithFunction creates an Extractor for SBOM fields.
+// quick mapping of fields with respective funtions
+func (extractor *Extractor) MapFieldWithFunction(ctx context.Context) {
+	log := logger.FromContext(ctx)
+	log.Debugf("Creating Extractor...")
 
 	// component-level mappings (canonical keys are lowercase)
 	extractor.compGetters["name"] = func(c sbom.GetComponent) []string {
@@ -246,8 +249,6 @@ func NewExtractor(ctx context.Context, doc sbom.Document) *Extractor {
 		primaryComp = append(primaryComp, d.PrimaryComp().GetID())
 		return nilOrSlice(primaryComp)
 	}
-
-	return extractor
 }
 
 // nilOrSlice returns nil if the provided slice is empty,
@@ -265,7 +266,7 @@ func nilOrSlice(s []string) []string {
 //   - Otherwise → resolve against component-level getters only.
 //
 // Field name is normalized to lowercase.
-func (e *Extractor) Values(comp sbom.GetComponent, field string) []string {
+func (e *Extractor) RetrieveValues(comp sbom.GetComponent, field string) []string {
 	if e == nil {
 		return nil
 	}
@@ -288,7 +289,7 @@ func (e *Extractor) Values(comp sbom.GetComponent, field string) []string {
 
 // HasField returns true if the given field exists and has at least one
 // non-empty value. Uses the same prefix rules as Values().
-func (e *Extractor) HasField(comp sbom.GetComponent, field string) bool {
-	vals := e.Values(comp, field)
+func (extract *Extractor) HasField(comp sbom.GetComponent, field string) bool {
+	vals := extract.RetrieveValues(comp, field)
 	return len(vals) > 0
 }

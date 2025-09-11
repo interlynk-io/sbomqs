@@ -17,7 +17,6 @@ package policy
 import (
 	"fmt"
 	"os"
-	"time"
 
 	"github.com/stretchr/testify/assert/yaml"
 )
@@ -51,40 +50,6 @@ type Policy struct {
 	Type   string `yaml:"type"`
 	Rules  []Rule `yaml:"rules"`
 	Action string `yaml:"action,omitempty"`
-}
-
-// Rule represents field/values or field/patterns
-type Rule struct {
-	Field    string   `yaml:"field"`
-	Values   []string `yaml:"values,omitempty"`
-	Patterns []string `yaml:"patterns,omitempty"`
-}
-
-// Result represent the evaluation result of policay against SBOM
-type Result struct {
-	Name         string      `json:"name,omitempty"`
-	Type         string      `json:"type,omitempty"`
-	Action       string      `json:"action,omitempty"`
-	Outcome      string      `json:"outcome"`
-	Violations   []Violation `json:"violations,omitempty"`
-	TotalChecked int         `json:"total_checked,omitempty"`
-	ViolationCnt int         `json:"violation_count,omitempty"`
-	GeneratedAt  time.Time   `json:"generated_at,omitempty"`
-}
-
-type Violation struct {
-	ComponentName string   `json:"component_name"`
-	Field         string   `json:"field"`
-	Actual        []string `json:"actual,omitempty"`
-	Reason        string   `json:"reason"`
-}
-
-func NewResult(p Policy) *Result {
-	return &Result{
-		Name:   p.Name,
-		Type:   p.Type,
-		Action: p.Action,
-	}
 }
 
 // LoadPoliciesFromFile reads a YAML policy file and unmarshals it into policies.
