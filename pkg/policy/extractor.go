@@ -46,47 +46,47 @@ func (extractor *Extractor) MapFieldWithFunction(ctx context.Context) {
 
 	// component-level mappings (canonical keys are lowercase)
 	extractor.compGetters["name"] = func(c sbom.GetComponent) []string {
-		log.Debugf("exracted field: name")
 		if s := c.GetName(); s != "" {
+			log.Debugf("exracted name field: %s", s)
 			return []string{s}
 		}
 		return nil
 	}
 
-	// alias
-	extractor.compGetters["component_name"] = extractor.compGetters["name"]
-
 	extractor.compGetters["version"] = func(c sbom.GetComponent) []string {
-		log.Debugf("exracted field: version")
-
 		if s := c.GetVersion(); s != "" {
+			log.Debugf("exracted version field: %s", s)
 			return []string{s}
 		}
 		return nil
 	}
 
 	extractor.compGetters["license"] = func(c sbom.GetComponent) []string {
-		log.Debugf("exracted field: license")
-
 		licenses := []string{}
+		if len(c.Licenses()) == 0 {
+			licenses = append(licenses, "NOASSERTION")
+		}
+
 		for _, l := range c.Licenses() {
 			// preferring ID instead of Name, coz, user prefer ID over names.
 			if ln := l.ShortID(); ln != "" {
 				licenses = append(licenses, ln)
 			}
 		}
+		log.Debugf("exracted license value: %s", licenses)
+
 		return nilOrSlice(licenses)
 	}
 
 	extractor.compGetters["purl"] = func(c sbom.GetComponent) []string {
-		log.Debugf("exracted field: purl")
-
 		purls := []string{}
 		for _, p := range c.GetPurls() {
 			if s := p.String(); s != "" {
 				purls = append(purls, s)
 			}
 		}
+
+		log.Debugf("exracted PURL field: %s", purls)
 		return nilOrSlice(purls)
 	}
 
@@ -99,13 +99,14 @@ func (extractor *Extractor) MapFieldWithFunction(ctx context.Context) {
 				cpes = append(cpes, s)
 			}
 		}
+
+		log.Debugf("exracted CPE field: %s", cpes)
 		return nilOrSlice(cpes)
 	}
 
 	extractor.compGetters["copyright"] = func(c sbom.GetComponent) []string {
-		log.Debugf("exracted field: copyright")
-
 		if s := c.GetCopyRight(); s != "" {
+			log.Debugf("exracted copyright field: %s", s)
 			return []string{s}
 		}
 		return nil
@@ -113,9 +114,8 @@ func (extractor *Extractor) MapFieldWithFunction(ctx context.Context) {
 
 	// keep canonical key lowercase: "downloadlocation" to avoid special chars in lookups
 	extractor.compGetters["downloadlocation"] = func(c sbom.GetComponent) []string {
-		log.Debugf("exracted field: downloadlocation")
-
 		if s := c.GetDownloadLocationURL(); s != "" {
+			log.Debugf("exracted downloadlocation field: %s", s)
 			return []string{s}
 		}
 		return nil
@@ -126,6 +126,7 @@ func (extractor *Extractor) MapFieldWithFunction(ctx context.Context) {
 		log.Debugf("exracted field: type")
 
 		if s := c.PrimaryPurpose(); s != "" {
+			log.Debugf("exracted package type field: %s", s)
 			return []string{s}
 		}
 		return nil
@@ -147,6 +148,7 @@ func (extractor *Extractor) MapFieldWithFunction(ctx context.Context) {
 				suppliers = append(suppliers, u)
 			}
 		}
+		log.Debugf("exracted suppliers field: %s", suppliers)
 		return nilOrSlice(suppliers)
 	}
 
@@ -162,6 +164,8 @@ func (extractor *Extractor) MapFieldWithFunction(ctx context.Context) {
 				authors = append(authors, a.GetEmail())
 			}
 		}
+
+		log.Debugf("exracted authors field: %s", authors)
 		return nilOrSlice(authors)
 	}
 
@@ -173,6 +177,8 @@ func (extractor *Extractor) MapFieldWithFunction(ctx context.Context) {
 		for _, chk := range c.GetChecksums() {
 			cheksums = append(cheksums, chk.GetContent())
 		}
+
+		log.Debugf("exracted cheksums field: %s", cheksums)
 		return nilOrSlice(cheksums)
 	}
 

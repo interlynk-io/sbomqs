@@ -287,11 +287,8 @@ func (s *SpdxDoc) parseComps() {
 		}
 
 		// nc.sourceCodeUrl //no conlusive way to get this from SPDX
-		if strings.ToLower(sc.PackageDownloadLocation) == "noassertion" || strings.ToLower(sc.PackageDownloadLocation) == "none" {
-			nc.DownloadLocation = ""
-		} else {
-			nc.DownloadLocation = sc.PackageDownloadLocation
-		}
+
+		nc.DownloadLocation = sc.PackageDownloadLocation
 
 		nc.isPrimary = s.PrimaryComponent.ID == string(sc.PackageSPDXIdentifier)
 
@@ -729,10 +726,6 @@ func (s *SpdxDoc) getAuthor(index int) []GetAuthor {
 		return nil
 	}
 
-	if strings.ToLower(pkg.PackageOriginator.Originator) == "noassertion" {
-		return nil
-	}
-
 	entity := parseEntity(fmt.Sprintf("%s: %s", pkg.PackageOriginator.OriginatorType, pkg.PackageOriginator.Originator))
 	if entity == nil {
 		return nil
@@ -754,10 +747,6 @@ func (s *SpdxDoc) getSupplier(index int) *Supplier {
 		return nil
 	}
 
-	if strings.ToLower(pkg.PackageSupplier.Supplier) == "noassertion" {
-		return nil
-	}
-
 	entity := parseEntity(fmt.Sprintf("%s: %s", pkg.PackageSupplier.SupplierType, pkg.PackageSupplier.Supplier))
 	if entity == nil {
 		return nil
@@ -769,43 +758,25 @@ func (s *SpdxDoc) getSupplier(index int) *Supplier {
 	}
 }
 
-// nolint
-// https://github.com/spdx/ntia-conformance-checker/issues/100
-// Add spdx support to check both supplier and originator
-func (s *SpdxDoc) addSupplierName(index int) string {
-	supplier := s.getSupplier(index)
-	manufacturer := s.getManufacturer(index)
-
-	if supplier == nil && manufacturer == nil {
-		s.addToLogs(fmt.Sprintf("spdx doc pkg %s at index %d no supplier/originator found", s.doc.Packages[index].PackageName, index))
-		return ""
-	}
-
-	if supplier != nil {
-		return supplier.Name
-	}
-
-	if manufacturer != nil {
-		return manufacturer.Name
-	}
-
-	return ""
-}
-
 type entity struct {
 	name  string
 	email string
 }
 
-func parseEntity(input string) *entity {
-	if strings.TrimSpace(input) == "" {
-		return nil
+func parseEntity(in string) *entity {
+	if strings.HasPrefix(in, ":") {
+		in = strings.TrimSpace(strings.TrimLeft(in, ":"))
+	}
+
+	if strings.ToUpper(in) == "NOASSERTION" || strings.ToUpper(in) == "NONE" {
+		return &entity{name: in}
 	}
 
 	// Regex pattern to match organization or person and email
 	pattern := `(Organization|Person)\s*:\s*([^(]+)\s*(?:\(\s*([^)]+)\s*\))?`
 	regex := regexp.MustCompile(pattern)
-	match := regex.FindStringSubmatch(input)
+	match := regex.FindStringSubmatch(in)
+
 	if len(match) == 0 {
 		return nil
 	}

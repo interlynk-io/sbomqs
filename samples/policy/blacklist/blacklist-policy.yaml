@@ -1,0 +1,42 @@
+policy:
+# fail if SBOM components contains copyright field with values NONE,NOASSERTION  
+  - name: copyright_not_allowed
+    type: blacklist
+    rules:
+      - field: copyright
+        values: [NONE,NOASSERTION]
+    action: fail
+
+# fail if SBOM components contains downloadLocation field with values  NONE,NOASSERTION
+  - name: download_location_not_allowed
+    type: blacklist
+    rules:
+      - field: downloadlocation
+        values: [NONE,NOASSERTION]
+    action: fail
+
+# fail if SBOM components contains author field with values  NONE,NOASSERTION
+  - name: author_not_allowed
+    type: blacklist
+    rules:
+      - field: author
+        values: [NONE,NOASSERTION]
+    action: fail
+
+# fail if SBOM components contains author field with values  NONE,NOASSERTION
+  - name: license_not_allowed
+    type: blacklist
+    rules:
+      - field: license
+        values: [NONE,NOASSERTION]
+    action: fail
+
+# fail if SBOM has a component with a name log4j
+  - name: banned_components
+    type: blacklist
+    rules:
+      - field: name
+        patterns:
+          - "log4j*"
+          - "commons-collections-3.2.1"
+    action: fail

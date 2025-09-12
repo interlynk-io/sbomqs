@@ -20,7 +20,7 @@
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
       "licenseDeclared": "NOASSERTION",
-      "copyrightText": "NOASSERTION"
+      "copyrightText": "Copyright 2025 Interlynk.io"
     },
     {
       "name": "ad1f1c6f4fef6e6208ebc53e701bf9937f4e05dce5f601b20c35d8a0ad7fdeff",
@@ -43,7 +43,7 @@
       "name": "bash",
       "SPDXID": "SPDXRef-bash-4.4.18-4.ph3",
       "versionInfo": "4.4.18-4.ph3",
-      "downloadLocation": "NOASSERTION",
+      "downloadLocation": "https://github.com/interlynk/sbomqs.git",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
       "licenseDeclared": "LicenseRef-92fe666",
