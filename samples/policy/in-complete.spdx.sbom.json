@@ -1,0 +1,214 @@
+{
+  "spdxVersion": "SPDX-2.3",
+  "dataLicense": "CC0-1.0",
+  "SPDXID": "SPDXRef-Document",
+  "name": "CycloneDX BOM converted to SPDX",
+  "documentNamespace": "urn:uuid:4d2edcda-fcc4-42fe-8e9d-87cf33e47b94",
+  "creationInfo": {
+    "creators": [
+        "Organization: Anchore, Inc (https://acme.com)",
+        "Tool: syft-1.26.1"
+   ],
+    "created": "2025-06-06T05:52:18Z"
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Package-kyverno-v1.14.0",
+      "name": "github.com/kyverno/kyverno",
+      "versionInfo": "v1.14.0",
+      "packageFileName": "kyverno-v1.14.0",
+      "supplier": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "originator" : "NOASSERTION",
+      "downloadLocation" : "NOASSERTION",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "89fb71dddbb3389dd3018c7f63dd6350b1611f382613c5c31edfee67006ac28e"
+        }
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/kyverno/kyverno@v1.14.0?type=module&goos=linux&goarch=amd64#cmd/kyverno"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:kyverno:kyverno:v1.14.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "vcs",
+          "referenceLocator": "https://github.com/kyverno/kyverno"
+        }
+      ],
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-fluxcd-pkg-oci-v0.45.0",
+      "name": "github.com/fluxcd/pkg/oci",
+      "versionInfo": "v0.45.0",
+      "packageFileName": "oci-v0.45.0",
+      "supplier": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "94fb71aaacc3385dd3018c7e63dd6750b1622f382613c5c31edfee67006ac78e"
+        }
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/fluxcd/pkg/oci@v0.45.0?type=module&goos=linux&goarch=amd64"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:fluxcd:oci:v0.45.0:*:*:*:*:*:*:*"
+        }
+      ],
+      "licenseConcluded": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-azure-sdk-for-go-sdk-azcore-v1.17.0",
+      "name": "github.com/Azure/azure-sdk-for-go/sdk/azcore",
+      "versionInfo": "v1.17.0",
+      "packageFileName": "azcore-v1.17.0",
+      "supplier": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "834119270cfbc645d0899008e718bd7f75961580655f508f4eb47e3434e84644"
+        }
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/Azure/azure-sdk-for-go/sdk/azcore@v1.17.0?type=module&goos=linux&goarch=amd64"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:azure:azcore:v1.17.0:*:*:*:*:*:*:*"
+        }
+      ],
+      "licenseConcluded": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-rekor-v1.3.9",
+      "name": "github.com/sigstore/rekor",
+      "versionInfo": "v1.3.9",
+      "packageFileName": "rekor-v1.3.9",
+      "supplier": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "b148d1a4a561fe1860a8632cd2df93b9b818b24b00ad9ea9a0b102dccb060335"
+        }
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/sigstore/rekor@v1.3.9?type=module&goos=linux&goarch=amd64"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:sigstore:rekor:v1.3.9:*:*:*:*:*:*:*"
+        }
+      ],
+      "licenseConcluded": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-expr-v0.19.1",
+      "name": "cel.dev/expr",
+      "versionInfo": "v0.19.1",
+      "packageFileName": "expr-v0.19.1",
+      "downloadLocation": "https://cel.dev",
+      "supplier": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "35c898aed0d1211d253429c7d4b1497a0763b29371f5f239f4eed359cb9afd6e"
+        }
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/cel.dev/expr@v0.19.1?type=module&goos=linux&goarch=amd64"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:cel:expr:v0.19.1:*:*:*:*:*:*:*"
+        }
+      ],
+      "licenseConcluded": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-log4j-core-v1.4",
+      "name": "log4j-core",
+      "versionInfo": "1.4",
+      "downloadLocation": "https://logging.apache.org/log4j/2.x/download.html",
+      "supplier": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "35c898aed0d1211jk88429c7d4b1497a0763b29371f5f239f4eed359cb9afd6e"
+        }
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:maven/org.apache.logging.log4j/log4j-core?type=jar"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:apache:log4j:*:*:*:*:*:*:*:*"
+        }
+      ],
+      "licenseConcluded": "NOASSERTION"
+    }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-Package-kyverno-v1.14.0",
+      "relatedSpdxElement": "SPDXRef-Package-fluxcd-pkg-oci-v0.45.0",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-kyverno-v1.14.0",
+      "relatedSpdxElement": "SPDXRef-Package-rekor-v1.3.9",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-fluxcd-pkg-oci-v0.45.0",
+      "relatedSpdxElement": "SPDXRef-Package-azure-sdk-for-go-sdk-azcore-v1.17.0",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-rekor-v1.3.9",
+      "relatedSpdxElement": "SPDXRef-Package-expr-v0.19.1",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relatedSpdxElement": "SPDXRef-Package-kyverno-v1.14.0",
+      "relationshipType": "DESCRIBES"
+    }
+  ]
+}

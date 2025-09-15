@@ -24,6 +24,7 @@ import (
 	"io"
 	"log"
 	"math/big"
+	"net/mail"
 	"os"
 	"strings"
 
@@ -458,6 +459,11 @@ func copyC(cdxc *cydx.Component, c *CdxDoc) *Component {
 		nc.Supplier = *supplier
 	}
 
+	authors := c.assignAuthor(cdxc)
+	if authors != nil {
+		nc.Athrs = authors
+	}
+
 	if cdxc.ExternalReferences != nil {
 		sources := lo.Filter(*cdxc.ExternalReferences, func(er cydx.ExternalReference, _ int) bool {
 			return er.Type == cydx.ERTypeVCS
@@ -771,6 +777,55 @@ func (c *CdxDoc) parsePrimaryCompAndRelationships() {
 		}
 	}
 	c.PrimaryComponent.Dependecies = totalDependencies
+}
+
+func (c *CdxDoc) assignAuthor(comp *cydx.Component) []GetAuthor {
+	// 1) If cdx:1.6, with `authors` are present, use them
+	if comp.Authors != nil && len(*comp.Authors) > 0 {
+		out := make([]GetAuthor, 0, len(*comp.Authors))
+		for _, a := range *comp.Authors {
+			au := Author{
+				Name:  a.Name,
+				Email: a.Email,
+				Phone: a.Phone,
+				// AuthorType: a.Type, // map fields as appropriate
+			}
+			out = append(out, au)
+		}
+		return out
+	}
+
+	// 2) Fallback: parse legacy `author` string (could be "Name <email>" or list)
+	//    i.e `author`
+	if comp.Author == "" {
+		// no authors present in either form
+		return nil
+	}
+
+	authorStr := comp.Author
+
+	// ParseAddressList handles comma-separated lists and quoted names.
+	addrs, err := mail.ParseAddressList(authorStr)
+	if err != nil {
+		// parse single address
+		if a, perr := mail.ParseAddress(authorStr); perr == nil {
+			addrs = []*mail.Address{a}
+		} else {
+			// parsing failed -- treat whole string as a name without an email
+			c.addToLogs(fmt.Sprintf("assignAuthor: cannot parse author string %q: %v", authorStr, err))
+			return []GetAuthor{Author{Name: authorStr}}
+		}
+	}
+
+	out := make([]GetAuthor, 0, len(addrs))
+	for _, addr := range addrs {
+		au := Author{
+			Name:  addr.Name,
+			Email: addr.Address,
+		}
+		out = append(out, au)
+	}
+	return out
 }
 
 func (c *CdxDoc) assignSupplier(comp *cydx.Component) *Supplier {

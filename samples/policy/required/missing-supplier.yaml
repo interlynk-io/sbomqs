@@ -1,0 +1,6 @@
+policy:
+  - name: required_metadata
+    type: required
+    rules:
+      - field: supplier
+    action: fail

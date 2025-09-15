@@ -270,6 +270,11 @@ func (s *SpdxDoc) parseComps() {
 			nc.Supplier = *supp
 		}
 
+		auth := s.getAuthor(index)
+		if supp != nil {
+			nc.Athrs = auth
+		}
+
 		// https://github.com/spdx/ntia-conformance-checker/issues/100
 		// Add spdx support to check both supplier and originator
 		if supp == nil && manu != nil {
@@ -282,11 +287,8 @@ func (s *SpdxDoc) parseComps() {
 		}
 
 		// nc.sourceCodeUrl //no conlusive way to get this from SPDX
-		if strings.ToLower(sc.PackageDownloadLocation) == "noassertion" || strings.ToLower(sc.PackageDownloadLocation) == "none" {
-			nc.DownloadLocation = ""
-		} else {
-			nc.DownloadLocation = sc.PackageDownloadLocation
-		}
+
+		nc.DownloadLocation = sc.PackageDownloadLocation
 
 		nc.isPrimary = s.PrimaryComponent.ID == string(sc.PackageSPDXIdentifier)
 
@@ -715,16 +717,33 @@ func (s *SpdxDoc) getManufacturer(index int) *Manufacturer {
 	}
 }
 
+func (s *SpdxDoc) getAuthor(index int) []GetAuthor {
+	authors := []GetAuthor{}
+	var a Author
+	pkg := s.doc.Packages[index]
+
+	if pkg.PackageOriginator == nil {
+		return nil
+	}
+
+	entity := parseEntity(fmt.Sprintf("%s: %s", pkg.PackageOriginator.OriginatorType, pkg.PackageOriginator.Originator))
+	if entity == nil {
+		return nil
+	}
+
+	a.Name = entity.name
+	a.Email = entity.email
+
+	authors = append(authors, a)
+	return authors
+}
+
 // https://github.com/spdx/ntia-conformance-checker/issues/100
 // Add spdx support to check both supplier and originator
 func (s *SpdxDoc) getSupplier(index int) *Supplier {
 	pkg := s.doc.Packages[index]
 
 	if pkg.PackageSupplier == nil {
-		return nil
-	}
-
-	if strings.ToLower(pkg.PackageSupplier.Supplier) == "noassertion" {
 		return nil
 	}
 
@@ -739,43 +758,25 @@ func (s *SpdxDoc) getSupplier(index int) *Supplier {
 	}
 }
 
-// nolint
-// https://github.com/spdx/ntia-conformance-checker/issues/100
-// Add spdx support to check both supplier and originator
-func (s *SpdxDoc) addSupplierName(index int) string {
-	supplier := s.getSupplier(index)
-	manufacturer := s.getManufacturer(index)
-
-	if supplier == nil && manufacturer == nil {
-		s.addToLogs(fmt.Sprintf("spdx doc pkg %s at index %d no supplier/originator found", s.doc.Packages[index].PackageName, index))
-		return ""
-	}
-
-	if supplier != nil {
-		return supplier.Name
-	}
-
-	if manufacturer != nil {
-		return manufacturer.Name
-	}
-
-	return ""
-}
-
 type entity struct {
 	name  string
 	email string
 }
 
-func parseEntity(input string) *entity {
-	if strings.TrimSpace(input) == "" {
-		return nil
+func parseEntity(in string) *entity {
+	if strings.HasPrefix(in, ":") {
+		in = strings.TrimSpace(strings.TrimLeft(in, ":"))
+	}
+
+	if strings.ToUpper(in) == "NOASSERTION" || strings.ToUpper(in) == "NONE" {
+		return &entity{name: in}
 	}
 
 	// Regex pattern to match organization or person and email
 	pattern := `(Organization|Person)\s*:\s*([^(]+)\s*(?:\(\s*([^)]+)\s*\))?`
 	regex := regexp.MustCompile(pattern)
-	match := regex.FindStringSubmatch(input)
+	match := regex.FindStringSubmatch(in)
+
 	if len(match) == 0 {
 		return nil
 	}
