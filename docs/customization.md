@@ -271,39 +271,43 @@ thresholds:
       min_coverage: 0.90  # 90% must have licenses
 ```
 
-### Custom Validators
+### Custom Policy
 
-Add organization-specific validation rules:
+Add organization-specific policy rules:
 
 ```yaml
-# validators.yaml
-validators:
+# policy.yaml
+policy:
   - id: approved_licenses
     type: whitelist
-    field: licenses
-    values:
-      - MIT
-      - Apache-2.0
-      - BSD-3-Clause
+    rules:
+      - field: license
+        values:
+          - MIT
+          - Apache-2.0
+          - BSD-3-Clause
     action: warn  # or 'fail'
     
-  - id: banned_components
+  - name: banned_components
     type: blacklist
-    field: component_name
-    patterns:
-      - "log4j-1.*"
-      - "commons-collections-3.2.1"
+    rules:
+      - field: name
+        patterns:
+        - "log4j*"
+        - "commons-collections-3.2.1"
     action: fail
     
-  - id: required_metadata
+  - name: required_metadata
     type: required
-    fields:
-      - supplier
-      - version
-      - license
-      - checksum
+    rules:
+      - field: supplier
+      - field: version
+      - field: license
+      - field: checksum
     action: fail
 ```
+
+For more, refer here: [policy.md](https://github.com/interlynk-io/sbomqs/blob/main/docs/policy.md)
 
 ## Organization Standards
 

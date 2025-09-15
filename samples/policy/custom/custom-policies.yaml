@@ -1,9 +1,9 @@
-# validators.yaml
+# policy.yaml
 policy:
   - name: approved_licenses
     type: whitelist
     rules:
-      - field: licenses
+      - field: license
         values:
         - MIT
         - Apache-2.0
