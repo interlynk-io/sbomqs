@@ -1,6 +1,0 @@
-policy:
-  - name: required_metadata
-    type: required
-    rules:
-      - field: checksum
-    action: fail

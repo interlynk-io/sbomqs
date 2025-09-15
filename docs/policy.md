@@ -38,7 +38,7 @@ policy:
 
 ### 2. Blacklist
 
-Ensures that SBOM field values must not belong to the banned set.
+Ensures that SBOM field values should not belong to the banned set.
 
 - Different fields → AND (all must avoid banned values).
 - Multiple values/patterns within one field → OR (any match → violation).
@@ -63,7 +63,7 @@ policy:
 
 ### 3. Required
 
-Ensures that listed fields must be present in the SBOM.
+Ensures that listed fields should be present in the SBOM.
 
 - Different fields → AND (all must exist).
 
@@ -90,6 +90,15 @@ Based on the inclusion result, 3 types of actions:
 - fail → Mark validation failure (stop or accumulate errors).
 - pass → Explicitly mark policy as always passing.
 - warn → Log violation, but continue processing.
+
+## Relationship b/w Policy Type and Policy Action
+
+**Policy type** (whitelist / blacklist / required) describes **what condition is checked** and **what constitutes a violation**.
+**Policy action** (fail / warn / pass) is the **severity to apply when the policy is violated**.
+So:
+
+- If the **rules are satisfied** → **final outcome is pass** (no violation).
+- If the **rules are not satisfied** → **final outcome is the configured action** (fail/warn/pass).
 
 ## How Policy works ?
 
