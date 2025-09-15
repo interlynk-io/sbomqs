@@ -1,0 +1,40 @@
+policy:
+  - name: required_author
+    type: required
+    rules:
+      - field: author
+    action: warn
+
+  - name: required_checksum
+    type: required
+    rules:
+      - field: checksum
+    action: warn
+
+  - name: required_license
+    type: required
+    rules:
+      - field: license
+    action: warn
+
+  - name: required_purl
+    type: required
+    rules:
+      - field: purl
+    action: warn
+
+  - name: required_supplier
+    type: required
+    rules:
+      - field: supplier
+    action: warn
+
+  - name: required_type
+    type: required
+    rules:
+      - field: type
+    action: warn
+  
+# warn if component is missing specified field in the rule.
+
+  

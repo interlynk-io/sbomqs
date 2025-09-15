@@ -1,0 +1,29 @@
+# validators.yaml
+policy:
+  - name: approved_licenses
+    type: whitelist
+    rules:
+      - field: licenses
+        values:
+        - MIT
+        - Apache-2.0
+        - BSD-3-Clause
+    action: warn  # or 'fail'
+    
+  - name: banned_components
+    type: blacklist
+    rules:
+      - field: name
+        patterns:
+        - "log4j*"
+        - "commons-collections-3.2.1"
+    action: fail
+    
+  - name: required_metadata
+    type: required
+    rules:
+      - field: supplier
+      - field: version
+      - field: license
+      - field: checksum
+    action: fail
