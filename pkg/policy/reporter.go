@@ -54,6 +54,7 @@ func ReportBasic(ctx context.Context, results []Result) error {
 	copy(sorted, results)
 	sort.Slice(sorted, func(i, j int) bool { return sorted[i].Name < sorted[j].Name })
 
+	fmt.Fprintf(os.Stdout, "\n\033[36m \t\t\t\t BASIC POLICY REPORT\033[36m\n")
 	// === Summary Table ===
 	summary := tablewriter.NewWriter(os.Stdout)
 	summary.SetHeader([]string{"POLICY", "TYPE", "ACTION", "RESULT", "CHECKED", "VIOLATIONS", "GENERATED_AT"})
@@ -79,65 +80,117 @@ func ReportTable(ctx context.Context, results []Result) error {
 	log := logger.FromContext(ctx)
 	log.Debugf("Table Report...")
 
+	// Defensive copy + deterministic ordering by policy name
 	sorted := make([]Result, len(results))
 	copy(sorted, results)
-
-	// sort out by policy
 	sort.Slice(sorted, func(i, j int) bool { return sorted[i].Name < sorted[j].Name })
 
-	// total violations across all policies
-	totalViolations := 0
-	for _, r := range results {
-		totalViolations += r.ViolationCnt
-	}
+	fmt.Fprintf(os.Stdout, "\n\033[1m \t\t--- TABLE DETAILED POLICY REPORT ---\033[0m\n")
 
-	if totalViolations == 0 {
-		return noViolationFmt(results)
-	}
+	// Per-policy tables
+	for _, res := range sorted {
+		// Policy header
+		fmt.Fprintf(os.Stdout, "\n\033[1mPolicy: %s (action=%s, result=%s, checked=%d, violations=%d)\033[0m\n",
+			res.Name, res.Action, res.Result, res.TotalChecked, res.ViolationCnt)
 
-	// === Detailed Violations ===
-	fmt.Fprintln(os.Stdout, "\n--- Detailed Violations Report ---")
+		// Prepare table writer per policy
+		tw := tablewriter.NewWriter(os.Stdout)
+		tw.SetAutoWrapText(false)
+		tw.SetBorder(true)
+		tw.SetRowLine(false)
 
-	for _, r := range sorted {
-		if len(r.Violations) == 0 {
-			continue
+		tw.SetHeader([]string{"COMPONENT", "FIELD", "ACTUAL", "REASON"})
+
+		// Build rows: default behaviour is to show failures only.
+		type row struct {
+			component string
+			field     string
+			actual    string
+			outcome   string
+			reason    string
 		}
-		fmt.Fprintf(os.Stdout, "\nPolicy: %s (outcome=%s, total components=%d, violations=%d)\n", r.Name, r.Result, r.TotalChecked, len(r.Violations))
+		rows := []row{}
 
-		violations := tablewriter.NewWriter(os.Stdout)
-		violations.SetHeader([]string{"COMPONENT", "FIELD", "ACTUAL", "REASON"})
-
-		// sort violations
-		vcopy := make([]Violation, len(r.Violations))
-		copy(vcopy, r.Violations)
-		sort.Slice(vcopy, func(i, j int) bool {
-			if vcopy[i].ComponentName == vcopy[j].ComponentName {
-				return vcopy[i].Field < vcopy[j].Field
+		// Prefer modern `PolicyResults` if present
+		if len(res.PolicyResults) > 0 {
+			for _, pr := range res.PolicyResults {
+				// show only failures by default
+				if pr.Outcome == "pass" {
+					continue
+				}
+				actual := ""
+				if len(pr.Actual) > 0 {
+					actual = strings.Join(pr.Actual, ", ")
+				}
+				rows = append(rows, row{
+					component: pr.ComponentName,
+					field:     pr.Field,
+					actual:    actual,
+					outcome:   pr.Outcome,
+					reason:    pr.Reason,
+				})
 			}
-			return vcopy[i].ComponentName < vcopy[j].ComponentName
+		}
+
+		// If no failure rows to print:
+		// - But we have PolicyResults (means all checks passed) -> print pass rows
+		// - Else -> print "No violations"
+		if len(rows) == 0 {
+			if len(res.PolicyResults) > 0 {
+				// populate rows with passing checks so we show non-violations
+				for _, pr := range res.PolicyResults {
+					// include passes; if some fails existed they'd already be in rows above
+					actual := ""
+					if len(pr.Actual) > 0 {
+						actual = strings.Join(pr.Actual, ", ")
+					}
+					// For clarity put reason empty for passes
+					rows = append(rows, row{
+						component: pr.ComponentName,
+						field:     pr.Field,
+						actual:    actual,
+						outcome:   pr.Outcome,
+						reason:    pr.Reason,
+					})
+				}
+			} else {
+				// truly no records at all (no PolicyResults and no Violations)
+				tw.Append([]string{"", "", "", "No violations"})
+				tw.Render()
+				continue
+			}
+		}
+
+		// Sort rows deterministically: by component name, then field
+		sort.Slice(rows, func(i, j int) bool {
+			if rows[i].component == rows[j].component {
+				return rows[i].field < rows[j].field
+			}
+			return rows[i].component < rows[j].component
 		})
 
-		for _, v := range vcopy {
-			actual := ""
-			if len(v.Actual) > 0 {
-				actual = strings.Join(v.Actual, ", ")
-			}
-			violations.Append([]string{v.ComponentName, v.Field, actual, v.Reason})
+		// Append to table writer
+		for _, rr := range rows {
+			// We only render COMPONENT, FIELD, ACTUAL, REASON columns (no outcome column here).
+			// If needed in the future, we can switch to a verbose mode that shows outcome too.
+			tw.Append([]string{rr.component, rr.field, rr.actual, rr.reason})
 		}
-
-		violations.Render()
+		tw.Render()
 	}
-	return nil
-}
 
-// when no violations at all, print a concise friendly message and return.
-func noViolationFmt(results []Result) error {
-	fmt.Fprintln(os.Stdout, "\nNo violations found — all policies passed.")
-	fmt.Fprintf(os.Stdout, "Policies evaluated: %d\n", len(results))
+	fmt.Fprintf(os.Stdout, "\n\033[1m\033[32m \t\t--- SUMMARY TABLE ---\033[1m\n")
 
-	for _, result := range results {
-		fmt.Fprintf(os.Stdout, " - policy=%s, \toutcome=%s, \tchecked=%d\n", result.Name, result.Result, result.TotalChecked)
+	sum := tablewriter.NewWriter(os.Stdout)
+	sum.SetHeader([]string{"POLICY", "RESULT", "CHECKED", "VIOLATIONS"})
+	for _, r := range sorted {
+		sum.Append([]string{
+			r.Name,
+			r.Result,
+			fmt.Sprintf("%d", r.TotalChecked),
+			fmt.Sprintf("%d", r.ViolationCnt),
+		})
 	}
+	sum.Render()
 
 	return nil
 }
