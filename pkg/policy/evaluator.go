@@ -40,71 +40,91 @@ func EvaluatePolicyAgainstSBOMs(ctx context.Context, p Policy, doc sbom.Document
 		return Result{}, err
 	}
 
-	violations := []Violation{}
+	policyResults := make([]PolicyResult, 0, len(components)*len(compiledRules))
 
 	// evaluate components against list of all rules in a single policy
 	for _, comp := range components {
+		var compID, compName string
+		if comp != nil {
+			compID = comp.GetID()
+		}
+		if comp != nil {
+			compName = comp.GetName()
+		}
+
 		// evaluate each component against list of all rules
 		for _, compileRule := range compiledRules {
 			// evaluate rule
 
-			originalRule := compileRule.Rule
-			declaredField := originalRule.Field
-			declaredValues := originalRule.Values
+			declaredRule := compileRule.Rule
+			declaredField := declaredRule.Field
+			declaredValues := declaredRule.Values
+			patterns := compileRule.Patterns
 
 			// retreive the actual values from component for that respective field
 			// example: `license`, `supplier`, `checksum`, `author`, etc
 			actualValues := fieldExtractor.RetrieveValues(comp, declaredField)
 
+			// default outcome/pass reason
+			outcome := "pass"
+			reason := "present"
+
+			// required rule: presence check
 			if RULE_TYPE(p.Type) == REQUIRED {
 				ok := fieldExtractor.HasField(comp, declaredField)
 				if !ok {
-					violations = append(violations, Violation{
-						ComponentName: comp.GetName(),
-						Field:         declaredField,
-						Actual:        actualValues,
-						Reason:        "missing field",
-					})
+					outcome = "fail"
+					reason = "missing field"
 				}
 
+			} else {
+				// for whitelist/blacklist do matching
+				matched := anyMatch(actualValues, declaredValues, patterns)
+
+				switch RULE_TYPE(p.Type) {
+				case WHITELIST:
+					if !matched {
+						outcome = "fail"
+						reason = "value not in whitelist"
+					}
+				case BLACKLIST:
+					if matched {
+						outcome = "fail"
+						reason = "value in blacklist"
+					}
+				default:
+					// if unknown type, treat as pass (or change to fail depending on your policy)
+				}
 			}
 
-			// now match value present(actual) vs value declared(desired)
-			matched := anyMatch(actualValues, declaredValues, compileRule.Patterns)
-
-			switch RULE_TYPE(p.Type) {
-
-			case WHITELIST:
-				if !matched {
-					violations = append(violations, Violation{
-						ComponentName: comp.GetName(),
-						Field:         declaredField,
-						Actual:        actualValues,
-						Reason:        "value not in whitelist",
-					})
-				}
-
-			case BLACKLIST:
-				if matched {
-					violations = append(violations, Violation{
-						ComponentName: comp.GetName(),
-						Field:         declaredField,
-						Actual:        actualValues,
-						Reason:        "value in blacklist",
-					})
-				}
-
-			default:
-				// unknown type
+			pr := PolicyResult{
+				ComponentID:   compID,
+				ComponentName: compName,
+				Field:         declaredField,
+				Actual:        actualValues,
+				Outcome:       outcome,
+				Reason:        reason,
 			}
+
+			policyResults = append(policyResults, pr)
+
 		}
 	}
 
-	result.Violations = violations
-	result.ViolationCnt = len(violations)
+	// assign results
+	result.PolicyResults = policyResults
+
+	// compute ViolationCnt (failed outcomes)
+	violationCount := 0
+	for _, pr := range policyResults {
+		if pr.Outcome == "fail" {
+			violationCount++
+		}
+	}
+	result.ViolationCnt = violationCount
 
 	// Decide outcome
-	if len(violations) == 0 {
+	if result.ViolationCnt == 0 {
 		result.Result = "pass"
 	} else {
 		switch p.Action {
