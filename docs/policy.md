@@ -35,7 +35,7 @@ This policy ensures every component license is one of the approved or defined va
 
 ## What is Rule?
 
-A rule describes a specific check on a single SBOM field.
+A rule describes a **specific check** on a single SBOM field.
 Each rule contains:
 
 - `field` → The SBOM attribute to check (e.g., license, supplier, version)
@@ -50,14 +50,14 @@ Each rule contains:
 
 ## Policy Types
 
-The type defines how rules are interpreted:
+The type defines **how rules are interpreted**:
 
 ### 1. Whitelist
 
 Ensures field values are only from the allowed set.
 
-- Rule passes if the field value is in the values list.
-- Violation if the value is outside the whitelist.
+- Rule passes if the field value is in the values list, Therefore Pass.
+- Violation if the value is outside the whitelist, Therefore action as per defined.
 
 Example:
 
@@ -79,8 +79,8 @@ policy:
 
 Ensures field values are not in the banned set.
 
-- Rule passes if the field value is not in the list/pattern.
-- Violation if it matches.
+- Rule passes if the field value is not in the list/pattern, Therefore, Pass.
+- Violation if it matches, Therefore, as per defined action.
 
 ```yaml
 policy:
