@@ -1,26 +1,65 @@
-# SBOM Policy Specification
+# SBOM Policy
 
-A policy file is a YAML document containing one or more policies.
-Each policy defines:
+An SBOM (Software Bill of Materials) often contains thousands of components with licenses, suppliers, checksums, and other metadata. Not all SBOMs are created equal — some may miss critical information or include risky components.
 
-- `name` --> unique name of the policy
-- `type` --> `whitelist`, `blacklist` or `required`
-- `rules` --> list of field checks
-- `action` --> `fail`, `warn`, or `pass`
+Policies help us automatically validate SBOMs against organizational requirements. They act like guardrails:
+
+- Enforce approved licenses
+- Reject banned components
+- Ensure required metadata exists
+
+In short, a policy defines what “good” looks like in an SBOM and how to react if something does not meet that expectation.
+
+## What is Policy?
+
+A policy file is a YAML defintion that contains.
+
+- `name` --> A unique identifier for the policy
+- `type` --> `The kind of check (whitelist, blacklist, required)
+- `rules` --> A list of conditions applied to SBOM fields
+- `action` --> What happens if violations are found (fail, warn, or pass)
+
+Example:
+
+```yaml
+policy:
+  - name: approved_licenses
+    type: whitelist
+    rules:
+      - field: license
+        values: [MIT, Apache-2.0, BSD-3-Clause]
+    action: fail
+```
+
+This policy ensures every component license is one of the approved or defined values. If not(or violates), the policy fails as per the defined action.
+
+## What is Rule?
+
+A rule describes a **specific check** on a single SBOM field.
+Each rule contains:
+
+- `field` → The SBOM attribute to check (e.g., license, supplier, version)
+- `values` → Allowed values (for whitelist/blacklist)
+- `patterns` → Regex patterns to match field values
+- `operator` (future support) → To extend comparisons (in, not_in, matches, not_matches)
+
+### Rule evaluation logic
+
+- **Multiple rules in a policy** → combined with **AND** (all must pass)
+- **Multiple values/patterns in a rule** → combined with **OR** (any value passes)
 
 ## Policy Types
 
-It represent **inclusion** of specific fields and values.
-It has 3 types:
+The type defines **how rules are interpreted**:
 
 ### 1. Whitelist
 
-Ensures that SBOM field values(actual) must belong to the allowed/declared set.
+Ensures field values are only from the allowed set.
 
-- Different fields → AND (all must pass).
-- Multiple values within one field → OR (any match passes).
+- Rule passes if the field value is in the values list, Therefore Pass.
+- Violation if the value is outside the whitelist, Therefore action as per defined.
 
-Examples:
+Example:
 
 ```yaml
 policy:
@@ -33,17 +72,15 @@ policy:
 
 ```
 
-- ✔ A component passes if its license is one of the listed values.
-- ✔ An SBOM passes if it's all components has one of the listed license values.
+- ✔ Components with MIT or Apache-2.0 → `pass`
+- ✘ Components with GPL-3.0 → violation, therefore action will be `fail`
 
 ### 2. Blacklist
 
-Ensures that SBOM field values should not belong to the banned set.
+Ensures field values are not in the banned set.
 
-- Different fields → AND (all must avoid banned values).
-- Multiple values/patterns within one field → OR (any match → violation).
-
-Example:
+- Rule passes if the field value is not in the list/pattern, Therefore, Pass.
+- Violation if it matches, Therefore, as per defined action.
 
 ```yaml
 policy:
@@ -51,21 +88,16 @@ policy:
     type: blacklist
     rules:
       - field: name
-        patterns:
-          - "log4j-1.*"
-          - "commons-collections-3.2.1"
+        patterns: ["log4j-1.*", "commons-collections-3.2.1"]
     action: fail
-
 ```
 
-- ✔ A component fails if its component_name matches any of the patterns.
-- ✔ An SBOM fails if any of it's component matches any of the patterns.
+- ✔ Component okio-1.6.0 → pass
+- ✘ Component log4j-1.2.17 → violation
 
 ### 3. Required
 
-Ensures that listed fields should be present in the SBOM.
-
-- Different fields → AND (all must exist).
+Ensures the field is present (not missing).
 
 ```yaml
 policy:
@@ -75,41 +107,39 @@ policy:
       - field: supplier
       - field: version
       - field: license
-      - field: checksum
     action: fail
-
 ```
 
-- ✔ A component fails if any of these fields are missing.
-- ✔ An SBOM fails if any component has missing any of these fields.
+- ✔ Component with supplier, version, and license → pass
+- ✘ Component missing supplier → violation
 
 ## Actions
 
-Based on the inclusion result, 3 types of actions:
+The action defines what happens when a violation is found:
 
-- fail → Mark validation failure (stop or accumulate errors).
-- pass → Explicitly mark policy as always passing.
-- warn → Log violation, but continue processing.
+- `fail` → Mark the policy as failed (exit code non-zero, block CI/CD pipeline)
+- `warn` → Report the violation but continue (exit code zero)
+- `pass` → Force pass even if violations exist (useful for dry-runs)
 
-## Relationship b/w Policy Type and Policy Action
+## How Policy Types and Actions Work Together
 
-**Policy type** (whitelist / blacklist / required) describes **what condition is checked** and **what constitutes a violation**.
-**Policy action** (fail / warn / pass) is the **severity to apply when the policy is violated**.
-So:
+1. **Rules satisfied** → outcome is always `pass`.
+2. **Rules violated** → outcome is whatever the policy’s `action` says:
 
-- If the **rules are satisfied** → **final outcome is pass** (no violation).
-- If the **rules are not satisfied** → **final outcome is the configured action** (fail/warn/pass).
+- `fail` → mark as failed
+- `warn` → mark as warning
+- `pass` → override violations and still pass
 
-## How Policy works ?
+This separation lets you define what to check (type + rules) and how serious it is (action).
 
-1. For each policy:
-   1. Apply all rules.
-   2. Different fields → AND logic.
-   3. Multiple values/patterns within a field → OR logic.
-2. Determine policy outcome (pass/warn/fail).
-3. Aggregate results into a final compliance report.
+## How Policies Work in Practice
 
-Example:
+1. Load policies (from file or CLI).
+2. For each policy:
+   1. For each rule: check field values in the SBOM.
+   2. Collect violations.
+3. Decide policy outcome (pass/warn/fail).
+4. Aggregate all results into a final compliance report.
 
 ```yaml
 policy:
@@ -117,78 +147,72 @@ policy:
     type: whitelist
     rules:
       - field: license
-        values: [MIT, Apache-2.0, BSD-3-Clause]
+        values: [MIT, Apache-2.0]
     action: fail
 
   - name: banned_components
     type: blacklist
     rules:
-      - field: component_name
-        patterns: ["log4j-1.*", "commons-collections-3.2.1"]
+      - field: name
+        patterns: ["log4j*"]
     action: fail
 
   - name: required_metadata
     type: required
     rules:
       - field: supplier
-      - field: version
       - field: license
-    action: fail
+    action: warn
 ```
 
-o/p:
+Output:
 
-```text
-Policy Results:
-- approved_licenses (fail): 5 components with unapproved licenses
-- banned_components (fail): 1 component found in blacklist
-- required_metadata (warn): 3 components missing fields
+```bash
+$ sbomqs policy -f samples/policy/custom/custom-policies.yaml samples/policy/in-complete.spdx.sbom.json 
++-------------------+-----------+--------+--------+---------+------------+----------------------+
+|      POLICY       |   TYPE    | ACTION | RESULT | CHECKED | VIOLATIONS |     GENERATED AT     |
++-------------------+-----------+--------+--------+---------+------------+----------------------+
+| approved_licenses | whitelist | warn   | warn   |       6 |          6 | 2025-09-16T08:24:57Z |
+| banned_components | blacklist | fail   | fail   |       6 |          1 | 2025-09-16T08:24:57Z |
+| required_metadata | required  | fail   | pass   |       6 |          0 | 2025-09-16T08:24:57Z |
++-------------------+-----------+--------+--------+---------+------------+----------------------+
 
-Overall Policy Result: FAIL
+```
+
+```bash
+$ sbomqs policy -f samples/policy/custom/custom-policies.yaml samples/policy/complete-sbom.spdx.json   
++-------------------+-----------+--------+--------+---------+------------+----------------------+
+|      POLICY       |   TYPE    | ACTION | RESULT | CHECKED | VIOLATIONS |     GENERATED AT     |
++-------------------+-----------+--------+--------+---------+------------+----------------------+
+| approved_licenses | whitelist | warn   | pass   |       5 |          0 | 2025-09-16T08:25:05Z |
+| banned_components | blacklist | fail   | pass   |       5 |          0 | 2025-09-16T08:25:05Z |
+| required_metadata | required  | fail   | pass   |       5 |          0 | 2025-09-16T08:25:05Z |
++-------------------+-----------+--------+--------+---------+------------+----------------------+
 ```
 
 ## Applying Policies
 
 Policies can be applied in two ways:
 
-- From a policy file (YAML format)
-- Directly from the CLI (inline rules)
+1. From a policy file (YAML format)
+2. Directly from the CLI (inline rules)
 
-### Apply from Policy File
-
-When you already have a policy.yaml file:
+### 1. From a Policy File
 
 ```bash
-sbomqs apply -f policy.yaml
+sbomqs policy -f samples/policy/custom/custom-policies.yaml samples/policy/complete-sbom.spdx.json 
 ```
 
-This will load all policies defined in the file and evaluate them against the SBOM.
-
-### Apply from CLI (inline rules)
-
-You can also define policies directly from the CLI without a policy file.
-
-#### Single Rule
-
-Example: 1
+### 2. From CLI (Inline Rules)
 
 ```bash
 sbomqs apply \
   --name approved_licenses \
   --type whitelist \
-  --rule "field=license,values=MIT,Apache-2.0,BSD-3-Clause" \
-  --action fail
+  --rules "field=license,values=MIT,Apache-2.0" \
+  --action fail \
+  samples/policy/complete-sbom.spdx.json
 ```
-
-Where,
-
-`--name` → policy name
-
-`--type` → policy type (whitelist, blacklist, required)
-
-`--rule` → field validation rule (field=...,values=... or field=...,patterns=...)
-
-`--action` → action on failure (fail, warn, pass)
 
 Example: 2
 
@@ -196,14 +220,10 @@ Example: 2
 sbomqs apply \
   --name supplier_noassertion_rule \
   --type blacklist \
-  --rule "field=supplier,values=NOASSERTION" \
-  --action fail
+  --rules "field=supplier,values=NOASSERTION" \
+  --action fail \
+  samples/policy/in-complete-sbom.spdx.json
 ```
-
-This defines a blacklist policy where:
-
-- Supplier must have some values
-- It must be NOASSERTION
 
 ## sbomqs policy flowchart
 
