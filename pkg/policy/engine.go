@@ -48,7 +48,7 @@ func Engine(ctx context.Context, policyConfig *Params, policies []Policy) error 
 
 	log.Debugf("field mapping done via extractor")
 
-	var results []Result
+	var policyResults []PolicyResult
 
 	log.Debugf("Evaluation of policy against SBOM begins...")
 
@@ -56,25 +56,26 @@ func Engine(ctx context.Context, policyConfig *Params, policies []Policy) error 
 	for _, policy := range policies {
 		log.Debugf("Evaluating policy: ", policy.Name)
 
+		// evaluate each policy one by one against SBOM
 		result, err := EvaluatePolicyAgainstSBOMs(ctx, policy, doc, fieldExtractor)
 		if err != nil {
 			return fmt.Errorf("policy %s evaluation failed: %w", policy.Name, err)
 		}
-		results = append(results, result)
+		policyResults = append(policyResults, result)
 	}
 
 	// Reporting
 	switch strings.ToLower(policyConfig.OutputFmt) {
 	case "json":
-		if err := ReportJSON(ctx, results); err != nil {
+		if err := ReportJSON(ctx, policyResults); err != nil {
 			return fmt.Errorf("failed to write json output: %w", err)
 		}
 	case "table":
-		if err := ReportTable(ctx, results); err != nil {
+		if err := ReportTable(ctx, policyResults); err != nil {
 			return fmt.Errorf("failed to write yaml output: %w", err)
 		}
 	default:
-		if err := ReportBasic(ctx, results); err != nil {
+		if err := ReportBasic(ctx, policyResults); err != nil {
 			return fmt.Errorf("failed to write table output: %w", err)
 		}
 	}
