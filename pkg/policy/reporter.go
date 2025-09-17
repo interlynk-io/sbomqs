@@ -57,7 +57,7 @@ func ReportBasic(ctx context.Context, results []PolicyResult) error {
 	fmt.Fprintf(os.Stdout, "\n\033[36m \t\t\t BASIC POLICY REPORT\033[36m\n")
 	// === Summary Table ===
 	summary := tablewriter.NewWriter(os.Stdout)
-	summary.SetHeader([]string{"POLICY", "TYPE", "ACTION", "RESULT", "COMPONENTS", "VIOLATIONS"})
+	summary.SetHeader([]string{"POLICY", "TYPE", "ACTION", "RESULT", "COMPONENTS", "VIOLATIONS", "RULES APPLIED"})
 
 	for _, r := range sorted {
 		summary.Append([]string{
@@ -67,6 +67,7 @@ func ReportBasic(ctx context.Context, results []PolicyResult) error {
 			r.OverallResult,
 			fmt.Sprintf("%d", r.TotalComponents),
 			fmt.Sprintf("%d", r.ViolationCnt),
+			fmt.Sprintf("%d", r.TotalRules),
 		})
 	}
 	summary.Render() // prints the table
@@ -84,7 +85,7 @@ func ReportTable(ctx context.Context, results []PolicyResult) error {
 	copy(sorted, results)
 	sort.Slice(sorted, func(i, j int) bool { return sorted[i].PolicyName < sorted[j].PolicyName })
 
-	fmt.Fprintf(os.Stdout, "\n\033[1m \t\t=== DETAILED POLICY REPORT ===\033[0m\n")
+	fmt.Fprintf(os.Stdout, "\n\033[1m DETAILED POLICY REPORT\033[0m\n")
 
 	// Per-policy tables
 	for _, res := range sorted {
@@ -176,13 +177,14 @@ func ReportTable(ctx context.Context, results []PolicyResult) error {
 	fmt.Fprintf(os.Stdout, "\n\033[1m\033[32m \t\t--- SUMMARY TABLE ---\033[1m\n")
 
 	sum := tablewriter.NewWriter(os.Stdout)
-	sum.SetHeader([]string{"POLICY", "RESULT", "COMPONENTS", "VIOLATIONS"})
+	sum.SetHeader([]string{"POLICY", "RESULT", "COMPONENTS", "VIOLATIONS", "RULES APPLIED"})
 	for _, r := range sorted {
 		sum.Append([]string{
 			r.PolicyName,
 			r.OverallResult,
 			fmt.Sprintf("%d", r.TotalComponents),
 			fmt.Sprintf("%d", r.ViolationCnt),
+			fmt.Sprintf("%d", r.TotalRules),
 		})
 	}
 	sum.Render()
