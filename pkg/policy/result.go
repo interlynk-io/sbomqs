@@ -14,40 +14,34 @@
 
 package policy
 
-import "time"
-
 // Result represent the evaluation result of policay against SBOM
-type Result struct {
-	Name          string         `json:"name,omitempty"`
-	Type          string         `json:"type,omitempty"`
-	Action        string         `json:"action,omitempty"`
-	Result        string         `json:"result"`                    // overall: pass|warn|fail
-	PolicyResults []PolicyResult `json:"policy_results,omitempty"`  // both passes & fails
-	TotalChecked  int            `json:"total_checked,omitempty"`   // number of components scanned
-	ViolationCnt  int            `json:"violation_count,omitempty"` // number of failed policy_results
-	GeneratedAt   time.Time      `json:"generated_at,omitempty"`
-}
-
-// type Violation struct {
-// 	ComponentName string   `json:"component_name"`
-// 	Field         string   `json:"field"`
-// 	Actual        []string `json:"actual,omitempty"`
-// 	Reason        string   `json:"reason"`
-// }
-
 type PolicyResult struct {
-	ComponentID   string   `json:"component_id,omitempty"`   // component unique id (or "<document>")
-	ComponentName string   `json:"component_name,omitempty"` // friendly name
-	Field         string   `json:"field"`                    // the field evaluated (e.g., license)
-	Actual        []string `json:"actual,omitempty"`         // actual values seen on SBOM
-	Outcome       string   `json:"outcome"`                  // "pass" | "fail"
-	Reason        string   `json:"reason,omitempty"`         // human-friendly reason for failure
+	PolicyName      string       `json:"name,omitempty"`
+	PolicyType      string       `json:"type,omitempty"`
+	PolicyAction    string       `json:"action,omitempty"`
+	OverallResult   string       `json:"overall_result"`           // overall: pass|warn|fail
+	RuleResults     []RuleResult `json:"policy_results,omitempty"` // both passes & fails
+	TotalChecks     int          `json:"total_checks,omitempty"`   // number of total check
+	TotalRules      int          `json:"total_rules,omitempty"`
+	TotalComponents int          `json:"total_components,omitempty"` // number of components scanned
+	ViolationCnt    int          `json:"violation_count,omitempty"`  // number of failed policy_results
 }
 
-func NewResult(p Policy) *Result {
-	return &Result{
-		Name:   p.Name,
-		Type:   p.Type,
-		Action: p.Action,
+type RuleResult struct {
+	ComponentID    string   `json:"component_id,omitempty"`   // component unique id (or "<document>")
+	ComponentName  string   `json:"component_name,omitempty"` // friendly name
+	DeclaredField  string   `json:"declared_field"`           // the field evaluated (e.g., license)
+	DeclaredValues string   `json:"declared_values"`          // the decalred values
+	ActualValues   []string `json:"actual_values,omitempty"`  // actual values seen on SBOM
+	Result         string   `json:"result"`                   // "pass" | "fail"
+	Reason         string   `json:"reason,omitempty"`         // human-friendly reason for failure
+}
+
+func NewPolicyResult(p Policy) *PolicyResult {
+	return &PolicyResult{
+		PolicyName:   p.Name,
+		PolicyType:   p.Type,
+		PolicyAction: p.Action,
+		TotalRules:   len(p.Rules),
 	}
 }

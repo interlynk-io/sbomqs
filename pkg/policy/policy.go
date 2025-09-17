@@ -34,9 +34,6 @@ type Params struct {
 
 	// Output
 	OutputFmt string
-
-	// Debug
-	debug bool
 }
 
 // PolicyFile represents the top-level YAML structure

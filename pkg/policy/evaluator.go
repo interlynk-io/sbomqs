@@ -17,30 +17,29 @@ package policy
 import (
 	"context"
 	"regexp"
-	"time"
 
 	"github.com/interlynk-io/sbomqs/pkg/logger"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 )
 
 // EvaluatePolicyAgainstSBOMs evaluates a single policy against a SBOMs.
-func EvaluatePolicyAgainstSBOMs(ctx context.Context, p Policy, doc sbom.Document, fieldExtractor *Extractor) (Result, error) {
+func EvaluatePolicyAgainstSBOMs(ctx context.Context, policy Policy, doc sbom.Document, fieldExtractor *Extractor) (PolicyResult, error) {
 	log := logger.FromContext(ctx)
-	log.Debugf("processing policy evaluation: %s", p.Name, p.Type)
+	log.Debugf("processing policy evaluation: %s", policy.Name, policy.Type)
 
-	result := NewResult(p)
-	result.GeneratedAt = time.Now().UTC()
+	policyResult := NewPolicyResult(policy)
 
+	totalChecks := 0
 	components := doc.Components()
-	result.TotalChecked = len(components)
+	policyResult.TotalComponents = len(components)
 
 	// compile regex present in pattern rules
-	compiledRules, err := compilePatternRules(p)
+	compiledRules, err := compilePatternRules(policy)
 	if err != nil {
-		return Result{}, err
+		return PolicyResult{}, err
 	}
 
-	policyResults := make([]PolicyResult, 0, len(components)*len(compiledRules))
+	policyResults := make([]RuleResult, 0, len(components)*len(compiledRules))
 
 	// evaluate components against list of all rules in a single policy
 	for _, comp := range components {
@@ -54,6 +53,7 @@ func EvaluatePolicyAgainstSBOMs(ctx context.Context, p Policy, doc sbom.Document
 
 		// evaluate each component against list of all rules
 		for _, compileRule := range compiledRules {
+			totalChecks++
 			// evaluate rule
 
 			declaredRule := compileRule.Rule
@@ -66,14 +66,14 @@ func EvaluatePolicyAgainstSBOMs(ctx context.Context, p Policy, doc sbom.Document
 			actualValues := fieldExtractor.RetrieveValues(comp, declaredField)
 
 			// default outcome/pass reason
-			outcome := "pass"
+			result := "pass"
 			reason := "present"
 
 			// required rule: presence check
-			if RULE_TYPE(p.Type) == REQUIRED {
+			if RULE_TYPE(policy.Type) == REQUIRED {
 				ok := fieldExtractor.HasField(comp, declaredField)
 				if !ok {
-					outcome = "fail"
+					result = "fail"
 					reason = "missing field"
 				}
 
@@ -81,15 +81,15 @@ func EvaluatePolicyAgainstSBOMs(ctx context.Context, p Policy, doc sbom.Document
 				// for whitelist/blacklist do matching
 				matched := anyMatch(actualValues, declaredValues, patterns)
 
-				switch RULE_TYPE(p.Type) {
+				switch RULE_TYPE(policy.Type) {
 				case WHITELIST:
 					if !matched {
-						outcome = "fail"
+						result = "fail"
 						reason = "value not in whitelist"
 					}
 				case BLACKLIST:
 					if matched {
-						outcome = "fail"
+						result = "fail"
 						reason = "value in blacklist"
 					}
 				default:
@@ -97,12 +97,12 @@ func EvaluatePolicyAgainstSBOMs(ctx context.Context, p Policy, doc sbom.Document
 				}
 			}
 
-			pr := PolicyResult{
+			pr := RuleResult{
 				ComponentID:   compID,
 				ComponentName: compName,
-				Field:         declaredField,
-				Actual:        actualValues,
-				Outcome:       outcome,
+				DeclaredField: declaredField,
+				ActualValues:  actualValues,
+				Result:        result,
 				Reason:        reason,
 			}
 
@@ -112,32 +112,33 @@ func EvaluatePolicyAgainstSBOMs(ctx context.Context, p Policy, doc sbom.Document
 	}
 
 	// assign results
-	result.PolicyResults = policyResults
+	policyResult.RuleResults = policyResults
+	policyResult.TotalChecks = totalChecks
 
 	// compute ViolationCnt (failed outcomes)
 	violationCount := 0
 	for _, pr := range policyResults {
-		if pr.Outcome == "fail" {
+		if pr.Result == "fail" {
 			violationCount++
 		}
 	}
-	result.ViolationCnt = violationCount
+	policyResult.ViolationCnt = violationCount
 
 	// Decide outcome
-	if result.ViolationCnt == 0 {
-		result.Result = "pass"
+	if policyResult.ViolationCnt == 0 {
+		policyResult.OverallResult = "pass"
 	} else {
-		switch p.Action {
+		switch policy.Action {
 		case "warn":
-			result.Result = "warn"
+			policyResult.OverallResult = "warn"
 		case "pass":
-			result.Result = "pass"
+			policyResult.OverallResult = "pass"
 		default:
-			result.Result = "fail"
+			policyResult.OverallResult = "fail"
 		}
 	}
 
-	return *result, nil
+	return *policyResult, nil
 }
 
 // anyMatch returns true if at least one of the actual values
