@@ -143,6 +143,7 @@ Recommendations:
 ```
 
 **Profile-based scoring (NTIA)**
+```
 $ sbomqs score --detailed --profile ntia samples/example.cdx.json
 
 NTIA Minimum Elements: PASS  Components: 247  samples/example.cdx.json
