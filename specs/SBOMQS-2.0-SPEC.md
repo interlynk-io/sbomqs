@@ -839,8 +839,6 @@ Improvements needed:
 - CC-BY-ND (no derivatives)
 - Proprietary licenses
 
-- https://github.com/interlynk-io/sbomqs/blob/main/specs/SBOMQS-2.0-SPEC.md#permissive-licenses-examples
-
 ### Permissive Licenses (Examples)
 - MIT
 - Apache-2.0
