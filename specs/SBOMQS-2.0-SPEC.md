@@ -94,35 +94,35 @@ SBOM Quality Score: 8.9/10.0  Grade: B  Components: 247  samples/example.cdx.jso
 |                       | comp_with_version              | 9.5/10.0  | 235/247 have versions          |
 |                       | comp_with_identifiers          | 8.2/10.0  | 203/247 have unique IDs        |
 +-----------------------+--------------------------------+-----------+--------------------------------+
-| Provenance           | sbom_creation_timestamp        | 10.0/10.0 | 2025-01-20T10:30:45Z           |
+| Provenance            | sbom_creation_timestamp        | 10.0/10.0 | 2025-01-20T10:30:45Z           |
 |                       | sbom_authors                   | 10.0/10.0 | 2 authors                      |
 |                       | sbom_tool_version              | 10.0/10.0 | syft v0.95.0                   |
 |                       | sbom_supplier                  | 5.0/10.0  | no supplier                    |
 |                       | sbom_namespace                 | 10.0/10.0 | valid namespace                |
 |                       | sbom_lifecycle                 | 5.0/10.0  | no lifecycle                   |
 +-----------------------+--------------------------------+-----------+--------------------------------+
-| Integrity            | comp_with_checksums            | 9.3/10.0  | 230/247 have checksums         |
+| Integrity             | comp_with_checksums            | 9.3/10.0  | 230/247 have checksums         |
 |                       | comp_with_sha256               | 8.0/10.0  | 198/247 have SHA-256+          |
 |                       | sbom_signature                 | 10.0/10.0 | signed                         |
 +-----------------------+--------------------------------+-----------+--------------------------------+
-| Completeness         | comp_with_dependencies         | 7.5/10.0  | 185/247 have dependencies      |
+| Completeness          | comp_with_dependencies         | 7.5/10.0  | 185/247 have dependencies      |
 |                       | sbom_completeness_declared     | 10.0/10.0 | declared                       |
 |                       | primary_component              | 10.0/10.0 | identified                     |
 |                       | comp_with_source_code          | 6.5/10.0  | 160/247 have source URIs       |
 |                       | comp_with_supplier             | 8.5/10.0  | 210/247 have suppliers         |
 |                       | comp_with_purpose              | 9.0/10.0  | 222/247 have type              |
 +-----------------------+--------------------------------+-----------+--------------------------------+
-| Licensing            | comp_with_licenses             | 9.5/10.0  | 235/247 have licenses          |
+| Licensing             | comp_with_licenses             | 9.5/10.0  | 235/247 have licenses          |
 |                       | comp_with_valid_licenses       | 9.0/10.0  | 211/235 valid SPDX             |
 |                       | comp_with_declared_licenses    | 8.0/10.0  | 188/235 have declared          |
 |                       | sbom_data_license              | 10.0/10.0 | CC0-1.0                        |
 |                       | comp_no_deprecated_licenses    | 10.0/10.0 | 0 deprecated                   |
 |                       | comp_no_restrictive_licenses   | 7.0/10.0  | 15 restrictive                 |
 +-----------------------+--------------------------------+-----------+--------------------------------+
-| Vulnerability        | comp_with_purl                 | 8.0/10.0  | 198/247 have PURL              |
+| Vulnerability         | comp_with_purl                 | 8.0/10.0  | 198/247 have PURL              |
 |                       | comp_with_cpe                  | 7.0/10.0  | 173/247 have CPE               |
 +-----------------------+--------------------------------+-----------+--------------------------------+
-| Structural           | sbom_spec_declared             | 10.0/10.0 | CycloneDX                      |
+| Structural            | sbom_spec_declared             | 10.0/10.0 | CycloneDX                      |
 |                       | sbom_spec_version              | 10.0/10.0 | v1.6                           |
 |                       | sbom_file_format               | 10.0/10.0 | JSON                           |
 |                       | sbom_schema_valid              | 10.0/10.0 | valid                          |
@@ -395,7 +395,7 @@ Score: 8.9/10.0 (Grade B)
 
 ## SBOM Spec Support
 - **CycloneDX**: 1.4, 1.5, 1.6+
-- **SPDX**: 2.2, 2.3+, 3.0(WIP)
+- **SPDX**: 2.2, 2.3+, 3.0 (WIP)
 
 ---
 
@@ -476,11 +476,11 @@ sbomqs supports both comprehensive quality scoring and profile-based compliance 
 | :------ | :-------- | :---------- | :--- | :----- |
 | **ntia** | NTIA Minimum Elements | US NTIA minimum required elements for SBOMs | Scored | Implemented |
 | **bsi-v1.1** | BSI TR-03183-2 v1.1 | German BSI technical guideline v1.1 | Scored | Implemented |
-| **bsi-v2.0** | BSI TR-03183-2 v2.0 | German BSI technical guideline v2.0 (adds signatures) | Scored | Implemented |
+| **bsi-v2.0** | BSI TR-03183-2 v2.0 | German BSI technical guideline v2.0.x (adds cryptographic signatures) | Scored | Implemented |
 | **oct** | OpenChain Telco | SPDX-specific telecommunications requirements | Scored | Implemented |
 
 ### Planned Profiles (Not Yet Available)
-- **bsi-v2.1.0**: Latest BSI guideline with enhanced requirements
+- **bsi-v2.1**: Latest BSI guideline with enhanced requirements
 - **auto-isac**: Automotive industry SBOM requirements  
 - **fsct**: Financial Services requirements
 
@@ -590,7 +590,7 @@ $ sbomqs score --profile ntia,bsi-v2.0 samples/example.cdx.json
 *Real-time component risk assessment based on external threat intelligence. These metrics are informational only and do NOT affect the overall quality score.*
 
 | Feature                           | Validation Rules                                                  | Weight |
-| :-------------------------------- | ---------------------------------------------------------------- | :----- |
+| :-------------------------------- | --------------------------------------------------------------- | :----- |
 | % components which are EOL or EOS | Components no longer maintained or declared end-of-life         | 0.10   |
 | % components that are malicious   | Components tagged as malicious in threat databases              | 0.30   |
 | % components that have KEV        | Components with vulnerabilities in CISA's Known Exploited Vulns | 0.30   |
@@ -839,6 +839,8 @@ Improvements needed:
 - CC-BY-ND (no derivatives)
 - Proprietary licenses
 
+- https://github.com/interlynk-io/sbomqs/blob/main/specs/SBOMQS-2.0-SPEC.md#permissive-licenses-examples
+
 ### Permissive Licenses (Examples)
 - MIT
 - Apache-2.0
@@ -862,9 +864,9 @@ The US National Telecommunications and Information Administration defines minimu
 - **Timestamp**: Record of when the SBOM was created
 
 ### BSI TR-03183-2 Evolution
-- **v1.0** (2023): Initial requirements focusing on basic component identification
-- **v2.0** (2024): This version added several new sections and required data fields, updated license fields, refined component definitions, and changed the minimum required versions for CycloneDX to 1.5 and SPDX to 2.2.1
-- **v2.1.0** (2025): The data fields were restructured, minimum CycloneDX (1.6) and SPDX (3.0.1) versions were updated, the concepts of logical and identified components were introduced, and a new section for mapping data fields was added
+- **v1.0** (in German) and **v1.1** (English translation of v1.0 with minor corrections; both 2023): Initial requirements focusing on basic component identification
+- **v2.0.0** (2024): This version added several new sections and required data fields, updated license fields, refined component definitions, and altered the minimum required versions for CycloneDX to 1.5 and SPDX to 2.2.1
+- **v2.1.0** (2025): The data fields were restructured, minimum CycloneDX (1.6) and SPDX (3.0.1) versions were raised, the concepts of logical, external, identified and referenced components were introduced, and a new section for mapping of this Technical Guideline's requirements to an SPDX format's data fields was added
 
 ### AUTO-ISAC Automotive Requirements
 Specific to automotive industry safety and compliance:
