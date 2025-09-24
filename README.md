@@ -217,7 +217,7 @@ sbomqs compliance --fsct application.spdx.json --color
 sbomqs compliance --fsct application.spdx.json --json > fsct-report.json
 ```
 
-[📖 Detailed Compliance Documentation](./docs/compliance.md)
+[📖 Detailed Compliance Documentation](./docs/Compliance.md)
 
 ### Component Analysis
 
