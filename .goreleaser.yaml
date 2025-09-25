@@ -69,3 +69,17 @@ sboms:
     artifacts: binary
     documents:
       - "${artifact}.spdx.sbom"
+
+signs:
+- cmd: cosign
+  env:
+  - COSIGN_YES=true
+  certificate: '${artifact}.pem'
+  signature: '${artifact}.sig'
+  args:
+  - sign-blob
+  - '--output-certificate=${certificate}'
+  - '--output-signature=${signature}'
+  - '${artifact}'
+  artifacts: binary
+  output: true
