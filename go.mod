@@ -1,13 +1,13 @@
 module github.com/interlynk-io/sbomqs
 
-go 1.24.0
+go 1.24.2
 
 toolchain go1.24.5
 
 require (
 	github.com/CycloneDX/cyclonedx-go v0.9.2
 	github.com/DependencyTrack/client-go v0.17.0
-	github.com/charmbracelet/fang v0.4.1
+	github.com/charmbracelet/fang v0.4.2
 	github.com/github/go-spdx/v2 v2.3.3
 	github.com/google/uuid v1.6.0
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.12.0
