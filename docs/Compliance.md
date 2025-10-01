@@ -73,10 +73,10 @@ TR-03183-2 by the German Federal Office for Information Security (BSI) follows a
 
 ## OpenChain Telco: SBOM Requirements
 
-The [OpenChain Telco](https://github.com/OpenChain-Project/Reference-Material/blob/master/SBOM-Quality/Version-1/OpenChain-Telco-SBOM-Guide_EN.md) specifies mandatory properties for an SBOM. Below is how we have derived all the values.
+The [OpenChain Telco](https://github.com/OpenChain-Project/Reference-Material/blob/master/SBOM-Quality-Management/Telco-SBOM-Guide/Version-1.1/en/OpenChain-Telco-SBOM-Guide_EN.md) specifies mandatory properties for an SBOM. Below is how we have derived all the values.
 
 - Released: May 22nd 2024
-- Contact: https://lists.openchainproject.org/g/telco
+- Contact: <https://lists.openchainproject.org/g/telco>
 
 | OpenTelco                    | Section ID | OpenTelco field                   | SPDX(2.3)               | Notes                                                    |
 | :--------------------------- | :--------- | :-------------------------------- | :---------------------- | :------------------------------------------------------- |

@@ -23,26 +23,56 @@ sbomqs score your-sbom.json
 
 ## Table of Contents
 
-- [Why sbomqs?](#why-sbomqs)
-- [Key Features](#key-features)
-- [sbomqs Blog](#sbomqs-blog)
-- [Getting Started](#getting-started)
-  - [Basic Usage](#basic-usage)
-  - [Essential Commands](#essential-commands)
-- [Industry Use Cases](#industry-use-cases)
-- [Advanced Features](#advanced-features)
-  - [Compliance Validation](#compliance-validation)
-  - [Component Analysis](#component-analysis)
-  - [Integration & Automation](#integration--automation)
-  - [Customization](#customization)
-- [Command Reference](#command-reference)
-- [SBOM Card](#sbom-card)
-- [SBOM Platform - Free Community Tier](#sbom-platform---free-community-tier)
-- [Installation](#installation)
-- [Contributions](#contributions)
-- [Other SBOM Open Source tools](#other-sbom-open-source-tools)
-- [Contact](#contact)
-- [Stargazers](#stargazers)
+- [sbomqs: The Comprehensive SBOM Quality \& Compliance Tool](#sbomqs-the-comprehensive-sbom-quality--compliance-tool)
+  - [Quick Start](#quick-start)
+  - [Table of Contents](#table-of-contents)
+  - [Why sbomqs?](#why-sbomqs)
+  - [Key Features](#key-features)
+  - [sbomqs Blog](#sbomqs-blog)
+  - [Getting Started](#getting-started)
+    - [Basic Usage](#basic-usage)
+      - [1. Check Your SBOM Quality Score](#1-check-your-sbom-quality-score)
+      - [2. Understand Why Your Score Is Low](#2-understand-why-your-score-is-low)
+      - [3. Check Compliance](#3-check-compliance)
+    - [Essential Commands](#essential-commands)
+  - [Industry Use Cases](#industry-use-cases)
+    - [Healthcare \& Medical Devices](#healthcare--medical-devices)
+    - [Automotive Industry](#automotive-industry)
+    - [Financial Services](#financial-services)
+    - [Telecommunications](#telecommunications)
+  - [Advanced Features](#advanced-features)
+    - [Compliance Validation](#compliance-validation)
+      - [BSI TR-03183-2 v2.0 (Latest)](#bsi-tr-03183-2-v20-latest)
+      - [Framing Software Component Transparency v3](#framing-software-component-transparency-v3)
+    - [Component Analysis](#component-analysis)
+    - [Integration \& Automation](#integration--automation)
+      - [CI/CD Pipeline Integration](#cicd-pipeline-integration)
+      - [Dependency-Track Integration](#dependency-track-integration)
+      - [Docker Container Scanning](#docker-container-scanning)
+    - [Customization](#customization)
+      - [Custom Scoring Profiles](#custom-scoring-profiles)
+      - [Category-Based Scoring](#category-based-scoring)
+      - [Output Formats](#output-formats)
+  - [Command Reference](#command-reference)
+    - [Core Commands](#core-commands)
+    - [Quick Examples](#quick-examples)
+  - [SBOM Card](#sbom-card)
+  - [SBOM Platform - Free Community Tier](#sbom-platform---free-community-tier)
+  - [Installation](#installation)
+    - [Recommended: Homebrew](#recommended-homebrew)
+    - [Using Go](#using-go)
+    - [Using Docker](#using-docker)
+    - [Pre-built Binaries](#pre-built-binaries)
+    - [Building from Source](#building-from-source)
+  - [Contributions](#contributions)
+  - [Community Recognition](#community-recognition)
+    - [Enterprise Adoptions](#enterprise-adoptions)
+    - [CI/CD Integrations](#cicd-integrations)
+    - [Package Manager Support](#package-manager-support)
+    - [Compliance Standards](#compliance-standards)
+  - [Other SBOM Open Source tools](#other-sbom-open-source-tools)
+  - [Contact](#contact)
+  - [Stargazers](#stargazers)
 
 ## Why sbomqs?
 
@@ -235,6 +265,7 @@ sbomqs list app.spdx.json --feature comp_with_purls --show --json > components.j
 ```
 
 Available features for analysis:
+
 - `comp_with_supplier` - Supply chain transparency
 - `comp_with_licenses` - License compliance
 - `comp_valid_licenses` - License validation
@@ -243,7 +274,7 @@ Available features for analysis:
 - `comp_with_cpes` - CVE matching
 - `comp_with_checksums` - Integrity verification
 
-[📖 Detailed List Command Documentation](./docs/list-command.md)
+[📖 Detailed List Command Documentation](./docs/list.md)
 
 ### Integration & Automation
 
@@ -335,7 +366,7 @@ sbomqs score app.spdx.json --basic
 |---------|-------------|---------------|
 | `score` | Calculate SBOM quality score | [Details](./docs/score-command.md) |
 | `compliance` | Check regulatory compliance | [Details](./docs/compliance-command.md) |
-| `list` | List and filter components | [Details](./docs/list-command.md) |
+| `list` | List and filter components | [Details](./docs/list.md) |
 | `share` | Generate shareable report link | [Details](./docs/share-command.md) |
 | `dtrackScore` | Dependency-Track integration | [Details](./docs/dtrack-command.md) |
 | `generate` | Generate configuration files | [Details](./docs/generate-command.md) |
@@ -412,6 +443,7 @@ We welcome contributions! Here's how to get started:
 5. Open a Pull Request
 
 Please ensure:
+
 - All commits are signed
 - Tests pass (`make test`)
 - Code follows our style guide (`make lint`)
@@ -440,15 +472,16 @@ sbomqs integrates seamlessly with major CI/CD platforms:
 ### Package Manager Support
 
 Available through multiple package managers for easy installation:
+
 - Homebrew (`brew install sbomqs`)
 - Go modules (`go install`)
 - Docker Hub & GitHub Container Registry
 - Uniget tools repository
 
-
 ### Compliance Standards
 
 Trusted for validating compliance with major standards:
+
 - NTIA Minimum Elements
 - BSI TR-03183-2 (v1.1 & v2.0)
 - OpenChain Telco (OCT)
@@ -465,7 +498,6 @@ Interlynk provides a comprehensive suite of SBOM tools:
 - [**SBOM Seamless Transfer**](https://github.com/interlynk-io/sbommv) - Transfer SBOMs between systems
 - [**SBOM Benchmark**](https://www.sbombenchmark.dev) - Repository of SBOM quality scores for popular containers
 
-
 ## Contact
 
 We're here to help! Reach out through:
@@ -475,7 +507,6 @@ We're here to help! Reach out through:
 - 📧 [Email](mailto:hello@interlynk.io) - Direct support
 - 🐛 [GitHub Issues](https://github.com/interlynk-io/sbomqs/issues) - Report bugs or request features
 - 🐦 [Follow us on X](https://twitter.com/InterlynkIo) - Latest updates
-=
 
 ## Stargazers
 
