@@ -43,3 +43,16 @@ type ScoreResult struct {
 	Overall    float64
 	Categories []CategoryResult
 }
+
+// Result represents result of an SBOM
+type Result struct {
+	Spec           string
+	SpecVersion    string
+	FileFormat     string
+	Filename       string
+	NumComponents  int
+	CreationTime   string
+	InterlynkScore float64
+	Grade          string
+	Categories     []CategoryResult
+}

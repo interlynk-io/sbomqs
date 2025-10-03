@@ -20,14 +20,14 @@ import "github.com/interlynk-io/sbomqs/pkg/sbom"
 // It returns a raw 0..10 score, a description, and whether to ignore (N/A).
 type FeatureFunc func(doc sbom.Document) FeatureScore
 
-// Feature contains Key, Weight and corresponding evaluating funtion.
+// FeatureSpec represents properties of a feature.
 type FeatureSpec struct {
-	Key    string
-	Weight float64
-	Eval   FeatureFunc
+	Key      string
+	Weight   float64
+	Evaluate FeatureFunc
 }
 
-// Category contains Name, Weight and collection of features.
+// CategorySpec represent properties of a category.
 type CategorySpec struct {
 	Name     string
 	Weight   float64
@@ -36,13 +36,23 @@ type CategorySpec struct {
 
 type Config struct {
 	// Categories to score (e.g., "provenance", "completeness")
-	Categories []CategorySpec
+	Categories []string
 
 	// Features to score (e.g., "components", "dependencies")
-	Features []FeatureSpec
+	Features []string
 
 	// Optional path to a config file for filters
 	ConfigFile string
 
 	SignatureBundle sbom.Signature
+}
+
+// extractMeta pulls the data to show in the final output.
+type interlynkMeta struct {
+	Filename      string
+	NumComponents int
+	CreationTime  string
+	Spec          string
+	SpecVersion   string
+	FileFormat    string
 }

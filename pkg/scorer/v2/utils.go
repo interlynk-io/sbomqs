@@ -15,6 +15,7 @@
 package v2
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -22,6 +23,8 @@ import (
 	"os"
 	"regexp"
 	"strings"
+
+	"github.com/interlynk-io/sbomqs/pkg/logger"
 )
 
 func IsDir(path string) bool {
@@ -92,4 +95,36 @@ func DownloadURL(url string) ([]byte, error) {
 	}
 
 	return data, err
+}
+
+func RemoveEmptyStrings(input []string) []string {
+	var output []string
+	for _, s := range input {
+		if trimmed := strings.TrimSpace(s); trimmed != "" {
+			output = append(output, trimmed)
+		}
+	}
+	return output
+}
+
+func normalizeAndValidateCategories(ctx context.Context, categories []string) ([]string, error) {
+	log := logger.FromContext(ctx)
+	var normalized []string
+
+	for _, c := range categories {
+
+		// normalize using alias
+		if alias, ok := CategoryAliases[c]; ok {
+			c = alias
+		}
+
+		// validate if it's a supported category
+		if !SupportedCategories[c] {
+			log.Warnf("unsupported category: %s", c)
+			continue
+		}
+		normalized = append(normalized, c)
+	}
+
+	return normalized, nil
 }
