@@ -24,6 +24,40 @@ import (
 	"github.com/samber/lo"
 )
 
+var SupportedFeatures = map[string]bool{
+	"comp_with_name":             true,
+	"comp_with_version":          true,
+	"comp_with_identifiers":      true,
+	"sbom_creation_timestamp":    true,
+	"sbom_authors":               true,
+	"sbom_tool_version":          true,
+	"sbom_supplier":              true,
+	"sbom_namespace":             true,
+	"sbom_lifecycle":             true,
+	"comp_with_checksums":        true,
+	"comp_with_sha256":           true,
+	"sbom_signature":             true,
+	"comp_with_dependencies":     true,
+	"sbom_completeness_declared": true,
+	"primary_component":          true,
+	"comp_with_source_code":      true,
+	"comp_with_supplier":         true,
+	"comp_with_purpose":          true,
+	"comp_with_licenses":         true,
+
+	"comp_with_valid_licenses":     true,
+	"comp_with_declared_licenses":  true,
+	"sbom_data_license":            true,
+	"comp_no_deprecated_licenses":  true,
+	"comp_no_restrictive_licenses": true,
+	"comp_with_purl":               true,
+	"comp_with_cpe":                true,
+	"sbom_spec_declared":           true,
+	"sbom_spec_version":            true,
+	"sbom_file_format":             true,
+	"sbom_schema_valid":            true,
+}
+
 //
 // Identification
 //

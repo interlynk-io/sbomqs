@@ -17,67 +17,13 @@ package v2
 import (
 	"context"
 	"fmt"
-	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/interlynk-io/sbomqs/pkg/logger"
+	"github.com/interlynk-io/sbomqs/pkg/utils"
 )
-
-var CategoryAliases = map[string]string{
-	"identification": "Identification",
-	"provenance":     "Provenance",
-	"integrity":      "Integrity",
-	"completeness":   "Completeness",
-	"licensing":      "Licensing",
-	"vulnerability":  "Vulnerability",
-	"structural":     "Structural",
-}
-
-var SupportedCategories = map[string]bool{
-	"Identification": true,
-	"Provenance":     true,
-	"Integrity":      true,
-	"Completeness":   true,
-	"Licensing":      true,
-	"Vulnerability":  true,
-	"Structural":     true,
-}
-
-var SupportedFeatures = map[string]bool{
-	"comp_with_name":             true,
-	"comp_with_version":          true,
-	"comp_with_identifiers":      true,
-	"sbom_creation_timestamp":    true,
-	"sbom_authors":               true,
-	"sbom_tool_version":          true,
-	"sbom_supplier":              true,
-	"sbom_namespace":             true,
-	"sbom_lifecycle":             true,
-	"comp_with_checksums":        true,
-	"comp_with_sha256":           true,
-	"sbom_signature":             true,
-	"comp_with_dependencies":     true,
-	"sbom_completeness_declared": true,
-	"primary_component":          true,
-	"comp_with_source_code":      true,
-	"comp_with_supplier":         true,
-	"comp_with_purpose":          true,
-	"comp_with_licenses":         true,
-
-	"comp_with_valid_licenses":     true,
-	"comp_with_declared_licenses":  true,
-	"sbom_data_license":            true,
-	"comp_no_deprecated_licenses":  true,
-	"comp_no_restrictive_licenses": true,
-	"comp_with_purl":               true,
-	"comp_with_cpe":                true,
-	"sbom_spec_declared":           true,
-	"sbom_spec_version":            true,
-	"sbom_file_format":             true,
-	"sbom_schema_valid":            true,
-}
 
 func validateFeatures(ctx context.Context, features []string) ([]string, error) {
 	log := logger.FromContext(ctx)
@@ -95,23 +41,9 @@ func validateFeatures(ctx context.Context, features []string) ([]string, error) 
 	return validFeatures, nil
 }
 
-// isHTTPURL returns true for well-formed http(s) URLs.
-func isHTTPURL(s string) bool {
-	u, err := url.Parse(s)
-	if err != nil {
-		return false
-	}
-	if u.Scheme != "http" && u.Scheme != "https" {
-		return false
-	}
-	return u.Host != "" && strings.TrimSpace(u.Path) != ""
-}
-
 // validateAndExpandPaths returns only files and URLs.
 // - URLs are kept as-is.
-// - URLs are kept as-is.
-// - Directories are expanded to their files (non-recursive by default; set recurse=true for walk).
-// - Directories are expanded to their files (non-recursive by default; set recurse=true for walk).
+// - Directories are expanded to their files
 func validateAndExpandPaths(ctx context.Context, paths []string) []string {
 	log := logger.FromContext(ctx)
 	log.Debug("validating paths")
@@ -127,7 +59,7 @@ func validateAndExpandPaths(ctx context.Context, paths []string) []string {
 		}
 
 		// accept URLs
-		if isHTTPURL(path) {
+		if utils.IsURL(path) {
 			if !check[path] {
 				check[path] = true
 				validPaths = append(validPaths, path)

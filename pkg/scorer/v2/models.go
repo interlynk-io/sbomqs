@@ -14,16 +14,58 @@
 
 package v2
 
-import "github.com/interlynk-io/sbomqs/pkg/sbom"
+import (
+	"github.com/interlynk-io/sbomqs/pkg/sbom"
+)
+
+// feature function is a corresponding funtion for a feature.
+type FeatureFunc func(doc sbom.Document) FeatureScore
+
+// FeatureSpec represents properties of a feature.
+type FeatureSpec struct {
+	Key      string
+	Weight   float64
+	Evaluate FeatureFunc
+}
+
+// CategorySpec represent properties of a category.
+type CategorySpec struct {
+	Name     string
+	Weight   float64
+	Features []FeatureSpec
+}
+
+type Config struct {
+	// Categories to score (e.g., "provenance", "completeness")
+	Categories []string
+
+	// Features to score (e.g., "components", "dependencies")
+	Features []string
+
+	// Optional path to a config file for filters
+	ConfigFile string
+
+	SignatureBundle sbom.Signature
+}
+
+// extractMeta pulls the data to show in the final output.
+type interlynkMeta struct {
+	Filename      string
+	NumComponents int
+	CreationTime  string
+	Spec          string
+	SpecVersion   string
+	FileFormat    string
+}
 
 // FeatureScore is returned by a feature function.
 type FeatureScore struct {
-	Score  float64 // 0..10
-	Desc   string  // e.g. "235/247 have versions"
-	Ignore bool    // true => exclude from category calc (N/A)
+	Score  float64
+	Desc   string // e.g. "235/247 have versions"
+	Ignore bool
 }
 
-// Per-feature result
+// feature result
 type FeatureResult struct {
 	Key     string
 	Weight  float64 // feature weight
@@ -32,32 +74,12 @@ type FeatureResult struct {
 	Ignored bool
 }
 
-func NewFeatureResultFromSpec(feat FeatureSpec) *FeatureResult {
-	return &FeatureResult{
-		Key:    feat.Key,
-		Weight: feat.Weight,
-	}
-}
-
-// Per-category result
+// Category result
 type CategoryResult struct {
 	Name     string
 	Weight   float64 // category weight
 	Score    float64
 	Features []FeatureResult
-}
-
-func NewCategoryResultFromSpec(cat CategorySpec) CategoryResult {
-	return CategoryResult{
-		Name:   cat.Name,
-		Weight: cat.Weight,
-	}
-}
-
-// Final result for a SBOM.
-type ScoreResult struct {
-	Overall    float64
-	Categories []CategoryResult
 }
 
 // Result represents result of an SBOM
@@ -71,6 +93,13 @@ type Result struct {
 	InterlynkScore float64
 	Grade          string
 	Categories     []CategoryResult
+}
+
+func NewCategoryResultFromSpec(cat CategorySpec) CategoryResult {
+	return CategoryResult{
+		Name:   cat.Name,
+		Weight: cat.Weight,
+	}
 }
 
 func NewResult(doc sbom.Document) *Result {

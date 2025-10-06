@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package v2
+package utils
 
 import (
 	"fmt"
@@ -42,7 +42,7 @@ func IsGit(in string) bool {
 	return regexp.MustCompile("^(http|https)://github.com").MatchString(in)
 }
 
-func handleURL(path string) (string, string, error) {
+func HandleURL(path string) (string, string, error) {
 	u, err := url.Parse(path)
 	if err != nil {
 		return "", "", fmt.Errorf("failed to parse urlPath: %w", err)
@@ -70,17 +70,18 @@ func handleURL(path string) (string, string, error) {
 	return sbomFilePath, rawURL, err
 }
 
-func downloadSBOMFromURL(url string) ([]byte, error) {
+func DownloadSBOMFromURL(url string) ([]byte, error) {
+	//nolint: gosec
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get data: %w", err)
 	}
 	defer resp.Body.Close()
 
+	// Ensure the response is OK
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("failed to download file: %s", resp.Status)
 	}
-
 	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read response body: %w", err)

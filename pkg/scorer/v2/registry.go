@@ -14,6 +14,26 @@
 
 package v2
 
+var CategoryAliases = map[string]string{
+	"identification": "Identification",
+	"provenance":     "Provenance",
+	"integrity":      "Integrity",
+	"completeness":   "Completeness",
+	"licensing":      "Licensing",
+	"vulnerability":  "Vulnerability",
+	"structural":     "Structural",
+}
+
+var SupportedCategories = map[string]bool{
+	"Identification": true,
+	"Provenance":     true,
+	"Integrity":      true,
+	"Completeness":   true,
+	"Licensing":      true,
+	"Vulnerability":  true,
+	"Structural":     true,
+}
+
 func baseCategories() []CategorySpec {
 	return []CategorySpec{
 		Identification,

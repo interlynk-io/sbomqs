@@ -23,168 +23,47 @@ import (
 	"github.com/interlynk-io/sbomqs/pkg/compliance/common"
 	"github.com/interlynk-io/sbomqs/pkg/logger"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
+	"github.com/interlynk-io/sbomqs/pkg/utils"
 )
 
-// Grade mapping per spec (A: 9–10, B: 8–8.9, C: 7–7.9, D: 5–6.9, F: <5)
-func toGrade(v float64) string {
-	switch {
-	case v >= 9.0:
-		return "A"
-	case v >= 8.0:
-		return "B"
-	case v >= 7.0:
-		return "C"
-	case v >= 5.0:
-		return "D"
-	default:
-		return "F"
-	}
-}
-
-// Rules:
-// - If no filters are provided, return the input as-is.
-// - If Categories are provided: keep only those categories (by name).
-// - If Features are provided: within the kept categories, keep only those features (by key).
-// - If both are provided: intersection semantics (category must match, and only listed features remain).
-// - Categories that end up with zero features after filtering are dropped.
-// - Order is preserved.
-func filterCategories(cfg Config, cats []CategorySpec) []CategorySpec {
-	if len(cfg.Categories) == 0 && len(cfg.Features) == 0 {
-		return cats
-	}
-
-	// Normalize filters once (trim + lowercase) and put them in sets for O(1) lookups.
-	toSet := func(ss []string) map[string]struct{} {
-		if len(ss) == 0 {
-			return nil
-		}
-		m := make(map[string]struct{}, len(ss))
-		for _, s := range ss {
-			k := strings.ToLower(strings.TrimSpace(s))
-			if k != "" {
-				m[k] = struct{}{}
-			}
-		}
-		return m
-	}
-	allowedCategories := toSet(cfg.Categories)
-	allowedFeatures := toSet(cfg.Features)
-
-	wantCats := len(allowedCategories) > 0
-	wantFeats := len(allowedFeatures) > 0
-
-	out := make([]CategorySpec, 0, len(cats))
-
-	for _, cat := range cats {
-		// Category filter (if any)
-		if wantCats {
-			if _, ok := allowedCategories[strings.ToLower(cat.Name)]; !ok {
-				continue
-			}
-		}
-
-		// If no feature filter, keep category as-is.
-		if !wantFeats {
-			out = append(out, cat)
-			continue
-		}
-
-		// Otherwise, keep only requested features inside this category.
-		filtered := make([]FeatureSpec, 0, len(cat.Features))
-		for _, feat := range cat.Features {
-			if _, ok := allowedFeatures[strings.ToLower(feat.Key)]; ok {
-				filtered = append(filtered, feat)
-			}
-		}
-		// Drop category if nothing remains after feature filtering.
-		if len(filtered) == 0 {
-			continue
-		}
-
-		// Append a copy of the category with its filtered feature list.
-		cat.Features = filtered
-		out = append(out, cat)
-	}
-
-	return out
-}
-
-func evaluateFeature(doc sbom.Document, feature FeatureSpec) FeatureResult {
-	featureResult := feature.Evaluate(doc)
-
-	return FeatureResult{
-		Key:     feature.Key,
-		Weight:  feature.Weight,
-		Score:   featureResult.Score,
-		Desc:    featureResult.Desc,
-		Ignored: featureResult.Ignore,
-	}
-}
-
-// scoreAgainstCategories checks SBOM against all defined categories
-func scoreAgainstCategories(ctx context.Context, doc sbom.Document, categories []CategorySpec) []CategoryResult {
+func processURLPath(ctx context.Context, config Config, url string) (*os.File, error) {
 	log := logger.FromContext(ctx)
-	log.Debugf("scoring against categories: ", categories)
+	log.Debugf("Processing URL: %s", url)
 
-	categoryResults := make([]CategoryResult, 0, len(categories))
-	for _, cat := range categories {
-		categoryResults = append(categoryResults, evaluateCategory(ctx, doc, cat))
-	}
-	return categoryResults
-}
-
-// Evaluate a category (feature-weighted average, ignoring N/A).
-func evaluateCategory(ctx context.Context, doc sbom.Document, category CategorySpec) CategoryResult {
-	log := logger.FromContext(ctx)
-	log.Debugf("evaluating against category: ", category)
-
-	categoryWiseResult := NewCategoryResultFromSpec(category)
-
-	var featureWeight float64             // feature weights actually used
-	var scoreWithFeatureWeightage float64 // feature-weighted score sum
-
-	for _, feature := range category.Features {
-		featureResult := evaluateFeature(doc, feature)
-		categoryWiseResult.Features = append(categoryWiseResult.Features, featureResult)
-
-		if featureResult.Ignored {
-			continue
+	if utils.IsGit(url) {
+		_, rawURL, err := utils.HandleURL(url)
+		if err != nil {
+			return nil, fmt.Errorf("handleURL failed: %w", err)
 		}
-
-		featureWeight += featureResult.Weight
-		scoreWithFeatureWeightage += featureResult.Score * featureResult.Weight
+		url = rawURL
 	}
 
-	if featureWeight > 0 {
-		categoryWiseResult.Score = scoreWithFeatureWeightage / featureWeight
-	} else {
-		categoryWiseResult.Score = 0
-	}
-	return categoryWiseResult
-}
-
-// selectCategoriesToScore returns the exact list of categories we’ll score.
-func selectCategoriesToScore(cfg Config) ([]CategorySpec, error) {
-	baseCategories := baseCategories() // Identification, Provenance (with their feature specs)
-
-	// filters (by category name and/or feature key).
-	newCategories := filterCategories(cfg, baseCategories)
-
-	if len(newCategories) == 0 {
-		return nil, fmt.Errorf("no categories to score after applying filters (check config)")
+	// download SBOM data from the URL
+	sbomData, err := utils.DownloadSBOMFromURL(url)
+	if err != nil {
+		return nil, fmt.Errorf("failed to download SBOM from URL %s: %w", url, err)
 	}
 
-	// Also prune categories that lost all features due to feature-level filters.
-	pruned := make([]CategorySpec, 0, len(newCategories))
-	for _, cat := range newCategories {
-		if len(cat.Features) > 0 {
-			pruned = append(pruned, cat)
-		}
+	// create a temporary file to store the SBOM
+	tmpFile, err := os.CreateTemp("", "sbomqs-url-*.json")
+	if err != nil {
+		return nil, fmt.Errorf("failed to create temp file for SBOM: %w", err)
 	}
-	if len(pruned) == 0 {
-		return nil, fmt.Errorf("no features to score after applying filters (check config)")
+
+	if _, err := tmpFile.Write(sbomData); err != nil {
+		tmpFile.Close()
+		os.Remove(tmpFile.Name())
+		return nil, fmt.Errorf("failed to write to temp SBOM file: %w", err)
 	}
-	return pruned, nil
+
+	// Rewind file pointer for reading later
+	if _, err := tmpFile.Seek(0, 0); err != nil {
+		tmpFile.Close()
+		os.Remove(tmpFile.Name())
+		return nil, fmt.Errorf("failed to reset temp file pointer: %w", err)
+	}
+
+	return tmpFile, nil
 }
 
 func removeEmptyStrings(input []string) []string {
@@ -256,4 +135,13 @@ func getSignature(ctx context.Context, config Config, path string) (sbom.Signatu
 		PublicKey: pubKey,
 		Blob:      blob,
 	}, nil
+}
+
+// helper for logging
+func categoryNames(cats []CategorySpec) []string {
+	out := make([]string, 0, len(cats))
+	for _, c := range cats {
+		out = append(out, c.Name)
+	}
+	return out
 }

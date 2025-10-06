@@ -17,10 +17,11 @@ package v2
 import (
 	"context"
 	"fmt"
-	"os"
+	"strings"
 
 	"github.com/interlynk-io/sbomqs/pkg/logger"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
+	"github.com/interlynk-io/sbomqs/pkg/utils"
 )
 
 func ScoreSBOM(ctx context.Context, config Config, paths []string) ([]Result, error) {
@@ -41,7 +42,7 @@ func ScoreSBOM(ctx context.Context, config Config, paths []string) ([]Result, er
 	var anyProcessed bool
 
 	for _, path := range validPaths {
-		if IsURL(path) {
+		if utils.IsURL(path) {
 			log.Debugf("processing URL: %s", path)
 
 			sbomFile, err := processURLPath(ctx, config, path)
@@ -69,6 +70,7 @@ func ScoreSBOM(ctx context.Context, config Config, paths []string) ([]Result, er
 				log.Warnf("failed to process SBOM %s: %v", path, err)
 				return nil, fmt.Errorf("process SBOM %q: %w", path, err)
 			}
+
 			sbomScoreResult.Filename = path
 
 			results = append(results, sbomScoreResult)
@@ -115,46 +117,6 @@ func ScoreSBOM(ctx context.Context, config Config, paths []string) ([]Result, er
 	return results, nil
 }
 
-func processURLPath(ctx context.Context, config Config, url string) (*os.File, error) {
-	log := logger.FromContext(ctx)
-	log.Debugf("Processing URL: %s", url)
-
-	if IsGit(url) {
-		_, rawURL, err := handleURL(url)
-		if err != nil {
-			return nil, fmt.Errorf("handleURL failed: %w", err)
-		}
-		url = rawURL
-	}
-
-	// download SBOM data from the URL
-	sbomData, err := downloadSBOMFromURL(url)
-	if err != nil {
-		return nil, fmt.Errorf("failed to download SBOM from URL %s: %w", url, err)
-	}
-
-	// create a temporary file to store the SBOM
-	tmpFile, err := os.CreateTemp("", "sbomqs-url-*.json")
-	if err != nil {
-		return nil, fmt.Errorf("failed to create temp file for SBOM: %w", err)
-	}
-
-	if _, err := tmpFile.Write(sbomData); err != nil {
-		tmpFile.Close()
-		os.Remove(tmpFile.Name())
-		return nil, fmt.Errorf("failed to write to temp SBOM file: %w", err)
-	}
-
-	// Rewind file pointer for reading later
-	if _, err := tmpFile.Seek(0, 0); err != nil {
-		tmpFile.Close()
-		os.Remove(tmpFile.Name())
-		return nil, fmt.Errorf("failed to reset temp file pointer: %w", err)
-	}
-
-	return tmpFile, nil
-}
-
 func SBOMEvaluation(ctx context.Context, doc sbom.Document, config Config, sig sbom.Signature) (Result, error) {
 	log := logger.FromContext(ctx)
 	log.Debugf("evaluating SBOM")
@@ -171,32 +133,16 @@ func SBOMEvaluation(ctx context.Context, doc sbom.Document, config Config, sig s
 		return Result{}, fmt.Errorf("no categories to score (check config filters)")
 	}
 
-	log.Debugf("selected categories for evaluation: %s", categoriesToScore)
+	// Log category names (readable)
+	log.Debugf("selected categories for evaluation: %s", strings.Join(categoryNames(categoriesToScore), ", "))
 
 	// Score SBOM by categories
 	catEvaluationResults := scoreAgainstCategories(ctx, doc, categoriesToScore)
-	overallScore := computeOverallScore(catEvaluationResults)
+	interlynkScore := computeInterlynkScore(catEvaluationResults)
 
-	result.InterlynkScore = overallScore
-	result.Grade = toGrade(overallScore)
+	result.InterlynkScore = interlynkScore
+	result.Grade = toGrade(interlynkScore)
 	result.Categories = catEvaluationResults
 
 	return *result, nil
-}
-
-// ComputeOverall returns the weighted average of category scores.
-func computeOverallScore(catResults []CategoryResult) float64 {
-	var categoryWeight, overallScore, sumOfScoreWithCategoryWeightage float64
-
-	for _, catResult := range catResults {
-		categoryWeight += catResult.Weight
-		sumOfScoreWithCategoryWeightage += catResult.Score * catResult.Weight
-	}
-
-	if categoryWeight == 0 {
-		return 0
-	}
-	overallScore = sumOfScoreWithCategoryWeightage / categoryWeight
-
-	return overallScore
 }
