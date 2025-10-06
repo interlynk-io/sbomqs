@@ -71,23 +71,23 @@ var Provenance = CategorySpec{
 }
 
 var Integrity = CategorySpec{
-	Name:   "Integrity",
-	Weight: 15,
+	Name:     "Integrity",
+	Weight:   15,
 	Features: []FeatureSpec{
-		{Key: "sbom_signature", Weight: 0.10, Evaluate: SBOMDDocSignature},
-		{Key: "component_hash", Weight: 0.10, Evaluate: CompWithChecksum},
+		// {Key: "sbom_signature", Weight: 0.10, Evaluate: SBOMDDocSignature},
+		// {Key: "component_hash", Weight: 0.10, Evaluate: CompWithChecksum},
 	},
 }
 
 var Completeness = CategorySpec{
-	Name:   "Completeness",
-	Weight: 12,
+	Name:     "Completeness",
+	Weight:   12,
 	Features: []FeatureSpec{
-		{Key: "comp_dependencies", Weight: 0.25, Evaluate: CompWithDependencies},
-		{Key: "comp_declared_completeness", Weight: 0.15, Evaluate: CompWithDeclaredCompleteness},
-		{Key: "sbom_primary_component", Weight: 0.20, Evaluate: SBOMWithPrimaryComponent},
-		{Key: "comp_source_code", Weight: 0.15, Evaluate: CompWithSourceCode},
-		{Key: "comp_supplier", Weight: 0.15, Evaluate: CompWithSupplier},
-		{Key: "comp_primary_purpose", Weight: 0.10, Evaluate: CompWithPrimaryPurpose},
+		// {Key: "comp_dependencies", Weight: 0.25, Evaluate: CompWithDependencies},
+		// {Key: "comp_declared_completeness", Weight: 0.15, Evaluate: CompWithDeclaredCompleteness},
+		// {Key: "sbom_primary_component", Weight: 0.20, Evaluate: SBOMWithPrimaryComponent},
+		// {Key: "comp_source_code", Weight: 0.15, Evaluate: CompWithSourceCode},
+		// {Key: "comp_supplier", Weight: 0.15, Evaluate: CompWithSupplier},
+		// {Key: "comp_primary_purpose", Weight: 0.10, Evaluate: CompWithPrimaryPurpose},
 	},
 }

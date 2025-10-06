@@ -14,6 +14,22 @@
 
 package v2
 
+// perComponentScore returns 10 × (have/total)
+func perComponentScore(have, total int) float64 {
+	if total <= 0 {
+		return 0
+	}
+	return 10.0 * (float64(have) / float64(total))
+}
+
+// booleanScore returns 10 if present, else 0.
+func booleanScore(present bool) float64 {
+	if present {
+		return 10.0
+	}
+	return 0.0
+}
+
 // Grade mapping (A: 9–10, B: 8–8.9, C: 7–7.9, D: 5–6.9, F: <5)
 func toGrade(interlynkScore float64) string {
 	switch {

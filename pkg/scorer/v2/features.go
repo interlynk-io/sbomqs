@@ -68,13 +68,13 @@ func CompWithName(doc sbom.Document) FeatureScore {
 	if total == 0 {
 		return FeatureScore{Score: 0, Desc: "N/A (no components)", Ignore: true}
 	}
-	withNames := lo.CountBy(doc.Components(), func(c sbom.GetComponent) bool {
-		return c.GetName() != ""
+	have := lo.CountBy(doc.Components(), func(c sbom.GetComponent) bool {
+		return strings.TrimSpace(c.GetName()) != ""
 	})
 
 	return FeatureScore{
-		Score:  10.0 * float64(withNames) / float64(total),
-		Desc:   fmt.Sprintf("%d/%d have names", withNames, total),
+		Score:  perComponentScore(have, total),
+		Desc:   fmt.Sprintf("%d/%d have names", have, total),
 		Ignore: false,
 	}
 }
@@ -85,13 +85,13 @@ func CompWithVersion(doc sbom.Document) FeatureScore {
 	if total == 0 {
 		return FeatureScore{Score: 0, Desc: "N/A (no components)", Ignore: true}
 	}
-	withVersions := lo.CountBy(d.Components(), func(c sbom.GetComponent) bool {
+	have := lo.CountBy(doc.Components(), func(c sbom.GetComponent) bool {
 		return c.GetVersion() != ""
 	})
 
 	return FeatureScore{
-		Score:  10.0 * float64(withVersions) / float64(total),
-		Desc:   fmt.Sprintf("%d/%d have versions", withVersions, total),
+		Score:  perComponentScore(have, total),
+		Desc:   fmt.Sprintf("%d/%d have versions", have, total),
 		Ignore: false,
 	}
 }
@@ -103,9 +103,7 @@ func CompWithUniqIDs(doc sbom.Document) FeatureScore {
 		return FeatureScore{Score: 0, Desc: "N/A (no components)", Ignore: true}
 	}
 
-	seen := make(map[string]int)
-
-	compIDs := lo.FilterMap(doc.Components(), func(c sbom.GetComponent, _ int) (string, bool) {
+	have := lo.FilterMap(doc.Components(), func(c sbom.GetComponent, _ int) (string, bool) {
 		if c.GetID() == "" {
 			return "", false
 		}
@@ -113,8 +111,8 @@ func CompWithUniqIDs(doc sbom.Document) FeatureScore {
 	})
 
 	return FeatureScore{
-		Score:  10.0 * float64(len(compIDs)) / float64(total),
-		Desc:   fmt.Sprintf("%d/%d have unique IDs", len(compIDs), total),
+		Score:  perComponentScore(len(have), total),
+		Desc:   fmt.Sprintf("%d/%d have unique IDs", len(have), total),
 		Ignore: false,
 	}
 }
@@ -133,17 +131,23 @@ func SBOMCreationTime(doc sbom.Document) FeatureScore {
 	if _, err := time.Parse(time.RFC3339, ts); err != nil {
 		return FeatureScore{Score: 0, Desc: fmt.Sprintf("invalid timestamp: %s", ts), Ignore: false}
 	}
-	return FeatureScore{Score: 10, Desc: ts, Ignore: false}
+	return FeatureScore{
+		Score:  booleanScore(ts != ""),
+		Desc:   ts,
+		Ignore: false,
+	}
 }
 
 // SBOMAuthors: SBOM has author/creator information (people/orgs and/or tools).
 // We treat "authors + tools" as creators for a friendlier pass in common real SBOMs.
 func SBOMAuthors(doc sbom.Document) FeatureScore {
 	total := len(doc.Authors())
-	if total > 0 {
-		return FeatureScore{Score: 10, Desc: fmt.Sprintf("%d creators (people/tools)", total), Ignore: false}
+
+	return FeatureScore{
+		Score:  booleanScore(total > 0),
+		Desc:   fmt.Sprintf("%d authors/tools", total),
+		Ignore: false,
 	}
-	return FeatureScore{Score: 0, Desc: "no legal authors/creators", Ignore: false}
 }
 
 // SBOMToolVersion: at least one tool has both a name and a version.
@@ -161,10 +165,10 @@ func SBOMToolVersion(doc sbom.Document) FeatureScore {
 // SBOMSupplier: document-level supplier/manufacturer is present.
 func SBOMSupplier(doc sbom.Document) FeatureScore {
 	// TODO: adjust to your spec wrapper. This is a placeholder accessor.
-	supplier := strings.TrimSpace(doc.Spec().GetSupplier()) // <-- replace with your real method
-	if supplier != "" {
-		return FeatureScore{Score: 10, Desc: supplier, Ignore: false}
-	}
+	// supplier := strings.TrimSpace(doc.Spec().GetSupplier()) // <-- replace with your real method
+	// if supplier != "" {
+	// 	return FeatureScore{Score: 10, Desc: supplier, Ignore: false}
+	// }
 	return FeatureScore{Score: 0, Desc: "no supplier", Ignore: false}
 }
 
@@ -184,9 +188,10 @@ func SBOMNamespace(doc sbom.Document) FeatureScore {
 
 // SBOMLifecycle: lifecycle/phase information is present (e.g., build/runtime).
 func SBOMLifecycle(doc sbom.Document) FeatureScore {
-	phase := strings.TrimSpace(doc.Lifecycles())
-	if phase != "" {
-		return FeatureScore{Score: 10, Desc: phase, Ignore: false}
-	}
+	// TODO: to implement
+	// phase := strings.TrimSpace(doc.Lifecycles())
+	// if phase != "" {
+	// 	return FeatureScore{Score: 10, Desc: phase, Ignore: false}
+	// }
 	return FeatureScore{Score: 0, Desc: "no lifecycle", Ignore: false}
 }
