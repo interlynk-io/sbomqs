@@ -14,6 +14,8 @@
 
 package v2
 
+import "github.com/interlynk-io/sbomqs/pkg/sbom"
+
 // FeatureScore is returned by a feature function.
 type FeatureScore struct {
 	Score  float64 // 0..10
@@ -30,12 +32,26 @@ type FeatureResult struct {
 	Ignored bool
 }
 
+func NewFeatureResultFromSpec(feat FeatureSpec) *FeatureResult {
+	return &FeatureResult{
+		Key:    feat.Key,
+		Weight: feat.Weight,
+	}
+}
+
 // Per-category result
 type CategoryResult struct {
 	Name     string
 	Weight   float64 // category weight
 	Score    float64
 	Features []FeatureResult
+}
+
+func NewCategoryResultFromSpec(cat CategorySpec) CategoryResult {
+	return CategoryResult{
+		Name:   cat.Name,
+		Weight: cat.Weight,
+	}
 }
 
 // Final result for a SBOM.
@@ -55,4 +71,14 @@ type Result struct {
 	InterlynkScore float64
 	Grade          string
 	Categories     []CategoryResult
+}
+
+func NewResult(doc sbom.Document) *Result {
+	return &Result{
+		NumComponents: len(doc.Components()),
+		CreationTime:  doc.Spec().GetCreationTimestamp(),
+		Spec:          doc.Spec().GetName(),
+		SpecVersion:   doc.Spec().GetVersion(),
+		FileFormat:    doc.Spec().FileFormat(),
+	}
 }

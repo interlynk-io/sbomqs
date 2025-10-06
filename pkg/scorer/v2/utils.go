@@ -15,7 +15,6 @@
 package v2
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -23,8 +22,6 @@ import (
 	"os"
 	"regexp"
 	"strings"
-
-	"github.com/interlynk-io/sbomqs/pkg/logger"
 )
 
 func IsDir(path string) bool {
@@ -45,7 +42,7 @@ func IsGit(in string) bool {
 	return regexp.MustCompile("^(http|https)://github.com").MatchString(in)
 }
 
-func HandleURL(path string) (string, string, error) {
+func handleURL(path string) (string, string, error) {
 	u, err := url.Parse(path)
 	if err != nil {
 		return "", "", fmt.Errorf("failed to parse urlPath: %w", err)
@@ -73,18 +70,17 @@ func HandleURL(path string) (string, string, error) {
 	return sbomFilePath, rawURL, err
 }
 
-func DownloadURL(url string) ([]byte, error) {
-	//nolint: gosec
+func downloadSBOMFromURL(url string) ([]byte, error) {
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get data: %w", err)
 	}
 	defer resp.Body.Close()
 
-	// Ensure the response is OK
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("failed to download file: %s", resp.Status)
 	}
+
 	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read response body: %w", err)
@@ -95,36 +91,4 @@ func DownloadURL(url string) ([]byte, error) {
 	}
 
 	return data, err
-}
-
-func RemoveEmptyStrings(input []string) []string {
-	var output []string
-	for _, s := range input {
-		if trimmed := strings.TrimSpace(s); trimmed != "" {
-			output = append(output, trimmed)
-		}
-	}
-	return output
-}
-
-func normalizeAndValidateCategories(ctx context.Context, categories []string) ([]string, error) {
-	log := logger.FromContext(ctx)
-	var normalized []string
-
-	for _, c := range categories {
-
-		// normalize using alias
-		if alias, ok := CategoryAliases[c]; ok {
-			c = alias
-		}
-
-		// validate if it's a supported category
-		if !SupportedCategories[c] {
-			log.Warnf("unsupported category: %s", c)
-			continue
-		}
-		normalized = append(normalized, c)
-	}
-
-	return normalized, nil
 }

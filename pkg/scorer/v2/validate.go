@@ -17,11 +17,12 @@ package v2
 import (
 	"context"
 	"fmt"
+	"net/url"
 	"os"
+	"path/filepath"
+	"strings"
 
-	"github.com/interlynk-io/sbomqs/pkg/compliance/common"
 	"github.com/interlynk-io/sbomqs/pkg/logger"
-	"github.com/interlynk-io/sbomqs/pkg/sbom"
 )
 
 var CategoryAliases = map[string]string{
@@ -80,6 +81,8 @@ var SupportedFeatures = map[string]bool{
 
 func validateFeatures(ctx context.Context, features []string) ([]string, error) {
 	log := logger.FromContext(ctx)
+	log.Debugf("validating features: %v", features)
+
 	var validFeatures []string
 
 	for _, feature := range features {
@@ -92,20 +95,84 @@ func validateFeatures(ctx context.Context, features []string) ([]string, error) 
 	return validFeatures, nil
 }
 
-// validatePaths returns the valid paths.
-func validatePaths(ctx context.Context, paths []string) []string {
+// isHTTPURL returns true for well-formed http(s) URLs.
+func isHTTPURL(s string) bool {
+	u, err := url.Parse(s)
+	if err != nil {
+		return false
+	}
+	if u.Scheme != "http" && u.Scheme != "https" {
+		return false
+	}
+	return u.Host != "" && strings.TrimSpace(u.Path) != ""
+}
+
+// validateAndExpandPaths returns only files and URLs.
+// - URLs are kept as-is.
+// - URLs are kept as-is.
+// - Directories are expanded to their files (non-recursive by default; set recurse=true for walk).
+// - Directories are expanded to their files (non-recursive by default; set recurse=true for walk).
+func validateAndExpandPaths(ctx context.Context, paths []string) []string {
 	log := logger.FromContext(ctx)
 	log.Debug("validating paths")
 
-	var validPaths []string
+	validPaths := make([]string, 0, len(paths))
+	check := make(map[string]bool)
 
 	for _, path := range paths {
-		if _, err := os.Stat(path); err != nil {
-			log.Debugf("skipping invalid path: %s, error: %v", path, err)
+
+		path = strings.TrimSpace(path)
+		if path == "" {
 			continue
 		}
-		validPaths = append(validPaths, path)
+
+		// accept URLs
+		if isHTTPURL(path) {
+			if !check[path] {
+				check[path] = true
+				validPaths = append(validPaths, path)
+			}
+			continue
+		}
+
+		// accept existing local files/dirs
+		info, err := os.Stat(path)
+		if err != nil {
+			log.Debugf("skip: cannot stat %q: %v", path, err)
+			continue
+		}
+
+		// Files: add directly.
+		if info.Mode().IsRegular() {
+			if !check[path] {
+				check[path] = true
+				validPaths = append(validPaths, path)
+			}
+			continue
+		}
+
+		// Dirs: expand to files.
+		if info.IsDir() {
+			files, err := os.ReadDir(path)
+			if err != nil {
+				log.Debugf("skip: cannot read dir %q: %v", path, err)
+				continue
+			}
+			for _, file := range files {
+				if file.Type().IsRegular() {
+					fullPath := filepath.Join(path, file.Name())
+					if !check[fullPath] {
+						check[fullPath] = true
+						validPaths = append(validPaths, fullPath)
+					}
+				}
+			}
+			continue
+		}
+
+		log.Debugf("skip: unsupported path type %q", path)
 	}
+
 	return validPaths
 }
 
@@ -119,10 +186,9 @@ func validateConfig(ctx context.Context, config *Config) error {
 		}
 		return nil
 	}
-	config.Categories = RemoveEmptyStrings(config.Categories)
+	config.Categories = removeEmptyStrings(config.Categories)
 
 	if len(config.Categories) > 0 {
-		log.Debugf("validating categories: %v", config.Categories)
 		normCategories, err := normalizeAndValidateCategories(ctx, config.Categories)
 		if err != nil {
 			return fmt.Errorf("failed to normalize and validate categories: %w", err)
@@ -130,9 +196,8 @@ func validateConfig(ctx context.Context, config *Config) error {
 		config.Categories = normCategories
 	}
 
-	config.Features = RemoveEmptyStrings(config.Features)
+	config.Features = removeEmptyStrings(config.Features)
 	if len(config.Features) > 0 {
-		log.Debugf("validating features: %v", config.Features)
 		validFeatures, err := validateFeatures(ctx, config.Features)
 		if err != nil {
 			return fmt.Errorf("failed to validate features: %w", err)
@@ -141,40 +206,4 @@ func validateConfig(ctx context.Context, config *Config) error {
 	}
 
 	return nil
-}
-
-// getFileHandle opens a file in read-only mode and returns the handle.
-// The caller is responsible for calling Close() on the returned file.
-func getFileHandle(ctx context.Context, filePath string) (*os.File, error) {
-	log := logger.FromContext(ctx)
-
-	log.Debugf("Opening file for reading: %q", filePath)
-
-	file, err := os.Open(filePath) // read-only
-	if err != nil {
-		log.Debugf("Failed to open %q: %v", filePath, err)
-		return nil, fmt.Errorf("open file for reading: %q: %w", filePath, err)
-	}
-
-	log.Debugf("Successfully opened %q", filePath)
-	return file, nil
-}
-
-func getSignature(ctx context.Context, path string, sigValue, publicKey string) (sbom.Signature, error) {
-	log := logger.FromContext(ctx)
-
-	if sigValue == "" || publicKey == "" {
-		return sbom.Signature{}, nil
-	}
-	blob, signature, pubKey, err := common.GetSignatureBundle(ctx, path, sigValue, publicKey)
-	if err != nil {
-		log.Debugf("failed to get signature bundle for file: %s: %v", path, err)
-		return sbom.Signature{}, err
-	}
-
-	return sbom.Signature{
-		SigValue:  signature,
-		PublicKey: pubKey,
-		Blob:      blob,
-	}, nil
 }

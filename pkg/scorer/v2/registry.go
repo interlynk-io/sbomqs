@@ -14,6 +14,19 @@
 
 package v2
 
+func baseCategories() []CategorySpec {
+	return []CategorySpec{
+		Identification,
+		Provenance,
+		Integrity,
+		Completeness,
+		// LicensingAndCompliance
+		// VulnerabilityAndTraceability
+		// Structural
+		// Component Quality
+	}
+}
+
 var Identification = CategorySpec{
 	Name:   "Identification",
 	Weight: 10,
