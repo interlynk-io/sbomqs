@@ -5,7 +5,7 @@ go 1.24.0
 toolchain go1.24.5
 
 require (
-	github.com/CycloneDX/cyclonedx-go v0.9.2
+	github.com/CycloneDX/cyclonedx-go v0.9.3
 	github.com/DependencyTrack/client-go v0.17.0
 	github.com/charmbracelet/fang v0.4.1
 	github.com/github/go-spdx/v2 v2.3.3
