@@ -12,10 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package v2
+package engine
+
+import "github.com/interlynk-io/sbomqs/pkg/scorer/v2/config"
 
 // perComponentScore returns 10 × (have/total)
-func perComponentScore(have, total int) float64 {
+func PerComponentScore(have, total int) float64 {
 	if total <= 0 {
 		return 0
 	}
@@ -23,7 +25,7 @@ func perComponentScore(have, total int) float64 {
 }
 
 // booleanScore returns 10 if present, else 0.
-func booleanScore(present bool) float64 {
+func BooleanScore(present bool) float64 {
 	if present {
 		return 10.0
 	}
@@ -47,7 +49,7 @@ func toGrade(interlynkScore float64) string {
 }
 
 // computeCategoryScore returns the weighted average of feature scores.
-func computeCategoryScore(features []FeatureResult) float64 {
+func computeCategoryScore(features []config.FeatureResult) float64 {
 	var totalFeatureWeight float64
 	for _, feature := range features {
 		if !feature.Ignored {
@@ -73,7 +75,7 @@ func computeCategoryScore(features []FeatureResult) float64 {
 }
 
 // computeInterlynkScore returns the weighted average of category scores.
-func computeInterlynkScore(catResults []CategoryResult) float64 {
+func computeInterlynkScore(catResults []config.CategoryResult) float64 {
 	var totalCategoryWeight, finalScoreWithWeightage float64
 
 	for _, catResult := range catResults {

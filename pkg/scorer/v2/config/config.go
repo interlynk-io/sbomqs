@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package v2
+package config
 
 import (
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
@@ -46,16 +46,6 @@ type Config struct {
 	ConfigFile string
 
 	SignatureBundle sbom.Signature
-}
-
-// extractMeta pulls the data to show in the final output.
-type interlynkMeta struct {
-	Filename      string
-	NumComponents int
-	CreationTime  string
-	Spec          string
-	SpecVersion   string
-	FileFormat    string
 }
 
 // FeatureScore is returned by a feature function.

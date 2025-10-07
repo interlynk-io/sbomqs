@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package v2
+package engine
 
 import (
 	"context"
@@ -23,10 +23,12 @@ import (
 	"github.com/interlynk-io/sbomqs/pkg/compliance/common"
 	"github.com/interlynk-io/sbomqs/pkg/logger"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
+	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/config"
+	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/registry"
 	"github.com/interlynk-io/sbomqs/pkg/utils"
 )
 
-func processURLPath(ctx context.Context, config Config, url string) (*os.File, error) {
+func processURLPath(ctx context.Context, cfg config.Config, url string) (*os.File, error) {
 	log := logger.FromContext(ctx)
 	log.Debugf("Processing URL: %s", url)
 
@@ -84,12 +86,12 @@ func normalizeAndValidateCategories(ctx context.Context, categories []string) ([
 	for _, cat := range categories {
 
 		// normalize using alias
-		if alias, ok := CategoryAliases[cat]; ok {
+		if alias, ok := registry.CategoryAliases[cat]; ok {
 			cat = alias
 		}
 
 		// validate if it's a supported category
-		if !SupportedCategories[cat] {
+		if !registry.SupportedCategories[cat] {
 			log.Warnf("unsupported category: %s", cat)
 			continue
 		}
@@ -116,10 +118,10 @@ func getFileHandle(ctx context.Context, filePath string) (*os.File, error) {
 	return file, nil
 }
 
-func getSignature(ctx context.Context, config Config, path string) (sbom.Signature, error) {
+func getSignature(ctx context.Context, cfg config.Config, path string) (sbom.Signature, error) {
 	log := logger.FromContext(ctx)
 
-	sigValue, publicKey := config.SignatureBundle.SigValue, config.SignatureBundle.PublicKey
+	sigValue, publicKey := cfg.SignatureBundle.SigValue, cfg.SignatureBundle.PublicKey
 	if sigValue == "" || publicKey == "" {
 		return sbom.Signature{}, nil
 	}
@@ -138,7 +140,7 @@ func getSignature(ctx context.Context, config Config, path string) (sbom.Signatu
 }
 
 // helper for logging
-func categoryNames(cats []CategorySpec) []string {
+func categoryNames(cats []config.CategorySpec) []string {
 	out := make([]string, 0, len(cats))
 	for _, c := range cats {
 		out = append(out, c.Name)

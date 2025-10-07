@@ -12,15 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package v2
+package engine
 
 import (
 	"testing"
 
+	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/config"
 	"github.com/stretchr/testify/assert"
 )
 
-func catNames(cs []CategorySpec) []string {
+func catNames(cs []config.CategorySpec) []string {
 	out := make([]string, 0, len(cs))
 	for _, c := range cs {
 		out = append(out, c.Name)
@@ -28,7 +29,7 @@ func catNames(cs []CategorySpec) []string {
 	return out
 }
 
-func featKeys(fs []FeatureSpec) []string {
+func featKeys(fs []config.FeatureSpec) []string {
 	out := make([]string, 0, len(fs))
 	for _, f := range fs {
 		out = append(out, f.Key)
@@ -38,11 +39,11 @@ func featKeys(fs []FeatureSpec) []string {
 
 func TestFilterCategories(t *testing.T) {
 	// Common input set for the cases below
-	input := []CategorySpec{
+	input := []config.CategorySpec{
 		{
 			Name:   "Identification",
 			Weight: 10,
-			Features: []FeatureSpec{
+			Features: []config.FeatureSpec{
 				{
 					Key:    "comp_with_name",
 					Weight: 0.40,
@@ -60,7 +61,7 @@ func TestFilterCategories(t *testing.T) {
 		{
 			Name:   "Provenance",
 			Weight: 12,
-			Features: []FeatureSpec{
+			Features: []config.FeatureSpec{
 				{
 					Key:    "sbom_creation_timestamp",
 					Weight: 0.20,
@@ -75,14 +76,14 @@ func TestFilterCategories(t *testing.T) {
 
 	tests := []struct {
 		name           string
-		cfg            Config
-		categories     []CategorySpec
+		cfg            config.Config
+		categories     []config.CategorySpec
 		wantCatNames   []string            // expected categories (order preserved)
 		wantCatFeatMap map[string][]string // expected feature keys per kept category (order preserved)
 	}{
 		{
 			name:         "No filters",
-			cfg:          Config{},
+			cfg:          config.Config{},
 			categories:   input,
 			wantCatNames: []string{"Identification", "Provenance"},
 			wantCatFeatMap: map[string][]string{
@@ -92,7 +93,7 @@ func TestFilterCategories(t *testing.T) {
 		},
 		{
 			name:       "Filter Identification category",
-			cfg:        Config{Categories: []string{"Identification"}},
+			cfg:        config.Config{Categories: []string{"Identification"}},
 			categories: input,
 			wantCatNames: []string{
 				"Identification",
@@ -103,7 +104,7 @@ func TestFilterCategories(t *testing.T) {
 		},
 		{
 			name:       "By features → keep only categories that have those features (and only those features)",
-			cfg:        Config{Features: []string{"comp_with_name", "comp_with_version"}},
+			cfg:        config.Config{Features: []string{"comp_with_name", "comp_with_version"}},
 			categories: input,
 			wantCatNames: []string{
 				"Identification",
@@ -114,7 +115,7 @@ func TestFilterCategories(t *testing.T) {
 		},
 		{
 			name:       "Both category and features → intersection",
-			cfg:        Config{Categories: []string{"Provenance"}, Features: []string{"sbom_authors", "not_present"}},
+			cfg:        config.Config{Categories: []string{"Provenance"}, Features: []string{"sbom_authors", "not_present"}},
 			categories: input,
 			wantCatNames: []string{
 				"Provenance",
@@ -125,7 +126,7 @@ func TestFilterCategories(t *testing.T) {
 		},
 		{
 			name:       "Feature filter removes all features from a category → category dropped",
-			cfg:        Config{Features: []string{"nonexistent_feature"}},
+			cfg:        config.Config{Features: []string{"nonexistent_feature"}},
 			categories: input,
 			// No categories should remain
 			wantCatNames:   []string{},

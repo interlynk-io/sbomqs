@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package v2
+package engine
 
 import (
 	"context"
@@ -22,6 +22,8 @@ import (
 	"strings"
 
 	"github.com/interlynk-io/sbomqs/pkg/logger"
+	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/config"
+	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/registry"
 	"github.com/interlynk-io/sbomqs/pkg/utils"
 )
 
@@ -32,7 +34,7 @@ func validateFeatures(ctx context.Context, features []string) ([]string, error) 
 	var validFeatures []string
 
 	for _, feature := range features {
-		if _, ok := SupportedFeatures[feature]; !ok {
+		if _, ok := registry.SupportedFeatures[feature]; !ok {
 			log.Warnf("unsupported feature: %s", feature)
 			continue
 		}
@@ -108,33 +110,33 @@ func validateAndExpandPaths(ctx context.Context, paths []string) []string {
 	return validPaths
 }
 
-func validateConfig(ctx context.Context, config *Config) error {
+func validateConfig(ctx context.Context, cfg *config.Config) error {
 	log := logger.FromContext(ctx)
 	log.Debug("validating configuration")
 
-	if config.ConfigFile != "" {
-		if _, err := os.Stat(config.ConfigFile); err != nil {
-			return fmt.Errorf("invalid config path: %s: %w", config.ConfigFile, err)
+	if cfg.ConfigFile != "" {
+		if _, err := os.Stat(cfg.ConfigFile); err != nil {
+			return fmt.Errorf("invalid config path: %s: %w", cfg.ConfigFile, err)
 		}
 		return nil
 	}
-	config.Categories = removeEmptyStrings(config.Categories)
+	cfg.Categories = removeEmptyStrings(cfg.Categories)
 
-	if len(config.Categories) > 0 {
-		normCategories, err := normalizeAndValidateCategories(ctx, config.Categories)
+	if len(cfg.Categories) > 0 {
+		normCategories, err := normalizeAndValidateCategories(ctx, cfg.Categories)
 		if err != nil {
 			return fmt.Errorf("failed to normalize and validate categories: %w", err)
 		}
-		config.Categories = normCategories
+		cfg.Categories = normCategories
 	}
 
-	config.Features = removeEmptyStrings(config.Features)
-	if len(config.Features) > 0 {
-		validFeatures, err := validateFeatures(ctx, config.Features)
+	cfg.Features = removeEmptyStrings(cfg.Features)
+	if len(cfg.Features) > 0 {
+		validFeatures, err := validateFeatures(ctx, cfg.Features)
 		if err != nil {
 			return fmt.Errorf("failed to validate features: %w", err)
 		}
-		config.Features = validFeatures
+		cfg.Features = validFeatures
 	}
 
 	return nil

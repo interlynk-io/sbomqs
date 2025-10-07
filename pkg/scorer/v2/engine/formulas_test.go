@@ -12,11 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package v2
+package engine
 
 import (
 	"testing"
 
+	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/config"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -43,7 +44,7 @@ func TestToGrade_Boundaries(t *testing.T) {
 
 func TestComputeInterlynkScore(t *testing.T) {
 	// overall = (9*10 + 7*12) / (10+12) = 7.909090...
-	catResults := []CategoryResult{
+	catResults := []config.CategoryResult{
 		{Name: "Identification", Weight: 10, Score: 9.0},
 		{Name: "Provenance", Weight: 12, Score: 7.0},
 	}
@@ -55,7 +56,7 @@ func TestComputeInterlynkScore(t *testing.T) {
 }
 
 func TestComputeCategoryScore_AllNA(t *testing.T) {
-	frs := []FeatureResult{
+	frs := []config.FeatureResult{
 		{Key: "f1", Weight: 0.5, Score: 10, Ignored: true},
 		{Key: "f2", Weight: 0.5, Score: 0, Ignored: true},
 	}
@@ -67,7 +68,7 @@ func TestComputeCategoryScore_AllNA(t *testing.T) {
 
 func TestComputeCategoryScore_WithNA(t *testing.T) {
 	// middle feature will be ignored; renormalize 0.40 and 0.25 = sum 0.65
-	frs := []FeatureResult{
+	frs := []config.FeatureResult{
 		{Key: "comp_with_name", Weight: 0.40, Score: 10.0, Ignored: false},
 		{Key: "comp_with_version", Weight: 0.35, Score: 9.5, Ignored: true}, // N/A
 		{Key: "comp_with_identifiers", Weight: 0.25, Score: 8.2, Ignored: false},
@@ -79,7 +80,7 @@ func TestComputeCategoryScore_WithNA(t *testing.T) {
 }
 
 func TestComputeCategoryScore(t *testing.T) {
-	frs := []FeatureResult{
+	frs := []config.FeatureResult{
 		{Key: "comp_with_name", Weight: 0.40, Score: 10.0, Ignored: false},
 		{Key: "comp_with_version", Weight: 0.35, Score: 9.5, Ignored: false},
 		{Key: "comp_with_identifiers", Weight: 0.25, Score: 8.2, Ignored: false},
@@ -91,9 +92,9 @@ func TestComputeCategoryScore(t *testing.T) {
 }
 
 func TestPerComponentScore(t *testing.T) {
-	got := perComponentScore(80, 100)
+	got := PerComponentScore(80, 100)
 	assert.InDelta(t, 8.0, got, 1e-6)
 
-	got = perComponentScore(0, 0)
+	got = PerComponentScore(0, 0)
 	assert.InDelta(t, 0.0, got, 1e-6)
 }

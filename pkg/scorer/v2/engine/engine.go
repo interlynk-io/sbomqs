@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package v2
+package engine
 
 import (
 	"context"
@@ -21,10 +21,11 @@ import (
 
 	"github.com/interlynk-io/sbomqs/pkg/logger"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
+	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/config"
 	"github.com/interlynk-io/sbomqs/pkg/utils"
 )
 
-func ScoreSBOM(ctx context.Context, config Config, paths []string) ([]Result, error) {
+func ScoreSBOM(ctx context.Context, cfg config.Config, paths []string) ([]config.Result, error) {
 	log := logger.FromContext(ctx)
 
 	// Validate paths
@@ -34,25 +35,25 @@ func ScoreSBOM(ctx context.Context, config Config, paths []string) ([]Result, er
 	}
 
 	// Validate config
-	if err := validateConfig(ctx, &config); err != nil {
+	if err := validateConfig(ctx, &cfg); err != nil {
 		return nil, fmt.Errorf("failed to validate SBOM configuration: %w", err)
 	}
 
-	results := make([]Result, 0, len(validPaths))
+	results := make([]config.Result, 0, len(validPaths))
 	var anyProcessed bool
 
 	for _, path := range validPaths {
 		if utils.IsURL(path) {
 			log.Debugf("processing URL: %s", path)
 
-			sbomFile, err := processURLPath(ctx, config, path)
+			sbomFile, err := processURLPath(ctx, cfg, path)
 			if err != nil {
 				log.Warnf("failed to process URL: %s: %v", path, err)
 				continue
 			}
 			defer sbomFile.Close()
 
-			signature, err := getSignature(ctx, config, sbomFile.Name())
+			signature, err := getSignature(ctx, cfg, sbomFile.Name())
 			if err != nil {
 				return nil, fmt.Errorf("get signature for %q: %w", path, err)
 			}
@@ -62,10 +63,10 @@ func ScoreSBOM(ctx context.Context, config Config, paths []string) ([]Result, er
 				return nil, fmt.Errorf("parse error: %w", err)
 			}
 
-			var sbomScoreResult Result
+			var sbomScoreResult config.Result
 
 			// Evaluate SBOM
-			sbomScoreResult, err = SBOMEvaluation(ctx, doc, config, signature)
+			sbomScoreResult, err = SBOMEvaluation(ctx, doc, cfg, signature)
 			if err != nil {
 				log.Warnf("failed to process SBOM %s: %v", path, err)
 				return nil, fmt.Errorf("process SBOM %q: %w", path, err)
@@ -78,7 +79,7 @@ func ScoreSBOM(ctx context.Context, config Config, paths []string) ([]Result, er
 		} else {
 			log.Debugf("processing file: %s", path)
 
-			signature, err := getSignature(ctx, config, path)
+			signature, err := getSignature(ctx, cfg, path)
 			if err != nil {
 				return nil, fmt.Errorf("get signature for %q: %w", path, err)
 			}
@@ -95,10 +96,10 @@ func ScoreSBOM(ctx context.Context, config Config, paths []string) ([]Result, er
 				return nil, fmt.Errorf("parse error: %w", err)
 			}
 
-			var sbomScoreResult Result
+			var sbomScoreResult config.Result
 
 			// Evaluate SBOM
-			sbomScoreResult, err = SBOMEvaluation(ctx, doc, config, signature)
+			sbomScoreResult, err = SBOMEvaluation(ctx, doc, cfg, signature)
 			if err != nil {
 				log.Warnf("failed to process SBOM %s: %v", path, err)
 				return nil, fmt.Errorf("process SBOM %q: %w", path, err)
@@ -117,20 +118,20 @@ func ScoreSBOM(ctx context.Context, config Config, paths []string) ([]Result, er
 	return results, nil
 }
 
-func SBOMEvaluation(ctx context.Context, doc sbom.Document, config Config, sig sbom.Signature) (Result, error) {
+func SBOMEvaluation(ctx context.Context, doc sbom.Document, cfg config.Config, sig sbom.Signature) (config.Result, error) {
 	log := logger.FromContext(ctx)
 	log.Debugf("evaluating SBOM")
 
-	result := NewResult(doc)
+	result := config.NewResult(doc)
 
 	// Select categories to score
-	categoriesToScore, err := selectCategoriesToScore(config)
+	categoriesToScore, err := selectCategoriesToScore(cfg)
 	if err != nil {
-		return Result{}, err
+		return config.Result{}, err
 	}
 
 	if len(categoriesToScore) == 0 {
-		return Result{}, fmt.Errorf("no categories to score (check config filters)")
+		return config.Result{}, fmt.Errorf("no categories to score (check config filters)")
 	}
 
 	// Log category names (readable)

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package v2
+package engine
 
 import (
 	"context"
@@ -21,14 +21,16 @@ import (
 
 	"github.com/interlynk-io/sbomqs/pkg/logger"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
+	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/config"
+	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/registry"
 )
 
 // scoreAgainstCategories checks SBOM against all defined categories
-func scoreAgainstCategories(ctx context.Context, doc sbom.Document, categories []CategorySpec) []CategoryResult {
+func scoreAgainstCategories(ctx context.Context, doc sbom.Document, categories []config.CategorySpec) []config.CategoryResult {
 	log := logger.FromContext(ctx)
 	log.Debugf("scoring against categories: ", categories)
 
-	categoryResults := make([]CategoryResult, 0, len(categories))
+	categoryResults := make([]config.CategoryResult, 0, len(categories))
 	for _, cat := range categories {
 		categoryResults = append(categoryResults, evaluateCategory(ctx, doc, cat))
 	}
@@ -36,12 +38,12 @@ func scoreAgainstCategories(ctx context.Context, doc sbom.Document, categories [
 }
 
 // Evaluate a category (feature-weighted average, ignoring N/A).
-func evaluateCategory(ctx context.Context, doc sbom.Document, category CategorySpec) CategoryResult {
+func evaluateCategory(ctx context.Context, doc sbom.Document, category config.CategorySpec) config.CategoryResult {
 	log := logger.FromContext(ctx)
 	log.Debugf("evaluateCategory: %s (features=%d, weight=%.2f)", category.Name, len(category.Features), category.Weight)
 
-	categoryWiseResult := NewCategoryResultFromSpec(category)
-	categoryWiseResult.Features = make([]FeatureResult, 0, len(category.Features))
+	categoryWiseResult := config.NewCategoryResultFromSpec(category)
+	categoryWiseResult.Features = make([]config.FeatureResult, 0, len(category.Features))
 
 	for _, feature := range category.Features {
 		featureResult := evaluateFeature(doc, feature)
@@ -53,8 +55,8 @@ func evaluateCategory(ctx context.Context, doc sbom.Document, category CategoryS
 }
 
 // selectCategoriesToScore returns the exact list of categories we’ll score.
-func selectCategoriesToScore(cfg Config) ([]CategorySpec, error) {
-	baseCategories := baseCategories() // Identification, Provenance (with their feature specs)
+func selectCategoriesToScore(cfg config.Config) ([]config.CategorySpec, error) {
+	baseCategories := registry.BaseCategories() // Identification, Provenance (with their feature specs)
 
 	// filters (by category name and/or feature key).
 	newCategories := filterCategories(cfg, baseCategories)
@@ -64,7 +66,7 @@ func selectCategoriesToScore(cfg Config) ([]CategorySpec, error) {
 	}
 
 	// Also prune categories that lost all features due to feature-level filters.
-	pruned := make([]CategorySpec, 0, len(newCategories))
+	pruned := make([]config.CategorySpec, 0, len(newCategories))
 	for _, cat := range newCategories {
 		if len(cat.Features) > 0 {
 			pruned = append(pruned, cat)
@@ -76,10 +78,10 @@ func selectCategoriesToScore(cfg Config) ([]CategorySpec, error) {
 	return pruned, nil
 }
 
-func evaluateFeature(doc sbom.Document, feature FeatureSpec) FeatureResult {
+func evaluateFeature(doc sbom.Document, feature config.FeatureSpec) config.FeatureResult {
 	featureResult := feature.Evaluate(doc)
 
-	return FeatureResult{
+	return config.FeatureResult{
 		Key:     feature.Key,
 		Weight:  feature.Weight,
 		Score:   featureResult.Score,
@@ -95,7 +97,7 @@ func evaluateFeature(doc sbom.Document, feature FeatureSpec) FeatureResult {
 // - If both are provided: intersection semantics (category must match, and only listed features remain).
 // - Categories that end up with zero features after filtering are dropped.
 // - Order is preserved.
-func filterCategories(cfg Config, cats []CategorySpec) []CategorySpec {
+func filterCategories(cfg config.Config, cats []config.CategorySpec) []config.CategorySpec {
 	if len(cfg.Categories) == 0 && len(cfg.Features) == 0 {
 		return cats
 	}
@@ -120,7 +122,7 @@ func filterCategories(cfg Config, cats []CategorySpec) []CategorySpec {
 	wantCats := len(allowedCategories) > 0
 	wantFeats := len(allowedFeatures) > 0
 
-	out := make([]CategorySpec, 0, len(cats))
+	out := make([]config.CategorySpec, 0, len(cats))
 
 	for _, cat := range cats {
 		// Category filter (if any)
@@ -137,7 +139,7 @@ func filterCategories(cfg Config, cats []CategorySpec) []CategorySpec {
 		}
 
 		// Otherwise, keep only requested features inside this category.
-		filtered := make([]FeatureSpec, 0, len(cat.Features))
+		filtered := make([]config.FeatureSpec, 0, len(cat.Features))
 		for _, feat := range cat.Features {
 			if _, ok := allowedFeatures[strings.ToLower(feat.Key)]; ok {
 				filtered = append(filtered, feat)
