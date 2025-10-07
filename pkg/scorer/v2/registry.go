@@ -19,19 +19,19 @@ var CategoryAliases = map[string]string{
 	"provenance":     "Provenance",
 	"integrity":      "Integrity",
 	"completeness":   "Completeness",
-	"licensing":      "Licensing",
-	"vulnerability":  "Vulnerability",
+	"licensing":      "LicensingAndCompliance",
+	"vulnerability":  "VulnerabilityAndTraceability",
 	"structural":     "Structural",
 }
 
 var SupportedCategories = map[string]bool{
-	"Identification": true,
-	"Provenance":     true,
-	"Integrity":      true,
-	"Completeness":   true,
-	"Licensing":      true,
-	"Vulnerability":  true,
-	"Structural":     true,
+	"Identification":               true,
+	"Provenance":                   true,
+	"Integrity":                    true,
+	"Completeness":                 true,
+	"LicensingAndCompliance":       true,
+	"VulnerabilityAndTraceability": true,
+	"Structural":                   true,
 }
 
 func baseCategories() []CategorySpec {
@@ -40,10 +40,10 @@ func baseCategories() []CategorySpec {
 		Provenance,
 		Integrity,
 		Completeness,
-		// LicensingAndCompliance
-		// VulnerabilityAndTraceability
-		// Structural
-		// Component Quality
+		LicensingAndCompliance,
+		VulnerabilityAndTraceability,
+		Structural,
+		ComponentAndQualityInfo,
 	}
 }
 
@@ -82,12 +82,29 @@ var Integrity = CategorySpec{
 var Completeness = CategorySpec{
 	Name:     "Completeness",
 	Weight:   12,
-	Features: []FeatureSpec{
-		// {Key: "comp_dependencies", Weight: 0.25, Evaluate: CompWithDependencies},
-		// {Key: "comp_declared_completeness", Weight: 0.15, Evaluate: CompWithDeclaredCompleteness},
-		// {Key: "sbom_primary_component", Weight: 0.20, Evaluate: SBOMWithPrimaryComponent},
-		// {Key: "comp_source_code", Weight: 0.15, Evaluate: CompWithSourceCode},
-		// {Key: "comp_supplier", Weight: 0.15, Evaluate: CompWithSupplier},
-		// {Key: "comp_primary_purpose", Weight: 0.10, Evaluate: CompWithPrimaryPurpose},
-	},
+	Features: nil,
+}
+
+var LicensingAndCompliance = CategorySpec{
+	Name:     "Licensing & Compliance",
+	Weight:   15,
+	Features: nil,
+}
+
+var VulnerabilityAndTraceability = CategorySpec{
+	Name:     "Vulnerability & Traceability",
+	Weight:   10,
+	Features: nil,
+}
+
+var Structural = CategorySpec{
+	Name:     "Structural",
+	Weight:   8,
+	Features: nil,
+}
+
+var ComponentAndQualityInfo = CategorySpec{
+	Name:     "Component Quality (Info)",
+	Weight:   0,
+	Features: nil,
 }
