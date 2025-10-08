@@ -25,21 +25,25 @@ import (
 )
 
 // SBOMCreationTime: document has a valid ISO-8601 timestamp (RFC3339/RFC3339Nano).
+// `Created` for SPDX and `metadata.timestamp` for CDX
 func SBOMCreationTimestamp(doc sbom.Document) config.FeatureScore {
 	ts := strings.TrimSpace(doc.Spec().GetCreationTimestamp())
 	if ts == "" {
 		return config.FeatureScore{
 			Score:  engine.BooleanScore(false),
-			Desc:   "missing timestamp",
+			Desc:   engine.MissingField("timestamp"),
 			Ignore: false,
 		}
 	}
 
+	// accept both RFC3339 and RFC3339Nano
 	if _, err := time.Parse(time.RFC3339, ts); err != nil {
-		return config.FeatureScore{
-			Score:  engine.BooleanScore(false),
-			Desc:   fmt.Sprintf("invalid timestamp: %s", ts),
-			Ignore: false,
+		if _, err2 := time.Parse(time.RFC3339Nano, ts); err2 != nil {
+			return config.FeatureScore{
+				Score:  engine.BooleanScore(false),
+				Desc:   fmt.Sprintf("invalid timestamp: %s", ts),
+				Ignore: false,
+			}
 		}
 	}
 
@@ -50,21 +54,172 @@ func SBOMCreationTimestamp(doc sbom.Document) config.FeatureScore {
 	}
 }
 
-// Creator.(Person/Organization):
+// SBOMAuthor represents an legal entity created an SBOM.
+// SPDX: Creator.(Person/Organization); CDX: metadata.(authors/author)
 func SBOMAuthors(doc sbom.Document) config.FeatureScore {
 	total := len(doc.Authors())
 
+	if total == 0 {
+		return config.FeatureScore{
+			Score:  engine.BooleanScore(false),
+			Desc:   "0 authors",
+			Ignore: false,
+		}
+	}
+
 	return config.FeatureScore{
-		Score:  engine.BooleanScore(total > 0),
-		Desc:   fmt.Sprintf("%d authors/tools", total),
+		Score:  engine.BooleanScore(true),
+		Desc:   fmt.Sprintf("%d authors", total),
 		Ignore: false,
 	}
 }
 
-// sbom_tool_version: Tool name and version present
+// SBOMCreationTool: tool name AND version present for at least one tool.
+// SPDX: Creator.Tool; CDX: metadata.tools/tool
+func SBOMCreationTool(doc sbom.Document) config.FeatureScore {
+	toolsWithNV := make([]string, 0, len(doc.Tools()))
 
-// sbom_supplier (N/A for SPDX)
+	for _, t := range doc.Tools() {
+		name := strings.TrimSpace(t.GetName())
+		ver := strings.TrimSpace(t.GetVersion())
+		if name != "" && ver != "" {
+			toolsWithNV = append(toolsWithNV, name+"-"+ver)
+		}
+	}
 
-// sbom_namespace: namespace(SPDX) or (serialNumber + version)
+	if len(toolsWithNV) == 0 {
+		return config.FeatureScore{
+			Score:  engine.BooleanScore(false),
+			Desc:   engine.MissingField("tool"),
+			Ignore: false,
+		}
+	}
 
-// sbom_lifecycle (N/A for SPDX)
+	return config.FeatureScore{
+		Score:  engine.BooleanScore(true),
+		Desc:   strings.Join(toolsWithNV, ", "),
+		Ignore: false,
+	}
+}
+
+// SBOMSupplier: CDX-only (supplier/manufacturer in metadata).
+// SPDX has no doc-level supplier,  N/A for SPDX.
+// For CDX: missing supplier is a FAIL (score 0, Ignore=false).
+func SBOMSupplier(doc sbom.Document) config.FeatureScore {
+	spec := doc.Spec().GetSpecType()
+
+	switch spec {
+	case string(sbom.SBOMSpecSPDX):
+		// N/A for SPDX
+		return config.FeatureScore{
+			Score:  engine.BooleanScore(false),
+			Desc:   engine.NonSupportedSPDXField(),
+			Ignore: true,
+		}
+
+	case string(sbom.SBOMSpecCDX):
+		s := doc.Supplier()
+		hasName := strings.TrimSpace(s.GetName()) != ""
+		hasContact := strings.TrimSpace(s.GetEmail()) != "" || strings.TrimSpace(s.GetURL()) != ""
+
+		if hasName && hasContact {
+			return config.FeatureScore{
+				Score:  engine.BooleanScore(true),
+				Desc:   engine.PresentField("supplier"),
+				Ignore: false,
+			}
+		}
+		return config.FeatureScore{
+			Score:  engine.BooleanScore(false),
+			Desc:   engine.MissingField("supplier"),
+			Ignore: false,
+		}
+	}
+
+	// Unknown spec → treat as not applicable to be safe (optional)
+	return config.FeatureScore{
+		Score:  engine.BooleanScore(false),
+		Desc:   engine.UnknownSpec(),
+		Ignore: true,
+	}
+}
+
+// SBOMNamespace: required for both specs.
+// SPDX: document namespace; CDX: serialNumber/version.
+func SBOMNamespace(doc sbom.Document) config.FeatureScore {
+	spec := doc.Spec().GetSpecType()
+
+	switch spec {
+	case string(sbom.SBOMSpecSPDX):
+		ns := strings.TrimSpace(doc.Spec().GetNamespace())
+		if ns != "" {
+			return config.FeatureScore{
+				Score:  engine.BooleanScore(true),
+				Desc:   engine.PresentField("namespace"),
+				Ignore: false,
+			}
+		}
+		return config.FeatureScore{
+			Score:  engine.BooleanScore(false),
+			Desc:   engine.MissingField("namespace"),
+			Ignore: false,
+		}
+
+	case string(sbom.SBOMSpecCDX):
+		uri := strings.TrimSpace(doc.Spec().GetURI())
+		if uri != "" {
+			return config.FeatureScore{
+				Score:  engine.BooleanScore(true),
+				Desc:   engine.PresentField("namespace"),
+				Ignore: false,
+			}
+		}
+		return config.FeatureScore{
+			Score:  engine.BooleanScore(false),
+			Desc:   engine.MissingField("namespace"),
+			Ignore: false,
+		}
+	}
+
+	// Unknown spec → fail closed (optional: set Ignore=true if you prefer)
+	return config.FeatureScore{
+		Score:  engine.BooleanScore(false),
+		Desc:   engine.UnknownSpec(),
+		Ignore: true,
+	}
+}
+
+// SBOMLifeCycle: CDX-only (metadata.lifecycles/phase). N/A for SPDX.
+func SBOMLifeCycle(doc sbom.Document) config.FeatureScore {
+	spec := doc.Spec().GetSpecType()
+
+	switch spec {
+	case string(sbom.SBOMSpecSPDX):
+		return config.FeatureScore{
+			Score:  engine.BooleanScore(false),
+			Desc:   engine.NonSupportedSPDXField(),
+			Ignore: true,
+		}
+
+	case string(sbom.SBOMSpecCDX):
+		phases := doc.Lifecycles()
+		if len(phases) > 0 {
+			return config.FeatureScore{
+				Score:  engine.BooleanScore(true),
+				Desc:   strings.Join(phases, ", "),
+				Ignore: false,
+			}
+		}
+		return config.FeatureScore{
+			Score:  engine.BooleanScore(false),
+			Desc:   engine.MissingField("lifecycle"),
+			Ignore: false,
+		}
+	}
+
+	return config.FeatureScore{
+		Score:  engine.BooleanScore(false),
+		Desc:   engine.UnknownSpec(),
+		Ignore: true,
+	}
+}

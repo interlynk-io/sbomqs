@@ -16,6 +16,11 @@ package engine
 
 import "github.com/interlynk-io/sbomqs/pkg/scorer/v2/config"
 
+func MissingField(field string) string { return "missing " + field }
+func PresentField(field string) string { return "present " + field }
+func NonSupportedSPDXField() string    { return "N/A (SPDX)" }
+func UnknownSpec() string              { return "N/A (unknown spec)" }
+
 // perComponentScore returns 10 × (have/total)
 func PerComponentScore(have, total int) float64 {
 	if total <= 0 {

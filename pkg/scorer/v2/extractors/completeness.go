@@ -13,3 +13,15 @@
 // limitations under the License.
 
 package extractors
+
+// comp_with_dependencies: Valid dependency graph ?
+
+// comp_with_declared_completeness: Completeness declaration present
+
+// sbom_with_primary_comp: Single primary component defined
+
+// comps_with_source_code: Valid VCS URL
+
+// comp_with_supplier
+
+// comp_with_primary_purpose

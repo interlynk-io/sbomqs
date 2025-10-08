@@ -14,7 +14,35 @@
 
 package extractors
 
+import (
+	"github.com/interlynk-io/sbomqs/pkg/sbom"
+	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/config"
+	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/engine"
+	"github.com/samber/lo"
+)
+
 // comp_with_checksum: SHA-1 minimum
+func CompWithCheckSumSHA_1(doc sbom.Document, component sbom.GetComponent) config.FeatureScore {
+	total := len(doc.Components())
+	if total == 0 {
+		return config.FeatureScore{
+			Score:  engine.PerComponentScore(0, total),
+			Desc:   "N/A (no components)",
+			Ignore: true,
+		}
+	}
+
+	algos := []string{"SHA256", "SHA-256", "sha256", "sha-256"}
+
+	checksums := component.GetChecksums()
+	for _, checksum := range checksums {
+		if lo.Count(algos, checksum.GetAlgo()) > 0 {
+			result = checksum.GetContent()
+			score = 10.0
+			break
+		}
+	}
+}
 
 // comp_with_checksum_sha256: SHA-256 or stronger algorithm
 
