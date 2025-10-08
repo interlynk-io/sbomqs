@@ -15,35 +15,174 @@
 package extractors
 
 import (
+	"fmt"
+	"os"
+	"strings"
+
+	"github.com/interlynk-io/sbomqs/pkg/compliance/common"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/config"
 	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/engine"
-	"github.com/samber/lo"
 )
 
-// comp_with_checksum: SHA-1 minimum
-func CompWithCheckSumSHA_1(doc sbom.Document, component sbom.GetComponent) config.FeatureScore {
-	total := len(doc.Components())
+// CompWithSHA1Plus returns coverage of components that have SHA-1 or stronger
+// (SHA-1, SHA-256, SHA-384, or SHA-512).
+func CompWithSHA1Plus(doc sbom.Document) config.FeatureScore {
+	comps := doc.Components()
+	total := len(comps)
 	if total == 0 {
 		return config.FeatureScore{
-			Score:  engine.PerComponentScore(0, total),
+			Score:  engine.PerComponentScore(0, 0),
 			Desc:   "N/A (no components)",
 			Ignore: true,
 		}
 	}
 
-	algos := []string{"SHA256", "SHA-256", "sha256", "sha-256"}
-
-	checksums := component.GetChecksums()
-	for _, checksum := range checksums {
-		if lo.Count(algos, checksum.GetAlgo()) > 0 {
-			result = checksum.GetContent()
-			score = 10.0
-			break
+	withSHA1p := 0
+	for _, comp := range comps {
+		if hasSHA1Plus(comp) {
+			withSHA1p++
 		}
+	}
+
+	return config.FeatureScore{
+		Score:  engine.PerComponentScore(withSHA1p, total),
+		Desc:   fmt.Sprintf("%d/%d have SHA-1+", withSHA1p, total),
+		Ignore: false,
 	}
 }
 
-// comp_with_checksum_sha256: SHA-256 or stronger algorithm
+// CompWithSHA256Plus returns coverage of components that have SHA-256 or stronger.
+func CompWithSHA256Plus(doc sbom.Document) config.FeatureScore {
+	comps := doc.Components()
+	total := len(comps)
+	if total == 0 {
+		return config.FeatureScore{
+			Score:  engine.PerComponentScore(0, 0),
+			Desc:   "N/A (no components)",
+			Ignore: true,
+		}
+	}
 
-// sbom_signature
+	with256p := 0
+	for _, c := range comps {
+		if hasSHA256Plus(c) {
+			with256p++
+		}
+	}
+
+	return config.FeatureScore{
+		Score:  engine.PerComponentScore(with256p, total),
+		Desc:   fmt.Sprintf("%d/%d have SHA-256+", with256p, total),
+		Ignore: false,
+	}
+}
+
+// allow tests to stub this
+var verifySignature = common.VerifySignature
+
+// SBOMSignature verifies a doc-level signature if a bundle is present.
+// Scoring:
+//
+//	10 = signature present and verification succeeded
+//	 5 = signature present but verification failed
+//	 0 = no signature / incomplete bundle
+func SBOMSignature(doc sbom.Document) config.FeatureScore {
+	s := doc.Signature()
+	if s == nil {
+		return config.FeatureScore{
+			Score:  0,
+			Desc:   "no signature",
+			Ignore: false,
+		}
+	}
+
+	pubKeyPath := strings.TrimSpace(s.GetPublicKey())
+	blobPath := strings.TrimSpace(s.GetBlob())
+	sigPath := strings.TrimSpace(s.GetSigValue())
+
+	// Incomplete bundle → treat as missing
+	if pubKeyPath == "" || blobPath == "" || sigPath == "" {
+		return config.FeatureScore{
+			Score:  0,
+			Desc:   "signature bundle incomplete",
+			Ignore: false,
+		}
+	}
+
+	pubKeyBytes, err := os.ReadFile(pubKeyPath)
+	if err != nil {
+		return config.FeatureScore{
+			Score:  5, // bundle present, but verification cannot succeed
+			Desc:   fmt.Sprintf("cannot read public key: %v", err),
+			Ignore: false,
+		}
+	}
+
+	ok, err := verifySignature(pubKeyBytes, blobPath, sigPath)
+	if err != nil {
+		return config.FeatureScore{
+			Score:  5,
+			Desc:   "signature present but verification failed",
+			Ignore: false,
+		}
+	}
+	if ok {
+		return config.FeatureScore{
+			Score:  10,
+			Desc:   "signature verification succeeded",
+			Ignore: false,
+		}
+	}
+	return config.FeatureScore{
+		Score:  5,
+		Desc:   "signature present but invalid",
+		Ignore: false,
+	}
+}
+
+func hasSHA1Plus(c sbom.GetComponent) bool {
+	for _, checksum := range c.GetChecksums() {
+		if isSHA1Plus(checksum.GetAlgo()) && strings.TrimSpace(checksum.GetContent()) != "" {
+			return true
+		}
+	}
+	return false
+}
+
+func isSHA1Plus(algo string) bool {
+	n := strings.ToUpper(algo)
+	n = strings.ReplaceAll(n, "-", "")
+	n = strings.ReplaceAll(n, "_", "")
+	n = strings.TrimSpace(n)
+
+	switch n {
+	case "SHA1", "SHA256", "SHA384", "SHA512":
+		return true
+	default:
+		return false
+	}
+}
+
+func hasSHA256Plus(c sbom.GetComponent) bool {
+	for _, ch := range c.GetChecksums() {
+		if isSHA256Plus(ch.GetAlgo()) && strings.TrimSpace(ch.GetContent()) != "" {
+			return true
+		}
+	}
+	return false
+}
+
+func isSHA256Plus(algo string) bool {
+	n := strings.ToUpper(algo)
+	n = strings.ReplaceAll(n, "-", "")
+	n = strings.ReplaceAll(n, "_", "")
+	n = strings.TrimSpace(n)
+
+	switch n {
+	case "SHA256", "SHA384", "SHA512":
+		return true
+	default:
+		return false
+	}
+}
