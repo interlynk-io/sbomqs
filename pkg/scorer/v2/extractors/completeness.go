@@ -14,14 +14,140 @@
 
 package extractors
 
-// comp_with_dependencies: Valid dependency graph ?
+import (
+	"strings"
+
+	"github.com/interlynk-io/sbomqs/pkg/sbom"
+	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/config"
+	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/engine"
+	"github.com/samber/lo"
+)
+
+// comp_with_dependencies (component-level coverage)
+// SPDX: relationships (DEPENDS_ON); CDX: component.dependencies / bom.dependencies
+func CompWithDependencies(doc sbom.Document) config.FeatureScore {
+	comps := doc.Components()
+	if len(comps) == 0 {
+		return engine.ScoreNA()
+	}
+
+	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
+		return c.HasRelationShips() || c.CountOfDependencies() > 0
+	})
+
+	return config.FeatureScore{
+		Score:  engine.PerComponentScore(have, len(comps)),
+		Desc:   engine.CompDescription(have, len(comps), "dependencies"),
+		Ignore: false,
+	}
+}
 
 // comp_with_declared_completeness: Completeness declaration present
+func CompWithCompleteness(doc sbom.Document) config.FeatureScore {
+	comps := doc.Components()
+	if len(comps) == 0 {
+		return engine.ScoreNA()
+	}
+
+	spec := doc.Spec().GetSpecType()
+
+	switch spec {
+	case string(sbom.SBOMSpecSPDX):
+		// N/A for SPDX
+		return config.FeatureScore{
+			Score:  engine.BooleanScore(false),
+			Desc:   engine.NonSupportedSPDXField(),
+			Ignore: true,
+		}
+
+	case string(sbom.SBOMSpecCDX):
+		// TODO: to add this method in our sbom module, then only we can fetch it here
+		// Compositions/Aggregate
+		// have := lo.CountBy(doc.Components(), func(c sbom.GetComponent) bool {
+		// 	return c.GetComposition() != ""
+		// })
+	}
+
+	return config.FeatureScore{
+		Score:  engine.BooleanScore(false),
+		Desc:   engine.UnknownSpec(),
+		Ignore: true,
+	}
+}
 
 // sbom_with_primary_comp: Single primary component defined
+func SBOMWithPrimaryComponent(doc sbom.Document) config.FeatureScore {
+	comps := doc.Components()
+	isPrimaryPresent := doc.PrimaryComp().IsPresent()
+
+	if !isPrimaryPresent {
+		return config.FeatureScore{
+			Score:  engine.PerComponentScore(0, len(comps)),
+			Desc:   "absent",
+			Ignore: true,
+		}
+	}
+
+	return config.FeatureScore{
+		Score:  engine.BooleanScore(isPrimaryPresent),
+		Desc:   "identified",
+		Ignore: false,
+	}
+}
 
 // comps_with_source_code: Valid VCS URL
+func CompWithSourceCode(doc sbom.Document) config.FeatureScore {
+	comps := doc.Components()
+	if len(comps) == 0 {
+		return engine.ScoreNA()
+	}
+
+	have := lo.CountBy(doc.Components(), func(c sbom.GetComponent) bool {
+		return strings.TrimSpace(c.SourceCodeURL()) != ""
+	})
+
+	return config.FeatureScore{
+		Score:  engine.PerComponentScore(have, len(comps)),
+		Desc:   engine.CompDescription(have, len(comps), "source URIs"),
+		Ignore: false,
+	}
+}
 
 // comp_with_supplier
+func CompWithSupplier(doc sbom.Document) config.FeatureScore {
+	comps := doc.Components()
+	if len(comps) == 0 {
+		return engine.ScoreNA()
+	}
+
+	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
+		s := c.Suppliers()
+		hasName := strings.TrimSpace(s.GetName()) != ""
+		hasContact := strings.TrimSpace(s.GetEmail()) != "" || strings.TrimSpace(s.GetURL()) != ""
+		return c.Suppliers().IsPresent() && hasName && hasContact
+	})
+
+	return config.FeatureScore{
+		Score:  engine.PerComponentScore(have, len(comps)),
+		Desc:   engine.CompDescription(have, len(comps), "suppliers"),
+		Ignore: false,
+	}
+}
 
 // comp_with_primary_purpose
+func CompWithPackagePurpose(doc sbom.Document) config.FeatureScore {
+	comps := doc.Components()
+	if len(comps) == 0 {
+		return engine.ScoreNA()
+	}
+
+	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
+		return c.PrimaryPurpose() != ""
+	})
+
+	return config.FeatureScore{
+		Score:  engine.PerComponentScore(have, len(comps)),
+		Desc:   engine.CompDescription(have, len(comps), "type"),
+		Ignore: false,
+	}
+}

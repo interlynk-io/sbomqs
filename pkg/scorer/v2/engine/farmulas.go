@@ -20,6 +20,13 @@ import (
 	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/config"
 )
 
+func ScoreNA() config.FeatureScore {
+	return config.FeatureScore{
+		Score:  PerComponentScore(0, 0),
+		Desc:   NoComponentsNA(),
+		Ignore: true,
+	}
+}
 func NoComponentsNA() string           { return "N/A (no components)" }
 func MissingField(field string) string { return "missing " + field }
 func PresentField(field string) string { return "present " + field }

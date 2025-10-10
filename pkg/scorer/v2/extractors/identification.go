@@ -26,13 +26,9 @@ import (
 
 // CompWithName: percentage of components that have a non-empty name.
 func CompWithName(doc sbom.Document) config.FeatureScore {
-	total := len(doc.Components())
-	if total == 0 {
-		return config.FeatureScore{
-			Score:  engine.PerComponentScore(0, total),
-			Desc:   engine.NoComponentsNA(),
-			Ignore: true,
-		}
+	comps := doc.Components()
+	if len(comps) == 0 {
+		return engine.ScoreNA()
 	}
 
 	have := lo.CountBy(doc.Components(), func(c sbom.GetComponent) bool {
@@ -40,22 +36,17 @@ func CompWithName(doc sbom.Document) config.FeatureScore {
 	})
 
 	return config.FeatureScore{
-		Score: engine.PerComponentScore(have, total),
-		Desc:  engine.CompDescription(have, total, "names"),
-
+		Score:  engine.PerComponentScore(have, len(comps)),
+		Desc:   engine.CompDescription(have, len(comps), "names"),
 		Ignore: false,
 	}
 }
 
 // CompWithVersion: percentage of components that have a non-empty version.
 func CompWithVersion(doc sbom.Document) config.FeatureScore {
-	total := len(doc.Components())
-	if total == 0 {
-		return config.FeatureScore{
-			Score:  engine.PerComponentScore(0, total),
-			Desc:   engine.NoComponentsNA(),
-			Ignore: true,
-		}
+	comps := doc.Components()
+	if len(comps) == 0 {
+		return engine.ScoreNA()
 	}
 
 	have := lo.CountBy(doc.Components(), func(c sbom.GetComponent) bool {
@@ -63,25 +54,20 @@ func CompWithVersion(doc sbom.Document) config.FeatureScore {
 	})
 
 	return config.FeatureScore{
-		Score:  engine.PerComponentScore(have, total),
-		Desc:   engine.CompDescription(have, total, "versions"),
+		Score:  engine.PerComponentScore(have, len(comps)),
+		Desc:   engine.CompDescription(have, len(comps), "versions"),
 		Ignore: false,
 	}
 }
 
 // CompWithUniqIDs: percentage of components whose ID is present and unique within the SBOM.
 func CompWithUniqLocalIDs(doc sbom.Document) config.FeatureScore {
-	total := len(doc.Components())
-	if total == 0 {
-		return config.FeatureScore{
-			Score:  engine.PerComponentScore(0, total),
-			Desc:   engine.NoComponentsNA(),
-			Ignore: true,
-		}
+	comps := doc.Components()
+	if len(comps) == 0 {
+		return engine.ScoreNA()
 	}
 
 	have := lo.FilterMap(doc.Components(), func(c sbom.GetComponent, _ int) (string, bool) {
-		// cross-check: is this local unique id or unique id like purl, cpe ?
 		if c.GetID() == "" {
 			fmt.Println("c.GetID(): ", c.GetID())
 			return "", false
@@ -90,8 +76,8 @@ func CompWithUniqLocalIDs(doc sbom.Document) config.FeatureScore {
 	})
 
 	return config.FeatureScore{
-		Score:  engine.PerComponentScore(len(have), total),
-		Desc:   engine.CompDescription(len(have), total, "unique IDs"),
+		Score:  engine.PerComponentScore(len(have), len(comps)),
+		Desc:   engine.CompDescription(len(have), len(comps), "unique IDs"),
 		Ignore: false,
 	}
 }

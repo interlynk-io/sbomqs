@@ -29,13 +29,8 @@ import (
 // (SHA-1, SHA-256, SHA-384, or SHA-512).
 func CompWithSHA1Plus(doc sbom.Document) config.FeatureScore {
 	comps := doc.Components()
-	total := len(comps)
-	if total == 0 {
-		return config.FeatureScore{
-			Score:  engine.PerComponentScore(0, 0),
-			Desc:   engine.NoComponentsNA(),
-			Ignore: true,
-		}
+	if len(comps) == 0 {
+		return engine.ScoreNA()
 	}
 
 	have := 0
@@ -46,8 +41,8 @@ func CompWithSHA1Plus(doc sbom.Document) config.FeatureScore {
 	}
 
 	return config.FeatureScore{
-		Score:  engine.PerComponentScore(have, total),
-		Desc:   engine.CompDescription(have, total, "SHA-1+"),
+		Score:  engine.PerComponentScore(have, len(comps)),
+		Desc:   engine.CompDescription(have, len(comps), "SHA-1+"),
 		Ignore: false,
 	}
 }
@@ -55,13 +50,8 @@ func CompWithSHA1Plus(doc sbom.Document) config.FeatureScore {
 // CompWithSHA256Plus returns coverage of components that have SHA-256 or stronger.
 func CompWithSHA256Plus(doc sbom.Document) config.FeatureScore {
 	comps := doc.Components()
-	total := len(comps)
-	if total == 0 {
-		return config.FeatureScore{
-			Score:  engine.PerComponentScore(0, 0),
-			Desc:   engine.NoComponentsNA(),
-			Ignore: true,
-		}
+	if len(comps) == 0 {
+		return engine.ScoreNA()
 	}
 
 	have := 0
@@ -72,8 +62,8 @@ func CompWithSHA256Plus(doc sbom.Document) config.FeatureScore {
 	}
 
 	return config.FeatureScore{
-		Score:  engine.PerComponentScore(have, total),
-		Desc:   engine.CompDescription(have, total, "SHA-256+"),
+		Score:  engine.PerComponentScore(have, len(comps)),
+		Desc:   engine.CompDescription(have, len(comps), "SHA-256+"),
 		Ignore: false,
 	}
 }
