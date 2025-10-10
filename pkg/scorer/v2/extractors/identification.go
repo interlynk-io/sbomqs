@@ -30,7 +30,7 @@ func CompWithName(doc sbom.Document) config.FeatureScore {
 	if total == 0 {
 		return config.FeatureScore{
 			Score:  engine.PerComponentScore(0, total),
-			Desc:   "N/A (no components)",
+			Desc:   engine.NoComponentsNA(),
 			Ignore: true,
 		}
 	}
@@ -40,8 +40,9 @@ func CompWithName(doc sbom.Document) config.FeatureScore {
 	})
 
 	return config.FeatureScore{
-		Score:  engine.PerComponentScore(have, total),
-		Desc:   fmt.Sprintf("%d/%d have names", have, total),
+		Score: engine.PerComponentScore(have, total),
+		Desc:  engine.CompDescription(have, total, "names"),
+
 		Ignore: false,
 	}
 }
@@ -52,7 +53,7 @@ func CompWithVersion(doc sbom.Document) config.FeatureScore {
 	if total == 0 {
 		return config.FeatureScore{
 			Score:  engine.PerComponentScore(0, total),
-			Desc:   "N/A (no components)",
+			Desc:   engine.NoComponentsNA(),
 			Ignore: true,
 		}
 	}
@@ -63,7 +64,7 @@ func CompWithVersion(doc sbom.Document) config.FeatureScore {
 
 	return config.FeatureScore{
 		Score:  engine.PerComponentScore(have, total),
-		Desc:   fmt.Sprintf("%d/%d have versions", have, total),
+		Desc:   engine.CompDescription(have, total, "versions"),
 		Ignore: false,
 	}
 }
@@ -74,7 +75,7 @@ func CompWithUniqLocalIDs(doc sbom.Document) config.FeatureScore {
 	if total == 0 {
 		return config.FeatureScore{
 			Score:  engine.PerComponentScore(0, total),
-			Desc:   "N/A (no components)",
+			Desc:   engine.NoComponentsNA(),
 			Ignore: true,
 		}
 	}
@@ -90,7 +91,7 @@ func CompWithUniqLocalIDs(doc sbom.Document) config.FeatureScore {
 
 	return config.FeatureScore{
 		Score:  engine.PerComponentScore(len(have), total),
-		Desc:   fmt.Sprintf("%d/%d have unique IDs", len(have), total),
+		Desc:   engine.CompDescription(len(have), total, "unique IDs"),
 		Ignore: false,
 	}
 }

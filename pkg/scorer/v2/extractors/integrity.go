@@ -33,21 +33,21 @@ func CompWithSHA1Plus(doc sbom.Document) config.FeatureScore {
 	if total == 0 {
 		return config.FeatureScore{
 			Score:  engine.PerComponentScore(0, 0),
-			Desc:   "N/A (no components)",
+			Desc:   engine.NoComponentsNA(),
 			Ignore: true,
 		}
 	}
 
-	withSHA1p := 0
+	have := 0
 	for _, comp := range comps {
 		if hasSHA1Plus(comp) {
-			withSHA1p++
+			have++
 		}
 	}
 
 	return config.FeatureScore{
-		Score:  engine.PerComponentScore(withSHA1p, total),
-		Desc:   fmt.Sprintf("%d/%d have SHA-1+", withSHA1p, total),
+		Score:  engine.PerComponentScore(have, total),
+		Desc:   engine.CompDescription(have, total, "SHA-1+"),
 		Ignore: false,
 	}
 }
@@ -59,21 +59,21 @@ func CompWithSHA256Plus(doc sbom.Document) config.FeatureScore {
 	if total == 0 {
 		return config.FeatureScore{
 			Score:  engine.PerComponentScore(0, 0),
-			Desc:   "N/A (no components)",
+			Desc:   engine.NoComponentsNA(),
 			Ignore: true,
 		}
 	}
 
-	with256p := 0
+	have := 0
 	for _, c := range comps {
 		if hasSHA256Plus(c) {
-			with256p++
+			have++
 		}
 	}
 
 	return config.FeatureScore{
-		Score:  engine.PerComponentScore(with256p, total),
-		Desc:   fmt.Sprintf("%d/%d have SHA-256+", with256p, total),
+		Score:  engine.PerComponentScore(have, total),
+		Desc:   engine.CompDescription(have, total, "SHA-256+"),
 		Ignore: false,
 	}
 }
@@ -88,18 +88,18 @@ var verifySignature = common.VerifySignature
 //	 5 = signature present but verification failed
 //	 0 = no signature / incomplete bundle
 func SBOMSignature(doc sbom.Document) config.FeatureScore {
-	s := doc.Signature()
-	if s == nil {
+	sig := doc.Signature()
+	if sig == nil {
 		return config.FeatureScore{
 			Score:  0,
-			Desc:   "no signature",
+			Desc:   engine.MissingField("signature"),
 			Ignore: false,
 		}
 	}
 
-	pubKeyPath := strings.TrimSpace(s.GetPublicKey())
-	blobPath := strings.TrimSpace(s.GetBlob())
-	sigPath := strings.TrimSpace(s.GetSigValue())
+	pubKeyPath := strings.TrimSpace(sig.GetPublicKey())
+	blobPath := strings.TrimSpace(sig.GetBlob())
+	sigPath := strings.TrimSpace(sig.GetSigValue())
 
 	// Incomplete bundle → treat as missing
 	if pubKeyPath == "" || blobPath == "" || sigPath == "" {

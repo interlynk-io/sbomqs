@@ -14,12 +14,20 @@
 
 package engine
 
-import "github.com/interlynk-io/sbomqs/pkg/scorer/v2/config"
+import (
+	"fmt"
 
+	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/config"
+)
+
+func NoComponentsNA() string           { return "N/A (no components)" }
 func MissingField(field string) string { return "missing " + field }
 func PresentField(field string) string { return "present " + field }
 func NonSupportedSPDXField() string    { return "N/A (SPDX)" }
 func UnknownSpec() string              { return "N/A (unknown spec)" }
+func CompDescription(have, total int, field string) string {
+	return fmt.Sprintf("%d/%d have %s", have, total, field)
+}
 
 // perComponentScore returns 10 × (have/total)
 func PerComponentScore(have, total int) float64 {
