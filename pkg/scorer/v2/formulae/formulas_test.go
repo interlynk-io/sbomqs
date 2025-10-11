@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package engine
+package formulae
 
 import (
 	"testing"
@@ -38,7 +38,7 @@ func TestToGrade_Boundaries(t *testing.T) {
 		{0.0, "F"},
 	}
 	for _, tc := range tests {
-		assert.Equal(t, tc.want, toGrade(tc.interlynkScore))
+		assert.Equal(t, tc.want, ToGrade(tc.interlynkScore))
 	}
 }
 
@@ -49,7 +49,7 @@ func TestComputeInterlynkScore(t *testing.T) {
 		{Name: "Provenance", Weight: 12, Score: 7.0},
 	}
 
-	got := computeInterlynkScore(catResults)
+	got := ComputeInterlynkScore(catResults)
 	want := (9.0*10.0 + 7.0*12.0) / (10.0 + 12.0)
 
 	assert.InDelta(t, want, got, 1e-6)
@@ -61,7 +61,7 @@ func TestComputeCategoryScore_AllNA(t *testing.T) {
 		{Key: "f2", Weight: 0.5, Score: 0, Ignored: true},
 	}
 	want := 0.0
-	got := computeCategoryScore(frs)
+	got := ComputeCategoryScore(frs)
 
 	assert.InDelta(t, want, got, 1e-6)
 }
@@ -73,7 +73,7 @@ func TestComputeCategoryScore_WithNA(t *testing.T) {
 		{Key: "comp_with_version", Weight: 0.35, Score: 9.5, Ignored: true}, // N/A
 		{Key: "comp_with_identifiers", Weight: 0.25, Score: 8.2, Ignored: false},
 	}
-	got := computeCategoryScore(frs)
+	got := ComputeCategoryScore(frs)
 	want := (10.0*0.40 + 8.2*0.25) / 0.65
 
 	assert.InDelta(t, want, got, 1e-6)
@@ -85,7 +85,7 @@ func TestComputeCategoryScore(t *testing.T) {
 		{Key: "comp_with_version", Weight: 0.35, Score: 9.5, Ignored: false},
 		{Key: "comp_with_identifiers", Weight: 0.25, Score: 8.2, Ignored: false},
 	}
-	got := computeCategoryScore(frs)
+	got := ComputeCategoryScore(frs)
 	want := (10.0*0.40 + 9.5*0.35 + 8.2*0.25) / 1.0
 
 	assert.InDelta(t, want, got, 1e-6)

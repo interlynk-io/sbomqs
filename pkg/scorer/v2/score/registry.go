@@ -12,10 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package registry
+package score
 
 import (
 	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/config"
+	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/extractors"
 )
 
 var SupportedFeatures = map[string]bool{
@@ -89,9 +90,9 @@ var Identification = config.CategorySpec{
 	Name:   "Identification",
 	Weight: 10,
 	Features: []config.FeatureSpec{
-		{Key: "comp_with_name", Weight: 0.40, Evaluate: nil},
-		{Key: "comp_with_version", Weight: 0.35, Evaluate: nil},
-		{Key: "comp_with_ids", Weight: 0.25, Evaluate: nil},
+		{Key: "comp_with_name", Weight: 0.40, Evaluate: extractors.CompWithName},
+		{Key: "comp_with_version", Weight: 0.35, Evaluate: extractors.CompWithCompleteness},
+		{Key: "comp_with_ids", Weight: 0.25, Evaluate: extractors.CompWithUniqLocalIDs},
 	},
 }
 
@@ -99,28 +100,36 @@ var Provenance = config.CategorySpec{
 	Name:   "Provenance",
 	Weight: 12,
 	Features: []config.FeatureSpec{
-		{Key: "sbom_creation_timestamp", Weight: 0.20, Evaluate: nil},
-		{Key: "sbom_authors", Weight: 0.20, Evaluate: nil},
-		{Key: "sbom_tool_version", Weight: 0.20, Evaluate: nil},
-		{Key: "sbom_supplier", Weight: 0.15, Evaluate: nil},
-		{Key: "sbom_namespace", Weight: 0.15, Evaluate: nil},
-		{Key: "sbom_lifecycle", Weight: 0.10, Evaluate: nil},
+		{Key: "sbom_creation_timestamp", Weight: 0.20, Evaluate: extractors.SBOMCreationTimestamp},
+		{Key: "sbom_authors", Weight: 0.20, Evaluate: extractors.SBOMAuthors},
+		{Key: "sbom_tool_version", Weight: 0.20, Evaluate: extractors.SBOMCreationTool},
+		{Key: "sbom_supplier", Weight: 0.15, Evaluate: extractors.SBOMSupplier},
+		{Key: "sbom_namespace", Weight: 0.15, Evaluate: extractors.SBOMNamespace},
+		{Key: "sbom_lifecycle", Weight: 0.10, Evaluate: extractors.SBOMLifeCycle},
 	},
 }
 
 var Integrity = config.CategorySpec{
-	Name:     "Integrity",
-	Weight:   15,
+	Name:   "Integrity",
+	Weight: 15,
 	Features: []config.FeatureSpec{
-		// {Key: "sbom_signature", Weight: 0.10, Evaluate: SBOMDDocSignature},
-		// {Key: "component_hash", Weight: 0.10, Evaluate: CompWithChecksum},
+		{Key: "sbom_signature", Weight: 0.10, Evaluate: extractors.SBOMSignature},
+		{Key: "comp_with_checksums", Weight: 0.60, Evaluate: extractors.CompWithSHA1Plus},
+		{Key: "comp_with_sha256", Weight: 0.30, Evaluate: extractors.CompWithSHA256Plus},
 	},
 }
 
 var Completeness = config.CategorySpec{
-	Name:     "Completeness",
-	Weight:   12,
-	Features: nil,
+	Name:   "Completeness",
+	Weight: 12,
+	Features: []config.FeatureSpec{
+		{Key: "comp_with_dependencies", Weight: 0.25, Evaluate: extractors.CompWithDependencies},
+		{Key: "sbom_completeness_declared", Weight: 0.15, Evaluate: extractors.CompWithCompleteness},
+		{Key: "primary_component", Weight: 0.20, Evaluate: extractors.SBOMWithPrimaryComponent},
+		{Key: "comp_with_source_code", Weight: 0.15, Evaluate: extractors.CompWithSourceCode},
+		{Key: "comp_with_supplier", Weight: 0.15, Evaluate: extractors.CompWithSupplier},
+		{Key: "comp_with_purpose", Weight: 0.10, Evaluate: extractors.CompWithPackagePurpose},
+	},
 }
 
 var LicensingAndCompliance = config.CategorySpec{

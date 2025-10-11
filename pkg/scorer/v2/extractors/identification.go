@@ -20,7 +20,7 @@ import (
 
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/config"
-	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/engine"
+	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/formulae"
 	"github.com/samber/lo"
 )
 
@@ -28,7 +28,7 @@ import (
 func CompWithName(doc sbom.Document) config.FeatureScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
-		return engine.ScoreNA()
+		return formulae.ScoreNA()
 	}
 
 	have := lo.CountBy(doc.Components(), func(c sbom.GetComponent) bool {
@@ -36,8 +36,8 @@ func CompWithName(doc sbom.Document) config.FeatureScore {
 	})
 
 	return config.FeatureScore{
-		Score:  engine.PerComponentScore(have, len(comps)),
-		Desc:   engine.CompDescription(have, len(comps), "names"),
+		Score:  formulae.PerComponentScore(have, len(comps)),
+		Desc:   formulae.CompDescription(have, len(comps), "names"),
 		Ignore: false,
 	}
 }
@@ -46,7 +46,7 @@ func CompWithName(doc sbom.Document) config.FeatureScore {
 func CompWithVersion(doc sbom.Document) config.FeatureScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
-		return engine.ScoreNA()
+		return formulae.ScoreNA()
 	}
 
 	have := lo.CountBy(doc.Components(), func(c sbom.GetComponent) bool {
@@ -54,8 +54,8 @@ func CompWithVersion(doc sbom.Document) config.FeatureScore {
 	})
 
 	return config.FeatureScore{
-		Score:  engine.PerComponentScore(have, len(comps)),
-		Desc:   engine.CompDescription(have, len(comps), "versions"),
+		Score:  formulae.PerComponentScore(have, len(comps)),
+		Desc:   formulae.CompDescription(have, len(comps), "versions"),
 		Ignore: false,
 	}
 }
@@ -64,7 +64,7 @@ func CompWithVersion(doc sbom.Document) config.FeatureScore {
 func CompWithUniqLocalIDs(doc sbom.Document) config.FeatureScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
-		return engine.ScoreNA()
+		return formulae.ScoreNA()
 	}
 
 	have := lo.FilterMap(doc.Components(), func(c sbom.GetComponent, _ int) (string, bool) {
@@ -76,8 +76,8 @@ func CompWithUniqLocalIDs(doc sbom.Document) config.FeatureScore {
 	})
 
 	return config.FeatureScore{
-		Score:  engine.PerComponentScore(len(have), len(comps)),
-		Desc:   engine.CompDescription(len(have), len(comps), "unique IDs"),
+		Score:  formulae.PerComponentScore(len(have), len(comps)),
+		Desc:   formulae.CompDescription(len(have), len(comps), "unique IDs"),
 		Ignore: false,
 	}
 }

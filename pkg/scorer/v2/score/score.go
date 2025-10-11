@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package engine
+package score
 
 import (
 	"context"
@@ -22,6 +22,7 @@ import (
 	"github.com/interlynk-io/sbomqs/pkg/logger"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/config"
+	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/formulae"
 	"github.com/interlynk-io/sbomqs/pkg/utils"
 )
 
@@ -29,13 +30,13 @@ func ScoreSBOM(ctx context.Context, cfg config.Config, paths []string) ([]config
 	log := logger.FromContext(ctx)
 
 	// Validate paths
-	validPaths := validateAndExpandPaths(ctx, paths)
+	validPaths := ValidateAndExpandPaths(ctx, paths)
 	if len(validPaths) == 0 {
 		return nil, fmt.Errorf("no valid paths provided")
 	}
 
 	// Validate config
-	if err := validateConfig(ctx, &cfg); err != nil {
+	if err := ValidateConfig(ctx, &cfg); err != nil {
 		return nil, fmt.Errorf("failed to validate SBOM configuration: %w", err)
 	}
 
@@ -46,14 +47,14 @@ func ScoreSBOM(ctx context.Context, cfg config.Config, paths []string) ([]config
 		if utils.IsURL(path) {
 			log.Debugf("processing URL: %s", path)
 
-			sbomFile, err := processURLPath(ctx, cfg, path)
+			sbomFile, err := ProcessURLPath(ctx, cfg, path)
 			if err != nil {
 				log.Warnf("failed to process URL: %s: %v", path, err)
 				continue
 			}
 			defer sbomFile.Close()
 
-			signature, err := getSignature(ctx, cfg, sbomFile.Name())
+			signature, err := GetSignature(ctx, cfg, sbomFile.Name())
 			if err != nil {
 				return nil, fmt.Errorf("get signature for %q: %w", path, err)
 			}
@@ -79,12 +80,12 @@ func ScoreSBOM(ctx context.Context, cfg config.Config, paths []string) ([]config
 		} else {
 			log.Debugf("processing file: %s", path)
 
-			signature, err := getSignature(ctx, cfg, path)
+			signature, err := GetSignature(ctx, cfg, path)
 			if err != nil {
 				return nil, fmt.Errorf("get signature for %q: %w", path, err)
 			}
 
-			file, err := getFileHandle(ctx, path)
+			file, err := GetFileHandle(ctx, path)
 			if err != nil {
 				log.Warnf("failed to open file %s: %v", path, err)
 				continue
@@ -135,14 +136,14 @@ func SBOMEvaluation(ctx context.Context, doc sbom.Document, cfg config.Config, s
 	}
 
 	// Log category names (readable)
-	log.Debugf("selected categories for evaluation: %s", strings.Join(categoryNames(categoriesToScore), ", "))
+	log.Debugf("selected categories for evaluation: %s", strings.Join(CategoryNames(categoriesToScore), ", "))
 
 	// Score SBOM by categories
 	catEvaluationResults := scoreAgainstCategories(ctx, doc, categoriesToScore)
-	interlynkScore := computeInterlynkScore(catEvaluationResults)
+	interlynkScore := formulae.ComputeInterlynkScore(catEvaluationResults)
 
 	result.InterlynkScore = interlynkScore
-	result.Grade = toGrade(interlynkScore)
+	result.Grade = formulae.ToGrade(interlynkScore)
 	result.Categories = catEvaluationResults
 
 	return *result, nil

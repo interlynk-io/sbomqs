@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package engine
+package score
 
 import (
 	"context"
@@ -24,11 +24,10 @@ import (
 	"github.com/interlynk-io/sbomqs/pkg/logger"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/config"
-	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/registry"
 	"github.com/interlynk-io/sbomqs/pkg/utils"
 )
 
-func processURLPath(ctx context.Context, cfg config.Config, url string) (*os.File, error) {
+func ProcessURLPath(ctx context.Context, cfg config.Config, url string) (*os.File, error) {
 	log := logger.FromContext(ctx)
 	log.Debugf("Processing URL: %s", url)
 
@@ -68,7 +67,7 @@ func processURLPath(ctx context.Context, cfg config.Config, url string) (*os.Fil
 	return tmpFile, nil
 }
 
-func removeEmptyStrings(input []string) []string {
+func RemoveEmptyStrings(input []string) []string {
 	var output []string
 	for _, s := range input {
 		if trimmed := strings.TrimSpace(s); trimmed != "" {
@@ -78,7 +77,7 @@ func removeEmptyStrings(input []string) []string {
 	return output
 }
 
-func normalizeAndValidateCategories(ctx context.Context, categories []string) ([]string, error) {
+func NormalizeAndValidateCategories(ctx context.Context, categories []string) ([]string, error) {
 	log := logger.FromContext(ctx)
 	log.Debugf("normalizing anf validating categories: %s", categories)
 	var normalized []string
@@ -86,12 +85,12 @@ func normalizeAndValidateCategories(ctx context.Context, categories []string) ([
 	for _, cat := range categories {
 
 		// normalize using alias
-		if alias, ok := registry.CategoryAliases[cat]; ok {
+		if alias, ok := CategoryAliases[cat]; ok {
 			cat = alias
 		}
 
 		// validate if it's a supported category
-		if !registry.SupportedCategories[cat] {
+		if !SupportedCategories[cat] {
 			log.Warnf("unsupported category: %s", cat)
 			continue
 		}
@@ -103,7 +102,7 @@ func normalizeAndValidateCategories(ctx context.Context, categories []string) ([
 
 // getFileHandle opens a file in read-only mode and returns the handle.
 // The caller is responsible for calling Close() on the returned file.
-func getFileHandle(ctx context.Context, filePath string) (*os.File, error) {
+func GetFileHandle(ctx context.Context, filePath string) (*os.File, error) {
 	log := logger.FromContext(ctx)
 
 	log.Debugf("Opening file for reading: %q", filePath)
@@ -118,7 +117,7 @@ func getFileHandle(ctx context.Context, filePath string) (*os.File, error) {
 	return file, nil
 }
 
-func getSignature(ctx context.Context, cfg config.Config, path string) (sbom.Signature, error) {
+func GetSignature(ctx context.Context, cfg config.Config, path string) (sbom.Signature, error) {
 	log := logger.FromContext(ctx)
 
 	sigValue, publicKey := cfg.SignatureBundle.SigValue, cfg.SignatureBundle.PublicKey
@@ -140,7 +139,7 @@ func getSignature(ctx context.Context, cfg config.Config, path string) (sbom.Sig
 }
 
 // helper for logging
-func categoryNames(cats []config.CategorySpec) []string {
+func CategoryNames(cats []config.CategorySpec) []string {
 	out := make([]string, 0, len(cats))
 	for _, c := range cats {
 		out = append(out, c.Name)

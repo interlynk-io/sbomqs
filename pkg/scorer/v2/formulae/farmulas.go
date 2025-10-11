@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package engine
+package formulae
 
 import (
 	"fmt"
@@ -27,6 +27,7 @@ func ScoreNA() config.FeatureScore {
 		Ignore: true,
 	}
 }
+
 func NoComponentsNA() string           { return "N/A (no components)" }
 func MissingField(field string) string { return "missing " + field }
 func PresentField(field string) string { return "present " + field }
@@ -53,7 +54,7 @@ func BooleanScore(present bool) float64 {
 }
 
 // Grade mapping (A: 9–10, B: 8–8.9, C: 7–7.9, D: 5–6.9, F: <5)
-func toGrade(interlynkScore float64) string {
+func ToGrade(interlynkScore float64) string {
 	switch {
 	case interlynkScore >= 9.0:
 		return "A"
@@ -69,7 +70,7 @@ func toGrade(interlynkScore float64) string {
 }
 
 // computeCategoryScore returns the weighted average of feature scores.
-func computeCategoryScore(features []config.FeatureResult) float64 {
+func ComputeCategoryScore(features []config.FeatureResult) float64 {
 	var totalFeatureWeight float64
 	for _, feature := range features {
 		if !feature.Ignored {
@@ -95,7 +96,7 @@ func computeCategoryScore(features []config.FeatureResult) float64 {
 }
 
 // computeInterlynkScore returns the weighted average of category scores.
-func computeInterlynkScore(catResults []config.CategoryResult) float64 {
+func ComputeInterlynkScore(catResults []config.CategoryResult) float64 {
 	var totalCategoryWeight, finalScoreWithWeightage float64
 
 	for _, catResult := range catResults {

@@ -21,7 +21,7 @@ import (
 
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/config"
-	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/engine"
+	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/formulae"
 )
 
 // SBOMCreationTime: document has a valid ISO-8601 timestamp (RFC3339/RFC3339Nano).
@@ -30,8 +30,8 @@ func SBOMCreationTimestamp(doc sbom.Document) config.FeatureScore {
 	ts := strings.TrimSpace(doc.Spec().GetCreationTimestamp())
 	if ts == "" {
 		return config.FeatureScore{
-			Score:  engine.BooleanScore(false),
-			Desc:   engine.MissingField("timestamp"),
+			Score:  formulae.BooleanScore(false),
+			Desc:   formulae.MissingField("timestamp"),
 			Ignore: false,
 		}
 	}
@@ -40,7 +40,7 @@ func SBOMCreationTimestamp(doc sbom.Document) config.FeatureScore {
 	if _, err := time.Parse(time.RFC3339, ts); err != nil {
 		if _, err2 := time.Parse(time.RFC3339Nano, ts); err2 != nil {
 			return config.FeatureScore{
-				Score:  engine.BooleanScore(false),
+				Score:  formulae.BooleanScore(false),
 				Desc:   fmt.Sprintf("invalid timestamp: %s", ts),
 				Ignore: false,
 			}
@@ -48,7 +48,7 @@ func SBOMCreationTimestamp(doc sbom.Document) config.FeatureScore {
 	}
 
 	return config.FeatureScore{
-		Score:  engine.BooleanScore(true),
+		Score:  formulae.BooleanScore(true),
 		Desc:   ts,
 		Ignore: false,
 	}
@@ -61,14 +61,14 @@ func SBOMAuthors(doc sbom.Document) config.FeatureScore {
 
 	if total == 0 {
 		return config.FeatureScore{
-			Score:  engine.BooleanScore(false),
+			Score:  formulae.BooleanScore(false),
 			Desc:   "0 authors",
 			Ignore: false,
 		}
 	}
 
 	return config.FeatureScore{
-		Score:  engine.BooleanScore(true),
+		Score:  formulae.BooleanScore(true),
 		Desc:   fmt.Sprintf("%d authors", total),
 		Ignore: false,
 	}
@@ -89,14 +89,14 @@ func SBOMCreationTool(doc sbom.Document) config.FeatureScore {
 
 	if len(toolsWithNV) == 0 {
 		return config.FeatureScore{
-			Score:  engine.BooleanScore(false),
-			Desc:   engine.MissingField("tool"),
+			Score:  formulae.BooleanScore(false),
+			Desc:   formulae.MissingField("tool"),
 			Ignore: false,
 		}
 	}
 
 	return config.FeatureScore{
-		Score:  engine.BooleanScore(true),
+		Score:  formulae.BooleanScore(true),
 		Desc:   strings.Join(toolsWithNV, ", "),
 		Ignore: false,
 	}
@@ -112,8 +112,8 @@ func SBOMSupplier(doc sbom.Document) config.FeatureScore {
 	case string(sbom.SBOMSpecSPDX):
 		// N/A for SPDX
 		return config.FeatureScore{
-			Score:  engine.BooleanScore(false),
-			Desc:   engine.NonSupportedSPDXField(),
+			Score:  formulae.BooleanScore(false),
+			Desc:   formulae.NonSupportedSPDXField(),
 			Ignore: true,
 		}
 
@@ -124,22 +124,22 @@ func SBOMSupplier(doc sbom.Document) config.FeatureScore {
 
 		if hasName && hasContact {
 			return config.FeatureScore{
-				Score:  engine.BooleanScore(true),
-				Desc:   engine.PresentField("supplier"),
+				Score:  formulae.BooleanScore(true),
+				Desc:   formulae.PresentField("supplier"),
 				Ignore: false,
 			}
 		}
 		return config.FeatureScore{
-			Score:  engine.BooleanScore(false),
-			Desc:   engine.MissingField("supplier"),
+			Score:  formulae.BooleanScore(false),
+			Desc:   formulae.MissingField("supplier"),
 			Ignore: false,
 		}
 	}
 
 	// Unknown spec → treat as not applicable to be safe (optional)
 	return config.FeatureScore{
-		Score:  engine.BooleanScore(false),
-		Desc:   engine.UnknownSpec(),
+		Score:  formulae.BooleanScore(false),
+		Desc:   formulae.UnknownSpec(),
 		Ignore: true,
 	}
 }
@@ -154,14 +154,14 @@ func SBOMNamespace(doc sbom.Document) config.FeatureScore {
 		ns := strings.TrimSpace(doc.Spec().GetNamespace())
 		if ns != "" {
 			return config.FeatureScore{
-				Score:  engine.BooleanScore(true),
-				Desc:   engine.PresentField("namespace"),
+				Score:  formulae.BooleanScore(true),
+				Desc:   formulae.PresentField("namespace"),
 				Ignore: false,
 			}
 		}
 		return config.FeatureScore{
-			Score:  engine.BooleanScore(false),
-			Desc:   engine.MissingField("namespace"),
+			Score:  formulae.BooleanScore(false),
+			Desc:   formulae.MissingField("namespace"),
 			Ignore: false,
 		}
 
@@ -169,22 +169,22 @@ func SBOMNamespace(doc sbom.Document) config.FeatureScore {
 		uri := strings.TrimSpace(doc.Spec().GetURI())
 		if uri != "" {
 			return config.FeatureScore{
-				Score:  engine.BooleanScore(true),
-				Desc:   engine.PresentField("namespace"),
+				Score:  formulae.BooleanScore(true),
+				Desc:   formulae.PresentField("namespace"),
 				Ignore: false,
 			}
 		}
 		return config.FeatureScore{
-			Score:  engine.BooleanScore(false),
-			Desc:   engine.MissingField("namespace"),
+			Score:  formulae.BooleanScore(false),
+			Desc:   formulae.MissingField("namespace"),
 			Ignore: false,
 		}
 	}
 
 	// Unknown spec → fail closed (optional: set Ignore=true if you prefer)
 	return config.FeatureScore{
-		Score:  engine.BooleanScore(false),
-		Desc:   engine.UnknownSpec(),
+		Score:  formulae.BooleanScore(false),
+		Desc:   formulae.UnknownSpec(),
 		Ignore: true,
 	}
 }
@@ -196,8 +196,8 @@ func SBOMLifeCycle(doc sbom.Document) config.FeatureScore {
 	switch spec {
 	case string(sbom.SBOMSpecSPDX):
 		return config.FeatureScore{
-			Score:  engine.BooleanScore(false),
-			Desc:   engine.NonSupportedSPDXField(),
+			Score:  formulae.BooleanScore(false),
+			Desc:   formulae.NonSupportedSPDXField(),
 			Ignore: true,
 		}
 
@@ -205,21 +205,21 @@ func SBOMLifeCycle(doc sbom.Document) config.FeatureScore {
 		phases := doc.Lifecycles()
 		if len(phases) > 0 {
 			return config.FeatureScore{
-				Score:  engine.BooleanScore(true),
+				Score:  formulae.BooleanScore(true),
 				Desc:   strings.Join(phases, ", "),
 				Ignore: false,
 			}
 		}
 		return config.FeatureScore{
-			Score:  engine.BooleanScore(false),
-			Desc:   engine.MissingField("lifecycle"),
+			Score:  formulae.BooleanScore(false),
+			Desc:   formulae.MissingField("lifecycle"),
 			Ignore: false,
 		}
 	}
 
 	return config.FeatureScore{
-		Score:  engine.BooleanScore(false),
-		Desc:   engine.UnknownSpec(),
+		Score:  formulae.BooleanScore(false),
+		Desc:   formulae.UnknownSpec(),
 		Ignore: true,
 	}
 }

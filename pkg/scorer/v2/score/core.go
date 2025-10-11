@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package engine
+package score
 
 import (
 	"context"
@@ -22,7 +22,7 @@ import (
 	"github.com/interlynk-io/sbomqs/pkg/logger"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/config"
-	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/registry"
+	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/formulae"
 )
 
 // scoreAgainstCategories checks SBOM against all defined categories
@@ -50,13 +50,13 @@ func evaluateCategory(ctx context.Context, doc sbom.Document, category config.Ca
 		categoryWiseResult.Features = append(categoryWiseResult.Features, featureResult)
 	}
 
-	categoryWiseResult.Score = computeCategoryScore(categoryWiseResult.Features)
+	categoryWiseResult.Score = formulae.ComputeCategoryScore(categoryWiseResult.Features)
 	return categoryWiseResult
 }
 
 // selectCategoriesToScore returns the exact list of categories we’ll score.
 func selectCategoriesToScore(cfg config.Config) ([]config.CategorySpec, error) {
-	baseCategories := registry.BaseCategories() // Identification, Provenance (with their feature specs)
+	baseCategories := BaseCategories() // Identification, Provenance (with their feature specs)
 
 	// filters (by category name and/or feature key).
 	newCategories := filterCategories(cfg, baseCategories)

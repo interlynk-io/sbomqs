@@ -19,7 +19,7 @@ import (
 
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/config"
-	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/engine"
+	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/formulae"
 	"github.com/samber/lo"
 )
 
@@ -28,7 +28,7 @@ import (
 func CompWithDependencies(doc sbom.Document) config.FeatureScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
-		return engine.ScoreNA()
+		return formulae.ScoreNA()
 	}
 
 	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
@@ -36,8 +36,8 @@ func CompWithDependencies(doc sbom.Document) config.FeatureScore {
 	})
 
 	return config.FeatureScore{
-		Score:  engine.PerComponentScore(have, len(comps)),
-		Desc:   engine.CompDescription(have, len(comps), "dependencies"),
+		Score:  formulae.PerComponentScore(have, len(comps)),
+		Desc:   formulae.CompDescription(have, len(comps), "dependencies"),
 		Ignore: false,
 	}
 }
@@ -46,7 +46,7 @@ func CompWithDependencies(doc sbom.Document) config.FeatureScore {
 func CompWithCompleteness(doc sbom.Document) config.FeatureScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
-		return engine.ScoreNA()
+		return formulae.ScoreNA()
 	}
 
 	spec := doc.Spec().GetSpecType()
@@ -54,8 +54,8 @@ func CompWithCompleteness(doc sbom.Document) config.FeatureScore {
 	switch spec {
 	case string(sbom.SBOMSpecSPDX):
 		return config.FeatureScore{
-			Score:  engine.BooleanScore(false),
-			Desc:   engine.NonSupportedSPDXField(),
+			Score:  formulae.BooleanScore(false),
+			Desc:   formulae.NonSupportedSPDXField(),
 			Ignore: true,
 		}
 
@@ -68,8 +68,8 @@ func CompWithCompleteness(doc sbom.Document) config.FeatureScore {
 	}
 
 	return config.FeatureScore{
-		Score:  engine.BooleanScore(false),
-		Desc:   engine.UnknownSpec(),
+		Score:  formulae.BooleanScore(false),
+		Desc:   formulae.UnknownSpec(),
 		Ignore: true,
 	}
 }
@@ -81,14 +81,14 @@ func SBOMWithPrimaryComponent(doc sbom.Document) config.FeatureScore {
 
 	if !isPrimaryPresent {
 		return config.FeatureScore{
-			Score:  engine.PerComponentScore(0, len(comps)),
+			Score:  formulae.PerComponentScore(0, len(comps)),
 			Desc:   "absent",
 			Ignore: true,
 		}
 	}
 
 	return config.FeatureScore{
-		Score:  engine.BooleanScore(isPrimaryPresent),
+		Score:  formulae.BooleanScore(isPrimaryPresent),
 		Desc:   "identified",
 		Ignore: false,
 	}
@@ -98,7 +98,7 @@ func SBOMWithPrimaryComponent(doc sbom.Document) config.FeatureScore {
 func CompWithSourceCode(doc sbom.Document) config.FeatureScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
-		return engine.ScoreNA()
+		return formulae.ScoreNA()
 	}
 
 	have := lo.CountBy(doc.Components(), func(c sbom.GetComponent) bool {
@@ -106,8 +106,8 @@ func CompWithSourceCode(doc sbom.Document) config.FeatureScore {
 	})
 
 	return config.FeatureScore{
-		Score:  engine.PerComponentScore(have, len(comps)),
-		Desc:   engine.CompDescription(have, len(comps), "source URIs"),
+		Score:  formulae.PerComponentScore(have, len(comps)),
+		Desc:   formulae.CompDescription(have, len(comps), "source URIs"),
 		Ignore: false,
 	}
 }
@@ -116,7 +116,7 @@ func CompWithSourceCode(doc sbom.Document) config.FeatureScore {
 func CompWithSupplier(doc sbom.Document) config.FeatureScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
-		return engine.ScoreNA()
+		return formulae.ScoreNA()
 	}
 
 	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
@@ -127,8 +127,8 @@ func CompWithSupplier(doc sbom.Document) config.FeatureScore {
 	})
 
 	return config.FeatureScore{
-		Score:  engine.PerComponentScore(have, len(comps)),
-		Desc:   engine.CompDescription(have, len(comps), "suppliers"),
+		Score:  formulae.PerComponentScore(have, len(comps)),
+		Desc:   formulae.CompDescription(have, len(comps), "suppliers"),
 		Ignore: false,
 	}
 }
@@ -137,7 +137,7 @@ func CompWithSupplier(doc sbom.Document) config.FeatureScore {
 func CompWithPackagePurpose(doc sbom.Document) config.FeatureScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
-		return engine.ScoreNA()
+		return formulae.ScoreNA()
 	}
 
 	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
@@ -145,8 +145,8 @@ func CompWithPackagePurpose(doc sbom.Document) config.FeatureScore {
 	})
 
 	return config.FeatureScore{
-		Score:  engine.PerComponentScore(have, len(comps)),
-		Desc:   engine.CompDescription(have, len(comps), "type"),
+		Score:  formulae.PerComponentScore(have, len(comps)),
+		Desc:   formulae.CompDescription(have, len(comps), "type"),
 		Ignore: false,
 	}
 }

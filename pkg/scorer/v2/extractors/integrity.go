@@ -22,7 +22,7 @@ import (
 	"github.com/interlynk-io/sbomqs/pkg/compliance/common"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/config"
-	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/engine"
+	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/formulae"
 )
 
 // CompWithSHA1Plus returns coverage of components that have SHA-1 or stronger
@@ -30,7 +30,7 @@ import (
 func CompWithSHA1Plus(doc sbom.Document) config.FeatureScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
-		return engine.ScoreNA()
+		return formulae.ScoreNA()
 	}
 
 	have := 0
@@ -41,8 +41,8 @@ func CompWithSHA1Plus(doc sbom.Document) config.FeatureScore {
 	}
 
 	return config.FeatureScore{
-		Score:  engine.PerComponentScore(have, len(comps)),
-		Desc:   engine.CompDescription(have, len(comps), "SHA-1+"),
+		Score:  formulae.PerComponentScore(have, len(comps)),
+		Desc:   formulae.CompDescription(have, len(comps), "SHA-1+"),
 		Ignore: false,
 	}
 }
@@ -51,7 +51,7 @@ func CompWithSHA1Plus(doc sbom.Document) config.FeatureScore {
 func CompWithSHA256Plus(doc sbom.Document) config.FeatureScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
-		return engine.ScoreNA()
+		return formulae.ScoreNA()
 	}
 
 	have := 0
@@ -62,8 +62,8 @@ func CompWithSHA256Plus(doc sbom.Document) config.FeatureScore {
 	}
 
 	return config.FeatureScore{
-		Score:  engine.PerComponentScore(have, len(comps)),
-		Desc:   engine.CompDescription(have, len(comps), "SHA-256+"),
+		Score:  formulae.PerComponentScore(have, len(comps)),
+		Desc:   formulae.CompDescription(have, len(comps), "SHA-256+"),
 		Ignore: false,
 	}
 }
@@ -82,7 +82,7 @@ func SBOMSignature(doc sbom.Document) config.FeatureScore {
 	if sig == nil {
 		return config.FeatureScore{
 			Score:  0,
-			Desc:   engine.MissingField("signature"),
+			Desc:   formulae.MissingField("signature"),
 			Ignore: false,
 		}
 	}

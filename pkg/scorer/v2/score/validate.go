@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package engine
+package score
 
 import (
 	"context"
@@ -23,18 +23,17 @@ import (
 
 	"github.com/interlynk-io/sbomqs/pkg/logger"
 	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/config"
-	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/registry"
 	"github.com/interlynk-io/sbomqs/pkg/utils"
 )
 
-func validateFeatures(ctx context.Context, features []string) ([]string, error) {
+func ValidateFeatures(ctx context.Context, features []string) ([]string, error) {
 	log := logger.FromContext(ctx)
 	log.Debugf("validating features: %v", features)
 
 	var validFeatures []string
 
 	for _, feature := range features {
-		if _, ok := registry.SupportedFeatures[feature]; !ok {
+		if _, ok := SupportedFeatures[feature]; !ok {
 			log.Warnf("unsupported feature: %s", feature)
 			continue
 		}
@@ -46,7 +45,7 @@ func validateFeatures(ctx context.Context, features []string) ([]string, error) 
 // validateAndExpandPaths returns only files and URLs.
 // - URLs are kept as-is.
 // - Directories are expanded to their files
-func validateAndExpandPaths(ctx context.Context, paths []string) []string {
+func ValidateAndExpandPaths(ctx context.Context, paths []string) []string {
 	log := logger.FromContext(ctx)
 	log.Debug("validating paths")
 
@@ -110,7 +109,7 @@ func validateAndExpandPaths(ctx context.Context, paths []string) []string {
 	return validPaths
 }
 
-func validateConfig(ctx context.Context, cfg *config.Config) error {
+func ValidateConfig(ctx context.Context, cfg *config.Config) error {
 	log := logger.FromContext(ctx)
 	log.Debug("validating configuration")
 
@@ -120,19 +119,19 @@ func validateConfig(ctx context.Context, cfg *config.Config) error {
 		}
 		return nil
 	}
-	cfg.Categories = removeEmptyStrings(cfg.Categories)
+	cfg.Categories = RemoveEmptyStrings(cfg.Categories)
 
 	if len(cfg.Categories) > 0 {
-		normCategories, err := normalizeAndValidateCategories(ctx, cfg.Categories)
+		normCategories, err := NormalizeAndValidateCategories(ctx, cfg.Categories)
 		if err != nil {
 			return fmt.Errorf("failed to normalize and validate categories: %w", err)
 		}
 		cfg.Categories = normCategories
 	}
 
-	cfg.Features = removeEmptyStrings(cfg.Features)
+	cfg.Features = RemoveEmptyStrings(cfg.Features)
 	if len(cfg.Features) > 0 {
-		validFeatures, err := validateFeatures(ctx, cfg.Features)
+		validFeatures, err := ValidateFeatures(ctx, cfg.Features)
 		if err != nil {
 			return fmt.Errorf("failed to validate features: %w", err)
 		}
