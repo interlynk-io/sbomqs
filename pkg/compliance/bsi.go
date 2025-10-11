@@ -487,7 +487,7 @@ func bsiComponentDownloadURL(component sbom.GetComponent) *db.Record {
 }
 
 func bsiComponentSourceCodeURL(component sbom.GetComponent) *db.Record {
-	result := component.SourceCodeURL()
+	result := component.GetSourceCodeURL()
 
 	if result != "" {
 		return db.NewRecordStmtOptional(COMP_SOURCE_CODE_URL, common.UniqueElementID(component), result, 10.0)

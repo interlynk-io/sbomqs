@@ -43,7 +43,7 @@ type GetComponent interface {
 	Authors() []GetAuthor
 	Manufacturer() GetManufacturer
 	CountOfDependencies() int
-	SourceCodeURL() string
+	GetSourceCodeURL() string
 	GetDownloadLocationURL() string
 	SourceCodeHash() string
 	IsPrimaryComponent() bool
@@ -71,19 +71,19 @@ type Component struct {
 	declaredLicense         []licenses.License
 	concludedLicense        []licenses.License
 	Checksums               []GetChecksum
-	purpose                 string
+	Purpose                 string
 	isReqFieldsPresent      bool
 	ID                      string
 	Athrs                   []GetAuthor
 	Supplier                Supplier
 	manufacturer            Manufacturer
-	dependenciesCount       int
-	sourceCodeURL           string
+	Count                   int
+	SourceCodeURL           string
 	DownloadLocation        string
 	sourceCodeHash          string
 	isPrimary               bool
 	PrimaryCompt            PrimaryComp
-	hasRelationships        bool
+	HasRelationships        bool
 	RelationshipState       string
 	Spdxid                  string
 	FileAnalyzed            bool
@@ -147,7 +147,7 @@ func (c Component) GetChecksums() []GetChecksum {
 }
 
 func (c Component) PrimaryPurpose() string {
-	return c.purpose
+	return c.Purpose
 }
 
 func (c Component) RequiredFields() bool {
@@ -171,11 +171,11 @@ func (c Component) Authors() []GetAuthor {
 }
 
 func (c Component) CountOfDependencies() int {
-	return c.dependenciesCount
+	return c.Count
 }
 
-func (c Component) SourceCodeURL() string {
-	return c.sourceCodeURL
+func (c Component) GetSourceCodeURL() string {
+	return c.SourceCodeURL
 }
 
 func (c Component) GetDownloadLocationURL() string {
@@ -191,7 +191,7 @@ func (c Component) IsPrimaryComponent() bool {
 }
 
 func (c Component) HasRelationShips() bool {
-	return c.hasRelationships
+	return c.HasRelationships
 }
 
 func (c Component) RelationShipState() string {

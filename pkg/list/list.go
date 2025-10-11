@@ -639,7 +639,7 @@ func evaluateCompWithSourceCodeURI(doc sbom.Document, comp sbom.GetComponent) (b
 		return false, "source code URI is not supported for SPDX documents", nil
 	}
 
-	sourceCodeURI := comp.SourceCodeURL()
+	sourceCodeURI := comp.GetSourceCodeURL()
 	if sourceCodeURI != "" {
 		return true, sourceCodeURI, nil
 	}

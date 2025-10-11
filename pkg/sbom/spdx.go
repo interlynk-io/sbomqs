@@ -239,7 +239,7 @@ func (s *SpdxDoc) parseComps() {
 
 		nc.Version = sc.PackageVersion
 		nc.Name = sc.PackageName
-		nc.purpose = sc.PrimaryPackagePurpose
+		nc.Purpose = sc.PrimaryPackagePurpose
 		nc.Spdxid = string(sc.PackageSPDXIdentifier)
 		nc.CopyRight = sc.PackageCopyrightText
 		nc.FileAnalyzed = sc.FilesAnalyzed
@@ -286,7 +286,7 @@ func (s *SpdxDoc) parseComps() {
 			nc.sourceCodeHash = sc.PackageVerificationCode.Value
 		}
 
-		// nc.sourceCodeUrl //no conlusive way to get this from SPDX
+		nc.SourceCodeURL = sc.PackageSourceInfo
 
 		nc.DownloadLocation = sc.PackageDownloadLocation
 
@@ -303,7 +303,7 @@ func (s *SpdxDoc) parseComps() {
 
 		// nc.hasRelationships = fromRelsPresent(s.Rels, string(sc.PackageSPDXIdentifier))
 		// nc.RelationshipState = "not-specified"
-		nc.hasRelationships = getComponentDependencies(s, nc.Spdxid)
+		nc.HasRelationships, nc.Count = getComponentDependencies(s, nc.Spdxid)
 
 		s.Comps = append(s.Comps, nc)
 	}
@@ -334,22 +334,24 @@ func (s *SpdxDoc) parseAuthors() {
 }
 
 // return true if a component has DEPENDS_ON relationship
-func getComponentDependencies(s *SpdxDoc, componentID string) bool {
+func getComponentDependencies(s *SpdxDoc, componentID string) (bool, int) {
 	newID := "SPDXRef-" + componentID
-
+	count := 0
 	for _, r := range s.doc.Relationships {
-		if strings.ToUpper(r.Relationship) == "DEPENDS_ON" {
+		// some sbom generating tools specify relationship type as contain and some as depends-on
+		if strings.ToUpper(r.Relationship) == spdx.RelationshipDependsOn || strings.ToUpper(r.Relationship) == spdx.RelationshipContains {
 			aBytes, err := r.RefA.MarshalJSON()
 			if err != nil {
 				continue
 			}
 
 			if CleanKey(string(aBytes)) == newID {
-				return true
+				count++
 			}
 		}
 	}
-	return false
+
+	return count > 0, count
 }
 
 func (s *SpdxDoc) parsePrimaryCompAndRelationships() {
