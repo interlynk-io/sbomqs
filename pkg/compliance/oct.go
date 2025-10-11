@@ -69,7 +69,7 @@ func octSpec(doc sbom.Document) *db.Record {
 	result := ""
 	score := 0.0
 
-	if vToLower == "spdx" {
+	if vToLower == string(sbom.SBOMSpecSPDX) {
 		result = v
 		score = 10.0
 	} else {

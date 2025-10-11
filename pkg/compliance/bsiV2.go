@@ -139,7 +139,7 @@ func bsiV2SpecVersion(doc sbom.Document) *db.Record {
 
 	result, score := "", 0.0
 
-	if spec == "spdx" {
+	if spec == string(sbom.SBOMSpecSPDX) {
 		count := lo.Count(validBsiV2SpdxVersions, version)
 		validate := lo.Contains(validSpdxVersion, version)
 		if validate {
@@ -151,7 +151,7 @@ func bsiV2SpecVersion(doc sbom.Document) *db.Record {
 				score = 0.0
 			}
 		}
-	} else if spec == "cyclonedx" {
+	} else if spec == string(sbom.SBOMSpecCDX) {
 		count := lo.Count(validBsiV2CdxVersions, version)
 		if count > 0 {
 			result = version
@@ -213,9 +213,9 @@ func bsiV2ComponentAssociatedLicense(doc sbom.Document, component sbom.GetCompon
 	spec := doc.Spec().GetSpecType()
 
 	var licenses []licenses.License
-	if spec == "cyclonedx" {
+	if spec == string(sbom.SBOMSpecCDX) {
 		licenses = component.Licenses()
-	} else if spec == "spdx" {
+	} else if spec == string(sbom.SBOMSpecSPDX) {
 		licenses = component.ConcludedLicenses()
 	}
 
