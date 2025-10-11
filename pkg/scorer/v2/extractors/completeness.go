@@ -53,7 +53,6 @@ func CompWithCompleteness(doc sbom.Document) config.FeatureScore {
 
 	switch spec {
 	case string(sbom.SBOMSpecSPDX):
-		// N/A for SPDX
 		return config.FeatureScore{
 			Score:  engine.BooleanScore(false),
 			Desc:   engine.NonSupportedSPDXField(),
@@ -103,7 +102,7 @@ func CompWithSourceCode(doc sbom.Document) config.FeatureScore {
 	}
 
 	have := lo.CountBy(doc.Components(), func(c sbom.GetComponent) bool {
-		return strings.TrimSpace(c.SourceCodeURL()) != ""
+		return strings.TrimSpace(c.GetSourceCodeURL()) != ""
 	})
 
 	return config.FeatureScore{
