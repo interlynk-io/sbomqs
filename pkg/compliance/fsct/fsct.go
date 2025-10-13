@@ -391,7 +391,7 @@ func fsctPackageDependencies(doc sbom.Document, component sbom.GetComponent) *db
 func fsctPackageLicense(component sbom.GetComponent) *db.Record {
 	result, score, maturity := "", 0.0, "None"
 
-	licenses := component.Licenses()
+	licenses := component.GetLicenses()
 	if len(licenses) == 0 {
 		return db.NewRecordStmt(COMP_LICENSE, common.UniqueElementID(component), result, score, maturity)
 	}

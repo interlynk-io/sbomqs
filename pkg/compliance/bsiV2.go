@@ -214,7 +214,7 @@ func bsiV2ComponentAssociatedLicense(doc sbom.Document, component sbom.GetCompon
 
 	var licenses []licenses.License
 	if spec == string(sbom.SBOMSpecCDX) {
-		licenses = component.Licenses()
+		licenses = component.GetLicenses()
 	} else if spec == string(sbom.SBOMSpecSPDX) {
 		licenses = component.ConcludedLicenses()
 	}

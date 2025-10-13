@@ -33,7 +33,7 @@ type GetComponent interface {
 	Swhids() []swhid.SWHID
 	OmniborIDs() []omniborid.OMNIBORID
 	Swids() []swid.SWID
-	Licenses() []licenses.License
+	GetLicenses() []licenses.License
 	DeclaredLicenses() []licenses.License
 	ConcludedLicenses() []licenses.License
 	GetChecksums() []GetChecksum
@@ -67,9 +67,9 @@ type Component struct {
 	Swhid                   []swhid.SWHID
 	OmniID                  []omniborid.OMNIBORID
 	Swid                    []swid.SWID
-	licenses                []licenses.License
-	declaredLicense         []licenses.License
-	concludedLicense        []licenses.License
+	Licenses                []licenses.License
+	DeclaredLicense         []licenses.License
+	ConcludedLicense        []licenses.License
 	Checksums               []GetChecksum
 	Purpose                 string
 	isReqFieldsPresent      bool
@@ -130,16 +130,16 @@ func (c Component) OmniborIDs() []omniborid.OMNIBORID {
 	return c.OmniID
 }
 
-func (c Component) Licenses() []licenses.License {
-	return c.licenses
+func (c Component) GetLicenses() []licenses.License {
+	return c.Licenses
 }
 
 func (c Component) DeclaredLicenses() []licenses.License {
-	return c.licenses
+	return c.DeclaredLicense
 }
 
 func (c Component) ConcludedLicenses() []licenses.License {
-	return c.licenses
+	return c.ConcludedLicense
 }
 
 func (c Component) GetChecksums() []GetChecksum {

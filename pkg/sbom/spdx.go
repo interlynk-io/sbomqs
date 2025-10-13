@@ -251,9 +251,9 @@ func (s *SpdxDoc) parseComps() {
 		nc.Swid = nil
 		nc.Checksums = s.checksums(index)
 		nc.ExternalRefs = s.externalRefs(index)
-		nc.licenses = s.licenses(index)
-		nc.declaredLicense = s.declaredLicenses(index)
-		nc.concludedLicense = s.concludedLicenses(index)
+		nc.Licenses = s.licenses(index)
+		nc.DeclaredLicense = s.declaredLicenses(index)
+		nc.ConcludedLicense = s.concludedLicenses(index)
 		nc.ID = string(sc.PackageSPDXIdentifier)
 		nc.PackageLicenseConcluded = sc.PackageLicenseConcluded
 		if strings.Contains(s.PrimaryComponent.ID, string(sc.PackageSPDXIdentifier)) {

@@ -110,7 +110,7 @@ func compWithLicensesCompliantCheck(d sbom.Document, c *check) score {
 		return *s
 	}
 	withLicenses := lo.CountBy(d.Components(), func(c sbom.GetComponent) bool {
-		return common.AreLicensesValid(c.Licenses())
+		return common.AreLicensesValid(c.GetLicenses())
 	})
 
 	if totalComponents > 0 {
@@ -391,7 +391,7 @@ func compWithAssociatedLicensesCheck(d sbom.Document, c *check) score {
 		})
 	} else if spec == "cyclonedx" {
 		withLicenses = lo.CountBy(d.Components(), func(c sbom.GetComponent) bool {
-			return common.AreLicensesValid(c.Licenses())
+			return common.AreLicensesValid(c.GetLicenses())
 		})
 	}
 

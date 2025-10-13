@@ -450,7 +450,7 @@ func evaluateCompWithUniqID(comp sbom.GetComponent) (bool, string, error) {
 
 // evaluateCompWithValidLicenses evaluates if the component has valid licenses
 func evaluateCompWithValidLicenses(comp sbom.GetComponent) (bool, string, error) {
-	licenses := comp.Licenses()
+	licenses := comp.GetLicenses()
 	if len(licenses) == 0 {
 		return false, "", nil
 	}
@@ -518,7 +518,7 @@ func evaluateCompWithMultiVulnLookupID(comp sbom.GetComponent) (bool, string, er
 
 // evaluateCompWithDeprecatedLicenses evaluates if the component has any deprecated licenses
 func evaluateCompWithDeprecatedLicenses(comp sbom.GetComponent) (bool, string, error) {
-	licenses := comp.Licenses()
+	licenses := comp.GetLicenses()
 	if len(licenses) == 0 {
 		return false, "", nil
 	}
@@ -550,7 +550,7 @@ func evaluateCompWithPrimaryPurpose(doc sbom.Document, comp sbom.GetComponent) (
 
 // evaluateCompWithRestrictedLicenses evaluates if the component has any restrictive licenses
 func evaluateCompWithRestrictedLicenses(comp sbom.GetComponent) (bool, string, error) {
-	licenses := comp.Licenses()
+	licenses := comp.GetLicenses()
 	if len(licenses) == 0 {
 		return false, "", nil
 	}
@@ -593,7 +593,7 @@ func evaluateCompWithChecksums(comp sbom.GetComponent) (bool, string, error) {
 
 // evaluateCompWithLicenses
 func evaluateCompWithLicenses(comp sbom.GetComponent) (bool, string, error) {
-	licenses := comp.Licenses()
+	licenses := comp.GetLicenses()
 	if len(licenses) == 0 {
 		return false, "", nil
 	}
@@ -688,7 +688,7 @@ func evaluateCompWithAssociatedLicense(doc sbom.Document, comp sbom.GetComponent
 	} else if spec == "cyclonedx" {
 		var associatedLicense []string
 
-		for _, l := range comp.Licenses() {
+		for _, l := range comp.GetLicenses() {
 			if l != nil {
 				associatedLicense = append(associatedLicense, l.Name())
 			}

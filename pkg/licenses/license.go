@@ -183,14 +183,14 @@ func LookupExpression(expression string, customLicenses []License) []License {
 			continue
 		}
 
-		//if custom license list is provided use that.
+		// if custom license list is provided use that.
 		license, err = customLookup(trimLicenseKey)
 		if err == nil {
 			licenses = append(licenses, license)
 			continue
 		}
 
-		//if nothing else this license is custom
+		// if nothing else this license is custom
 		licenses = append(licenses, CreateCustomLicense(trimLicenseKey, trimLicenseKey))
 	}
 

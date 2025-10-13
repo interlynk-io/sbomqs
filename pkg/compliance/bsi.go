@@ -424,7 +424,7 @@ func bsiComponentDepth(doc sbom.Document, component sbom.GetComponent) *db.Recor
 }
 
 func bsiComponentLicense(component sbom.GetComponent) *db.Record {
-	licenses := component.Licenses()
+	licenses := component.GetLicenses()
 	score := 0.0
 
 	if len(licenses) == 0 {

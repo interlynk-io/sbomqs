@@ -450,9 +450,9 @@ func copyC(cdxc *cydx.Component, c *CdxDoc) *Component {
 	}
 
 	nc.Checksums = c.checksums(cdxc)
-	nc.licenses = c.licenses(cdxc)
-	nc.declaredLicense = c.declaredLicenses(cdxc)
-	nc.concludedLicense = c.concludedLicenses(cdxc)
+	nc.Licenses = c.licenses(cdxc)
+	nc.DeclaredLicense = c.declaredLicenses(cdxc)
+	nc.ConcludedLicense = c.concludedLicenses(cdxc)
 
 	supplier := c.assignSupplier(cdxc)
 	if supplier != nil {
@@ -488,8 +488,8 @@ func copyC(cdxc *cydx.Component, c *CdxDoc) *Component {
 	nc.ID = cdxc.BOMRef
 
 	// license->acknowlegement(1.6+): currently acknowlegement field doesn't support
-	nc.declaredLicense = nil
-	nc.concludedLicense = nil
+	nc.DeclaredLicense = nil
+	nc.ConcludedLicense = nil
 	nc.HasRelationships, nc.Count = getComponentRelationship(c, nc.ID)
 
 	return nc
