@@ -133,9 +133,16 @@ var Completeness = config.CategorySpec{
 }
 
 var LicensingAndCompliance = config.CategorySpec{
-	Name:     "Licensing & Compliance",
-	Weight:   15,
-	Features: nil,
+	Name:   "Licensing & Compliance",
+	Weight: 15,
+	Features: []config.FeatureSpec{
+		{Key: "comp_with_licenses", Weight: 0.20, Evaluate: extractors.CompWithLicenses},
+		{Key: "comp_with_valid_licenses", Weight: 0.20, Evaluate: extractors.CompWithValidLicenses},
+		{Key: "comp_with_declared_licenses", Weight: 0.15, Evaluate: extractors.CompWithDeclaredLicenses},
+		{Key: "sbom_data_license", Weight: 0.10, Evaluate: extractors.SBOMDataLicense},
+		{Key: "comp_no_deprecated_licenses", Weight: 0.15, Evaluate: extractors.CompWithDeprecatedLicenses},
+		{Key: "comp_no_restrictive_licenses", Weight: 0.20, Evaluate: extractors.CompWithRestrictiveLicenses},
+	},
 }
 
 var VulnerabilityAndTraceability = config.CategorySpec{
