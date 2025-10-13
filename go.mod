@@ -13,7 +13,7 @@ require (
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.12.0
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/package-url/packageurl-go v0.1.3
-	github.com/samber/lo v1.51.0
+	github.com/samber/lo v1.52.0
 	github.com/spdx/tools-golang v0.5.5
 	github.com/spf13/cobra v1.10.1
 	github.com/stretchr/testify v1.11.1
