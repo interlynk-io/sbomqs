@@ -51,6 +51,7 @@ type CdxDoc struct {
 	format           FileFormat
 	ctx              context.Context
 	CdxSpec          *Specs
+	cdxValidSchema   bool
 	Comps            []GetComponent
 	CdxAuthors       []GetAuthor
 	CdxTools         []GetTool
@@ -98,6 +99,7 @@ func newCDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat, sig Sign
 		doc:             bom,
 		format:          format,
 		ctx:             ctx,
+		cdxValidSchema:  true,
 		SignatureDetail: &sig,
 	}
 	doc.parse()
@@ -159,6 +161,10 @@ func (c CdxDoc) Vulnerabilities() []GetVulnerabilities {
 
 func (c CdxDoc) Signature() GetSignature {
 	return c.SignatureDetail
+}
+
+func (c CdxDoc) SchemaValidation() bool {
+	return c.cdxValidSchema
 }
 
 func (c *CdxDoc) parse() {

@@ -48,6 +48,7 @@ type SpdxDoc struct {
 	version          FormatVersion
 	ctx              context.Context
 	SpdxSpec         *Specs
+	spdxValidSchema  bool
 	Comps            []GetComponent
 	Auths            []GetAuthor
 	SpdxTools        []GetTool
@@ -94,6 +95,7 @@ func newSPDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat, version
 		format:          format,
 		ctx:             ctx,
 		version:         version,
+		spdxValidSchema: true,
 		SignatureDetail: &sig,
 	}
 
@@ -161,6 +163,10 @@ func (s SpdxDoc) Vulnerabilities() []GetVulnerabilities {
 
 func (s SpdxDoc) Signature() GetSignature {
 	return s.SignatureDetail
+}
+
+func (s SpdxDoc) SchemaValidation() bool {
+	return s.spdxValidSchema
 }
 
 func (s *SpdxDoc) parse() {

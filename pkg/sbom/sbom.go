@@ -66,9 +66,9 @@ func SupportedSBOMSpecs() []string {
 
 func SupportedSBOMSpecVersions(f string) []string {
 	switch strings.ToLower(f) {
-	case "cyclonedx":
+	case string(SBOMSpecCDX):
 		return cdxSpecVersions
-	case "spdx":
+	case string(SBOMSpecSPDX):
 		return spdxSpecVersions
 	default:
 		return []string{}
@@ -173,7 +173,7 @@ func NewSBOMDocument(ctx context.Context, f io.ReadSeeker, sig Signature) (Docum
 		return nil, err
 	}
 
-	log.Debugf("SBOM detect spec:%s format:%s", spec, format)
+	log.Debugf("SBOM detect spec:%s version:%s format:%s ", spec, version, format)
 
 	var doc Document
 
