@@ -19,6 +19,8 @@ import (
 
 	"github.com/interlynk-io/sbomqs/pkg/licenses"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
+	"github.com/knqyf263/go-cpe/naming"
+	purl "github.com/package-url/packageurl-go"
 )
 
 // license with "NOASSERTION" or "NONE" are considered as
@@ -106,4 +108,56 @@ func componentHasAnyRestrictive(c sbom.GetComponent) bool {
 		}
 	}
 	return false
+}
+
+func compHasAnyPURLs(c sbom.GetComponent) bool {
+	for _, p := range c.GetPurls() {
+		if isValidPURL(string(p)) {
+			return true
+		}
+	}
+	return false
+}
+
+func compHasAnyCPEs(c sbom.GetComponent) bool {
+	for _, p := range c.GetCpes() {
+		if isValidCPE(string(p)) {
+			return true
+		}
+	}
+	return false
+}
+
+func isValidPURL(s string) bool {
+	s = strings.TrimSpace(s)
+	if s == "" {
+		return false
+	}
+
+	u, err := purl.FromString(s)
+	if err != nil {
+		return false
+	}
+
+	// type and name must be present per spec
+	if strings.TrimSpace(u.Type) == "" || strings.TrimSpace(u.Name) == "" {
+		return false
+	}
+	return true
+}
+
+func isValidCPE(s string) bool {
+	ls := strings.TrimSpace(s)
+	low := strings.ToLower(ls)
+
+	switch {
+	case strings.HasPrefix(low, "cpe:2.3:"):
+		_, err := naming.UnbindFS(ls)
+		return err == nil
+	case strings.HasPrefix(low, "cpe:/"):
+		_, err := naming.UnbindURI(ls)
+		return err == nil
+	default:
+		return false
+	}
 }
