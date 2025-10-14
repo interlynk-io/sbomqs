@@ -13,3 +13,119 @@
 // limitations under the License.
 
 package extractors
+
+import (
+	"fmt"
+	"strings"
+
+	"github.com/interlynk-io/sbomqs/pkg/sbom"
+	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/config"
+	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/formulae"
+)
+
+// SBOMWithSpec check for SBOM spec
+func SBOMWithSpec(doc sbom.Document) config.FeatureScore {
+	spec := strings.TrimSpace(strings.ToLower(doc.Spec().GetSpecType()))
+
+	if spec == "" {
+		return config.FeatureScore{
+			Score:  formulae.BooleanScore(false),
+			Desc:   formulae.MissingField("spec"),
+			Ignore: false,
+		}
+	}
+
+	for _, s := range sbom.SupportedSBOMSpecs() {
+		if spec == strings.ToLower(strings.TrimSpace(s)) {
+			return config.FeatureScore{
+				Score:  formulae.BooleanScore(true),
+				Desc:   spec,
+				Ignore: false,
+			}
+		}
+	}
+
+	return config.FeatureScore{
+		Score:  formulae.BooleanScore(false),
+		Desc:   fmt.Sprintf("unsupported spec: %s", spec),
+		Ignore: false,
+	}
+}
+
+// SBOMSpecVersion: version supported for this spec?
+func SBOMSpecVersion(doc sbom.Document) config.FeatureScore {
+	spec := strings.TrimSpace(strings.ToLower(doc.Spec().GetSpecType()))
+	ver := strings.TrimSpace(doc.Spec().GetVersion())
+
+	if spec == "" || ver == "" {
+		return config.FeatureScore{
+			Score:  formulae.BooleanScore(false),
+			Desc:   formulae.MissingField("spec/version"),
+			Ignore: false,
+		}
+	}
+
+	supported := sbom.SupportedSBOMSpecVersions(spec)
+	for _, v := range supported {
+		if ver == v {
+			return config.FeatureScore{
+				Score:  formulae.BooleanScore(true),
+				Desc:   ver,
+				Ignore: false,
+			}
+		}
+	}
+
+	return config.FeatureScore{
+		Score:  formulae.BooleanScore(false),
+		Desc:   fmt.Sprintf("unsupported version: %s (spec %s)", ver, spec),
+		Ignore: false,
+	}
+}
+
+// SBOMFileFormat: file format supported for this spec?
+func SBOMFileFormat(doc sbom.Document) config.FeatureScore {
+	spec := strings.TrimSpace(strings.ToLower(doc.Spec().GetSpecType()))
+	format := strings.TrimSpace(strings.ToLower(doc.Spec().FileFormat()))
+
+	if spec == "" || format == "" {
+		return config.FeatureScore{
+			Score:  formulae.BooleanScore(false),
+			Desc:   formulae.MissingField("file format"),
+			Ignore: false,
+		}
+	}
+
+	supported := sbom.SupportedSBOMFileFormats(spec)
+	for _, f := range supported {
+		if format == strings.ToLower(strings.TrimSpace(f)) {
+			return config.FeatureScore{
+				Score:  formulae.BooleanScore(true),
+				Desc:   format,
+				Ignore: false,
+			}
+		}
+	}
+
+	return config.FeatureScore{
+		Score:  formulae.BooleanScore(false),
+		Desc:   fmt.Sprintf("unsupported format: %s (spec %s)", format, spec),
+		Ignore: false,
+	}
+}
+
+// SBOMSchemaValid: validate document against official schema for its spec/version.
+func SBOMSchemaValid(doc sbom.Document) config.FeatureScore {
+	if doc.SchemaValidation() {
+		return config.FeatureScore{
+			Score:  formulae.BooleanScore(true),
+			Desc:   "schema valid",
+			Ignore: false,
+		}
+	}
+	return config.FeatureScore{
+		Score:  formulae.BooleanScore(false),
+		Desc:   "schema invalid",
+		Ignore: false,
+	}
+}
