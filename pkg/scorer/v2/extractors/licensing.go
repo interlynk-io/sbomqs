@@ -18,7 +18,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/interlynk-io/sbomqs/pkg/licenses"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/config"
 	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/formulae"
@@ -147,91 +146,4 @@ func CompWithRestrictiveLicenses(doc sbom.Document) config.FeatureScore {
 		Desc:   fmt.Sprintf("%d restrictive", have),
 		Ignore: false,
 	}
-}
-
-// license with "NOASSERTION" or "NONE" are considered as
-// non-meaningful licenses
-func validateLicenseText(s string) bool {
-	if s == "" {
-		return false
-	}
-
-	u := strings.ToUpper(strings.TrimSpace(s))
-	if u == "NOASSERTION" || u == "NONE" {
-		return false
-	}
-	return true
-}
-
-func validationCheckConcludedLicenses(c sbom.GetComponent) bool {
-	lics := c.ConcludedLicenses()
-	if len(lics) == 0 {
-		return false
-	}
-
-	return areLicensesValid(lics)
-}
-
-func areLicensesValid(licenses []licenses.License) bool {
-	if len(licenses) == 0 {
-		return false
-	}
-	var spdx, aboutcode, custom int
-
-	for _, license := range licenses {
-		switch license.Source() {
-		case "spdx":
-			spdx++
-		case "aboutcode":
-			aboutcode++
-		case "custom":
-			if strings.HasPrefix(license.ShortID(), "LicenseRef-") || strings.HasPrefix(license.Name(), "LicenseRef-") {
-				custom++
-			}
-		}
-	}
-
-	return spdx+aboutcode+custom == len(licenses)
-}
-
-func componentHasAnyConcluded(c sbom.GetComponent) bool {
-	for _, l := range c.ConcludedLicenses() {
-		if id := strings.TrimSpace(l.ShortID()); validateLicenseText(id) {
-			return true
-		}
-		if nm := strings.TrimSpace(l.Name()); validateLicenseText(nm) {
-			return true
-		}
-	}
-	return false
-}
-
-func componentHasAnyDeclared(c sbom.GetComponent) bool {
-	for _, l := range c.DeclaredLicenses() {
-		if id := strings.TrimSpace(l.ShortID()); validateLicenseText(id) {
-			return true
-		}
-		if nm := strings.TrimSpace(l.Name()); validateLicenseText(nm) {
-			return true
-		}
-	}
-	return false
-}
-
-func componentHasAnyDeprecated(c sbom.GetComponent) bool {
-	for _, l := range c.ConcludedLicenses() {
-		if l.Deprecated() {
-			return true
-		}
-	}
-	return false
-}
-
-func componentHasAnyRestrictive(c sbom.GetComponent) bool {
-	for _, l := range c.ConcludedLicenses() {
-		if l.Restrictive() {
-			return true
-		}
-	}
-	return false
 }

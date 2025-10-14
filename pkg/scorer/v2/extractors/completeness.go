@@ -102,7 +102,7 @@ func CompWithSourceCode(doc sbom.Document) config.FeatureScore {
 	}
 
 	have := lo.CountBy(doc.Components(), func(c sbom.GetComponent) bool {
-		return textual(c.GetSourceCodeURL()) != ""
+		return strings.TrimSpace(c.GetSourceCodeURL()) != ""
 	})
 
 	return config.FeatureScore{
