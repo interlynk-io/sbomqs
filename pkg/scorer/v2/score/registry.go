@@ -146,15 +146,23 @@ var LicensingAndCompliance = config.CategorySpec{
 }
 
 var VulnerabilityAndTraceability = config.CategorySpec{
-	Name:     "Vulnerability & Traceability",
-	Weight:   10,
-	Features: nil,
+	Name:   "Vulnerability & Traceability",
+	Weight: 10,
+	Features: []config.FeatureSpec{
+		{Key: "CompWithPURL", Weight: 0.50, Evaluate: extractors.CompWithPURL},
+		{Key: "CompWithCPE", Weight: 0.50, Evaluate: extractors.CompWithCPE},
+	},
 }
 
 var Structural = config.CategorySpec{
-	Name:     "Structural",
-	Weight:   8,
-	Features: nil,
+	Name:   "Structural",
+	Weight: 8,
+	Features: []config.FeatureSpec{
+		{Key: "SBOMWithSpec", Weight: 0.30, Evaluate: extractors.SBOMWithSpec},
+		{Key: "SBOMSpecVersion", Weight: 0.30, Evaluate: extractors.SBOMSpecVersion},
+		{Key: "SBOMFileFormat", Weight: 0.20, Evaluate: extractors.SBOMFileFormat},
+		{Key: "SBOMSchemaValid", Weight: 0.20, Evaluate: extractors.SBOMSchemaValid},
+	},
 }
 
 var ComponentAndQualityInfo = config.CategorySpec{
