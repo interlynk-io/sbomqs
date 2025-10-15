@@ -116,6 +116,8 @@ func LookupSpdxLicense(licenseKey string) (License, error) {
 		return nil, errors.New("license not found")
 	}
 
+	license = overlayRestrictiveFromAboutCode(license)
+
 	return license, nil
 }
 
@@ -183,14 +185,14 @@ func LookupExpression(expression string, customLicenses []License) []License {
 			continue
 		}
 
-		//if custom license list is provided use that.
+		// if custom license list is provided use that.
 		license, err = customLookup(trimLicenseKey)
 		if err == nil {
 			licenses = append(licenses, license)
 			continue
 		}
 
-		//if nothing else this license is custom
+		// if nothing else this license is custom
 		licenses = append(licenses, CreateCustomLicense(trimLicenseKey, trimLicenseKey))
 	}
 
@@ -209,4 +211,16 @@ func CreateCustomLicense(id, name string) License {
 		exception:   false,
 		source:      "custom",
 	}
+}
+
+// overlayRestrictiveFromAboutCode sets spdx.restrictive to true if AboutCode
+// metadata marks the same license ID as restrictive. No other fields are changed.
+func overlayRestrictiveFromAboutCode(spdx meta) meta {
+	if spdx.restrictive {
+		return spdx
+	}
+	if ac, ok := licenseListAboutCode[spdx.short]; ok && ac.restrictive {
+		spdx.restrictive = true
+	}
+	return spdx
 }

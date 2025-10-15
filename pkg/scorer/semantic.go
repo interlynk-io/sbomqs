@@ -72,7 +72,7 @@ func compWithLicensesCheck(d sbom.Document, c *check) score {
 		return *s
 	}
 	withLicenses := lo.CountBy(d.Components(), func(c sbom.GetComponent) bool {
-		return len(c.Licenses()) > 0
+		return len(c.GetLicenses()) > 0
 	})
 
 	if totalComponents > 0 {

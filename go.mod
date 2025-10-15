@@ -10,6 +10,7 @@ require (
 	github.com/charmbracelet/fang v0.4.1
 	github.com/github/go-spdx/v2 v2.3.3
 	github.com/google/uuid v1.6.0
+	github.com/knqyf263/go-cpe v0.0.0-20230627041855-cb0794d06872
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.12.0
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/package-url/packageurl-go v0.1.3

@@ -12,27 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package sbom
+package profiles
 
-//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
+// YAML schema + loader (from file or built-ins).
 
-//counterfeiter:generate . Document
-type Document interface {
-	Spec() Spec
-	SchemaValidation() bool
-	Components() []GetComponent
-	Relations() []GetRelation
-	Authors() []GetAuthor
-	Tools() []GetTool
-	Logs() []string
+// File is the root of profiles.yaml
+type Config struct {
+	SBOMQS   SBOMQSMeta `yaml:"sbomqs"`
+	Profiles []Profile  `yaml:"profiles"`
+}
 
-	Lifecycles() []string
-	Manufacturer() GetManufacturer
-	Supplier() GetSupplier
-
-	PrimaryComp() GetPrimaryComp
-	GetRelationships(string) []string
-
-	Vulnerabilities() []GetVulnerabilities
-	Signature() GetSignature
+// SBOMQSMeta is a small header so we can warn on incompatible files.
+type SBOMQSMeta struct {
+	Version     string `yaml:"version"`      // e.g., "2.0.0"
+	Description string `yaml:"description"`  // free text
+	LastUpdated string `yaml:"last_updated"` // 2025-10-15
 }

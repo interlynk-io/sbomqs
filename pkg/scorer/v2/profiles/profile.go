@@ -12,27 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package sbom
+package profiles
 
-//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
+import "github.com/interlynk-io/sbomqs/pkg/scorer/v2/config"
 
-//counterfeiter:generate . Document
-type Document interface {
-	Spec() Spec
-	SchemaValidation() bool
-	Components() []GetComponent
-	Relations() []GetRelation
-	Authors() []GetAuthor
-	Tools() []GetTool
-	Logs() []string
-
-	Lifecycles() []string
-	Manufacturer() GetManufacturer
-	Supplier() GetSupplier
-
-	PrimaryComp() GetPrimaryComp
-	GetRelationships(string) []string
-
-	Vulnerabilities() []GetVulnerabilities
-	Signature() GetSignature
+// Profile is one compliance profile (e.g., ntia, bsi-v2.0, oct).
+type Profile struct {
+	Name        string               `yaml:"name"`      // short key: "ntia"
+	FullName    string               `yaml:"full_name"` // display: "NTIA Minimum Elements"
+	Description string               `yaml:"description"`
+	Features    []config.FeatureSpec `yaml:"features"`
 }

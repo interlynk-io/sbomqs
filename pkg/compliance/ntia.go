@@ -95,7 +95,7 @@ func ntiaSbomCreator(doc sbom.Document) *db.Record {
 	result, score := "", SCORE_ZERO
 
 	switch spec {
-	case "spdx":
+	case string(sbom.SBOMSpecSPDX):
 		if tools := doc.Tools(); tools != nil {
 			if toolResult, found := getToolInfo(tools); found {
 				result = toolResult
@@ -110,7 +110,7 @@ func ntiaSbomCreator(doc sbom.Document) *db.Record {
 				break
 			}
 		}
-	case "cyclonedx":
+	case string(sbom.SBOMSpecCDX):
 		if authors := doc.Authors(); authors != nil {
 			if authorResult, found := getAuthorInfo(authors); found {
 				result = authorResult
