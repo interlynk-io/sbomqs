@@ -383,6 +383,6 @@ done
 
 ## Related Commands
 
-- [`score`](./score-command.md) - Calculate quality score
-- [`compliance`](./compliance-command.md) - Check compliance
-- [`list`](./list-command.md) - Analyze SBOM components
+- [`score`](./score.md) - Calculate quality score
+- [`compliance`](./compliance.md) - Check compliance
+- [`list`](./list.md) - Analyze SBOM components

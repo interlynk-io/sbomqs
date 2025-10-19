@@ -307,7 +307,7 @@ policy:
     action: fail
 ```
 
-For more, refer here: [policy.md](https://github.com/interlynk-io/sbomqs/blob/main/docs/policy.md)
+For more, refer here: [policy.md](./policy.md)
 
 ## Organization Standards
 

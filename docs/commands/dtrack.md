@@ -439,6 +439,6 @@ sbomqs dtrackScore -u "$DT_URL" -k "$DT_KEY" "$PROJECT_ID" --debug
 
 ## Related Commands
 
-- [`score`](./score-command.md) - Score local SBOM files
-- [`compliance`](./compliance-command.md) - Check compliance standards
-- [`share`](./share-command.md) - Generate shareable reports
+- [`score`](./score.md) - Score local SBOM files
+- [`compliance`](./compliance.md) - Check compliance standards
+- [`share`](./share.md) - Generate shareable reports

@@ -499,6 +499,6 @@ git commit -m "Initial SBOM quality standards"
 
 ## Related Commands
 
-- [`score`](./score-command.md) - Use custom configurations for scoring
-- [`compliance`](./compliance-command.md) - Check against standards
-- [`list`](./list-command.md) - Verify feature presence
+- [`score`](./score.md) - Use custom configurations for scoring
+- [`compliance`](./compliance.md) - Check against standards
+- [`list`](./list.md) - Verify feature presence

@@ -376,6 +376,6 @@ sbomqs compliance --fsct problematic.json --debug
 
 ## Related Commands
 
-- [`score`](./score-command.md) - Get overall quality score
-- [`list`](./list-command.md) - Find components missing compliance fields
-- [`share`](./share-command.md) - Share compliance reports
+- [`score`](./score.md) - Get overall quality score
+- [`list`](./list.md) - Find components missing compliance fields
+- [`share`](./share.md) - Share compliance reports
