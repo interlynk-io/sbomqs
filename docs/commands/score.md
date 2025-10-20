@@ -304,7 +304,7 @@ sbomqs score large-sbom.json --json | jq '.files[0].avg_score'
 
 ## Related Commands
 
-- [`compliance`](./compliance-command.md) - Check regulatory compliance
-- [`list`](./list-command.md) - Analyze specific SBOM features
-- [`share`](./share-command.md) - Generate shareable score reports
-- [`generate`](./generate-command.md) - Create custom scoring profiles
+- [`compliance`](./compliance.md) - Check regulatory compliance
+- [`list`](./list.md) - Analyze specific SBOM features
+- [`share`](./share.md) - Generate shareable score reports
+- [`generate`](./generate.md) - Create custom scoring profiles

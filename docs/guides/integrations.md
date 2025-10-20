@@ -26,8 +26,9 @@ jobs:
     
     - name: Install SBOMQS
       run: |
-        curl -LO https://github.com/interlynk-io/sbomqs/releases/latest/download/sbomqs_linux_amd64.tar.gz
-        tar -xzf sbomqs_linux_amd64.tar.gz
+        VERSION=v1.2.0
+        curl -L -o sbomqs "https://github.com/interlynk-io/sbomqs/releases/download/${VERSION}/sbomqs-linux-amd64"
+        chmod +x sbomqs
         sudo mv sbomqs /usr/local/bin/
         
     - name: Generate SBOM
@@ -129,13 +130,13 @@ stages:
   - quality
 
 variables:
-  SBOMQS_VERSION: "latest"
+  SBOMQS_VERSION: "v1.2.0"
   MIN_SCORE: "7.0"
 
 .install-sbomqs:
   before_script:
-    - curl -LO https://github.com/interlynk-io/sbomqs/releases/${SBOMQS_VERSION}/download/sbomqs_linux_amd64.tar.gz
-    - tar -xzf sbomqs_linux_amd64.tar.gz
+    -  curl -L -o sbomqs "https://github.com/interlynk-io/sbomqs/releases/download/${SBOMQS_VERSION}/sbomqs-linux-amd64"
+    - chmod +x sbomqs
     - mv sbomqs /usr/local/bin/
 
 generate-sbom:
@@ -192,7 +193,7 @@ pipeline {
     agent any
     
     environment {
-        SBOMQS_VERSION = 'latest'
+        SBOMQS_VERSION = 'v1.2.0'
         MIN_SCORE = 7.0
     }
     
@@ -200,9 +201,8 @@ pipeline {
         stage('Setup') {
             steps {
                 sh '''
-                    curl -LO https://github.com/interlynk-io/sbomqs/releases/${SBOMQS_VERSION}/download/sbomqs_linux_amd64.tar.gz
-                    tar -xzf sbomqs_linux_amd64.tar.gz
-                    chmod +x sbomqs
+                   curl -L -o sbomqs "https://github.com/interlynk-io/sbomqs/releases/download/${SBOMQS_VERSION}/sbomqs-linux-amd64"
+                   chmod +x sbomqs
                 '''
             }
         }
@@ -312,7 +312,7 @@ pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  sbomqsVersion: 'latest'
+  sbomqsVersion: 'v1.2.0'
   minScore: 7.0
 
 stages:
@@ -355,9 +355,8 @@ stages:
       inputs:
         targetType: 'inline'
         script: |
-          curl -LO https://github.com/interlynk-io/sbomqs/releases/$(sbomqsVersion)/download/sbomqs_linux_amd64.tar.gz
-          tar -xzf sbomqs_linux_amd64.tar.gz
-          chmod +x sbomqs
+            curl -L -o sbomqs "https://github.com/interlynk-io/sbomqs/releases/download/${SBOMQS_VERSION}/sbomqs-linux-amd64"
+            chmod +x sbomqs
           
     - task: Bash@3
       displayName: 'Check SBOM Quality'
@@ -395,74 +394,7 @@ stages:
         failTaskOnFailedTests: false
 ```
 
-### CircleCI
 
-```yaml
-# .circleci/config.yml
-version: 2.1
-
-orbs:
-  sbomqs: interlynk/sbomqs@1.0.0
-
-jobs:
-  generate-sbom:
-    docker:
-      - image: cimg/base:stable
-    steps:
-      - checkout
-      - run:
-          name: Install Syft
-          command: |
-            curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b ~/bin
-            echo 'export PATH=~/bin:$PATH' >> $BASH_ENV
-      - run:
-          name: Generate SBOM
-          command: syft . -o spdx-json > sbom.json
-      - persist_to_workspace:
-          root: .
-          paths:
-            - sbom.json
-
-  check-quality:
-    docker:
-      - image: cimg/base:stable
-    steps:
-      - attach_workspace:
-          at: .
-      - run:
-          name: Install SBOMQS
-          command: |
-            curl -LO https://github.com/interlynk-io/sbomqs/releases/latest/download/sbomqs_linux_amd64.tar.gz
-            tar -xzf sbomqs_linux_amd64.tar.gz
-            chmod +x sbomqs
-      - run:
-          name: Score SBOM
-          command: |
-            score=$(./sbomqs score sbom.json --json | jq '.files[0].avg_score')
-            echo "SBOM Score: $score/10"
-            
-            if (( $(echo "$score < 7.0" | bc -l) )); then
-              echo "SBOM quality score too low: $score"
-              exit 1
-            fi
-      - run:
-          name: Check Compliance
-          command: |
-            ./sbomqs compliance --bsi-v2 sbom.json --json > bsi-compliance.json
-            ./sbomqs compliance --fsct sbom.json --json > fsct-compliance.json
-      - store_artifacts:
-          path: bsi-compliance.json
-      - store_artifacts:
-          path: fsct-compliance.json
-
-workflows:
-  sbom-quality:
-    jobs:
-      - generate-sbom
-      - check-quality:
-          requires:
-            - generate-sbom
-```
 
 ## Container Integration
 
@@ -558,94 +490,7 @@ spec:
       restartPolicy: Never
 ```
 
-### CronJob for Regular Checks
-
-```yaml
-apiVersion: batch/v1
-kind: CronJob
-metadata:
-  name: daily-sbom-quality-check
-spec:
-  schedule: "0 2 * * *"  # Daily at 2 AM
-  jobTemplate:
-    spec:
-      template:
-        spec:
-          containers:
-          - name: sbomqs
-            image: ghcr.io/interlynk-io/sbomqs:latest
-            env:
-            - name: SLACK_WEBHOOK
-              valueFrom:
-                secretKeyRef:
-                  name: slack-secrets
-                  key: webhook-url
-            command:
-            - sh
-            - -c
-            - |
-              # Score all SBOMs
-              for sbom in /sboms/*.json; do
-                score=$(sbomqs score "$sbom" --json | jq '.files[0].avg_score')
-                name=$(basename "$sbom")
-                
-                if (( $(echo "$score < 7.0" | bc -l) )); then
-                  # Send alert
-                  curl -X POST "$SLACK_WEBHOOK" \
-                    -H 'Content-Type: application/json' \
-                    -d "{\"text\": \"⚠️ Low SBOM score for $name: $score/10\"}"
-                fi
-              done
-            volumeMounts:
-            - name: sboms
-              mountPath: /sboms
-          volumes:
-          - name: sboms
-            persistentVolumeClaim:
-              claimName: sbom-storage
-          restartPolicy: OnFailure
-```
-
 ## IDE Integration
-
-### VS Code Task
-
-```json
-// .vscode/tasks.json
-{
-  "version": "2.0.0",
-  "tasks": [
-    {
-      "label": "Check SBOM Quality",
-      "type": "shell",
-      "command": "sbomqs",
-      "args": [
-        "score",
-        "${workspaceFolder}/sbom.json",
-        "--detailed"
-      ],
-      "group": {
-        "kind": "test",
-        "isDefault": true
-      },
-      "presentation": {
-        "reveal": "always",
-        "panel": "new"
-      }
-    },
-    {
-      "label": "Check BSI Compliance",
-      "type": "shell",
-      "command": "sbomqs",
-      "args": [
-        "compliance",
-        "--bsi-v2",
-        "${workspaceFolder}/sbom.json"
-      ]
-    }
-  ]
-}
-```
 
 ### Git Hooks
 
@@ -673,104 +518,7 @@ fi
 
 ### Dependency-Track
 
-See [dtrack-command.md](./dtrack-command.md) for detailed integration.
-
-### SonarQube
-
-```groovy
-// Add to sonar-project.properties
-sonar.externalIssuesReportPaths=sbom-quality-report.json
-
-// Generate report in SonarQube format
-stage('SBOM Analysis') {
-    steps {
-        sh '''
-            sbomqs score sbom.json --json > sbom-score.json
-            
-            # Convert to SonarQube format
-            jq '{
-              issues: [
-                .files[0].scores[] | 
-                select(.score < .max_score) |
-                {
-                  engineId: "sbomqs",
-                  ruleId: .feature,
-                  severity: (if .score < 5 then "MAJOR" else "MINOR" end),
-                  type: "CODE_SMELL",
-                  primaryLocation: {
-                    message: .description,
-                    filePath: "sbom.json"
-                  }
-                }
-              ]
-            }' sbom-score.json > sbom-quality-report.json
-        '''
-    }
-}
-```
-
-## API Integration
-
-### REST API Wrapper
-
-```python
-#!/usr/bin/env python3
-# sbomqs-api.py
-
-from flask import Flask, request, jsonify
-import subprocess
-import json
-import tempfile
-
-app = Flask(__name__)
-
-@app.route('/score', methods=['POST'])
-def score_sbom():
-    sbom_content = request.json
-    
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
-        json.dump(sbom_content, f)
-        temp_path = f.name
-    
-    try:
-        result = subprocess.run(
-            ['sbomqs', 'score', temp_path, '--json'],
-            capture_output=True,
-            text=True,
-            check=True
-        )
-        
-        return jsonify(json.loads(result.stdout))
-    except subprocess.CalledProcessError as e:
-        return jsonify({'error': e.stderr}), 500
-    finally:
-        os.unlink(temp_path)
-
-@app.route('/compliance/<standard>', methods=['POST'])
-def check_compliance(standard):
-    sbom_content = request.json
-    
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
-        json.dump(sbom_content, f)
-        temp_path = f.name
-    
-    try:
-        result = subprocess.run(
-            ['sbomqs', 'compliance', f'--{standard}', temp_path, '--json'],
-            capture_output=True,
-            text=True,
-            check=True
-        )
-        
-        return jsonify(json.loads(result.stdout))
-    except subprocess.CalledProcessError as e:
-        return jsonify({'error': e.stderr}), 500
-    finally:
-        os.unlink(temp_path)
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080)
-```
+See [dtrack.md](../commands/dtrack.md) for detailed integration.
 
 ## Monitoring Integration
 

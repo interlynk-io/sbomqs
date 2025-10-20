@@ -339,6 +339,6 @@ pipeline {
 
 ## Related Commands
 
-- [`score`](./score-command.md) - Score SBOMs with current version
-- [`compliance`](./compliance-command.md) - Check compliance with version-specific features
-- [`generate`](./generate-command.md) - Generate configs compatible with version
+- [`score`](./score.md) - Score SBOMs with current version
+- [`compliance`](./compliance.md) - Check compliance with version-specific features
+- [`generate`](./generate.md) - Generate configs compatible with version

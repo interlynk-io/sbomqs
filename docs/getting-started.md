@@ -1,8 +1,8 @@
-# Installation Guide
+# Getting Started Guide
 
-This guide covers all installation methods for SBOMQS, including platform-specific instructions, Docker usage, and building from source.
+This comprehensive guide covers installing sbomqs and getting started with SBOM quality assessment.
 
-## Quick Start
+## Quick Installation
 
 ### macOS (Homebrew) - Recommended
 
@@ -44,19 +44,16 @@ sbomqs version
 
 ```bash
 # Download latest release for macOS (Intel)
-curl -LO https://github.com/interlynk-io/sbomqs/releases/latest/download/sbomqs_darwin_amd64.tar.gz
+curl -LO https://github.com/interlynk-io/sbomqs/releases/latest/download/sbomqs-darwin-amd64
 
 # For Apple Silicon (M1/M2)
-curl -LO https://github.com/interlynk-io/sbomqs/releases/latest/download/sbomqs_darwin_arm64.tar.gz
-
-# Extract
-tar -xzf sbomqs_darwin_*.tar.gz
-
-# Move to PATH
-sudo mv sbomqs /usr/local/bin/
+curl -LO https://github.com/interlynk-io/sbomqs/releases/latest/download/sbomqs-darwin-arm64
 
 # Make executable
-chmod +x /usr/local/bin/sbomqs
+chmod +x sbomqs-darwin-*
+
+# Move to PATH
+sudo mv sbomqs-darwin-* /usr/local/bin/sbomqs
 
 # Verify
 sbomqs version
@@ -69,11 +66,15 @@ sbomqs version
 ##### Debian/Ubuntu (via .deb package)
 
 ```bash
-# Download the .deb package
-wget https://github.com/interlynk-io/sbomqs/releases/latest/download/sbomqs_linux_amd64.deb
+# Download the .deb package (x86_64)
+VERSION=$(curl -s https://api.github.com/repos/interlynk-io/sbomqs/releases/latest | jq -r '.tag_name' | sed 's/v//')
+wget https://github.com/interlynk-io/sbomqs/releases/latest/download/sbomqs_${VERSION}_amd64.deb
+
+# For ARM64
+wget https://github.com/interlynk-io/sbomqs/releases/latest/download/sbomqs_${VERSION}_arm64.deb
 
 # Install
-sudo dpkg -i sbomqs_linux_amd64.deb
+sudo dpkg -i sbomqs_*.deb
 
 # Fix any dependency issues
 sudo apt-get install -f
@@ -82,30 +83,31 @@ sudo apt-get install -f
 ##### RedHat/CentOS/Fedora (via .rpm package)
 
 ```bash
-# Download the .rpm package
-wget https://github.com/interlynk-io/sbomqs/releases/latest/download/sbomqs_linux_amd64.rpm
+# Download the .rpm package (x86_64)
+VERSION=$(curl -s https://api.github.com/repos/interlynk-io/sbomqs/releases/latest | jq -r '.tag_name' | sed 's/v//')
+wget https://github.com/interlynk-io/sbomqs/releases/latest/download/sbomqs-${VERSION}-1.x86_64.rpm
+
+# For ARM64/aarch64
+wget https://github.com/interlynk-io/sbomqs/releases/latest/download/sbomqs-${VERSION}-1.aarch64.rpm
 
 # Install
-sudo rpm -i sbomqs_linux_amd64.rpm
+sudo rpm -i sbomqs-*.rpm
 ```
 
 #### Using Pre-built Binary
 
 ```bash
 # Download for Linux (x86_64)
-curl -LO https://github.com/interlynk-io/sbomqs/releases/latest/download/sbomqs_linux_amd64.tar.gz
+curl -LO https://github.com/interlynk-io/sbomqs/releases/latest/download/sbomqs-linux-amd64
 
 # For ARM64
-curl -LO https://github.com/interlynk-io/sbomqs/releases/latest/download/sbomqs_linux_arm64.tar.gz
-
-# Extract
-tar -xzf sbomqs_linux_*.tar.gz
-
-# Move to PATH
-sudo mv sbomqs /usr/local/bin/
+curl -LO https://github.com/interlynk-io/sbomqs/releases/latest/download/sbomqs-linux-arm64
 
 # Make executable
-chmod +x /usr/local/bin/sbomqs
+chmod +x sbomqs-linux-*
+
+# Move to PATH
+sudo mv sbomqs-linux-* /usr/local/bin/sbomqs
 
 # Verify
 sbomqs version
@@ -114,8 +116,7 @@ sbomqs version
 #### Using Snap
 
 ```bash
-# Coming soon
-snap install sbomqs
+# Please request
 ```
 
 ### Windows
@@ -134,10 +135,11 @@ scoop install sbomqs
 
 ```powershell
 # Download the Windows binary
-Invoke-WebRequest -Uri "https://github.com/interlynk-io/sbomqs/releases/latest/download/sbomqs_windows_amd64.zip" -OutFile "sbomqs.zip"
+Invoke-WebRequest -Uri "https://github.com/interlynk-io/sbomqs/releases/latest/download/sbomqs-windows-amd64.exe" -OutFile "sbomqs.exe"
 
-# Extract
-Expand-Archive -Path "sbomqs.zip" -DestinationPath "C:\Program Files\sbomqs"
+# Create directory and move executable
+New-Item -ItemType Directory -Force -Path "C:\Program Files\sbomqs"
+Move-Item -Path "sbomqs.exe" -Destination "C:\Program Files\sbomqs\sbomqs.exe"
 
 # Add to PATH
 [Environment]::SetEnvironmentVariable("Path", $env:Path + ";C:\Program Files\sbomqs", [EnvironmentVariableTarget]::Machine)
@@ -149,8 +151,7 @@ sbomqs version
 #### Using Chocolatey
 
 ```powershell
-# Coming soon
-choco install sbomqs
+# Please request
 ```
 
 ## Docker Installation
@@ -415,12 +416,15 @@ if [ "$CURRENT" != "$LATEST" ]; then
     fi
     
     # Download latest
-    URL="https://github.com/interlynk-io/sbomqs/releases/latest/download/sbomqs_${OS}_${ARCH}.tar.gz"
+    URL="https://github.com/interlynk-io/sbomqs/releases/latest/download/sbomqs-${OS}-${ARCH}"
+    if [ "$OS" = "windows" ]; then
+        URL="${URL}.exe"
+    fi
     curl -LO "$URL"
     
-    # Extract and install
-    tar -xzf "sbomqs_${OS}_${ARCH}.tar.gz"
-    sudo mv sbomqs /usr/local/bin/
+    # Install
+    chmod +x "sbomqs-${OS}-${ARCH}"*
+    sudo mv "sbomqs-${OS}-${ARCH}"* /usr/local/bin/sbomqs
     
     echo "Updated to: $(sbomqs version --short)"
 else
@@ -518,11 +522,106 @@ export SBOMQS_CONFIG_DIR=$HOME/.config/sbomqs
 export SBOMQS_DEBUG=true
 ```
 
+## Basic Usage
+
+Now that you have sbomqs installed, let's start with some basic commands.
+
+### Your First Quality Score
+
+```bash
+# Score a single SBOM
+sbomqs score my-app.spdx.json
+
+# Get just the numeric score
+sbomqs score my-app.spdx.json --basic
+```
+
+### Understanding Your Score
+
+Scores range from 0-10:
+- **9-10**: Excellent quality
+- **7-8.9**: Good, minor improvements needed  
+- **5-6.9**: Fair, has gaps to address
+- **0-4.9**: Poor, missing critical information
+
+### Check What's Missing
+
+```bash
+# See detailed breakdown
+sbomqs score my-app.spdx.json
+
+# Find components missing versions
+sbomqs list my-app.spdx.json --feature comp_with_version --missing
+
+# Find components missing suppliers
+sbomqs list my-app.spdx.json --feature comp_with_supplier --missing
+```
+
+### Verify Compliance
+
+```bash
+# Check NTIA minimum elements
+sbomqs score my-app.spdx.json --category ntia
+
+# Check BSI compliance
+sbomqs compliance --bsi-v2 my-app.spdx.json
+
+# Check FSCT compliance  
+sbomqs compliance --fsct my-app.spdx.json
+```
+
+### Share Your Results
+
+```bash
+# Generate a shareable link (doesn't upload SBOM content)
+sbomqs share my-app.spdx.json
+```
+
+## Common Use Cases
+
+### CI/CD Integration
+
+Add to your pipeline to fail builds with low-quality SBOMs:
+
+```yaml
+# GitHub Actions example
+- name: Check SBOM Quality
+  run: |
+    score=$(sbomqs score sbom.json --json | jq '.files[0].avg_score')
+    if (( $(echo "$score < 7.0" | bc -l) )); then
+      echo "SBOM quality too low: $score"
+      exit 1
+    fi
+```
+
+### Vendor SBOM Assessment
+
+```bash
+# Score all vendor SBOMs
+for sbom in vendor-sboms/*.json; do
+  echo "$(sbomqs score "$sbom" --basic) - $(basename "$sbom")"
+done | sort -rn
+```
+
+### Progressive Improvement
+
+```bash
+# 1. Get baseline score
+sbomqs score app.spdx.json
+
+# 2. Identify issues
+sbomqs score app.spdx.json
+
+# 3. Fix missing data
+sbomqs list app.spdx.json --feature comp_with_version --missing
+
+# 4. Re-score to verify improvement
+sbomqs score app-fixed.spdx.json
+```
+
 ## Next Steps
 
-After installation:
-
-1. [Read the Quick Start Guide](../README.md#quick-start)
-2. [Try the score command](./score-command.md)
-3. [Check compliance](./compliance-command.md)
-4. [Generate custom configurations](./generate-command.md)
+- **[Command Reference](./commands/)** - Detailed documentation for all commands
+- **[Customization Guide](./guides/customization.md)** - Create organization-specific profiles
+- **[Integration Guide](./guides/integrations.md)** - CI/CD and tool integrations
+- **[Compliance Standards](./reference/compliance-standards.md)** - Detailed compliance mappings
