@@ -100,14 +100,14 @@ func NormalizeAndValidateCategories(ctx context.Context, categories []string) ([
 	return normalized, nil
 }
 
-// getFileHandle opens a file in read-only mode and returns the handle.
+// GetFileHandle opens a file in read-only mode and returns the handle.
 // The caller is responsible for calling Close() on the returned file.
 func GetFileHandle(ctx context.Context, filePath string) (*os.File, error) {
 	log := logger.FromContext(ctx)
 
 	log.Debugf("Opening file for reading: %q", filePath)
 
-	file, err := os.Open(filePath) // read-only
+	file, err := os.Open(filePath)
 	if err != nil {
 		log.Debugf("Failed to open %q: %v", filePath, err)
 		return nil, fmt.Errorf("open file for reading: %q: %w", filePath, err)
@@ -117,7 +117,8 @@ func GetFileHandle(ctx context.Context, filePath string) (*os.File, error) {
 	return file, nil
 }
 
-func GetSignature(ctx context.Context, cfg config.Config, path string) (sbom.Signature, error) {
+// ExtractSignature extracts signature provided externally via config or even from SBOM itself incase of cyclonedx
+func ExtractSignature(ctx context.Context, cfg config.Config, path string) (sbom.Signature, error) {
 	log := logger.FromContext(ctx)
 
 	sigValue, publicKey := cfg.SignatureBundle.SigValue, cfg.SignatureBundle.PublicKey

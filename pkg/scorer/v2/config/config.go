@@ -16,10 +16,57 @@ package config
 
 import (
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
+	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/profiles"
 )
 
-// feature function is a corresponding funtion for a feature.
-type FeatureFunc func(doc sbom.Document) FeatureScore
+// Common file-level metadata
+type SBOMMeta struct {
+	Spec          string
+	SpecVersion   string
+	FileFormat    string
+	Filename      string
+	NumComponents int
+	CreationTime  string
+}
+
+// Result represents result of an SBOM
+type Result struct {
+	Meta SBOMMeta
+
+	Comprehensive *ComprehensiveResult
+	Profiles      []profiles.ProfileResult
+}
+
+// Comprehensive (quality) scoring
+type ComprehensiveResult struct {
+	InterlynkScore float64
+	Grade          string
+	Categories     []CategoryResult
+}
+
+// Category result
+type CategoryResult struct {
+	Name     string
+	Weight   float64 // category weight
+	Score    float64
+	Features []FeatureResult
+}
+
+// feature result
+type FeatureResult struct {
+	Key     string
+	Weight  float64 // feature weight
+	Score   float64
+	Desc    string
+	Ignored bool
+}
+
+// CategorySpec represent properties of a category.
+type CategorySpec struct {
+	Name     string
+	Weight   float64
+	Features []FeatureSpec
+}
 
 // FeatureSpec represents properties of a feature.
 type FeatureSpec struct {
@@ -28,11 +75,37 @@ type FeatureSpec struct {
 	Evaluate FeatureFunc
 }
 
-// CategorySpec represent properties of a category.
-type CategorySpec struct {
-	Name     string
-	Weight   float64
-	Features []FeatureSpec
+// feature function is a corresponding funtion for a feature.
+type FeatureFunc func(doc sbom.Document) FeatureScore
+
+// FeatureScore is returned by a feature function.
+type FeatureScore struct {
+	Score  float64
+	Desc   string // e.g. "235/247 have versions"
+	Ignore bool
+}
+
+func NewCategoryResultFromSpec(cat CategorySpec) CategoryResult {
+	return CategoryResult{
+		Name:   cat.Name,
+		Weight: cat.Weight,
+	}
+}
+
+func NewResult(doc sbom.Document) *Result {
+	return &Result{
+		Meta: NewSBOMMeta(doc),
+	}
+}
+
+func NewSBOMMeta(doc sbom.Document) SBOMMeta {
+	return SBOMMeta{
+		NumComponents: len(doc.Components()),
+		CreationTime:  doc.Spec().GetCreationTimestamp(),
+		Spec:          doc.Spec().GetName(),
+		SpecVersion:   doc.Spec().GetVersion(),
+		FileFormat:    doc.Spec().FileFormat(),
+	}
 }
 
 type Config struct {
@@ -45,59 +118,8 @@ type Config struct {
 	// Optional path to a config file for filters
 	ConfigFile string
 
+	// profiles
+	Profile []string
+
 	SignatureBundle sbom.Signature
-}
-
-// FeatureScore is returned by a feature function.
-type FeatureScore struct {
-	Score  float64
-	Desc   string // e.g. "235/247 have versions"
-	Ignore bool
-}
-
-// feature result
-type FeatureResult struct {
-	Key     string
-	Weight  float64 // feature weight
-	Score   float64
-	Desc    string
-	Ignored bool
-}
-
-// Category result
-type CategoryResult struct {
-	Name     string
-	Weight   float64 // category weight
-	Score    float64
-	Features []FeatureResult
-}
-
-// Result represents result of an SBOM
-type Result struct {
-	Spec           string
-	SpecVersion    string
-	FileFormat     string
-	Filename       string
-	NumComponents  int
-	CreationTime   string
-	InterlynkScore float64
-	Grade          string
-	Categories     []CategoryResult
-}
-
-func NewCategoryResultFromSpec(cat CategorySpec) CategoryResult {
-	return CategoryResult{
-		Name:   cat.Name,
-		Weight: cat.Weight,
-	}
-}
-
-func NewResult(doc sbom.Document) *Result {
-	return &Result{
-		NumComponents: len(doc.Components()),
-		CreationTime:  doc.Spec().GetCreationTimestamp(),
-		Spec:          doc.Spec().GetName(),
-		SpecVersion:   doc.Spec().GetVersion(),
-		FileFormat:    doc.Spec().FileFormat(),
-	}
 }

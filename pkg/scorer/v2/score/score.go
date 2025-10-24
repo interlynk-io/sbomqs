@@ -17,12 +17,14 @@ package score
 import (
 	"context"
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/interlynk-io/sbomqs/pkg/logger"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/config"
 	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/formulae"
+	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/profiles"
 	"github.com/interlynk-io/sbomqs/pkg/utils"
 )
 
@@ -54,7 +56,7 @@ func ScoreSBOM(ctx context.Context, cfg config.Config, paths []string) ([]config
 			}
 			defer sbomFile.Close()
 
-			signature, err := GetSignature(ctx, cfg, sbomFile.Name())
+			signature, err := ExtractSignature(ctx, cfg, sbomFile.Name())
 			if err != nil {
 				return nil, fmt.Errorf("get signature for %q: %w", path, err)
 			}
@@ -67,29 +69,30 @@ func ScoreSBOM(ctx context.Context, cfg config.Config, paths []string) ([]config
 			var sbomScoreResult config.Result
 
 			// Evaluate SBOM
-			sbomScoreResult, err = SBOMEvaluation(ctx, doc, cfg, signature)
+			sbomScoreResult, err = SBOMEvaluation(ctx, cfg, doc)
 			if err != nil {
 				log.Warnf("failed to process SBOM %s: %v", path, err)
 				return nil, fmt.Errorf("process SBOM %q: %w", path, err)
 			}
 
-			sbomScoreResult.Filename = path
+			sbomScoreResult.Meta.Filename = path
 
 			results = append(results, sbomScoreResult)
 			anyProcessed = true
 		} else {
 			log.Debugf("processing file: %s", path)
 
-			signature, err := GetSignature(ctx, cfg, path)
+			signature, err := ExtractSignature(ctx, cfg, path)
 			if err != nil {
 				return nil, fmt.Errorf("get signature for %q: %w", path, err)
 			}
 
-			file, err := GetFileHandle(ctx, path)
+			file, err := os.Open(path)
 			if err != nil {
-				log.Warnf("failed to open file %s: %v", path, err)
-				continue
+				log.Debugf("Failed to open %q: %v", path, err)
+				return nil, fmt.Errorf("open file for reading: %q: %w", path, err)
 			}
+
 			defer file.Close()
 
 			doc, err := sbom.NewSBOMDocument(ctx, file, signature)
@@ -100,12 +103,13 @@ func ScoreSBOM(ctx context.Context, cfg config.Config, paths []string) ([]config
 			var sbomScoreResult config.Result
 
 			// Evaluate SBOM
-			sbomScoreResult, err = SBOMEvaluation(ctx, doc, cfg, signature)
+			sbomScoreResult, err = SBOMEvaluation(ctx, cfg, doc)
 			if err != nil {
 				log.Warnf("failed to process SBOM %s: %v", path, err)
 				return nil, fmt.Errorf("process SBOM %q: %w", path, err)
 			}
-			sbomScoreResult.Filename = path
+
+			sbomScoreResult.Meta.Filename = path
 
 			results = append(results, sbomScoreResult)
 			anyProcessed = true
@@ -119,32 +123,40 @@ func ScoreSBOM(ctx context.Context, cfg config.Config, paths []string) ([]config
 	return results, nil
 }
 
-func SBOMEvaluation(ctx context.Context, doc sbom.Document, cfg config.Config, sig sbom.Signature) (config.Result, error) {
+func SBOMEvaluation(ctx context.Context, cfg config.Config, doc sbom.Document) (config.Result, error) {
 	log := logger.FromContext(ctx)
 	log.Debugf("evaluating SBOM")
 
 	result := config.NewResult(doc)
 
-	// Select categories to score
-	categoriesToScore, err := selectCategoriesToScore(cfg)
-	if err != nil {
-		return config.Result{}, err
+	if len(cfg.Profile) > 0 {
+		profResults, err := profiles.EvaluateProfiles(ctx, cfg.Profile, doc, cfg.SignatureBundle)
+		result.Profiles = append(result.Profiles, profResults...)
+
+		// check profiles
+		// evaluate profiles
+	} else {
+
+		// Select categories to score
+		categoriesToScore, err := selectCategoriesToScore(cfg)
+		if err != nil {
+			return config.Result{}, err
+		}
+
+		if len(categoriesToScore) == 0 {
+			return config.Result{}, fmt.Errorf("no categories to score (check config filters)")
+		}
+
+		// Log category names (readable)
+		log.Debugf("selected categories for evaluation: %s", strings.Join(CategoryNames(categoriesToScore), ", "))
+
+		// Score SBOM by categories
+		catEvaluationResults := scoreAgainstCategories(ctx, doc, categoriesToScore)
+		interlynkScore := formulae.ComputeInterlynkScore(catEvaluationResults)
+
+		result.Comprehensive.InterlynkScore = interlynkScore
+		result.Comprehensive.Grade = formulae.ToGrade(interlynkScore)
+		result.Comprehensive.Categories = catEvaluationResults
 	}
-
-	if len(categoriesToScore) == 0 {
-		return config.Result{}, fmt.Errorf("no categories to score (check config filters)")
-	}
-
-	// Log category names (readable)
-	log.Debugf("selected categories for evaluation: %s", strings.Join(CategoryNames(categoriesToScore), ", "))
-
-	// Score SBOM by categories
-	catEvaluationResults := scoreAgainstCategories(ctx, doc, categoriesToScore)
-	interlynkScore := formulae.ComputeInterlynkScore(catEvaluationResults)
-
-	result.InterlynkScore = interlynkScore
-	result.Grade = formulae.ToGrade(interlynkScore)
-	result.Categories = catEvaluationResults
-
 	return *result, nil
 }

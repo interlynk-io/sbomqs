@@ -13,18 +13,3 @@
 // limitations under the License.
 
 package profiles
-
-// YAML schema + loader (from file or built-ins).
-
-// File is the root of profiles.yaml
-type Config struct {
-	SBOMQS   SBOMQSMeta      `yaml:"sbomqs"`
-	Profiles []ProfileResult `yaml:"profiles"`
-}
-
-// SBOMQSMeta is a small header so we can warn on incompatible files.
-type SBOMQSMeta struct {
-	Version     string `yaml:"version"`      // e.g., "2.0.0"
-	Description string `yaml:"description"`  // free text
-	LastUpdated string `yaml:"last_updated"` // 2025-10-15
-}

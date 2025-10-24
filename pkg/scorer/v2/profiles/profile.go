@@ -14,12 +14,258 @@
 
 package profiles
 
-import "github.com/interlynk-io/sbomqs/pkg/scorer/v2/config"
+import (
+	"context"
+	"fmt"
+	"strings"
 
-// Profile is one compliance profile (e.g., ntia, bsi-v2.0, oct).
-type Profile struct {
-	Name        string               `yaml:"name"`      // short key: "ntia"
-	FullName    string               `yaml:"full_name"` // display: "NTIA Minimum Elements"
-	Description string               `yaml:"description"`
-	Features    []config.FeatureSpec `yaml:"features"`
+	"github.com/interlynk-io/sbomqs/pkg/sbom"
+)
+
+type ProfileResult struct {
+	Name       string
+	Score      float64
+	Compliance ProfileComplianceState
+	Message    string
+	Items      []ProfileFeatureResult
+}
+
+func NewProfileResult(profile ProfileSpec) ProfileResult {
+	return ProfileResult{
+		Name:       profile.Name,
+		Score:      0.0,
+		Items:      make([]ProfileFeatureResult, 0, len(profile.Features)),
+		Compliance: ProfileFail,
+	}
+}
+
+type ProfileFeatureResult struct {
+	Key      string
+	Required bool
+	Score    float64
+	Passed   bool
+	Desc     string
+}
+
+func NewProfileFeatureResult(f ProfileFeatureSpec) ProfileFeatureResult {
+	return ProfileFeatureResult{
+		Key:      f.Name,
+		Required: f.Required,
+		Score:    0.0,
+		Passed:   false,
+		Desc:     "no evaluator bound",
+	}
+}
+
+// ProfileSpec ofile is one compliance profile (e.g., ntia, bsi-v2.0, oct).
+type ProfileSpec struct {
+	Name        string
+	Description string
+	Features    []ProfileFeatureSpec
+}
+
+type ProfileFeatureSpec struct {
+	Name        string
+	Required    bool
+	Description string
+	Evaluate    ProfileFeatureFunc
+}
+
+type ProfileFeatureFunc func(doc sbom.Document) ProfileFeatureScore
+
+type ProfileFeatureScore struct {
+	Score  float64
+	Desc   string
+	Ignore bool
+}
+
+type ProfileComplianceState string
+
+const (
+	ProfilePass    ProfileComplianceState = "PASS"
+	ProfileFail    ProfileComplianceState = "FAIL"
+	ProfileSkipped ProfileComplianceState = "SKIPPED" // e.g., profile not applicable (OCT on CDX)
+	ProfileError   ProfileComplianceState = "ERROR"   // evaluation failed (unexpected)
+)
+
+var profileToSpec = map[string]ProfileSpec{
+	"ntia":     NTIAProfile,
+	"bsi-v1.1": BSIV11Profile,
+	"bsi-v2.0": BSIV20Profile,
+	"oct":      OCTProfile,
+}
+
+func BaseProfiles() []ProfileSpec {
+	return []ProfileSpec{
+		NTIAProfile,
+		BSIV11Profile,
+		BSIV20Profile,
+		OCTProfile,
+	}
+}
+
+var NTIAProfile = ProfileSpec{
+	Name: "NTIA-minimum-elements",
+	Features: []ProfileFeatureSpec{
+		{Name: "sbom_with_spec", Required: true, Description: "Machine-readable SBOM (SPDX or CycloneDX declared)", Evaluate: nil},
+		{Name: "sbom_spec_version", Required: true, Description: "Supported spec version declared", Evaluate: nil},
+		{Name: "sbom_file_format", Required: true, Description: "Supported file format", Evaluate: nil},
+		{Name: "comp_with_name", Required: true, Description: "All components have names", Evaluate: nil},
+		{Name: "comp_with_version", Required: true, Description: "Components have versions", Evaluate: nil},
+		{Name: "comp_with_identifiers", Required: true, Description: "Unique local identifiers (SPDXID / bom-ref)", Evaluate: nil},
+		{Name: "comp_with_supplier", Required: true, Description: "Supplier/manufacturer info", Evaluate: nil},
+		{Name: "comp_with_dependencies", Required: true, Description: "Dependency mapping present", Evaluate: nil},
+		{Name: "sbom_creation_timestamp", Required: true, Description: "Creation timestamp (ISO-8601)", Evaluate: nil},
+		{Name: "sbom_authors", Required: true, Description: "Author/creator info", Evaluate: nil},
+	},
+}
+
+var BSIV11Profile = ProfileSpec{
+	Name: "BSI-V1.1",
+	Features: []ProfileFeatureSpec{
+		{Name: "sbom_with_spec", Required: true, Description: "SPDX or CycloneDX", Evaluate: nil},
+		{Name: "sbom_spec_version", Required: true, Description: "Supported spec version", Evaluate: nil},
+		{Name: "sbom_file_format", Required: true, Description: "Supported file format", Evaluate: nil},
+		{Name: "sbom_creation_timestamp", Required: true, Description: "Creation timestamp", Evaluate: nil},
+		{Name: "sbom_authors", Required: true, Description: "Creator info", Evaluate: nil},
+		{Name: "sbom_namespace", Required: true, Description: "Unique SBOM identifier", Evaluate: nil},
+		{Name: "comp_with_name", Required: true, Description: "Names present", Evaluate: nil},
+		{Name: "comp_with_version", Required: true, Description: "Versions present", Evaluate: nil},
+		{Name: "comp_with_licenses", Required: true, Description: "License info", Evaluate: nil},
+		{Name: "comp_with_checksums", Required: true, Description: "Checksums present", Evaluate: nil},
+		{Name: "comp_with_dependencies", Required: true, Description: "Dependencies present", Evaluate: nil},
+		{Name: "comp_with_source_code", Required: false, Description: "Source/VCS references", Evaluate: nil},
+		{Name: "comp_with_supplier", Required: true, Description: "Supplier info", Evaluate: nil},
+	},
+}
+
+var BSIV20Profile = ProfileSpec{
+	Name: "BSI-V2.0",
+	Features: []ProfileFeatureSpec{
+		{Name: "sbom_with_spec", Required: true, Description: "SPDX or CycloneDX", Evaluate: nil},
+		{Name: "sbom_spec_version", Required: true, Description: "Supported spec version", Evaluate: nil},
+		{Name: "sbom_file_format", Required: true, Description: "Supported file format", Evaluate: nil},
+		{Name: "sbom_schema_valid", Required: true, Description: "Schema validation", Evaluate: nil},
+		{Name: "comp_with_checksums", Required: true, Description: "Checksums", Evaluate: nil},
+		{Name: "comp_with_sha256", Required: true, Description: "SHA-256 or stronger", Evaluate: nil},
+		{Name: "sbom_signature", Required: true, Description: "Digital signature", Evaluate: nil},
+		{Name: "comp_with_valid_licenses", Required: true, Description: "Valid SPDX license IDs", Evaluate: nil},
+		{Name: "sbom_data_license", Required: true, Description: "Data license", Evaluate: nil},
+		{Name: "comp_with_name", Required: true, Description: "Names present", Evaluate: nil},
+		{Name: "comp_with_version", Required: true, Description: "Versions present", Evaluate: nil},
+		{Name: "comp_with_identifiers", Required: true, Description: "Local identifiers", Evaluate: nil},
+		{Name: "comp_with_supplier", Required: true, Description: "Supplier info", Evaluate: nil},
+		{Name: "comp_with_dependencies", Required: true, Description: "Dependencies present", Evaluate: nil},
+		{Name: "comp_with_purl", Required: false, Description: "PURLs", Evaluate: nil},
+		{Name: "comp_with_cpe", Required: false, Description: "CPEs", Evaluate: nil},
+	},
+}
+
+var OCTProfile = ProfileSpec{
+	Name: "OpenChain Telco",
+	Features: []ProfileFeatureSpec{
+		// SPDX doc essentials
+		{Name: "sbom_with_spec", Required: true, Description: "SPDX declared", Evaluate: nil},
+		{Name: "sbom_spec_version", Required: true, Description: "Supported SPDX version", Evaluate: nil},
+		{Name: "sbom_namespace", Required: true, Description: "SPDX namespace", Evaluate: nil},
+		{Name: "sbom_data_license", Required: true, Description: "Data license (CC0-1.0 etc.)", Evaluate: nil},
+		{Name: "sbom_tool_version", Required: true, Description: "Creator tool + version", Evaluate: nil},
+		// Packages
+		{Name: "comp_with_name", Required: true, Description: "Package names", Evaluate: nil},
+		{Name: "comp_with_version", Required: true, Description: "Package versions", Evaluate: nil},
+		{Name: "comp_with_identifiers", Required: true, Description: "Package SPDXIDs", Evaluate: nil},
+		{Name: "comp_with_licenses", Required: true, Description: "Concluded license", Evaluate: nil},
+		{Name: "comp_with_declared_licenses", Required: true, Description: "Declared/original license", Evaluate: nil},
+		{Name: "comp_with_checksums", Required: true, Description: "Checksums", Evaluate: nil},
+		{Name: "comp_with_supplier", Required: true, Description: "Supplier info", Evaluate: nil},
+		{Name: "comp_with_source_code", Required: false, Description: "Source/VCS", Evaluate: nil},
+		{Name: "comp_with_dependencies", Required: true, Description: "Dependencies", Evaluate: nil},
+	},
+}
+
+// Evaluates one SBOM against one or more profile names (aliases allowed).
+// Never panics, never early-returns the whole SBOM; collects per-profile errors.
+func EvaluateProfiles(ctx context.Context, profileNames []string, doc sbom.Document) ([]ProfileResult, []error) {
+	var results []ProfileResult
+	var errs []error
+
+	selectedProfiles, errs := filterProfiles(profileNames)
+	if errs != nil {
+		return nil, errs
+	}
+
+	// Evaluate each selected profile independently; never abort overall loop.
+	for _, profile := range selectedProfiles {
+		res := evaluateEachProfile(ctx, doc, profile)
+		results = append(results, res)
+	}
+
+	return results, errs
+}
+
+func filterProfiles(profileNames []string) ([]ProfileSpec, []error) {
+	var errs []error
+
+	seen := make(map[string]struct{}, len(profileNames))
+	filterProfiles := make([]ProfileSpec, 0, len(profileNames))
+
+	for i, profile := range profileNames {
+
+		name := strings.TrimSpace(strings.ToLower(profile))
+		if name == "" {
+			errs = append(errs, fmt.Errorf("profiles: empty profile name at position %d", i))
+			continue
+		}
+
+		if _, dup := seen[name]; dup {
+			errs = append(errs, fmt.Errorf("profiles: duplicate requested profile %q", profile))
+			continue
+		}
+
+		spec, ok := profileToSpec[name]
+		if !ok {
+			errs = append(errs, fmt.Errorf("profiles: unknown profile %q (available: %s)", profile))
+			continue
+		}
+		filterProfiles = append(filterProfiles, spec)
+	}
+
+	return filterProfiles, errs
+}
+
+func evaluateEachProfile(ctx context.Context, doc sbom.Document, profile ProfileSpec) ProfileResult {
+	result := NewProfileResult(profile)
+	var countNonNA int
+	var sumScore float64
+
+	for _, f := range profile.Features {
+		featResult := NewProfileFeatureResult(f)
+
+		// result.Items = append(result.Items, featResult)
+		s := f.Evaluate(doc)
+
+		if s.Ignore {
+			featResult.Passed = !f.Required
+		} else if f.Required {
+			featResult.Passed = (s.Score >= 10.0)
+		} else {
+			featResult.Passed = (s.Score > 0.0)
+		}
+
+		featResult.Score = s.Score
+		featResult.Desc = s.Desc
+
+		result.Items = append(result.Items, featResult)
+
+		if !s.Ignore {
+			sumScore += s.Score
+			countNonNA++
+		}
+	}
+
+	if countNonNA > 0 {
+		result.Score = sumScore / float64(countNonNA)
+	}
+
+	return result
 }

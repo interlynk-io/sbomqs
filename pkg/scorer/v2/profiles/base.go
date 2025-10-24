@@ -70,11 +70,11 @@ func validateConfig(cfg *Config) error {
 	return nil
 }
 
-func validateProfileFeatures(profile Profile) error {
+func validateProfileFeatures(profile ProfileResult) error {
 	// validate profile features
 	featureExists := make(map[string]bool)
-	for i, feat := range profile.Features {
-		key := strings.TrimSpace(feat.Key)
+	for i, feat := range profile.ProfileResult {
+		key := strings.TrimSpace(feat.Name)
 
 		if key == "" {
 			return fmt.Errorf("profiles: profile %q has empty feature.name at index %d", profile.Name, i)
