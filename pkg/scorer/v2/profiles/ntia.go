@@ -27,11 +27,7 @@ import (
 func compWithSupplierCheck(doc sbom.Document) ProfileFeatureScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
-		return ProfileFeatureScore{
-			Score:  formulae.PerComponentScore(0, 0),
-			Desc:   formulae.NoComponentsNA(),
-			Ignore: true,
-		}
+		formulae.SetNA()
 	}
 
 	have := lo.CountBy(doc.Components(), func(c sbom.GetComponent) bool {
@@ -48,11 +44,7 @@ func compWithSupplierCheck(doc sbom.Document) ProfileFeatureScore {
 func compWithNameCheck(doc sbom.Document) ProfileFeatureScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
-		return ProfileFeatureScore{
-			Score:  formulae.PerComponentScore(0, 0),
-			Desc:   formulae.NoComponentsNA(),
-			Ignore: true,
-		}
+		formulae.SetNA()
 	}
 
 	have := lo.CountBy(doc.Components(), func(c sbom.GetComponent) bool {
@@ -69,11 +61,7 @@ func compWithNameCheck(doc sbom.Document) ProfileFeatureScore {
 func compWithVersionCheck(doc sbom.Document) ProfileFeatureScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
-		return ProfileFeatureScore{
-			Score:  formulae.PerComponentScore(0, 0),
-			Desc:   formulae.NoComponentsNA(),
-			Ignore: true,
-		}
+		formulae.SetNA()
 	}
 
 	have := lo.CountBy(doc.Components(), func(c sbom.GetComponent) bool {
@@ -90,21 +78,15 @@ func compWithVersionCheck(doc sbom.Document) ProfileFeatureScore {
 func compWithUniqIDCheck(doc sbom.Document) ProfileFeatureScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
-		return ProfileFeatureScore{
-			Score:  formulae.PerComponentScore(0, 0),
-			Desc:   formulae.NoComponentsNA(),
-			Ignore: true,
-		}
+		formulae.SetNA()
 	}
 
 	have := lo.FilterMap(doc.Components(), func(c sbom.GetComponent, _ int) (string, bool) {
 		if c.GetID() == "" {
 			return "", false
 		}
-		return strings.Join([]string{d.Spec().GetNamespace(), c.GetID()}, ""), true
+		return strings.Join([]string{doc.Spec().GetNamespace(), c.GetID()}, ""), true
 	})
-
-	// uniqComps := lo.Uniq(compIDs)
 
 	return ProfileFeatureScore{
 		Score:  formulae.PerComponentScore(len(have), len(comps)),

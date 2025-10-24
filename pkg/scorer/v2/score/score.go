@@ -130,7 +130,10 @@ func SBOMEvaluation(ctx context.Context, cfg config.Config, doc sbom.Document) (
 	result := config.NewResult(doc)
 
 	if len(cfg.Profile) > 0 {
-		profResults, err := profiles.EvaluateProfiles(ctx, cfg.Profile, doc, cfg.SignatureBundle)
+		profResults, err := profiles.EvaluateProfiles(ctx, cfg.Profile, doc)
+		if err != nil {
+			return *result, err
+		}
 		result.Profiles = append(result.Profiles, profResults...)
 
 		// check profiles

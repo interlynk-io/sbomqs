@@ -18,10 +18,19 @@ import (
 	"fmt"
 
 	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/config"
+	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/profiles"
 )
 
 func ScoreNA() config.FeatureScore {
 	return config.FeatureScore{
+		Score:  PerComponentScore(0, 0),
+		Desc:   NoComponentsNA(),
+		Ignore: true,
+	}
+}
+
+func SetNA() profiles.ProfileFeatureScore {
+	return profiles.ProfileFeatureScore{
 		Score:  PerComponentScore(0, 0),
 		Desc:   NoComponentsNA(),
 		Ignore: true,
