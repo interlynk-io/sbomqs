@@ -20,6 +20,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/api"
 	"github.com/stretchr/testify/assert/yaml"
 )
 
@@ -70,7 +71,7 @@ func validateConfig(cfg *Config) error {
 	return nil
 }
 
-func validateProfileFeatures(profile ProfileResult) error {
+func validateProfileFeatures(profile api.ProfileResult) error {
 	// validate profile features
 	featureExists := make(map[string]bool)
 	for i, feat := range profile.ProfileResult {

@@ -20,11 +20,12 @@ import (
 	"time"
 
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
+	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/catalog"
 	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/formulae"
 	"github.com/samber/lo"
 )
 
-func compWithSupplierCheck(doc sbom.Document) ProfileFeatureScore {
+func CompWithSupplierCheck(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
 		formulae.SetNA()
@@ -34,14 +35,14 @@ func compWithSupplierCheck(doc sbom.Document) ProfileFeatureScore {
 		return c.Suppliers().IsPresent()
 	})
 
-	return ProfileFeatureScore{
+	return catalog.ProfFeatScore{
 		Score:  formulae.PerComponentScore(have, len(comps)),
 		Desc:   formulae.CompDescription(have, len(comps), "names"),
 		Ignore: false,
 	}
 }
 
-func compWithNameCheck(doc sbom.Document) ProfileFeatureScore {
+func CompWithNameCheck(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
 		formulae.SetNA()
@@ -51,14 +52,14 @@ func compWithNameCheck(doc sbom.Document) ProfileFeatureScore {
 		return c.GetName() != ""
 	})
 
-	return ProfileFeatureScore{
+	return catalog.ProfFeatScore{
 		Score:  formulae.PerComponentScore(have, len(comps)),
 		Desc:   formulae.CompDescription(have, len(comps), "names"),
 		Ignore: false,
 	}
 }
 
-func compWithVersionCheck(doc sbom.Document) ProfileFeatureScore {
+func CompWithVersionCheck(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
 		formulae.SetNA()
@@ -68,14 +69,14 @@ func compWithVersionCheck(doc sbom.Document) ProfileFeatureScore {
 		return c.GetVersion() != ""
 	})
 
-	return ProfileFeatureScore{
+	return catalog.ProfFeatScore{
 		Score:  formulae.PerComponentScore(have, len(comps)),
 		Desc:   formulae.CompDescription(have, len(comps), "names"),
 		Ignore: false,
 	}
 }
 
-func compWithUniqIDCheck(doc sbom.Document) ProfileFeatureScore {
+func CompWithUniqIDCheck(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
 		formulae.SetNA()
@@ -88,48 +89,48 @@ func compWithUniqIDCheck(doc sbom.Document) ProfileFeatureScore {
 		return strings.Join([]string{doc.Spec().GetNamespace(), c.GetID()}, ""), true
 	})
 
-	return ProfileFeatureScore{
+	return catalog.ProfFeatScore{
 		Score:  formulae.PerComponentScore(len(have), len(comps)),
 		Desc:   formulae.CompDescription(len(have), len(comps), "names"),
 		Ignore: false,
 	}
 }
 
-func sbomWithDepedenciesCheck(doc sbom.Document) ProfileFeatureScore {
+func SbomWithDepedenciesCheck(doc sbom.Document) catalog.ProfFeatScore {
 	var have int
 	if doc.PrimaryComp() != nil {
 		have = doc.PrimaryComp().GetTotalNoOfDependencies()
 	}
 
-	return ProfileFeatureScore{
+	return catalog.ProfFeatScore{
 		Score:  formulae.BooleanScore(true),
 		Desc:   fmt.Sprintf("primary comp has %d dependencies", have),
 		Ignore: false,
 	}
 }
 
-func sbomWithAuthorsCheck(doc sbom.Document) ProfileFeatureScore {
+func SbomWithAuthorsCheck(doc sbom.Document) catalog.ProfFeatScore {
 	total := len(doc.Authors())
 
 	if total == 0 {
-		return ProfileFeatureScore{
+		return catalog.ProfFeatScore{
 			Score:  formulae.BooleanScore(false),
 			Desc:   "0 authors",
 			Ignore: false,
 		}
 	}
 
-	return ProfileFeatureScore{
+	return catalog.ProfFeatScore{
 		Score:  formulae.BooleanScore(true),
 		Desc:   fmt.Sprintf("%d authors", total),
 		Ignore: false,
 	}
 }
 
-func sbomWithTimeStampCheck(doc sbom.Document) ProfileFeatureScore {
+func SbomWithTimeStampCheck(doc sbom.Document) catalog.ProfFeatScore {
 	ts := strings.TrimSpace(doc.Spec().GetCreationTimestamp())
 	if ts == "" {
-		return ProfileFeatureScore{
+		return catalog.ProfFeatScore{
 			Score:  formulae.BooleanScore(false),
 			Desc:   formulae.MissingField("timestamp"),
 			Ignore: false,
@@ -138,7 +139,7 @@ func sbomWithTimeStampCheck(doc sbom.Document) ProfileFeatureScore {
 
 	if _, err := time.Parse(time.RFC3339, ts); err != nil {
 		if _, err2 := time.Parse(time.RFC3339Nano, ts); err2 != nil {
-			return ProfileFeatureScore{
+			return catalog.ProfFeatScore{
 				Score:  formulae.BooleanScore(false),
 				Desc:   fmt.Sprintf("invalid timestamp: %s", ts),
 				Ignore: false,
@@ -146,7 +147,7 @@ func sbomWithTimeStampCheck(doc sbom.Document) ProfileFeatureScore {
 		}
 	}
 
-	return ProfileFeatureScore{
+	return catalog.ProfFeatScore{
 		Score:  formulae.BooleanScore(true),
 		Desc:   ts,
 		Ignore: false,

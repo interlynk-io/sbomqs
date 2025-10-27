@@ -6,11 +6,12 @@ import (
 
 	"github.com/interlynk-io/sbomqs/pkg/compliance/common"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
+	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/catalog"
 	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/formulae"
 	"github.com/samber/lo"
 )
 
-func compWithLicensesCheck(doc sbom.Document) ProfileFeatureScore {
+func CompWithLicensesCheck(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
 		formulae.SetNA()
@@ -20,14 +21,14 @@ func compWithLicensesCheck(doc sbom.Document) ProfileFeatureScore {
 		return common.AreLicensesValid(c.GetLicenses())
 	})
 
-	return ProfileFeatureScore{
+	return catalog.ProfFeatScore{
 		Score:  formulae.PerComponentScore(have, len(comps)),
 		Desc:   formulae.CompDescription(have, len(comps), "names"),
 		Ignore: false,
 	}
 }
 
-func compWithSHA256ChecksumsCheck(doc sbom.Document) ProfileFeatureScore {
+func CompWithSHA256ChecksumsCheck(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
 		formulae.SetNA()
@@ -41,14 +42,14 @@ func compWithSHA256ChecksumsCheck(doc sbom.Document) ProfileFeatureScore {
 		})
 	})
 
-	return ProfileFeatureScore{
+	return catalog.ProfFeatScore{
 		Score:  formulae.PerComponentScore(have, len(comps)),
 		Desc:   formulae.CompDescription(have, len(comps), "names"),
 		Ignore: false,
 	}
 }
 
-func compWithSourceCodeURICheck(doc sbom.Document) ProfileFeatureScore {
+func CompWithSourceCodeURICheck(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
 		formulae.SetNA()
@@ -58,14 +59,14 @@ func compWithSourceCodeURICheck(doc sbom.Document) ProfileFeatureScore {
 		return c.GetSourceCodeURL() != ""
 	})
 
-	return ProfileFeatureScore{
+	return catalog.ProfFeatScore{
 		Score:  formulae.PerComponentScore(have, len(comps)),
 		Desc:   formulae.CompDescription(have, len(comps), "names"),
 		Ignore: false,
 	}
 }
 
-func compWithSourceCodeHashCheck(doc sbom.Document) ProfileFeatureScore {
+func CompWithSourceCodeHashCheck(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
 		formulae.SetNA()
@@ -75,14 +76,14 @@ func compWithSourceCodeHashCheck(doc sbom.Document) ProfileFeatureScore {
 		return c.SourceCodeHash() != ""
 	})
 
-	return ProfileFeatureScore{
+	return catalog.ProfFeatScore{
 		Score:  formulae.PerComponentScore(have, len(comps)),
 		Desc:   formulae.CompDescription(have, len(comps), "names"),
 		Ignore: false,
 	}
 }
 
-func compWithExecutableURICheck(doc sbom.Document) ProfileFeatureScore {
+func CompWithExecutableURICheck(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
 		formulae.SetNA()
@@ -92,14 +93,14 @@ func compWithExecutableURICheck(doc sbom.Document) ProfileFeatureScore {
 		return c.GetDownloadLocationURL() != ""
 	})
 
-	return ProfileFeatureScore{
+	return catalog.ProfFeatScore{
 		Score:  formulae.PerComponentScore(have, len(comps)),
 		Desc:   formulae.CompDescription(have, len(comps), "names"),
 		Ignore: false,
 	}
 }
 
-func compWithDependencyCheck(doc sbom.Document) ProfileFeatureScore {
+func CompWithDependencyCheck(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
 		formulae.SetNA()
@@ -109,7 +110,7 @@ func compWithDependencyCheck(doc sbom.Document) ProfileFeatureScore {
 		return c.HasRelationShips()
 	})
 
-	return ProfileFeatureScore{
+	return catalog.ProfFeatScore{
 		Score:  formulae.PerComponentScore(have, len(comps)),
 		Desc:   formulae.CompDescription(have, len(comps), "names"),
 		Ignore: false,
@@ -120,38 +121,38 @@ func compWithDependencyCheck(doc sbom.Document) ProfileFeatureScore {
 // - 10 if spec+version in BSI-supported lists,
 // - 5  if spec supported but version not in list,
 // - 0  otherwise.
-func sbomWithVersionCompliant(doc sbom.Document) ProfileFeatureScore {
+func SbomWithVersionCompliant(doc sbom.Document) catalog.ProfFeatScore {
 	spec := strings.ToLower(strings.TrimSpace(doc.Spec().GetSpecType()))
 	ver := strings.TrimSpace(doc.Spec().GetVersion())
 
 	switch spec {
 	case string(sbom.SBOMSpecSPDX):
 		if lo.Contains(validBsiSpdxVersions, ver) {
-			return ProfileFeatureScore{Score: 10.0, Desc: fmt.Sprintf("supported: %s %s", spec, ver)}
+			return catalog.ProfFeatScore{Score: 10.0, Desc: fmt.Sprintf("supported: %s %s", spec, ver)}
 		}
-		return ProfileFeatureScore{Score: 5.0, Desc: fmt.Sprintf("spec supported but not version: %s", ver)}
+		return catalog.ProfFeatScore{Score: 5.0, Desc: fmt.Sprintf("spec supported but not version: %s", ver)}
 
 	case string(sbom.SBOMSpecCDX):
 		if lo.Contains(validBsiCdxVersions, ver) {
-			return ProfileFeatureScore{Score: 10.0, Desc: fmt.Sprintf("supported: %s %s", spec, ver)}
+			return catalog.ProfFeatScore{Score: 10.0, Desc: fmt.Sprintf("supported: %s %s", spec, ver)}
 		}
-		return ProfileFeatureScore{Score: 5.0, Desc: fmt.Sprintf("spec supported but not version: %s", ver)}
+		return catalog.ProfFeatScore{Score: 5.0, Desc: fmt.Sprintf("spec supported but not version: %s", ver)}
 
 	default:
-		return ProfileFeatureScore{Score: 0.0, Desc: fmt.Sprintf("unsupported spec: %s", spec)}
+		return catalog.ProfFeatScore{Score: 0.0, Desc: fmt.Sprintf("unsupported spec: %s", spec)}
 	}
 }
 
 // sbomWithURICheck
-func sbomWithURICheck(doc sbom.Document) ProfileFeatureScore {
+func SbomWithURICheck(doc sbom.Document) catalog.ProfFeatScore {
 	if strings.TrimSpace(doc.Spec().GetURI()) == "" {
-		return ProfileFeatureScore{
+		return catalog.ProfFeatScore{
 			Score:  0.0,
 			Desc:   "no URI",
 			Ignore: false,
 		}
 	}
-	return ProfileFeatureScore{
+	return catalog.ProfFeatScore{
 		Score:  10.0,
 		Desc:   "has URI",
 		Ignore: false,

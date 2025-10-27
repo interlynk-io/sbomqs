@@ -20,7 +20,7 @@ import (
 	"testing"
 
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
-	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/config"
+	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/catalog"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -62,13 +62,13 @@ func TestCompWithSHA1Plus(t *testing.T) {
 	tests := []struct {
 		name     string
 		doc      sbom.Document
-		want     config.FeatureScore
+		want     catalog.ComprFeatScore
 		wantDesc string
 	}{
 		{
 			name: "no components → N/A",
 			doc:  makeSPDXDocForIntegrity(),
-			want: config.FeatureScore{Score: 0, Ignore: true},
+			want: catalog.ComprFeatScore{Score: 0, Ignore: true},
 		},
 		{
 			name: "all have SHA-1 or stronger",
@@ -78,7 +78,7 @@ func TestCompWithSHA1Plus(t *testing.T) {
 				[]sbom.GetChecksum{ch("SHA-512", "c")},
 			),
 			// 3/3 → 10.0
-			want: config.FeatureScore{Score: 10, Ignore: false},
+			want: catalog.ComprFeatScore{Score: 10, Ignore: false},
 		},
 		{
 			name: "partial coverage",
@@ -91,7 +91,7 @@ func TestCompWithSHA1Plus(t *testing.T) {
 				[]sbom.GetChecksum{ch("sha-256", "lower")}, // yes (case normalization handled by extractor impl)
 			),
 			// 3/6 → 5.0
-			want: config.FeatureScore{Score: 5, Ignore: false},
+			want: catalog.ComprFeatScore{Score: 5, Ignore: false},
 		},
 		{
 			name: "none",
@@ -99,7 +99,7 @@ func TestCompWithSHA1Plus(t *testing.T) {
 				[]sbom.GetChecksum{ch("MD5", "x")},
 				[]sbom.GetChecksum{ch("CRC32", "y")},
 			),
-			want: config.FeatureScore{Score: 0, Ignore: false},
+			want: catalog.ComprFeatScore{Score: 0, Ignore: false},
 		},
 	}
 
@@ -121,13 +121,13 @@ func TestCompWithSHA256Plus(t *testing.T) {
 	tests := []struct {
 		name     string
 		doc      sbom.Document
-		want     config.FeatureScore
+		want     catalog.ComprFeatScore
 		wantDesc string
 	}{
 		{
 			name: "no components → N/A",
 			doc:  makeSPDXDocForIntegrity(),
-			want: config.FeatureScore{Score: 0, Ignore: true},
+			want: catalog.ComprFeatScore{Score: 0, Ignore: true},
 		},
 		{
 			name: "all have SHA-256 or stronger",
@@ -137,7 +137,7 @@ func TestCompWithSHA256Plus(t *testing.T) {
 				[]sbom.GetChecksum{ch("SHA-512", "c")},
 			),
 			// 3/3 → 10.0
-			want: config.FeatureScore{Score: 10, Ignore: false},
+			want: catalog.ComprFeatScore{Score: 10, Ignore: false},
 		},
 		{
 			name: "mixed: SHA-1 should not count",
@@ -148,7 +148,7 @@ func TestCompWithSHA256Plus(t *testing.T) {
 				[]sbom.GetChecksum{ch("SHA-512", "ok2")}, // yes
 			),
 			// 2/4 → 5.0
-			want: config.FeatureScore{Score: 5, Ignore: false},
+			want: catalog.ComprFeatScore{Score: 5, Ignore: false},
 		},
 		{
 			name: "none",
@@ -156,7 +156,7 @@ func TestCompWithSHA256Plus(t *testing.T) {
 				[]sbom.GetChecksum{ch("MD5", "x")},
 				[]sbom.GetChecksum{ch("sha-1", "y")},
 			),
-			want: config.FeatureScore{Score: 0, Ignore: false},
+			want: catalog.ComprFeatScore{Score: 0, Ignore: false},
 		},
 	}
 

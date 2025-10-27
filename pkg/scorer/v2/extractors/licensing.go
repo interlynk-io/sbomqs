@@ -19,13 +19,13 @@ import (
 	"strings"
 
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
-	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/config"
+	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/catalog"
 	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/formulae"
 	"github.com/samber/lo"
 )
 
 // CompWithLicenses check for concluded license
-func CompWithLicenses(doc sbom.Document) config.FeatureScore {
+func CompWithLicenses(doc sbom.Document) catalog.ComprFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
 		return formulae.ScoreNA()
@@ -35,7 +35,7 @@ func CompWithLicenses(doc sbom.Document) config.FeatureScore {
 		return componentHasAnyConcluded(c)
 	})
 
-	return config.FeatureScore{
+	return catalog.ComprFeatScore{
 		Score:  formulae.PerComponentScore(have, len(comps)),
 		Desc:   formulae.CompDescription(have, len(comps), "licenses"),
 		Ignore: false,
@@ -43,7 +43,7 @@ func CompWithLicenses(doc sbom.Document) config.FeatureScore {
 }
 
 // CompWithValidLicenses validates concluded licenses
-func CompWithValidLicenses(doc sbom.Document) config.FeatureScore {
+func CompWithValidLicenses(doc sbom.Document) catalog.ComprFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
 		return formulae.ScoreNA()
@@ -53,7 +53,7 @@ func CompWithValidLicenses(doc sbom.Document) config.FeatureScore {
 		return validationCheckConcludedLicenses(c)
 	})
 
-	return config.FeatureScore{
+	return catalog.ComprFeatScore{
 		Score:  formulae.PerComponentScore(have, len(comps)),
 		Desc:   formulae.CompDescription(have, len(comps), "valid SPDX licenses"),
 		Ignore: false,
@@ -61,7 +61,7 @@ func CompWithValidLicenses(doc sbom.Document) config.FeatureScore {
 }
 
 // CompWithDeclaredLicenses look for declared licenses
-func CompWithDeclaredLicenses(doc sbom.Document) config.FeatureScore {
+func CompWithDeclaredLicenses(doc sbom.Document) catalog.ComprFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
 		return formulae.ScoreNA()
@@ -71,7 +71,7 @@ func CompWithDeclaredLicenses(doc sbom.Document) config.FeatureScore {
 		return componentHasAnyDeclared(c)
 	})
 
-	return config.FeatureScore{
+	return catalog.ComprFeatScore{
 		Score:  formulae.PerComponentScore(have, len(comps)),
 		Desc:   formulae.CompDescription(have, len(comps), "declared"),
 		Ignore: false,
@@ -79,11 +79,11 @@ func CompWithDeclaredLicenses(doc sbom.Document) config.FeatureScore {
 }
 
 // SBOMDataLicense check for SBOM license
-func SBOMDataLicense(doc sbom.Document) config.FeatureScore {
+func SBOMDataLicense(doc sbom.Document) catalog.ComprFeatScore {
 	specLicenses := doc.Spec().GetLicenses()
 
 	if len(specLicenses) == 0 {
-		return config.FeatureScore{
+		return catalog.ComprFeatScore{
 			Score:  formulae.BooleanScore(false),
 			Desc:   "no data license",
 			Ignore: true,
@@ -98,13 +98,13 @@ func SBOMDataLicense(doc sbom.Document) config.FeatureScore {
 		if l == "" {
 			l = "data license present"
 		}
-		return config.FeatureScore{
+		return catalog.ComprFeatScore{
 			Score:  formulae.BooleanScore(true),
 			Desc:   l,
 			Ignore: false,
 		}
 	}
-	return config.FeatureScore{
+	return catalog.ComprFeatScore{
 		Score:  formulae.BooleanScore(false),
 		Desc:   "invalid data license",
 		Ignore: false,
@@ -112,7 +112,7 @@ func SBOMDataLicense(doc sbom.Document) config.FeatureScore {
 }
 
 // CompWithDeprecatedLicenses check for concluded license are not in the deprecated license list
-func CompWithDeprecatedLicenses(doc sbom.Document) config.FeatureScore {
+func CompWithDeprecatedLicenses(doc sbom.Document) catalog.ComprFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
 		return formulae.ScoreNA()
@@ -122,7 +122,7 @@ func CompWithDeprecatedLicenses(doc sbom.Document) config.FeatureScore {
 		return componentHasAnyDeprecated(c)
 	})
 
-	return config.FeatureScore{
+	return catalog.ComprFeatScore{
 		Score:  formulae.PerComponentScore(have, len(comps)),
 		Desc:   fmt.Sprintf("%d deprecated", have),
 		Ignore: false,
@@ -131,7 +131,7 @@ func CompWithDeprecatedLicenses(doc sbom.Document) config.FeatureScore {
 
 // CompWithNoDeprecatedLicenses check for concluded license are not
 // in the restrictive license list (GPL, etc)
-func CompWithRestrictiveLicenses(doc sbom.Document) config.FeatureScore {
+func CompWithRestrictiveLicenses(doc sbom.Document) catalog.ComprFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
 		return formulae.ScoreNA()
@@ -141,7 +141,7 @@ func CompWithRestrictiveLicenses(doc sbom.Document) config.FeatureScore {
 		return componentHasAnyRestrictive(c)
 	})
 
-	return config.FeatureScore{
+	return catalog.ComprFeatScore{
 		Score:  formulae.PerComponentScore(have, len(comps)),
 		Desc:   fmt.Sprintf("%d restrictive", have),
 		Ignore: false,

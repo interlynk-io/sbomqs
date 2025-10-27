@@ -17,20 +17,20 @@ package formulae
 import (
 	"fmt"
 
-	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/config"
-	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/profiles"
+	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/api"
+	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/catalog"
 )
 
-func ScoreNA() config.FeatureScore {
-	return config.FeatureScore{
+func ScoreNA() catalog.ComprFeatScore {
+	return catalog.ComprFeatScore{
 		Score:  PerComponentScore(0, 0),
 		Desc:   NoComponentsNA(),
 		Ignore: true,
 	}
 }
 
-func SetNA() profiles.ProfileFeatureScore {
-	return profiles.ProfileFeatureScore{
+func SetNA() catalog.ProfFeatScore {
+	return catalog.ProfFeatScore{
 		Score:  PerComponentScore(0, 0),
 		Desc:   NoComponentsNA(),
 		Ignore: true,
@@ -79,7 +79,7 @@ func ToGrade(interlynkScore float64) string {
 }
 
 // computeCategoryScore returns the weighted average of feature scores.
-func ComputeCategoryScore(features []config.FeatureResult) float64 {
+func ComputeCategoryScore(features []api.FeatureResult) float64 {
 	var totalFeatureWeight float64
 	for _, feature := range features {
 		if !feature.Ignored {
@@ -105,7 +105,7 @@ func ComputeCategoryScore(features []config.FeatureResult) float64 {
 }
 
 // computeInterlynkScore returns the weighted average of category scores.
-func ComputeInterlynkScore(catResults []config.CategoryResult) float64 {
+func ComputeInterlynkScore(catResults []api.CategoryResult) float64 {
 	var totalCategoryWeight, finalScoreWithWeightage float64
 
 	for _, catResult := range catResults {

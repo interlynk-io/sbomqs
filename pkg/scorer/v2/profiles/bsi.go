@@ -19,6 +19,7 @@ import (
 	"strings"
 
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
+	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/catalog"
 	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/formulae"
 	"github.com/samber/lo"
 )
@@ -32,39 +33,39 @@ var (
 // - 10 if spec+version in BSI-supported lists,
 // - 5  if spec supported but version not in list,
 // - 0  otherwise.
-func specWithVersionCompliant(doc sbom.Document) ProfileFeatureScore {
+func specWithVersionCompliant(doc sbom.Document) catalog.ProfFeatScore {
 	spec := strings.ToLower(strings.TrimSpace(doc.Spec().GetSpecType()))
 	ver := strings.TrimSpace(doc.Spec().GetVersion())
 
 	switch spec {
 	case "spdx":
 		if lo.Contains(validBsiSpdxVersions, ver) {
-			return ProfileFeatureScore{Score: 10.0, Desc: fmt.Sprintf("supported: %s %s", spec, ver)}
+			return catalog.ProfFeatScore{Score: 10.0, Desc: fmt.Sprintf("supported: %s %s", spec, ver)}
 		}
-		return ProfileFeatureScore{Score: 5.0, Desc: fmt.Sprintf("spec supported but not version: %s", ver)}
+		return catalog.ProfFeatScore{Score: 5.0, Desc: fmt.Sprintf("spec supported but not version: %s", ver)}
 	case "cyclonedx":
 		if lo.Contains(validBsiCdxVersions, ver) {
-			return ProfileFeatureScore{Score: 10.0, Desc: fmt.Sprintf("supported: %s %s", spec, ver)}
+			return catalog.ProfFeatScore{Score: 10.0, Desc: fmt.Sprintf("supported: %s %s", spec, ver)}
 		}
-		return ProfileFeatureScore{Score: 5.0, Desc: fmt.Sprintf("spec supported but not version: %s", ver)}
+		return catalog.ProfFeatScore{Score: 5.0, Desc: fmt.Sprintf("spec supported but not version: %s", ver)}
 	default:
-		return ProfileFeatureScore{Score: 0.0, Desc: fmt.Sprintf("unsupported spec: %s", spec)}
+		return catalog.ProfFeatScore{Score: 0.0, Desc: fmt.Sprintf("unsupported spec: %s", spec)}
 	}
 }
 
 // bsiCompWithUniqIDCheck
 // BSI wants “unique identifiers” usable for vuln lookup: PURL or CPE.
-func bsiCompWithUniqIDCheck(doc sbom.Document) ProfileFeatureScore {
+func bsiCompWithUniqIDCheck(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
-		return ProfileFeatureScore{Score: formulae.PerComponentScore(0, 0), Desc: formulae.NoComponentsNA(), Ignore: true}
+		return catalog.ProfFeatScore{Score: formulae.PerComponentScore(0, 0), Desc: formulae.NoComponentsNA(), Ignore: true}
 	}
 
 	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
 		return len(c.GetPurls()) > 0 || len(c.GetCpes()) > 0
 	})
 
-	return ProfileFeatureScore{
+	return catalog.ProfFeatScore{
 		Score:  formulae.PerComponentScore(have, len(comps)),
 		Desc:   formulae.CompDescription(have, len(comps), "unique IDs (purl/cpe)"),
 		Ignore: false,
@@ -72,18 +73,19 @@ func bsiCompWithUniqIDCheck(doc sbom.Document) ProfileFeatureScore {
 }
 
 // compWithLicensesCompliantCheck (generic “valid licenses” per component)
-func compWithLicensesCompliantCheck(doc sbom.Document) ProfileFeatureScore {
+func compWithLicensesCompliantCheck(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
-		return ProfileFeatureScore{Score: formulae.PerComponentScore(0, 0), Desc: formulae.NoComponentsNA(), Ignore: true}
+		return catalog.ProfFeatScore{Score: formulae.PerComponentScore(0, 0), Desc: formulae.NoComponentsNA(), Ignore: true}
 	}
 
 	// NOTE: keeping prior behavior: “valid licenses” on the component license set.
-	with := lo.CountBy(comps, func(c sbom.GetComponent) bool {
-		return AreLicensesValid(c.GetLicenses()) // keep your common.AreLicensesValid impl under this name
-	})
+	// with := lo.CountBy(comps, func(c sbom.GetComponent) bool {
+	// 	return AreLicensesValid(c.GetLicenses()) // keep your common.AreLicensesValid impl under this name
+	// })
+	with := 0
 
-	return ProfileFeatureScore{
+	return catalog.ProfFeatScore{
 		Score:  formulae.PerComponentScore(with, len(comps)),
 		Desc:   formulae.CompDescription(with, len(comps), "compliant licenses"),
 		Ignore: false,

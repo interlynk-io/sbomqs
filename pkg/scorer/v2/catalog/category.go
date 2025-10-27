@@ -12,21 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package profiles
+package catalog
 
-import "github.com/interlynk-io/sbomqs/pkg/scorer/v2/api"
-
-// YAML schema + loader (from file or built-ins).
-
-// File is the root of profiles.yaml
-type Config struct {
-	SBOMQS   SBOMQSMeta          `yaml:"sbomqs"`
-	Profiles []api.ProfileResult `yaml:"profiles"`
-}
-
-// SBOMQSMeta is a small header so we can warn on incompatible files.
-type SBOMQSMeta struct {
-	Version     string `yaml:"version"`      // e.g., "2.0.0"
-	Description string `yaml:"description"`  // free text
-	LastUpdated string `yaml:"last_updated"` // 2025-10-15
+// ComprCatSpec represent specification of
+// each comprehenssive category.
+type ComprCatSpec struct {
+	Name        string
+	Description string
+	Key         ComprCatKey
+	Weight      float64
+	Features    []ComprFeatKey
 }

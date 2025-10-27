@@ -21,13 +21,13 @@ import (
 
 	"github.com/interlynk-io/sbomqs/pkg/compliance/common"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
-	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/config"
+	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/catalog"
 	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/formulae"
 )
 
 // CompWithSHA1Plus returns coverage of components that have SHA-1 or stronger
 // (SHA-1, SHA-256, SHA-384, or SHA-512).
-func CompWithSHA1Plus(doc sbom.Document) config.FeatureScore {
+func CompWithSHA1Plus(doc sbom.Document) catalog.ComprFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
 		return formulae.ScoreNA()
@@ -40,7 +40,7 @@ func CompWithSHA1Plus(doc sbom.Document) config.FeatureScore {
 		}
 	}
 
-	return config.FeatureScore{
+	return catalog.ComprFeatScore{
 		Score:  formulae.PerComponentScore(have, len(comps)),
 		Desc:   formulae.CompDescription(have, len(comps), "SHA-1+"),
 		Ignore: false,
@@ -48,7 +48,7 @@ func CompWithSHA1Plus(doc sbom.Document) config.FeatureScore {
 }
 
 // CompWithSHA256Plus returns coverage of components that have SHA-256 or stronger.
-func CompWithSHA256Plus(doc sbom.Document) config.FeatureScore {
+func CompWithSHA256Plus(doc sbom.Document) catalog.ComprFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
 		return formulae.ScoreNA()
@@ -61,7 +61,7 @@ func CompWithSHA256Plus(doc sbom.Document) config.FeatureScore {
 		}
 	}
 
-	return config.FeatureScore{
+	return catalog.ComprFeatScore{
 		Score:  formulae.PerComponentScore(have, len(comps)),
 		Desc:   formulae.CompDescription(have, len(comps), "SHA-256+"),
 		Ignore: false,
@@ -77,10 +77,10 @@ var verifySignature = common.VerifySignature
 //	10 = signature present and verification succeeded
 //	 5 = signature present but verification failed
 //	 0 = no signature / incomplete bundle
-func SBOMSignature(doc sbom.Document) config.FeatureScore {
+func SBOMSignature(doc sbom.Document) catalog.ComprFeatScore {
 	sig := doc.Signature()
 	if sig == nil {
-		return config.FeatureScore{
+		return catalog.ComprFeatScore{
 			Score:  0,
 			Desc:   formulae.MissingField("signature"),
 			Ignore: false,
@@ -93,7 +93,7 @@ func SBOMSignature(doc sbom.Document) config.FeatureScore {
 
 	// Incomplete bundle → treat as missing
 	if pubKeyPath == "" || blobPath == "" || sigPath == "" {
-		return config.FeatureScore{
+		return catalog.ComprFeatScore{
 			Score:  0,
 			Desc:   "signature bundle incomplete",
 			Ignore: false,
@@ -102,7 +102,7 @@ func SBOMSignature(doc sbom.Document) config.FeatureScore {
 
 	pubKeyBytes, err := os.ReadFile(pubKeyPath)
 	if err != nil {
-		return config.FeatureScore{
+		return catalog.ComprFeatScore{
 			Score:  5, // bundle present, but verification cannot succeed
 			Desc:   fmt.Sprintf("cannot read public key: %v", err),
 			Ignore: false,
@@ -111,20 +111,20 @@ func SBOMSignature(doc sbom.Document) config.FeatureScore {
 
 	ok, err := verifySignature(pubKeyBytes, blobPath, sigPath)
 	if err != nil {
-		return config.FeatureScore{
+		return catalog.ComprFeatScore{
 			Score:  5,
 			Desc:   "signature present but verification failed",
 			Ignore: false,
 		}
 	}
 	if ok {
-		return config.FeatureScore{
+		return catalog.ComprFeatScore{
 			Score:  10,
 			Desc:   "signature verification succeeded",
 			Ignore: false,
 		}
 	}
-	return config.FeatureScore{
+	return catalog.ComprFeatScore{
 		Score:  5,
 		Desc:   "signature present but invalid",
 		Ignore: false,

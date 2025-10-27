@@ -16,50 +16,40 @@ package config
 
 import (
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
-	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/profiles"
 )
 
-// Common file-level metadata
-type SBOMMeta struct {
-	Spec          string
-	SpecVersion   string
-	FileFormat    string
-	Filename      string
-	NumComponents int
-	CreationTime  string
-}
+// // Common file-level metadata
+// type SBOMMeta struct {
+// 	Spec          string
+// 	SpecVersion   string
+// 	FileFormat    string
+// 	Filename      string
+// 	NumComponents int
+// 	CreationTime  string
+// }
 
-// Result represents result of an SBOM
-type Result struct {
-	Meta SBOMMeta
+// // Result represents result of an SBOM
+// type Result struct {
+// 	Meta SBOMMeta
 
-	Comprehensive *ComprehensiveResult
-	Profiles      []profiles.ProfileResult
-}
+// 	Comprehensive *ComprehensiveResult
+// 	Profiles      []profiles.ProfileResult
+// }
 
-// Comprehensive (quality) scoring
-type ComprehensiveResult struct {
-	InterlynkScore float64
-	Grade          string
-	Categories     []CategoryResult
-}
+// // Comprehensive (quality) scoring
+// type ComprehensiveResult struct {
+// 	InterlynkScore float64
+// 	Grade          string
+// 	Categories     []CategoryResult
+// }
 
-// Category result
-type CategoryResult struct {
-	Name     string
-	Weight   float64 // category weight
-	Score    float64
-	Features []FeatureResult
-}
-
-// feature result
-type FeatureResult struct {
-	Key     string
-	Weight  float64 // feature weight
-	Score   float64
-	Desc    string
-	Ignored bool
-}
+// // Category result
+// type CategoryResult struct {
+// 	Name     string
+// 	Weight   float64 // category weight
+// 	Score    float64
+// 	Features []FeatureResult
+// }
 
 // CategorySpec represent properties of a category.
 type CategorySpec struct {

@@ -18,14 +18,14 @@ import (
 	"strings"
 
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
-	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/config"
+	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/catalog"
 	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/formulae"
 	"github.com/samber/lo"
 )
 
 // comp_with_dependencies (component-level coverage)
 // SPDX: relationships (DEPENDS_ON); CDX: component.dependencies / bom.dependencies
-func CompWithDependencies(doc sbom.Document) config.FeatureScore {
+func CompWithDependencies(doc sbom.Document) catalog.ComprFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
 		return formulae.ScoreNA()
@@ -35,7 +35,7 @@ func CompWithDependencies(doc sbom.Document) config.FeatureScore {
 		return c.HasRelationShips() || c.CountOfDependencies() > 0
 	})
 
-	return config.FeatureScore{
+	return catalog.ComprFeatScore{
 		Score:  formulae.PerComponentScore(have, len(comps)),
 		Desc:   formulae.CompDescription(have, len(comps), "dependencies"),
 		Ignore: false,
@@ -43,7 +43,7 @@ func CompWithDependencies(doc sbom.Document) config.FeatureScore {
 }
 
 // comp_with_declared_completeness: Completeness declaration present
-func CompWithCompleteness(doc sbom.Document) config.FeatureScore {
+func CompWithCompleteness(doc sbom.Document) catalog.ComprFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
 		return formulae.ScoreNA()
@@ -53,7 +53,7 @@ func CompWithCompleteness(doc sbom.Document) config.FeatureScore {
 
 	switch spec {
 	case string(sbom.SBOMSpecSPDX):
-		return config.FeatureScore{
+		return catalog.ComprFeatScore{
 			Score:  formulae.BooleanScore(false),
 			Desc:   formulae.NonSupportedSPDXField(),
 			Ignore: true,
@@ -67,7 +67,7 @@ func CompWithCompleteness(doc sbom.Document) config.FeatureScore {
 		// })
 	}
 
-	return config.FeatureScore{
+	return catalog.ComprFeatScore{
 		Score:  formulae.BooleanScore(false),
 		Desc:   formulae.UnknownSpec(),
 		Ignore: true,
@@ -75,19 +75,19 @@ func CompWithCompleteness(doc sbom.Document) config.FeatureScore {
 }
 
 // sbom_with_primary_comp: Single primary component defined
-func SBOMWithPrimaryComponent(doc sbom.Document) config.FeatureScore {
+func SBOMWithPrimaryComponent(doc sbom.Document) catalog.ComprFeatScore {
 	comps := doc.Components()
 	isPrimaryPresent := doc.PrimaryComp().IsPresent()
 
 	if !isPrimaryPresent {
-		return config.FeatureScore{
+		return catalog.ComprFeatScore{
 			Score:  formulae.PerComponentScore(0, len(comps)),
 			Desc:   "absent",
 			Ignore: true,
 		}
 	}
 
-	return config.FeatureScore{
+	return catalog.ComprFeatScore{
 		Score:  formulae.BooleanScore(isPrimaryPresent),
 		Desc:   "identified",
 		Ignore: false,
@@ -95,7 +95,7 @@ func SBOMWithPrimaryComponent(doc sbom.Document) config.FeatureScore {
 }
 
 // comps_with_source_code: Valid VCS URL
-func CompWithSourceCode(doc sbom.Document) config.FeatureScore {
+func CompWithSourceCode(doc sbom.Document) catalog.ComprFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
 		return formulae.ScoreNA()
@@ -105,7 +105,7 @@ func CompWithSourceCode(doc sbom.Document) config.FeatureScore {
 		return strings.TrimSpace(c.GetSourceCodeURL()) != ""
 	})
 
-	return config.FeatureScore{
+	return catalog.ComprFeatScore{
 		Score:  formulae.PerComponentScore(have, len(comps)),
 		Desc:   formulae.CompDescription(have, len(comps), "source URIs"),
 		Ignore: false,
@@ -113,7 +113,7 @@ func CompWithSourceCode(doc sbom.Document) config.FeatureScore {
 }
 
 // comp_with_supplier
-func CompWithSupplier(doc sbom.Document) config.FeatureScore {
+func CompWithSupplier(doc sbom.Document) catalog.ComprFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
 		return formulae.ScoreNA()
@@ -126,7 +126,7 @@ func CompWithSupplier(doc sbom.Document) config.FeatureScore {
 		return c.Suppliers().IsPresent() && hasName && hasContact
 	})
 
-	return config.FeatureScore{
+	return catalog.ComprFeatScore{
 		Score:  formulae.PerComponentScore(have, len(comps)),
 		Desc:   formulae.CompDescription(have, len(comps), "suppliers"),
 		Ignore: false,
@@ -134,7 +134,7 @@ func CompWithSupplier(doc sbom.Document) config.FeatureScore {
 }
 
 // comp_with_primary_purpose
-func CompWithPackagePurpose(doc sbom.Document) config.FeatureScore {
+func CompWithPackagePurpose(doc sbom.Document) catalog.ComprFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
 		return formulae.ScoreNA()
@@ -144,7 +144,7 @@ func CompWithPackagePurpose(doc sbom.Document) config.FeatureScore {
 		return c.PrimaryPurpose() != ""
 	})
 
-	return config.FeatureScore{
+	return catalog.ComprFeatScore{
 		Score:  formulae.PerComponentScore(have, len(comps)),
 		Desc:   formulae.CompDescription(have, len(comps), "type"),
 		Ignore: false,

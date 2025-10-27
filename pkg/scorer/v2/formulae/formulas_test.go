@@ -17,7 +17,7 @@ package formulae
 import (
 	"testing"
 
-	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/config"
+	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/api"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -44,7 +44,7 @@ func TestToGrade_Boundaries(t *testing.T) {
 
 func TestComputeInterlynkScore(t *testing.T) {
 	// overall = (9*10 + 7*12) / (10+12) = 7.909090...
-	catResults := []config.CategoryResult{
+	catResults := []api.CategoryResult{
 		{Name: "Identification", Weight: 10, Score: 9.0},
 		{Name: "Provenance", Weight: 12, Score: 7.0},
 	}
@@ -56,7 +56,7 @@ func TestComputeInterlynkScore(t *testing.T) {
 }
 
 func TestComputeCategoryScore_AllNA(t *testing.T) {
-	frs := []config.FeatureResult{
+	frs := []api.FeatureResult{
 		{Key: "f1", Weight: 0.5, Score: 10, Ignored: true},
 		{Key: "f2", Weight: 0.5, Score: 0, Ignored: true},
 	}
@@ -68,7 +68,7 @@ func TestComputeCategoryScore_AllNA(t *testing.T) {
 
 func TestComputeCategoryScore_WithNA(t *testing.T) {
 	// middle feature will be ignored; renormalize 0.40 and 0.25 = sum 0.65
-	frs := []config.FeatureResult{
+	frs := []api.FeatureResult{
 		{Key: "comp_with_name", Weight: 0.40, Score: 10.0, Ignored: false},
 		{Key: "comp_with_version", Weight: 0.35, Score: 9.5, Ignored: true}, // N/A
 		{Key: "comp_with_identifiers", Weight: 0.25, Score: 8.2, Ignored: false},
@@ -80,7 +80,7 @@ func TestComputeCategoryScore_WithNA(t *testing.T) {
 }
 
 func TestComputeCategoryScore(t *testing.T) {
-	frs := []config.FeatureResult{
+	frs := []api.FeatureResult{
 		{Key: "comp_with_name", Weight: 0.40, Score: 10.0, Ignored: false},
 		{Key: "comp_with_version", Weight: 0.35, Score: 9.5, Ignored: false},
 		{Key: "comp_with_identifiers", Weight: 0.25, Score: 8.2, Ignored: false},

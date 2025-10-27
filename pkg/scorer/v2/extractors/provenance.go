@@ -20,16 +20,16 @@ import (
 	"time"
 
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
-	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/config"
+	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/catalog"
 	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/formulae"
 )
 
 // SBOMCreationTime: document has a valid ISO-8601 timestamp (RFC3339/RFC3339Nano).
 // `Created` for SPDX and `metadata.timestamp` for CDX
-func SBOMCreationTimestamp(doc sbom.Document) config.FeatureScore {
+func SBOMCreationTimestamp(doc sbom.Document) catalog.ComprFeatScore {
 	ts := strings.TrimSpace(doc.Spec().GetCreationTimestamp())
 	if ts == "" {
-		return config.FeatureScore{
+		return catalog.ComprFeatScore{
 			Score:  formulae.BooleanScore(false),
 			Desc:   formulae.MissingField("timestamp"),
 			Ignore: false,
@@ -39,7 +39,7 @@ func SBOMCreationTimestamp(doc sbom.Document) config.FeatureScore {
 	// accept both RFC3339 and RFC3339Nano
 	if _, err := time.Parse(time.RFC3339, ts); err != nil {
 		if _, err2 := time.Parse(time.RFC3339Nano, ts); err2 != nil {
-			return config.FeatureScore{
+			return catalog.ComprFeatScore{
 				Score:  formulae.BooleanScore(false),
 				Desc:   fmt.Sprintf("invalid timestamp: %s", ts),
 				Ignore: false,
@@ -47,7 +47,7 @@ func SBOMCreationTimestamp(doc sbom.Document) config.FeatureScore {
 		}
 	}
 
-	return config.FeatureScore{
+	return catalog.ComprFeatScore{
 		Score:  formulae.BooleanScore(true),
 		Desc:   ts,
 		Ignore: false,
@@ -56,18 +56,18 @@ func SBOMCreationTimestamp(doc sbom.Document) config.FeatureScore {
 
 // SBOMAuthor represents an legal entity created an SBOM.
 // SPDX: Creator.(Person/Organization); CDX: metadata.(authors/author)
-func SBOMAuthors(doc sbom.Document) config.FeatureScore {
+func SBOMAuthors(doc sbom.Document) catalog.ComprFeatScore {
 	total := len(doc.Authors())
 
 	if total == 0 {
-		return config.FeatureScore{
+		return catalog.ComprFeatScore{
 			Score:  formulae.BooleanScore(false),
 			Desc:   "0 authors",
 			Ignore: false,
 		}
 	}
 
-	return config.FeatureScore{
+	return catalog.ComprFeatScore{
 		Score:  formulae.BooleanScore(true),
 		Desc:   fmt.Sprintf("%d authors", total),
 		Ignore: false,
@@ -76,7 +76,7 @@ func SBOMAuthors(doc sbom.Document) config.FeatureScore {
 
 // SBOMCreationTool: tool name AND version present for at least one tool.
 // SPDX: Creator.Tool; CDX: metadata.tools/tool
-func SBOMCreationTool(doc sbom.Document) config.FeatureScore {
+func SBOMCreationTool(doc sbom.Document) catalog.ComprFeatScore {
 	toolsWithNV := make([]string, 0, len(doc.Tools()))
 
 	for _, t := range doc.Tools() {
@@ -88,14 +88,14 @@ func SBOMCreationTool(doc sbom.Document) config.FeatureScore {
 	}
 
 	if len(toolsWithNV) == 0 {
-		return config.FeatureScore{
+		return catalog.ComprFeatScore{
 			Score:  formulae.BooleanScore(false),
 			Desc:   formulae.MissingField("tool"),
 			Ignore: false,
 		}
 	}
 
-	return config.FeatureScore{
+	return catalog.ComprFeatScore{
 		Score:  formulae.BooleanScore(true),
 		Desc:   strings.Join(toolsWithNV, ", "),
 		Ignore: false,
@@ -105,13 +105,13 @@ func SBOMCreationTool(doc sbom.Document) config.FeatureScore {
 // SBOMSupplier: CDX-only (supplier/manufacturer in metadata).
 // SPDX has no doc-level supplier,  N/A for SPDX.
 // For CDX: missing supplier is a FAIL (score 0, Ignore=false).
-func SBOMSupplier(doc sbom.Document) config.FeatureScore {
+func SBOMSupplier(doc sbom.Document) catalog.ComprFeatScore {
 	spec := doc.Spec().GetSpecType()
 
 	switch spec {
 	case string(sbom.SBOMSpecSPDX):
 		// N/A for SPDX
-		return config.FeatureScore{
+		return catalog.ComprFeatScore{
 			Score:  formulae.BooleanScore(false),
 			Desc:   formulae.NonSupportedSPDXField(),
 			Ignore: true,
@@ -123,13 +123,13 @@ func SBOMSupplier(doc sbom.Document) config.FeatureScore {
 		hasContact := strings.TrimSpace(s.GetEmail()) != "" || strings.TrimSpace(s.GetURL()) != ""
 
 		if hasName && hasContact {
-			return config.FeatureScore{
+			return catalog.ComprFeatScore{
 				Score:  formulae.BooleanScore(true),
 				Desc:   formulae.PresentField("supplier"),
 				Ignore: false,
 			}
 		}
-		return config.FeatureScore{
+		return catalog.ComprFeatScore{
 			Score:  formulae.BooleanScore(false),
 			Desc:   formulae.MissingField("supplier"),
 			Ignore: false,
@@ -137,7 +137,7 @@ func SBOMSupplier(doc sbom.Document) config.FeatureScore {
 	}
 
 	// Unknown spec → treat as not applicable to be safe (optional)
-	return config.FeatureScore{
+	return catalog.ComprFeatScore{
 		Score:  formulae.BooleanScore(false),
 		Desc:   formulae.UnknownSpec(),
 		Ignore: true,
@@ -146,20 +146,20 @@ func SBOMSupplier(doc sbom.Document) config.FeatureScore {
 
 // SBOMNamespace: required for both specs.
 // SPDX: document namespace; CDX: serialNumber/version.
-func SBOMNamespace(doc sbom.Document) config.FeatureScore {
+func SBOMNamespace(doc sbom.Document) catalog.ComprFeatScore {
 	spec := doc.Spec().GetSpecType()
 
 	switch spec {
 	case string(sbom.SBOMSpecSPDX):
 		ns := strings.TrimSpace(doc.Spec().GetNamespace())
 		if ns != "" {
-			return config.FeatureScore{
+			return catalog.ComprFeatScore{
 				Score:  formulae.BooleanScore(true),
 				Desc:   formulae.PresentField("namespace"),
 				Ignore: false,
 			}
 		}
-		return config.FeatureScore{
+		return catalog.ComprFeatScore{
 			Score:  formulae.BooleanScore(false),
 			Desc:   formulae.MissingField("namespace"),
 			Ignore: false,
@@ -168,13 +168,13 @@ func SBOMNamespace(doc sbom.Document) config.FeatureScore {
 	case string(sbom.SBOMSpecCDX):
 		uri := strings.TrimSpace(doc.Spec().GetURI())
 		if uri != "" {
-			return config.FeatureScore{
+			return catalog.ComprFeatScore{
 				Score:  formulae.BooleanScore(true),
 				Desc:   formulae.PresentField("namespace"),
 				Ignore: false,
 			}
 		}
-		return config.FeatureScore{
+		return catalog.ComprFeatScore{
 			Score:  formulae.BooleanScore(false),
 			Desc:   formulae.MissingField("namespace"),
 			Ignore: false,
@@ -182,7 +182,7 @@ func SBOMNamespace(doc sbom.Document) config.FeatureScore {
 	}
 
 	// Unknown spec → fail closed (optional: set Ignore=true if you prefer)
-	return config.FeatureScore{
+	return catalog.ComprFeatScore{
 		Score:  formulae.BooleanScore(false),
 		Desc:   formulae.UnknownSpec(),
 		Ignore: true,
@@ -190,12 +190,12 @@ func SBOMNamespace(doc sbom.Document) config.FeatureScore {
 }
 
 // SBOMLifeCycle: CDX-only (metadata.lifecycles/phase). N/A for SPDX.
-func SBOMLifeCycle(doc sbom.Document) config.FeatureScore {
+func SBOMLifeCycle(doc sbom.Document) catalog.ComprFeatScore {
 	spec := doc.Spec().GetSpecType()
 
 	switch spec {
 	case string(sbom.SBOMSpecSPDX):
-		return config.FeatureScore{
+		return catalog.ComprFeatScore{
 			Score:  formulae.BooleanScore(false),
 			Desc:   formulae.NonSupportedSPDXField(),
 			Ignore: true,
@@ -204,20 +204,20 @@ func SBOMLifeCycle(doc sbom.Document) config.FeatureScore {
 	case string(sbom.SBOMSpecCDX):
 		phases := doc.Lifecycles()
 		if len(phases) > 0 {
-			return config.FeatureScore{
+			return catalog.ComprFeatScore{
 				Score:  formulae.BooleanScore(true),
 				Desc:   strings.Join(phases, ", "),
 				Ignore: false,
 			}
 		}
-		return config.FeatureScore{
+		return catalog.ComprFeatScore{
 			Score:  formulae.BooleanScore(false),
 			Desc:   formulae.MissingField("lifecycle"),
 			Ignore: false,
 		}
 	}
 
-	return config.FeatureScore{
+	return catalog.ComprFeatScore{
 		Score:  formulae.BooleanScore(false),
 		Desc:   formulae.UnknownSpec(),
 		Ignore: true,

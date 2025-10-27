@@ -19,13 +19,13 @@ import (
 	"strings"
 
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
-	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/config"
+	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/catalog"
 	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/formulae"
 	"github.com/samber/lo"
 )
 
 // CompWithName: percentage of components that have a non-empty name.
-func CompWithName(doc sbom.Document) config.FeatureScore {
+func CompWithName(doc sbom.Document) catalog.ComprFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
 		return formulae.ScoreNA()
@@ -35,7 +35,7 @@ func CompWithName(doc sbom.Document) config.FeatureScore {
 		return strings.TrimSpace(c.GetName()) != ""
 	})
 
-	return config.FeatureScore{
+	return catalog.ComprFeatScore{
 		Score:  formulae.PerComponentScore(have, len(comps)),
 		Desc:   formulae.CompDescription(have, len(comps), "names"),
 		Ignore: false,
@@ -43,7 +43,7 @@ func CompWithName(doc sbom.Document) config.FeatureScore {
 }
 
 // CompWithVersion: percentage of components that have a non-empty version.
-func CompWithVersion(doc sbom.Document) config.FeatureScore {
+func CompWithVersion(doc sbom.Document) catalog.ComprFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
 		return formulae.ScoreNA()
@@ -53,7 +53,7 @@ func CompWithVersion(doc sbom.Document) config.FeatureScore {
 		return strings.TrimSpace(c.GetVersion()) != ""
 	})
 
-	return config.FeatureScore{
+	return catalog.ComprFeatScore{
 		Score:  formulae.PerComponentScore(have, len(comps)),
 		Desc:   formulae.CompDescription(have, len(comps), "versions"),
 		Ignore: false,
@@ -61,7 +61,7 @@ func CompWithVersion(doc sbom.Document) config.FeatureScore {
 }
 
 // CompWithUniqIDs: percentage of components whose ID is present and unique within the SBOM.
-func CompWithUniqLocalIDs(doc sbom.Document) config.FeatureScore {
+func CompWithUniqLocalIDs(doc sbom.Document) catalog.ComprFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
 		return formulae.ScoreNA()
@@ -75,7 +75,7 @@ func CompWithUniqLocalIDs(doc sbom.Document) config.FeatureScore {
 		return strings.Join([]string{doc.Spec().GetNamespace(), c.GetID()}, ""), true
 	})
 
-	return config.FeatureScore{
+	return catalog.ComprFeatScore{
 		Score:  formulae.PerComponentScore(len(have), len(comps)),
 		Desc:   formulae.CompDescription(len(have), len(comps), "unique IDs"),
 		Ignore: false,
