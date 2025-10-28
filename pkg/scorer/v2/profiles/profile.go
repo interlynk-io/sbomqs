@@ -16,8 +16,6 @@ package profiles
 
 import (
 	"context"
-	"fmt"
-	"strings"
 
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/api"
@@ -185,97 +183,74 @@ import (
 // 	},
 // }
 
-// Evaluates one SBOM against one or more profile names (aliases allowed).
-// Never panics, never early-returns the whole SBOM; collects per-profile errors.
-func Evaluate(ctx context.Context, catal *catalog.Catalog, profileKeys []catalog.ProfileKey, doc sbom.Document) ([]api.ProfileResult, []error) {
+// Evaluate evaluates the profiles against an SBOM and returns their results.
+// Unknown profile keys are skipped
+// Returns collected profile results
+func Evaluate(ctx context.Context, catal *catalog.Catalog, profileKeys []catalog.ProfileKey, doc sbom.Document) []api.ProfileResult {
 	var results []api.ProfileResult
-	var errs []error
-
-	// selectedProfiles, errs := filterProfiles(profileNames)
-	// if errs != nil {
-	// 	return nil, errs
-	// }
 
 	allProfiles := make([]catalog.ProfSpec, 0, len(profileKeys))
 
-	for _, pKey := range profileKeys {
-		pSpec, ok := catal.Profiles[pKey]
+	for _, key := range profileKeys {
+		profile, ok := catal.Profiles[key]
 		if ok {
-			allProfiles = append(allProfiles, pSpec)
+			allProfiles = append(allProfiles, profile)
 		}
 	}
 
 	for _, profile := range allProfiles {
-		res := evaluateEachProfile(ctx, doc, profile)
-		results = append(results, res)
+		profResult := evaluateEachProfile(ctx, doc, profile, catal)
+		results = append(results, profResult)
 	}
 
-	return results, errs
+	return results
 }
 
-func filterProfiles(profileNames []string) ([]catalog.ProfSpec, []error) {
-	var errs []error
-
-	seen := make(map[string]struct{}, len(profileNames))
-	filterProfiles := make([]catalog.ProfSpec, 0, len(profileNames))
-
-	for i, profile := range profileNames {
-
-		name := strings.TrimSpace(strings.ToLower(profile))
-		if name == "" {
-			errs = append(errs, fmt.Errorf("profiles: empty profile name at position %d", i))
-			continue
-		}
-
-		if _, dup := seen[name]; dup {
-			errs = append(errs, fmt.Errorf("profiles: duplicate requested profile %q", profile))
-			continue
-		}
-
-		spec, ok := profileToSpec[name]
-		if !ok {
-			errs = append(errs, fmt.Errorf("profiles: unknown profile %q (available: %s)", profile))
-			continue
-		}
-		filterProfiles = append(filterProfiles, spec)
-	}
-
-	return filterProfiles, errs
-}
-
-func evaluateEachProfile(ctx context.Context, doc sbom.Document, profile catalog.ProfSpec) api.ProfileResult {
-	result := api.NewProfileResult(profile)
+// evaluateEachProfile runs evaluation for a profile.
+// It executes all feature checks defined in the profile,
+// collects their results, aggregates the scores, and
+// returns a completed ProfileResult (with metadata included).
+func evaluateEachProfile(ctx context.Context, doc sbom.Document, profile catalog.ProfSpec, catal *catalog.Catalog) api.ProfileResult {
 	var countNonNA int
 	var sumScore float64
 
-	for _, pFeat := range profile.Features {
-		featResult := api.NewProfileFeatureResult(pFeat)
+	proResult := api.NewProfileResult(profile)
 
-		// result.Items = append(result.Items, featResult)
-		s := pFeat.Evaluate(doc)
+	for _, pFeatKey := range profile.Features {
 
-		if s.Ignore {
-			featResult.Passed = !pFeat.Required
-		} else if pFeat.Required {
-			featResult.Passed = (s.Score >= 10.0)
-		} else {
-			featResult.Passed = (s.Score > 0.0)
+		// extract corresponding profileFeatureSpec to a featureKey
+		pFeat, ok := catal.ProfFeatures[catalog.ProfFeatKey(pFeatKey)]
+		if !ok {
+			continue
 		}
 
-		featResult.Score = s.Score
-		featResult.Desc = s.Desc
+		pFeatResult := api.NewProfFeatResult(pFeat)
 
-		result.Items = append(result.Items, featResult)
+		// evaluate feature
+		pFeatScore := pFeat.Evaluate(doc)
 
-		if !s.Ignore {
-			sumScore += s.Score
+		if pFeatScore.Ignore {
+			pFeatResult.Passed = !pFeat.Required
+		} else if pFeat.Required {
+			pFeatResult.Passed = (pFeatScore.Score >= 10.0)
+		} else {
+			pFeatResult.Passed = (pFeatScore.Score > 0.0)
+		}
+
+		pFeatResult.Score = pFeatScore.Score
+		pFeatResult.Desc = pFeatScore.Desc
+
+		proResult.Items = append(proResult.Items, pFeatResult)
+
+		if !pFeatScore.Ignore {
+			sumScore += pFeatScore.Score
 			countNonNA++
 		}
 	}
 
 	if countNonNA > 0 {
-		result.Score = sumScore / float64(countNonNA)
+		proResult.Score = sumScore / float64(countNonNA)
 	}
 
-	return result
+	return proResult
 }

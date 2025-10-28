@@ -155,3 +155,60 @@ func (c *Catalog) ResolveProfileKeys(profiles []string) []ProfileKey {
 
 	return profileKeys
 }
+
+// ResolveProfileKeys converts user-provided strings into ProfileKeys.
+// 1) Tries alias map first (Catalog.Aliases.Profile).
+// 2) Then tries exact key (case-insensitive).
+// 3) Then tries profile display name (ProfSpec.Name, case-insensitive).
+// 4) Preserves input order and de-duplicates.
+func (c *Catalog) ResolveCategoryKeys(category []string) []ComprCatKey {
+	if c == nil || len(category) == 0 {
+		return nil
+	}
+
+	catKeys := make([]ComprCatKey, 0, len(category))
+	alreadyExist := make(map[ComprCatKey]struct{}, len(category))
+
+	// Build lookups for exact key and display name.
+	exactCatKey := make(map[string]ComprCatKey, len(c.ComprCategories)) // "bsi-v2.0" -> ProfileBSI20
+	byCatName := make(map[string]ComprCatKey, len(c.ComprCategories))   // "BSI-V2.0" -> ProfileBSI20
+
+	for key, spec := range c.ComprCategories {
+		exactCatKey[strings.ToLower(string(key))] = key
+		if spec.Name != "" {
+			byCatName[strings.ToLower(spec.Name)] = key
+		}
+	}
+
+	for _, raw := range category {
+		s := strings.TrimSpace(raw)
+		if s == "" {
+			continue
+		}
+		input := strings.ToLower(s)
+
+		var (
+			pk ComprCatKey
+			ok bool
+		)
+
+		// 1) alias (aliases are already stored lowercased)
+		// 2) exact key (case-insensitive)
+		// 3) profile display name (case-insensitive)
+		if pk, ok = c.Aliases.Category[input]; !ok {
+			if pk, ok = exactCatKey[input]; !ok {
+				if pk, ok = byCatName[input]; !ok {
+					continue // skip
+				}
+			}
+		}
+
+		if _, dup := alreadyExist[pk]; dup {
+			continue
+		}
+		alreadyExist[pk] = struct{}{}
+		catKeys = append(catKeys, pk)
+	}
+
+	return catKeys
+}

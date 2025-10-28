@@ -56,7 +56,7 @@ func evaluateCategory(ctx context.Context, doc sbom.Document, category catalog.C
 	return categoryWiseResult
 }
 
-// selectCategoriesToScore returns the exact list of categories we’ll score.
+// selectCategoriesToScore returns the list of all categories to score.
 func selectCategoriesToScore(cfg config.Config, catal *catalog.Catalog) ([]catalog.ComprCatSpec, error) {
 	baseCategories := catal.BaseCategories()
 
@@ -96,7 +96,7 @@ func materializeCategories(cat *catalog.Catalog, defs []catalog.ComprCatSpec) []
 			Name:   d.Name,
 			Weight: d.Weight,
 		}
-		ac.Features = make([]catalog.ComprFeatSpec, 0, len(d.Features))
+		ac.Features = make([]catalog.FeatureSpec, 0, len(d.Features))
 		for _, fk := range d.Features {
 			fs, ok := cat.Features[fk] // fs is catalog.FeatureSpec
 			if !ok {

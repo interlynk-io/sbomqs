@@ -63,22 +63,26 @@ type FeatureResult struct {
 
 type ProfileResult struct {
 	Name       string
+	Key        string
 	Score      float64
-	Compliance catalog.ProfileComplianceState
+	Compliance catalog.ProfComplianceState
 	Message    string
 	Items      []ProfileFeatureResult
 }
 
-func NewProfileResult(profile catalog.ProfileSpec) ProfileResult {
+func NewProfileResult(profile catalog.ProfSpec) ProfileResult {
 	return ProfileResult{
-		Name:       profile.Name,
-		Score:      0.0,
-		Items:      make([]ProfileFeatureResult, 0, len(profile.Features)),
-		Compliance: catalog.ProfileFail,
+		Name:    profile.Name,
+		Message: profile.Description,
+		Key:     string(profile.Key),
+		Score:   0.0,
+		Items:   make([]ProfileFeatureResult, 0, len(profile.Features)),
+		// Compliance: ProfileFail,
 	}
 }
 
 type ProfileFeatureResult struct {
+	Name     string
 	Key      string
 	Required bool
 	Score    float64
@@ -86,17 +90,18 @@ type ProfileFeatureResult struct {
 	Desc     string
 }
 
-func NewProfileFeatureResult(f ProfileFeatureSpec) ProfileFeatureResult {
+func NewProfFeatResult(pFeat catalog.ProfFeatSpec) ProfileFeatureResult {
 	return ProfileFeatureResult{
-		Key:      f.Name,
-		Required: f.Required,
+		Name:     pFeat.Name,
+		Key:      string(pFeat.Key),
+		Required: pFeat.Required,
 		Score:    0.0,
 		Passed:   false,
 		Desc:     "no evaluator bound",
 	}
 }
 
-func NewCategoryResultFromSpec(cat CategorySpec) CategoryResult {
+func NewCategoryResultFromSpec(cat catalog.ComprCatSpec) CategoryResult {
 	return CategoryResult{
 		Name:   cat.Name,
 		Weight: cat.Weight,

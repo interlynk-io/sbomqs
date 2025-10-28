@@ -23,6 +23,7 @@ import (
 	"github.com/interlynk-io/sbomqs/pkg/compliance/common"
 	"github.com/interlynk-io/sbomqs/pkg/logger"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
+	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/catalog"
 	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/config"
 	"github.com/interlynk-io/sbomqs/pkg/utils"
 )
@@ -140,7 +141,7 @@ func ExtractSignature(ctx context.Context, cfg config.Config, path string) (sbom
 }
 
 // helper for logging
-func CategoryNames(cats []config.CategorySpec) []string {
+func CategoryNames(cats []catalog.ComprCatSpec) []string {
 	out := make([]string, 0, len(cats))
 	for _, c := range cats {
 		out = append(out, c.Name)

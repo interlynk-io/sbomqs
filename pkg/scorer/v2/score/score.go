@@ -29,12 +29,18 @@ import (
 	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/profiles"
 	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/registry"
 	"github.com/interlynk-io/sbomqs/pkg/utils"
+	"github.com/saferwall/pe/log"
 )
 
+// ScoreSBOM scores a SBOM for profile or comprehenssive scoring.
+// It validates input, builds the scoring catalog once, then iterates
+// each path (file or URL), parses it into an SBOM document, and evaluates it
+// either via profiles or comprehensive scoring. Per-path errors are logged and
+// skipped; successful scoring results are collected and returned.
 func ScoreSBOM(ctx context.Context, cfg config.Config, paths []string) ([]api.Result, error) {
 	log := logger.FromContext(ctx)
 
-	// Validate paths
+	// 1. Validate paths
 	validPaths := ValidateAndExpandPaths(ctx, paths)
 	if len(validPaths) == 0 {
 		return nil, fmt.Errorf("no valid paths provided")
@@ -45,112 +51,110 @@ func ScoreSBOM(ctx context.Context, cfg config.Config, paths []string) ([]api.Re
 		return nil, fmt.Errorf("failed to validate SBOM configuration: %w", err)
 	}
 
-	// Initialize the catalog (features, categories, profiles) in one go.
+	// 2) Initialize the catalog (features, categories, profiles) once.
 	catalog := registry.InitializeCatalog()
 
 	results := make([]api.Result, 0, len(validPaths))
-	var anyProcessed bool
+	processed := 0
 
-	for _, path := range validPaths {
-		if utils.IsURL(path) {
-			log.Debugf("processing URL: %s", path)
-
-			sbomFile, err := ProcessURLPath(ctx, cfg, path)
-			if err != nil {
-				log.Warnf("failed to process URL: %s: %v", path, err)
-				continue
-			}
-			defer sbomFile.Close()
-
-			signature, err := ExtractSignature(ctx, cfg, sbomFile.Name())
-			if err != nil {
-				return nil, fmt.Errorf("get signature for %q: %w", path, err)
-			}
-
-			doc, err := sbom.NewSBOMDocument(ctx, sbomFile, signature)
-			if err != nil {
-				return nil, fmt.Errorf("parse error: %w", err)
-			}
-
-			var sbomScoreResult api.Result
-
-			// Evaluate SBOM
-			sbomScoreResult, err = SBOMEvaluation(ctx, catalog, cfg, doc)
-			if err != nil {
-				log.Warnf("failed to process SBOM %s: %v", path, err)
-				return nil, fmt.Errorf("process SBOM %q: %w", path, err)
-			}
-
-			sbomScoreResult.Meta.Filename = path
-
-			results = append(results, sbomScoreResult)
-			anyProcessed = true
-		} else {
-			log.Debugf("processing file: %s", path)
-
-			signature, err := ExtractSignature(ctx, cfg, path)
-			if err != nil {
-				return nil, fmt.Errorf("get signature for %q: %w", path, err)
-			}
-
-			file, err := os.Open(path)
-			if err != nil {
-				log.Debugf("Failed to open %q: %v", path, err)
-				return nil, fmt.Errorf("open file for reading: %q: %w", path, err)
-			}
-
-			defer file.Close()
-
-			doc, err := sbom.NewSBOMDocument(ctx, file, signature)
-			if err != nil {
-				return nil, fmt.Errorf("parse error: %w", err)
-			}
-
-			var sbomScoreResult api.Result
-
-			// Evaluate SBOM
-			sbomScoreResult, err = SBOMEvaluation(ctx, catalog, cfg, doc)
-			if err != nil {
-				log.Warnf("failed to process SBOM %s: %v", path, err)
-				return nil, fmt.Errorf("process SBOM %q: %w", path, err)
-			}
-
-			sbomScoreResult.Meta.Filename = path
-
-			results = append(results, sbomScoreResult)
-			anyProcessed = true
+	for _, p := range validPaths {
+		res, err := scoreOnePath(ctx, catalog, cfg, p)
+		if err != nil {
+			// Non-fatal per path: warn and continue (mirrors your previous behavior for many cases).
+			log.Warnf("skip %s: %v", p, err)
+			continue
 		}
+		res.Meta.Filename = p
+		results = append(results, res)
+		processed++
 	}
 
-	if len(results) == 0 || !anyProcessed {
+	if processed == 0 {
 		return nil, fmt.Errorf("no valid SBOM files processed")
 	}
-
 	return results, nil
 }
 
+// scoreOnePath opens a local file or downloads a URL, parses it into a document,
+// and then evaluates each SBOM, and returns the single SBOM scoring result
+func scoreOnePath(ctx context.Context, catalog *catalog.Catalog, cfg config.Config, path string) (api.Result, error) {
+	file, doc, err := openAndParse(ctx, cfg, path)
+	if err != nil {
+		return api.Result{}, err
+	}
+	defer file.Close()
+
+	return SBOMEvaluation(ctx, catalog, cfg, doc)
+}
+
+// openAndParse normalizes the path (file or URL), extracts the signature,
+// opens/creates a file handle, and constructs an sbom.Document
+// and return file handle, sbom document
+func openAndParse(ctx context.Context, cfg config.Config, path string) (*os.File, sbom.Document, error) {
+	var (
+		f   *os.File
+		err error
+	)
+
+	if utils.IsURL(path) {
+		f, err = ProcessURLPath(ctx, cfg, path)
+		if err != nil {
+			return nil, nil, fmt.Errorf("process URL: %s: %w", path, err)
+		}
+	} else {
+		f, err = os.Open(path)
+		if err != nil {
+			return nil, nil, fmt.Errorf("open file for reading: %q: %w", path, err)
+		}
+	}
+
+	sig, err := ExtractSignature(ctx, cfg, f.Name())
+	if err != nil {
+		f.Close()
+		return nil, nil, fmt.Errorf("get signature for %q: %w", path, err)
+	}
+
+	doc, err := sbom.NewSBOMDocument(ctx, f, sig)
+	if err != nil {
+		f.Close()
+		return nil, nil, fmt.Errorf("parse error for %q: %w", path, err)
+	}
+
+	return f, doc, nil
+}
+
+// SBOMEvaluation decides between profile-based and comprehensive scoring,
+// delegates to a focused helper, and returns a single SBOM scoring result.
 func SBOMEvaluation(ctx context.Context, catal *catalog.Catalog, cfg config.Config, doc sbom.Document) (api.Result, error) {
-	log := logger.FromContext(ctx)
-	log.Debugf("evaluating SBOM")
+	if profilePresent(cfg) {
+		return evaluateProfiles(ctx, catal, cfg, doc)
+	}
+	return evaluateComprehensive(ctx, catal, cfg, doc)
+}
+
+func profilePresent(cfg config.Config) bool {
+	return len(cfg.Profile) > 0
+}
+
+func evaluateProfiles(ctx context.Context, catal *catalog.Catalog, cfg config.Config, doc sbom.Document) (api.Result, error) {
+	result := api.NewResult(doc)
+
+	profileKeys := catal.ResolveProfileKeys(cfg.Profile)
+	if len(profileKeys) == 0 {
+		return *result, fmt.Errorf("no valid profiles resolved from: %v", cfg.Profile)
+	}
+
+	profResults := profiles.Evaluate(ctx, catal, profileKeys, doc)
+	result.Profiles = append(result.Profiles, profResults...)
+
+	return *result, nil
+}
+
+func evaluateComprehensive(ctx context.Context, catal *catalog.Catalog, cfg config.Config, doc sbom.Document) (api.Result, error) {
+	// Comprehensive Scoring
 
 	result := api.NewResult(doc)
 
-	if len(cfg.Profile) > 0 {
-		profileKeys := catal.ResolveProfileKeys(cfg.Profile)
-		if len(profileKeys) == 0 {
-			return *result, fmt.Errorf("no valid profiles resolved from: %v", cfg.Profile)
-		}
-
-		profResults, err := profiles.Evaluate(ctx, catal, profileKeys, doc)
-		if err != nil {
-			return *result, err
-		}
-		result.Profiles = append(result.Profiles, profResults...)
-
-		return *result, nil
-	}
-
-	// Comprehensive Scoring
 	categoriesToScore, err := selectCategoriesToScore(cfg, catal)
 	if err != nil {
 		return api.Result{}, err
@@ -173,3 +177,49 @@ func SBOMEvaluation(ctx context.Context, catal *catalog.Catalog, cfg config.Conf
 
 	return *result, nil
 }
+
+// SBOMEvaluation evaluates a SBOM for profiles or comprehensive scoring.
+// If profile flag is set, it performs profile scoring
+// computes the Interlynk score + grade, and returns the comprehensive result.
+// func SBOMEvaluation(ctx context.Context, catal *catalog.Catalog, cfg config.Config, doc sbom.Document) (api.Result, error) {
+// 	log := logger.FromContext(ctx)
+// 	log.Debugf("evaluating SBOM")
+
+// 	result := api.NewResult(doc)
+
+// 	if len(cfg.Profile) > 0 {
+
+// 		profileKeys := catal.ResolveProfileKeys(cfg.Profile)
+// 		if len(profileKeys) == 0 {
+// 			return *result, fmt.Errorf("no valid profiles resolved from: %v", cfg.Profile)
+// 		}
+
+// 		profResults := profiles.Evaluate(ctx, catal, profileKeys, doc)
+// 		result.Profiles = append(result.Profiles, profResults...)
+
+// 		return *result, nil
+// 	}
+
+// 	// Comprehensive Scoring
+// 	categoriesToScore, err := selectCategoriesToScore(cfg, catal)
+// 	if err != nil {
+// 		return api.Result{}, err
+// 	}
+
+// 	if len(categoriesToScore) == 0 {
+// 		return api.Result{}, fmt.Errorf("no categories to score (check config filters)")
+// 	}
+
+// 	// Log category names (readable)
+// 	log.Debugf("selected categories for evaluation: %s", strings.Join(CategoryNames(categoriesToScore), ", "))
+
+// 	// Score SBOM by categories
+// 	catEvaluationResults := scoreAgainstCategories(ctx, doc, categoriesToScore)
+// 	interlynkScore := formulae.ComputeInterlynkScore(catEvaluationResults)
+
+// 	result.Comprehensive.InterlynkScore = interlynkScore
+// 	result.Comprehensive.Grade = formulae.ToGrade(interlynkScore)
+// 	result.Comprehensive.Categories = catEvaluationResults
+
+// 	return *result, nil
+// }
