@@ -110,9 +110,9 @@ func CompWithAssociatedLicensesCheck(doc sbom.Document) catalog.ProfFeatScore {
 	var with int
 	switch spec {
 	case "spdx":
-		with = lo.CountBy(comps, func(c sbom.GetComponent) bool { return AreLicensesValid(c.ConcludedLicenses()) })
+		// with = lo.CountBy(comps, func(c sbom.GetComponent) bool { return AreLicensesValid(c.ConcludedLicenses()) })
 	case "cyclonedx":
-		with = lo.CountBy(comps, func(c sbom.GetComponent) bool { return AreLicensesValid(c.GetLicenses()) })
+		// with = lo.CountBy(comps, func(c sbom.GetComponent) bool { return AreLicensesValid(c.GetLicenses()) })
 	default:
 		// treat unknown spec as NA
 		return catalog.ProfFeatScore{Score: 0.0, Desc: formulae.UnknownSpec(), Ignore: true}
@@ -132,7 +132,8 @@ func CompWithConcludedLicensesCheck(doc sbom.Document) catalog.ProfFeatScore {
 		return catalog.ProfFeatScore{Score: formulae.PerComponentScore(0, 0), Desc: formulae.NoComponentsNA(), Ignore: true}
 	}
 
-	with := lo.CountBy(comps, func(c sbom.GetComponent) bool { return AreLicensesValid(c.ConcludedLicenses()) })
+	with := 0
+	// with := lo.CountBy(comps, func(c sbom.GetComponent) bool { return AreLicensesValid(c.ConcludedLicenses()) })
 
 	return catalog.ProfFeatScore{
 		Score:  formulae.PerComponentScore(with, len(comps)),
@@ -148,7 +149,8 @@ func CompWithDeclaredLicensesCheck(doc sbom.Document) catalog.ProfFeatScore {
 		return catalog.ProfFeatScore{Score: formulae.PerComponentScore(0, 0), Desc: formulae.NoComponentsNA(), Ignore: true}
 	}
 
-	with := lo.CountBy(comps, func(c sbom.GetComponent) bool { return AreLicensesValid(c.DeclaredLicenses()) })
+	with := 0
+	// with := lo.CountBy(comps, func(c sbom.GetComponent) bool { return AreLicensesValid(c.DeclaredLicenses()) })
 
 	return catalog.ProfFeatScore{
 		Score:  formulae.PerComponentScore(with, len(comps)),

@@ -21,7 +21,10 @@ import (
 
 // Result represents result of an SBOM
 type Result struct {
-	Meta SBOMMeta
+	Doc            sbom.Document
+	Meta           SBOMMeta
+	InterlynkScore float64
+	Grade          string
 
 	Comprehensive *ComprehensiveResult
 	Profiles      []ProfileResult
@@ -39,9 +42,7 @@ type SBOMMeta struct {
 
 // Comprehensive (quality) scoring
 type ComprehensiveResult struct {
-	InterlynkScore float64
-	Grade          string
-	Categories     []CategoryResult
+	Categories []CategoryResult
 }
 
 // Category result
@@ -54,6 +55,7 @@ type CategoryResult struct {
 
 // feature result
 type FeatureResult struct {
+	Name    string
 	Key     string
 	Weight  float64 // feature weight
 	Score   float64
@@ -99,6 +101,19 @@ func NewProfFeatResult(pFeat catalog.ProfFeatSpec) ProfileFeatureResult {
 		Passed:   false,
 		Desc:     "no evaluator bound",
 	}
+}
+
+func NewComprFeatResult(comprFeat catalog.ComprFeatSpec) FeatureResult {
+	return FeatureResult{
+		Name:   comprFeat.Name,
+		Key:    string(comprFeat.Key),
+		Score:  0.0,
+		Weight: comprFeat.Weight,
+	}
+}
+
+func NewComprResult() ComprehensiveResult {
+	return ComprehensiveResult{}
 }
 
 func NewCategoryResultFromSpec(cat catalog.ComprCatSpec) CategoryResult {

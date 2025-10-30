@@ -19,52 +19,49 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/interlynk-io/sbomqs/pkg/logger"
+	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/catalog"
 	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/config"
 	"github.com/interlynk-io/sbomqs/pkg/utils"
 )
 
-func ValidateFeatures(ctx context.Context, features []string) ([]string, error) {
-	log := logger.FromContext(ctx)
-	log.Debugf("validating features: %v", features)
+// func ValidateFeatures(ctx context.Context, features []string) ([]string, error) {
+// 	log := logger.FromContext(ctx)
+// 	log.Debugf("validating features: %v", features)
 
-	var validFeatures []string
+// 	var validFeatures []string
 
-	for _, feature := range features {
-		if _, ok := SupportedFeatures[feature]; !ok {
-			log.Warnf("unsupported feature: %s", feature)
-			continue
-		}
-		validFeatures = append(validFeatures, feature)
-	}
-	return validFeatures, nil
-}
+// 	for _, feature := range features {
+// 		if _, ok := SupportedFeatures[feature]; !ok {
+// 			log.Warnf("unsupported feature: %s", feature)
+// 			continue
+// 		}
+// 		validFeatures = append(validFeatures, feature)
+// 	}
+// 	return validFeatures, nil
+// }
 
-// validateAndExpandPaths returns only files and URLs.
-// - URLs are kept as-is.
-// - Directories are expanded to their files
-func ValidateAndExpandPaths(ctx context.Context, paths []string) []string {
+// validateAndExpandPaths returns a list of files and URLs.
+// - URLs are kept as-is (no normalization here).
+// - Directories are expanded to their immediate files (non-recursive).
+func validateAndExpandPaths(ctx context.Context, paths []string) []string {
 	log := logger.FromContext(ctx)
 	log.Debug("validating paths")
 
 	validPaths := make([]string, 0, len(paths))
-	check := make(map[string]bool)
+	alreadyExist := utils.Set[string]{}
 
 	for _, path := range paths {
-
-		path = strings.TrimSpace(path)
-		if path == "" {
+		if utils.IsBlank(path) {
 			continue
 		}
 
 		// accept URLs
 		if utils.IsURL(path) {
-			if !check[path] {
-				check[path] = true
-				validPaths = append(validPaths, path)
-			}
+			utils.AppendUnique(&validPaths, alreadyExist, path)
 			continue
 		}
 
@@ -75,68 +72,115 @@ func ValidateAndExpandPaths(ctx context.Context, paths []string) []string {
 			continue
 		}
 
-		// Files: add directly.
-		if info.Mode().IsRegular() {
-			if !check[path] {
-				check[path] = true
-				validPaths = append(validPaths, path)
-			}
-			continue
-		}
+		switch {
+		// files: add directly.
+		case info.Mode().IsRegular():
+			utils.AppendUnique(&validPaths, alreadyExist, path)
 
-		// Dirs: expand to files.
-		if info.IsDir() {
+			// irs: expand to files.
+		case info.IsDir():
+
+			// expand only one level (intentional).
 			files, err := os.ReadDir(path)
 			if err != nil {
 				log.Debugf("skip: cannot read dir %q: %v", path, err)
 				continue
 			}
+
 			for _, file := range files {
 				if file.Type().IsRegular() {
-					fullPath := filepath.Join(path, file.Name())
-					if !check[fullPath] {
-						check[fullPath] = true
-						validPaths = append(validPaths, fullPath)
-					}
+					utils.AppendUnique(&validPaths, alreadyExist, filepath.Join(path, file.Name()))
 				}
 			}
-			continue
+		default:
+			log.Debugf("skip: unsupported path type %q", path)
 		}
-
-		log.Debugf("skip: unsupported path type %q", path)
 	}
 
+	// optional: ensure deterministic order (helps tests & diffs)
+	sort.Strings(validPaths)
 	return validPaths
 }
 
-func ValidateConfig(ctx context.Context, cfg *config.Config) error {
+// validateConfig verifies that user-supplied categories, features (and profiles) exist in the catalog.
+// It normalizes inputs via alias resolution, preserves order, de-duplicates, and errors on unknowns.
+func validateConfig(ctx context.Context, catal *catalog.Catalog, cfg *config.Config) error {
 	log := logger.FromContext(ctx)
 	log.Debug("validating configuration")
 
 	if cfg.ConfigFile != "" {
 		if _, err := os.Stat(cfg.ConfigFile); err != nil {
-			return fmt.Errorf("invalid config path: %s: %w", cfg.ConfigFile, err)
+			return fmt.Errorf("invalid config path %q: %w", cfg.ConfigFile, err)
 		}
 		return nil
 	}
-	cfg.Categories = RemoveEmptyStrings(cfg.Categories)
 
-	if len(cfg.Categories) > 0 {
-		normCategories, err := NormalizeAndValidateCategories(ctx, cfg.Categories)
-		if err != nil {
-			return fmt.Errorf("failed to normalize and validate categories: %w", err)
+	cfg.Categories = utils.RemoveEmptyStrings(cfg.Categories)
+
+	var (
+		normCats   []string
+		unknownCat []string
+		seenCat    = make(map[string]struct{})
+	)
+
+	for _, cat := range cfg.Categories {
+		if k, ok := catal.ResolveCategoryAlias(cat); ok && catal.HasCategory(k) {
+			ck := string(k)
+			utils.AppendUnique(&normCats, seenCat, ck)
+		} else {
+			unknownCat = append(unknownCat, cat)
 		}
-		cfg.Categories = normCategories
 	}
 
-	cfg.Features = RemoveEmptyStrings(cfg.Features)
-	if len(cfg.Features) > 0 {
-		validFeatures, err := ValidateFeatures(ctx, cfg.Features)
-		if err != nil {
-			return fmt.Errorf("failed to validate features: %w", err)
+	if len(unknownCat) > 0 {
+		return fmt.Errorf("unknown categories: %s", strings.Join(unknownCat, ", "))
+	}
+	cfg.Categories = normCats
+
+	// --- Features ---
+	cfg.Features = utils.RemoveEmptyStrings(cfg.Features)
+
+	var (
+		normFeats   []string
+		unknownFeat []string
+		seenFeat    = make(map[string]struct{})
+	)
+
+	for _, raw := range cfg.Features {
+		if k, ok := catal.ResolveFeatureAlias(raw); ok && catal.HasFeature(k) {
+			fk := string(k)
+			utils.AppendUnique(&normFeats, seenFeat, fk)
+		} else {
+			unknownFeat = append(unknownFeat, raw)
 		}
-		cfg.Features = validFeatures
 	}
 
+	if len(unknownFeat) > 0 {
+		return fmt.Errorf("unknown features: %s", strings.Join(unknownFeat, ", "))
+	}
+	cfg.Features = normFeats
+
+	// --- Profiles (optional but helpful to fail fast) ---
+	if len(cfg.Profile) > 0 {
+		var (
+			normProfiles []string
+			unknownProf  []string
+			seenProf     = make(map[string]struct{})
+		)
+		for _, raw := range utils.RemoveEmptyStrings(cfg.Profile) {
+			if k, ok := catal.ResolveProfileAlias(raw); ok && catal.HasProfile(k) {
+				pk := string(k)
+				utils.AppendUnique(&normProfiles, seenProf, pk)
+			} else {
+				unknownProf = append(unknownProf, raw)
+			}
+		}
+		if len(unknownProf) > 0 {
+			return fmt.Errorf("unknown profiles: %s", strings.Join(unknownProf, ", "))
+		}
+		cfg.Profile = normProfiles
+	}
+
+	log.Debugf("validated config: categories=%v features=%v profiles=%v", cfg.Categories, cfg.Features, cfg.Profile)
 	return nil
 }

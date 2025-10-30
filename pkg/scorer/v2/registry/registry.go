@@ -239,9 +239,9 @@ func bindComprCategories() (map[catalog.ComprCatKey]catalog.ComprCatSpec, []cata
 			Name:   "Integrity",
 			Weight: 15,
 			Features: []catalog.ComprFeatKey{
-				FSBOMSignature,
 				FCompWithChecksums,
 				FCompWithSHA256,
+				FSBOMSignature,
 			},
 		},
 
@@ -263,7 +263,7 @@ func bindComprCategories() (map[catalog.ComprCatKey]catalog.ComprCatSpec, []cata
 		// LicensingAndCompliance Category
 		CatLicensingAndCompliance: {
 			Key:    CatLicensingAndCompliance,
-			Name:   "Licensing & Compliance",
+			Name:   "Licensing",
 			Weight: 15,
 			Features: []catalog.ComprFeatKey{
 				FCompWithLicenses,
@@ -278,7 +278,7 @@ func bindComprCategories() (map[catalog.ComprCatKey]catalog.ComprCatSpec, []cata
 		// Vulnerability Category
 		CatVulnerabilityAndTrace: {
 			Key:    CatVulnerabilityAndTrace,
-			Name:   "Vulnerability & Traceability",
+			Name:   "Vulnerability",
 			Weight: 10,
 			Features: []catalog.ComprFeatKey{
 				FCompWithPURL,

@@ -51,52 +51,52 @@ import (
 // 	Features []FeatureResult
 // }
 
-// CategorySpec represent properties of a category.
-type CategorySpec struct {
-	Name     string
-	Weight   float64
-	Features []FeatureSpec
-}
+// // CategorySpec represent properties of a category.
+// type CategorySpec struct {
+// 	Name     string
+// 	Weight   float64
+// 	Features []FeatureSpec
+// }
 
-// FeatureSpec represents properties of a feature.
-type FeatureSpec struct {
-	Key      string
-	Weight   float64
-	Evaluate FeatureFunc
-}
+// // FeatureSpec represents properties of a feature.
+// type FeatureSpec struct {
+// 	Key      string
+// 	Weight   float64
+// 	Evaluate FeatureFunc
+// }
 
-// feature function is a corresponding funtion for a feature.
-type FeatureFunc func(doc sbom.Document) FeatureScore
+// // feature function is a corresponding funtion for a feature.
+// type FeatureFunc func(doc sbom.Document) FeatureScore
 
-// FeatureScore is returned by a feature function.
-type FeatureScore struct {
-	Score  float64
-	Desc   string // e.g. "235/247 have versions"
-	Ignore bool
-}
+// // FeatureScore is returned by a feature function.
+// type FeatureScore struct {
+// 	Score  float64
+// 	Desc   string // e.g. "235/247 have versions"
+// 	Ignore bool
+// }
 
-func NewCategoryResultFromSpec(cat CategorySpec) CategoryResult {
-	return CategoryResult{
-		Name:   cat.Name,
-		Weight: cat.Weight,
-	}
-}
+// func NewCategoryResultFromSpec(cat CategorySpec) CategoryResult {
+// 	return CategoryResult{
+// 		Name:   cat.Name,
+// 		Weight: cat.Weight,
+// 	}
+// }
 
-func NewResult(doc sbom.Document) *Result {
-	return &Result{
-		Meta: NewSBOMMeta(doc),
-	}
-}
+// func NewResult(doc sbom.Document) *Result {
+// 	return &Result{
+// 		Meta: NewSBOMMeta(doc),
+// 	}
+// }
 
-func NewSBOMMeta(doc sbom.Document) SBOMMeta {
-	return SBOMMeta{
-		NumComponents: len(doc.Components()),
-		CreationTime:  doc.Spec().GetCreationTimestamp(),
-		Spec:          doc.Spec().GetName(),
-		SpecVersion:   doc.Spec().GetVersion(),
-		FileFormat:    doc.Spec().FileFormat(),
-	}
-}
+// func NewSBOMMeta(doc sbom.Document) SBOMMeta {
+// 	return SBOMMeta{
+// 		NumComponents: len(doc.Components()),
+// 		CreationTime:  doc.Spec().GetCreationTimestamp(),
+// 		Spec:          doc.Spec().GetName(),
+// 		SpecVersion:   doc.Spec().GetVersion(),
+// 		FileFormat:    doc.Spec().FileFormat(),
+// 	}
+// }
 
 type Config struct {
 	// Categories to score (e.g., "provenance", "completeness")

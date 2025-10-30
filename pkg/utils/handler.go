@@ -34,8 +34,38 @@ func IsDir(path string) bool {
 	return pathInfo.IsDir()
 }
 
+// Set[T] is a generic "set" of values of type T.
+// Internally it's a map[T]struct{}
+type Set[T comparable] map[T]struct{}
+
+// AppendUnique adds the value v to the slice pointed to by out **only if**
+// it hasn't been seen before. "already" tracks which values were already added
+func AppendUnique[T comparable](out *[]T, already Set[T], v T) bool {
+	if _, ok := already[v]; ok {
+		return false
+	}
+	*out = append(*out, v)
+	already[v] = struct{}{}
+	return true
+}
+
 func IsURL(in string) bool {
 	return regexp.MustCompile("^(http|https)://").MatchString(in)
+}
+
+// IsBlank reports whether s is empty or only whitespace (Unicode-aware).
+func IsBlank(s string) bool {
+	return strings.TrimSpace(s) == ""
+}
+
+func RemoveEmptyStrings(input []string) []string {
+	output := make([]string, 0, len(input))
+	for _, in := range input {
+		if trimmed := strings.TrimSpace(in); trimmed != "" {
+			output = append(output, trimmed)
+		}
+	}
+	return output
 }
 
 func IsGit(in string) bool {

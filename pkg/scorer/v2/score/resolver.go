@@ -18,7 +18,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/interlynk-io/sbomqs/pkg/compliance/common"
 	"github.com/interlynk-io/sbomqs/pkg/logger"
@@ -68,38 +67,28 @@ func ProcessURLPath(ctx context.Context, cfg config.Config, url string) (*os.Fil
 	return tmpFile, nil
 }
 
-func RemoveEmptyStrings(input []string) []string {
-	var output []string
-	for _, s := range input {
-		if trimmed := strings.TrimSpace(s); trimmed != "" {
-			output = append(output, trimmed)
-		}
-	}
-	return output
-}
+// func NormalizeAndValidateCategories(ctx context.Context, categories []string) ([]string, error) {
+// 	log := logger.FromContext(ctx)
+// 	log.Debugf("normalizing anf validating categories: %s", categories)
+// 	var normalized []string
 
-func NormalizeAndValidateCategories(ctx context.Context, categories []string) ([]string, error) {
-	log := logger.FromContext(ctx)
-	log.Debugf("normalizing anf validating categories: %s", categories)
-	var normalized []string
+// 	for _, cat := range categories {
 
-	for _, cat := range categories {
+// 		// normalize using alias
+// 		if alias, ok := CategoryAliases[cat]; ok {
+// 			cat = alias
+// 		}
 
-		// normalize using alias
-		if alias, ok := CategoryAliases[cat]; ok {
-			cat = alias
-		}
+// 		// validate if it's a supported category
+// 		if !SupportedCategories[cat] {
+// 			log.Warnf("unsupported category: %s", cat)
+// 			continue
+// 		}
+// 		normalized = append(normalized, cat)
+// 	}
 
-		// validate if it's a supported category
-		if !SupportedCategories[cat] {
-			log.Warnf("unsupported category: %s", cat)
-			continue
-		}
-		normalized = append(normalized, cat)
-	}
-
-	return normalized, nil
-}
+// 	return normalized, nil
+// }
 
 // GetFileHandle opens a file in read-only mode and returns the handle.
 // The caller is responsible for calling Close() on the returned file.

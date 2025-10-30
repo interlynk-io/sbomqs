@@ -18,18 +18,17 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/interlynk-io/sbomqs/pkg/logger"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/api"
 	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/catalog"
+	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/comprehenssive"
 	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/config"
 	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/formulae"
 	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/profiles"
 	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/registry"
 	"github.com/interlynk-io/sbomqs/pkg/utils"
-	"github.com/saferwall/pe/log"
 )
 
 // ScoreSBOM scores a SBOM for profile or comprehenssive scoring.
@@ -41,18 +40,18 @@ func ScoreSBOM(ctx context.Context, cfg config.Config, paths []string) ([]api.Re
 	log := logger.FromContext(ctx)
 
 	// 1. Validate paths
-	validPaths := ValidateAndExpandPaths(ctx, paths)
+	validPaths := validateAndExpandPaths(ctx, paths)
 	if len(validPaths) == 0 {
 		return nil, fmt.Errorf("no valid paths provided")
 	}
 
-	// Validate config
-	if err := ValidateConfig(ctx, &cfg); err != nil {
-		return nil, fmt.Errorf("failed to validate SBOM configuration: %w", err)
-	}
-
 	// 2) Initialize the catalog (features, categories, profiles) once.
 	catalog := registry.InitializeCatalog()
+
+	// 3) validate config
+	if err := validateConfig(ctx, catalog, &cfg); err != nil {
+		return nil, fmt.Errorf("failed to validate SBOM configuration: %w", err)
+	}
 
 	results := make([]api.Result, 0, len(validPaths))
 	processed := 0
@@ -60,7 +59,6 @@ func ScoreSBOM(ctx context.Context, cfg config.Config, paths []string) ([]api.Re
 	for _, p := range validPaths {
 		res, err := scoreOnePath(ctx, catalog, cfg, p)
 		if err != nil {
-			// Non-fatal per path: warn and continue (mirrors your previous behavior for many cases).
 			log.Warnf("skip %s: %v", p, err)
 			continue
 		}
@@ -84,7 +82,12 @@ func scoreOnePath(ctx context.Context, catalog *catalog.Catalog, cfg config.Conf
 	}
 	defer file.Close()
 
-	return SBOMEvaluation(ctx, catalog, cfg, doc)
+	res, err := SBOMEvaluation(ctx, catalog, cfg, doc)
+	res.InterlynkScore = formulae.ComputeInterlynkScore(res.Comprehensive.Categories)
+	res.Grade = formulae.ToGrade(res.InterlynkScore)
+	res.Doc = doc
+
+	return res, err
 }
 
 // openAndParse normalizes the path (file or URL), extracts the signature,
@@ -155,25 +158,23 @@ func evaluateComprehensive(ctx context.Context, catal *catalog.Catalog, cfg conf
 
 	result := api.NewResult(doc)
 
-	categoriesToScore, err := selectCategoriesToScore(cfg, catal)
-	if err != nil {
-		return api.Result{}, err
-	}
-
-	if len(categoriesToScore) == 0 {
+	catKeys := selectCategoriesToScore(cfg, catal)
+	if len(catKeys) == 0 {
 		return api.Result{}, fmt.Errorf("no categories to score (check config filters)")
 	}
 
-	// Log category names (readable)
-	log.Debugf("selected categories for evaluation: %s", strings.Join(CategoryNames(categoriesToScore), ", "))
+	comprResult := comprehenssive.Evaluate(ctx, catKeys, catal, doc)
+	result.Comprehensive = &comprResult
 
-	// Score SBOM by categories
-	catEvaluationResults := scoreAgainstCategories(ctx, doc, categoriesToScore)
-	interlynkScore := formulae.ComputeInterlynkScore(catEvaluationResults)
+	// log.Debugf("selected categories for evaluation: %s", strings.Join(string(catKeys)), ", ")
 
-	result.Comprehensive.InterlynkScore = interlynkScore
-	result.Comprehensive.Grade = formulae.ToGrade(interlynkScore)
-	result.Comprehensive.Categories = catEvaluationResults
+	// // Score SBOM by categories
+	// catEvaluationResults := scoreAgainstCategories(ctx, doc, categoriesToScore)
+	// interlynkScore := formulae.ComputeInterlynkScore(catEvaluationResults)
+
+	// result.Comprehensive.InterlynkScore = interlynkScore
+	// result.Comprehensive.Grade = formulae.ToGrade(interlynkScore)
+	// result.Comprehensive.Categories = catEvaluationResults
 
 	return *result, nil
 }

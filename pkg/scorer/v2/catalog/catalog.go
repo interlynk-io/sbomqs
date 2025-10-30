@@ -80,14 +80,8 @@ func (c *Catalog) ResolveProfileAlias(s string) (ProfileKey, bool) {
 	return k, ok
 }
 
-func (c *Catalog) BaseCategories() []ComprCatSpec {
-	out := make([]ComprCatSpec, 0, len(c.Order))
-	for _, k := range c.Order {
-		if spec, ok := c.ComprCategories[k]; ok {
-			out = append(out, spec)
-		}
-	}
-	return out
+func (c *Catalog) BaseCategoriesKeys() []ComprCatKey {
+	return c.Order
 }
 
 func (c *Catalog) BaseProfiles() []ProfSpec {

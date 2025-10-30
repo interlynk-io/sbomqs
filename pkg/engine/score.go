@@ -29,8 +29,12 @@ import (
 	"github.com/interlynk-io/sbomqs/pkg/compliance/common"
 	"github.com/interlynk-io/sbomqs/pkg/logger"
 	"github.com/interlynk-io/sbomqs/pkg/reporter"
+	v2 "github.com/interlynk-io/sbomqs/pkg/reporter/v2"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/pkg/scorer"
+	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/config"
+	score "github.com/interlynk-io/sbomqs/pkg/scorer/v2/score"
+
 	"github.com/spf13/afero"
 )
 
@@ -66,6 +70,9 @@ type Params struct {
 	Signature string
 	PublicKey string
 	Blob      string
+
+	Legacy   bool
+	Profiles []string
 }
 
 func Run(ctx context.Context, ep *Params) error {
@@ -77,7 +84,41 @@ func Run(ctx context.Context, ep *Params) error {
 		log.Fatal("path is required")
 	}
 
-	return handlePaths(ctx, ep)
+	if ep.Legacy {
+		return handlePaths(ctx, ep)
+	}
+
+	return scored(ctx, ep)
+}
+
+func scored(ctx context.Context, ep *Params) error {
+	cfg := config.Config{
+		Categories: ep.Categories,
+		Features:   ep.Features,
+		ConfigFile: ep.ConfigPath,
+		Profile:    ep.Profiles,
+	}
+
+	results, err := score.ScoreSBOM(ctx, cfg, ep.Path)
+	if err != nil {
+		return err
+	}
+
+	reportFormat := "detailed"
+	if ep.Basic {
+		reportFormat = "basic"
+	}
+
+	if ep.JSON {
+		reportFormat = "json"
+	}
+
+	nr := v2.NewReport(ctx, results, reportFormat)
+	nr.Report()
+
+	return nil
+
+	// print the score
 }
 
 func handleURL(path string) (string, string, error) {
