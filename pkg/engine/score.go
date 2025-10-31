@@ -92,6 +92,9 @@ func Run(ctx context.Context, ep *Params) error {
 }
 
 func scored(ctx context.Context, ep *Params) error {
+	log := logger.FromContext(ctx)
+	log.Debugf("starting engine to score v2")
+
 	cfg := config.Config{
 		Categories: ep.Categories,
 		Features:   ep.Features,

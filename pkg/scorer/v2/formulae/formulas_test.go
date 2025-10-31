@@ -49,7 +49,7 @@ func TestComputeInterlynkScore(t *testing.T) {
 		{Name: "Provenance", Weight: 12, Score: 7.0},
 	}
 
-	got := ComputeInterlynkScore(catResults)
+	got := ComputeInterlynkComprScore(catResults)
 	want := (9.0*10.0 + 7.0*12.0) / (10.0 + 12.0)
 
 	assert.InDelta(t, want, got, 1e-6)

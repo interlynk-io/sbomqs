@@ -16,6 +16,8 @@ package catalog
 
 import (
 	"strings"
+
+	"github.com/interlynk-io/sbomqs/pkg/utils"
 )
 
 type (
@@ -117,12 +119,11 @@ func (c *Catalog) ResolveProfileKeys(profiles []string) []ProfileKey {
 		}
 	}
 
-	for _, raw := range profiles {
-		s := strings.TrimSpace(raw)
-		if s == "" {
+	for _, pr := range profiles {
+		if utils.IsBlank(pr) {
 			continue
 		}
-		input := strings.ToLower(s)
+		input := strings.ToLower(strings.TrimSpace(pr))
 
 		var (
 			pk ProfileKey
@@ -174,12 +175,11 @@ func (c *Catalog) ResolveCategoryKeys(category []string) []ComprCatKey {
 		}
 	}
 
-	for _, raw := range category {
-		s := strings.TrimSpace(raw)
-		if s == "" {
+	for _, cat := range category {
+		if utils.IsBlank(cat) {
 			continue
 		}
-		input := strings.ToLower(s)
+		input := strings.ToLower(strings.TrimSpace(cat))
 
 		var (
 			pk ComprCatKey

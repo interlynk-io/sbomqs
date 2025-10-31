@@ -32,10 +32,7 @@ import (
 )
 
 // ScoreSBOM scores a SBOM for profile or comprehenssive scoring.
-// It validates input, builds the scoring catalog once, then iterates
-// each path (file or URL), parses it into an SBOM document, and evaluates it
-// either via profiles or comprehensive scoring. Per-path errors are logged and
-// skipped; successful scoring results are collected and returned.
+// returns successful scoring results
 func ScoreSBOM(ctx context.Context, cfg config.Config, paths []string) ([]api.Result, error) {
 	log := logger.FromContext(ctx)
 
@@ -62,7 +59,6 @@ func ScoreSBOM(ctx context.Context, cfg config.Config, paths []string) ([]api.Re
 			log.Warnf("skip %s: %v", p, err)
 			continue
 		}
-		res.Meta.Filename = p
 		results = append(results, res)
 		processed++
 	}
@@ -76,6 +72,9 @@ func ScoreSBOM(ctx context.Context, cfg config.Config, paths []string) ([]api.Re
 // scoreOnePath opens a local file or downloads a URL, parses it into a document,
 // and then evaluates each SBOM, and returns the single SBOM scoring result
 func scoreOnePath(ctx context.Context, catalog *catalog.Catalog, cfg config.Config, path string) (api.Result, error) {
+	log := logger.FromContext(ctx)
+	log.Debugf("processing scoreOnePath")
+
 	file, doc, err := openAndParse(ctx, cfg, path)
 	if err != nil {
 		return api.Result{}, err
@@ -83,9 +82,6 @@ func scoreOnePath(ctx context.Context, catalog *catalog.Catalog, cfg config.Conf
 	defer file.Close()
 
 	res, err := SBOMEvaluation(ctx, catalog, cfg, doc)
-	res.InterlynkScore = formulae.ComputeInterlynkScore(res.Comprehensive.Categories)
-	res.Grade = formulae.ToGrade(res.InterlynkScore)
-	res.Doc = doc
 
 	return res, err
 }
@@ -94,10 +90,11 @@ func scoreOnePath(ctx context.Context, catalog *catalog.Catalog, cfg config.Conf
 // opens/creates a file handle, and constructs an sbom.Document
 // and return file handle, sbom document
 func openAndParse(ctx context.Context, cfg config.Config, path string) (*os.File, sbom.Document, error) {
-	var (
-		f   *os.File
-		err error
-	)
+	log := logger.FromContext(ctx)
+	log.Debugf("processing openAndParse...")
+
+	var f *os.File
+	var err error
 
 	if utils.IsURL(path) {
 		f, err = ProcessURLPath(ctx, cfg, path)
@@ -139,22 +136,32 @@ func profilePresent(cfg config.Config) bool {
 	return len(cfg.Profile) > 0
 }
 
+// evaluateProfiles computes profile-based results for the given SBOM document.
+// It resolves profile keys from cfg.Profile, evaluates them via the catalog,
+// fills the result (score, grade, and per-profile results), and returns it.
 func evaluateProfiles(ctx context.Context, catal *catalog.Catalog, cfg config.Config, doc sbom.Document) (api.Result, error) {
 	result := api.NewResult(doc)
 
+	// Resolve profiles
 	profileKeys := catal.ResolveProfileKeys(cfg.Profile)
 	if len(profileKeys) == 0 {
 		return *result, fmt.Errorf("no valid profiles resolved from: %v", cfg.Profile)
 	}
 
+	// Evaluate profiles
 	profResults := profiles.Evaluate(ctx, catal, profileKeys, doc)
-	result.Profiles = append(result.Profiles, profResults...)
+
+	result.InterlynkScore = formulae.ComputeInterlynkProfScore(profResults)
+	result.Grade = formulae.ToGrade(result.InterlynkScore)
+	result.Profiles = &profResults
 
 	return *result, nil
 }
 
 func evaluateComprehensive(ctx context.Context, catal *catalog.Catalog, cfg config.Config, doc sbom.Document) (api.Result, error) {
 	// Comprehensive Scoring
+	log := logger.FromContext(ctx)
+	log.Debugf("evaluating comprehenssive scoring")
 
 	result := api.NewResult(doc)
 
@@ -166,61 +173,10 @@ func evaluateComprehensive(ctx context.Context, catal *catalog.Catalog, cfg conf
 	comprResult := comprehenssive.Evaluate(ctx, catKeys, catal, doc)
 	result.Comprehensive = &comprResult
 
-	// log.Debugf("selected categories for evaluation: %s", strings.Join(string(catKeys)), ", ")
+	log.Debugf("selected categories for evaluation: %s", catKeys)
 
-	// // Score SBOM by categories
-	// catEvaluationResults := scoreAgainstCategories(ctx, doc, categoriesToScore)
-	// interlynkScore := formulae.ComputeInterlynkScore(catEvaluationResults)
-
-	// result.Comprehensive.InterlynkScore = interlynkScore
-	// result.Comprehensive.Grade = formulae.ToGrade(interlynkScore)
-	// result.Comprehensive.Categories = catEvaluationResults
+	result.InterlynkScore = formulae.ComputeInterlynkComprScore(comprResult.CatResult)
+	result.Grade = formulae.ToGrade(result.InterlynkScore)
 
 	return *result, nil
 }
-
-// SBOMEvaluation evaluates a SBOM for profiles or comprehensive scoring.
-// If profile flag is set, it performs profile scoring
-// computes the Interlynk score + grade, and returns the comprehensive result.
-// func SBOMEvaluation(ctx context.Context, catal *catalog.Catalog, cfg config.Config, doc sbom.Document) (api.Result, error) {
-// 	log := logger.FromContext(ctx)
-// 	log.Debugf("evaluating SBOM")
-
-// 	result := api.NewResult(doc)
-
-// 	if len(cfg.Profile) > 0 {
-
-// 		profileKeys := catal.ResolveProfileKeys(cfg.Profile)
-// 		if len(profileKeys) == 0 {
-// 			return *result, fmt.Errorf("no valid profiles resolved from: %v", cfg.Profile)
-// 		}
-
-// 		profResults := profiles.Evaluate(ctx, catal, profileKeys, doc)
-// 		result.Profiles = append(result.Profiles, profResults...)
-
-// 		return *result, nil
-// 	}
-
-// 	// Comprehensive Scoring
-// 	categoriesToScore, err := selectCategoriesToScore(cfg, catal)
-// 	if err != nil {
-// 		return api.Result{}, err
-// 	}
-
-// 	if len(categoriesToScore) == 0 {
-// 		return api.Result{}, fmt.Errorf("no categories to score (check config filters)")
-// 	}
-
-// 	// Log category names (readable)
-// 	log.Debugf("selected categories for evaluation: %s", strings.Join(CategoryNames(categoriesToScore), ", "))
-
-// 	// Score SBOM by categories
-// 	catEvaluationResults := scoreAgainstCategories(ctx, doc, categoriesToScore)
-// 	interlynkScore := formulae.ComputeInterlynkScore(catEvaluationResults)
-
-// 	result.Comprehensive.InterlynkScore = interlynkScore
-// 	result.Comprehensive.Grade = formulae.ToGrade(interlynkScore)
-// 	result.Comprehensive.Categories = catEvaluationResults
-
-// 	return *result, nil
-// }

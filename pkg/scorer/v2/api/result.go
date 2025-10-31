@@ -19,7 +19,7 @@ import (
 	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/catalog"
 )
 
-// Result represents result of an SBOM
+// Result represents evaluation result of an SBOM
 type Result struct {
 	Doc            sbom.Document
 	Meta           SBOMMeta
@@ -27,7 +27,7 @@ type Result struct {
 	Grade          string
 
 	Comprehensive *ComprehensiveResult
-	Profiles      []ProfileResult
+	Profiles      *ProfilesResult
 }
 
 // Common file-level metadata
@@ -42,7 +42,15 @@ type SBOMMeta struct {
 
 // Comprehensive (quality) scoring
 type ComprehensiveResult struct {
-	Categories []CategoryResult
+	CatResult []CategoryResult
+}
+
+type ProfilesResult struct {
+	ProfResult []ProfileResult
+}
+
+func NewProfResult() ProfilesResult {
+	return ProfilesResult{}
 }
 
 // Category result
@@ -126,6 +134,7 @@ func NewCategoryResultFromSpec(cat catalog.ComprCatSpec) CategoryResult {
 func NewResult(doc sbom.Document) *Result {
 	return &Result{
 		Meta: NewSBOMMeta(doc),
+		Doc:  doc,
 	}
 }
 

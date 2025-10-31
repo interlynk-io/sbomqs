@@ -105,7 +105,7 @@ func ComputeCategoryScore(features []api.FeatureResult) float64 {
 }
 
 // computeInterlynkScore returns the weighted average of category scores.
-func ComputeInterlynkScore(catResults []api.CategoryResult) float64 {
+func ComputeInterlynkComprScore(catResults []api.CategoryResult) float64 {
 	var totalCategoryWeight, finalScoreWithWeightage float64
 
 	for _, catResult := range catResults {
@@ -117,4 +117,12 @@ func ComputeInterlynkScore(catResults []api.CategoryResult) float64 {
 		return 0
 	}
 	return finalScoreWithWeightage / totalCategoryWeight
+}
+
+func ComputeInterlynkProfScore(profResults api.ProfilesResult) float64 {
+	totalScore := 0.0
+	for _, res := range profResults.ProfResult {
+		totalScore += res.Score
+	}
+	return totalScore / 10.0
 }

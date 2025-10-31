@@ -67,29 +67,6 @@ func ProcessURLPath(ctx context.Context, cfg config.Config, url string) (*os.Fil
 	return tmpFile, nil
 }
 
-// func NormalizeAndValidateCategories(ctx context.Context, categories []string) ([]string, error) {
-// 	log := logger.FromContext(ctx)
-// 	log.Debugf("normalizing anf validating categories: %s", categories)
-// 	var normalized []string
-
-// 	for _, cat := range categories {
-
-// 		// normalize using alias
-// 		if alias, ok := CategoryAliases[cat]; ok {
-// 			cat = alias
-// 		}
-
-// 		// validate if it's a supported category
-// 		if !SupportedCategories[cat] {
-// 			log.Warnf("unsupported category: %s", cat)
-// 			continue
-// 		}
-// 		normalized = append(normalized, cat)
-// 	}
-
-// 	return normalized, nil
-// }
-
 // GetFileHandle opens a file in read-only mode and returns the handle.
 // The caller is responsible for calling Close() on the returned file.
 func GetFileHandle(ctx context.Context, filePath string) (*os.File, error) {
@@ -136,4 +113,15 @@ func CategoryNames(cats []catalog.ComprCatSpec) []string {
 		out = append(out, c.Name)
 	}
 	return out
+}
+
+// selectCategoriesToScore returns the list of all categories to score.
+func selectCategoriesToScore(cfg config.Config, catal *catalog.Catalog) []catalog.ComprCatKey {
+	if len(cfg.Categories) == 0 {
+		return catal.BaseCategoriesKeys()
+	}
+	if len(cfg.Features) == 0 {
+		// TODO
+	}
+	return catal.ResolveCategoryKeys(cfg.Categories)
 }
