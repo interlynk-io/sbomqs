@@ -49,7 +49,7 @@ type ProfilesResult struct {
 	ProfResult []ProfileResult
 }
 
-func NewProfResult() ProfilesResult {
+func NewProfResults() ProfilesResult {
 	return ProfilesResult{}
 }
 

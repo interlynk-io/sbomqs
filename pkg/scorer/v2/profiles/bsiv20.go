@@ -26,7 +26,7 @@ import (
 )
 
 // sbomWithBomLinksCheck
-func SbomWithBomLinksCheck(doc sbom.Document) catalog.ProfFeatScore {
+func BSISBOMWithBomLinks(doc sbom.Document) catalog.ProfFeatScore {
 	links := doc.Spec().GetExtDocRef()
 	if len(links) == 0 {
 		return catalog.ProfFeatScore{Score: 0.0, Desc: "no bom links found", Ignore: false}
@@ -36,7 +36,7 @@ func SbomWithBomLinksCheck(doc sbom.Document) catalog.ProfFeatScore {
 
 // sbomWithVulnCheck (BSI v2.1 note in your comments)
 // If SPDX has no deterministic vuln field → mark NA for SPDX (clearer than awarding 10).
-func SbomWithVulnCheck(doc sbom.Document) catalog.ProfFeatScore {
+func BSISBOMWithVulnerabilities(doc sbom.Document) catalog.ProfFeatScore {
 	if strings.ToLower(doc.Spec().GetSpecType()) == "spdx" {
 		return catalog.ProfFeatScore{Score: 0.0, Desc: formulae.NonSupportedSPDXField(), Ignore: true}
 	}
@@ -58,7 +58,7 @@ func SbomWithVulnCheck(doc sbom.Document) catalog.ProfFeatScore {
 }
 
 // sbomBuildLifecycleCheck: NA for SPDX; in CDX, look for "build" lifecycle.
-func SbomBuildLifecycleCheck(doc sbom.Document) catalog.ProfFeatScore {
+func BSISBOMBuildLifecycle(doc sbom.Document) catalog.ProfFeatScore {
 	if strings.ToLower(doc.Spec().GetSpecType()) == "spdx" {
 		return catalog.ProfFeatScore{Score: 0.0, Desc: formulae.NonSupportedSPDXField(), Ignore: true}
 	}
@@ -74,7 +74,7 @@ func SbomBuildLifecycleCheck(doc sbom.Document) catalog.ProfFeatScore {
 // sbomWithSignatureCheck
 // NOTE: Prefer to move the crypto verification into a small helper (no file I/O here).
 // Here we keep the shape and return NA if no signature provided.
-func SbomWithSignatureCheck(doc sbom.Document) catalog.ProfFeatScore {
+func BSISBOMWithSignature(doc sbom.Document) catalog.ProfFeatScore {
 	sig := doc.Signature()
 	if sig == nil {
 		return catalog.ProfFeatScore{Score: 0.0, Desc: "no signature provided", Ignore: true}
@@ -100,7 +100,7 @@ func SbomWithSignatureCheck(doc sbom.Document) catalog.ProfFeatScore {
 }
 
 // compWithAssociatedLicensesCheck: concluded for SPDX, effective for CDX components
-func CompWithAssociatedLicensesCheck(doc sbom.Document) catalog.ProfFeatScore {
+func BSICompWithAssociatedLicenses(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
 		return catalog.ProfFeatScore{Score: formulae.PerComponentScore(0, 0), Desc: formulae.NoComponentsNA(), Ignore: true}

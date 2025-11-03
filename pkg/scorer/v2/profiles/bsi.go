@@ -33,7 +33,7 @@ var (
 // - 10 if spec+version in BSI-supported lists,
 // - 5  if spec supported but version not in list,
 // - 0  otherwise.
-func specWithVersionCompliant(doc sbom.Document) catalog.ProfFeatScore {
+func SBOMWithVersionCompliant(doc sbom.Document) catalog.ProfFeatScore {
 	spec := strings.ToLower(strings.TrimSpace(doc.Spec().GetSpecType()))
 	ver := strings.TrimSpace(doc.Spec().GetVersion())
 

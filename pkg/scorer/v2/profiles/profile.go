@@ -30,7 +30,7 @@ func Evaluate(ctx context.Context, catal *catalog.Catalog, profileKeys []catalog
 	log := logger.FromContext(ctx)
 	log.Debugf("Evaluating profiles: %s", profileKeys)
 
-	results := api.NewProfResult()
+	results := api.NewProfResults()
 
 	allProfiles := make([]catalog.ProfSpec, 0, len(profileKeys))
 

@@ -43,7 +43,7 @@ func rfc3339ish(ts string) bool {
 }
 
 // OCT: must be SPDX
-func OctSBOMSpecCheck(doc sbom.Document) catalog.ProfFeatScore {
+func OCTSBOMSpec(doc sbom.Document) catalog.ProfFeatScore {
 	ok := isSPDX(doc)
 	return catalog.ProfFeatScore{
 		Score:  formulae.BooleanScore(ok),
@@ -52,7 +52,7 @@ func OctSBOMSpecCheck(doc sbom.Document) catalog.ProfFeatScore {
 	}
 }
 
-func OctSBOMSpecVersionCheck(doc sbom.Document) catalog.ProfFeatScore {
+func OCTSBOMSpecVersion(doc sbom.Document) catalog.ProfFeatScore {
 	ver := strings.TrimSpace(doc.Spec().GetVersion())
 	return catalog.ProfFeatScore{
 		Score:  formulae.BooleanScore(ver != ""),
@@ -61,7 +61,7 @@ func OctSBOMSpecVersionCheck(doc sbom.Document) catalog.ProfFeatScore {
 	}
 }
 
-func OctSBOMWithTimestampCheck(doc sbom.Document) catalog.ProfFeatScore {
+func OCTSBOMWithTimestamp(doc sbom.Document) catalog.ProfFeatScore {
 	ts := strings.TrimSpace(doc.Spec().GetCreationTimestamp())
 	if !rfc3339ish(ts) {
 		return catalog.ProfFeatScore{Score: 0, Desc: formulae.MissingField("timestamp"), Ignore: false}
@@ -69,7 +69,7 @@ func OctSBOMWithTimestampCheck(doc sbom.Document) catalog.ProfFeatScore {
 	return catalog.ProfFeatScore{Score: 10, Desc: ts, Ignore: false}
 }
 
-func OctSBOMSpdxIDCheck(doc sbom.Document) catalog.ProfFeatScore {
+func OCTSBOMSpdxID(doc sbom.Document) catalog.ProfFeatScore {
 	id := strings.TrimSpace(doc.Spec().GetSpdxID())
 	return catalog.ProfFeatScore{
 		Score:  formulae.BooleanScore(id != ""),
@@ -78,7 +78,7 @@ func OctSBOMSpdxIDCheck(doc sbom.Document) catalog.ProfFeatScore {
 	}
 }
 
-func OctSBOMNamespaceCheck(doc sbom.Document) catalog.ProfFeatScore {
+func OCTSBOMNamespace(doc sbom.Document) catalog.ProfFeatScore {
 	ns := strings.TrimSpace(doc.Spec().GetNamespace())
 	return catalog.ProfFeatScore{
 		Score:  formulae.BooleanScore(ns != ""),
@@ -87,7 +87,7 @@ func OctSBOMNamespaceCheck(doc sbom.Document) catalog.ProfFeatScore {
 	}
 }
 
-func OctSBOMDataLicenseCheck(doc sbom.Document) catalog.ProfFeatScore {
+func OCTSBOMDataLicense(doc sbom.Document) catalog.ProfFeatScore {
 	var names []string
 	for _, lic := range doc.Spec().GetLicenses() {
 		if n := strings.TrimSpace(lic.Name()); n != "" {
@@ -101,16 +101,7 @@ func OctSBOMDataLicenseCheck(doc sbom.Document) catalog.ProfFeatScore {
 	}
 }
 
-func OctSBOMSpec(doc sbom.Document) catalog.ProfFeatScore {
-	n := strings.TrimSpace(doc.Spec().GetName())
-	return catalog.ProfFeatScore{
-		Score:  formulae.BooleanScore(n != ""),
-		Desc:   n,
-		Ignore: false,
-	}
-}
-
-func OctSBOMToolCreationCheck(doc sbom.Document) catalog.ProfFeatScore {
+func OCTSBOMToolCreation(doc sbom.Document) catalog.ProfFeatScore {
 	tools := doc.Tools()
 	ok := len(tools) > 0 && strings.TrimSpace(tools[0].GetName()) != ""
 	desc := ""
@@ -124,7 +115,7 @@ func OctSBOMToolCreationCheck(doc sbom.Document) catalog.ProfFeatScore {
 	}
 }
 
-func OctSBOMCreationOrganizationCheck(doc sbom.Document) catalog.ProfFeatScore {
+func OCTSBOMCreationOrganization(doc sbom.Document) catalog.ProfFeatScore {
 	org := strings.TrimSpace(doc.Spec().GetOrganization())
 	return catalog.ProfFeatScore{
 		Score:  formulae.BooleanScore(org != ""),
@@ -134,7 +125,18 @@ func OctSBOMCreationOrganizationCheck(doc sbom.Document) catalog.ProfFeatScore {
 }
 
 // SPDX JSON or Tag-Value are acceptable “machine/human” forms in OCT.
-func OctSBOMMachineFormatCheck(doc sbom.Document) catalog.ProfFeatScore {
+func OCTSBOMMachineFormatCheck(doc sbom.Document) catalog.ProfFeatScore {
+	ff := strings.ToLower(strings.TrimSpace(doc.Spec().FileFormat()))
+	ok := ff == "json" || ff == "tag-value"
+	return catalog.ProfFeatScore{
+		Score:  formulae.BooleanScore(ok),
+		Desc:   ff,
+		Ignore: false,
+	}
+}
+
+// TODO
+func OCTSBOMComment(doc sbom.Document) catalog.ProfFeatScore {
 	ff := strings.ToLower(strings.TrimSpace(doc.Spec().FileFormat()))
 	ok := ff == "json" || ff == "tag-value"
 	return catalog.ProfFeatScore{
@@ -145,7 +147,7 @@ func OctSBOMMachineFormatCheck(doc sbom.Document) catalog.ProfFeatScore {
 }
 
 // % with names
-func OctCompWithNameCheck(doc sbom.Document) catalog.ProfFeatScore {
+func OCTCompWithName(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
 		return catalog.ProfFeatScore{Score: formulae.PerComponentScore(0, 0), Desc: formulae.NoComponentsNA(), Ignore: true}
@@ -159,7 +161,7 @@ func OctCompWithNameCheck(doc sbom.Document) catalog.ProfFeatScore {
 }
 
 // % with SPDX IDs
-func OctCompWithSpdxIDCheck(doc sbom.Document) catalog.ProfFeatScore {
+func OCTCompWithSpdxID(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
 		return catalog.ProfFeatScore{Score: formulae.PerComponentScore(0, 0), Desc: formulae.NoComponentsNA(), Ignore: true}
@@ -173,7 +175,7 @@ func OctCompWithSpdxIDCheck(doc sbom.Document) catalog.ProfFeatScore {
 }
 
 // % with versions
-func OctCompWithVersionCheck(doc sbom.Document) catalog.ProfFeatScore {
+func OCTCompWithVersion(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
 		return catalog.ProfFeatScore{Score: formulae.PerComponentScore(0, 0), Desc: formulae.NoComponentsNA(), Ignore: true}
@@ -187,7 +189,7 @@ func OctCompWithVersionCheck(doc sbom.Document) catalog.ProfFeatScore {
 }
 
 // % with supplier (OCT requires supplier contact; keep simple: any supplier email/name present)
-func OctCompWithSupplierCheck(doc sbom.Document) catalog.ProfFeatScore {
+func OCTCompWithSupplier(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
 		return catalog.ProfFeatScore{Score: formulae.PerComponentScore(0, 0), Desc: formulae.NoComponentsNA(), Ignore: true}
@@ -204,7 +206,7 @@ func OctCompWithSupplierCheck(doc sbom.Document) catalog.ProfFeatScore {
 }
 
 // % with download URL
-func OctCompWithDownloadURLCheck(doc sbom.Document) catalog.ProfFeatScore {
+func OCTCompWithDownloadURL(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
 		return catalog.ProfFeatScore{Score: formulae.PerComponentScore(0, 0), Desc: formulae.NoComponentsNA(), Ignore: true}
@@ -237,7 +239,7 @@ func OctCompWithSHA256Check(doc sbom.Document) catalog.ProfFeatScore {
 }
 
 // % with concluded license (and not NONE/NOASSERTION)
-func OctCompWithConcludedLicenseCheck(doc sbom.Document) catalog.ProfFeatScore {
+func OCTCompWithConcludedLicense(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
 		return catalog.ProfFeatScore{Score: formulae.PerComponentScore(0, 0), Desc: formulae.NoComponentsNA(), Ignore: true}
@@ -254,7 +256,7 @@ func OctCompWithConcludedLicenseCheck(doc sbom.Document) catalog.ProfFeatScore {
 }
 
 // % with declared license (and not NONE/NOASSERTION)
-func OctCompWithDeclaredLicenseCheck(doc sbom.Document) catalog.ProfFeatScore {
+func OCTCompWithDeclaredLicense(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
 		return catalog.ProfFeatScore{Score: formulae.PerComponentScore(0, 0), Desc: formulae.NoComponentsNA(), Ignore: true}
@@ -271,7 +273,7 @@ func OctCompWithDeclaredLicenseCheck(doc sbom.Document) catalog.ProfFeatScore {
 }
 
 // % with copyright (and not NONE/NOASSERTION)
-func OctCompWithCopyrightCheck(doc sbom.Document) catalog.ProfFeatScore {
+func OCTCompWithCopyright(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
 		return catalog.ProfFeatScore{
@@ -295,6 +297,29 @@ func OctCompWithCopyrightCheck(doc sbom.Document) catalog.ProfFeatScore {
 
 // % with copyright (and not NONE/NOASSERTION)
 func OctCompWithExternalRefsCheck(doc sbom.Document) catalog.ProfFeatScore {
+	comps := doc.Components()
+	if len(comps) == 0 {
+		return catalog.ProfFeatScore{
+			Score:  formulae.PerComponentScore(0, 0),
+			Desc:   formulae.NoComponentsNA(),
+			Ignore: true,
+		}
+	}
+
+	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
+		// return compHasAnyPURLs(c)
+		return false
+	})
+
+	return catalog.ProfFeatScore{
+		Score:  formulae.PerComponentScore(have, len(comps)),
+		Desc:   formulae.CompDescription(have, len(comps), "declared licenses"),
+		Ignore: false,
+	}
+}
+
+// TODO
+func OCTCompWithFileAnalyzed(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
 		return catalog.ProfFeatScore{

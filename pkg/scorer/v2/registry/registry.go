@@ -6,16 +6,6 @@ import (
 	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/profiles"
 )
 
-// type (
-// 	// comprehenssive cateogy and it's features keys
-// 	ComprCatKey  string
-// 	ComprFeatKey string
-
-// 	// profiles and it's feature keys
-// 	ProfileKey  string
-// 	ProfFeatKey string
-// )
-
 // ComprCatKey lists all comprehenssive catefories
 // e.g. identification, provenance, integrity, etc
 const (
@@ -73,33 +63,64 @@ const (
 	ProfileOCT   catalog.ProfileKey = "oct"
 )
 
+type (
+	PFNTIAFeatKey    catalog.ProfFeatKey
+	PFBSIV1_1FeatKey catalog.ProfFeatKey
+	PFBSIV2_0FeatKey catalog.ProfFeatKey
+	PFOCTFeatKey     catalog.ProfFeatKey
+)
+
 // ProFeatKey lists all profiles features
 // e.g. comp_with_name, sbom_authors, etc
 const (
-	PFSBOMSpec                catalog.ProfFeatKey = "sbom_with_spec"
-	PFSBOMSpecVersion         catalog.ProfFeatKey = "sbom_spec_version"
-	PFSBOMSpecFileFormat      catalog.ProfFeatKey = "sbom_file_format"
-	PFCompWithName            catalog.ProfFeatKey = "comp_with_name"
-	PFCompName                catalog.ProfFeatKey = "comp_with_name"
-	PFCompVersion             catalog.ProfFeatKey = "comp_with_version"
-	PFCompIdentifiers         catalog.ProfFeatKey = "comp_with_identifiers"
-	PFCompSupplier            catalog.ProfFeatKey = "comp_with_supplier"
-	PFCompDependencies        catalog.ProfFeatKey = "comp_with_dependencies"
-	PFSBOMCreationTimestamp   catalog.ProfFeatKey = "sbom_creation_timestamp"
-	PFSBOMAuthors             catalog.ProfFeatKey = "sbom_authors"
-	PFSBOMNamespace           catalog.ProfFeatKey = "sbom_namespace"
-	PFCompLicense             catalog.ProfFeatKey = "comp_with_licenses"
-	PFCompChecksum            catalog.ProfFeatKey = "comp_with_checksums"
-	PFCompSourceCode          catalog.ProfFeatKey = "comp_with_source_code"
-	PFSBOMSchema              catalog.ProfFeatKey = "sbom_schema_valid"
-	PFCompChecksumSHA256      catalog.ProfFeatKey = "comp_with_checksum_sha256"
-	PFSBOMSignature           catalog.ProfFeatKey = "sbom_signature"
-	PFCompValidLicense        catalog.ProfFeatKey = "comp_with_valid_licenses"
-	PFSBOMDataLicense         catalog.ProfFeatKey = "sbom_data_license"
-	PFCompPURLID              catalog.ProfFeatKey = "comp_with_purl"
-	PFCompCPEID               catalog.ProfFeatKey = "comp_with_cpe"
-	PFSBOMCreationToolVersion catalog.ProfFeatKey = "sbom_tool_version"
-	PFCompDeclaredLicense     catalog.ProfFeatKey = "comp_with_declared_licenses"
+	// NTIA
+	PFNTIASBOMSpec              catalog.ProfFeatKey = "sbom_spec"
+	PFNTIACompName              catalog.ProfFeatKey = "comp_name"
+	PFNTIACompVersion           catalog.ProfFeatKey = "comp_version"
+	PFNTIACompSupplier          catalog.ProfFeatKey = "comp_supplier"
+	PFNTIACompIdentifiers       catalog.ProfFeatKey = "comp_uniq_id"
+	PFNTIASBOMDependencies      catalog.ProfFeatKey = "sbom_dependencies"
+	PFNTIASBOMAuthors           catalog.ProfFeatKey = "sbom_authors"
+	PFNTIASBOMCreationTimestamp catalog.ProfFeatKey = "sbom_creation_timestamp"
+
+	PFBSISBOMSpec              catalog.ProfFeatKey = "sbom_bsi_spec"
+	PFBSISBOMSpecVersion       catalog.ProfFeatKey = "sbom_spec_version"
+	PFBSISBOMLifecycle         catalog.ProfFeatKey = "sbom_lifecycle"
+	PFBSISBOMDependencies      catalog.ProfFeatKey = "sbom_dependencies"
+	PFBSISBOMAuthors           catalog.ProfFeatKey = "sbom_authors"
+	PFBSISBOMCreationTimestamp catalog.ProfFeatKey = "sbom_creation_timestamp"
+	PFBSISBOMNamespace         catalog.ProfFeatKey = "sbom_namespace"
+	PFBSICompName              catalog.ProfFeatKey = "comp_name"
+	PFBSICompVersion           catalog.ProfFeatKey = "comp_version"
+	PFBSICompLicense           catalog.ProfFeatKey = "comp_license"
+	PFBSICompHash              catalog.ProfFeatKey = "comp_hash"
+	PFBSICompSourceCodeURL     catalog.ProfFeatKey = "comp_source_code_url"
+	PFBSICompDownloadURL       catalog.ProfFeatKey = "comp_download_code_url"
+	PFBSICompSourceCodeHash    catalog.ProfFeatKey = "comp_source_code_hash"
+	PFBSICompDependencies      catalog.ProfFeatKey = "comp_dependencies"
+
+	PFBSI20SBOMSignature         catalog.ProfFeatKey = "sbom_signature"
+	PFBSI20SBOMLinks             catalog.ProfFeatKey = "sbom_bomlinks"
+	PFBSI20SBOMVulnerabilities   catalog.ProfFeatKey = "sbom_vulnerabilities"
+	PFBSI20CompChecksumSHA256    catalog.ProfFeatKey = "comp_hash_256_sha"
+	PFBSI20CompAssociatedLicense catalog.ProfFeatKey = "comp_associated_license"
+
+	PFOCTSBOMSpec             catalog.ProfFeatKey = "sbom_spec"
+	PFOCTSBOMSpecVersion      catalog.ProfFeatKey = "sbom_spec_version"
+	PFOCTCompName             catalog.ProfFeatKey = "comp_name"
+	PFOCTCompVersion          catalog.ProfFeatKey = "comp_version"
+	PFOCTSBOMNamespace        catalog.ProfFeatKey = "sbom_namespace"
+	PFOCTCompLicenseDeclared  catalog.ProfFeatKey = "comp_license_declared"
+	PFOCTCompLicenseConcluded catalog.ProfFeatKey = "comp_license_concluded"
+	PFOCTSBOMDataLicense      catalog.ProfFeatKey = "sbom_license"
+	PFOCTSBOMCreationTool     catalog.ProfFeatKey = "sbom_creation_tool"
+	PFOCTSBOMSpdxID           catalog.ProfFeatKey = "sbom_spdxid"
+	PFOCTSBOMName             catalog.ProfFeatKey = "sbom_name"
+	PFOCTSBOMComment          catalog.ProfFeatKey = "sbom_comment"
+	PFOCTSBOMOrg              catalog.ProfFeatKey = "sbom_organization"
+	PFOCTCompSpdxID           catalog.ProfFeatKey = "comp_spdxid"
+	PFOCTCompFileAnalyzed     catalog.ProfFeatKey = "comp_file_analyze"
+	PFOCTCompCopyright        catalog.ProfFeatKey = "comp_copyright"
 )
 
 func InitializeCatalog() *catalog.Catalog {
@@ -373,29 +394,56 @@ func bindComprFeatures() map[catalog.ComprFeatKey]catalog.ComprFeatSpec {
 
 func bindProfFeatures() map[catalog.ProfFeatKey]catalog.ProfFeatSpec {
 	return map[catalog.ProfFeatKey]catalog.ProfFeatSpec{
-		PFSBOMSpec:                {Key: PFSBOMSpec, Required: true, Description: "Machine-readable SBOM (SPDX or CycloneDX declared)", Evaluate: profiles.SbomWithVersionCompliant},
-		PFSBOMSpecVersion:         {Key: PFSBOMSpec, Required: true, Description: "Supported spec version declared", Evaluate: profiles.SbomWithVersionCompliant},
-		PFSBOMSpecFileFormat:      {Key: PFSBOMSpec, Required: true, Description: "Supported file format", Evaluate: profiles.SbomWithVersionCompliant},
-		PFCompName:                {Key: PFSBOMSpec, Required: true, Description: "All components have names", Evaluate: profiles.CompWithNameCheck},
-		PFCompVersion:             {Key: PFSBOMSpec, Required: true, Description: "Components have versions", Evaluate: profiles.CompWithVersionCheck},
-		PFCompIdentifiers:         {Key: PFSBOMSpec, Required: true, Description: "Unique local identifiers PURL/CPE", Evaluate: profiles.CompWithUniqIDCheck},
-		PFCompSupplier:            {Key: PFSBOMSpec, Required: true, Description: "Supplier/manufacturer info", Evaluate: profiles.CompWithSupplierCheck},
-		PFCompDependencies:        {Key: PFSBOMSpec, Required: true, Description: "Dependency mapping present", Evaluate: profiles.CompWithDependencyCheck},
-		PFSBOMCreationTimestamp:   {Key: PFSBOMSpec, Required: true, Description: "Creation timestamp (ISO-8601)", Evaluate: profiles.SbomWithTimeStampCheck},
-		PFSBOMAuthors:             {Key: PFSBOMSpec, Required: true, Description: "Author/creator info", Evaluate: profiles.SbomWithAuthorsCheck},
-		PFSBOMNamespace:           {Key: PFSBOMSpec, Required: true, Description: "Unique SBOM identifier", Evaluate: profiles.SbomWithVersionCompliant},
-		PFCompLicense:             {Key: PFSBOMSpec, Required: true, Description: "License info", Evaluate: profiles.CompWithLicensesCheck},
-		PFCompChecksum:            {Key: PFSBOMSpec, Required: true, Description: "Checksums present", Evaluate: profiles.SbomWithVersionCompliant},
-		PFCompSourceCode:          {Key: PFSBOMSpec, Required: true, Description: "Source/VCS references", Evaluate: profiles.SbomWithVersionCompliant},
-		PFSBOMSchema:              {Key: PFSBOMSpec, Required: true, Evaluate: profiles.SbomWithVersionCompliant},
-		PFCompChecksumSHA256:      {Key: PFSBOMSpec, Required: true, Description: "SHA-256 or stronger", Evaluate: profiles.CompWithSHA256ChecksumsCheck},
-		PFSBOMSignature:           {Key: PFSBOMSpec, Required: true, Description: "Digital signature", Evaluate: profiles.SbomWithSignatureCheck},
-		PFCompValidLicense:        {Key: PFSBOMSpec, Required: true, Description: "Valid SPDX license IDs", Evaluate: profiles.SbomWithVersionCompliant},
-		PFSBOMDataLicense:         {Key: PFSBOMSpec, Required: true, Description: "Data license (CC0-1.0 etc.)", Evaluate: profiles.SbomWithVersionCompliant},
-		PFCompPURLID:              {Key: PFSBOMSpec, Required: true, Description: "PURLs", Evaluate: profiles.SbomWithVersionCompliant},
-		PFCompCPEID:               {Key: PFSBOMSpec, Required: true, Description: "CPEs", Evaluate: profiles.SbomWithVersionCompliant},
-		PFSBOMCreationToolVersion: {Key: PFSBOMSpec, Required: true, Description: "Creator tool + version", Evaluate: profiles.SbomWithVersionCompliant},
-		PFCompDeclaredLicense:     {Key: PFSBOMSpec, Required: true, Description: "Declared/original license", Evaluate: profiles.CompWithDeclaredLicensesCheck},
+		// NTIA
+		PFNTIASBOMSpec:              {Key: PFNTIASBOMSpec, Required: true, Description: "Machine-readable SBOM (SPDX or CycloneDX declared)", Evaluate: profiles.NTIASBOMWithVersionCompliant},
+		PFNTIACompName:              {Key: PFNTIACompName, Required: true, Description: "Component Name", Evaluate: profiles.CompWithName},
+		PFNTIACompVersion:           {Key: PFNTIACompVersion, Required: true, Description: "Components version", Evaluate: profiles.CompWithVersion},
+		PFNTIACompSupplier:          {Key: PFNTIACompSupplier, Required: true, Description: "Supplier/manufacturer info", Evaluate: profiles.CompWithSupplier},
+		PFNTIACompIdentifiers:       {Key: PFNTIACompIdentifiers, Required: true, Description: "Unique local identifiers PURL/CPE", Evaluate: profiles.CompWithUniqID},
+		PFNTIASBOMDependencies:      {Key: PFNTIASBOMDependencies, Required: true, Description: "Primary Comp With Dependenies", Evaluate: profiles.SbomWithDepedencies},
+		PFNTIASBOMAuthors:           {Key: PFNTIASBOMAuthors, Required: true, Description: "Author/creator info", Evaluate: profiles.SbomWithAuthors},
+		PFNTIASBOMCreationTimestamp: {Key: PFNTIASBOMCreationTimestamp, Required: true, Description: "Creation timestamp (ISO-8601)", Evaluate: profiles.SbomWithTimeStamp},
+
+		PFBSISBOMSpec:              {Key: PFBSISBOMSpec, Required: true, Description: "Machine-readable SBOM (SPDX or CycloneDX declared)", Evaluate: profiles.BSISBOMSpec},
+		PFBSISBOMSpecVersion:       {Key: PFBSISBOMSpecVersion, Required: true, Description: "Supported spec version declared", Evaluate: profiles.BSISBOMSpecVersion},
+		PFBSISBOMLifecycle:         {Key: PFBSISBOMLifecycle, Required: true, Description: "SBOM Lifecycle", Evaluate: profiles.BSISBOMBuildLifecycle},
+		PFBSISBOMDependencies:      {Key: PFBSISBOMDependencies, Required: true, Description: "Primary Comp With Dependenies", Evaluate: profiles.BSISBOMWithDepedencies},
+		PFBSISBOMAuthors:           {Key: PFBSISBOMAuthors, Required: true, Description: "Author/creator info", Evaluate: profiles.BSISBOMWithAuthors},
+		PFBSISBOMCreationTimestamp: {Key: PFBSISBOMCreationTimestamp, Required: true, Description: "Creation timestamp (ISO-8601)", Evaluate: profiles.BSISBOMWithTimeStamp},
+		PFBSISBOMNamespace:         {Key: PFBSISBOMNamespace, Required: true, Description: "Unique SBOM identifier", Evaluate: profiles.BSISBOMNamespace},
+		PFBSICompName:              {Key: PFBSICompName, Required: true, Description: "All components have names", Evaluate: profiles.BSICompWithName},
+		PFBSICompVersion:           {Key: PFBSICompVersion, Required: true, Description: "Components have versions", Evaluate: profiles.BSICompWithVersion},
+		PFBSICompLicense:           {Key: PFBSICompLicense, Required: true, Description: "License info", Evaluate: profiles.BSICompWithLicenses},
+		PFBSICompHash:              {Key: PFBSICompHash, Required: true, Description: "Checksums present", Evaluate: profiles.BSICompWithHash},
+		PFBSICompSourceCodeURL:     {Key: PFBSICompSourceCodeURL, Required: true, Description: "Source/VCS references", Evaluate: profiles.BSICompWithSourceCodeURICheck},
+		PFBSICompDownloadURL:       {Key: PFBSICompDownloadURL, Required: true, Description: "Source/VCS references", Evaluate: profiles.BSICompWithDownloadURI},
+		PFBSICompSourceCodeHash:    {Key: PFBSICompSourceCodeHash, Required: true, Description: "Source/VCS references", Evaluate: profiles.BSICompWithSourceCodeHash},
+		PFBSICompDependencies:      {Key: PFBSICompDependencies, Required: true, Description: "Dependency mapping present", Evaluate: profiles.BSICompWithDependency},
+
+		PFBSI20SBOMSignature:         {Key: PFBSI20SBOMSignature, Required: true, Description: "Digital signature", Evaluate: profiles.BSISBOMWithSignature},
+		PFBSI20SBOMLinks:             {Key: PFBSI20SBOMLinks, Required: true, Description: "Digital signature", Evaluate: profiles.BSISBOMWithBomLinks},
+		PFBSI20SBOMVulnerabilities:   {Key: PFBSI20SBOMVulnerabilities, Required: true, Description: "Digital signature", Evaluate: profiles.BSISBOMWithVulnerabilities},
+		PFBSI20CompChecksumSHA256:    {Key: PFBSI20CompChecksumSHA256, Required: true, Description: "Digital signature", Evaluate: profiles.BSICompWithSHA256Checksums},
+		PFBSI20CompAssociatedLicense: {Key: PFBSI20CompAssociatedLicense, Required: true, Description: "Digital signature", Evaluate: profiles.BSICompWithAssociatedLicenses},
+
+		// OCT
+		PFOCTSBOMSpec:             {Key: PFOCTSBOMSpec, Required: true, Description: "Machine-readable SBOM (SPDX or CycloneDX declared)", Evaluate: profiles.OCTSBOMSpec},
+		PFOCTSBOMSpecVersion:      {Key: PFOCTSBOMSpecVersion, Required: true, Description: "Supported spec version declared", Evaluate: profiles.OCTSBOMSpecVersion},
+		PFOCTCompName:             {Key: PFOCTCompName, Required: true, Description: "All components have names", Evaluate: profiles.OCTCompWithName},
+		PFOCTCompVersion:          {Key: PFOCTCompVersion, Required: true, Description: "Components have versions", Evaluate: profiles.OCTCompWithVersion},
+		PFOCTSBOMNamespace:        {Key: PFOCTSBOMNamespace, Required: true, Description: "Unique SBOM identifier", Evaluate: profiles.OCTSBOMNamespace},
+		PFOCTCompLicenseDeclared:  {Key: PFOCTCompLicenseDeclared, Required: true, Description: "License info", Evaluate: profiles.OCTCompWithDeclaredLicense},
+		PFOCTCompLicenseConcluded: {Key: PFOCTCompLicenseConcluded, Required: true, Description: "License info", Evaluate: profiles.OCTCompWithConcludedLicense},
+
+		PFOCTSBOMDataLicense:  {Key: PFOCTSBOMDataLicense, Required: true, Description: "Data license (CC0-1.0 etc.)", Evaluate: profiles.OCTSBOMDataLicense},
+		PFOCTSBOMCreationTool: {Key: PFOCTSBOMCreationTool, Required: true, Description: "Creator tool + version", Evaluate: profiles.OCTSBOMToolCreation},
+		PFOCTSBOMSpdxID:       {Key: PFOCTSBOMSpdxID, Required: true, Description: "Document SPDXID", Evaluate: profiles.OCTSBOMSpdxID},
+		PFOCTSBOMName:         {Key: PFOCTSBOMName, Required: true, Description: "SBOM name", Evaluate: profiles.OCTSBOMName},
+		PFOCTSBOMComment:      {Key: PFOCTSBOMComment, Required: false, Description: "Additional info", Evaluate: profiles.OCTSBOMComment},
+		PFOCTSBOMOrg:          {Key: PFOCTSBOMOrg, Required: true, Description: "Organization info", Evaluate: profiles.OCTSBOMCreationOrganization},
+		PFOCTCompSpdxID:       {Key: PFOCTCompSpdxID, Required: true, Description: "Unique SPDX IDs", Evaluate: profiles.OCTCompWithSpdxID},
+		PFOCTCompFileAnalyzed: {Key: PFOCTCompFileAnalyzed, Required: false, Description: "File analysis status", Evaluate: profiles.OCTCompWithFileAnalyzed},
+		PFOCTCompCopyright:    {Key: PFOCTCompCopyright, Required: true, Description: "Copyright text", Evaluate: profiles.OCTCompWithCopyright},
 	}
 }
 
@@ -405,16 +453,14 @@ func bindProfiles() map[catalog.ProfileKey]catalog.ProfSpec {
 			Key:  ProfileNTIA,
 			Name: "NTIA Minimum Elements",
 			Features: []catalog.ProfFeatKey{
-				PFSBOMSpec,
-				PFSBOMSpecVersion,
-				PFSBOMSpecFileFormat,
+				PFSBOMCompliant,
 				PFCompName,
+				PFCompSupplier,
 				PFCompVersion,
 				PFCompIdentifiers,
-				PFCompSupplier,
-				PFCompDependencies,
-				PFSBOMCreationTimestamp,
+				PFSBOMDependencies,
 				PFSBOMAuthors,
+				PFSBOMCreationTimestamp,
 			},
 		},
 
@@ -424,16 +470,20 @@ func bindProfiles() map[catalog.ProfileKey]catalog.ProfSpec {
 			Features: []catalog.ProfFeatKey{
 				PFSBOMSpec,
 				PFSBOMSpecVersion,
-				PFSBOMCreationTimestamp,
+				PFSBOMLifecycle,
+				PFSBOMDependencies,
 				PFSBOMAuthors,
+				PFSBOMCreationTimestamp,
 				PFSBOMNamespace,
+
 				PFCompName,
 				PFCompVersion,
 				PFCompLicense,
 				PFCompChecksum,
-				PFCompDependencies,
 				PFCompSourceCode,
-				PFCompSupplier,
+				PFCompDownloadURL,
+				PFCompSourceCodeHash,
+				PFCompDependencies,
 			},
 		},
 
@@ -443,21 +493,26 @@ func bindProfiles() map[catalog.ProfileKey]catalog.ProfSpec {
 			Features: []catalog.ProfFeatKey{
 				PFSBOMSpec,
 				PFSBOMSpecVersion,
-				PFSBOMCreationTimestamp,
+				PFSBOMLifecycle,
+				PFSBOMDependencies,
 				PFSBOMAuthors,
-				PFSBOMSpecFileFormat,
-				PFSBOMSchema,
-				PFCompChecksum,
-				PFCompChecksumSHA256,
-				PFSBOMSignature,
-				PFCompValidLicense,
-				PFSBOMDataLicense,
+				PFSBOMCreationTimestamp,
+				PFSBOMNamespace,
+
 				PFCompName,
 				PFCompVersion,
-				PFCompIdentifiers,
-				PFCompPURLID,
-				PFCompCPEID,
+				PFCompLicense,
+				PFCompChecksum,
+				PFCompSourceCode,
+				PFCompDownloadURL,
+				PFCompSourceCodeHash,
 				PFCompDependencies,
+
+				PFSBOMSignature,
+				PFSBOMLinks,
+				PFSBOMVulnerabilities,
+				PFCompWithHash256,
+				PFCompAssociatedLicense,
 			},
 		},
 
@@ -467,11 +522,22 @@ func bindProfiles() map[catalog.ProfileKey]catalog.ProfSpec {
 			Features: []catalog.ProfFeatKey{
 				PFSBOMSpec,
 				PFSBOMSpecVersion,
+				PFSBOMSpdxID,
+				PFSBOMName,
+				PFSBOMComment,
+				PFSBOMOrg,
+				PFSBOMCreatorTool,
 				PFSBOMNamespace,
 				PFSBOMDataLicense,
-				PFSBOMCreationToolVersion,
+
 				PFCompName,
 				PFCompVersion,
+				PFCompSpdxID,
+				PFCompDownloadURL,
+				PFCompFileAnalyzed,
+				PFCompLicenseConcluded,
+				PFCompLicenseDeclared,
+				PFCompCopyright,
 				PFCompIdentifiers,
 				PFCompLicense,
 				PFCompDeclaredLicense,

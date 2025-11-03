@@ -26,7 +26,7 @@ func (r *Reporter) detailedReport() {
 	for _, r := range r.Results {
 		outDoc := [][]string{}
 		header := []string{}
-		if r.Comprehensive.CatResult != nil && r.Profiles.ProfResult != nil {
+		if r.Comprehensive != nil && r.Profiles != nil {
 			for _, cat := range r.Comprehensive.CatResult {
 				for _, feat := range cat.Features {
 					l := []string{cat.Name, feat.Key, fmt.Sprintf("%.1f/10.0", feat.Score), feat.Desc}
@@ -41,7 +41,7 @@ func (r *Reporter) detailedReport() {
 				}
 			}
 
-		} else if r.Comprehensive.CatResult != nil {
+		} else if r.Comprehensive != nil {
 			header = []string{"Category", "Feature", "Score", "Desc"}
 			for _, cat := range r.Comprehensive.CatResult {
 				for _, feat := range cat.Features {
@@ -49,7 +49,7 @@ func (r *Reporter) detailedReport() {
 					outDoc = append(outDoc, l)
 				}
 			}
-		} else if r.Profiles.ProfResult != nil {
+		} else if r.Profiles != nil {
 			header = []string{"Requirment", "Feature", "Status", "Desc"}
 
 			for _, pro := range r.Profiles.ProfResult {

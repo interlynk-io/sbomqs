@@ -124,10 +124,10 @@ func bsiSpec(doc sbom.Document) *db.Record {
 	result := ""
 	score := 0.0
 
-	if vToLower == "spdx" {
+	if vToLower == string(sbom.SBOMSpecSPDX) {
 		result = v
 		score = 10.0
-	} else if vToLower == "cyclonedx" {
+	} else if vToLower == string(sbom.SBOMSpecCDX) {
 		result = v
 		score = 10.0
 	}
@@ -141,7 +141,7 @@ func bsiSpecVersion(doc sbom.Document) *db.Record {
 	result := ""
 	score := 0.0
 
-	if spec == "spdx" {
+	if spec == string(sbom.SBOMSpecSPDX) {
 		count := lo.Count(validBsiSpdxVersions, version)
 		validate := lo.Contains(validSpdxVersion, version)
 		if validate {
@@ -153,7 +153,7 @@ func bsiSpecVersion(doc sbom.Document) *db.Record {
 				score = 0.0
 			}
 		}
-	} else if spec == "cyclonedx" {
+	} else if spec == string(sbom.SBOMSpecCDX) {
 		count := lo.Count(validBsiCdxVersions, version)
 		if count > 0 {
 			result = version
