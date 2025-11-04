@@ -15,7 +15,6 @@
 package extractors
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
@@ -28,56 +27,43 @@ import (
 func CompWithName(doc sbom.Document) catalog.ComprFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
-		return formulae.ScoreNA()
+		return formulae.ScoreCompNA()
 	}
 
 	have := lo.CountBy(doc.Components(), func(c sbom.GetComponent) bool {
 		return strings.TrimSpace(c.GetName()) != ""
 	})
 
-	return catalog.ComprFeatScore{
-		Score:  formulae.PerComponentScore(have, len(comps)),
-		Desc:   formulae.CompDescription(have, len(comps), "names"),
-		Ignore: false,
-	}
+	return formulae.ScoreCompFull(have, len(comps), "names", false)
 }
 
 // CompWithVersion: percentage of components that have a non-empty version.
 func CompWithVersion(doc sbom.Document) catalog.ComprFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
-		return formulae.ScoreNA()
+		return formulae.ScoreCompNA()
 	}
 
 	have := lo.CountBy(doc.Components(), func(c sbom.GetComponent) bool {
 		return strings.TrimSpace(c.GetVersion()) != ""
 	})
 
-	return catalog.ComprFeatScore{
-		Score:  formulae.PerComponentScore(have, len(comps)),
-		Desc:   formulae.CompDescription(have, len(comps), "versions"),
-		Ignore: false,
-	}
+	return formulae.ScoreCompFull(have, len(comps), "versions", false)
 }
 
 // CompWithUniqIDs: percentage of components whose ID is present and unique within the SBOM.
 func CompWithUniqLocalIDs(doc sbom.Document) catalog.ComprFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
-		return formulae.ScoreNA()
+		return formulae.ScoreCompNA()
 	}
 
 	have := lo.FilterMap(doc.Components(), func(c sbom.GetComponent, _ int) (string, bool) {
 		if c.GetID() == "" {
-			fmt.Println("c.GetID(): ", c.GetID())
 			return "", false
 		}
 		return strings.Join([]string{doc.Spec().GetNamespace(), c.GetID()}, ""), true
 	})
 
-	return catalog.ComprFeatScore{
-		Score:  formulae.PerComponentScore(len(have), len(comps)),
-		Desc:   formulae.CompDescription(len(have), len(comps), "unique IDs"),
-		Ignore: false,
-	}
+	return formulae.ScoreCompFull(len(have), len(comps), "unique IDs", false)
 }

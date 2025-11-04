@@ -28,25 +28,21 @@ import (
 func CompWithDependencies(doc sbom.Document) catalog.ComprFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
-		return formulae.ScoreNA()
+		return formulae.ScoreCompNA()
 	}
 
 	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
 		return c.HasRelationShips() || c.CountOfDependencies() > 0
 	})
 
-	return catalog.ComprFeatScore{
-		Score:  formulae.PerComponentScore(have, len(comps)),
-		Desc:   formulae.CompDescription(have, len(comps), "dependencies"),
-		Ignore: false,
-	}
+	return formulae.ScoreCompFull(have, len(comps), "dependencies", false)
 }
 
 // comp_with_declared_completeness: Completeness declaration present
 func CompWithCompleteness(doc sbom.Document) catalog.ComprFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
-		return formulae.ScoreNA()
+		return formulae.ScoreCompNA()
 	}
 
 	spec := doc.Spec().GetSpecType()
@@ -98,25 +94,21 @@ func SBOMWithPrimaryComponent(doc sbom.Document) catalog.ComprFeatScore {
 func CompWithSourceCode(doc sbom.Document) catalog.ComprFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
-		return formulae.ScoreNA()
+		return formulae.ScoreCompNA()
 	}
 
 	have := lo.CountBy(doc.Components(), func(c sbom.GetComponent) bool {
 		return strings.TrimSpace(c.GetSourceCodeURL()) != ""
 	})
 
-	return catalog.ComprFeatScore{
-		Score:  formulae.PerComponentScore(have, len(comps)),
-		Desc:   formulae.CompDescription(have, len(comps), "source URIs"),
-		Ignore: false,
-	}
+	return formulae.ScoreCompFull(have, len(comps), "source URIs", false)
 }
 
 // comp_with_supplier
 func CompWithSupplier(doc sbom.Document) catalog.ComprFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
-		return formulae.ScoreNA()
+		return formulae.ScoreCompNA()
 	}
 
 	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
@@ -126,27 +118,19 @@ func CompWithSupplier(doc sbom.Document) catalog.ComprFeatScore {
 		return c.Suppliers().IsPresent() && hasName && hasContact
 	})
 
-	return catalog.ComprFeatScore{
-		Score:  formulae.PerComponentScore(have, len(comps)),
-		Desc:   formulae.CompDescription(have, len(comps), "suppliers"),
-		Ignore: false,
-	}
+	return formulae.ScoreCompFull(have, len(comps), "suppliers", false)
 }
 
 // comp_with_primary_purpose
 func CompWithPackagePurpose(doc sbom.Document) catalog.ComprFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
-		return formulae.ScoreNA()
+		return formulae.ScoreCompNA()
 	}
 
 	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
 		return c.PrimaryPurpose() != ""
 	})
 
-	return catalog.ComprFeatScore{
-		Score:  formulae.PerComponentScore(have, len(comps)),
-		Desc:   formulae.CompDescription(have, len(comps), "type"),
-		Ignore: false,
-	}
+	return formulae.ScoreCompFull(have, len(comps), "type", false)
 }

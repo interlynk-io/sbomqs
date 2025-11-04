@@ -28,54 +28,42 @@ import (
 func CompWithLicenses(doc sbom.Document) catalog.ComprFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
-		return formulae.ScoreNA()
+		return formulae.ScoreCompNA()
 	}
 
 	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
 		return componentHasAnyConcluded(c)
 	})
 
-	return catalog.ComprFeatScore{
-		Score:  formulae.PerComponentScore(have, len(comps)),
-		Desc:   formulae.CompDescription(have, len(comps), "licenses"),
-		Ignore: false,
-	}
+	return formulae.ScoreCompFull(have, len(comps), "licenses", false)
 }
 
 // CompWithValidLicenses validates concluded licenses
 func CompWithValidLicenses(doc sbom.Document) catalog.ComprFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
-		return formulae.ScoreNA()
+		return formulae.ScoreCompNA()
 	}
 
 	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
 		return validationCheckConcludedLicenses(c)
 	})
 
-	return catalog.ComprFeatScore{
-		Score:  formulae.PerComponentScore(have, len(comps)),
-		Desc:   formulae.CompDescription(have, len(comps), "valid SPDX licenses"),
-		Ignore: false,
-	}
+	return formulae.ScoreCompFull(have, len(comps), "valid SPDX licenses", false)
 }
 
 // CompWithDeclaredLicenses look for declared licenses
 func CompWithDeclaredLicenses(doc sbom.Document) catalog.ComprFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
-		return formulae.ScoreNA()
+		return formulae.ScoreCompNA()
 	}
 
 	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
 		return componentHasAnyDeclared(c)
 	})
 
-	return catalog.ComprFeatScore{
-		Score:  formulae.PerComponentScore(have, len(comps)),
-		Desc:   formulae.CompDescription(have, len(comps), "declared"),
-		Ignore: false,
-	}
+	return formulae.ScoreCompFull(have, len(comps), "declared licenses", false)
 }
 
 // SBOMDataLicense check for SBOM license
@@ -115,7 +103,7 @@ func SBOMDataLicense(doc sbom.Document) catalog.ComprFeatScore {
 func CompWithDeprecatedLicenses(doc sbom.Document) catalog.ComprFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
-		return formulae.ScoreNA()
+		return formulae.ScoreCompNA()
 	}
 
 	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
@@ -134,7 +122,7 @@ func CompWithDeprecatedLicenses(doc sbom.Document) catalog.ComprFeatScore {
 func CompWithRestrictiveLicenses(doc sbom.Document) catalog.ComprFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
-		return formulae.ScoreNA()
+		return formulae.ScoreCompNA()
 	}
 
 	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {

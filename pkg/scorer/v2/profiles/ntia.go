@@ -15,20 +15,20 @@
 package profiles
 
 import (
-	"fmt"
-	"strings"
-	"time"
-
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/catalog"
 	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/formulae"
 	"github.com/samber/lo"
 )
 
-func CompWithSupplierCheck(doc sbom.Document) catalog.ProfFeatScore {
+func SBOMWithAutomationSpec(doc sbom.Document) catalog.ProfFeatScore {
+	return SBOMAutomationSpec(doc)
+}
+
+func CompWithSupplier(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
-		formulae.SetNA()
+		return formulae.ScoreProfNA()
 	}
 
 	have := lo.CountBy(doc.Components(), func(c sbom.GetComponent) bool {
@@ -42,114 +42,26 @@ func CompWithSupplierCheck(doc sbom.Document) catalog.ProfFeatScore {
 	}
 }
 
-func CompWithNameCheck(doc sbom.Document) catalog.ProfFeatScore {
-	comps := doc.Components()
-	if len(comps) == 0 {
-		formulae.SetNA()
-	}
-
-	have := lo.CountBy(doc.Components(), func(c sbom.GetComponent) bool {
-		return c.GetName() != ""
-	})
-
-	return catalog.ProfFeatScore{
-		Score:  formulae.PerComponentScore(have, len(comps)),
-		Desc:   formulae.CompDescription(have, len(comps), "names"),
-		Ignore: false,
-	}
+func CompWithName(doc sbom.Document) catalog.ProfFeatScore {
+	return CompName(doc)
 }
 
-func CompWithVersionCheck(doc sbom.Document) catalog.ProfFeatScore {
-	comps := doc.Components()
-	if len(comps) == 0 {
-		formulae.SetNA()
-	}
-
-	have := lo.CountBy(doc.Components(), func(c sbom.GetComponent) bool {
-		return c.GetVersion() != ""
-	})
-
-	return catalog.ProfFeatScore{
-		Score:  formulae.PerComponentScore(have, len(comps)),
-		Desc:   formulae.CompDescription(have, len(comps), "names"),
-		Ignore: false,
-	}
+func CompWithVersion(doc sbom.Document) catalog.ProfFeatScore {
+	return CompVersion(doc)
 }
 
-func CompWithUniqIDCheck(doc sbom.Document) catalog.ProfFeatScore {
-	comps := doc.Components()
-	if len(comps) == 0 {
-		formulae.SetNA()
-	}
-
-	have := lo.FilterMap(doc.Components(), func(c sbom.GetComponent, _ int) (string, bool) {
-		if c.GetID() == "" {
-			return "", false
-		}
-		return strings.Join([]string{doc.Spec().GetNamespace(), c.GetID()}, ""), true
-	})
-
-	return catalog.ProfFeatScore{
-		Score:  formulae.PerComponentScore(len(have), len(comps)),
-		Desc:   formulae.CompDescription(len(have), len(comps), "names"),
-		Ignore: false,
-	}
+func CompWithUniqID(doc sbom.Document) catalog.ProfFeatScore {
+	return CompWithUniqID(doc)
 }
 
-func SbomWithDepedenciesCheck(doc sbom.Document) catalog.ProfFeatScore {
-	var have int
-	if doc.PrimaryComp() != nil {
-		have = doc.PrimaryComp().GetTotalNoOfDependencies()
-	}
-
-	return catalog.ProfFeatScore{
-		Score:  formulae.BooleanScore(true),
-		Desc:   fmt.Sprintf("primary comp has %d dependencies", have),
-		Ignore: false,
-	}
+func SbomWithDepedencies(doc sbom.Document) catalog.ProfFeatScore {
+	return SBOMDepedencies(doc)
 }
 
-func SbomWithAuthorsCheck(doc sbom.Document) catalog.ProfFeatScore {
-	total := len(doc.Authors())
-
-	if total == 0 {
-		return catalog.ProfFeatScore{
-			Score:  formulae.BooleanScore(false),
-			Desc:   "0 authors",
-			Ignore: false,
-		}
-	}
-
-	return catalog.ProfFeatScore{
-		Score:  formulae.BooleanScore(true),
-		Desc:   fmt.Sprintf("%d authors", total),
-		Ignore: false,
-	}
+func SbomWithAuthors(doc sbom.Document) catalog.ProfFeatScore {
+	return SBOMAuthors(doc)
 }
 
-func SbomWithTimeStampCheck(doc sbom.Document) catalog.ProfFeatScore {
-	ts := strings.TrimSpace(doc.Spec().GetCreationTimestamp())
-	if ts == "" {
-		return catalog.ProfFeatScore{
-			Score:  formulae.BooleanScore(false),
-			Desc:   formulae.MissingField("timestamp"),
-			Ignore: false,
-		}
-	}
-
-	if _, err := time.Parse(time.RFC3339, ts); err != nil {
-		if _, err2 := time.Parse(time.RFC3339Nano, ts); err2 != nil {
-			return catalog.ProfFeatScore{
-				Score:  formulae.BooleanScore(false),
-				Desc:   fmt.Sprintf("invalid timestamp: %s", ts),
-				Ignore: false,
-			}
-		}
-	}
-
-	return catalog.ProfFeatScore{
-		Score:  formulae.BooleanScore(true),
-		Desc:   ts,
-		Ignore: false,
-	}
+func SbomWithTimeStamp(doc sbom.Document) catalog.ProfFeatScore {
+	return SBOMCreationTimestamp(doc)
 }

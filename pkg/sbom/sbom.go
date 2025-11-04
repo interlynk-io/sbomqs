@@ -77,9 +77,9 @@ func SupportedSBOMSpecVersions(f string) []string {
 
 func SupportedSBOMFileFormats(f string) []string {
 	switch strings.ToLower(f) {
-	case "cyclonedx":
+	case string(SBOMSpecCDX):
 		return cdxFileFormats
-	case "spdx":
+	case string(SBOMSpecSPDX):
 		return spdxFileFormats
 	default:
 		return []string{}

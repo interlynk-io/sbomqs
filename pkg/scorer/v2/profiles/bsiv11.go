@@ -17,232 +17,99 @@ package profiles
 import (
 	"fmt"
 	"strings"
-	"time"
 
-	"github.com/interlynk-io/sbomqs/pkg/compliance/common"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/catalog"
 	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/formulae"
 	"github.com/samber/lo"
 )
 
-func BSISBOMWithAuthors(doc sbom.Document) catalog.ProfFeatScore {
-	total := len(doc.Authors())
-
-	if total == 0 {
-		return catalog.ProfFeatScore{
-			Score:  formulae.BooleanScore(false),
-			Desc:   "0 authors",
-			Ignore: false,
-		}
-	}
-
-	return catalog.ProfFeatScore{
-		Score:  formulae.BooleanScore(true),
-		Desc:   fmt.Sprintf("%d authors", total),
-		Ignore: false,
-	}
+// BSISBOMSpec
+func BSISBOMSpec(doc sbom.Document) catalog.ProfFeatScore {
+	return SBOMSpec(doc)
 }
 
-// TODO
-func BSICompWithHash(doc sbom.Document) catalog.ProfFeatScore {
-	comps := doc.Components()
-	if len(comps) == 0 {
-		formulae.SetNA()
-	}
-
-	have := lo.CountBy(doc.Components(), func(c sbom.GetComponent) bool {
-		return common.AreLicensesValid(c.GetLicenses())
-	})
-
-	return catalog.ProfFeatScore{
-		Score:  formulae.PerComponentScore(have, len(comps)),
-		Desc:   formulae.CompDescription(have, len(comps), "names"),
-		Ignore: false,
-	}
+// BSISBOMSpecVersion
+func BSISBOMSpecVersion(doc sbom.Document) catalog.ProfFeatScore {
+	return SBOMSpecVersion(doc)
 }
 
-// // TODO
-// func BSICompWithSourceCode(doc sbom.Document) catalog.ProfFeatScore {
-// 	comps := doc.Components()
-// 	if len(comps) == 0 {
-// 		formulae.SetNA()
-// 	}
-
-// 	have := lo.CountBy(doc.Components(), func(c sbom.GetComponent) bool {
-// 		return common.AreLicensesValid(c.GetLicenses())
-// 	})
-
-// 	return catalog.ProfFeatScore{
-// 		Score:  formulae.PerComponentScore(have, len(comps)),
-// 		Desc:   formulae.CompDescription(have, len(comps), "names"),
-// 		Ignore: false,
-// 	}
-// }
-
-func BSICompWithLicenses(doc sbom.Document) catalog.ProfFeatScore {
-	comps := doc.Components()
-	if len(comps) == 0 {
-		formulae.SetNA()
-	}
-
-	have := lo.CountBy(doc.Components(), func(c sbom.GetComponent) bool {
-		return common.AreLicensesValid(c.GetLicenses())
-	})
-
-	return catalog.ProfFeatScore{
-		Score:  formulae.PerComponentScore(have, len(comps)),
-		Desc:   formulae.CompDescription(have, len(comps), "names"),
-		Ignore: false,
-	}
-}
-
-func BSISBOMWithTimeStamp(doc sbom.Document) catalog.ProfFeatScore {
-	ts := strings.TrimSpace(doc.Spec().GetCreationTimestamp())
-	if ts == "" {
-		return catalog.ProfFeatScore{
-			Score:  formulae.BooleanScore(false),
-			Desc:   formulae.MissingField("timestamp"),
-			Ignore: false,
-		}
-	}
-
-	if _, err := time.Parse(time.RFC3339, ts); err != nil {
-		if _, err2 := time.Parse(time.RFC3339Nano, ts); err2 != nil {
-			return catalog.ProfFeatScore{
-				Score:  formulae.BooleanScore(false),
-				Desc:   fmt.Sprintf("invalid timestamp: %s", ts),
-				Ignore: false,
-			}
-		}
-	}
-
-	return catalog.ProfFeatScore{
-		Score:  formulae.BooleanScore(true),
-		Desc:   ts,
-		Ignore: false,
-	}
-}
-
-func BSICompWithSHA256Checksums(doc sbom.Document) catalog.ProfFeatScore {
-	comps := doc.Components()
-	if len(comps) == 0 {
-		formulae.SetNA()
-	}
-
-	algos := []string{"SHA256", "SHA-256", "sha256", "sha-256"}
-
-	have := lo.CountBy(doc.Components(), func(c sbom.GetComponent) bool {
-		return lo.ContainsBy(c.GetChecksums(), func(checksum sbom.GetChecksum) bool {
-			return lo.Contains(algos, checksum.GetAlgo())
-		})
-	})
-
-	return catalog.ProfFeatScore{
-		Score:  formulae.PerComponentScore(have, len(comps)),
-		Desc:   formulae.CompDescription(have, len(comps), "names"),
-		Ignore: false,
-	}
+// BSISBOMBuildLifecycle: NA for SPDX; in CDX, look for "build" lifecycle.
+func BSISBOMBuildLifecycle(doc sbom.Document) catalog.ProfFeatScore {
+	return SBOMLifeCycle(doc)
 }
 
 func BSISBOMWithDepedencies(doc sbom.Document) catalog.ProfFeatScore {
-	var have int
-	if doc.PrimaryComp() != nil {
-		have = doc.PrimaryComp().GetTotalNoOfDependencies()
-	}
+	return SBOMDepedencies(doc)
+}
 
-	return catalog.ProfFeatScore{
-		Score:  formulae.BooleanScore(true),
-		Desc:   fmt.Sprintf("primary comp has %d dependencies", have),
-		Ignore: false,
-	}
+func BSISBOMWithAuthors(doc sbom.Document) catalog.ProfFeatScore {
+	return SBOMAuthors(doc)
+}
+
+// BSISBOMWithTimeStamp
+func BSISBOMWithTimeStamp(doc sbom.Document) catalog.ProfFeatScore {
+	return SBOMCreationTimestamp(doc)
+}
+
+// BSISBOMNamespace
+func BSISBOMNamespace(doc sbom.Document) catalog.ProfFeatScore {
+	return SBOMNamespace(doc)
+}
+
+// BSICompWithName
+func BSICompWithName(doc sbom.Document) catalog.ProfFeatScore {
+	return CompName(doc)
+}
+
+// BSICompWithVersion
+func BSICompWithVersion(doc sbom.Document) catalog.ProfFeatScore {
+	return CompVersion(doc)
+}
+
+// BSICompWithLicenses
+func BSICompWithLicenses(doc sbom.Document) catalog.ProfFeatScore {
+	return CompLicenses(doc)
+}
+
+// BSICompWithHash
+func BSICompWithHash(doc sbom.Document) catalog.ProfFeatScore {
+	return CompHash(doc)
 }
 
 func BSICompWithSourceCodeURI(doc sbom.Document) catalog.ProfFeatScore {
-	comps := doc.Components()
-	if len(comps) == 0 {
-		formulae.SetNA()
-	}
+	return CompSourceCodeURL(doc)
+}
 
-	have := lo.CountBy(doc.Components(), func(c sbom.GetComponent) bool {
-		return c.GetSourceCodeURL() != ""
-	})
-
-	return catalog.ProfFeatScore{
-		Score:  formulae.PerComponentScore(have, len(comps)),
-		Desc:   formulae.CompDescription(have, len(comps), "names"),
-		Ignore: false,
-	}
+func BSICompWithDownloadURI(doc sbom.Document) catalog.ProfFeatScore {
+	return CompDownloadCodeURL(doc)
 }
 
 func BSICompWithSourceCodeHash(doc sbom.Document) catalog.ProfFeatScore {
-	comps := doc.Components()
-	if len(comps) == 0 {
-		formulae.SetNA()
-	}
-
-	have := lo.CountBy(doc.Components(), func(c sbom.GetComponent) bool {
-		return c.SourceCodeHash() != ""
-	})
-
-	return catalog.ProfFeatScore{
-		Score:  formulae.PerComponentScore(have, len(comps)),
-		Desc:   formulae.CompDescription(have, len(comps), "names"),
-		Ignore: false,
-	}
+	return CompSourceCodeHash(doc)
 }
+
+func BSICompWithDependency(doc sbom.Document) catalog.ProfFeatScore {
+	return CompDependencies(doc)
+}
+
+// ---------------------------------------------
+// ---------------------------------------------
 
 func BSICompWithExecutableURICheck(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
-		formulae.SetNA()
+		return formulae.ScoreProfNA()
 	}
 
 	have := lo.CountBy(doc.Components(), func(c sbom.GetComponent) bool {
 		return c.GetDownloadLocationURL() != ""
 	})
 
-	return catalog.ProfFeatScore{
-		Score:  formulae.PerComponentScore(have, len(comps)),
-		Desc:   formulae.CompDescription(have, len(comps), "names"),
-		Ignore: false,
-	}
+	return formulae.ScoreProfFull(have, len(comps), "executable url", false)
 }
 
 // TODO
-func BSICompWithDownloadURI(doc sbom.Document) catalog.ProfFeatScore {
-	comps := doc.Components()
-	if len(comps) == 0 {
-		formulae.SetNA()
-	}
-
-	have := lo.CountBy(doc.Components(), func(c sbom.GetComponent) bool {
-		return c.GetDownloadLocationURL() != ""
-	})
-
-	return catalog.ProfFeatScore{
-		Score:  formulae.PerComponentScore(have, len(comps)),
-		Desc:   formulae.CompDescription(have, len(comps), "names"),
-		Ignore: false,
-	}
-}
-
-func BSICompWithDependency(doc sbom.Document) catalog.ProfFeatScore {
-	comps := doc.Components()
-	if len(comps) == 0 {
-		formulae.SetNA()
-	}
-
-	have := lo.CountBy(doc.Components(), func(c sbom.GetComponent) bool {
-		return c.HasRelationShips()
-	})
-
-	return catalog.ProfFeatScore{
-		Score:  formulae.PerComponentScore(have, len(comps)),
-		Desc:   formulae.CompDescription(have, len(comps), "names"),
-		Ignore: false,
-	}
-}
 
 // specWithVersionCompliant
 // - 10 if spec+version in BSI-supported lists,
@@ -273,70 +140,10 @@ func BSISbomWithVersionCompliant(doc sbom.Document) catalog.ProfFeatScore {
 // sbomWithURICheck
 func BSISbomWithURICheck(doc sbom.Document) catalog.ProfFeatScore {
 	if strings.TrimSpace(doc.Spec().GetURI()) == "" {
-		return catalog.ProfFeatScore{
-			Score:  0.0,
-			Desc:   "no URI",
-			Ignore: false,
-		}
-	}
-	return catalog.ProfFeatScore{
-		Score:  10.0,
-		Desc:   "has URI",
-		Ignore: false,
-	}
-}
-
-// sbomWithURICheck
-func BSISBOMSpec(doc sbom.Document) catalog.ProfFeatScore {
-	spec := doc.Spec().GetSpecType()
-	specToLower := strings.Trim(strings.ToLower(spec), " ")
-
-	if specToLower == string(sbom.SBOMSpecSPDX) {
-		return catalog.ProfFeatScore{
-			Score:  10.0,
-			Desc:   "has spdx spec",
-			Ignore: false,
-		}
-	} else if specToLower == string(sbom.SBOMSpecCDX) {
-		return catalog.ProfFeatScore{
-			Score:  10.0,
-			Desc:   "has cyclonedx spec",
-			Ignore: false,
-		}
+		return formulae.ScoreSBOMProfNA("no URI", false)
 	}
 
-	return catalog.ProfFeatScore{
-		Score:  0.0,
-		Desc:   "has URI",
-		Ignore: false,
-	}
-}
-
-// TODO
-func BSISBOMSpecVersion(doc sbom.Document) catalog.ProfFeatScore {
-	spec := doc.Spec().GetSpecType()
-	specToLower := strings.Trim(strings.ToLower(spec), " ")
-	// version := doc.Spec().GetVersion()
-
-	if specToLower == string(sbom.SBOMSpecSPDX) {
-		return catalog.ProfFeatScore{
-			Score:  10.0,
-			Desc:   "has spdx spec",
-			Ignore: false,
-		}
-	} else if specToLower == string(sbom.SBOMSpecCDX) {
-		return catalog.ProfFeatScore{
-			Score:  10.0,
-			Desc:   "has cyclonedx spec",
-			Ignore: false,
-		}
-	}
-
-	return catalog.ProfFeatScore{
-		Score:  0.0,
-		Desc:   "has URI",
-		Ignore: false,
-	}
+	return formulae.ScoreSBOMProfFull("URI", false)
 }
 
 // TODO
@@ -346,83 +153,14 @@ func BSISBOMLifecycle(doc sbom.Document) catalog.ProfFeatScore {
 	// version := doc.Spec().GetVersion()
 
 	if specToLower == string(sbom.SBOMSpecSPDX) {
-		return catalog.ProfFeatScore{
-			Score:  10.0,
-			Desc:   "has spdx spec",
-			Ignore: false,
-		}
+		return formulae.ScoreSBOMProfFull("spdx spec", false)
 	} else if specToLower == string(sbom.SBOMSpecCDX) {
-		return catalog.ProfFeatScore{
-			Score:  10.0,
-			Desc:   "has cyclonedx spec",
-			Ignore: false,
-		}
+		return formulae.ScoreSBOMProfFull("cyclonedx spec", false)
 	}
 
 	return catalog.ProfFeatScore{
 		Score:  0.0,
 		Desc:   "has URI",
-		Ignore: false,
-	}
-}
-
-// TODO
-func BSISBOMNamespace(doc sbom.Document) catalog.ProfFeatScore {
-	spec := doc.Spec().GetSpecType()
-	specToLower := strings.Trim(strings.ToLower(spec), " ")
-	// version := doc.Spec().GetVersion()
-
-	if specToLower == string(sbom.SBOMSpecSPDX) {
-		return catalog.ProfFeatScore{
-			Score:  10.0,
-			Desc:   "has spdx spec",
-			Ignore: false,
-		}
-	} else if specToLower == string(sbom.SBOMSpecCDX) {
-		return catalog.ProfFeatScore{
-			Score:  10.0,
-			Desc:   "has cyclonedx spec",
-			Ignore: false,
-		}
-	}
-
-	return catalog.ProfFeatScore{
-		Score:  0.0,
-		Desc:   "has URI",
-		Ignore: false,
-	}
-}
-
-func BSICompWithName(doc sbom.Document) catalog.ProfFeatScore {
-	comps := doc.Components()
-	if len(comps) == 0 {
-		formulae.SetNA()
-	}
-
-	have := lo.CountBy(doc.Components(), func(c sbom.GetComponent) bool {
-		return c.GetName() != ""
-	})
-
-	return catalog.ProfFeatScore{
-		Score:  formulae.PerComponentScore(have, len(comps)),
-		Desc:   formulae.CompDescription(have, len(comps), "names"),
-		Ignore: false,
-	}
-}
-
-func BSICompWithVersion(doc sbom.Document) catalog.ProfFeatScore {
-	comps := doc.Components()
-	if len(comps) == 0 {
-		formulae.SetNA()
-	}
-
-	have := lo.CountBy(doc.Components(), func(c sbom.GetComponent) bool {
-		return c.GetVersion() != ""
-	})
-
-	return catalog.ProfFeatScore{
-		Score:  formulae.PerComponentScore(have, len(comps)),
-		Desc:   formulae.CompDescription(have, len(comps), "names"),
 		Ignore: false,
 	}
 }
@@ -430,7 +168,7 @@ func BSICompWithVersion(doc sbom.Document) catalog.ProfFeatScore {
 func BSICompWithUniqID(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
-		formulae.SetNA()
+		return formulae.ScoreProfNA()
 	}
 
 	have := lo.FilterMap(doc.Components(), func(c sbom.GetComponent, _ int) (string, bool) {
@@ -440,11 +178,5 @@ func BSICompWithUniqID(doc sbom.Document) catalog.ProfFeatScore {
 		return strings.Join([]string{doc.Spec().GetNamespace(), c.GetID()}, ""), true
 	})
 
-	return catalog.ProfFeatScore{
-		Score:  formulae.PerComponentScore(len(have), len(comps)),
-		Desc:   formulae.CompDescription(len(have), len(comps), "names"),
-		Ignore: false,
-	}
+	return formulae.ScoreProfFull(len(have), len(comps), "uniq IDs", false)
 }
-
-// TODO

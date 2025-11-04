@@ -30,7 +30,7 @@ import (
 func CompWithSHA1Plus(doc sbom.Document) catalog.ComprFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
-		return formulae.ScoreNA()
+		return formulae.ScoreCompNA()
 	}
 
 	have := 0
@@ -40,18 +40,14 @@ func CompWithSHA1Plus(doc sbom.Document) catalog.ComprFeatScore {
 		}
 	}
 
-	return catalog.ComprFeatScore{
-		Score:  formulae.PerComponentScore(have, len(comps)),
-		Desc:   formulae.CompDescription(have, len(comps), "SHA-1+"),
-		Ignore: false,
-	}
+	return formulae.ScoreCompFull(have, len(comps), "SHA-1+", false)
 }
 
 // CompWithSHA256Plus returns coverage of components that have SHA-256 or stronger.
 func CompWithSHA256Plus(doc sbom.Document) catalog.ComprFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
-		return formulae.ScoreNA()
+		return formulae.ScoreCompNA()
 	}
 
 	have := 0
@@ -61,11 +57,7 @@ func CompWithSHA256Plus(doc sbom.Document) catalog.ComprFeatScore {
 		}
 	}
 
-	return catalog.ComprFeatScore{
-		Score:  formulae.PerComponentScore(have, len(comps)),
-		Desc:   formulae.CompDescription(have, len(comps), "SHA-256+"),
-		Ignore: false,
-	}
+	return formulae.ScoreCompFull(have, len(comps), "SHA-256+", false)
 }
 
 // allow tests to stub this

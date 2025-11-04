@@ -21,7 +21,8 @@ import (
 	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/catalog"
 )
 
-func ScoreNA() catalog.ComprFeatScore {
+// ScoreNA score NA for comprehenssive features related to components
+func ScoreCompNA() catalog.ComprFeatScore {
 	return catalog.ComprFeatScore{
 		Score:  PerComponentScore(0, 0),
 		Desc:   NoComponentsNA(),
@@ -29,11 +30,66 @@ func ScoreNA() catalog.ComprFeatScore {
 	}
 }
 
-func SetNA() catalog.ProfFeatScore {
+// ScoreCompFull score for comprehenssive features related to components
+func ScoreCompFull(have, comps int, field string, ignore bool) catalog.ComprFeatScore {
+	return catalog.ComprFeatScore{
+		Score:  PerComponentScore(have, comps),
+		Desc:   CompDescription(have, comps, field),
+		Ignore: ignore,
+	}
+}
+
+// ScoreProfNA score NA for profile features related to components
+func ScoreProfNA() catalog.ProfFeatScore {
 	return catalog.ProfFeatScore{
 		Score:  PerComponentScore(0, 0),
 		Desc:   NoComponentsNA(),
 		Ignore: true,
+	}
+}
+
+// ScoreProfNA score for profile features related to components
+func ScoreProfFull(have, comps int, feat string, ignore bool) catalog.ProfFeatScore {
+	return catalog.ProfFeatScore{
+		Score:  PerComponentScore(have, comps),
+		Desc:   CompDescription(have, comps, feat),
+		Ignore: ignore,
+	}
+}
+
+// ScoreProfNA score NA for profile features related to sbom
+func ScoreSBOMProfNA(desc string, ignore bool) catalog.ProfFeatScore {
+	return catalog.ProfFeatScore{
+		Score:  BooleanScore(false),
+		Desc:   desc,
+		Ignore: ignore,
+	}
+}
+
+// ScoreProfNA score full for profile features related to sbom
+func ScoreSBOMProfFull(field string, ignore bool) catalog.ProfFeatScore {
+	return catalog.ProfFeatScore{
+		Score:  BooleanScore(true),
+		Desc:   PresentField(field),
+		Ignore: ignore,
+	}
+}
+
+// ScoreSBOMProfMissingNA score NA for profile features related to sbom
+func ScoreSBOMProfMissingNA(field string, ignore bool) catalog.ProfFeatScore {
+	return catalog.ProfFeatScore{
+		Score:  BooleanScore(false),
+		Desc:   MissingField(field),
+		Ignore: ignore,
+	}
+}
+
+// ScoreSBOMProfMissingNA score NA for profile features related to sbom
+func ScoreSBOMProfUnknownNA(field string, ignore bool) catalog.ProfFeatScore {
+	return catalog.ProfFeatScore{
+		Score:  BooleanScore(false),
+		Desc:   UnknownSpec(),
+		Ignore: ignore,
 	}
 }
 
