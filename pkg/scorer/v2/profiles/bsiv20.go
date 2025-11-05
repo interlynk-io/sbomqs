@@ -15,9 +15,6 @@
 package profiles
 
 import (
-	"fmt"
-	"strings"
-
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/catalog"
 	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/formulae"
@@ -27,9 +24,9 @@ import (
 func BSISBOMWithBomLinks(doc sbom.Document) catalog.ProfFeatScore {
 	links := doc.Spec().GetExtDocRef()
 	if len(links) == 0 {
-		return catalog.ProfFeatScore{Score: 0.0, Desc: "no bom links found", Ignore: false}
+		formulae.ScoreSBOMProfNA("no bom links found", true)
 	}
-	return catalog.ProfFeatScore{Score: 10.0, Desc: fmt.Sprintf("found %d bom links", len(links)), Ignore: false}
+	return formulae.ScoreSBOMProfFull("bom links", true)
 }
 
 // BSISBOMWithVulnerabilities (BSI v2.1 note in your comments)
@@ -44,29 +41,12 @@ func BSISBOMWithSignature(doc sbom.Document) catalog.ProfFeatScore {
 
 // compWithAssociatedLicensesCheck: concluded for SPDX, effective for CDX components
 func BSICompWithAssociatedLicenses(doc sbom.Document) catalog.ProfFeatScore {
-	comps := doc.Components()
-	if len(comps) == 0 {
-		return catalog.ProfFeatScore{Score: formulae.PerComponentScore(0, 0), Desc: formulae.NoComponentsNA(), Ignore: true}
-	}
-
-	spec := strings.ToLower(doc.Spec().GetSpecType())
-	var have int
-	switch spec {
-	case "spdx":
-		// with = lo.CountBy(comps, func(c sbom.GetComponent) bool { return AreLicensesValid(c.ConcludedLicenses()) })
-	case "cyclonedx":
-		// with = lo.CountBy(comps, func(c sbom.GetComponent) bool { return AreLicensesValid(c.GetLicenses()) })
-	default:
-		// treat unknown spec as NA
-		return catalog.ProfFeatScore{Score: 0.0, Desc: formulae.UnknownSpec(), Ignore: true}
-	}
-
-	return formulae.ScoreProfFull(have, len(comps), "associated licenses", false)
+	return CompLicenses(doc)
 }
 
 // compWithConcludedLicensesCheck (SPDX)
 func CompWithConcludedLicensesCheck(doc sbom.Document) catalog.ProfFeatScore {
-	return CompLicenses(doc)
+	return CompConcludedLicenses(doc)
 }
 
 // compWithDeclaredLicensesCheck

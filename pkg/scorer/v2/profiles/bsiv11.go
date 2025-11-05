@@ -24,71 +24,77 @@ import (
 	"github.com/samber/lo"
 )
 
-// BSISBOMSpec
+// BSISBOMSpec checks SBOM Formats
 func BSISBOMSpec(doc sbom.Document) catalog.ProfFeatScore {
 	return SBOMSpec(doc)
 }
 
-// BSISBOMSpecVersion
+// BSISBOMSpecVersion checks SBOM Spec Version
 func BSISBOMSpecVersion(doc sbom.Document) catalog.ProfFeatScore {
 	return SBOMSpecVersion(doc)
 }
 
-// BSISBOMBuildLifecycle: NA for SPDX; in CDX, look for "build" lifecycle.
+// BSISBOMBuildLifecycle checks Build Information
 func BSISBOMBuildLifecycle(doc sbom.Document) catalog.ProfFeatScore {
 	return SBOMLifeCycle(doc)
 }
 
+// BSISBOMWithDepedencies checks SBOM Depth
 func BSISBOMWithDepedencies(doc sbom.Document) catalog.ProfFeatScore {
 	return SBOMDepedencies(doc)
 }
 
+// BSISBOMWithAuthors checks SBOM Creator Info
 func BSISBOMWithAuthors(doc sbom.Document) catalog.ProfFeatScore {
 	return SBOMAuthors(doc)
 }
 
-// BSISBOMWithTimeStamp
+// BSISBOMWithTimeStamp checks Creation Time
 func BSISBOMWithTimeStamp(doc sbom.Document) catalog.ProfFeatScore {
 	return SBOMCreationTimestamp(doc)
 }
 
-// BSISBOMNamespace
+// BSISBOMNamespace checks URI/Namespace
 func BSISBOMNamespace(doc sbom.Document) catalog.ProfFeatScore {
 	return SBOMNamespace(doc)
 }
 
-// BSICompWithName
+// BSICompWithName checks Component Name
 func BSICompWithName(doc sbom.Document) catalog.ProfFeatScore {
 	return CompName(doc)
 }
 
-// BSICompWithVersion
+// BSICompWithVersion checks Component Version
 func BSICompWithVersion(doc sbom.Document) catalog.ProfFeatScore {
 	return CompVersion(doc)
 }
 
-// BSICompWithLicenses
+// BSICompWithLicenses checks Component License
 func BSICompWithLicenses(doc sbom.Document) catalog.ProfFeatScore {
 	return CompLicenses(doc)
 }
 
-// BSICompWithHash
+// BSICompWithHash checks Component Hash
 func BSICompWithHash(doc sbom.Document) catalog.ProfFeatScore {
 	return CompHash(doc)
 }
 
+// BSICompWithSourceCodeURI checks Component Source URL
 func BSICompWithSourceCodeURI(doc sbom.Document) catalog.ProfFeatScore {
 	return CompSourceCodeURL(doc)
 }
 
+// BSICompWithDownloadURI checks Component Download URL
 func BSICompWithDownloadURI(doc sbom.Document) catalog.ProfFeatScore {
 	return CompDownloadCodeURL(doc)
 }
 
+// BSICompWithSourceCodeHash checks Component Source Hash
 func BSICompWithSourceCodeHash(doc sbom.Document) catalog.ProfFeatScore {
 	return CompSourceCodeHash(doc)
 }
 
+// BSICompWithDependency checks Component Dependencies
 func BSICompWithDependency(doc sbom.Document) catalog.ProfFeatScore {
 	return CompDependencies(doc)
 }
@@ -99,7 +105,7 @@ func BSICompWithDependency(doc sbom.Document) catalog.ProfFeatScore {
 func BSICompWithExecutableURICheck(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
-		return formulae.ScoreProfNA()
+		return formulae.ScoreProfNA(false)
 	}
 
 	have := lo.CountBy(doc.Components(), func(c sbom.GetComponent) bool {
@@ -168,7 +174,7 @@ func BSISBOMLifecycle(doc sbom.Document) catalog.ProfFeatScore {
 func BSICompWithUniqID(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
-		return formulae.ScoreProfNA()
+		return formulae.ScoreProfNA(false)
 	}
 
 	have := lo.FilterMap(doc.Components(), func(c sbom.GetComponent, _ int) (string, bool) {

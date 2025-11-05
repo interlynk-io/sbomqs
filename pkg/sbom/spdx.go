@@ -703,6 +703,7 @@ func (s *SpdxDoc) concludedLicenses(index int) []licenses.License {
 	return lics
 }
 
+// getManufacturer for spdx checks for packageOriginator
 func (s *SpdxDoc) getManufacturer(index int) *Manufacturer {
 	pkg := s.doc.Packages[index]
 
@@ -725,6 +726,7 @@ func (s *SpdxDoc) getManufacturer(index int) *Manufacturer {
 	}
 }
 
+// getAuthor in spdx checks for packageOriginator
 func (s *SpdxDoc) getAuthor(index int) []GetAuthor {
 	authors := []GetAuthor{}
 	var a Author

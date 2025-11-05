@@ -17,51 +17,44 @@ package profiles
 import (
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/catalog"
-	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/formulae"
-	"github.com/samber/lo"
 )
 
+// Automation Support
 func SBOMWithAutomationSpec(doc sbom.Document) catalog.ProfFeatScore {
 	return SBOMAutomationSpec(doc)
 }
 
-func CompWithSupplier(doc sbom.Document) catalog.ProfFeatScore {
-	comps := doc.Components()
-	if len(comps) == 0 {
-		return formulae.ScoreProfNA()
-	}
-
-	have := lo.CountBy(doc.Components(), func(c sbom.GetComponent) bool {
-		return c.Suppliers().IsPresent()
-	})
-
-	return catalog.ProfFeatScore{
-		Score:  formulae.PerComponentScore(have, len(comps)),
-		Desc:   formulae.CompDescription(have, len(comps), "names"),
-		Ignore: false,
-	}
-}
-
-func CompWithName(doc sbom.Document) catalog.ProfFeatScore {
-	return CompName(doc)
-}
-
-func CompWithVersion(doc sbom.Document) catalog.ProfFeatScore {
-	return CompVersion(doc)
-}
-
-func CompWithUniqID(doc sbom.Document) catalog.ProfFeatScore {
-	return CompWithUniqID(doc)
-}
-
+// Dependency Relationships
 func SbomWithDepedencies(doc sbom.Document) catalog.ProfFeatScore {
 	return SBOMDepedencies(doc)
 }
 
+// SBOM Author
 func SbomWithAuthors(doc sbom.Document) catalog.ProfFeatScore {
 	return SBOMAuthors(doc)
 }
 
+// SBOM Timestamp
 func SbomWithTimeStamp(doc sbom.Document) catalog.ProfFeatScore {
 	return SBOMCreationTimestamp(doc)
+}
+
+// Component Name
+func CompWithName(doc sbom.Document) catalog.ProfFeatScore {
+	return CompName(doc)
+}
+
+// Component Version
+func CompWithVersion(doc sbom.Document) catalog.ProfFeatScore {
+	return CompVersion(doc)
+}
+
+// Component Supplier
+func CompWithSupplier(doc sbom.Document) catalog.ProfFeatScore {
+	return CompSupplier(doc)
+}
+
+// Component Other Identifiers
+func CompWithUniqID(doc sbom.Document) catalog.ProfFeatScore {
+	return CompUniqID(doc)
 }

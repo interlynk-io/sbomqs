@@ -27,8 +27,8 @@ import (
 	"github.com/samber/lo"
 )
 
-// SBOMSpec checks whether the SBOM uses a supported specification (SPDX or CycloneDX)
-// and assigns a corresponding score.
+// SBOMSpec checks whether the SBOM has a standard specification (SPDX or CycloneDX)
+// and then assigns a corresponding score.
 func SBOMSpec(doc sbom.Document) catalog.ProfFeatScore {
 	spec := strings.TrimSpace(strings.ToLower(doc.Spec().GetSpecType()))
 
@@ -51,8 +51,12 @@ func SBOMSpecVersion(doc sbom.Document) catalog.ProfFeatScore {
 	spec := strings.TrimSpace(strings.ToLower(doc.Spec().GetSpecType()))
 	ver := strings.TrimSpace(doc.Spec().GetVersion())
 
-	if spec == "" || ver == "" {
-		return formulae.ScoreSBOMProfMissingNA("spec/version", false)
+	if spec == "" {
+		return formulae.ScoreSBOMProfMissingNA("spec", false)
+	}
+
+	if ver == "" {
+		return formulae.ScoreSBOMProfMissingNA("version", false)
 	}
 
 	supportedVersions := sbom.SupportedSBOMSpecVersions(spec)
@@ -62,7 +66,7 @@ func SBOMSpecVersion(doc sbom.Document) catalog.ProfFeatScore {
 		}
 	}
 
-	return formulae.ScoreSBOMProfNA(fmt.Sprintf("unsupported version: %s (spec %s)", ver, spec), false)
+	return formulae.ScoreSBOMProfNA(fmt.Sprintf("unsupported spec version: %s (spec %s)", ver, spec), false)
 }
 
 // SBOMAutomationSpec checks whether the SBOM's file format is present
@@ -72,7 +76,11 @@ func SBOMAutomationSpec(doc sbom.Document) catalog.ProfFeatScore {
 	spec := strings.TrimSpace(strings.ToLower(doc.Spec().GetSpecType()))
 	format := strings.TrimSpace(strings.ToLower(doc.Spec().FileFormat()))
 
-	if spec == "" || format == "" {
+	if spec == "" {
+		return formulae.ScoreSBOMProfMissingNA("spec", false)
+	}
+
+	if format == "" {
 		return formulae.ScoreSBOMProfMissingNA("file format", false)
 	}
 
@@ -96,7 +104,8 @@ func SBOMSchema(doc sbom.Document) catalog.ProfFeatScore {
 	return formulae.ScoreSBOMProfNA("invalid schema", false)
 }
 
-// SBOMLifeCycle check whether cyclonedx has lifecycle build and score accordingly
+// SBOMLifeCycle check whether cyclonedx has lifecycle build
+// and score accordingly
 // SPDX doesn't support this field
 func SBOMLifeCycle(doc sbom.Document) catalog.ProfFeatScore {
 	spec := doc.Spec().GetSpecType()
@@ -112,40 +121,28 @@ func SBOMLifeCycle(doc sbom.Document) catalog.ProfFeatScore {
 	case string(sbom.SBOMSpecCDX):
 		phases := doc.Lifecycles()
 		if len(phases) > 0 {
-			return formulae.ScoreSBOMProfFull(strings.Join(phases, ", "), false)
+			return formulae.ScoreSBOMProfFull(strings.Join(phases, ", "), true)
 		}
 
-		return formulae.ScoreSBOMProfMissingNA("lifecycle", false)
+		return formulae.ScoreSBOMProfMissingNA("lifecycle", true)
 	}
 	return formulae.ScoreSBOMProfUnknownNA("lifecycle", true)
 }
 
 // SBOMNamespace check whether spdx has namespace
 // and cyclonedx has serialNumber and score accordingly
+// `Namespace` for SPDX, `serial/version` for CDX
 func SBOMNamespace(doc sbom.Document) catalog.ProfFeatScore {
-	spec := doc.Spec().GetSpecType()
-
-	switch spec {
-	case string(sbom.SBOMSpecSPDX):
-		ns := strings.TrimSpace(doc.Spec().GetNamespace())
-		if ns != "" {
-			return formulae.ScoreSBOMProfFull("namespace", false)
-		}
-		return formulae.ScoreSBOMProfMissingNA("namespace", false)
-
-	case string(sbom.SBOMSpecCDX):
-		uri := strings.TrimSpace(doc.Spec().GetURI())
-		if uri != "" {
-			return formulae.ScoreSBOMProfFull("namespace", false)
-		}
-
-		return formulae.ScoreSBOMProfMissingNA("namespace", false)
+	uri := strings.TrimSpace(doc.Spec().GetURI())
+	if uri != "" {
+		return formulae.ScoreSBOMProfFull("namespace", false)
 	}
-	return formulae.ScoreSBOMProfNA(formulae.UnknownSpec(), true)
+
+	return formulae.ScoreSBOMProfMissingNA("namespace", false)
 }
 
 // SBOMAuthor represents an legal entity created an SBOM.
-// SPDX: Creator.(Person/Organization); CDX: metadata.(authors/author)
+// SPDX: Creator.(Person/Organization); CDX: metadata.(authors/supplier)
 func SBOMAuthors(doc sbom.Document) catalog.ProfFeatScore {
 	total := len(doc.Authors())
 
@@ -153,7 +150,22 @@ func SBOMAuthors(doc sbom.Document) catalog.ProfFeatScore {
 		return formulae.ScoreSBOMProfMissingNA("authors", false)
 	}
 
-	return formulae.ScoreSBOMProfFull(fmt.Sprintf("%d authors", total), false)
+	if isSBOMAuthorEntity(doc) {
+		return formulae.ScoreSBOMProfFull(fmt.Sprintf("%d legal authors", total), false)
+	}
+
+	return formulae.ScoreSBOMProfMissingNA("legal authors", false)
+}
+
+// isSBOMAuthorEntity check whether author is a legal entity or not:
+// author should have name + email/phone info.
+func isSBOMAuthorEntity(doc sbom.Document) bool {
+	for _, author := range doc.Authors() {
+		if author.GetName() != "" && (author.GetEmail() != "" || author.GetPhone() != "") {
+			return true
+		}
+	}
+	return false
 }
 
 // SBOMCreationTime check has a valid ISO-8601 timestamp (RFC3339/RFC3339Nano).
@@ -174,12 +186,27 @@ func SBOMCreationTimestamp(doc sbom.Document) catalog.ProfFeatScore {
 	return formulae.ScoreSBOMProfFull(ts, false)
 }
 
+// SBOMDepedencies checks for primary component level dependencies
+// SPDX: relationships (DEPENDS_ON); CDX: component.dependencies / bom.dependencies
+func SBOMDepedencies(doc sbom.Document) catalog.ProfFeatScore {
+	var have int
+	if doc.PrimaryComp() != nil {
+		have = doc.PrimaryComp().GetTotalNoOfDependencies()
+	}
+
+	return catalog.ProfFeatScore{
+		Score:  formulae.BooleanScore(true),
+		Desc:   fmt.Sprintf("primary comp has %d dependencies", have),
+		Ignore: false,
+	}
+}
+
 // CompName: percentage of components that have a non-empty name.
 // Package.Name for SPDX, Compnent.Name for CDX
 func CompName(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
-		formulae.ScoreProfNA()
+		formulae.ScoreProfNA(false)
 	}
 
 	have := lo.CountBy(doc.Components(), func(c sbom.GetComponent) bool {
@@ -193,7 +220,7 @@ func CompName(doc sbom.Document) catalog.ProfFeatScore {
 func CompVersion(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
-		formulae.ScoreProfNA()
+		formulae.ScoreProfNA(false)
 	}
 
 	have := lo.CountBy(doc.Components(), func(c sbom.GetComponent) bool {
@@ -203,11 +230,47 @@ func CompVersion(doc sbom.Document) catalog.ProfFeatScore {
 	return formulae.ScoreProfFull(have, len(comps), "versions", false)
 }
 
-// CompWithLicenses check for concluded license
+func CompSupplier(doc sbom.Document) catalog.ProfFeatScore {
+	comps := doc.Components()
+	if len(comps) == 0 {
+		return formulae.ScoreProfNA(false)
+	}
+
+	have := lo.CountBy(doc.Components(), func(c sbom.GetComponent) bool {
+		return isSupplierEntity(c.Suppliers())
+	})
+
+	return formulae.ScoreProfFull(have, len(comps), "names", false)
+}
+
+// isSupplierEntity check whether supplier is a legal entity or not:
+// supplier should have name + email/url/contact info.
+func isSupplierEntity(supplier sbom.GetSupplier) bool {
+	if supplier.GetName() != "" && (supplier.GetEmail() != "" || supplier.GetURL() != "" || len(supplier.GetContacts()) > 0) {
+		return true
+	}
+	return false
+}
+
+// CompLicenses check for concluded valid license and score accordingly
 func CompLicenses(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
-		return formulae.ScoreProfNA()
+		return formulae.ScoreProfNA(false)
+	}
+
+	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
+		return componentHasAnyConcluded(c)
+	})
+
+	return formulae.ScoreProfFull(have, len(comps), "licenses", false)
+}
+
+// CompConcludedLicenses check for concluded valid license and score accordingly
+func CompConcludedLicenses(doc sbom.Document) catalog.ProfFeatScore {
+	comps := doc.Components()
+	if len(comps) == 0 {
+		return formulae.ScoreProfNA(false)
 	}
 
 	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
@@ -243,22 +306,19 @@ func validateLicenseText(s string) bool {
 	return true
 }
 
-// CompWithSHA1Plus returns coverage of components that have SHA-1 or stronger
-// (SHA-1, SHA-256, SHA-384, or SHA-512).
+// CompHash returns coverage of components that have SHA-1 or stronger
+// (MD5, SHA-1, SHA-256, SHA-384, or SHA-512).
 func CompHash(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
-		return formulae.ScoreProfNA()
+		return formulae.ScoreProfNA(false)
 	}
 
-	have := 0
-	for _, comp := range comps {
-		if hasAnySHA(comp) {
-			have++
-		}
-	}
+	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
+		return hasAnySHA(c)
+	})
 
-	return formulae.ScoreProfFull(have, len(comps), "SHA-1+", false)
+	return formulae.ScoreProfFull(have, len(comps), "hash", false)
 }
 
 func hasAnySHA(c sbom.GetComponent) bool {
@@ -284,11 +344,47 @@ func isAnySHA(algo string) bool {
 	}
 }
 
+// CompHash returns coverage of components that have SHA-1 or stronger
+// (MD5, SHA-1, SHA-256, SHA-384, or SHA-512).
+func CompSHA256(doc sbom.Document) catalog.ProfFeatScore {
+	comps := doc.Components()
+	if len(comps) == 0 {
+		return formulae.ScoreProfNA(false)
+	}
+
+	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
+		return hasSHA256SHA(c)
+	})
+
+	return formulae.ScoreProfFull(have, len(comps), "hash256", false)
+}
+
+func hasSHA256SHA(c sbom.GetComponent) bool {
+	for _, checksum := range c.GetChecksums() {
+		if isSHA256(checksum.GetAlgo()) && strings.TrimSpace(checksum.GetContent()) != "" {
+			return true
+		}
+	}
+	return false
+}
+
+func isSHA256(algo string) bool {
+	n := strings.ToUpper(algo)
+	n = strings.ReplaceAll(n, "-", "")
+	n = strings.ReplaceAll(n, "_", "")
+	n = strings.TrimSpace(n)
+
+	if n == "SHA256" {
+		return true
+	}
+	return false
+}
+
 // CompWithSHA256Plus returns coverage of components that have SHA-256 or stronger.
 func CompSHA256Plus(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
-		return formulae.ScoreProfNA()
+		return formulae.ScoreProfNA(false)
 	}
 
 	have := 0
@@ -324,25 +420,42 @@ func isSHA256Plus(algo string) bool {
 	}
 }
 
-// CompSourceCodeURL checks source code url
+// CompSourceCodeURL checks source code repo url
+// `PackageSourceInfo` for SPDX Ext Ref type `VCS` for CDX
 func CompSourceCodeURL(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
-		return formulae.ScoreProfNA()
+		return formulae.ScoreProfNA(true)
 	}
 
 	have := lo.CountBy(doc.Components(), func(c sbom.GetComponent) bool {
 		return strings.TrimSpace(c.GetSourceCodeURL()) != ""
 	})
 
-	return formulae.ScoreProfFull(have, len(comps), "source URIs", false)
+	return formulae.ScoreProfFull(have, len(comps), "source code repo", true)
+}
+
+// CompCopyright
+func CompCopyright(doc sbom.Document) catalog.ProfFeatScore {
+	comps := doc.Components()
+	if len(comps) == 0 {
+		return formulae.ScoreProfNA(true)
+	}
+
+	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
+		dl := strings.ToLower(strings.TrimSpace(c.GetCopyRight()))
+		return dl != "" && dl != "none" && dl != "noassertion"
+	})
+
+	return formulae.ScoreProfFull(have, len(comps), "copyright", true)
 }
 
 // CompDownloadCodeURL checks download url
+// `PackageDownloadLocation` for SPDX, Ext Ref type `distribution-vcs` url for CDX
 func CompDownloadCodeURL(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
-		return formulae.ScoreProfNA()
+		return formulae.ScoreProfNA(false)
 	}
 
 	have := lo.CountBy(doc.Components(), func(c sbom.GetComponent) bool {
@@ -352,18 +465,29 @@ func CompDownloadCodeURL(doc sbom.Document) catalog.ProfFeatScore {
 	return formulae.ScoreProfFull(have, len(comps), "download URIs", false)
 }
 
-// CompSourceCodeHash
+// CompSourceCodeHash checks for source code has
+// `PackageVerificationCode` for SPDX, no determinsitic field in CDX
 func CompSourceCodeHash(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
-		return formulae.ScoreProfNA()
+		return formulae.ScoreProfNA(true)
+	}
+
+	spec := strings.TrimSpace(strings.ToLower(doc.Spec().GetSpecType()))
+
+	if spec == string(sbom.SBOMSpecCDX) {
+		return catalog.ProfFeatScore{
+			Score:  formulae.BooleanScore(true),
+			Desc:   "no-deterministic-field",
+			Ignore: true,
+		}
 	}
 
 	have := lo.CountBy(doc.Components(), func(c sbom.GetComponent) bool {
 		return c.SourceCodeHash() != ""
 	})
 
-	return formulae.ScoreProfFull(have, len(comps), "source code hash", false)
+	return formulae.ScoreProfFull(have, len(comps), "source code hash", true)
 }
 
 // CompDependencies checks for component level dependencies
@@ -371,7 +495,7 @@ func CompSourceCodeHash(doc sbom.Document) catalog.ProfFeatScore {
 func CompDependencies(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
-		return formulae.ScoreProfNA()
+		return formulae.ScoreProfNA(false)
 	}
 
 	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
@@ -381,26 +505,35 @@ func CompDependencies(doc sbom.Document) catalog.ProfFeatScore {
 	return formulae.ScoreProfFull(have, len(comps), "dependencies", false)
 }
 
-// SBOMDepedencies checks for primary component level dependencies
-// SPDX: relationships (DEPENDS_ON); CDX: component.dependencies / bom.dependencies
-func SBOMDepedencies(doc sbom.Document) catalog.ProfFeatScore {
-	var have int
-	if doc.PrimaryComp() != nil {
-		have = doc.PrimaryComp().GetTotalNoOfDependencies()
+func CompUniqID(doc sbom.Document) catalog.ProfFeatScore {
+	comps := doc.Components()
+	if len(comps) == 0 {
+		return formulae.ScoreProfNA(false)
 	}
 
-	return catalog.ProfFeatScore{
-		Score:  formulae.BooleanScore(true),
-		Desc:   fmt.Sprintf("primary comp has %d dependencies", have),
-		Ignore: false,
+	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
+		return checkUniqueID(c)
+	})
+
+	return formulae.ScoreProfFull(have, len(comps), "unique ID", false)
+}
+
+func checkUniqueID(component sbom.GetComponent) bool {
+	if purl := component.GetPurls(); len(purl) > 0 {
+		return true
 	}
+
+	if cpe := component.GetCpes(); len(cpe) > 0 {
+		return true
+	}
+	return false
 }
 
 // CompDeclaredLicenses look for declared licenses
 func CompDeclaredLicenses(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
-		return formulae.ScoreProfNA()
+		return formulae.ScoreProfNA(false)
 	}
 
 	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
@@ -486,28 +619,8 @@ func SBOMVulnerabilities(doc sbom.Document) catalog.ProfFeatScore {
 	}
 
 	if hasAny {
-		return catalog.ProfFeatScore{Score: 0.0, Desc: "vulnerabilities found: " + strings.Join(ids, ", "), Ignore: false}
+		return catalog.ProfFeatScore{Score: 0.0, Desc: "vulnerabilities found: " + strings.Join(ids, ", "), Ignore: true}
 	}
 
-	return formulae.ScoreSBOMProfFull("no vulnerabilities", false)
-}
-
-func CompUniqID(doc sbom.Document) catalog.ProfFeatScore {
-	comps := doc.Components()
-	if len(comps) == 0 {
-		return formulae.ScoreProfNA()
-	}
-
-	have := lo.FilterMap(doc.Components(), func(c sbom.GetComponent, _ int) (string, bool) {
-		if c.GetID() == "" {
-			return "", false
-		}
-		return strings.Join([]string{doc.Spec().GetNamespace(), c.GetID()}, ""), true
-	})
-
-	return catalog.ProfFeatScore{
-		Score:  formulae.PerComponentScore(len(have), len(comps)),
-		Desc:   formulae.CompDescription(len(have), len(comps), "names"),
-		Ignore: false,
-	}
+	return formulae.ScoreSBOMProfFull("no vulnerabilities", true)
 }

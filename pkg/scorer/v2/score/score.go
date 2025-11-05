@@ -81,6 +81,21 @@ func scoreOnePath(ctx context.Context, catalog *catalog.Catalog, cfg config.Conf
 	}
 	defer file.Close()
 
+	// if doc.Spec().GetSpecType() == string(sbom.SBOMSpecCDX) {
+	// 	// Resolve profiles alias
+	// 	profileKeys := catalog.ResolveProfileKeys(cfg.Profile)
+	// 	if len(profileKeys) == 0 {
+	// 		// return , fmt.Errorf("no valid profiles resolved from: %v", cfg.Profile)
+	// 	}
+
+	// 	for _, pk := range profileKeys {
+	// 		if pk == registry.ProfileOCT {
+	// 			fmt.Println("OCT Profile doesn't support for CycloneDX SBOM")
+	// 			os.Exit(0)
+	// 		}
+	// 	}
+	// }
+
 	res, err := SBOMEvaluation(ctx, catalog, cfg, doc)
 
 	return res, err
@@ -146,6 +161,15 @@ func evaluateProfiles(ctx context.Context, catal *catalog.Catalog, cfg config.Co
 	profileKeys := catal.ResolveProfileKeys(cfg.Profile)
 	if len(profileKeys) == 0 {
 		return *result, fmt.Errorf("no valid profiles resolved from: %v", cfg.Profile)
+	}
+
+	if doc.Spec().GetSpecType() == string(sbom.SBOMSpecCDX) {
+		for _, pk := range profileKeys {
+			if pk == registry.ProfileOCT {
+				fmt.Println("OCT Profiles doesn't support for Cyclonedx SBOM")
+				os.Exit(0)
+			}
+		}
 	}
 
 	// Evaluate profiles

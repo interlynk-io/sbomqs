@@ -373,7 +373,7 @@ func bsiComponentDepth(doc sbom.Document, component sbom.GetComponent) *db.Recor
 	var dependencies []string
 	var allDepByName []string
 
-	if doc.Spec().GetSpecType() == "spdx" {
+	if doc.Spec().GetSpecType() == string(sbom.SBOMSpecSPDX) {
 		if component.GetPrimaryCompInfo().IsPresent() {
 			result = strings.Join(bsiGetAllPrimaryDepenciesByName, ", ")
 			score = 10.0
@@ -396,7 +396,7 @@ func bsiComponentDepth(doc sbom.Document, component sbom.GetComponent) *db.Recor
 		result = strings.Join(allDepByName, ", ")
 		return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), result, 10.0, "")
 
-	} else if doc.Spec().GetSpecType() == "cyclonedx" {
+	} else if doc.Spec().GetSpecType() == string(sbom.SBOMSpecCDX) {
 		if component.GetPrimaryCompInfo().IsPresent() {
 			result = strings.Join(bsiGetAllPrimaryDepenciesByName, ", ")
 			score = 10.0
