@@ -28,22 +28,6 @@ import (
 	"github.com/interlynk-io/sbomqs/pkg/utils"
 )
 
-// func ValidateFeatures(ctx context.Context, features []string) ([]string, error) {
-// 	log := logger.FromContext(ctx)
-// 	log.Debugf("validating features: %v", features)
-
-// 	var validFeatures []string
-
-// 	for _, feature := range features {
-// 		if _, ok := SupportedFeatures[feature]; !ok {
-// 			log.Warnf("unsupported feature: %s", feature)
-// 			continue
-// 		}
-// 		validFeatures = append(validFeatures, feature)
-// 	}
-// 	return validFeatures, nil
-// }
-
 // validateAndExpandPaths returns a list of files and URLs.
 // - URLs are kept as-is (no normalization here).
 // - Directories are expanded to their immediate files (non-recursive).

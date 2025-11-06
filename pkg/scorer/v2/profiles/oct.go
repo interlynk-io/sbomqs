@@ -16,30 +16,12 @@ package profiles
 
 import (
 	"strings"
-	"time"
 
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/catalog"
 	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/formulae"
 	"github.com/samber/lo"
 )
-
-func isSPDX(doc sbom.Document) bool {
-	return strings.EqualFold(strings.TrimSpace(doc.Spec().GetSpecType()), string(sbom.SBOMSpecSPDX))
-}
-
-func rfc3339ish(ts string) bool {
-	if ts == "" {
-		return false
-	}
-	if _, err := time.Parse(time.RFC3339, ts); err == nil {
-		return true
-	}
-	if _, err := time.Parse(time.RFC3339Nano, ts); err == nil {
-		return true
-	}
-	return false
-}
 
 // SBOM Format
 func OCTSBOMSpec(doc sbom.Document) catalog.ProfFeatScore {
@@ -122,15 +104,6 @@ func OCTSBOMDataLicense(doc sbom.Document) catalog.ProfFeatScore {
 	return formulae.ScoreSBOMProfMissingNA("data license", false)
 }
 
-// func OCTSBOMWithTimestamp(doc sbom.Document) catalog.ProfFeatScore {
-// 	return SBOMCreationTimestamp(doc)
-// }
-
-// // SPDX JSON or Tag-Value are acceptable “machine/human” forms in OCT.
-// func OCTSBOMMachineFormatCheck(doc sbom.Document) catalog.ProfFeatScore {
-// 	return SBOMWithAutomationSpec(doc)
-// }
-
 // OCTCompWithName: Package Name
 func OCTCompWithName(doc sbom.Document) catalog.ProfFeatScore {
 	return CompName(doc)
@@ -173,16 +146,6 @@ func OCTCompWithFileAnalyzed(doc sbom.Document) catalog.ProfFeatScore {
 	return formulae.ScoreProfFull(have, len(comps), "fileAnalyze", true)
 }
 
-// // OCTCompWithSupplier
-// func OCTCompWithSupplier(doc sbom.Document) catalog.ProfFeatScore {
-// 	return CompSupplier(doc)
-// }
-
-// // OctCompWithSHA256Check
-// func OctCompWithSHA256Check(doc sbom.Document) catalog.ProfFeatScore {
-// 	return CompSHA256(doc)
-// }
-
 // OCTCompWithConcludedLicense: Package License Concluded
 func OCTCompWithConcludedLicense(doc sbom.Document) catalog.ProfFeatScore {
 	return CompConcludedLicenses(doc)
@@ -197,53 +160,3 @@ func OCTCompWithDeclaredLicense(doc sbom.Document) catalog.ProfFeatScore {
 func OCTCompWithCopyright(doc sbom.Document) catalog.ProfFeatScore {
 	return CompCopyright(doc)
 }
-
-// // % with copyright (and not NONE/NOASSERTION)
-// func OctCompWithExternalRefsCheck(doc sbom.Document) catalog.ProfFeatScore {
-// 	comps := doc.Components()
-// 	if len(comps) == 0 {
-// 		return catalog.ProfFeatScore{
-// 			Score:  formulae.PerComponentScore(0, 0),
-// 			Desc:   formulae.NoComponentsNA(),
-// 			Ignore: true,
-// 		}
-// 	}
-
-// 	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
-// 		// return compHasAnyPURLs(c)
-// 		return false
-// 	})
-
-// 	return catalog.ProfFeatScore{
-// 		Score:  formulae.PerComponentScore(have, len(comps)),
-// 		Desc:   formulae.CompDescription(have, len(comps), "declared licenses"),
-// 		Ignore: false,
-// 	}
-// }
-
-// func CompHasAnyPURLs(c sbom.GetComponent) bool {
-// 	for _, p := range c.GetPurls() {
-// 		if isValidPURL(string(p)) {
-// 			return true
-// 		}
-// 	}
-// 	return false
-// }
-
-// func isValidPURL(s string) bool {
-// 	s = strings.TrimSpace(s)
-// 	if s == "" {
-// 		return false
-// 	}
-
-// 	u, err := purl.FromString(s)
-// 	if err != nil {
-// 		return false
-// 	}
-
-// 	// type and name must be present per spec
-// 	if strings.TrimSpace(u.Type) == "" || strings.TrimSpace(u.Name) == "" {
-// 		return false
-// 	}
-// 	return true
-// }

@@ -24,6 +24,11 @@ import (
 	"github.com/samber/lo"
 )
 
+var (
+	validBsiSpdxVersions = []string{"SPDX-2.3"}
+	validBsiCdxVersions  = []string{"1.4", "1.5", "1.6"}
+)
+
 // BSISBOMSpec checks SBOM Formats
 func BSISBOMSpec(doc sbom.Document) catalog.ProfFeatScore {
 	return SBOMSpec(doc)
