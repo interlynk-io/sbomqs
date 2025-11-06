@@ -30,7 +30,7 @@ type Result struct {
 	Profiles      *ProfilesResult
 }
 
-// Common file-level metadata
+// SBOMMeta represents common SBOM metadata
 type SBOMMeta struct {
 	Spec          string
 	SpecVersion   string
@@ -40,20 +40,22 @@ type SBOMMeta struct {
 	CreationTime  string
 }
 
-// Comprehensive (quality) scoring
+// ComprehensiveResult represent comprehenssive result
 type ComprehensiveResult struct {
 	CatResult []CategoryResult
 }
 
+// ProfilesResult represent profiles result
 type ProfilesResult struct {
 	ProfResult []ProfileResult
 }
 
+// NewProfResults is constructor of ProfilesResult
 func NewProfResults() ProfilesResult {
 	return ProfilesResult{}
 }
 
-// Category result
+// CategoryResult represents category-wise result
 type CategoryResult struct {
 	Name     string
 	Weight   float64 // category weight
@@ -61,7 +63,7 @@ type CategoryResult struct {
 	Features []FeatureResult
 }
 
-// feature result
+// FeatureResult represents feature-wise result
 type FeatureResult struct {
 	Name    string
 	Key     string
@@ -71,6 +73,7 @@ type FeatureResult struct {
 	Ignored bool
 }
 
+// ProfileResult represents profile-wise result
 type ProfileResult struct {
 	Name       string
 	Key        string
@@ -80,6 +83,7 @@ type ProfileResult struct {
 	Items      []ProfileFeatureResult
 }
 
+// NewProfileResult represent constructor of ProfilesResult
 func NewProfileResult(profile catalog.ProfSpec) ProfileResult {
 	return ProfileResult{
 		Name:    profile.Name,
@@ -91,6 +95,7 @@ func NewProfileResult(profile catalog.ProfSpec) ProfileResult {
 	}
 }
 
+// ProfileFeatureResult represents profile feature wise result
 type ProfileFeatureResult struct {
 	Name     string
 	Key      string

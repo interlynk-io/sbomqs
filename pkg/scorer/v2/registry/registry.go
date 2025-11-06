@@ -63,13 +63,6 @@ const (
 	ProfileOCT   catalog.ProfileKey = "oct"
 )
 
-type (
-	PFNTIAFeatKey    catalog.ProfFeatKey
-	PFBSIV1_1FeatKey catalog.ProfFeatKey
-	PFBSIV2_0FeatKey catalog.ProfFeatKey
-	PFOCTFeatKey     catalog.ProfFeatKey
-)
-
 // ProFeatKey lists all profiles features
 // e.g. comp_with_name, sbom_authors, etc
 const (
@@ -83,19 +76,15 @@ const (
 	PFCompVersion           catalog.ProfFeatKey = "comp_version"
 
 	// NTIA
-	// PFNTIASBOMSpec              catalog.ProfFeatKey = "sbom_spec"
-	PFNTIACompName        catalog.ProfFeatKey = "comp_name"
-	PFNTIACompVersion     catalog.ProfFeatKey = "comp_version"
-	PFNTIACompSupplier    catalog.ProfFeatKey = "comp_supplier"
-	PFNTIACompIdentifiers catalog.ProfFeatKey = "comp_uniq_id"
-	// PFNTIASBOMDependencies      catalog.ProfFeatKey = "sbom_dependencies"
+	PFNTIACompName              catalog.ProfFeatKey = "comp_name"
+	PFNTIACompVersion           catalog.ProfFeatKey = "comp_version"
+	PFNTIACompSupplier          catalog.ProfFeatKey = "comp_supplier"
+	PFNTIACompIdentifiers       catalog.ProfFeatKey = "comp_uniq_id"
 	PFNTIASBOMAuthors           catalog.ProfFeatKey = "sbom_authors"
 	PFNTIASBOMCreationTimestamp catalog.ProfFeatKey = "sbom_creation_timestamp"
 
-	// PFBSISBOMSpec              catalog.ProfFeatKey = "sbom_spec"
-	PFBSISBOMSpecVersion catalog.ProfFeatKey = "sbom_spec_version"
-	PFBSISBOMLifecycle   catalog.ProfFeatKey = "sbom_lifecycle"
-	// PFBSISBOMDependencies      catalog.ProfFeatKey = "sbom_dependencies"
+	PFBSISBOMSpecVersion       catalog.ProfFeatKey = "sbom_spec_version"
+	PFBSISBOMLifecycle         catalog.ProfFeatKey = "sbom_lifecycle"
 	PFBSISBOMAuthors           catalog.ProfFeatKey = "sbom_authors"
 	PFBSISBOMCreationTimestamp catalog.ProfFeatKey = "sbom_creation_timestamp"
 	PFBSISBOMNamespace         catalog.ProfFeatKey = "sbom_namespace"
@@ -133,96 +122,51 @@ const (
 	PFOCTCompCopyright        catalog.ProfFeatKey = "oct_comp_copyright"
 )
 
+var categoryAlias = map[string]catalog.ComprCatKey{
+	"identification":                 CatIdentification,
+	"provenance":                     CatProvenance,
+	"integrity":                      CatIntegrity,
+	"completeness":                   CatCompleteness,
+	"licensing":                      CatLicensingAndCompliance,
+	"licensingandcompliance":         CatLicensingAndCompliance,
+	"licensing_and_compliance":       CatLicensingAndCompliance,
+	"vulnerability":                  CatVulnerabilityAndTrace,
+	"vulnerabilityandtraceability":   CatVulnerabilityAndTrace,
+	"vulnerability_and_traceability": CatVulnerabilityAndTrace,
+	"structural":                     CatStructural,
+	"componentquality(info)":         CatComponentQualityInfo,
+	"component_quality_info":         CatComponentQualityInfo,
+}
+
+var profileAliases = map[string]catalog.ProfileKey{
+	"ntia":                  ProfileNTIA,
+	"nita-minimum-elements": ProfileNTIA,
+	"NTIA-minimum-elements": ProfileNTIA,
+	"NTIA-Minimum-Elements": ProfileNTIA,
+	"NTIA":                  ProfileNTIA,
+	"BSI":                   ProfileBSI11,
+	"bsi":                   ProfileBSI11,
+	"BSI-V1.1":              ProfileBSI11,
+	"bsi-v1.1":              ProfileBSI11,
+	"bsi-v1_1":              ProfileBSI11,
+	"BSI-V2.0":              ProfileBSI20,
+	"bsi-v2.0":              ProfileBSI20,
+	"bsi-v2_0":              ProfileBSI20,
+	"OCT":                   ProfileOCT,
+	"oct":                   ProfileOCT,
+	"OpenChain-Telco":       ProfileOCT,
+}
+
 func InitializeCatalog() *catalog.Catalog {
-	comprFeatures := bindComprFeatures()
 	comprCategories, order := bindComprCategories()
+	comprFeatures := bindComprFeatures()
+
 	profiles := bindProfiles()
 	profFeatures := bindProfFeatures()
 
 	aliases := catalog.Aliases{
-		Category: map[string]catalog.ComprCatKey{
-			"identification":                 CatIdentification,
-			"provenance":                     CatProvenance,
-			"integrity":                      CatIntegrity,
-			"completeness":                   CatCompleteness,
-			"licensing":                      CatLicensingAndCompliance,
-			"licensingandcompliance":         CatLicensingAndCompliance, // tolerate old camel
-			"licensing_and_compliance":       CatLicensingAndCompliance,
-			"vulnerability":                  CatVulnerabilityAndTrace,
-			"vulnerabilityandtraceability":   CatVulnerabilityAndTrace,
-			"vulnerability_and_traceability": CatVulnerabilityAndTrace,
-			"structural":                     CatStructural,
-			"componentquality(info)":         CatComponentQualityInfo,
-			"component_quality_info":         CatComponentQualityInfo,
-		},
-		Feature: map[string]catalog.ComprFeatKey{
-			// identification
-			"comp_with_name":        FCompWithName,
-			"comp_with_version":     FCompWithVersion,
-			"comp_with_identifiers": FCompWithIdentifiers,
-			"comp_with_ids":         FCompWithIdentifiers, // legacy alias
-
-			// provenance
-			"sbom_creation_timestamp": FSBOMCreationTimestamp,
-			"sbom_authors":            FSBOMAuthors,
-			"sbom_tool_version":       FSBOMToolVersion,
-			"sbom_supplier":           FSBOMSupplier,
-			"sbom_namespace":          FSBOMNamespace,
-			"sbom_lifecycle":          FSBOMLifecycle,
-
-			// integrity
-			"comp_with_checksums": FCompWithChecksums,
-			"comp_with_sha256":    FCompWithSHA256,
-			"sbom_signature":      FSBOMSignature,
-
-			// completeness
-			"comp_with_dependencies":     FCompWithDependencies,
-			"sbom_completeness_declared": FSBOMCompletenessDeclared,
-			"primary_component":          FPrimaryComponent,
-			"comp_with_source_code":      FCompWithSourceCode,
-			"comp_with_supplier":         FCompWithSupplier,
-			"comp_with_purpose":          FCompWithPurpose,
-
-			// licensing
-			"comp_with_licenses":           FCompWithLicenses,
-			"comp_with_valid_licenses":     FCompWithValidLicenses,
-			"comp_with_declared_licenses":  FCompWithDeclaredLicenses,
-			"sbom_data_license":            FSBOMDataLicense,
-			"comp_no_deprecated_licenses":  FCompNoDeprecatedLicenses,
-			"comp_no_restrictive_licenses": FCompNoRestrictiveLicenses,
-
-			// vuln/trace
-			"comp_with_purl": FCompWithPURL,
-			"compwithpurl":   FCompWithPURL, // casing alias
-			"comp_with_cpe":  FCompWithCPE,
-			"compwithcpe":    FCompWithCPE,
-
-			// structural
-			"sbom_spec_declared": FSBOMSpecDeclared,
-			"sbomwithspec":       FSBOMSpecDeclared, // legacy alias
-			"sbom_spec_version":  FSBOMSpecVersion,
-			"sbomspecversion":    FSBOMSpecVersion,
-			"sbom_file_format":   FSBOMFileFormat,
-			"sbomfileformat":     FSBOMFileFormat,
-			"sbom_schema_valid":  FSBOMSchemaValid,
-			"sbomschemavalid":    FSBOMSchemaValid,
-		},
-		Profile: map[string]catalog.ProfileKey{
-			"ntia":                  ProfileNTIA,
-			"nita-minimum-elements": ProfileNTIA,
-			"NTIA-minimum-elements": ProfileNTIA,
-			"NTIA-Minimum-Elements": ProfileNTIA,
-			"NTIA":                  ProfileNTIA,
-			"BSI-V1.1":              ProfileBSI11,
-			"bsi-v1.1":              ProfileBSI11,
-			"bsi-v1_1":              ProfileBSI11,
-			"BSI-V2.0":              ProfileBSI20,
-			"bsi-v2.0":              ProfileBSI20,
-			"bsi-v2_0":              ProfileBSI20,
-			"OCT":                   ProfileOCT,
-			"oct":                   ProfileOCT,
-			"OpenChain-Telco":       ProfileOCT,
-		},
+		Category: categoryAlias,
+		Profile:  profileAliases,
 	}
 
 	return &catalog.Catalog{
@@ -235,108 +179,126 @@ func InitializeCatalog() *catalog.Catalog {
 	}
 }
 
+var CatIdentificationSpec = catalog.ComprCatSpec{
+	Key:    CatIdentification,
+	Name:   "Identification",
+	Weight: 10,
+	Features: []catalog.ComprFeatKey{
+		FCompWithName,
+		FCompWithVersion,
+		FCompWithIdentifiers,
+	},
+}
+
+var CatProvenanceSpec = catalog.ComprCatSpec{
+	Key:    CatProvenance,
+	Name:   "Provenance",
+	Weight: 12,
+	Features: []catalog.ComprFeatKey{
+		FSBOMCreationTimestamp,
+		FSBOMAuthors,
+		FSBOMToolVersion,
+		FSBOMSupplier,
+		FSBOMNamespace,
+		FSBOMLifecycle,
+	},
+}
+
+var CatIntegritySpec = catalog.ComprCatSpec{
+	Key:    CatIntegrity,
+	Name:   "Integrity",
+	Weight: 15,
+	Features: []catalog.ComprFeatKey{
+		FCompWithChecksums,
+		FCompWithSHA256,
+		FSBOMSignature,
+	},
+}
+
+var CatCompletenessSpec = catalog.ComprCatSpec{
+	Key:    CatCompleteness,
+	Name:   "Completeness",
+	Weight: 12,
+	Features: []catalog.ComprFeatKey{
+		FCompWithDependencies,
+		FSBOMCompletenessDeclared,
+		FPrimaryComponent,
+		FCompWithSourceCode,
+		FCompWithSupplier,
+		FCompWithPurpose,
+	},
+}
+
+var CatLicensingAndComplianceSpec = catalog.ComprCatSpec{
+	Key:    CatLicensingAndCompliance,
+	Name:   "Licensing",
+	Weight: 15,
+	Features: []catalog.ComprFeatKey{
+		FCompWithLicenses,
+		FCompWithValidLicenses,
+		FCompWithDeclaredLicenses,
+		FSBOMDataLicense,
+		FCompNoDeprecatedLicenses,
+		FCompNoRestrictiveLicenses,
+	},
+}
+
+var CatVulnerabilityAndTraceSpec = catalog.ComprCatSpec{
+	Key:    CatVulnerabilityAndTrace,
+	Name:   "Vulnerability",
+	Weight: 10,
+	Features: []catalog.ComprFeatKey{
+		FCompWithPURL,
+		FCompWithCPE,
+	},
+}
+
+var CatStructuralSpec = catalog.ComprCatSpec{
+	Key:    CatStructural,
+	Name:   "Structural",
+	Weight: 8,
+	Features: []catalog.ComprFeatKey{
+		FSBOMSpecDeclared,
+		FSBOMSpecVersion,
+		FSBOMFileFormat,
+		FSBOMSchemaValid,
+	},
+}
+
+var CatComponentQualityInfoSpec = catalog.ComprCatSpec{
+	Key:      CatComponentQualityInfo,
+	Name:     "Component Quality (Info)",
+	Weight:   0,
+	Features: nil,
+}
+
+// bindComprCategories maps ComprCatKey with ComprCatSpec
+// spec contains key, name, weight, features
 func bindComprCategories() (map[catalog.ComprCatKey]catalog.ComprCatSpec, []catalog.ComprCatKey) {
 	cats := map[catalog.ComprCatKey]catalog.ComprCatSpec{
 		// Identification Category
-		CatIdentification: {
-			Key:    CatIdentification,
-			Name:   "Identification",
-			Weight: 10,
-			Features: []catalog.ComprFeatKey{
-				FCompWithName,
-				FCompWithVersion,
-				FCompWithIdentifiers,
-			},
-		},
+		CatIdentification: CatIdentificationSpec,
 
 		// Provenance Category
-		CatProvenance: {
-			Key:    CatProvenance,
-			Name:   "Provenance",
-			Weight: 12,
-			Features: []catalog.ComprFeatKey{
-				FSBOMCreationTimestamp,
-				FSBOMAuthors,
-				FSBOMToolVersion,
-				FSBOMSupplier,
-				FSBOMNamespace,
-				FSBOMLifecycle,
-			},
-		},
+		CatProvenance: CatProvenanceSpec,
 
 		// Integrity Category
-		CatIntegrity: {
-			Key:    CatIntegrity,
-			Name:   "Integrity",
-			Weight: 15,
-			Features: []catalog.ComprFeatKey{
-				FCompWithChecksums,
-				FCompWithSHA256,
-				FSBOMSignature,
-			},
-		},
+		CatIntegrity: CatIntegritySpec,
 
 		// Completeness Category
-		CatCompleteness: {
-			Key:    CatCompleteness,
-			Name:   "Completeness",
-			Weight: 12,
-			Features: []catalog.ComprFeatKey{
-				FCompWithDependencies,
-				FSBOMCompletenessDeclared,
-				FPrimaryComponent,
-				FCompWithSourceCode,
-				FCompWithSupplier,
-				FCompWithPurpose,
-			},
-		},
+		CatCompleteness: CatCompletenessSpec,
 
 		// LicensingAndCompliance Category
-		CatLicensingAndCompliance: {
-			Key:    CatLicensingAndCompliance,
-			Name:   "Licensing",
-			Weight: 15,
-			Features: []catalog.ComprFeatKey{
-				FCompWithLicenses,
-				FCompWithValidLicenses,
-				FCompWithDeclaredLicenses,
-				FSBOMDataLicense,
-				FCompNoDeprecatedLicenses,
-				FCompNoRestrictiveLicenses,
-			},
-		},
+		CatLicensingAndCompliance: CatLicensingAndComplianceSpec,
 
 		// Vulnerability Category
-		CatVulnerabilityAndTrace: {
-			Key:    CatVulnerabilityAndTrace,
-			Name:   "Vulnerability",
-			Weight: 10,
-			Features: []catalog.ComprFeatKey{
-				FCompWithPURL,
-				FCompWithCPE,
-			},
-		},
+		CatVulnerabilityAndTrace: CatVulnerabilityAndTraceSpec,
 
 		// Structural Category
-		CatStructural: {
-			Key:    CatStructural,
-			Name:   "Structural",
-			Weight: 8,
-			Features: []catalog.ComprFeatKey{
-				FSBOMSpecDeclared,
-				FSBOMSpecVersion,
-				FSBOMFileFormat,
-				FSBOMSchemaValid,
-			},
-		},
+		CatStructural: CatStructuralSpec,
 
 		// ComponentQualityInfo Category
-		CatComponentQualityInfo: {
-			Key:      CatComponentQualityInfo,
-			Name:     "Component Quality (Info)",
-			Weight:   0,
-			Features: nil,
-		},
+		CatComponentQualityInfo: CatComponentQualityInfoSpec,
 	}
 
 	// Default evaluation order
@@ -354,6 +316,8 @@ func bindComprCategories() (map[catalog.ComprCatKey]catalog.ComprCatSpec, []cata
 	return cats, order
 }
 
+// bindComprFeatures maps ComprFeatKey with ComprFeatSpec
+// spec contains key, weight, evaluating function
 func bindComprFeatures() map[catalog.ComprFeatKey]catalog.ComprFeatSpec {
 	return map[catalog.ComprFeatKey]catalog.ComprFeatSpec{
 		// Identification
@@ -402,34 +366,25 @@ func bindComprFeatures() map[catalog.ComprFeatKey]catalog.ComprFeatSpec {
 	}
 }
 
+// bindProfFeatures profileFeatureKey with profileFeatureSpec
+// spec contains key, required, description, evaluation function
 func bindProfFeatures() map[catalog.ProfFeatKey]catalog.ProfFeatSpec {
 	return map[catalog.ProfFeatKey]catalog.ProfFeatSpec{
 		// common
 		PFSBOMSpec:              {Key: PFSBOMSpec, Required: true, Description: "Machine-readable SBOM (SPDX or CycloneDX declared)", Evaluate: profiles.SBOMAutomationSpec},
-		PFSBOMDependencies:      {Key: PFSBOMDependencies, Required: true, Description: "Primary Comp With Dependenies", Evaluate: profiles.SbomWithDepedencies},
-		PFSBOMAuthors:           {Key: PFSBOMAuthors, Required: true, Description: "Author/creator info", Evaluate: profiles.BSISBOMWithAuthors},
-		PFSBOMCreationTimestamp: {Key: PFSBOMCreationTimestamp, Required: true, Description: "Creation timestamp (ISO-8601)", Evaluate: profiles.BSISBOMWithTimeStamp},
-		PFCompName:              {Key: PFCompName, Required: true, Description: "All components have names", Evaluate: profiles.BSICompWithName},
-		PFCompVersion:           {Key: PFCompVersion, Required: true, Description: "Components have versions", Evaluate: profiles.BSICompWithVersion},
+		PFSBOMDependencies:      {Key: PFSBOMDependencies, Required: true, Description: "Primary Comp With Dependenies", Evaluate: profiles.SBOMDepedencies},
+		PFSBOMAuthors:           {Key: PFSBOMAuthors, Required: true, Description: "Author/creator info", Evaluate: profiles.SBOMAuthors},
+		PFSBOMCreationTimestamp: {Key: PFSBOMCreationTimestamp, Required: true, Description: "Creation timestamp (ISO-8601)", Evaluate: profiles.SBOMCreationTimestamp},
+		PFCompName:              {Key: PFCompName, Required: true, Description: "All components have names", Evaluate: profiles.CompName},
+		PFCompVersion:           {Key: PFCompVersion, Required: true, Description: "Components have versions", Evaluate: profiles.CompVersion},
 
 		// NTIA
-		// PFNTIACompName:        {Key: PFNTIACompName, Required: true, Description: "Component Name", Evaluate: profiles.CompWithName},
-		// PFNTIACompVersion:     {Key: PFNTIACompVersion, Required: true, Description: "Components version", Evaluate: profiles.CompWithVersion},
 		PFNTIACompSupplier:    {Key: PFNTIACompSupplier, Required: true, Description: "Supplier/manufacturer info", Evaluate: profiles.CompWithSupplier},
 		PFNTIACompIdentifiers: {Key: PFNTIACompIdentifiers, Required: true, Description: "Unique local identifiers PURL/CPE", Evaluate: profiles.CompWithUniqID},
-		// PFNTIASBOMDependencies:      {Key: PFNTIASBOMDependencies, Required: true, Description: "Primary Comp With Dependenies", Evaluate: profiles.SbomWithDepedencies},
-		// PFNTIASBOMAuthors:           {Key: PFNTIASBOMAuthors, Required: true, Description: "Author/creator info", Evaluate: profiles.SbomWithAuthors},
-		// PFNTIASBOMCreationTimestamp: {Key: PFNTIASBOMCreationTimestamp, Required: true, Description: "Creation timestamp (ISO-8601)", Evaluate: profiles.SbomWithTimeStamp},
 
-		// PFSBOMSpec:                 {Key: PFSBOMSpec, Required: true, Description: "SBOM (SPDX or CycloneDX declared)", Evaluate: profiles.BSISBOMSpec},
-		PFBSISBOMSpecVersion: {Key: PFBSISBOMSpecVersion, Required: true, Description: "Supported spec version declared", Evaluate: profiles.BSISBOMSpecVersion},
-		PFBSISBOMLifecycle:   {Key: PFBSISBOMLifecycle, Required: true, Description: "SBOM Lifecycle", Evaluate: profiles.BSISBOMBuildLifecycle},
-		// PFBSISBOMDependencies:      {Key: PFBSISBOMDependencies, Required: true, Description: "Primary Comp With Dependenies", Evaluate: profiles.BSISBOMWithDepedencies},
-		// PFBSISBOMAuthors:           {Key: PFBSISBOMAuthors, Required: true, Description: "Author/creator info", Evaluate: profiles.BSISBOMWithAuthors},
-		// PFBSISBOMCreationTimestamp: {Key: PFBSISBOMCreationTimestamp, Required: true, Description: "Creation timestamp (ISO-8601)", Evaluate: profiles.BSISBOMWithTimeStamp},
-		PFBSISBOMNamespace: {Key: PFBSISBOMNamespace, Required: true, Description: "Unique SBOM identifier", Evaluate: profiles.BSISBOMNamespace},
-		// PFBSICompName:           {Key: PFBSICompName, Required: true, Description: "All components have names", Evaluate: profiles.BSICompWithName},
-		// PFBSICompVersion:        {Key: PFBSICompVersion, Required: true, Description: "Components have versions", Evaluate: profiles.BSICompWithVersion},
+		PFBSISBOMSpecVersion:    {Key: PFBSISBOMSpecVersion, Required: true, Description: "Supported spec version declared", Evaluate: profiles.BSISBOMSpecVersion},
+		PFBSISBOMLifecycle:      {Key: PFBSISBOMLifecycle, Required: true, Description: "SBOM Lifecycle", Evaluate: profiles.BSISBOMBuildLifecycle},
+		PFBSISBOMNamespace:      {Key: PFBSISBOMNamespace, Required: true, Description: "Unique SBOM identifier", Evaluate: profiles.BSISBOMNamespace},
 		PFBSICompLicense:        {Key: PFBSICompLicense, Required: true, Description: "License info", Evaluate: profiles.BSICompWithLicenses},
 		PFBSICompHash:           {Key: PFBSICompHash, Required: true, Description: "Checksums present", Evaluate: profiles.BSICompWithHash},
 		PFBSICompSourceCodeURL:  {Key: PFBSICompSourceCodeURL, Required: true, Description: "Source/VCS references", Evaluate: profiles.BSICompWithSourceCodeURI},
@@ -464,97 +419,107 @@ func bindProfFeatures() map[catalog.ProfFeatKey]catalog.ProfFeatSpec {
 	}
 }
 
+var profileNTIASpec = catalog.ProfSpec{
+	Key:  ProfileNTIA,
+	Name: "NTIA Minimum Elements",
+	Features: []catalog.ProfFeatKey{
+		PFSBOMSpec,
+		PFNTIACompName,
+		PFNTIACompVersion,
+		PFNTIACompIdentifiers,
+		PFSBOMDependencies,
+		PFNTIASBOMAuthors,
+		PFNTIASBOMCreationTimestamp,
+	},
+}
+
+var profileBSI11Spec = catalog.ProfSpec{
+	Key:  ProfileBSI11,
+	Name: "BSI TR-03183-2 v1.1",
+	Features: []catalog.ProfFeatKey{
+		PFSBOMSpec,
+		PFBSISBOMSpecVersion,
+		PFBSISBOMLifecycle,
+		PFSBOMDependencies,
+		PFBSISBOMAuthors,
+		PFBSISBOMCreationTimestamp,
+		PFBSISBOMNamespace,
+
+		PFCompName,
+		PFCompVersion,
+		PFBSICompLicense,
+		PFBSICompHash,
+		PFBSICompSourceCodeURL,
+		PFBSICompDownloadURL,
+		PFBSICompSourceCodeHash,
+		PFBSICompDependencies,
+	},
+}
+
+var profileBSI20Spec = catalog.ProfSpec{
+	Key:  ProfileBSI20,
+	Name: "BSI TR-03183-2 v2.0",
+	Features: []catalog.ProfFeatKey{
+		PFSBOMSpec,
+		PFBSISBOMSpecVersion,
+		PFBSISBOMLifecycle,
+		PFSBOMDependencies,
+		PFBSISBOMAuthors,
+		PFBSISBOMCreationTimestamp,
+		PFBSISBOMNamespace,
+
+		PFCompName,
+		PFCompVersion,
+		PFBSICompLicense,
+		PFBSICompHash,
+		PFBSICompSourceCodeURL,
+		PFBSICompDownloadURL,
+		PFBSICompSourceCodeHash,
+		PFBSICompDependencies,
+
+		PFBSI20SBOMSignature,
+		PFBSI20SBOMLinks,
+		PFBSI20SBOMVulnerabilities,
+		PFBSI20CompChecksumSHA256,
+		PFBSI20CompAssociatedLicense,
+	},
+}
+
+var profileOCTSpec = catalog.ProfSpec{
+	Key:  ProfileOCT,
+	Name: "OpenChain Telco (OCT)",
+	Features: []catalog.ProfFeatKey{
+		PFOCTSBOMSpec,
+		PFOCTSBOMSpecVersion,
+		PFOCTSBOMSpdxID,
+		PFOCTSBOMName,
+		PFOCTSBOMComment,
+		PFOCTSBOMOrg,
+		PFOCTSBOMCreationTool,
+		PFOCTSBOMNamespace,
+		PFOCTSBOMDataLicense,
+
+		PFOCTCompName,
+		PFOCTCompVersion,
+		PFOCTCompSpdxID,
+		PFOCTCompDownloadURL,
+		PFOCTCompFileAnalyzed,
+		PFOCTCompLicenseConcluded,
+		PFOCTCompLicenseDeclared,
+		PFOCTCompCopyright,
+	},
+}
+
+// bindProfiles maps profile key with profile spec
+// spec contains key, name, and features
+// ProfileNTIA with it's spec
+// ProfileBSI11 with it's spec
+// ProfileBSI20 with it's spec
 func bindProfiles() map[catalog.ProfileKey]catalog.ProfSpec {
 	return map[catalog.ProfileKey]catalog.ProfSpec{
-		ProfileNTIA: {
-			Key:  ProfileNTIA,
-			Name: "NTIA Minimum Elements",
-			Features: []catalog.ProfFeatKey{
-				PFSBOMSpec,
-				PFNTIACompName,
-				PFNTIACompVersion,
-				PFNTIACompIdentifiers,
-				PFSBOMDependencies,
-				PFNTIASBOMAuthors,
-				PFNTIASBOMCreationTimestamp,
-			},
-		},
-
-		ProfileBSI11: {
-			Key:  ProfileBSI11,
-			Name: "BSI TR-03183-2 v1.1",
-			Features: []catalog.ProfFeatKey{
-				PFSBOMSpec,
-				PFBSISBOMSpecVersion,
-				PFBSISBOMLifecycle,
-				PFSBOMDependencies,
-				PFBSISBOMAuthors,
-				PFBSISBOMCreationTimestamp,
-				PFBSISBOMNamespace,
-
-				PFCompName,
-				PFCompVersion,
-				PFBSICompLicense,
-				PFBSICompHash,
-				PFBSICompSourceCodeURL,
-				PFBSICompDownloadURL,
-				PFBSICompSourceCodeHash,
-				PFBSICompDependencies,
-			},
-		},
-
-		ProfileBSI20: {
-			Key:  ProfileBSI20,
-			Name: "BSI TR-03183-2 v2.0",
-			Features: []catalog.ProfFeatKey{
-				PFSBOMSpec,
-				PFBSISBOMSpecVersion,
-				PFBSISBOMLifecycle,
-				PFSBOMDependencies,
-				PFBSISBOMAuthors,
-				PFBSISBOMCreationTimestamp,
-				PFBSISBOMNamespace,
-
-				PFCompName,
-				PFCompVersion,
-				PFBSICompLicense,
-				PFBSICompHash,
-				PFBSICompSourceCodeURL,
-				PFBSICompDownloadURL,
-				PFBSICompSourceCodeHash,
-				PFBSICompDependencies,
-
-				PFBSI20SBOMSignature,
-				PFBSI20SBOMLinks,
-				PFBSI20SBOMVulnerabilities,
-				PFBSI20CompChecksumSHA256,
-				PFBSI20CompAssociatedLicense,
-			},
-		},
-
-		ProfileOCT: {
-			Key:  ProfileOCT,
-			Name: "OpenChain Telco (OCT)",
-			Features: []catalog.ProfFeatKey{
-				PFOCTSBOMSpec,
-				PFOCTSBOMSpecVersion,
-				PFOCTSBOMSpdxID,
-				PFOCTSBOMName,
-				PFOCTSBOMComment,
-				PFOCTSBOMOrg,
-				PFOCTSBOMCreationTool,
-				PFOCTSBOMNamespace,
-				PFOCTSBOMDataLicense,
-
-				PFOCTCompName,
-				PFOCTCompVersion,
-				PFOCTCompSpdxID,
-				PFOCTCompDownloadURL,
-				PFOCTCompFileAnalyzed,
-				PFOCTCompLicenseConcluded,
-				PFOCTCompLicenseDeclared,
-				PFOCTCompCopyright,
-			},
-		},
+		ProfileNTIA:  profileNTIASpec,
+		ProfileBSI11: profileBSI11Spec,
+		ProfileBSI20: profileBSI20Spec,
+		ProfileOCT:   profileOCTSpec,
 	}
 }

@@ -30,12 +30,15 @@ type (
 	ProfFeatKey string
 )
 
+// Aliases represent mapping of common name to keys
 type Aliases struct {
 	Category map[string]ComprCatKey
 	Feature  map[string]ComprFeatKey
 	Profile  map[string]ProfileKey
 }
 
+// Catalog is a collection of comprehenssive categories, features
+// and profiles and it's features
 type Catalog struct {
 	ComprFeatures   map[ComprFeatKey]ComprFeatSpec
 	ComprCategories map[ComprCatKey]ComprCatSpec
@@ -62,11 +65,6 @@ func (c *Catalog) HasProfile(k ProfileKey) bool {
 	return ok
 }
 
-func (c *Catalog) GetProfileSpec(k ProfileKey) (ProfSpec, bool) {
-	p, ok := c.Profiles[k]
-	return p, ok
-}
-
 func (c *Catalog) ResolveCategoryAlias(s string) (ComprCatKey, bool) {
 	k, ok := c.Aliases.Category[strings.ToLower(strings.TrimSpace(s))]
 	return k, ok
@@ -91,7 +89,6 @@ func (c *Catalog) BaseProfiles() []ProfSpec {
 	for _, k := range c.Profiles {
 		out = append(out, k)
 	}
-
 	return out
 }
 
