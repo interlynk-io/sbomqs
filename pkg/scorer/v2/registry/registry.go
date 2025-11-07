@@ -180,9 +180,10 @@ func InitializeCatalog() *catalog.Catalog {
 }
 
 var CatIdentificationSpec = catalog.ComprCatSpec{
-	Key:    CatIdentification,
-	Name:   "Identification",
-	Weight: 10,
+	Key:         CatIdentification,
+	Name:        "Identification",
+	Weight:      10,
+	Description: "Identification of components is critical for understanding supply chain metadata",
 	Features: []catalog.ComprFeatKey{
 		FCompWithName,
 		FCompWithVersion,
@@ -191,9 +192,10 @@ var CatIdentificationSpec = catalog.ComprCatSpec{
 }
 
 var CatProvenanceSpec = catalog.ComprCatSpec{
-	Key:    CatProvenance,
-	Name:   "Provenance",
-	Weight: 12,
+	Key:         CatProvenance,
+	Name:        "Provenance",
+	Description: "Enables trust and audit trails",
+	Weight:      12,
 	Features: []catalog.ComprFeatKey{
 		FSBOMCreationTimestamp,
 		FSBOMAuthors,
@@ -205,9 +207,10 @@ var CatProvenanceSpec = catalog.ComprCatSpec{
 }
 
 var CatIntegritySpec = catalog.ComprCatSpec{
-	Key:    CatIntegrity,
-	Name:   "Integrity",
-	Weight: 15,
+	Key:         CatIntegrity,
+	Name:        "Integrity",
+	Description: "Allows for verification if artifacts were altered",
+	Weight:      15,
 	Features: []catalog.ComprFeatKey{
 		FCompWithChecksums,
 		FCompWithSHA256,
@@ -216,9 +219,10 @@ var CatIntegritySpec = catalog.ComprCatSpec{
 }
 
 var CatCompletenessSpec = catalog.ComprCatSpec{
-	Key:    CatCompleteness,
-	Name:   "Completeness",
-	Weight: 12,
+	Key:         CatCompleteness,
+	Name:        "Completeness",
+	Description: "Allows for vulnerability and impact analysis",
+	Weight:      12,
 	Features: []catalog.ComprFeatKey{
 		FCompWithDependencies,
 		FSBOMCompletenessDeclared,
@@ -230,9 +234,10 @@ var CatCompletenessSpec = catalog.ComprCatSpec{
 }
 
 var CatLicensingAndComplianceSpec = catalog.ComprCatSpec{
-	Key:    CatLicensingAndCompliance,
-	Name:   "Licensing",
-	Weight: 15,
+	Key:         CatLicensingAndCompliance,
+	Name:        "Licensing",
+	Description: "Determines redistribution rights and legal compliance",
+	Weight:      15,
 	Features: []catalog.ComprFeatKey{
 		FCompWithLicenses,
 		FCompWithValidLicenses,
@@ -244,9 +249,10 @@ var CatLicensingAndComplianceSpec = catalog.ComprCatSpec{
 }
 
 var CatVulnerabilityAndTraceSpec = catalog.ComprCatSpec{
-	Key:    CatVulnerabilityAndTrace,
-	Name:   "Vulnerability",
-	Weight: 10,
+	Key:         CatVulnerabilityAndTrace,
+	Name:        "Vulnerability",
+	Description: "Ability to map components to vulnerability databases",
+	Weight:      10,
 	Features: []catalog.ComprFeatKey{
 		FCompWithPURL,
 		FCompWithCPE,
@@ -254,9 +260,10 @@ var CatVulnerabilityAndTraceSpec = catalog.ComprCatSpec{
 }
 
 var CatStructuralSpec = catalog.ComprCatSpec{
-	Key:    CatStructural,
-	Name:   "Structural",
-	Weight: 8,
+	Key:         CatStructural,
+	Name:        "Structural",
+	Description: "If a BOM can't be reliably parsed, all downstream automation fails",
+	Weight:      8,
 	Features: []catalog.ComprFeatKey{
 		FSBOMSpecDeclared,
 		FSBOMSpecVersion,
@@ -266,10 +273,11 @@ var CatStructuralSpec = catalog.ComprCatSpec{
 }
 
 var CatComponentQualityInfoSpec = catalog.ComprCatSpec{
-	Key:      CatComponentQualityInfo,
-	Name:     "Component Quality (Info)",
-	Weight:   0,
-	Features: nil,
+	Key:         CatComponentQualityInfo,
+	Name:        "Component Quality (Info)",
+	Weight:      0,
+	Description: "Real-time component risk assessment based on external threat intelligence. These metrics are informational only and do NOT affect the overall quality score",
+	Features:    nil,
 }
 
 // bindComprCategories maps ComprCatKey with ComprCatSpec
@@ -321,48 +329,48 @@ func bindComprCategories() (map[catalog.ComprCatKey]catalog.ComprCatSpec, []cata
 func bindComprFeatures() map[catalog.ComprFeatKey]catalog.ComprFeatSpec {
 	return map[catalog.ComprFeatKey]catalog.ComprFeatSpec{
 		// Identification
-		FCompWithName:        {Key: FCompWithName, Weight: 0.40, Evaluate: extractors.CompWithName},
-		FCompWithVersion:     {Key: FCompWithVersion, Weight: 0.35, Evaluate: extractors.CompWithVersion}, // FIXED: was mapped to completeness
-		FCompWithIdentifiers: {Key: FCompWithIdentifiers, Weight: 0.25, Evaluate: extractors.CompWithUniqLocalIDs},
+		FCompWithName:        {Key: FCompWithName, Description: "components with name", Weight: 0.40, Ignore: false, Evaluate: extractors.CompWithName},
+		FCompWithVersion:     {Key: FCompWithVersion, Description: "components with version", Weight: 0.35, Ignore: false, Evaluate: extractors.CompWithVersion}, // FIXED: was mapped to completeness
+		FCompWithIdentifiers: {Key: FCompWithIdentifiers, Description: "components with local identifiers", Weight: 0.25, Ignore: false, Evaluate: extractors.CompWithUniqLocalIDs},
 
 		// Provenance
-		FSBOMCreationTimestamp: {Key: FSBOMCreationTimestamp, Weight: 0.20, Evaluate: extractors.SBOMCreationTimestamp},
-		FSBOMAuthors:           {Key: FSBOMAuthors, Weight: 0.20, Evaluate: extractors.SBOMAuthors},
-		FSBOMToolVersion:       {Key: FSBOMToolVersion, Weight: 0.20, Evaluate: extractors.SBOMCreationTool},
-		FSBOMSupplier:          {Key: FSBOMSupplier, Weight: 0.15, Evaluate: extractors.SBOMSupplier},
-		FSBOMNamespace:         {Key: FSBOMNamespace, Weight: 0.15, Evaluate: extractors.SBOMNamespace},
-		FSBOMLifecycle:         {Key: FSBOMLifecycle, Weight: 0.10, Evaluate: extractors.SBOMLifeCycle},
+		FSBOMCreationTimestamp: {Key: FSBOMCreationTimestamp, Description: "Document creation time", Weight: 0.20, Ignore: false, Evaluate: extractors.SBOMCreationTimestamp},
+		FSBOMAuthors:           {Key: FSBOMAuthors, Description: "Document authors", Weight: 0.20, Ignore: false, Evaluate: extractors.SBOMAuthors},
+		FSBOMToolVersion:       {Key: FSBOMToolVersion, Description: "Document creator tool & version", Weight: 0.20, Ignore: false, Evaluate: extractors.SBOMCreationTool},
+		FSBOMSupplier:          {Key: FSBOMSupplier, Description: "Document supplier", Weight: 0.15, Ignore: false, Evaluate: extractors.SBOMSupplier},
+		FSBOMNamespace:         {Key: FSBOMNamespace, Description: "Document URI/namespace", Weight: 0.15, Ignore: false, Evaluate: extractors.SBOMNamespace},
+		FSBOMLifecycle:         {Key: FSBOMLifecycle, Description: "Document Lifecycle", Weight: 0.10, Ignore: false, Evaluate: extractors.SBOMLifeCycle},
 
 		// Integrity
-		FSBOMSignature:     {Key: FSBOMSignature, Weight: 0.10, Evaluate: extractors.SBOMSignature},
-		FCompWithChecksums: {Key: FCompWithChecksums, Weight: 0.60, Evaluate: extractors.CompWithSHA1Plus},
-		FCompWithSHA256:    {Key: FCompWithSHA256, Weight: 0.30, Evaluate: extractors.CompWithSHA256Plus},
+		FCompWithChecksums: {Key: FCompWithChecksums, Description: "components with checksums", Weight: 0.60, Ignore: false, Evaluate: extractors.CompWithSHA1Plus},
+		FCompWithSHA256:    {Key: FCompWithSHA256, Description: "components with SHA-256+", Weight: 0.30, Ignore: false, Evaluate: extractors.CompWithSHA256Plus},
+		FSBOMSignature:     {Key: FSBOMSignature, Description: "Document signature	", Weight: 0.10, Ignore: false, Evaluate: extractors.SBOMSignature},
 
 		// Completeness
-		FCompWithDependencies:     {Key: FCompWithDependencies, Weight: 0.25, Evaluate: extractors.CompWithDependencies},
-		FSBOMCompletenessDeclared: {Key: FSBOMCompletenessDeclared, Weight: 0.15, Evaluate: extractors.CompWithCompleteness},
-		FPrimaryComponent:         {Key: FPrimaryComponent, Weight: 0.20, Evaluate: extractors.SBOMWithPrimaryComponent},
-		FCompWithSourceCode:       {Key: FCompWithSourceCode, Weight: 0.15, Evaluate: extractors.CompWithSourceCode},
-		FCompWithSupplier:         {Key: FCompWithSupplier, Weight: 0.15, Evaluate: extractors.CompWithSupplier},
-		FCompWithPurpose:          {Key: FCompWithPurpose, Weight: 0.10, Evaluate: extractors.CompWithPackagePurpose},
+		FCompWithDependencies:     {Key: FCompWithDependencies, Description: "components with dependencies", Weight: 0.25, Ignore: false, Evaluate: extractors.CompWithDependencies},
+		FSBOMCompletenessDeclared: {Key: FSBOMCompletenessDeclared, Description: "components with declared completeness", Weight: 0.15, Ignore: false, Evaluate: extractors.CompWithCompleteness},
+		FPrimaryComponent:         {Key: FPrimaryComponent, Description: "Primary component identified", Weight: 0.20, Ignore: false, Evaluate: extractors.SBOMWithPrimaryComponent},
+		FCompWithSourceCode:       {Key: FCompWithSourceCode, Description: "components with source code", Weight: 0.15, Ignore: false, Evaluate: extractors.CompWithSourceCode},
+		FCompWithSupplier:         {Key: FCompWithSupplier, Description: "components with supplier", Weight: 0.15, Ignore: false, Evaluate: extractors.CompWithSupplier},
+		FCompWithPurpose:          {Key: FCompWithPurpose, Description: "components with primary purpose", Weight: 0.10, Ignore: false, Evaluate: extractors.CompWithPackagePurpose},
 
 		// Licensing & Compliance
-		FCompWithLicenses:          {Key: FCompWithLicenses, Weight: 0.20, Evaluate: extractors.CompWithLicenses},
-		FCompWithValidLicenses:     {Key: FCompWithValidLicenses, Weight: 0.20, Evaluate: extractors.CompWithValidLicenses},
-		FCompWithDeclaredLicenses:  {Key: FCompWithDeclaredLicenses, Weight: 0.15, Evaluate: extractors.CompWithDeclaredLicenses},
-		FSBOMDataLicense:           {Key: FSBOMDataLicense, Weight: 0.10, Evaluate: extractors.SBOMDataLicense},
-		FCompNoDeprecatedLicenses:  {Key: FCompNoDeprecatedLicenses, Weight: 0.15, Evaluate: extractors.CompWithDeprecatedLicenses},
-		FCompNoRestrictiveLicenses: {Key: FCompNoRestrictiveLicenses, Weight: 0.20, Evaluate: extractors.CompWithRestrictiveLicenses},
+		FCompWithLicenses:          {Key: FCompWithLicenses, Description: "components with licenses", Weight: 0.20, Ignore: false, Evaluate: extractors.CompWithLicenses},
+		FCompWithValidLicenses:     {Key: FCompWithValidLicenses, Description: "components with valid licenses", Weight: 0.20, Ignore: false, Evaluate: extractors.CompWithValidLicenses},
+		FCompWithDeclaredLicenses:  {Key: FCompWithDeclaredLicenses, Description: "components with original licenses", Weight: 0.15, Ignore: false, Evaluate: extractors.CompWithDeclaredLicenses},
+		FSBOMDataLicense:           {Key: FSBOMDataLicense, Description: "Document data license", Weight: 0.10, Ignore: false, Evaluate: extractors.SBOMDataLicense},
+		FCompNoDeprecatedLicenses:  {Key: FCompNoDeprecatedLicenses, Description: "components without deprecated licenses", Weight: 0.15, Ignore: false, Evaluate: extractors.CompWithDeprecatedLicenses},
+		FCompNoRestrictiveLicenses: {Key: FCompNoRestrictiveLicenses, Description: "components without restrictive licenses", Weight: 0.20, Ignore: false, Evaluate: extractors.CompWithRestrictiveLicenses},
 
 		// Vulnerability & Traceability
-		FCompWithPURL: {Key: FCompWithPURL, Weight: 0.50, Evaluate: extractors.CompWithPURL},
-		FCompWithCPE:  {Key: FCompWithCPE, Weight: 0.50, Evaluate: extractors.CompWithCPE},
+		FCompWithPURL: {Key: FCompWithPURL, Description: "components with PURL", Weight: 0.50, Ignore: false, Evaluate: extractors.CompWithPURL},
+		FCompWithCPE:  {Key: FCompWithCPE, Description: "components with CPE", Weight: 0.50, Ignore: false, Evaluate: extractors.CompWithCPE},
 
 		// Structural
-		FSBOMSpecDeclared: {Key: FSBOMSpecDeclared, Weight: 0.30, Evaluate: extractors.SBOMWithSpec},
-		FSBOMSpecVersion:  {Key: FSBOMSpecVersion, Weight: 0.30, Evaluate: extractors.SBOMSpecVersion},
-		FSBOMFileFormat:   {Key: FSBOMFileFormat, Weight: 0.20, Evaluate: extractors.SBOMFileFormat},
-		FSBOMSchemaValid:  {Key: FSBOMSchemaValid, Weight: 0.20, Evaluate: extractors.SBOMSchemaValid},
+		FSBOMSpecDeclared: {Key: FSBOMSpecDeclared, Description: "SBOM spec declared", Weight: 0.30, Ignore: false, Evaluate: extractors.SBOMWithSpec},
+		FSBOMSpecVersion:  {Key: FSBOMSpecVersion, Description: "SBOM spec version", Weight: 0.30, Ignore: false, Evaluate: extractors.SBOMSpecVersion},
+		FSBOMFileFormat:   {Key: FSBOMFileFormat, Description: "SBOM file format", Weight: 0.20, Ignore: false, Evaluate: extractors.SBOMFileFormat},
+		FSBOMSchemaValid:  {Key: FSBOMSchemaValid, Description: "Schema validation", Weight: 0.20, Ignore: false, Evaluate: extractors.SBOMSchemaValid},
 	}
 }
 
@@ -420,8 +428,9 @@ func bindProfFeatures() map[catalog.ProfFeatKey]catalog.ProfFeatSpec {
 }
 
 var profileNTIASpec = catalog.ProfSpec{
-	Key:  ProfileNTIA,
-	Name: "NTIA Minimum Elements",
+	Key:         ProfileNTIA,
+	Name:        "ntia",
+	Description: "NTIA Minimum Elements",
 	Features: []catalog.ProfFeatKey{
 		PFSBOMSpec,
 		PFNTIACompName,
@@ -434,8 +443,9 @@ var profileNTIASpec = catalog.ProfSpec{
 }
 
 var profileBSI11Spec = catalog.ProfSpec{
-	Key:  ProfileBSI11,
-	Name: "BSI TR-03183-2 v1.1",
+	Key:         ProfileBSI11,
+	Name:        "bsi-v1.1",
+	Description: "BSI TR-03183-2 v1.1",
 	Features: []catalog.ProfFeatKey{
 		PFSBOMSpec,
 		PFBSISBOMSpecVersion,
@@ -457,8 +467,9 @@ var profileBSI11Spec = catalog.ProfSpec{
 }
 
 var profileBSI20Spec = catalog.ProfSpec{
-	Key:  ProfileBSI20,
-	Name: "BSI TR-03183-2 v2.0",
+	Key:         ProfileBSI20,
+	Name:        "bsi-v2.0",
+	Description: "BSI TR-03183-2 v2.0",
 	Features: []catalog.ProfFeatKey{
 		PFSBOMSpec,
 		PFBSISBOMSpecVersion,
@@ -486,8 +497,9 @@ var profileBSI20Spec = catalog.ProfSpec{
 }
 
 var profileOCTSpec = catalog.ProfSpec{
-	Key:  ProfileOCT,
-	Name: "OpenChain Telco (OCT)",
+	Key:         ProfileOCT,
+	Name:        "oct",
+	Description: "OpenChain Telco (OCT)",
 	Features: []catalog.ProfFeatKey{
 		PFOCTSBOMSpec,
 		PFOCTSBOMSpecVersion,

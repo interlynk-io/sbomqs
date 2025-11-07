@@ -84,6 +84,18 @@ func (c *Catalog) BaseCategoriesKeys() []ComprCatKey {
 	return c.Order
 }
 
+func (c *Catalog) BaseCategoriesSpec() []ComprCatSpec {
+	catKeys := c.BaseCategoriesKeys()
+	allCategories := make([]ComprCatSpec, 0, len(catKeys))
+	for _, key := range catKeys {
+		category, ok := c.ComprCategories[key]
+		if ok {
+			allCategories = append(allCategories, category)
+		}
+	}
+	return allCategories
+}
+
 func (c *Catalog) BaseProfiles() []ProfSpec {
 	out := make([]ProfSpec, 0, len(c.Profiles))
 	for _, k := range c.Profiles {

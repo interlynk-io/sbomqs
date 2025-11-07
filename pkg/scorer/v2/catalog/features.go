@@ -18,10 +18,12 @@ import "github.com/interlynk-io/sbomqs/pkg/sbom"
 
 // ComprFeatSpec represents feature of comprehenssive categories.
 type ComprFeatSpec struct {
-	Name     string
-	Key      ComprFeatKey
-	Weight   float64
-	Evaluate ComprFeatEval
+	Name        string
+	Description string
+	Ignore      bool
+	Key         ComprFeatKey
+	Weight      float64
+	Evaluate    ComprFeatEval
 }
 
 // ComprFeatEval function represents evaluation of corresponding feature.
