@@ -47,7 +47,7 @@ type ProfFeatures struct {
 func DefaultProfConfig() string {
 	config := ProfileConfig{}
 	config.Metadata.Version = "2.0.0"
-	config.Metadata.Description = "Configuration of SBOM scoring features, grouped by category"
+	config.Metadata.Description = "Configuration of Profile scoring."
 	config.Metadata.LastUpdated = time.Now().Format("2006-01-02")
 
 	// track categories using Map

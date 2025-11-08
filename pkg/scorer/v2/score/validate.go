@@ -144,7 +144,6 @@ func validateConfig(ctx context.Context, catal *catalog.Catalog, cfg *config.Con
 	}
 	cfg.Features = normFeats
 
-	// --- Profiles (optional but helpful to fail fast) ---
 	if len(cfg.Profile) > 0 {
 		var (
 			normProfiles []string
