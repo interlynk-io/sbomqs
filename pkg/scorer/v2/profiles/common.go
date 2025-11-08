@@ -24,6 +24,8 @@ import (
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/catalog"
 	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/formulae"
+	"github.com/knqyf263/go-cpe/naming"
+	purl "github.com/package-url/packageurl-go"
 	"github.com/samber/lo"
 )
 
@@ -119,14 +121,21 @@ func SBOMLifeCycle(doc sbom.Document) catalog.ProfFeatScore {
 		}
 
 	case string(sbom.SBOMSpecCDX):
-		phases := doc.Lifecycles()
-		if len(phases) > 0 {
-			return formulae.ScoreSBOMProfFull(strings.Join(phases, ", "), true)
+		var phases []string
+
+		for _, p := range doc.Lifecycles() {
+			if strings.TrimSpace(p) != "" {
+				phases = append(phases, p)
+			}
 		}
 
-		return formulae.ScoreSBOMProfMissingNA("lifecycle", true)
+		if len(phases) > 0 {
+			return formulae.ScoreSBOMProfFull(strings.Join(phases, ", "), false)
+		}
+
+		return formulae.ScoreSBOMProfMissingNA("lifecycle", false)
 	}
-	return formulae.ScoreSBOMProfUnknownNA("lifecycle", true)
+	return formulae.ScoreSBOMProfUnknownNA("lifecycle", false)
 }
 
 // SBOMNamespace check whether spdx has namespace
@@ -518,15 +527,53 @@ func CompUniqID(doc sbom.Document) catalog.ProfFeatScore {
 	return formulae.ScoreProfFull(have, len(comps), "unique ID", false)
 }
 
-func checkUniqueID(component sbom.GetComponent) bool {
-	if purl := component.GetPurls(); len(purl) > 0 {
-		return true
+func checkUniqueID(c sbom.GetComponent) bool {
+	for _, p := range c.GetPurls() {
+		if isValidPURL(string(p)) {
+			return true
+		}
 	}
 
-	if cpe := component.GetCpes(); len(cpe) > 0 {
-		return true
+	for _, p := range c.GetCpes() {
+		if isValidCPE(string(p)) {
+			return true
+		}
 	}
 	return false
+}
+
+func isValidCPE(s string) bool {
+	ls := strings.TrimSpace(s)
+	low := strings.ToLower(ls)
+
+	switch {
+	case strings.HasPrefix(low, "cpe:2.3:"):
+		_, err := naming.UnbindFS(ls)
+		return err == nil
+	case strings.HasPrefix(low, "cpe:/"):
+		_, err := naming.UnbindURI(ls)
+		return err == nil
+	default:
+		return false
+	}
+}
+
+func isValidPURL(s string) bool {
+	s = strings.TrimSpace(s)
+	if s == "" {
+		return false
+	}
+
+	u, err := purl.FromString(s)
+	if err != nil {
+		return false
+	}
+
+	// type and name must be present per spec
+	if strings.TrimSpace(u.Type) == "" || strings.TrimSpace(u.Name) == "" {
+		return false
+	}
+	return true
 }
 
 // CompDeclaredLicenses look for declared licenses

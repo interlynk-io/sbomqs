@@ -151,7 +151,7 @@ func SBOMNamespace(doc sbom.Document) catalog.ComprFeatScore {
 
 	switch spec {
 	case string(sbom.SBOMSpecSPDX):
-		ns := strings.TrimSpace(doc.Spec().GetNamespace())
+		ns := strings.TrimSpace(doc.Spec().GetURI())
 		if ns != "" {
 			return catalog.ComprFeatScore{
 				Score:  formulae.BooleanScore(true),
