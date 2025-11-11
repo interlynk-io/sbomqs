@@ -43,10 +43,13 @@ func ScoreSBOM(ctx context.Context, cfg config.Config, paths []string) ([]api.Re
 	}
 
 	// 2) Initialize the catalog (features, categories, profiles) once.
-	catalog := registry.InitializeCatalog()
+	catal, err := registry.InitializeCatalog(cfg)
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize catalog: %w", err)
+	}
 
 	// 3) validate config
-	if err := validateConfig(ctx, catalog, &cfg); err != nil {
+	if err := validateConfig(ctx, catal, &cfg); err != nil {
 		return nil, fmt.Errorf("failed to validate SBOM configuration: %w", err)
 	}
 
@@ -54,7 +57,7 @@ func ScoreSBOM(ctx context.Context, cfg config.Config, paths []string) ([]api.Re
 	processed := 0
 
 	for _, p := range validPaths {
-		res, err := scoreOnePath(ctx, catalog, cfg, p)
+		res, err := scoreOnePath(ctx, catal, cfg, p)
 		if err != nil {
 			log.Warnf("skip %s: %v", p, err)
 			continue
@@ -141,14 +144,11 @@ func openAndParse(ctx context.Context, cfg config.Config, path string) (*os.File
 // SBOMEvaluation decides between profile-based and comprehensive scoring,
 // delegates to a focused helper, and returns a single SBOM scoring result.
 func SBOMEvaluation(ctx context.Context, catal *catalog.Catalog, cfg config.Config, doc sbom.Document) (api.Result, error) {
-	if profilePresent(cfg) {
+	if catal.Profiles != nil {
 		return evaluateProfiles(ctx, catal, cfg, doc)
 	}
-	return evaluateComprehensive(ctx, catal, cfg, doc)
-}
 
-func profilePresent(cfg config.Config) bool {
-	return len(cfg.Profile) > 0
+	return evaluateComprehensive(ctx, catal, cfg, doc)
 }
 
 // evaluateProfiles computes profile-based results for the given SBOM document.
@@ -189,15 +189,15 @@ func evaluateComprehensive(ctx context.Context, catal *catalog.Catalog, cfg conf
 
 	result := api.NewResult(doc)
 
-	catKeys := selectCategoriesToScore(cfg, catal)
-	if len(catKeys) == 0 {
-		return api.Result{}, fmt.Errorf("no categories to score (check config filters)")
-	}
+	// catKeys := selectCategoriesToScore(cfg, catal)
+	// if len(catKeys) == 0 {
+	// 	return api.Result{}, fmt.Errorf("no categories to score (check config filters)")
+	// }
 
-	comprResult := comprehenssive.Evaluate(ctx, catKeys, catal, doc)
+	comprResult := comprehenssive.Evaluate(ctx, catal, doc)
 	result.Comprehensive = &comprResult
 
-	log.Debugf("selected categories for evaluation: %s", catKeys)
+	// log.Debugf("selected categories for evaluation: %s", catKeys)
 
 	result.InterlynkScore = formulae.ComputeInterlynkComprScore(comprResult.CatResult)
 	result.Grade = formulae.ToGrade(result.InterlynkScore)

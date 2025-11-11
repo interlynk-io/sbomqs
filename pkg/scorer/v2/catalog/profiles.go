@@ -22,7 +22,7 @@ type ProfSpec struct {
 	Name        string
 	Description string
 	Key         ProfileKey
-	Features    []ProfFeatKey
+	Features    []ProfFeatSpec
 }
 
 // ProfFeatSpec represents specification of feature of each profiles.

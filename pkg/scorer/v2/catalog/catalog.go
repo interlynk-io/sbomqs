@@ -40,29 +40,45 @@ type Aliases struct {
 // Catalog is a collection of comprehenssive categories, features
 // and profiles and it's features
 type Catalog struct {
-	ComprFeatures   map[ComprFeatKey]ComprFeatSpec
-	ComprCategories map[ComprCatKey]ComprCatSpec
+	ComprCategories []ComprCatSpec
+	ComprFeatures   []ComprFeatSpec
+	Profiles        []ProfSpec
+	ProfFeatures    []ProfFeatSpec
 
-	Profiles     map[ProfileKey]ProfSpec
-	ProfFeatures map[ProfFeatKey]ProfFeatSpec
-
-	Order   []ComprCatKey
+	Order   []ComprCatSpec
 	Aliases Aliases
+
+	// NTIAProfile   map[ProfileKey]ProfSpec
+	// BSIV11Profile map[ProfileKey]ProfSpec
+	// BSIV20Profile map[ProfileKey]ProfSpec
+	// OCTProfile    map[ProfileKey]ProfSpec
 }
 
 func (c *Catalog) HasFeature(k ComprFeatKey) bool {
-	_, ok := c.ComprFeatures[k]
-	return ok
+	for _, feat := range c.ComprFeatures {
+		if feat.Key == k {
+			return true
+		}
+	}
+	return false
 }
 
 func (c *Catalog) HasCategory(k ComprCatKey) bool {
-	_, ok := c.ComprCategories[k]
-	return ok
+	for _, spec := range c.ComprCategories {
+		if k == spec.Key {
+			return true
+		}
+	}
+	return false
 }
 
 func (c *Catalog) HasProfile(k ProfileKey) bool {
-	_, ok := c.Profiles[k]
-	return ok
+	for _, pr := range c.Profiles {
+		if k == pr.Key {
+			return true
+		}
+	}
+	return false
 }
 
 func (c *Catalog) ResolveCategoryAlias(s string) (ComprCatKey, bool) {
@@ -80,29 +96,21 @@ func (c *Catalog) ResolveProfileAlias(s string) (ProfileKey, bool) {
 	return k, ok
 }
 
-func (c *Catalog) BaseCategoriesKeys() []ComprCatKey {
-	return c.Order
-}
+// func (c *Catalog) BaseCategoriesKeys() []ComprCatKey {
+// 	return c.Order
+// }
 
-func (c *Catalog) BaseCategoriesSpec() []ComprCatSpec {
-	catKeys := c.BaseCategoriesKeys()
-	allCategories := make([]ComprCatSpec, 0, len(catKeys))
-	for _, key := range catKeys {
-		category, ok := c.ComprCategories[key]
-		if ok {
-			allCategories = append(allCategories, category)
-		}
-	}
-	return allCategories
-}
+// func (c *Catalog) BaseCategoriesSpec() []ComprCatSpec {
+// 	return c.ComprCategories
+// }
 
-func (c *Catalog) BaseProfiles() []ProfSpec {
-	out := make([]ProfSpec, 0, len(c.Profiles))
-	for _, k := range c.Profiles {
-		out = append(out, k)
-	}
-	return out
-}
+// func (c *Catalog) BaseProfiles() []ProfSpec {
+// 	out := make([]ProfSpec, 0, len(c.Profiles))
+// 	for _, k := range c.Profiles {
+// 		out = append(out, k)
+// 	}
+// 	return out
+// }
 
 // ResolveProfileKeys converts user-provided strings into ProfileKeys.
 // 1) Tries alias map first (Catalog.Aliases.Profile).
@@ -121,10 +129,10 @@ func (c *Catalog) ResolveProfileKeys(profiles []string) []ProfileKey {
 	exactProfileKey := make(map[string]ProfileKey, len(c.Profiles)) // "bsi-v2.0" -> ProfileBSI20
 	byProfileName := make(map[string]ProfileKey, len(c.Profiles))   // "BSI-V2.0" -> ProfileBSI20
 
-	for pKey, spec := range c.Profiles {
-		exactProfileKey[strings.ToLower(string(pKey))] = pKey
+	for _, spec := range c.Profiles {
+		exactProfileKey[strings.ToLower(string(spec.Key))] = spec.Key
 		if spec.Name != "" {
-			byProfileName[strings.ToLower(spec.Name)] = pKey
+			byProfileName[strings.ToLower(spec.Name)] = spec.Key
 		}
 	}
 
@@ -132,6 +140,7 @@ func (c *Catalog) ResolveProfileKeys(profiles []string) []ProfileKey {
 		if utils.IsBlank(pr) {
 			continue
 		}
+
 		input := strings.ToLower(strings.TrimSpace(pr))
 
 		var (
@@ -160,7 +169,7 @@ func (c *Catalog) ResolveProfileKeys(profiles []string) []ProfileKey {
 	return profileKeys
 }
 
-// ResolveProfileKeys converts user-provided strings into ProfileKeys.
+// ResolveCategoryKeys converts user-provided strings into ProfileKeys.
 // 1) Tries alias map first (Catalog.Aliases.Profile).
 // 2) Then tries exact key (case-insensitive).
 // 3) Then tries profile display name (ProfSpec.Name, case-insensitive).
@@ -177,10 +186,10 @@ func (c *Catalog) ResolveCategoryKeys(category []string) []ComprCatKey {
 	exactCatKey := make(map[string]ComprCatKey, len(c.ComprCategories)) // "bsi-v2.0" -> ProfileBSI20
 	byCatName := make(map[string]ComprCatKey, len(c.ComprCategories))   // "BSI-V2.0" -> ProfileBSI20
 
-	for key, spec := range c.ComprCategories {
-		exactCatKey[strings.ToLower(string(key))] = key
+	for _, spec := range c.ComprCategories {
+		exactCatKey[strings.ToLower(string(spec.Key))] = spec.Key
 		if spec.Name != "" {
-			byCatName[strings.ToLower(spec.Name)] = key
+			byCatName[strings.ToLower(spec.Name)] = spec.Key
 		}
 	}
 
@@ -215,3 +224,39 @@ func (c *Catalog) ResolveCategoryKeys(category []string) []ComprCatKey {
 
 	return catKeys
 }
+
+// // ResolveFeatureKeys converts user-provided strings into ProfileKeys.
+// // 1) Tries alias map first (Catalog.Aliases.Profile).
+// // 2) Then tries exact key (case-insensitive).
+// // 3) Then tries profile display name (ProfSpec.Name, case-insensitive).
+// // 4) Preserves input order and de-duplicates.
+// func (c *Catalog) ResolveFeatureKeys(feature []string) []ComprCatKey {
+// 	if c == nil || len(feature) == 0 {
+// 		return nil
+// 	}
+
+// 	out := make([]c.ComprFeatKey, 0, len(inputs))
+// 	seen := map[c.ComprFeatKey]struct{}{}
+// 	for _, s := range inputs {
+// 		if s == "" {
+// 			continue
+// 		}
+// 		in := strings.ToLower(strings.TrimSpace(s))
+// 		var fk c.ComprFeatKey
+// 		if val, ok := c.Aliases.Feature[in]; ok {
+// 			fk = val
+// 		} else {
+// 			// try direct match to ComprFeatKey
+// 			fk = c.ComprFeatKey(in)
+// 			if _, ok := c.ComprFeatures[fk]; !ok {
+// 				continue
+// 			}
+// 		}
+// 		if _, dup := seen[fk]; dup {
+// 			continue
+// 		}
+// 		seen[fk] = struct{}{}
+// 		out = append(out, fk)
+// 	}
+// 	return out
+// }

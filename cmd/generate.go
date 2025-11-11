@@ -20,7 +20,7 @@ import (
 
 	"github.com/interlynk-io/sbomqs/pkg/logger"
 	"github.com/interlynk-io/sbomqs/pkg/scorer"
-	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/config"
+	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/registry"
 	"github.com/spf13/cobra"
 )
 
@@ -66,9 +66,9 @@ func generateYaml(_ context.Context) error {
 }
 
 func generateComprYaml(_ context.Context) error {
-	return os.WriteFile(comprFileName, []byte(config.DefaultComprConfig()), 0o600)
+	return os.WriteFile(comprFileName, []byte(registry.DefaultComprConfig()), 0o600)
 }
 
 func generateProfYaml(_ context.Context) error {
-	return os.WriteFile(profFileName, []byte(config.DefaultProfConfig()), 0o600)
+	return os.WriteFile(profFileName, []byte(registry.DefaultProfConfig()), 0o600)
 }

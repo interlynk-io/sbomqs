@@ -32,16 +32,16 @@ func Evaluate(ctx context.Context, catal *catalog.Catalog, profileKeys []catalog
 
 	results := api.NewProfResults()
 
-	allProfiles := make([]catalog.ProfSpec, 0, len(profileKeys))
+	// allProfiles := make([]catalog.ProfSpec, 0, len(profileKeys))
 
-	for _, key := range profileKeys {
-		profile, ok := catal.Profiles[key]
-		if ok {
-			allProfiles = append(allProfiles, profile)
-		}
-	}
+	// for _, key := range profileKeys {
+	// 	profile, ok := catal.Profiles[key]
+	// 	if ok {
+	// 		allProfiles = append(allProfiles, profile)
+	// 	}
+	// }
 
-	for _, profile := range allProfiles {
+	for _, profile := range catal.Profiles {
 		profResult := evaluateEachProfile(ctx, doc, profile, catal)
 		results.ProfResult = append(results.ProfResult, profResult)
 	}
@@ -63,34 +63,31 @@ func evaluateEachProfile(ctx context.Context, doc sbom.Document, profile catalog
 	proResult := api.NewProfileResult(profile)
 
 	for _, pFeatKey := range profile.Features {
+		for _, spec := range catal.ProfFeatures {
+			if spec.Key == pFeatKey.Key {
+				pFeatResult := api.NewProfFeatResult(spec)
 
-		// extract corresponding profileFeatureSpec to a featureKey
-		pFeat, ok := catal.ProfFeatures[catalog.ProfFeatKey(pFeatKey)]
-		if !ok {
-			continue
-		}
+				// evaluate feature
+				pFeatScore := spec.Evaluate(doc)
 
-		pFeatResult := api.NewProfFeatResult(pFeat)
+				if pFeatScore.Ignore {
+					pFeatResult.Passed = !spec.Required
+				} else if spec.Required {
+					pFeatResult.Passed = (pFeatScore.Score >= 10.0)
+				} else {
+					pFeatResult.Passed = (pFeatScore.Score > 0.0)
+				}
 
-		// evaluate feature
-		pFeatScore := pFeat.Evaluate(doc)
+				pFeatResult.Score = pFeatScore.Score
+				pFeatResult.Desc = pFeatScore.Desc
 
-		if pFeatScore.Ignore {
-			pFeatResult.Passed = !pFeat.Required
-		} else if pFeat.Required {
-			pFeatResult.Passed = (pFeatScore.Score >= 10.0)
-		} else {
-			pFeatResult.Passed = (pFeatScore.Score > 0.0)
-		}
+				proResult.Items = append(proResult.Items, pFeatResult)
 
-		pFeatResult.Score = pFeatScore.Score
-		pFeatResult.Desc = pFeatScore.Desc
-
-		proResult.Items = append(proResult.Items, pFeatResult)
-
-		if !pFeatScore.Ignore {
-			sumScore += pFeatScore.Score
-			countNonNA++
+				if !pFeatScore.Ignore {
+					sumScore += pFeatScore.Score
+					countNonNA++
+				}
+			}
 		}
 	}
 

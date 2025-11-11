@@ -16,6 +16,7 @@ package comprehenssive
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/interlynk-io/sbomqs/pkg/logger"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
@@ -24,21 +25,22 @@ import (
 	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/formulae"
 )
 
-func Evaluate(ctx context.Context, catKeys []catalog.ComprCatKey, catal *catalog.Catalog, doc sbom.Document) api.ComprehensiveResult {
+func Evaluate(ctx context.Context, catal *catalog.Catalog, doc sbom.Document) api.ComprehensiveResult {
 	// var results []api.ComprehensiveResult
 	results := api.NewComprResult()
-	results.CatResult = make([]api.CategoryResult, 0, len(catKeys))
+	// results.CatResult = make([]api.CategoryResult, 0, len(catKeys))
+	results.CatResult = make([]api.CategoryResult, 0, len(catal.ComprCategories))
 
-	allCategories := make([]catalog.ComprCatSpec, 0, len(catKeys))
+	// allCategories := make([]catalog.ComprCatSpec, 0, len(catKeys))
 
-	for _, key := range catKeys {
-		category, ok := catal.ComprCategories[key]
-		if ok {
-			allCategories = append(allCategories, category)
-		}
-	}
+	// for _, key := range catKeys {
+	// 	category, ok := catal.ComprCategories[key]
+	// 	if ok {
+	// 		allCategories = append(allCategories, category)
+	// 	}
+	// }
 
-	for _, category := range allCategories {
+	for _, category := range catal.ComprCategories {
 		catResult := evaluateEachCategory(ctx, doc, category, catal)
 		results.CatResult = append(results.CatResult, catResult)
 	}
@@ -51,18 +53,17 @@ func evaluateEachCategory(ctx context.Context, doc sbom.Document, category catal
 	catResult.Features = make([]api.FeatureResult, 0, len(category.Features))
 
 	log := logger.FromContext(ctx)
-	log.Debugf("evaluateCategory: %s (features=%d, weight=%.2f)", category.Name, len(category.Features), category.Weight)
+	log.Debugf("evaluateCategory: %s (features=%d, weight=%.2f )", category.Name, len(category.Features), category.Weight)
 
-	for _, comprFeatKey := range category.Features {
-
-		// extract corresponding categorySpec to a feature
-		comprFeat, ok := catal.ComprFeatures[comprFeatKey]
-		if !ok {
-			continue
-		}
-
-		catResult.Features = append(catResult.Features, evaluateFeature(doc, comprFeat))
+	for _, featSpec := range category.Features {
+		// for _, spec := range catal.ComprFeatures {
+		// if spec.Key == comprFeat.Key {
+		fmt.Println("kdkedleldel")
+		catResult.Features = append(catResult.Features, evaluateFeature(doc, featSpec))
+		// }
+		// }
 	}
+
 	catResult.Score = formulae.ComputeCategoryScore(catResult.Features)
 	return catResult
 }

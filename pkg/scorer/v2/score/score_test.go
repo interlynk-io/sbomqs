@@ -12,14 +12,4 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package catalog
-
-// ComprCatSpec represent specification of
-// each comprehenssive category.
-type ComprCatSpec struct {
-	Name        string
-	Description string
-	Key         ComprCatKey
-	Weight      float64
-	Features    []ComprFeatSpec
-}
+package score
