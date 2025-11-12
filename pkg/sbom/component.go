@@ -33,7 +33,7 @@ type GetComponent interface {
 	Swhids() []swhid.SWHID
 	OmniborIDs() []omniborid.OMNIBORID
 	Swids() []swid.SWID
-	Licenses() []licenses.License
+	GetLicenses() []licenses.License
 	DeclaredLicenses() []licenses.License
 	ConcludedLicenses() []licenses.License
 	GetChecksums() []GetChecksum
@@ -43,7 +43,7 @@ type GetComponent interface {
 	Authors() []GetAuthor
 	Manufacturer() GetManufacturer
 	CountOfDependencies() int
-	SourceCodeURL() string
+	GetSourceCodeURL() string
 	GetDownloadLocationURL() string
 	SourceCodeHash() string
 	IsPrimaryComponent() bool
@@ -67,23 +67,23 @@ type Component struct {
 	Swhid                   []swhid.SWHID
 	OmniID                  []omniborid.OMNIBORID
 	Swid                    []swid.SWID
-	licenses                []licenses.License
-	declaredLicense         []licenses.License
-	concludedLicense        []licenses.License
+	Licenses                []licenses.License
+	DeclaredLicense         []licenses.License
+	ConcludedLicense        []licenses.License
 	Checksums               []GetChecksum
-	purpose                 string
+	Purpose                 string
 	isReqFieldsPresent      bool
 	ID                      string
 	Athrs                   []GetAuthor
 	Supplier                Supplier
 	manufacturer            Manufacturer
-	dependenciesCount       int
-	sourceCodeURL           string
+	Count                   int
+	SourceCodeURL           string
 	DownloadLocation        string
 	sourceCodeHash          string
 	isPrimary               bool
 	PrimaryCompt            PrimaryComp
-	hasRelationships        bool
+	HasRelationships        bool
 	RelationshipState       string
 	Spdxid                  string
 	FileAnalyzed            bool
@@ -130,16 +130,16 @@ func (c Component) OmniborIDs() []omniborid.OMNIBORID {
 	return c.OmniID
 }
 
-func (c Component) Licenses() []licenses.License {
-	return c.licenses
+func (c Component) GetLicenses() []licenses.License {
+	return c.Licenses
 }
 
 func (c Component) DeclaredLicenses() []licenses.License {
-	return c.licenses
+	return c.DeclaredLicense
 }
 
 func (c Component) ConcludedLicenses() []licenses.License {
-	return c.licenses
+	return c.ConcludedLicense
 }
 
 func (c Component) GetChecksums() []GetChecksum {
@@ -147,7 +147,7 @@ func (c Component) GetChecksums() []GetChecksum {
 }
 
 func (c Component) PrimaryPurpose() string {
-	return c.purpose
+	return c.Purpose
 }
 
 func (c Component) RequiredFields() bool {
@@ -171,11 +171,11 @@ func (c Component) Authors() []GetAuthor {
 }
 
 func (c Component) CountOfDependencies() int {
-	return c.dependenciesCount
+	return c.Count
 }
 
-func (c Component) SourceCodeURL() string {
-	return c.sourceCodeURL
+func (c Component) GetSourceCodeURL() string {
+	return c.SourceCodeURL
 }
 
 func (c Component) GetDownloadLocationURL() string {
@@ -191,7 +191,7 @@ func (c Component) IsPrimaryComponent() bool {
 }
 
 func (c Component) HasRelationShips() bool {
-	return c.hasRelationships
+	return c.HasRelationships
 }
 
 func (c Component) RelationShipState() string {

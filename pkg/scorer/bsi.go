@@ -37,7 +37,7 @@ func specWithVersionCompliant(d sbom.Document, c *check) score {
 	version := d.Spec().GetVersion()
 	spec := d.Spec().GetSpecType()
 
-	if spec == "spdx" {
+	if spec == string(sbom.SBOMSpecSPDX) {
 		count := lo.Count(validBsiSpdxVersions, version)
 		if count > 0 {
 			s.setScore(10.0)
@@ -46,7 +46,7 @@ func specWithVersionCompliant(d sbom.Document, c *check) score {
 			s.setScore(5.0)
 			s.setDesc(fmt.Sprintf("provided sbom spec: %s, is supported but not version: %s", spec, version))
 		}
-	} else if spec == "cyclonedx" {
+	} else if spec == string(sbom.SBOMSpecCDX) {
 		count := lo.Count(validBsiCdxVersions, version)
 		if count > 0 {
 			s.setScore(10.0)
@@ -110,7 +110,7 @@ func compWithLicensesCompliantCheck(d sbom.Document, c *check) score {
 		return *s
 	}
 	withLicenses := lo.CountBy(d.Components(), func(c sbom.GetComponent) bool {
-		return common.AreLicensesValid(c.Licenses())
+		return common.AreLicensesValid(c.GetLicenses())
 	})
 
 	if totalComponents > 0 {
@@ -194,7 +194,7 @@ func compWithSourceCodeURICheck(d sbom.Document, c *check) score {
 	}
 
 	withSourceCodeURI := lo.CountBy(d.Components(), func(c sbom.GetComponent) bool {
-		return c.SourceCodeURL() != ""
+		return c.GetSourceCodeURL() != ""
 	})
 
 	if totalComponents > 0 {
@@ -391,7 +391,7 @@ func compWithAssociatedLicensesCheck(d sbom.Document, c *check) score {
 		})
 	} else if spec == "cyclonedx" {
 		withLicenses = lo.CountBy(d.Components(), func(c sbom.GetComponent) bool {
-			return common.AreLicensesValid(c.Licenses())
+			return common.AreLicensesValid(c.GetLicenses())
 		})
 	}
 

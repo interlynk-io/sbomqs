@@ -62,6 +62,12 @@ type userCmd struct {
 
 	signature string
 	publicKey string
+
+	// profiles
+	profile []string
+
+	// Old scoring
+	legacy bool
 }
 
 // scoreCmd represents the score command
@@ -242,6 +248,8 @@ func toUserCmd(cmd *cobra.Command, args []string) *userCmd {
 	uCmd.color, _ = cmd.Flags().GetBool("color")
 	uCmd.signature, _ = cmd.Flags().GetString("sig")
 	uCmd.publicKey, _ = cmd.Flags().GetString("pub")
+	uCmd.legacy, _ = cmd.Flags().GetBool("legacy")
+	uCmd.profile, _ = cmd.Flags().GetStringSlice("profile")
 
 	if reportFormat != "" {
 		uCmd.json = strings.ToLower(reportFormat) == "json"
@@ -269,6 +277,8 @@ func toEngineParams(uCmd *userCmd) *engine.Params {
 		ConfigPath: uCmd.configPath,
 		Signature:  uCmd.signature,
 		PublicKey:  uCmd.publicKey,
+		Legacy:     uCmd.legacy,
+		Profiles:   uCmd.profile,
 	}
 }
 
@@ -363,4 +373,7 @@ func init() {
 
 	scoreCmd.Flags().StringP("sig", "v", "", "signature of sbom")
 	scoreCmd.Flags().StringP("pub", "p", "", "public key of sbom")
+
+	scoreCmd.Flags().StringSlice("profile", nil, "Profiles to run (comma-separated or repeatable)")
+	scoreCmd.Flags().BoolP("legacy", "e", false, "legacy")
 }

@@ -20,12 +20,17 @@ import (
 
 	"github.com/interlynk-io/sbomqs/pkg/logger"
 	"github.com/interlynk-io/sbomqs/pkg/scorer"
+	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/registry"
 	"github.com/spf13/cobra"
 )
 
 const (
 	featuresFileName = "features.yaml"
 	features         = "features"
+	comprehenssive   = "comprehenssive"
+	comprFileName    = "compr.yaml"
+	profiles         = "profiles"
+	profFileName     = "profiles.yaml"
 )
 
 // generateCmd represents the generate command
@@ -36,8 +41,14 @@ var generateCmd = &cobra.Command{
 		ctx := logger.WithLogger(context.Background())
 
 		if len(args) > 0 {
-			if args[0] == features {
+			switch args[0] {
+			case features:
 				return generateYaml(ctx)
+			case comprehenssive:
+				return generateComprYaml(ctx)
+			case profiles:
+				return generateProfYaml(ctx)
+
 			}
 		} else {
 			return fmt.Errorf("arguments missing%s", "list of valid command eg. features")
@@ -52,4 +63,12 @@ func init() {
 
 func generateYaml(_ context.Context) error {
 	return os.WriteFile(featuresFileName, []byte(scorer.DefaultConfig()), 0o600)
+}
+
+func generateComprYaml(_ context.Context) error {
+	return os.WriteFile(comprFileName, []byte(registry.DefaultComprConfig()), 0o600)
+}
+
+func generateProfYaml(_ context.Context) error {
+	return os.WriteFile(profFileName, []byte(registry.DefaultProfConfig()), 0o600)
 }

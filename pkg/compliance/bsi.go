@@ -124,10 +124,10 @@ func bsiSpec(doc sbom.Document) *db.Record {
 	result := ""
 	score := 0.0
 
-	if vToLower == "spdx" {
+	if vToLower == string(sbom.SBOMSpecSPDX) {
 		result = v
 		score = 10.0
-	} else if vToLower == "cyclonedx" {
+	} else if vToLower == string(sbom.SBOMSpecCDX) {
 		result = v
 		score = 10.0
 	}
@@ -141,7 +141,7 @@ func bsiSpecVersion(doc sbom.Document) *db.Record {
 	result := ""
 	score := 0.0
 
-	if spec == "spdx" {
+	if spec == string(sbom.SBOMSpecSPDX) {
 		count := lo.Count(validBsiSpdxVersions, version)
 		validate := lo.Contains(validSpdxVersion, version)
 		if validate {
@@ -153,7 +153,7 @@ func bsiSpecVersion(doc sbom.Document) *db.Record {
 				score = 0.0
 			}
 		}
-	} else if spec == "cyclonedx" {
+	} else if spec == string(sbom.SBOMSpecCDX) {
 		count := lo.Count(validBsiCdxVersions, version)
 		if count > 0 {
 			result = version
@@ -373,7 +373,7 @@ func bsiComponentDepth(doc sbom.Document, component sbom.GetComponent) *db.Recor
 	var dependencies []string
 	var allDepByName []string
 
-	if doc.Spec().GetSpecType() == "spdx" {
+	if doc.Spec().GetSpecType() == string(sbom.SBOMSpecSPDX) {
 		if component.GetPrimaryCompInfo().IsPresent() {
 			result = strings.Join(bsiGetAllPrimaryDepenciesByName, ", ")
 			score = 10.0
@@ -396,7 +396,7 @@ func bsiComponentDepth(doc sbom.Document, component sbom.GetComponent) *db.Recor
 		result = strings.Join(allDepByName, ", ")
 		return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), result, 10.0, "")
 
-	} else if doc.Spec().GetSpecType() == "cyclonedx" {
+	} else if doc.Spec().GetSpecType() == string(sbom.SBOMSpecCDX) {
 		if component.GetPrimaryCompInfo().IsPresent() {
 			result = strings.Join(bsiGetAllPrimaryDepenciesByName, ", ")
 			score = 10.0
@@ -424,7 +424,7 @@ func bsiComponentDepth(doc sbom.Document, component sbom.GetComponent) *db.Recor
 }
 
 func bsiComponentLicense(component sbom.GetComponent) *db.Record {
-	licenses := component.Licenses()
+	licenses := component.GetLicenses()
 	score := 0.0
 
 	if len(licenses) == 0 {
@@ -487,7 +487,7 @@ func bsiComponentDownloadURL(component sbom.GetComponent) *db.Record {
 }
 
 func bsiComponentSourceCodeURL(component sbom.GetComponent) *db.Record {
-	result := component.SourceCodeURL()
+	result := component.GetSourceCodeURL()
 
 	if result != "" {
 		return db.NewRecordStmtOptional(COMP_SOURCE_CODE_URL, common.UniqueElementID(component), result, 10.0)

@@ -51,6 +51,7 @@ type CdxDoc struct {
 	format           FileFormat
 	ctx              context.Context
 	CdxSpec          *Specs
+	cdxValidSchema   bool
 	Comps            []GetComponent
 	CdxAuthors       []GetAuthor
 	CdxTools         []GetTool
@@ -98,6 +99,7 @@ func newCDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat, sig Sign
 		doc:             bom,
 		format:          format,
 		ctx:             ctx,
+		cdxValidSchema:  true,
 		SignatureDetail: &sig,
 	}
 	doc.parse()
@@ -159,6 +161,10 @@ func (c CdxDoc) Vulnerabilities() []GetVulnerabilities {
 
 func (c CdxDoc) Signature() GetSignature {
 	return c.SignatureDetail
+}
+
+func (c CdxDoc) SchemaValidation() bool {
+	return c.cdxValidSchema
 }
 
 func (c *CdxDoc) parse() {
@@ -395,7 +401,7 @@ func copyC(cdxc *cydx.Component, c *CdxDoc) *Component {
 	nc := NewComponent()
 	nc.Version = cdxc.Version
 	nc.Name = cdxc.Name
-	nc.purpose = string(cdxc.Type)
+	nc.Purpose = string(cdxc.Type)
 	nc.isReqFieldsPresent = c.pkgRequiredFields(cdxc)
 	nc.CopyRight = cdxc.Copyright
 	ncpe := cpe.NewCPE(cdxc.CPE)
@@ -450,9 +456,9 @@ func copyC(cdxc *cydx.Component, c *CdxDoc) *Component {
 	}
 
 	nc.Checksums = c.checksums(cdxc)
-	nc.licenses = c.licenses(cdxc)
-	nc.declaredLicense = c.declaredLicenses(cdxc)
-	nc.concludedLicense = c.concludedLicenses(cdxc)
+	nc.Licenses = c.licenses(cdxc)
+	nc.DeclaredLicense = c.declaredLicenses(cdxc)
+	nc.ConcludedLicense = c.concludedLicenses(cdxc)
 
 	supplier := c.assignSupplier(cdxc)
 	if supplier != nil {
@@ -470,7 +476,7 @@ func copyC(cdxc *cydx.Component, c *CdxDoc) *Component {
 		})
 
 		if len(sources) > 0 {
-			nc.sourceCodeURL = sources[0].URL
+			nc.SourceCodeURL = sources[0].URL
 		}
 
 		downloads := lo.Filter(*cdxc.ExternalReferences, func(er cydx.ExternalReference, _ int) bool {
@@ -488,27 +494,28 @@ func copyC(cdxc *cydx.Component, c *CdxDoc) *Component {
 	nc.ID = cdxc.BOMRef
 
 	// license->acknowlegement(1.6+): currently acknowlegement field doesn't support
-	nc.declaredLicense = nil
-	nc.concludedLicense = nil
-	nc.hasRelationships = getComponentRelationship(c, nc.ID)
+	nc.DeclaredLicense = nil
+	nc.ConcludedLicense = nil
+	nc.HasRelationships, nc.Count = getComponentRelationship(c, nc.ID)
 
 	return nc
 }
 
 // return true if a component has relationship
-func getComponentRelationship(c *CdxDoc, compID string) bool {
+func getComponentRelationship(c *CdxDoc, compID string) (bool, int) {
+	count := 0
 	if c.doc.Dependencies == nil {
 		c.addToLogs(fmt.Sprintf("cdx doc component %s has no dependencies", compID))
-		return false
+		return false, count
 	}
 	for _, rel := range *c.doc.Dependencies {
 		if rel.Ref == compID {
 			if len(lo.FromPtr(rel.Dependencies)) > 0 {
-				return true
+				count++
 			}
 		}
 	}
-	return false
+	return count > 0, count
 }
 
 func (c *CdxDoc) parseComps() {

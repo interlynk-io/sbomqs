@@ -36,13 +36,13 @@ func compWithValidLicensesCheck(d sbom.Document, c *check) score {
 	}
 
 	compScores := lo.Map(d.Components(), func(c sbom.GetComponent, _ int) float64 {
-		tl := len(c.Licenses())
+		tl := len(c.GetLicenses())
 
 		if tl == 0 {
 			return 0.0
 		}
 
-		validLic := lo.CountBy(c.Licenses(), func(l licenses.License) bool {
+		validLic := lo.CountBy(c.GetLicenses(), func(l licenses.License) bool {
 			return l.Spdx()
 		})
 
@@ -105,11 +105,11 @@ func compWithNoDepLicensesCheck(d sbom.Document, c *check) score {
 	}
 
 	totalLicenses := lo.Reduce(d.Components(), func(agg int, c sbom.GetComponent, _ int) int {
-		return agg + len(c.Licenses())
+		return agg + len(c.GetLicenses())
 	}, 0)
 
 	withDepLicense := lo.CountBy(d.Components(), func(c sbom.GetComponent) bool {
-		deps := lo.CountBy(c.Licenses(), func(l licenses.License) bool {
+		deps := lo.CountBy(c.GetLicenses(), func(l licenses.License) bool {
 			return l.Deprecated()
 		})
 		return deps > 0
@@ -137,11 +137,11 @@ func compWithRestrictedLicensesCheck(d sbom.Document, c *check) score {
 	}
 
 	totalLicenses := lo.Reduce(d.Components(), func(agg int, c sbom.GetComponent, _ int) int {
-		return agg + len(c.Licenses())
+		return agg + len(c.GetLicenses())
 	}, 0)
 
 	withRestrictLicense := lo.CountBy(d.Components(), func(c sbom.GetComponent) bool {
-		rest := lo.CountBy(c.Licenses(), func(l licenses.License) bool {
+		rest := lo.CountBy(c.GetLicenses(), func(l licenses.License) bool {
 			return l.Restrictive()
 		})
 		return rest > 0

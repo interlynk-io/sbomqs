@@ -48,6 +48,7 @@ type SpdxDoc struct {
 	version          FormatVersion
 	ctx              context.Context
 	SpdxSpec         *Specs
+	spdxValidSchema  bool
 	Comps            []GetComponent
 	Auths            []GetAuthor
 	SpdxTools        []GetTool
@@ -94,6 +95,7 @@ func newSPDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat, version
 		format:          format,
 		ctx:             ctx,
 		version:         version,
+		spdxValidSchema: true,
 		SignatureDetail: &sig,
 	}
 
@@ -161,6 +163,10 @@ func (s SpdxDoc) Vulnerabilities() []GetVulnerabilities {
 
 func (s SpdxDoc) Signature() GetSignature {
 	return s.SignatureDetail
+}
+
+func (s SpdxDoc) SchemaValidation() bool {
+	return s.spdxValidSchema
 }
 
 func (s *SpdxDoc) parse() {
@@ -239,7 +245,7 @@ func (s *SpdxDoc) parseComps() {
 
 		nc.Version = sc.PackageVersion
 		nc.Name = sc.PackageName
-		nc.purpose = sc.PrimaryPackagePurpose
+		nc.Purpose = sc.PrimaryPackagePurpose
 		nc.Spdxid = string(sc.PackageSPDXIdentifier)
 		nc.CopyRight = sc.PackageCopyrightText
 		nc.FileAnalyzed = sc.FilesAnalyzed
@@ -251,9 +257,9 @@ func (s *SpdxDoc) parseComps() {
 		nc.Swid = nil
 		nc.Checksums = s.checksums(index)
 		nc.ExternalRefs = s.externalRefs(index)
-		nc.licenses = s.licenses(index)
-		nc.declaredLicense = s.declaredLicenses(index)
-		nc.concludedLicense = s.concludedLicenses(index)
+		nc.Licenses = s.licenses(index)
+		nc.DeclaredLicense = s.declaredLicenses(index)
+		nc.ConcludedLicense = s.concludedLicenses(index)
 		nc.ID = string(sc.PackageSPDXIdentifier)
 		nc.PackageLicenseConcluded = sc.PackageLicenseConcluded
 		if strings.Contains(s.PrimaryComponent.ID, string(sc.PackageSPDXIdentifier)) {
@@ -286,7 +292,7 @@ func (s *SpdxDoc) parseComps() {
 			nc.sourceCodeHash = sc.PackageVerificationCode.Value
 		}
 
-		// nc.sourceCodeUrl //no conlusive way to get this from SPDX
+		nc.SourceCodeURL = sc.PackageSourceInfo
 
 		nc.DownloadLocation = sc.PackageDownloadLocation
 
@@ -303,7 +309,7 @@ func (s *SpdxDoc) parseComps() {
 
 		// nc.hasRelationships = fromRelsPresent(s.Rels, string(sc.PackageSPDXIdentifier))
 		// nc.RelationshipState = "not-specified"
-		nc.hasRelationships = getComponentDependencies(s, nc.Spdxid)
+		nc.HasRelationships, nc.Count = getComponentDependencies(s, nc.Spdxid)
 
 		s.Comps = append(s.Comps, nc)
 	}
@@ -334,22 +340,24 @@ func (s *SpdxDoc) parseAuthors() {
 }
 
 // return true if a component has DEPENDS_ON relationship
-func getComponentDependencies(s *SpdxDoc, componentID string) bool {
+func getComponentDependencies(s *SpdxDoc, componentID string) (bool, int) {
 	newID := "SPDXRef-" + componentID
-
+	count := 0
 	for _, r := range s.doc.Relationships {
-		if strings.ToUpper(r.Relationship) == "DEPENDS_ON" {
+		// some sbom generating tools specify relationship type as contain and some as depends-on
+		if strings.ToUpper(r.Relationship) == spdx.RelationshipDependsOn || strings.ToUpper(r.Relationship) == spdx.RelationshipContains {
 			aBytes, err := r.RefA.MarshalJSON()
 			if err != nil {
 				continue
 			}
 
 			if CleanKey(string(aBytes)) == newID {
-				return true
+				count++
 			}
 		}
 	}
-	return false
+
+	return count > 0, count
 }
 
 func (s *SpdxDoc) parsePrimaryCompAndRelationships() {
@@ -695,6 +703,7 @@ func (s *SpdxDoc) concludedLicenses(index int) []licenses.License {
 	return lics
 }
 
+// getManufacturer for spdx checks for packageOriginator
 func (s *SpdxDoc) getManufacturer(index int) *Manufacturer {
 	pkg := s.doc.Packages[index]
 
@@ -717,6 +726,7 @@ func (s *SpdxDoc) getManufacturer(index int) *Manufacturer {
 	}
 }
 
+// getAuthor in spdx checks for packageOriginator
 func (s *SpdxDoc) getAuthor(index int) []GetAuthor {
 	authors := []GetAuthor{}
 	var a Author

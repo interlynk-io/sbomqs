@@ -19,6 +19,7 @@ package sbom
 //counterfeiter:generate . Document
 type Document interface {
 	Spec() Spec
+	SchemaValidation() bool
 	Components() []GetComponent
 	Relations() []GetRelation
 	Authors() []GetAuthor
