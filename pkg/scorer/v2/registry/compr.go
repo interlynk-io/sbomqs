@@ -59,7 +59,8 @@ func DefaultComprConfig() string {
 	for _, cat := range comprehenssiveCategories {
 
 		category := CatSpec{
-			Name:        string(cat.Key),
+			Name:        string(cat.Name),
+			Key:         cat.Key,
 			Weight:      cat.Weight,
 			Description: cat.Description,
 		}
@@ -67,6 +68,7 @@ func DefaultComprConfig() string {
 		for _, pFeat := range cat.Features {
 
 			feature := FeatSpec{
+				Name:        pFeat.Name,
 				Key:         string(pFeat.Key),
 				Weight:      pFeat.Weight,
 				Description: pFeat.Description,
@@ -103,7 +105,7 @@ func ReadComprConfigFile(path string) ([]catalog.ComprCatSpec, error) {
 
 		category := catalog.ComprCatSpec{
 			Name:        c.Name,
-			Key:         catalog.ComprCatKey(c.Key),
+			Key:         c.Key,
 			Description: c.Description,
 			Weight:      c.Weight,
 		}
@@ -116,7 +118,7 @@ func ReadComprConfigFile(path string) ([]catalog.ComprCatSpec, error) {
 				Name:        f.Name,
 				Description: f.Description,
 				Ignore:      f.Ignore,
-				Key:         catalog.ComprFeatKey(f.Key),
+				Key:         f.Key,
 				Weight:      f.Weight,
 				Evaluate:    CompKeyToEvaluatingFunction[f.Key],
 			}

@@ -16,7 +16,6 @@ package comprehenssive
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/interlynk-io/sbomqs/pkg/logger"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
@@ -26,19 +25,8 @@ import (
 )
 
 func Evaluate(ctx context.Context, catal *catalog.Catalog, doc sbom.Document) api.ComprehensiveResult {
-	// var results []api.ComprehensiveResult
 	results := api.NewComprResult()
-	// results.CatResult = make([]api.CategoryResult, 0, len(catKeys))
 	results.CatResult = make([]api.CategoryResult, 0, len(catal.ComprCategories))
-
-	// allCategories := make([]catalog.ComprCatSpec, 0, len(catKeys))
-
-	// for _, key := range catKeys {
-	// 	category, ok := catal.ComprCategories[key]
-	// 	if ok {
-	// 		allCategories = append(allCategories, category)
-	// 	}
-	// }
 
 	for _, category := range catal.ComprCategories {
 		catResult := evaluateEachCategory(ctx, doc, category, catal)
@@ -56,12 +44,7 @@ func evaluateEachCategory(ctx context.Context, doc sbom.Document, category catal
 	log.Debugf("evaluateCategory: %s (features=%d, weight=%.2f )", category.Name, len(category.Features), category.Weight)
 
 	for _, featSpec := range category.Features {
-		// for _, spec := range catal.ComprFeatures {
-		// if spec.Key == comprFeat.Key {
-		fmt.Println("kdkedleldel")
 		catResult.Features = append(catResult.Features, evaluateFeature(doc, featSpec))
-		// }
-		// }
 	}
 
 	catResult.Score = formulae.ComputeCategoryScore(catResult.Features)

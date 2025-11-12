@@ -19,7 +19,7 @@ package catalog
 type ComprCatSpec struct {
 	Name        string
 	Description string
-	Key         ComprCatKey
+	Key         string
 	Weight      float64
 	Features    []ComprFeatSpec
 }

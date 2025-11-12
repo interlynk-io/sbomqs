@@ -93,7 +93,7 @@ func Run(ctx context.Context, ep *Params) error {
 
 func scored(ctx context.Context, ep *Params) error {
 	log := logger.FromContext(ctx)
-	log.Debugf("starting engine to score v2")
+	log.Debugf("Starting score engine to score v2")
 
 	cfg := config.Config{
 		Categories: ep.Categories,
@@ -110,9 +110,7 @@ func scored(ctx context.Context, ep *Params) error {
 	reportFormat := "detailed"
 	if ep.Basic {
 		reportFormat = "basic"
-	}
-
-	if ep.JSON {
+	} else if ep.JSON {
 		reportFormat = "json"
 	}
 
@@ -120,8 +118,6 @@ func scored(ctx context.Context, ep *Params) error {
 	nr.Report()
 
 	return nil
-
-	// print the score
 }
 
 func handleURL(path string) (string, string, error) {

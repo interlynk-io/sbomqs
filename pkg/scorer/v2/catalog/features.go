@@ -21,7 +21,7 @@ type ComprFeatSpec struct {
 	Name        string
 	Description string
 	Ignore      bool
-	Key         ComprFeatKey
+	Key         string
 	Weight      float64
 	Evaluate    ComprFeatEval
 }

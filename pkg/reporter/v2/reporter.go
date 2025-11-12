@@ -2,6 +2,7 @@ package v2
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/api"
 )
@@ -33,15 +34,15 @@ func NewReport(ctx context.Context, results []api.Result, rFormat string) *Repor
 func (r *Reporter) Report() {
 	switch r.Format {
 	case REPORT_BASIC:
-		// basic report
 		r.basicReport()
 
 	case REPORT_JSON:
-		// json report
 		r.jsonReport()
 
 	case REPORT_DETAILED:
 		r.detailedReport()
 
+	default:
+		fmt.Print("Unknow Report format")
 	}
 }

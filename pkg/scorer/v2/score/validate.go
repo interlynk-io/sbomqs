@@ -16,15 +16,11 @@ package score
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"path/filepath"
 	"sort"
-	"strings"
 
 	"github.com/interlynk-io/sbomqs/pkg/logger"
-	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/catalog"
-	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/config"
 	"github.com/interlynk-io/sbomqs/pkg/utils"
 )
 
@@ -86,84 +82,84 @@ func validateAndExpandPaths(ctx context.Context, paths []string) []string {
 	return validPaths
 }
 
-// validateConfig verifies that user-supplied categories, features (and profiles) exist in the catalog.
-// It normalizes inputs via alias resolution, preserves order, de-duplicates, and errors on unknowns.
-func validateConfig(ctx context.Context, catal *catalog.Catalog, cfg *config.Config) error {
-	log := logger.FromContext(ctx)
-	log.Debug("validating configuration")
+// // validateConfig verifies that user-supplied categories, features (and profiles) exist in the catalog.
+// // It normalizes inputs via alias resolution, preserves order, de-duplicates, and errors on unknowns.
+// func validateConfig(ctx context.Context, catal *catalog.Catalog, cfg *config.Config) error {
+// 	log := logger.FromContext(ctx)
+// 	log.Debug("validating configuration")
 
-	if cfg.ConfigFile != "" {
-		if _, err := os.Stat(cfg.ConfigFile); err != nil {
-			return fmt.Errorf("invalid config path %q: %w", cfg.ConfigFile, err)
-		}
-		return nil
-	}
+// 	if cfg.ConfigFile != "" {
+// 		if _, err := os.Stat(cfg.ConfigFile); err != nil {
+// 			return fmt.Errorf("invalid config path %q: %w", cfg.ConfigFile, err)
+// 		}
+// 		return nil
+// 	}
 
-	cfg.Categories = utils.RemoveEmptyStrings(cfg.Categories)
+// 	cfg.Categories = utils.RemoveEmptyStrings(cfg.Categories)
 
-	var (
-		normCats   []string
-		unknownCat []string
-		seenCat    = make(map[string]struct{})
-	)
+// 	var (
+// 		normCats   []string
+// 		unknownCat []string
+// 		seenCat    = make(map[string]struct{})
+// 	)
 
-	for _, cat := range cfg.Categories {
-		if k, ok := catal.ResolveCategoryAlias(cat); ok && catal.HasCategory(k) {
-			ck := string(k)
-			utils.AppendUnique(&normCats, seenCat, ck)
-		} else {
-			unknownCat = append(unknownCat, cat)
-		}
-	}
+// 	for _, cat := range cfg.Categories {
+// 		if k, ok := catal.ResolveCategoryAlias(cat); ok && catal.HasCategory(k) {
+// 			ck := string(k)
+// 			utils.AppendUnique(&normCats, seenCat, ck)
+// 		} else {
+// 			unknownCat = append(unknownCat, cat)
+// 		}
+// 	}
 
-	if len(unknownCat) > 0 {
-		return fmt.Errorf("unknown categories: %s", strings.Join(unknownCat, ", "))
-	}
-	cfg.Categories = normCats
+// 	if len(unknownCat) > 0 {
+// 		return fmt.Errorf("unknown categories: %s", strings.Join(unknownCat, ", "))
+// 	}
+// 	cfg.Categories = normCats
 
-	// --- Features ---
-	cfg.Features = utils.RemoveEmptyStrings(cfg.Features)
+// 	// --- Features ---
+// 	cfg.Features = utils.RemoveEmptyStrings(cfg.Features)
 
-	var (
-		normFeats   []string
-		unknownFeat []string
-		seenFeat    = make(map[string]struct{})
-	)
+// 	var (
+// 		normFeats   []string
+// 		unknownFeat []string
+// 		seenFeat    = make(map[string]struct{})
+// 	)
 
-	for _, raw := range cfg.Features {
-		if k, ok := catal.ResolveFeatureAlias(raw); ok && catal.HasFeature(k) {
-			fk := string(k)
-			utils.AppendUnique(&normFeats, seenFeat, fk)
-		} else {
-			unknownFeat = append(unknownFeat, raw)
-		}
-	}
+// 	for _, raw := range cfg.Features {
+// 		if k, ok := catal.ResolveFeatureAlias(raw); ok && catal.HasFeature(k) {
+// 			fk := string(k)
+// 			utils.AppendUnique(&normFeats, seenFeat, fk)
+// 		} else {
+// 			unknownFeat = append(unknownFeat, raw)
+// 		}
+// 	}
 
-	if len(unknownFeat) > 0 {
-		return fmt.Errorf("unknown features: %s", strings.Join(unknownFeat, ", "))
-	}
-	cfg.Features = normFeats
+// 	if len(unknownFeat) > 0 {
+// 		return fmt.Errorf("unknown features: %s", strings.Join(unknownFeat, ", "))
+// 	}
+// 	cfg.Features = normFeats
 
-	if len(cfg.Profile) > 0 {
-		var (
-			normProfiles []string
-			unknownProf  []string
-			seenProf     = make(map[string]struct{})
-		)
-		for _, raw := range utils.RemoveEmptyStrings(cfg.Profile) {
-			if k, ok := catal.ResolveProfileAlias(raw); ok && catal.HasProfile(k) {
-				pk := string(k)
-				utils.AppendUnique(&normProfiles, seenProf, pk)
-			} else {
-				unknownProf = append(unknownProf, raw)
-			}
-		}
-		if len(unknownProf) > 0 {
-			return fmt.Errorf("unknown profiles: %s", strings.Join(unknownProf, ", "))
-		}
-		cfg.Profile = normProfiles
-	}
+// 	if len(cfg.Profile) > 0 {
+// 		var (
+// 			normProfiles []string
+// 			unknownProf  []string
+// 			seenProf     = make(map[string]struct{})
+// 		)
+// 		for _, raw := range utils.RemoveEmptyStrings(cfg.Profile) {
+// 			if k, ok := catal.ResolveProfileAlias(raw); ok && catal.HasProfile(k) {
+// 				pk := string(k)
+// 				utils.AppendUnique(&normProfiles, seenProf, pk)
+// 			} else {
+// 				unknownProf = append(unknownProf, raw)
+// 			}
+// 		}
+// 		if len(unknownProf) > 0 {
+// 			return fmt.Errorf("unknown profiles: %s", strings.Join(unknownProf, ", "))
+// 		}
+// 		cfg.Profile = normProfiles
+// 	}
 
-	log.Debugf("validated config: categories=%v features=%v profiles=%v", cfg.Categories, cfg.Features, cfg.Profile)
-	return nil
-}
+// 	log.Debugf("validated config: categories=%v features=%v profiles=%v", cfg.Categories, cfg.Features, cfg.Profile)
+// 	return nil
+// }

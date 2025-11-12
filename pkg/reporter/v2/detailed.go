@@ -52,22 +52,15 @@ func (r *Reporter) detailedReport() {
 		} else if r.Profiles != nil {
 			header = []string{"Requirment", "Feature", "Status", "Desc"}
 
-			for _, pro := range r.Profiles.ProfResult {
-				for _, pf := range pro.Items {
-					l := []string{pro.Name, pf.Key, fmt.Sprintf("%.1f/10.0", pf.Score), pf.Desc}
+			for _, proResult := range r.Profiles.ProfResult {
+				for _, pFeatResult := range proResult.Items {
+					l := []string{proResult.Name, pFeatResult.Key, fmt.Sprintf("%.1f/10.0", pFeatResult.Score), pFeatResult.Desc}
 					outDoc = append(outDoc, l)
 				}
 			}
 		} else {
 			// no scoring
 		}
-		// for _, cat := range r.Comprehensive.CatResult {
-
-		// 	for _, feat := range cat.Features {
-		// 		l := []string{cat.Name, feat.Key, fmt.Sprintf("%.1f/10.0", feat.Score), feat.Desc}
-		// 		outDoc = append(outDoc, l)
-		// 	}
-		// }
 
 		fmt.Printf("\n  SBOM Quality Score: %0.1f/10.0\t Grade: %s\tComponents: %d\t%s\t\n\n", r.InterlynkScore, r.Grade, r.Meta.NumComponents, r.Meta.Filename)
 

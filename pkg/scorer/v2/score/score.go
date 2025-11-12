@@ -35,6 +35,7 @@ import (
 // returns successful scoring results
 func ScoreSBOM(ctx context.Context, cfg config.Config, paths []string) ([]api.Result, error) {
 	log := logger.FromContext(ctx)
+	log.Debugf("Running ScoreSBOM: to score a SBOM")
 
 	// 1. Validate paths
 	validPaths := validateAndExpandPaths(ctx, paths)
@@ -48,10 +49,10 @@ func ScoreSBOM(ctx context.Context, cfg config.Config, paths []string) ([]api.Re
 		return nil, fmt.Errorf("failed to initialize catalog: %w", err)
 	}
 
-	// 3) validate config
-	if err := validateConfig(ctx, catal, &cfg); err != nil {
-		return nil, fmt.Errorf("failed to validate SBOM configuration: %w", err)
-	}
+	// // 3) validate config
+	// if err := validateConfig(ctx, catal, &cfg); err != nil {
+	// 	return nil, fmt.Errorf("failed to validate SBOM configuration: %w", err)
+	// }
 
 	results := make([]api.Result, 0, len(validPaths))
 	processed := 0
@@ -76,7 +77,7 @@ func ScoreSBOM(ctx context.Context, cfg config.Config, paths []string) ([]api.Re
 // and then evaluates each SBOM, and returns the single SBOM scoring result
 func scoreOnePath(ctx context.Context, catalog *catalog.Catalog, cfg config.Config, path string) (api.Result, error) {
 	log := logger.FromContext(ctx)
-	log.Debugf("processing scoreOnePath")
+	log.Debugf("Starting scoreOnePath: to score one by one")
 
 	file, doc, err := openAndParse(ctx, cfg, path)
 	if err != nil {
@@ -84,23 +85,7 @@ func scoreOnePath(ctx context.Context, catalog *catalog.Catalog, cfg config.Conf
 	}
 	defer file.Close()
 
-	// if doc.Spec().GetSpecType() == string(sbom.SBOMSpecCDX) {
-	// 	// Resolve profiles alias
-	// 	profileKeys := catalog.ResolveProfileKeys(cfg.Profile)
-	// 	if len(profileKeys) == 0 {
-	// 		// return , fmt.Errorf("no valid profiles resolved from: %v", cfg.Profile)
-	// 	}
-
-	// 	for _, pk := range profileKeys {
-	// 		if pk == registry.ProfileOCT {
-	// 			fmt.Println("OCT Profile doesn't support for CycloneDX SBOM")
-	// 			os.Exit(0)
-	// 		}
-	// 	}
-	// }
-
 	res, err := SBOMEvaluation(ctx, catalog, cfg, doc)
-
 	return res, err
 }
 
@@ -144,8 +129,12 @@ func openAndParse(ctx context.Context, cfg config.Config, path string) (*os.File
 // SBOMEvaluation decides between profile-based and comprehensive scoring,
 // delegates to a focused helper, and returns a single SBOM scoring result.
 func SBOMEvaluation(ctx context.Context, catal *catalog.Catalog, cfg config.Config, doc sbom.Document) (api.Result, error) {
+	log := logger.FromContext(ctx)
+	log.Debugf("Starting SBOM Evaluation")
+
 	if catal.Profiles != nil {
-		return evaluateProfiles(ctx, catal, cfg, doc)
+		log.Debugf("profile is provided")
+		return evaluateProfiles(ctx, catal, doc)
 	}
 
 	return evaluateComprehensive(ctx, catal, cfg, doc)
@@ -154,26 +143,23 @@ func SBOMEvaluation(ctx context.Context, catal *catalog.Catalog, cfg config.Conf
 // evaluateProfiles computes profile-based results for the given SBOM document.
 // It resolves profile keys from cfg.Profile, evaluates them via the catalog,
 // fills the result (score, grade, and per-profile results), and returns it.
-func evaluateProfiles(ctx context.Context, catal *catalog.Catalog, cfg config.Config, doc sbom.Document) (api.Result, error) {
+func evaluateProfiles(ctx context.Context, catal *catalog.Catalog, doc sbom.Document) (api.Result, error) {
+	log := logger.FromContext(ctx)
+
+	log.Debugf("evaluate profiles")
 	result := api.NewResult(doc)
 
-	// Resolve profiles
-	profileKeys := catal.ResolveProfileKeys(cfg.Profile)
-	if len(profileKeys) == 0 {
-		return *result, fmt.Errorf("no valid profiles resolved from: %v", cfg.Profile)
-	}
-
 	if doc.Spec().GetSpecType() == string(sbom.SBOMSpecCDX) {
-		for _, pk := range profileKeys {
-			if pk == registry.ProfileOCT {
+		for _, pk := range catal.Profiles {
+			if pk.Key == registry.ProfileOCT {
 				fmt.Println("OCT Profiles doesn't support for Cyclonedx SBOM")
 				os.Exit(0)
 			}
 		}
 	}
 
-	// Evaluate profiles
-	profResults := profiles.Evaluate(ctx, catal, profileKeys, doc)
+	// Evaluate all profiles and get the results
+	profResults := profiles.Evaluate(ctx, catal, doc)
 
 	result.InterlynkScore = formulae.ComputeInterlynkProfScore(profResults)
 	result.Grade = formulae.ToGrade(result.InterlynkScore)

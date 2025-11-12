@@ -180,5 +180,5 @@ func ComputeInterlynkProfScore(profResults api.ProfilesResult) float64 {
 	for _, res := range profResults.ProfResult {
 		totalScore += res.Score
 	}
-	return totalScore / 10.0
+	return totalScore
 }

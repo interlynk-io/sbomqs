@@ -141,7 +141,7 @@ func similar(p Prof, eval map[string]catalog.ProfFeatEval) []catalog.ProfFeatSpe
 		feat := catalog.ProfFeatSpec{
 			Name:        f.Name,
 			Description: f.Description,
-			Key:         catalog.ProfFeatKey(f.Key),
+			Key:         f.Key,
 			Required:    f.Required,
 			Evaluate:    eval[f.Key],
 		}

@@ -30,7 +30,7 @@ type ProfFeatSpec struct {
 	Name        string
 	Required    bool
 	Description string
-	Key         ProfFeatKey
+	Key         string
 	Evaluate    ProfFeatEval
 }
 
