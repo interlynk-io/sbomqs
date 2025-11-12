@@ -175,11 +175,6 @@ func evaluateComprehensive(ctx context.Context, catal *catalog.Catalog, cfg conf
 
 	result := api.NewResult(doc)
 
-	// catKeys := selectCategoriesToScore(cfg, catal)
-	// if len(catKeys) == 0 {
-	// 	return api.Result{}, fmt.Errorf("no categories to score (check config filters)")
-	// }
-
 	comprResult := comprehenssive.Evaluate(ctx, catal, doc)
 	result.Comprehensive = &comprResult
 

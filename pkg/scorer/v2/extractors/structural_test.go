@@ -128,8 +128,6 @@ func Test_SBOMFileFormat(t *testing.T) {
 	})
 }
 
-// Test-only wrappers: embed real docs (to satisfy the full interface)
-// and override only SchemaValidation().
 type spdxSchemaDoc struct {
 	sbom.SpdxDoc
 	valid bool

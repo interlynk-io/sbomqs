@@ -80,9 +80,6 @@ func evaluateEachProfile(ctx context.Context, doc sbom.Document, profile catalog
 		}
 
 	}
-	fmt.Println("sumScore: ", sumScore)
-	fmt.Println("countNonNA: ", countNonNA)
-	fmt.Println("finalScore: ", sumScore/float64(countNonNA))
 
 	if countNonNA > 0 {
 		proResult.Score = sumScore / float64(countNonNA)

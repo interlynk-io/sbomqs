@@ -361,7 +361,7 @@ func Test_CompWithLicenses(t *testing.T) {
 
 		gotDecl := CompWithDeclaredLicenses(doc)
 		assert.InDelta(t, 10.0, gotDecl.Score, 1e-9)
-		assert.Equal(t, "1/1 have declared", gotDecl.Desc)
+		assert.Equal(t, "1/1 have declared licenses", gotDecl.Desc)
 	})
 }
 
@@ -487,7 +487,7 @@ func Test_CompWithDeclaredLicenses(t *testing.T) {
 		got := CompWithDeclaredLicenses(doc)
 
 		assert.InDelta(t, 5.0, got.Score, 1e-9)
-		assert.Equal(t, "1/2 have declared", got.Desc)
+		assert.Equal(t, "1/2 have declared licenses", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -500,7 +500,7 @@ func Test_CompWithDeclaredLicenses(t *testing.T) {
 		got := CompWithDeclaredLicenses(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "0/2 have declared", got.Desc)
+		assert.Equal(t, "0/2 have declared licenses", got.Desc)
 	})
 
 	// CDX:1.4
@@ -513,7 +513,7 @@ func Test_CompWithDeclaredLicenses(t *testing.T) {
 		got := CompWithDeclaredLicenses(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "0/2 have declared", got.Desc)
+		assert.Equal(t, "0/2 have declared licenses", got.Desc)
 	})
 
 	// CDX:1.6
@@ -535,7 +535,7 @@ func Test_CompWithDeclaredLicenses(t *testing.T) {
 
 		got := CompWithDeclaredLicenses(doc)
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "2/2 have declared", got.Desc)
+		assert.Equal(t, "2/2 have declared licenses", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -557,7 +557,7 @@ func Test_CompWithDeclaredLicenses(t *testing.T) {
 
 		got := CompWithDeclaredLicenses(doc)
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "0/2 have declared", got.Desc)
+		assert.Equal(t, "0/2 have declared licenses", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 }

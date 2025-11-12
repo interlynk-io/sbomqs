@@ -57,7 +57,6 @@ func evaluateFeature(doc sbom.Document, comprFeat catalog.ComprFeatSpec) api.Fea
 	// evaluate feature
 	res := comprFeat.Evaluate(doc)
 
-	//
 	comprFeatResult.Score = res.Score
 	comprFeatResult.Desc = res.Desc
 	comprFeatResult.Ignored = res.Ignore

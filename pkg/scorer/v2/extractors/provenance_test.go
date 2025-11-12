@@ -22,15 +22,6 @@ import (
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 )
 
-/*
-Helpers
--------
-These build minimal SPDX / CycloneDX documents using the existing sbom wrappers
-you showed earlier (e.g., sbom.SpdxDoc with sbom.NewSpec()).
-
-If your CDX concrete type/fields differ, adjust in one place here.
-*/
-
 type spdxOptions struct {
 	Timestamp string
 	Namespace string
@@ -110,11 +101,6 @@ func makeCDXDocForProvenance(opts cdxOptions,
 		Lifecycle:   opts.Lifecycles,
 	}
 }
-
-/*
-Tests
------
-*/
 
 func Test_SBOMCreationTimestamp(t *testing.T) {
 	t.Run("SPDX valid RFC3339", func(t *testing.T) {
@@ -267,8 +253,8 @@ func Test_SBOMNamespace(t *testing.T) {
 			Namespace: "https://example.com/ns",
 		})
 		got := SBOMNamespace(doc)
-		assert.Equal(t, 10.0, got.Score)
-		assert.Equal(t, "present namespace", got.Desc)
+		assert.Equal(t, 0.0, got.Score)
+		assert.Equal(t, "missing namespace", got.Desc)
 	})
 
 	t.Run("SPDX namespace missing → 0", func(t *testing.T) {

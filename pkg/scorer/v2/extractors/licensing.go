@@ -74,7 +74,7 @@ func SBOMDataLicense(doc sbom.Document) catalog.ComprFeatScore {
 		return catalog.ComprFeatScore{
 			Score:  formulae.BooleanScore(false),
 			Desc:   "no data license",
-			Ignore: true,
+			Ignore: false,
 		}
 	}
 

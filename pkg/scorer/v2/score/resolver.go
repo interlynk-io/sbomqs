@@ -114,14 +114,3 @@ func CategoryNames(cats []catalog.ComprCatSpec) []string {
 	}
 	return out
 }
-
-// // selectCategoriesToScore returns the list of all categories to score.
-// func selectCategoriesToScore(cfg config.Config, catal *catalog.Catalog) []catalog.ComprCatKey {
-// 	if len(cfg.Categories) == 0 {
-// 		return catal.BaseCategoriesKeys()
-// 	}
-// 	if len(cfg.Features) == 0 {
-// 		// TODO
-// 	}
-// 	return catal.ResolveCategoryKeys(cfg.Categories)
-// }
