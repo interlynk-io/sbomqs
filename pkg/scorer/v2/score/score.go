@@ -44,7 +44,7 @@ func ScoreSBOM(ctx context.Context, cfg config.Config, paths []string) ([]api.Re
 	}
 
 	// 2) Initialize the catalog (features, categories, profiles) once.
-	catal, err := registry.InitializeCatalog(cfg)
+	catal, err := registry.InitializeCatalog(ctx, cfg)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize catalog: %w", err)
 	}

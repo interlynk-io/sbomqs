@@ -1,10 +1,12 @@
 package registry
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strings"
 
+	"github.com/interlynk-io/sbomqs/pkg/logger"
 	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/catalog"
 	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/config"
 	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/extractors"
@@ -278,136 +280,238 @@ var profileAliases = map[string]catalog.ProfileKey{
 }
 
 // Returns an error on serious IO / decode failures only.
-func InitializeCatalog(conf config.Config) (*catalog.Catalog, error) {
+func InitializeCatalog(ctx context.Context, conf config.Config) (*catalog.Catalog, error) {
+	log := logger.FromContext(ctx)
+	log.Debugf("InitializeCatalog: starting catalog initialization")
+
 	catal := &catalog.Catalog{}
+	confFile := strings.TrimSpace(conf.ConfigFile)
 
-	// 2) if user supplied a config file, merge its entries (file overrides base)
-	if strings.TrimSpace(conf.ConfigFile) != "" {
+	// when config file is feeded
+	if confFile != "" {
+		log.Debugf("InitializeCatalog: config file provided: %q", confFile)
 
-		categories, profiles, err := mergeConfigFileIntoCatalogYAML(conf.ConfigFile)
+		categories, profiles, err := mergeConfigFileIntoCatalogYAML(ctx, confFile)
 		if err != nil {
-			return nil, fmt.Errorf("failed to load config file %q: %w", conf.ConfigFile, err)
+			return nil, fmt.Errorf("failed to load config file %q: %w", confFile, err)
 		}
 
 		if categories != nil {
+			log.Debugf("InitializeCatalog: loaded %d comprehensive category(ies) from config file", len(categories))
 			catal.ComprCategories = categories
 		}
+
 		if profiles != nil {
+			log.Debugf("InitializeCatalog: loaded %d profile(s) from config file", len(profiles))
 			catal.Profiles = profiles
 		}
 
+		log.Debugf("InitializeCatalog: initialized from config file %q", confFile)
 		return catal, nil
 	}
 
-	// 3) Apply runtime filters (profiles first — because profile selection impacts which profile features matter)
+	// Profiles provided command inline
 	if len(conf.Profile) > 0 {
-		catal.Profiles = filterProfiles(conf.Profile)
+		log.Debugf("InitializeCatalog: profiles provided inline (%d): %v", len(conf.Profile), conf.Profile)
+
+		catal.Profiles = filterProfiles(ctx, conf.Profile)
+		log.Debugf("InitializeCatalog: selected %d profile(s) after filtering", len(catal.Profiles))
+
 		return catal, nil
 	}
 
-	// 5) Apply features filter (comprehensive features)
+	// Features provided inline
 	if len(conf.Features) > 0 {
+		log.Debugf("InitializeCatalog: features provided inline (%d) - applying feature-based initialization", len(conf.Features))
 		return catal, nil
 	}
 
-	// 4) Apply categories filter (comprehensive scoring)
+	// Categories provided inline
 	if len(conf.Categories) > 0 {
-		catal.ComprCategories = filterCategories(conf.Categories)
+		log.Debugf("InitializeCatalog: categories provided inline (%d): %v", len(conf.Categories), conf.Categories)
+		catal.ComprCategories = filterCategories(ctx, conf.Categories)
+
+		log.Debugf("InitializeCatalog: selected %d comprehensive category(ies) after filtering", len(catal.ComprCategories))
 		return catal, nil
 	}
 
 	catal.ComprCategories = comprehenssiveCategories
+
+	// Default -> use full comprehensive categories
+	log.Debugf("InitializeCatalog: no config/profile/categories provided - defaulting to %d comprehensive categories", len(catal.ComprCategories))
+
+	// Final summary
+	log.Debugf("InitializeCatalog: finished initialization: profiles=%d, comprehensiveCategories=%d",
+		len(catal.Profiles), len(catal.ComprCategories))
 
 	return catal, nil
 }
 
 // mergeConfigFileIntoCatalogYAML reads path and merges any found categories/profiles into out.
 // It tries to detect which shape the file has by looking for top-level keys.
-func mergeConfigFileIntoCatalogYAML(path string) ([]catalog.ComprCatSpec, []catalog.ProfSpec, error) {
+func mergeConfigFileIntoCatalogYAML(ctx context.Context, path string) ([]catalog.ComprCatSpec, []catalog.ProfSpec, error) {
+	log := logger.FromContext(ctx)
+	log.Debugf("mergeConfigFileIntoCatalogYAML: processing file %q", path)
+
 	var cat []catalog.ComprCatSpec
 	var prof []catalog.ProfSpec
 
 	b, err := os.ReadFile(path)
 	if err != nil {
+		log.Errorf("mergeConfigFileIntoCatalogYAML: failed to read file %q: %v", path, err)
 		return nil, nil, err
 	}
 
+	log.Debugf("mergeConfigFileIntoCatalogYAML: read %d bytes from %q", len(b), path)
+
 	lower := strings.ToLower(string(b))
+
+	// Detect comprehensive categories file
 	if strings.Contains(lower, "categories:") {
-		fmt.Println("comprehenssive config file")
+		log.Debugf("mergeConfigFileIntoCatalogYAML: detected comprehensive categories config in %q", path)
+
 		cat, err = ReadComprConfigFile(path)
 		if err != nil {
+			log.Errorf("mergeConfigFileIntoCatalogYAML: failed to parse comprehensive config %q: %v", path, err)
 			return nil, nil, fmt.Errorf("read comprehensive config: %w", err)
 		}
+
+		log.Debugf("mergeConfigFileIntoCatalogYAML: parsed %d comprehensive categories from %q", len(cat), path)
 		return cat, nil, nil
 	}
 
 	if strings.Contains(lower, "profiles:") {
-		fmt.Println("profiles config file")
+		log.Debugf("mergeConfigFileIntoCatalogYAML: detected profiles config in %q", path)
+
 		prof, err = ReadProfileConfigFile(path)
 		if err != nil {
+			log.Errorf("mergeConfigFileIntoCatalogYAML: failed to parse profiles config %q: %v", path, err)
 			return nil, nil, fmt.Errorf("read profile config: %w", err)
 		}
+
+		log.Debugf("mergeConfigFileIntoCatalogYAML: parsed %d profiles from %q", len(prof), path)
 		return nil, prof, nil
 	}
 
-	return cat, prof, nil
+	log.Debugf("mergeConfigFileIntoCatalogYAML: no top-level 'categories:' or 'profiles:' key found in %q config file", path)
+
+	return nil, nil, fmt.Errorf("Unknown config file, neither categories not profiles based")
 }
 
 // filterCategories keeps only requested comprehensive categories.
-func filterCategories(categories []string) []catalog.ComprCatSpec {
+func filterCategories(ctx context.Context, categories []string) []catalog.ComprCatSpec {
+	log := logger.FromContext(ctx)
+	log.Debugf("filterCategories: received %d categories: %v", len(categories), categories)
+
+	alreadyExists := make(map[string]bool)
 	var finalCats []catalog.ComprCatSpec
-	for _, c := range categories {
-		if c == "identification" {
+	var unknown []string
+
+	for _, cat := range categories {
+		if cat == "" {
+			continue
+		}
+
+		category := strings.ToLower(strings.TrimSpace(cat))
+		if alreadyExists[category] {
+			log.Debugf("filterCategories: duplicate category: %q - skip", category)
+			continue
+		}
+		alreadyExists[category] = true
+
+		switch category {
+		case "identification":
+			log.Debugf("filterCategories: selecting category %q", category)
 			finalCats = append(finalCats, CatIdentificationSpec)
-		}
 
-		if c == "provenance" {
+		case "provenance":
+			log.Debugf("filterCategories: selecting category %q", category)
 			finalCats = append(finalCats, CatProvenanceSpec)
-		}
 
-		if c == "integrity" {
+		case "integrity":
+			log.Debugf("filterCategories: selecting category %q", category)
 			finalCats = append(finalCats, CatIntegritySpec)
-		}
 
-		if c == "completeness" {
+		case "completeness":
+			log.Debugf("filterCategories: selecting category %q", category)
 			finalCats = append(finalCats, CatCompletenessSpec)
-		}
 
-		if c == "licensing" {
+		case "licensing":
+			log.Debugf("filterCategories: selecting category %q", category)
 			finalCats = append(finalCats, CatLicensingAndComplianceSpec)
-		}
 
-		if c == "vulnerability" {
+		case "vulnerability":
+			log.Debugf("filterCategories: selecting category %q", category)
 			finalCats = append(finalCats, CatVulnerabilityAndTraceSpec)
-		}
 
-		if c == "structural" {
+		case "structural":
+			log.Debugf("filterCategories: selecting category %q", category)
 			finalCats = append(finalCats, CatStructuralSpec)
+
+		default:
+			unknown = append(unknown, category)
+			log.Debugf("filterCategories: unknown category %q - skipping", category)
 		}
+	}
+
+	log.Debugf("filterCategories: selected %d categories: %v", len(finalCats), finalCats)
+	if len(unknown) > 0 {
+		log.Debugf("filterCategories: ignored %d unknown categories: %v", len(unknown), unknown)
 	}
 
 	return finalCats
 }
 
 // filterProfiles keeps only requested profile keys (preserving order).
-func filterProfiles(profiles []string) []catalog.ProfSpec {
-	var finalProfiles []catalog.ProfSpec
+func filterProfiles(ctx context.Context, profiles []string) []catalog.ProfSpec {
+	log := logger.FromContext(ctx)
+	log.Debugf("filterProfiles: received %d requested profiles: %v", len(profiles), profiles)
 
-	for _, profile := range profiles {
-		if profile == "ntia" {
+	alreadyExists := make(map[string]bool)
+	finalProfiles := make([]catalog.ProfSpec, 0, len(profiles))
+	var unknown []string
+
+	for _, pro := range profiles {
+		if pro == "" {
+			continue
+		}
+
+		profile := strings.ToLower(strings.TrimSpace(pro))
+		if alreadyExists[profile] {
+			log.Debugf("filterProfiles: duplicate profile: %q, skipping", profile)
+			continue
+		}
+		alreadyExists[profile] = true
+
+		switch profile {
+
+		case "ntia":
+			log.Debugf("filterProfiles: selecting profile %q", profile)
 			finalProfiles = append(finalProfiles, profileNTIASpec)
-		}
-		if profile == "bsi-v1.1" {
+
+		case "bsi-v1.1":
+			log.Debugf("filterProfiles: selecting profile %q", profile)
 			finalProfiles = append(finalProfiles, profileBSI11Spec)
-		}
-		if profile == "bsi-v2.0" {
+
+		case "bsi-v2.0":
+			log.Debugf("filterProfiles: selecting profile %q", profile)
 			finalProfiles = append(finalProfiles, profileBSI20Spec)
-		}
-		if profile == "oct" {
+
+		case "oct":
+			log.Debugf("filterProfiles: selecting profile %q", profile)
 			finalProfiles = append(finalProfiles, profileOCTSpec)
+		default:
+			unknown = append(unknown, profile)
+			log.Debugf("filterProfiles: unknown profile %q, skip", profile)
+			//
 		}
+
 	}
+	log.Debugf("filterProfiles: selected %d profile(s): %v", len(finalProfiles), finalProfiles)
+	if len(unknown) > 0 {
+		log.Debugf("filterProfiles: ignored %d unknown profile(s): %v", len(unknown), unknown)
+	}
+
 	return finalProfiles
 }
 

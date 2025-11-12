@@ -119,14 +119,16 @@ func SBOMSupplier(doc sbom.Document) catalog.ComprFeatScore {
 
 	case string(sbom.SBOMSpecCDX):
 		s := doc.Supplier()
-		hasName := strings.TrimSpace(s.GetName()) != ""
-		hasContact := strings.TrimSpace(s.GetEmail()) != "" || strings.TrimSpace(s.GetURL()) != ""
+		if s != nil {
+			hasName := strings.TrimSpace(s.GetName()) != ""
+			hasContact := strings.TrimSpace(s.GetEmail()) != "" || strings.TrimSpace(s.GetURL()) != ""
 
-		if hasName && hasContact {
-			return catalog.ComprFeatScore{
-				Score:  formulae.BooleanScore(true),
-				Desc:   formulae.PresentField("supplier"),
-				Ignore: false,
+			if hasName && hasContact {
+				return catalog.ComprFeatScore{
+					Score:  formulae.BooleanScore(true),
+					Desc:   formulae.PresentField("supplier"),
+					Ignore: false,
+				}
 			}
 		}
 		return catalog.ComprFeatScore{
