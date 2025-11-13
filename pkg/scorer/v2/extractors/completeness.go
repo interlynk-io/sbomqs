@@ -61,6 +61,11 @@ func CompWithCompleteness(doc sbom.Document) catalog.ComprFeatScore {
 		// have := lo.CountBy(doc.Components(), func(c sbom.GetComponent) bool {
 		// 	return c.GetComposition() != ""
 		// })
+		return catalog.ComprFeatScore{
+			Score:  formulae.BooleanScore(false),
+			Desc:   formulae.MissingField("completeness"),
+			Ignore: true,
+		}
 	}
 
 	return catalog.ComprFeatScore{

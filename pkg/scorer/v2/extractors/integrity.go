@@ -15,7 +15,6 @@
 package extractors
 
 import (
-	"fmt"
 	"os"
 	"strings"
 
@@ -87,7 +86,7 @@ func SBOMSignature(doc sbom.Document) catalog.ComprFeatScore {
 	if pubKeyPath == "" || blobPath == "" || sigPath == "" {
 		return catalog.ComprFeatScore{
 			Score:  0,
-			Desc:   "signature bundle incomplete",
+			Desc:   formulae.MissingField("signature"),
 			Ignore: false,
 		}
 	}
@@ -96,7 +95,7 @@ func SBOMSignature(doc sbom.Document) catalog.ComprFeatScore {
 	if err != nil {
 		return catalog.ComprFeatScore{
 			Score:  5, // bundle present, but verification cannot succeed
-			Desc:   fmt.Sprintf("cannot read public key: %v", err),
+			Desc:   formulae.MissingField("signature"),
 			Ignore: false,
 		}
 	}
@@ -104,21 +103,23 @@ func SBOMSignature(doc sbom.Document) catalog.ComprFeatScore {
 	ok, err := verifySignature(pubKeyBytes, blobPath, sigPath)
 	if err != nil {
 		return catalog.ComprFeatScore{
-			Score:  5,
-			Desc:   "signature present but verification failed",
+			Score: 5,
+			Desc:  formulae.MissingField("signature"),
+			// Desc:   "signature present but verification failed",
 			Ignore: false,
 		}
 	}
 	if ok {
 		return catalog.ComprFeatScore{
 			Score:  10,
-			Desc:   "signature verification succeeded",
+			Desc:   formulae.PresentField("signature"),
 			Ignore: false,
 		}
 	}
 	return catalog.ComprFeatScore{
-		Score:  5,
-		Desc:   "signature present but invalid",
+		Score: 5,
+		Desc:  formulae.MissingField("signature"),
+		// Desc:   "signature present but invalid",
 		Ignore: false,
 	}
 }

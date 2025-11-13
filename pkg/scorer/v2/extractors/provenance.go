@@ -62,7 +62,7 @@ func SBOMAuthors(doc sbom.Document) catalog.ComprFeatScore {
 	if total == 0 {
 		return catalog.ComprFeatScore{
 			Score:  formulae.BooleanScore(false),
-			Desc:   "0 authors",
+			Desc:   formulae.MissingField("author"),
 			Ignore: false,
 		}
 	}
@@ -97,7 +97,7 @@ func SBOMCreationTool(doc sbom.Document) catalog.ComprFeatScore {
 
 	return catalog.ComprFeatScore{
 		Score:  formulae.BooleanScore(true),
-		Desc:   strings.Join(toolsWithNV, ", "),
+		Desc:   fmt.Sprintf("%d tool", len(toolsWithNV)),
 		Ignore: false,
 	}
 }
@@ -126,7 +126,7 @@ func SBOMSupplier(doc sbom.Document) catalog.ComprFeatScore {
 			if hasName && hasContact {
 				return catalog.ComprFeatScore{
 					Score:  formulae.BooleanScore(true),
-					Desc:   formulae.PresentField("supplier"),
+					Desc:   fmt.Sprintf("%d supplier", 1),
 					Ignore: false,
 				}
 			}

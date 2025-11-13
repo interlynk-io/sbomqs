@@ -31,10 +31,6 @@ func (r *Reporter) basicReport() {
 			version = strings.Replace(version, "SPDX-", "", 1)
 		}
 
-		// if spec == string(sbom.SBOMSpecCDX) {
-		// 	spec = "cyclonedx"
-		// }
-
 		fmt.Printf("%0.1f\t%s\t%s\t%s\t%s\n", r.InterlynkScore, r.Grade, version, format, r.Meta.Filename)
 
 	}

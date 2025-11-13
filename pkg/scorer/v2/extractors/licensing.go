@@ -16,7 +16,6 @@ package extractors
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/catalog"
@@ -73,22 +72,15 @@ func SBOMDataLicense(doc sbom.Document) catalog.ComprFeatScore {
 	if len(specLicenses) == 0 {
 		return catalog.ComprFeatScore{
 			Score:  formulae.BooleanScore(false),
-			Desc:   "no data license",
+			Desc:   formulae.MissingField("data license"),
 			Ignore: false,
 		}
 	}
 
 	if areLicensesValid(specLicenses) {
-		l := strings.TrimSpace(specLicenses[0].ShortID())
-		if l == "" {
-			l = strings.TrimSpace(specLicenses[0].Name())
-		}
-		if l == "" {
-			l = "data license present"
-		}
 		return catalog.ComprFeatScore{
 			Score:  formulae.BooleanScore(true),
-			Desc:   l,
+			Desc:   formulae.PresentField("data license"),
 			Ignore: false,
 		}
 	}
@@ -110,9 +102,14 @@ func CompWithDeprecatedLicenses(doc sbom.Document) catalog.ComprFeatScore {
 		return componentHasAnyDeprecated(c)
 	})
 
+	description := fmt.Sprintf("%d deprecated", have)
+	if have == 0 {
+		description = "N/A"
+	}
+
 	return catalog.ComprFeatScore{
 		Score:  formulae.PerComponentScore(have, len(comps)),
-		Desc:   fmt.Sprintf("%d deprecated", have),
+		Desc:   description,
 		Ignore: false,
 	}
 }
@@ -129,9 +126,14 @@ func CompWithRestrictiveLicenses(doc sbom.Document) catalog.ComprFeatScore {
 		return componentHasAnyRestrictive(c)
 	})
 
+	description := fmt.Sprintf("%d restrictive", have)
+	if have == 0 {
+		description = "N/A"
+	}
+
 	return catalog.ComprFeatScore{
 		Score:  formulae.PerComponentScore(have, len(comps)),
-		Desc:   fmt.Sprintf("%d restrictive", have),
+		Desc:   description,
 		Ignore: false,
 	}
 }

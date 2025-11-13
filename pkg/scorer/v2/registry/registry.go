@@ -353,6 +353,10 @@ func filterCategories(ctx context.Context, categories []string) []catalog.ComprC
 			log.Debugf("filterCategories: selecting category %q", category)
 			finalCats = append(finalCats, CatStructuralSpec)
 
+		case "compinfo":
+			log.Debugf("filterCategories: selecting category %q", category)
+			finalCats = append(finalCats, CatComponentQualityInfoSpec)
+
 		default:
 			unknown = append(unknown, category)
 			log.Debugf("filterCategories: unknown category %q - skipping", category)
@@ -514,11 +518,16 @@ var CatStructuralSpec = catalog.ComprCatSpec{
 }
 
 var CatComponentQualityInfoSpec = catalog.ComprCatSpec{
-	Key:         "component_quality_info",
+	Key:         "compinfo",
 	Name:        "Component Quality (Info)",
-	Weight:      0,
+	Weight:      10,
 	Description: "Real-time component risk assessment based on external threat intelligence. These metrics are informational only and do NOT affect the overall quality score",
-	Features:    nil,
+	Features: []catalog.ComprFeatSpec{
+		{Key: "comp_eol_eos", Description: "Components no longer maintained or declared end-of-life", Weight: 0.10, Ignore: true, Evaluate: extractors.CompWithEOSOrEOL},
+		{Key: "comp_malicious", Description: "Components tagged as malicious in threat databases", Weight: 0.30, Ignore: true, Evaluate: extractors.CompWithMalicious},
+		{Key: "comp_vuln_sev_critical", Description: "Components with vulnerabilities in CISA's Known Exploited Vulns", Weight: 0.30, Ignore: true, Evaluate: extractors.CompWithVulnSeverityCritical},
+		{Key: "comp_epss_high", Description: "Components with Exploit Prediction Scoring System > 0.8", Weight: 0.30, Ignore: true, Evaluate: extractors.CompWithHighEPSS},
+	},
 }
 
 var comprehenssiveCategories = []catalog.ComprCatSpec{

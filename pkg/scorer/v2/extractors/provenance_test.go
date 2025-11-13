@@ -151,7 +151,7 @@ func Test_SBOMAuthors(t *testing.T) {
 		doc := makeSPDXDocForProvenance(spdxOptions{})
 		got := SBOMAuthors(doc)
 		assert.Equal(t, 0.0, got.Score)
-		assert.Equal(t, "0 authors", got.Desc)
+		assert.Equal(t, "missing author", got.Desc)
 	})
 
 	// SPDX Doc with 1 author of type person
@@ -213,7 +213,7 @@ func Test_SBOMCreationTool(t *testing.T) {
 		})
 		got := SBOMCreationTool(doc)
 		assert.Equal(t, 10.0, got.Score)
-		assert.Equal(t, got.Desc, "syft-0.95.0, trivy-0.45.1")
+		assert.Equal(t, got.Desc, "2 tool")
 	})
 }
 
@@ -235,7 +235,7 @@ func Test_SBOMSupplier(t *testing.T) {
 		got := SBOMSupplier(doc)
 		assert.False(t, got.Ignore)
 		assert.Equal(t, 10.0, got.Score)
-		assert.Equal(t, "present supplier", got.Desc)
+		assert.Equal(t, "1 supplier", got.Desc)
 	})
 
 	t.Run("CDX missing supplier → 0", func(t *testing.T) {
