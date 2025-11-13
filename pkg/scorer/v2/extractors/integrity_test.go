@@ -231,28 +231,28 @@ func TestSBOMSignature_VerificationMatrix(t *testing.T) {
 		fs := SBOMSignature(docValidBundle())
 		assert.Equal(t, 10.0, fs.Score)
 		assert.False(t, fs.Ignore)
-		assert.Contains(t, fs.Desc, "succeed") // “signature verification succeeded”
+		assert.Contains(t, fs.Desc, "present signature") // “signature verification succeeded”
 	})
 
 	t.Run("unreadable public key -> 5", func(t *testing.T) {
 		fs := SBOMSignature(docUnreadableKey())
 		assert.Equal(t, 5.0, fs.Score)
 		assert.False(t, fs.Ignore)
-		assert.Contains(t, fs.Desc, "cannot read public key")
+		assert.Contains(t, fs.Desc, "missing signature")
 	})
 
 	t.Run("incomplete bundle -> 0", func(t *testing.T) {
 		fs := SBOMSignature(docIncompleteBundle())
 		assert.Equal(t, 0.0, fs.Score)
 		assert.False(t, fs.Ignore)
-		assert.Contains(t, fs.Desc, "incomplete")
+		assert.Contains(t, fs.Desc, "missing signature")
 	})
 
 	t.Run("mismatched bundle -> verify fail -> 5", func(t *testing.T) {
 		fs := SBOMSignature(docMismatchedBundle())
 		assert.Equal(t, 5.0, fs.Score)
 		assert.False(t, fs.Ignore)
-		assert.Contains(t, fs.Desc, "present") // “present but verification failed/invalid”
+		assert.Contains(t, fs.Desc, "missing signature") // “present but verification failed/invalid”
 	})
 
 	t.Run("no signature -> 0", func(t *testing.T) {

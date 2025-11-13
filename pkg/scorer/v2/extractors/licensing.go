@@ -126,7 +126,7 @@ func CompWithRestrictiveLicenses(doc sbom.Document) catalog.ComprFeatScore {
 		return componentHasAnyRestrictive(c)
 	})
 
-	description := fmt.Sprintf("%d deprecated", have)
+	description := fmt.Sprintf("%d restrictive", have)
 	if have == 0 {
 		description = "N/A"
 	}

@@ -129,7 +129,6 @@ func makeCDXDoc(components []miniComp) sbom.Document {
 	}
 }
 
-// ----tests-------------------
 func TestCompWithVersion_SPdx(t *testing.T) {
 	t.Run("all have versions → 10.0", func(t *testing.T) {
 		doc := makeSPDXDoc([]miniComp{
@@ -193,7 +192,6 @@ func TestCompWithVersion_CycloneDX(t *testing.T) {
 	assert.False(t, got.Ignore)
 }
 
-// ---test uniq ids--------
 func TestCompWithUniqLocalIDs_SPDX(t *testing.T) {
 	t.Run("all have local IDs → 10.0", func(t *testing.T) {
 		doc := makeSPDXDoc([]miniComp{

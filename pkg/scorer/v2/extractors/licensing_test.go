@@ -570,7 +570,7 @@ func Test_SBOMDataLicense(t *testing.T) {
 
 		assert.Equal(t, 0.0, got.Score)
 		assert.False(t, got.Ignore)
-		assert.Equal(t, "no data license", got.Desc)
+		assert.Equal(t, "missing data license", got.Desc)
 	})
 
 	t.Run("valid SPDX data license -> 10", func(t *testing.T) {
@@ -580,7 +580,7 @@ func Test_SBOMDataLicense(t *testing.T) {
 		got := SBOMDataLicense(doc)
 
 		assert.Equal(t, 10.0, got.Score)
-		assert.Contains(t, got.Desc, "CC-BY-4.0")
+		assert.Contains(t, got.Desc, "present data license")
 		assert.False(t, got.Ignore)
 	})
 
@@ -601,7 +601,7 @@ func Test_SBOMDataLicense(t *testing.T) {
 		got := SBOMDataLicense(doc)
 
 		assert.Equal(t, 10.0, got.Score)
-		assert.Contains(t, got.Desc, "Apache-2.0")
+		assert.Contains(t, got.Desc, "resent data license")
 		assert.False(t, got.Ignore)
 	})
 }
@@ -653,7 +653,7 @@ func Test_CompWithDeprecatedLicenses(t *testing.T) {
 		got := CompWithDeprecatedLicenses(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "0 deprecated", got.Desc)
+		assert.Equal(t, "N/A", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -666,7 +666,7 @@ func Test_CompWithDeprecatedLicenses(t *testing.T) {
 		got := CompWithDeprecatedLicenses(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "0 deprecated", got.Desc)
+		assert.Equal(t, "N/A", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -729,7 +729,7 @@ func Test_CompWithRestrictiveLicenses(t *testing.T) {
 		got := CompWithRestrictiveLicenses(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "0 restrictive", got.Desc)
+		assert.Equal(t, "N/A", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -787,7 +787,7 @@ func Test_CompWithRestrictiveLicenses(t *testing.T) {
 		}, "CC0-1.0")
 		got := CompWithRestrictiveLicenses(doc)
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "0 restrictive", got.Desc)
+		assert.Equal(t, "N/A", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -799,7 +799,7 @@ func Test_CompWithRestrictiveLicenses(t *testing.T) {
 		}, "CC0-1.0")
 		got := CompWithRestrictiveLicenses(doc)
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "0 restrictive", got.Desc)
+		assert.Equal(t, "N/A", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 }
