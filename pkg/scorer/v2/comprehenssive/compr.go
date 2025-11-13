@@ -29,14 +29,14 @@ func Evaluate(ctx context.Context, catal *catalog.Catalog, doc sbom.Document) ap
 	results.CatResult = make([]api.CategoryResult, 0, len(catal.ComprCategories))
 
 	for _, category := range catal.ComprCategories {
-		catResult := evaluateEachCategory(ctx, doc, category, catal)
+		catResult := evaluateEachCategory(ctx, doc, category)
 		results.CatResult = append(results.CatResult, catResult)
 	}
 
 	return results
 }
 
-func evaluateEachCategory(ctx context.Context, doc sbom.Document, category catalog.ComprCatSpec, catal *catalog.Catalog) api.CategoryResult {
+func evaluateEachCategory(ctx context.Context, doc sbom.Document, category catalog.ComprCatSpec) api.CategoryResult {
 	catResult := api.NewCategoryResultFromSpec(category)
 	catResult.Features = make([]api.FeatureResult, 0, len(category.Features))
 

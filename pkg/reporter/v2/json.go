@@ -48,7 +48,7 @@ type file struct {
 type creation struct {
 	Name          string `json:"name"`
 	Version       string `json:"version"`
-	ScoringEngine string `json:"scoring_engine_version"`
+	SBOMQS_Engine string `json:"sbomqs_engine_version"`
 	Vendor        string `json:"vendor"`
 }
 
@@ -64,17 +64,16 @@ func newJSONReport() *jsonReport {
 		RunID:     uuid.New().String(),
 		TimeStamp: time.Now().UTC().Format(time.RFC3339),
 		CreationInfo: creation{
-			Name:    "sbomqs",
-			Version: version.GetVersionInfo().GitVersion,
-			// ScoringEngine: scorer.EngineVersion,
-			Vendor: "Interlynk (support@interlynk.io)",
+			Name:          "sbomqs",
+			Version:       version.GetVersionInfo().GitVersion,
+			SBOMQS_Engine: EngineVersion,
+			Vendor:        "Interlynk (support@interlynk.io)",
 		},
 		Files: []file{},
 	}
 }
 
 func (r *Reporter) jsonReport() (string, error) {
-	fmt.Println("JSON SCORE")
 	jr := newJSONReport()
 
 	for _, r := range r.Results {

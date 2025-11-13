@@ -57,6 +57,7 @@ func NewProfResults() ProfilesResult {
 
 // CategoryResult represents category-wise result
 type CategoryResult struct {
+	Key      string
 	Name     string
 	Weight   float64 // category weight
 	Score    float64
@@ -131,6 +132,7 @@ func NewComprResult() ComprehensiveResult {
 
 func NewCategoryResultFromSpec(cat catalog.ComprCatSpec) CategoryResult {
 	return CategoryResult{
+		Key:    cat.Key,
 		Name:   cat.Name,
 		Weight: cat.Weight,
 	}

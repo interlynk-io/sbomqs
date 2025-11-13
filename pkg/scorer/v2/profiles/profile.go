@@ -16,7 +16,6 @@ package profiles
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/interlynk-io/sbomqs/pkg/logger"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
@@ -59,7 +58,6 @@ func evaluateEachProfile(ctx context.Context, doc sbom.Document, profile catalog
 
 		// evaluate feature
 		pFeatScore := spec.Evaluate(doc)
-		fmt.Println("pFeatScore.Score: ", pFeatScore.Score)
 
 		if pFeatScore.Ignore {
 			pFeatResult.Passed = !spec.Required

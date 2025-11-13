@@ -30,6 +30,15 @@ func ScoreCompNA() catalog.ComprFeatScore {
 	}
 }
 
+// ScoreNA score NA for comprehenssive features related to components
+func ScoreCompNAA() catalog.ComprFeatScore {
+	return catalog.ComprFeatScore{
+		Score:  PerComponentScore(0, 0),
+		Desc:   NoComponentsNAA(),
+		Ignore: true,
+	}
+}
+
 // ScoreCompFull score for comprehenssive features related to components
 func ScoreCompFull(have, comps int, field string, ignore bool) catalog.ComprFeatScore {
 	return catalog.ComprFeatScore{
@@ -92,7 +101,7 @@ func ScoreSBOMProfUnknownNA(field string, ignore bool) catalog.ProfFeatScore {
 		Ignore: ignore,
 	}
 }
-
+func NoComponentsNAA() string          { return "N/A" }
 func NoComponentsNA() string           { return "N/A (no components)" }
 func MissingField(field string) string { return "missing " + field }
 func PresentField(field string) string { return "present " + field }
@@ -134,7 +143,19 @@ func ToGrade(interlynkScore float64) string {
 	}
 }
 
-// computeCategoryScore returns the weighted average of feature scores.
+/*
+		 ComputeCategoryScore calculates the category-level score using a weighted
+		 average of all non-ignored feature scores.
+
+		 category_score = Σ(score_i * (weight_i / totalFeatureWeight))
+	                    = (Σ(score_i * weight_i)) / totalFeatureWeight
+
+		 Behavior:
+		  1. totalFeatureWeight = Sums the weights of all features where Ignored == false.
+		  2. If no valid weights remain, returns 0.
+		  3. Renormalizes each feature’s weight (weight_i / totalFeatureWeight).
+		  4. Computes the weighted average: Σ(score_i * normalizedWeight_i).
+*/
 func ComputeCategoryScore(features []api.FeatureResult) float64 {
 	var totalFeatureWeight float64
 	for _, feature := range features {
@@ -142,37 +163,57 @@ func ComputeCategoryScore(features []api.FeatureResult) float64 {
 			totalFeatureWeight += feature.Weight
 		}
 	}
+
 	if totalFeatureWeight <= 0 {
 		return 0
 	}
 
-	// weighted average with renormalized weights
-	var totalScoreWithWeightage float64
+	var weightedScore float64
+
 	for _, feature := range features {
 		if feature.Ignored {
 			continue
 		}
 
-		norm := feature.Weight / totalFeatureWeight
-		totalScoreWithWeightage += feature.Score * norm
+		score_i := feature.Score
+		weight_i := feature.Weight
+
+		normalizedWeight_i := weight_i / totalFeatureWeight
+		weightedScore += score_i * normalizedWeight_i
 	}
 
-	return totalScoreWithWeightage
+	return weightedScore
 }
 
-// computeInterlynkScore returns the weighted average of category scores.
+/*
+ComputeInterlynkComprScore computes the final Interlynk SBOM Quality score by
+taking a weighted average of all category scores.
+
+Skips the "compinfo" category, which represents Component Quality
+
+interlynk_score = Σ(category_score × category_weight) / Σ(category_weight)
+
+where, totalCategoriesScore = Σ(category_score × category_weight)
+and, totalCategoriesWeight = Σ(category_weight)
+*/
 func ComputeInterlynkComprScore(catResults []api.CategoryResult) float64 {
-	var totalCategoryWeight, finalScoreWithWeightage float64
+	var totalCategoriesWeight, totalCategoriesScore float64
 
 	for _, catResult := range catResults {
-		totalCategoryWeight += catResult.Weight
-		finalScoreWithWeightage += catResult.Score * catResult.Weight
+
+		// Skip component qaulity informational category
+		if catResult.Key == "compinfo" {
+			continue
+		}
+
+		totalCategoriesWeight += catResult.Weight
+		totalCategoriesScore += catResult.Score * catResult.Weight
 	}
 
-	if totalCategoryWeight == 0 {
+	if totalCategoriesWeight == 0 {
 		return 0
 	}
-	return finalScoreWithWeightage / totalCategoryWeight
+	return totalCategoriesScore / totalCategoriesWeight
 }
 
 func ComputeInterlynkProfScore(profResults api.ProfilesResult) float64 {

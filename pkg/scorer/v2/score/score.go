@@ -86,6 +86,8 @@ func scoreOnePath(ctx context.Context, catalog *catalog.Catalog, cfg config.Conf
 	defer file.Close()
 
 	res, err := SBOMEvaluation(ctx, catalog, cfg, doc)
+	res.Meta.Filename = path
+
 	return res, err
 }
 
@@ -177,8 +179,6 @@ func evaluateComprehensive(ctx context.Context, catal *catalog.Catalog, cfg conf
 
 	comprResult := comprehenssive.Evaluate(ctx, catal, doc)
 	result.Comprehensive = &comprResult
-
-	// log.Debugf("selected categories for evaluation: %s", catKeys)
 
 	result.InterlynkScore = formulae.ComputeInterlynkComprScore(comprResult.CatResult)
 	result.Grade = formulae.ToGrade(result.InterlynkScore)

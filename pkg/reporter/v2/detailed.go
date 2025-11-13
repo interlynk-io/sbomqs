@@ -18,15 +18,16 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/api"
 	"github.com/olekukonko/tablewriter"
 )
 
 func (r *Reporter) detailedReport() {
-	fmt.Println("DETAILED SCORE")
+	form := "https://forms.gle/anFSspwrk7uSfD7Q6"
+
 	for _, r := range r.Results {
 		outDoc := [][]string{}
 		header := []string{}
-		form := "https://forms.gle/anFSspwrk7uSfD7Q6"
 		if r.Comprehensive != nil && r.Profiles != nil {
 			for _, cat := range r.Comprehensive.CatResult {
 				for _, feat := range cat.Features {
@@ -46,7 +47,8 @@ func (r *Reporter) detailedReport() {
 			header = []string{"Category", "Feature", "Score", "Desc"}
 			for _, cat := range r.Comprehensive.CatResult {
 				for _, feat := range cat.Features {
-					l := []string{cat.Name, feat.Key, fmt.Sprintf("%.1f/10.0", feat.Score), feat.Desc}
+					scoreStr := formatScore(feat)
+					l := []string{cat.Name, feat.Key, scoreStr, feat.Desc}
 					outDoc = append(outDoc, l)
 				}
 			}
@@ -63,7 +65,7 @@ func (r *Reporter) detailedReport() {
 			// no scoring
 		}
 
-		fmt.Printf("\n  SBOM Quality Score: %0.1f/10.0\t Grade: %s\tComponents: %d\t%s\t\n\n", r.InterlynkScore, r.Grade, r.Meta.NumComponents, r.Meta.Filename)
+		fmt.Printf("\n  SBOM Quality Score: %0.1f/10.0\t Grade: %s\tComponents: %d \t SBOMQS Engine: %s\n\n  File: %s\n", r.InterlynkScore, r.Grade, r.Meta.NumComponents, EngineVersion, r.Meta.Filename)
 
 		// Initialize tablewriter table with borders
 		table := tablewriter.NewWriter(os.Stdout)
@@ -72,6 +74,15 @@ func (r *Reporter) detailedReport() {
 		table.SetAutoMergeCellsByColumnIndex([]int{0})
 		table.AppendBulk(outDoc)
 		table.Render()
-		fmt.Println("\nFeedback form on enhancing the SBOM quality: ", form)
+		fmt.Println()
+		fmt.Println()
 	}
+	fmt.Println("\nFeedback form on enhancing the SBOM quality: ", form)
+}
+
+func formatScore(feat api.FeatureResult) string {
+	if (feat.Key == "comp_eol_eos") || (feat.Key == "comp_malicious") || (feat.Key == "comp_vuln_sev_critical") || (feat.Key == "comp_epss_high") {
+		return "N/A"
+	}
+	return fmt.Sprintf("%.1f/10.0", feat.Score)
 }
