@@ -26,6 +26,7 @@ func (r *Reporter) detailedReport() {
 	for _, r := range r.Results {
 		outDoc := [][]string{}
 		header := []string{}
+		form := "https://forms.gle/anFSspwrk7uSfD7Q6"
 		if r.Comprehensive != nil && r.Profiles != nil {
 			for _, cat := range r.Comprehensive.CatResult {
 				for _, feat := range cat.Features {
@@ -71,5 +72,6 @@ func (r *Reporter) detailedReport() {
 		table.SetAutoMergeCellsByColumnIndex([]int{0})
 		table.AppendBulk(outDoc)
 		table.Render()
+		fmt.Println("\nFeedback form on enhancing the SBOM quality: ", form)
 	}
 }
