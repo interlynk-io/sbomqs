@@ -26,24 +26,44 @@ func (r *Reporter) detailedReport() {
 	form := "https://forms.gle/anFSspwrk7uSfD7Q6"
 
 	for _, r := range r.Results {
-		outDoc := [][]string{}
+		// buffers for table rows
+		outDoc := [][]string{}     // detailed comprehensive rows
+		profOutDoc := [][]string{} // profile summary rows
+
 		header := []string{}
+		profHeader := []string{}
+
 		if r.Comprehensive != nil && r.Profiles != nil {
-			for _, cat := range r.Comprehensive.CatResult {
-				for _, feat := range cat.Features {
-					l := []string{cat.Name, feat.Key, fmt.Sprintf("%.1f/10.0", feat.Score), feat.Desc}
-					outDoc = append(outDoc, l)
-				}
+			var score float64
+			var grade string
+
+			for _, r := range r.Profiles.ProfResult {
+				score = r.Score
+				grade = r.Grade
 			}
 
-			for _, pro := range r.Profiles.ProfResult {
-				for _, pf := range pro.Items {
-					l := []string{pro.Name, pf.Key, fmt.Sprintf("%.1f/10.0", pf.Score), pf.Desc}
+			fmt.Printf("\n  SBOM Quality Score: %0.1f/10.0\t Grade: %s\tComponents: %d \t SBOMQS Engine: %s\n\n  File: %s\n", score, grade, r.Meta.NumComponents, EngineVersion, r.Meta.Filename)
+
+			profHeader = []string{"PROFILE", "SCORE", "GRADE"}
+
+			for _, proResult := range r.Profiles.ProfResult {
+				l := []string{proResult.Name, fmt.Sprintf("%.1f/10.0", proResult.Score), proResult.Grade}
+				profOutDoc = append(profOutDoc, l)
+			}
+
+			header = []string{"Category", "Feature", "Score", "Desc"}
+			for _, cat := range r.Comprehensive.CatResult {
+				for _, feat := range cat.Features {
+					scoreStr := formatScore(feat)
+					l := []string{cat.Name, feat.Key, scoreStr, feat.Desc}
 					outDoc = append(outDoc, l)
 				}
 			}
 
 		} else if r.Comprehensive != nil {
+
+			fmt.Printf("\n  SBOM Quality Score: %0.1f/10.0\t Grade: %s\tComponents: %d \t SBOMQS Engine: %s\n\n  File: %s\n", r.Comprehensive.InterlynkScore, r.Comprehensive.Grade, r.Meta.NumComponents, EngineVersion, r.Meta.Filename)
+
 			header = []string{"Category", "Feature", "Score", "Desc"}
 			for _, cat := range r.Comprehensive.CatResult {
 				for _, feat := range cat.Features {
@@ -53,6 +73,17 @@ func (r *Reporter) detailedReport() {
 				}
 			}
 		} else if r.Profiles != nil {
+
+			var score float64
+			var grade string
+
+			for _, r := range r.Profiles.ProfResult {
+				score = r.Score
+				grade = r.Grade
+			}
+
+			fmt.Printf("\n  SBOM Quality Score: %0.1f/10.0\t Grade: %s\tComponents: %d \t SBOMQS Engine: %s\n\n  File: %s\n", score, grade, r.Meta.NumComponents, EngineVersion, r.Meta.Filename)
+
 			header = []string{"Requirment", "Feature", "Status", "Desc"}
 
 			for _, proResult := range r.Profiles.ProfResult {
@@ -61,19 +92,33 @@ func (r *Reporter) detailedReport() {
 					outDoc = append(outDoc, l)
 				}
 			}
-		} else {
-			// no scoring
 		}
 
-		fmt.Printf("\n  SBOM Quality Score: %0.1f/10.0\t Grade: %s\tComponents: %d \t SBOMQS Engine: %s\n\n  File: %s\n", r.InterlynkScore, r.Grade, r.Meta.NumComponents, EngineVersion, r.Meta.Filename)
+		// Render profile summary table (only if we have rows)
+		if len(profOutDoc) > 0 {
+			fmt.Println()
+			fmt.Println("Profile Summary Scores:")
+			pt := tablewriter.NewWriter(os.Stdout)
+			pt.SetHeader(profHeader)
+			pt.SetRowLine(true)
+			pt.SetAutoMergeCellsByColumnIndex([]int{0})
+			pt.AppendBulk(profOutDoc)
+			pt.Render()
+			fmt.Println()
+			fmt.Println()
+		}
 
-		// Initialize tablewriter table with borders
-		table := tablewriter.NewWriter(os.Stdout)
-		table.SetHeader(header)
-		table.SetRowLine(true)
-		table.SetAutoMergeCellsByColumnIndex([]int{0})
-		table.AppendBulk(outDoc)
-		table.Render()
+		// Render detailed comprehensive table (only if we have rows)
+		if len(outDoc) > 0 {
+			fmt.Println("Interlynk Detailed Score:")
+			dt := tablewriter.NewWriter(os.Stdout)
+			dt.SetHeader(header)
+			dt.SetRowLine(true)
+			dt.SetAutoMergeCellsByColumnIndex([]int{0})
+			dt.AppendBulk(outDoc)
+			dt.Render()
+			fmt.Println()
+		}
 		fmt.Println()
 		fmt.Println()
 	}

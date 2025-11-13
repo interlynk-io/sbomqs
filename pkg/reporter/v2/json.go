@@ -78,8 +78,8 @@ func (r *Reporter) jsonReport() (string, error) {
 
 	for _, r := range r.Results {
 		f := file{}
-		f.InterlynkScore = r.InterlynkScore
-		f.Grade = r.Grade
+		f.InterlynkScore = r.Comprehensive.InterlynkScore
+		f.Grade = r.Comprehensive.Grade
 		f.Components = r.Meta.NumComponents
 		f.Format = r.Meta.FileFormat
 		f.Name = r.Meta.Filename

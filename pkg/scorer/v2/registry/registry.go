@@ -241,6 +241,7 @@ func InitializeCatalog(ctx context.Context, conf config.Config) (*catalog.Catalo
 	}
 
 	catal.ComprCategories = comprehenssiveCategories
+	catal.Profiles = defaultProfiles
 
 	// Default -> use full comprehensive categories
 	log.Debugf("InitializeCatalog: no config/profile/categories provided - defaulting to %d comprehensive categories", len(catal.ComprCategories))
@@ -539,6 +540,56 @@ var comprehenssiveCategories = []catalog.ComprCatSpec{
 	CatVulnerabilityAndTraceSpec,
 	CatStructuralSpec,
 	CatComponentQualityInfoSpec,
+}
+
+var defaultProfiles = []catalog.ProfSpec{
+	profileInterlynkSpec,
+	profileNTIASpec,
+	profileBSI11Spec,
+}
+
+var profileInterlynkSpec = catalog.ProfSpec{
+	Key:         ProfileNTIA,
+	Name:        "Interlynk",
+	Description: "Interlynk Default Scoring Profile",
+	Features: []catalog.ProfFeatSpec{
+		{Key: "comp_with_name", Description: "components with name", Required: false, Evaluate: profiles.CompWithName},
+		{Key: "comp_with_version", Description: "components with version", Required: false, Evaluate: profiles.CompWithVersion}, // FIXED: was mapped to completeness
+		{Key: "comp_with_identifiers", Description: "components with local identifiers", Required: false, Evaluate: profiles.CompWithUniqID},
+
+		{Key: "sbom_creation_timestamp", Description: "Document creation time", Required: false, Evaluate: profiles.SBOMCreationTimestamp},
+		{Key: "sbom_authors", Description: "Document authors", Required: false, Evaluate: profiles.SBOMAuthors},
+		{Key: "sbom_tool_version", Description: "Document creator tool & version", Required: false, Evaluate: profiles.SBOMCreationTimestamp},
+		{Key: "sbom_supplier", Description: "Document supplier", Required: false, Evaluate: profiles.SBOMSupplier},
+		{Key: "sbom_namespace", Description: "Document URI/namespace", Required: false, Evaluate: profiles.SBOMNamespace},
+		{Key: "sbom_lifecycle", Description: "Document Lifecycle", Required: false, Evaluate: profiles.SBOMLifeCycle},
+
+		{Key: "comp_with_checksums", Description: "components with checksums", Required: false, Evaluate: profiles.CompSHA256},
+		{Key: "comp_with_sha256", Description: "components with SHA-256+", Required: false, Evaluate: profiles.CompSHA256Plus},
+		{Key: "sbom_signature", Description: "Document signature	", Required: false, Evaluate: profiles.SBOMSignature},
+
+		{Key: "comp_with_dependencies", Description: "components with dependencies", Required: false, Evaluate: profiles.CompDependencies},
+		// {Key: "sbom_completeness_declared", Description: "components with declared completeness", Required: false, Evaluate: profiles.CompCompleteness},
+		// {Key: "primary_component", Description: "Primary component identified", Required: false, Evaluate: profiles.SBOMPrimaryComponent },
+		{Key: "comp_with_source_code", Description: "components with source code", Required: false, Evaluate: profiles.CompSourceCodeURL},
+		{Key: "comp_with_supplier", Description: "components with supplier", Required: false, Evaluate: profiles.CompWithSupplier},
+		// {Key: "comp_with_purpose", Description: "components with primary purpose", Required: false, Evaluate: profiles.CompPackagePurpose},
+
+		{Key: "comp_with_licenses", Description: "components with licenses", Required: false, Evaluate: profiles.CompLicenses},
+		{Key: "comp_with_valid_licenses", Description: "components with valid licenses", Required: false, Evaluate: profiles.CompLicenses},
+		{Key: "comp_with_declared_licenses", Description: "components with original licenses", Required: false, Evaluate: profiles.CompDeclaredLicenses},
+		// {Key: "sbom_data_license", Description: "Document data license", Required: false, Evaluate: profiles.SBOMDataLicense},
+		// {Key: "comp_no_deprecated_licenses", Description: "components without deprecated licenses", Required: false, Evaluate: profiles.CompWithDeprecatedLicenses},
+		// {Key: "comp_no_restrictive_licenses", Description: "components without restrictive licenses", Required: false, Evaluate: profiles.CompWithRestrictiveLicenses},
+
+		{Key: "comp_with_purl", Description: "components with PURL", Required: false, Evaluate: profiles.CompWithUniqID},
+		{Key: "comp_with_cpe", Description: "components with CPE", Required: false, Evaluate: profiles.CompWithUniqID},
+
+		{Key: "sbom_spec_declared", Description: "SBOM spec declared", Required: false, Evaluate: profiles.SBOMSpec},
+		{Key: "sbom_spec_version", Description: "SBOM spec version", Required: false, Evaluate: profiles.SBOMSpecVersion},
+		{Key: "sbom_file_format", Description: "SBOM file format", Required: false, Evaluate: profiles.SBOMAutomationSpec},
+		{Key: "sbom_schema_valid", Description: "Schema validation", Required: false, Evaluate: profiles.SBOMSchema},
+	},
 }
 
 var profileNTIASpec = catalog.ProfSpec{

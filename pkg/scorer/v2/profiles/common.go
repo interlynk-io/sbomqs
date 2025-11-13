@@ -166,6 +166,36 @@ func SBOMAuthors(doc sbom.Document) catalog.ProfFeatScore {
 	return formulae.ScoreSBOMProfMissingNA("legal authors", false)
 }
 
+// SBOMSupplier: CDX-only (supplier/manufacturer in metadata).
+// SPDX has no doc-level supplier,  N/A for SPDX.
+// For CDX: missing supplier is a FAIL (score 0, Ignore=false).
+func SBOMSupplier(doc sbom.Document) catalog.ProfFeatScore {
+	spec := doc.Spec().GetSpecType()
+
+	switch spec {
+	case string(sbom.SBOMSpecSPDX):
+		// N/A for SPDX
+		return formulae.ScoreSBOMProfMissingNA("authors", false)
+
+	case string(sbom.SBOMSpecCDX):
+		s := doc.Supplier()
+		if s != nil {
+			hasName := strings.TrimSpace(s.GetName()) != ""
+			hasContact := strings.TrimSpace(s.GetEmail()) != "" || strings.TrimSpace(s.GetURL()) != ""
+
+			if hasName && hasContact {
+				return formulae.ScoreSBOMProfFull("1 supplier", false)
+			}
+		}
+
+		return formulae.ScoreSBOMProfMissingNA("supplier", false)
+
+	}
+
+	// Unknown spec → treat as not applicable to be safe (optional)
+	return formulae.ScoreSBOMProfUnknownNA("lifecycle", false)
+}
+
 // isSBOMAuthorEntity check whether author is a legal entity or not:
 // author should have name + email/phone info.
 func isSBOMAuthorEntity(doc sbom.Document) bool {

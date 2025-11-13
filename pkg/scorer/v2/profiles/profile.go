@@ -21,6 +21,7 @@ import (
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/api"
 	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/catalog"
+	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/formulae"
 )
 
 // Evaluate evaluates the profiles against an SBOM and returns their results.
@@ -78,6 +79,8 @@ func evaluateEachProfile(ctx context.Context, doc sbom.Document, profile catalog
 		}
 
 	}
+	proResult.InterlynkScore = proResult.Score
+	proResult.Grade = formulae.ToGrade(proResult.Score)
 
 	if countNonNA > 0 {
 		proResult.Score = sumScore / float64(countNonNA)

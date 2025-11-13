@@ -21,10 +21,10 @@ import (
 
 // Result represents evaluation result of an SBOM
 type Result struct {
-	Doc            sbom.Document
-	Meta           SBOMMeta
-	InterlynkScore float64
-	Grade          string
+	Doc  sbom.Document
+	Meta SBOMMeta
+	// InterlynkScore float64
+	// Grade          string
 
 	Comprehensive *ComprehensiveResult
 	Profiles      *ProfilesResult
@@ -42,7 +42,9 @@ type SBOMMeta struct {
 
 // ComprehensiveResult represent comprehenssive result
 type ComprehensiveResult struct {
-	CatResult []CategoryResult
+	InterlynkScore float64
+	Grade          string
+	CatResult      []CategoryResult
 }
 
 // ProfilesResult represent profiles result
@@ -76,12 +78,14 @@ type FeatureResult struct {
 
 // ProfileResult represents profile-wise result
 type ProfileResult struct {
-	Name       string
-	Key        string
-	Score      float64
-	Compliance catalog.ProfComplianceState
-	Message    string
-	Items      []ProfileFeatureResult
+	Name           string
+	Key            string
+	Score          float64
+	Compliance     catalog.ProfComplianceState
+	Message        string
+	Items          []ProfileFeatureResult
+	Grade          string
+	InterlynkScore float64
 }
 
 // NewProfileResult represent constructor of ProfilesResult
