@@ -33,6 +33,9 @@ func Evaluate(ctx context.Context, catal *catalog.Catalog, doc sbom.Document) ap
 		results.CatResult = append(results.CatResult, catResult)
 	}
 
+	results.InterlynkScore = formulae.ComputeInterlynkComprScore(results.CatResult)
+	results.Grade = formulae.ToGrade(results.InterlynkScore)
+
 	return results
 }
 

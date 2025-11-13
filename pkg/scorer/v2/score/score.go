@@ -25,7 +25,6 @@ import (
 	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/catalog"
 	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/comprehenssive"
 	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/config"
-	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/formulae"
 	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/profiles"
 	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/registry"
 	"github.com/interlynk-io/sbomqs/pkg/utils"
@@ -134,12 +133,17 @@ func SBOMEvaluation(ctx context.Context, catal *catalog.Catalog, cfg config.Conf
 	log := logger.FromContext(ctx)
 	log.Debugf("Starting SBOM Evaluation")
 
-	if catal.Profiles != nil {
-		log.Debugf("profile is provided")
+	if catal.Profiles != nil && catal.ComprCategories != nil {
+		log.Debugf("comprehenssive and short profile evaluation will take place")
+		return evaluateBoth(ctx, catal, doc)
+
+	} else if catal.Profiles != nil {
+		log.Debugf("profile evaluation will take place")
 		return evaluateProfiles(ctx, catal, doc)
 	}
 
-	return evaluateComprehensive(ctx, catal, cfg, doc)
+	log.Debugf("comprehenssive evaluation will take place")
+	return evaluateComprehensive(ctx, catal, doc)
 }
 
 // evaluateProfiles computes profile-based results for the given SBOM document.
@@ -163,14 +167,14 @@ func evaluateProfiles(ctx context.Context, catal *catalog.Catalog, doc sbom.Docu
 	// Evaluate all profiles and get the results
 	profResults := profiles.Evaluate(ctx, catal, doc)
 
-	result.InterlynkScore = formulae.ComputeInterlynkProfScore(profResults)
-	result.Grade = formulae.ToGrade(result.InterlynkScore)
+	// result.InterlynkScore = formulae.ComputeInterlynkProfScore(profResults)
+	// result.Grade = formulae.ToGrade(result.InterlynkScore)
 	result.Profiles = &profResults
 
 	return *result, nil
 }
 
-func evaluateComprehensive(ctx context.Context, catal *catalog.Catalog, cfg config.Config, doc sbom.Document) (api.Result, error) {
+func evaluateComprehensive(ctx context.Context, catal *catalog.Catalog, doc sbom.Document) (api.Result, error) {
 	// Comprehensive Scoring
 	log := logger.FromContext(ctx)
 	log.Debugf("evaluating comprehenssive scoring")
@@ -180,8 +184,24 @@ func evaluateComprehensive(ctx context.Context, catal *catalog.Catalog, cfg conf
 	comprResult := comprehenssive.Evaluate(ctx, catal, doc)
 	result.Comprehensive = &comprResult
 
-	result.InterlynkScore = formulae.ComputeInterlynkComprScore(comprResult.CatResult)
-	result.Grade = formulae.ToGrade(result.InterlynkScore)
+	// result.InterlynkScore = formulae.ComputeInterlynkComprScore(comprResult.CatResult)
+	// result.Grade = formulae.ToGrade(result.InterlynkScore)
+
+	return *result, nil
+}
+
+func evaluateBoth(ctx context.Context, catal *catalog.Catalog, doc sbom.Document) (api.Result, error) {
+	// Comprehensive Scoring
+	log := logger.FromContext(ctx)
+	log.Debugf("evaluating both comprehenssive and profile scoring")
+
+	result := api.NewResult(doc)
+
+	profResults := profiles.Evaluate(ctx, catal, doc)
+	result.Profiles = &profResults
+
+	comprResult := comprehenssive.Evaluate(ctx, catal, doc)
+	result.Comprehensive = &comprResult
 
 	return *result, nil
 }

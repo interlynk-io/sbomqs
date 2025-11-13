@@ -31,7 +31,7 @@ func (r *Reporter) basicReport() {
 			version = strings.Replace(version, "SPDX-", "", 1)
 		}
 
-		fmt.Printf("%0.1f\t%s\t%s\t%s\t%s\n", r.InterlynkScore, r.Grade, version, format, r.Meta.Filename)
+		fmt.Printf("%0.1f\t%s\t%s\t%s\t%s\n", r.Comprehensive.InterlynkScore, r.Comprehensive.Grade, version, format, r.Meta.Filename)
 
 	}
 }
