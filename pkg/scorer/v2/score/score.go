@@ -166,9 +166,6 @@ func evaluateProfiles(ctx context.Context, catal *catalog.Catalog, doc sbom.Docu
 
 	// Evaluate all profiles and get the results
 	profResults := profiles.Evaluate(ctx, catal, doc)
-
-	// result.InterlynkScore = formulae.ComputeInterlynkProfScore(profResults)
-	// result.Grade = formulae.ToGrade(result.InterlynkScore)
 	result.Profiles = &profResults
 
 	return *result, nil

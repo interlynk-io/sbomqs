@@ -410,10 +410,14 @@ func filterProfiles(ctx context.Context, profiles []string) []catalog.ProfSpec {
 		case "oct":
 			log.Debugf("filterProfiles: selecting profile %q", profile)
 			finalProfiles = append(finalProfiles, profileOCTSpec)
+
+		case "interlynk":
+			log.Debugf("filterProfiles: selecting profile %q", profile)
+			finalProfiles = append(finalProfiles, profileInterlynkSpec)
+
 		default:
 			unknown = append(unknown, profile)
 			log.Debugf("filterProfiles: unknown profile %q, skip", profile)
-			//
 		}
 
 	}
@@ -550,7 +554,7 @@ var defaultProfiles = []catalog.ProfSpec{
 
 var profileInterlynkSpec = catalog.ProfSpec{
 	Key:         ProfileNTIA,
-	Name:        "Interlynk",
+	Name:        "Interlynk Profile",
 	Description: "Interlynk Default Scoring Profile",
 	Features: []catalog.ProfFeatSpec{
 		{Key: "comp_with_name", Description: "components with name", Required: false, Evaluate: profiles.CompWithName},

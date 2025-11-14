@@ -78,7 +78,7 @@ func (r *Reporter) detailedReport() {
 				var prs proTable
 
 				prs.profilesHeader = []string{"PROFILE", "FEATURE", "STATUS", "DESC"}
-				prs.messages = fmt.Sprintf("\n SBOM Quality Score: %0.1f/10.0\t Grade: %s\tComponents: %d \t EngineVersion: %s\tFile: %s\n", proResult.Score, proResult.Grade, r.Meta.NumComponents, EngineVersion, r.Meta.Filename)
+				prs.messages = fmt.Sprintf("\n SBOM Quality Score: %0.1f/10.0\t Grade: %s\tComponents: %d \t EngineVersion: %s\tFile: %s", proResult.InterlynkScore, proResult.Grade, r.Meta.NumComponents, EngineVersion, r.Meta.Filename)
 
 				for _, pFeatResult := range proResult.Items {
 					l := []string{proResult.Name, pFeatResult.Key, fmt.Sprintf("%.1f/10.0", pFeatResult.Score), pFeatResult.Desc}
@@ -98,8 +98,8 @@ func (r *Reporter) detailedReport() {
 
 		if len(pros) > 0 {
 			for _, prs := range pros {
-				fmt.Println(prs.messages)
-				newTable(prs.profilesDoc, prs.profilesHeader, "Profile Detailed Score:")
+				fmt.Print(prs.messages)
+				newTable(prs.profilesDoc, prs.profilesHeader, "")
 			}
 		}
 
