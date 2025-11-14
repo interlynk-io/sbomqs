@@ -609,7 +609,7 @@ var profileNTIASpec = catalog.ProfSpec{
 
 var profileBSI11Spec = catalog.ProfSpec{
 	Key:         ProfileBSI11,
-	Name:        "bBSI TR-03183-2 v1.1",
+	Name:        "BSI TR-03183-2 v1.1",
 	Description: "BSI TR-03183-2 v1.1 Profile",
 	Features: []catalog.ProfFeatSpec{
 		{Key: "sbom_spec", Required: true, Description: "SPDX or CycloneDX", Evaluate: profiles.SBOMSpec},
