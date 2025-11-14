@@ -82,7 +82,6 @@ func evaluateEachProfile(ctx context.Context, doc sbom.Document, profile catalog
 	}
 	proResult.InterlynkScore = formulae.ComputeInterlynkProfScore(proResult)
 	proResult.Grade = formulae.ToGrade(proResult.InterlynkScore)
-
 	if countNonNA > 0 {
 		proResult.Score = sumScore / float64(countNonNA)
 	}
