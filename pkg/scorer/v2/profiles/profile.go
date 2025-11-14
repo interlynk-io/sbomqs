@@ -71,6 +71,7 @@ func evaluateEachProfile(ctx context.Context, doc sbom.Document, profile catalog
 		pFeatResult.Score = pFeatScore.Score
 		pFeatResult.Desc = pFeatScore.Desc
 
+		// proResult.Score += pFeatResult.Score
 		proResult.Items = append(proResult.Items, pFeatResult)
 
 		if !pFeatScore.Ignore {
@@ -79,8 +80,8 @@ func evaluateEachProfile(ctx context.Context, doc sbom.Document, profile catalog
 		}
 
 	}
-	proResult.InterlynkScore = proResult.Score
-	proResult.Grade = formulae.ToGrade(proResult.Score)
+	proResult.InterlynkScore = formulae.ComputeInterlynkProfScore(proResult)
+	proResult.Grade = formulae.ToGrade(proResult.InterlynkScore)
 
 	if countNonNA > 0 {
 		proResult.Score = sumScore / float64(countNonNA)

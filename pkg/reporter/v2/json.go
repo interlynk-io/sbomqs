@@ -48,7 +48,7 @@ type file struct {
 type creation struct {
 	Name          string `json:"name"`
 	Version       string `json:"version"`
-	SBOMQS_Engine string `json:"sbomqs_engine_version"`
+	EngineVersion string `json:"sbomqs_engine_version"`
 	Vendor        string `json:"vendor"`
 }
 
@@ -66,7 +66,7 @@ func newJSONReport() *jsonReport {
 		CreationInfo: creation{
 			Name:          "sbomqs",
 			Version:       version.GetVersionInfo().GitVersion,
-			SBOMQS_Engine: EngineVersion,
+			EngineVersion: EngineVersion,
 			Vendor:        "Interlynk (support@interlynk.io)",
 		},
 		Files: []file{},

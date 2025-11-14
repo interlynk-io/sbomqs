@@ -22,6 +22,12 @@ import (
 	"github.com/olekukonko/tablewriter"
 )
 
+type proTable struct {
+	profilesDoc    [][]string
+	profilesHeader []string
+	messages       string
+}
+
 func (r *Reporter) detailedReport() {
 	form := "https://forms.gle/anFSspwrk7uSfD7Q6"
 
@@ -30,19 +36,14 @@ func (r *Reporter) detailedReport() {
 		outDoc := [][]string{}     // detailed comprehensive rows
 		profOutDoc := [][]string{} // profile summary rows
 
+		var pros []proTable
+
 		header := []string{}
 		profHeader := []string{}
 
 		if r.Comprehensive != nil && r.Profiles != nil {
-			var score float64
-			var grade string
 
-			for _, r := range r.Profiles.ProfResult {
-				score = r.Score
-				grade = r.Grade
-			}
-
-			fmt.Printf("\n  SBOM Quality Score: %0.1f/10.0\t Grade: %s\tComponents: %d \t SBOMQS Engine: %s\n\n  File: %s\n", score, grade, r.Meta.NumComponents, EngineVersion, r.Meta.Filename)
+			fmt.Printf("\n SBOM Quality Score: %0.1f/10.0\t Grade: %s\tComponents: %d \t EngineVersion: %s\tFile: %s\n", r.Comprehensive.InterlynkScore, r.Comprehensive.Grade, r.Meta.NumComponents, EngineVersion, r.Meta.Filename)
 
 			profHeader = []string{"PROFILE", "SCORE", "GRADE"}
 
@@ -51,7 +52,7 @@ func (r *Reporter) detailedReport() {
 				profOutDoc = append(profOutDoc, l)
 			}
 
-			header = []string{"Category", "Feature", "Score", "Desc"}
+			header = []string{"CATEGORY", "FEATURE", "SCORE", "DESC"}
 			for _, cat := range r.Comprehensive.CatResult {
 				for _, feat := range cat.Features {
 					scoreStr := formatScore(feat)
@@ -62,9 +63,9 @@ func (r *Reporter) detailedReport() {
 
 		} else if r.Comprehensive != nil {
 
-			fmt.Printf("\n  SBOM Quality Score: %0.1f/10.0\t Grade: %s\tComponents: %d \t SBOMQS Engine: %s\n\n  File: %s\n", r.Comprehensive.InterlynkScore, r.Comprehensive.Grade, r.Meta.NumComponents, EngineVersion, r.Meta.Filename)
+			fmt.Printf("\n SBOM Quality Score: %0.1f/10.0\t Grade: %s\tComponents: %d \t EngineVersion: %s\tFile: %s\n", r.Comprehensive.InterlynkScore, r.Comprehensive.Grade, r.Meta.NumComponents, EngineVersion, r.Meta.Filename)
 
-			header = []string{"Category", "Feature", "Score", "Desc"}
+			header = []string{"CATEGORY", "FEATURE", "SCORE", "DESC"}
 			for _, cat := range r.Comprehensive.CatResult {
 				for _, feat := range cat.Features {
 					scoreStr := formatScore(feat)
@@ -73,53 +74,35 @@ func (r *Reporter) detailedReport() {
 				}
 			}
 		} else if r.Profiles != nil {
-
-			var score float64
-			var grade string
-
-			for _, r := range r.Profiles.ProfResult {
-				score = r.Score
-				grade = r.Grade
-			}
-
-			fmt.Printf("\n  SBOM Quality Score: %0.1f/10.0\t Grade: %s\tComponents: %d \t SBOMQS Engine: %s\n\n  File: %s\n", score, grade, r.Meta.NumComponents, EngineVersion, r.Meta.Filename)
-
-			header = []string{"Requirment", "Feature", "Status", "Desc"}
-
 			for _, proResult := range r.Profiles.ProfResult {
+				var prs proTable
+
+				prs.profilesHeader = []string{"PROFILE", "FEATURE", "STATUS", "DESC"}
+				prs.messages = fmt.Sprintf("\n SBOM Quality Score: %0.1f/10.0\t Grade: %s\tComponents: %d \t EngineVersion: %s\tFile: %s\n", proResult.Score, proResult.Grade, r.Meta.NumComponents, EngineVersion, r.Meta.Filename)
+
 				for _, pFeatResult := range proResult.Items {
 					l := []string{proResult.Name, pFeatResult.Key, fmt.Sprintf("%.1f/10.0", pFeatResult.Score), pFeatResult.Desc}
-					outDoc = append(outDoc, l)
+					prs.profilesDoc = append(prs.profilesDoc, l)
 				}
+				pros = append(pros, prs)
 			}
 		}
 
-		// Render profile summary table (only if we have rows)
 		if len(profOutDoc) > 0 {
-			fmt.Println()
-			fmt.Println("Profile Summary Scores:")
-			pt := tablewriter.NewWriter(os.Stdout)
-			pt.SetHeader(profHeader)
-			pt.SetRowLine(true)
-			pt.SetAutoMergeCellsByColumnIndex([]int{0})
-			pt.AppendBulk(profOutDoc)
-			pt.Render()
-			fmt.Println()
-			fmt.Println()
+			newTable(profOutDoc, profHeader, "Profile Summary Scores:")
 		}
 
-		// Render detailed comprehensive table (only if we have rows)
 		if len(outDoc) > 0 {
-			fmt.Println("Interlynk Detailed Score:")
-			dt := tablewriter.NewWriter(os.Stdout)
-			dt.SetHeader(header)
-			dt.SetRowLine(true)
-			dt.SetAutoMergeCellsByColumnIndex([]int{0})
-			dt.AppendBulk(outDoc)
-			dt.Render()
-			fmt.Println()
+			newTable(outDoc, header, "Interlynk Detailed Score:")
 		}
-		fmt.Println()
+
+		if len(pros) > 0 {
+			for _, prs := range pros {
+				fmt.Println(prs.messages)
+				newTable(prs.profilesDoc, prs.profilesHeader, "Profile Detailed Score:")
+			}
+		}
+
 		fmt.Println()
 	}
 	fmt.Println("\nFeedback form on enhancing the SBOM quality: ", form)
@@ -130,4 +113,17 @@ func formatScore(feat api.FeatureResult) string {
 		return "N/A"
 	}
 	return fmt.Sprintf("%.1f/10.0", feat.Score)
+}
+
+func newTable(doc [][]string, header []string, msg string) {
+	if len(doc) > 0 {
+		fmt.Println(msg)
+		dt := tablewriter.NewWriter(os.Stdout)
+		dt.SetHeader(header)
+		dt.SetRowLine(true)
+		dt.SetAutoMergeCellsByColumnIndex([]int{0})
+		dt.AppendBulk(doc)
+		dt.Render()
+		fmt.Println()
+	}
 }

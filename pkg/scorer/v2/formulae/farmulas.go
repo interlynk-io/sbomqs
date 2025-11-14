@@ -128,15 +128,15 @@ func BooleanScore(present bool) float64 {
 }
 
 // Grade mapping (A: 9–10, B: 8–8.9, C: 7–7.9, D: 5–6.9, F: <5)
-func ToGrade(interlynkScore float64) string {
+func ToGrade(score float64) string {
 	switch {
-	case interlynkScore >= 9.0:
+	case score >= 9.0:
 		return "A"
-	case interlynkScore >= 8.0:
+	case score >= 8.0:
 		return "B"
-	case interlynkScore >= 7.0:
+	case score >= 7.0:
 		return "C"
-	case interlynkScore >= 5.0:
+	case score >= 5.0:
 		return "D"
 	default:
 		return "F"
@@ -216,10 +216,13 @@ func ComputeInterlynkComprScore(catResults []api.CategoryResult) float64 {
 	return totalCategoriesScore / totalCategoriesWeight
 }
 
-func ComputeInterlynkProfScore(profResults api.ProfilesResult) float64 {
+func ComputeInterlynkProfScore(result api.ProfileResult) float64 {
 	totalScore := 0.0
-	for _, res := range profResults.ProfResult {
+
+	var total int
+	for _, res := range result.Items {
+		total++
 		totalScore += res.Score
 	}
-	return totalScore
+	return totalScore / float64(total)
 }
