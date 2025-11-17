@@ -396,7 +396,7 @@ func Test_CompWithPURL(t *testing.T) {
 		got := CompUniqID(doc)
 
 		assert.Equal(t, 0.0, got.Score)
-		assert.False(t, got.Ignore)
+		assert.True(t, got.Ignore)
 		assert.Equal(t, "N/A (no components)", got.Desc)
 	})
 
