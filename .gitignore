@@ -11,13 +11,48 @@
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 
-# Dependency directories (remove the comment below to include it)
+# Coverage reports
+coverage.txt
+coverage.html
+*.cover
+
+# Dependency directories
 vendor/
 build/
-
-version.txt 
-
 dist/
 
+# Version files
+version.txt
+
+# Go workspace file
+go.work
+go.work.sum
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# IDE and editor directories
 .vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Claude AI
 .claude/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Debug and profiling
+*.prof
+*.trace
+__debug_bin*
+
+# GoReleaser artifacts
+.goreleaser/
