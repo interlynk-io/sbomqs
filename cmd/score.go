@@ -352,7 +352,7 @@ func init() {
 	scoreCmd.Flags().StringP("configpath", "", "", "scoring based on config path")
 
 	// Filter Control
-	scoreCmd.Flags().StringP("category", "c", "", "filter by category (e.g. 'bsi-v1', 'NTIA-minimum-elements', 'Quality', 'Semantic', 'Sharing', 'Structural')")
+	scoreCmd.Flags().StringP("category", "c", "", "filter by category (e.g. 'identification', 'provenance', 'integrity', 'completeness', 'licensing', 'vulnerability', 'structural', 'cinfo')")
 	scoreCmd.Flags().StringP("feature", "f", "", "filter by feature (e.g. 'sbom_authors',  'comp_with_name', 'sbom_creation_timestamp') ")
 
 	// Spec Control
@@ -361,12 +361,10 @@ func init() {
 	scoreCmd.MarkFlagsMutuallyExclusive("spdx", "cdx")
 	err := scoreCmd.Flags().MarkHidden("spdx")
 	if err != nil {
-		// Handle the error appropriately, such as logging it or returning it
 		log.Fatalf("Failed to mark flag as deprecated: %v", err)
 	}
 	err = scoreCmd.Flags().MarkHidden("cdx")
 	if err != nil {
-		// Handle the error appropriately, such as logging it or returning it
 		log.Fatalf("Failed to mark flag as deprecated: %v", err)
 	}
 
@@ -374,7 +372,6 @@ func init() {
 	scoreCmd.Flags().BoolP("recurse", "r", false, "recurse into subdirectories")
 	err = scoreCmd.Flags().MarkHidden("recurse")
 	if err != nil {
-		// Handle the error appropriately, such as logging it or returning it
 		log.Fatalf("Failed to mark flag as deprecated: %v", err)
 	}
 
@@ -392,30 +389,30 @@ func init() {
 	scoreCmd.Flags().StringVar(&inDirPath, "dirpath", "", "sbom dir path")
 	scoreCmd.MarkFlagsMutuallyExclusive("filepath", "dirpath")
 	scoreCmd.Flags().StringVar(&reportFormat, "reportFormat", "", "reporting format basic/detailed/json")
+
 	err = scoreCmd.Flags().MarkDeprecated("reportFormat", "use --json, --detailed, or --basic instead")
 	if err != nil {
-		// Handle the error appropriately, such as logging it or returning it
 		log.Fatalf("Failed to mark flag as deprecated: %v", err)
 	}
+
 	err = scoreCmd.Flags().MarkDeprecated("filepath", "use positional argument instead")
 	if err != nil {
-		// Handle the error appropriately, such as logging it or returning it
 		log.Fatalf("Failed to mark flag as deprecated: %v", err)
 	}
+
 	err = scoreCmd.Flags().MarkDeprecated("dirpath", "use positional argument instead")
 	if err != nil {
-		// Handle the error appropriately, such as logging it or returning it
 		log.Fatalf("Failed to mark flag as deprecated: %v", err)
 	}
+
 	err = scoreCmd.Flags().MarkDeprecated("dirpath", "use positional argument instead")
 	if err != nil {
-		// Handle the error appropriately, such as logging it or returning it
 		log.Fatalf("Failed to mark flag as deprecated: %v", err)
 	}
 
 	scoreCmd.Flags().StringP("sig", "v", "", "signature of sbom")
 	scoreCmd.Flags().StringP("pub", "p", "", "public key of sbom")
 
-	scoreCmd.Flags().StringSlice("profile", nil, "Profiles to run (comma-separated or repeatable)")
-	scoreCmd.Flags().BoolP("legacy", "e", false, "legacy")
+	scoreCmd.Flags().StringSlice("profile", nil, "profiles to run ('ntia', 'bsi', 'oct', 'interlynk', 'bsi-v2.0')")
+	scoreCmd.Flags().BoolP("legacy", "e", false, "legacy, prior to sbomqs version 2.0")
 }
