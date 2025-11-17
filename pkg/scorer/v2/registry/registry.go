@@ -538,14 +538,16 @@ var CatStructuralSpec = catalog.ComprCatSpec{
 
 var CatComponentQualityInfoSpec = catalog.ComprCatSpec{
 	Key:         "compinfo",
-	Name:        "Component Quality (Info)",
+	Name:        "Component Quality",
 	Weight:      10,
 	Description: "Real-time component risk assessment based on external threat intelligence. These metrics are informational only and do NOT affect the overall quality score",
 	Features: []catalog.ComprFeatSpec{
 		{Key: "comp_eol_eos", Description: "Components no longer maintained or declared end-of-life", Weight: 0.10, Ignore: true, Evaluate: extractors.CompWithEOSOrEOL},
 		{Key: "comp_malicious", Description: "Components tagged as malicious in threat databases", Weight: 0.30, Ignore: true, Evaluate: extractors.CompWithMalicious},
 		{Key: "comp_vuln_sev_critical", Description: "Components with vulnerabilities in CISA's Known Exploited Vulns", Weight: 0.30, Ignore: true, Evaluate: extractors.CompWithVulnSeverityCritical},
-		{Key: "comp_epss_high", Description: "Components with Exploit Prediction Scoring System > 0.8", Weight: 0.30, Ignore: true, Evaluate: extractors.CompWithHighEPSS},
+		{Key: "comp_kev", Description: "Components which are actively exploited", Weight: 0.30, Ignore: true, Evaluate: extractors.CompWithKev},
+		{Key: "comp_purl_valid", Description: "Component purl resolves to a package manager or repository", Weight: 0.30, Ignore: true, Evaluate: extractors.CompWithPurlValid},
+		{Key: "comp_cpe_valid", Description: "Components cpe is found in NVD CPE database", Weight: 0.30, Ignore: true, Evaluate: extractors.CompWithCpeValid},
 	},
 }
 

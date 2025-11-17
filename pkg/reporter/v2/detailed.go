@@ -61,7 +61,7 @@ func (r *Reporter) detailedReport() {
 				}
 
 				if cat.Key == "compinfo" {
-					l := []string{cat.Name, "NOTE: Register Interest for Component Analysis, feedback >", "Form --->> ", "https://forms.gle/WVoB3DrX9NKnzfhV8"}
+					l := []string{cat.Name, "NOTE: Register Interest for Component Analysis", "", "https://forms.gle/WVoB3DrX9NKnzfhV8"}
 					outDoc = append(outDoc, l)
 				}
 			}
@@ -110,12 +110,12 @@ func (r *Reporter) detailedReport() {
 
 		fmt.Println()
 	}
-	fmt.Println("Feedback: Provide suggestion on enhancing the SBOM quality: ", form)
+	fmt.Println("Love to hear your feedback", form)
 }
 
 func formatScore(feat api.FeatureResult) string {
-	if (feat.Key == "comp_eol_eos") || (feat.Key == "comp_malicious") || (feat.Key == "comp_vuln_sev_critical") || (feat.Key == "comp_epss_high") {
-		return "N/A"
+	if (feat.Key == "comp_eol_eos") || (feat.Key == "comp_malicious") || (feat.Key == "comp_vuln_sev_critical") || (feat.Key == "comp_kev") || (feat.Key == "comp_purl_valid") || (feat.Key == "comp_cpe_valid") || (feat.Key == "comp_epss_high") {
+		return "Coming Soon.."
 	}
 	return fmt.Sprintf("%.1f/10.0", feat.Score)
 }

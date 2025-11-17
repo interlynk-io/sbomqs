@@ -39,3 +39,15 @@ func CompWithHighEPSS(doc sbom.Document) catalog.ComprFeatScore {
 func CompWithVulnSeverityCritical(doc sbom.Document) catalog.ComprFeatScore {
 	return formulae.ScoreCompNAA()
 }
+
+func CompWithKev(doc sbom.Document) catalog.ComprFeatScore {
+	return formulae.ScoreCompNAA()
+}
+
+func CompWithPurlValid(doc sbom.Document) catalog.ComprFeatScore {
+	return formulae.ScoreCompNAA()
+}
+
+func CompWithCpeValid(doc sbom.Document) catalog.ComprFeatScore{
+	return  formulae.ScoreCompNAA()
+}
