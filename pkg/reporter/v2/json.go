@@ -17,15 +17,13 @@ package v2
 import (
 	"encoding/json"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/interlynk-io/sbomqs/pkg/sbom"
 	"sigs.k8s.io/release-utils/version"
 )
 
-type score struct {
+type compr struct {
 	Category string  `json:"category"`
 	Feature  string  `json:"feature"`
 	Score    float64 `json:"score"`
@@ -33,16 +31,26 @@ type score struct {
 	Ignored  bool    `json:"ignored"`
 }
 
+type prof struct {
+	Profile string  `json:"profile"`
+	Score   float64 `json:"score"`
+	Grade   string  `json:grade"`
+	Message string  `json:message"`
+}
+
 type file struct {
-	Name           string   `json:"file_name"`
-	Spec           string   `json:"spec"`
-	SpecVersion    string   `json:"spec_version"`
-	Format         string   `json:"file_format"`
-	Grade          string   `json:"grade"`
-	InterlynkScore float64  `json:"interlynk_score"`
-	Components     int      `json:"num_components"`
-	CreationTime   string   `json:"creation_time"`
-	Scores         []*score `json:"scores"`
+	InterlynkScore float64 `json:"sbom_quality_score"`
+	Grade          string  `json:"grade"`
+	Components     int     `json:"num_components"`
+	FileName       string  `json:"file_name"`
+
+	Spec         string `json:"spec"`
+	SpecVersion  string `json:"spec_version"`
+	Format       string `json:"file_format"`
+	CreationTime string `json:"creation_time"`
+
+	Comprehenssive []*compr `json:"comprehenssive"`
+	Profiles       []*prof  `json:"profiles"`
 }
 
 type creation struct {
@@ -81,26 +89,32 @@ func (r *Reporter) jsonReport() (string, error) {
 		f.InterlynkScore = r.Comprehensive.InterlynkScore
 		f.Grade = r.Comprehensive.Grade
 		f.Components = r.Meta.NumComponents
-		f.Format = r.Meta.FileFormat
-		f.Name = r.Meta.Filename
+		f.FileName = r.Meta.Filename
 		f.Spec = r.Meta.Spec
+		f.SpecVersion = r.Meta.SpecVersion
+		f.Format = r.Meta.FileFormat
 		f.CreationTime = r.Meta.CreationTime
-
-		if r.Meta.Spec == string(sbom.SBOMSpecSPDX) {
-			version := strings.Replace(r.Meta.SpecVersion, "SPDX-", "", 1)
-			f.SpecVersion = version
-		}
 
 		for _, cat := range r.Comprehensive.CatResult {
 			for _, feat := range cat.Features {
-				ns := new(score)
+				ns := new(compr)
 				ns.Category = cat.Name
 				ns.Feature = feat.Key
 				ns.Score = feat.Score
 				ns.Desc = feat.Desc
 				ns.Ignored = feat.Ignored
-				f.Scores = append(f.Scores, ns)
+				f.Comprehenssive = append(f.Comprehenssive, ns)
 			}
+		}
+
+		for _, pr := range r.Profiles.ProfResult {
+			p := new(prof)
+			p.Profile = pr.Name
+			p.Grade = pr.Grade
+			p.Score = pr.InterlynkScore
+			p.Message = pr.Message
+
+			f.Profiles = append(f.Profiles, p)
 		}
 
 		jr.Files = append(jr.Files, f)

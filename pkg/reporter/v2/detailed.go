@@ -105,7 +105,7 @@ func (r *Reporter) detailedReport() {
 
 		fmt.Println()
 	}
-	fmt.Println("\nFeedback form on enhancing the SBOM quality: ", form)
+	fmt.Println("Feedback: Provide suggestion on enhancing the SBOM quality: ", form)
 }
 
 func formatScore(feat api.FeatureResult) string {
