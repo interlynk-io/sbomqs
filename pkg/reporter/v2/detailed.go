@@ -59,6 +59,11 @@ func (r *Reporter) detailedReport() {
 					l := []string{cat.Name, feat.Key, scoreStr, feat.Desc}
 					outDoc = append(outDoc, l)
 				}
+
+				if cat.Key == "compinfo" {
+					l := []string{cat.Name, "NOTE: Register Interest for Component Analysis, feedback >", "Form --->> ", "https://forms.gle/WVoB3DrX9NKnzfhV8"}
+					outDoc = append(outDoc, l)
+				}
 			}
 
 		} else if r.Comprehensive != nil {
@@ -105,7 +110,7 @@ func (r *Reporter) detailedReport() {
 
 		fmt.Println()
 	}
-	fmt.Println("\nFeedback form on enhancing the SBOM quality: ", form)
+	fmt.Println("Feedback: Provide suggestion on enhancing the SBOM quality: ", form)
 }
 
 func formatScore(feat api.FeatureResult) string {

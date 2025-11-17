@@ -153,7 +153,7 @@ func NewSBOMMeta(doc sbom.Document) SBOMMeta {
 	return SBOMMeta{
 		NumComponents: len(doc.Components()),
 		CreationTime:  doc.Spec().GetCreationTimestamp(),
-		Spec:          doc.Spec().GetName(),
+		Spec:          doc.Spec().GetSpecType(),
 		SpecVersion:   doc.Spec().GetVersion(),
 		FileFormat:    doc.Spec().FileFormat(),
 	}

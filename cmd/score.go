@@ -75,7 +75,7 @@ var scoreCmd = &cobra.Command{
 	Use:          "score",
 	Short:        "comprehensive quality score for your sbom",
 	SilenceUsage: true,
-	Example: ` sbomqs score [--category <category>] [--feature <feature>]  [--basic|--json]  <SBOM file>
+	Example: ` sbomqs score [--category <category>] [--basic|--json]  <SBOM file>
 
   # Get a score against a SBOM in a table output
   sbomqs score samples/sbomqs-spdx-syft.json
@@ -86,26 +86,17 @@ var scoreCmd = &cobra.Command{
   # Get a score against a SBOM in a JSON output
   sbomqs score --json samples/sbomqs-spdx-syft.json
 
-  # Get a score for a 'BSI TR-03183-2 v1.1' category against a SBOM in a table output
-  sbomqs score -c bsi-v1.1 samples/sbomqs-spdx-syft.json
+  # Score a SBOM for ntia profile
+  sbomqs score --profile ntia samples/sbomqs-spdx-syft.json
 
-  # Get a score for a 'BSI TR-03183-2 v2.0' category against a SBOM in a table output
-  sbomqs score -c bsi-v2.0 samples/sbomqs-spdx-syft.json
+  # Score a SBOM for ntia, bsi, oct, interlynk profiles
+  sbomqs score --profile ntia,bsi,oct,interlynk samples/sbomqs-spdx-syft.json
 
-  # To verify signature of a SBOM, use the --sig and --pub flags
-  sbomqs score -c bsi-v2.0 --sig samples/signature-test-data/sbom.sig --pub samples/signature-test-data/public_key.pem samples/signature-test-data/SPDXJSONExample-v2.3.spdx.json
- 
-  # Get a score for a 'NTIA-minimum-elements' category against a SBOM in a table output
-  sbomqs score --category NTIA-minimum-elements samples/sbomqs-spdx-syft.json
+  # To provide signature of a SBOM, use the --sig and --pub flags
+  sbomqs score --profile bsi-v2.0 --sig samples/signature-test-data/sbom.sig --pub samples/signature-test-data/public_key.pem samples/signature-test-data/SPDXJSONExample-v2.3.spdx.json
 
-  # Get a score for a 'NTIA-minimum-elements' category and 'sbom_authors' feature against a SBOM in a table output
-  sbomqs score --category NTIA-minimum-elements --feature sbom_authors samples/sbomqs-spdx-syft.json
-
-  # Get  a score for multiple features
-  sbomqs score --feature comp_with_name,comp_with_uniq_ids,sbom_authors,sbom_creation_timestamp  samples/sbomqs-spdx-syft.json 
-
-  # Get a score for multiple categories
-  sbomqs score --category NTIA-minimum-elements or ntia,bsi-v1.1,bsi-v2.0,Structural,Semantic,Sharing,Quality   samples/sbomqs-spdx-syft.json
+  # Get a score for multiple comprehenssive categories
+  sbomqs score -c identification,integrity samples/sbomqs-spdx-syft.json
 `,
 
 	Args: func(_ *cobra.Command, args []string) error {
@@ -119,15 +110,38 @@ var scoreCmd = &cobra.Command{
 	RunE: processScore,
 }
 
-var categoryAliases = map[string]string{
-	"ntia":                  "NTIA-minimum-elements",
-	"NTIA":                  "NTIA-minimum-elements",
-	"ntia-minimum-elements": "NTIA-minimum-elements",
-	"structural":            "Structural",
-	"sharing":               "Sharing",
-	"semantic":              "Semantic",
-	"quality":               "Quality",
-}
+var (
+	categoryAliases = map[string]string{
+		"ntia":                  "NTIA-minimum-elements",
+		"NTIA":                  "NTIA-minimum-elements",
+		"ntia-minimum-elements": "NTIA-minimum-elements",
+		"structural":            "Structural",
+		"sharing":               "Sharing",
+		"semantic":              "Semantic",
+		"quality":               "Quality",
+	}
+
+	legacyCategories = []string{
+		"bsi-v1",
+		"NTIA-minimum-elements",
+		"ntia",
+		"Quality",
+		"Semantic",
+		"Sharing",
+		"Structural", // common
+	}
+
+	v2Categories = []string{
+		"identification",
+		"provenance",
+		"integrity",
+		"completeness",
+		"licensing",
+		"vulnerability",
+		"structural", // common
+		"cinfo",
+	}
+)
 
 func processScore(cmd *cobra.Command, args []string) error {
 	debug, _ := cmd.Flags().GetBool("debug")
@@ -300,6 +314,34 @@ func validateFlags(cmd *userCmd) error {
 		return fmt.Errorf("invalid report format: %s", reportFormat)
 	}
 
+	// legacy + profile is not allowed
+	if cmd.legacy && len(cmd.profile) > 0 {
+		return fmt.Errorf("flag --profile is not supported in legacy mode; remove --legacy or --profile")
+	}
+
+	if cmd.legacy {
+		for _, c := range cmd.categories {
+			if c == "" {
+				continue
+			}
+
+			if !lo.Contains(legacyCategories, c) {
+				return fmt.Errorf("invalid category %q for legacy mode (allowed: %v)", c, legacyCategories)
+			}
+		}
+	}
+
+	if !cmd.legacy {
+		for _, c := range cmd.categories {
+			if c == "" {
+				continue
+			}
+
+			if !lo.Contains(v2Categories, strings.ToLower(c)) {
+				return fmt.Errorf("invalid category %q for v2 mode (allowed: %v)", c, v2Categories)
+			}
+		}
+	}
 	return nil
 }
 
@@ -310,7 +352,7 @@ func init() {
 	scoreCmd.Flags().StringP("configpath", "", "", "scoring based on config path")
 
 	// Filter Control
-	scoreCmd.Flags().StringP("category", "c", "", "filter by category (e.g. 'bsi-v1', 'NTIA-minimum-elements', 'Quality', 'Semantic', 'Sharing', 'Structural')")
+	scoreCmd.Flags().StringP("category", "c", "", "filter by category (e.g. 'identification', 'provenance', 'integrity', 'completeness', 'licensing', 'vulnerability', 'structural', 'cinfo')")
 	scoreCmd.Flags().StringP("feature", "f", "", "filter by feature (e.g. 'sbom_authors',  'comp_with_name', 'sbom_creation_timestamp') ")
 
 	// Spec Control
@@ -319,12 +361,10 @@ func init() {
 	scoreCmd.MarkFlagsMutuallyExclusive("spdx", "cdx")
 	err := scoreCmd.Flags().MarkHidden("spdx")
 	if err != nil {
-		// Handle the error appropriately, such as logging it or returning it
 		log.Fatalf("Failed to mark flag as deprecated: %v", err)
 	}
 	err = scoreCmd.Flags().MarkHidden("cdx")
 	if err != nil {
-		// Handle the error appropriately, such as logging it or returning it
 		log.Fatalf("Failed to mark flag as deprecated: %v", err)
 	}
 
@@ -332,7 +372,6 @@ func init() {
 	scoreCmd.Flags().BoolP("recurse", "r", false, "recurse into subdirectories")
 	err = scoreCmd.Flags().MarkHidden("recurse")
 	if err != nil {
-		// Handle the error appropriately, such as logging it or returning it
 		log.Fatalf("Failed to mark flag as deprecated: %v", err)
 	}
 
@@ -350,30 +389,30 @@ func init() {
 	scoreCmd.Flags().StringVar(&inDirPath, "dirpath", "", "sbom dir path")
 	scoreCmd.MarkFlagsMutuallyExclusive("filepath", "dirpath")
 	scoreCmd.Flags().StringVar(&reportFormat, "reportFormat", "", "reporting format basic/detailed/json")
+
 	err = scoreCmd.Flags().MarkDeprecated("reportFormat", "use --json, --detailed, or --basic instead")
 	if err != nil {
-		// Handle the error appropriately, such as logging it or returning it
 		log.Fatalf("Failed to mark flag as deprecated: %v", err)
 	}
+
 	err = scoreCmd.Flags().MarkDeprecated("filepath", "use positional argument instead")
 	if err != nil {
-		// Handle the error appropriately, such as logging it or returning it
 		log.Fatalf("Failed to mark flag as deprecated: %v", err)
 	}
+
 	err = scoreCmd.Flags().MarkDeprecated("dirpath", "use positional argument instead")
 	if err != nil {
-		// Handle the error appropriately, such as logging it or returning it
 		log.Fatalf("Failed to mark flag as deprecated: %v", err)
 	}
+
 	err = scoreCmd.Flags().MarkDeprecated("dirpath", "use positional argument instead")
 	if err != nil {
-		// Handle the error appropriately, such as logging it or returning it
 		log.Fatalf("Failed to mark flag as deprecated: %v", err)
 	}
 
 	scoreCmd.Flags().StringP("sig", "v", "", "signature of sbom")
 	scoreCmd.Flags().StringP("pub", "p", "", "public key of sbom")
 
-	scoreCmd.Flags().StringSlice("profile", nil, "Profiles to run (comma-separated or repeatable)")
-	scoreCmd.Flags().BoolP("legacy", "e", false, "legacy")
+	scoreCmd.Flags().StringSlice("profile", nil, "profiles to run ('ntia', 'bsi', 'oct', 'interlynk', 'bsi-v2.0')")
+	scoreCmd.Flags().BoolP("legacy", "e", false, "legacy, prior to sbomqs version 2.0")
 }

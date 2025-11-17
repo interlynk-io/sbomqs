@@ -15,13 +15,8 @@
 package profiles
 
 import (
-	"fmt"
-	"strings"
-
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/catalog"
-	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/formulae"
-	"github.com/samber/lo"
 )
 
 var (
@@ -102,92 +97,4 @@ func BSICompWithSourceCodeHash(doc sbom.Document) catalog.ProfFeatScore {
 // BSICompWithDependency checks Component Dependencies
 func BSICompWithDependency(doc sbom.Document) catalog.ProfFeatScore {
 	return CompDependencies(doc)
-}
-
-// ---------------------------------------------
-// ---------------------------------------------
-
-func BSICompWithExecutableURICheck(doc sbom.Document) catalog.ProfFeatScore {
-	comps := doc.Components()
-	if len(comps) == 0 {
-		return formulae.ScoreProfNA(false)
-	}
-
-	have := lo.CountBy(doc.Components(), func(c sbom.GetComponent) bool {
-		return c.GetDownloadLocationURL() != ""
-	})
-
-	return formulae.ScoreProfFull(have, len(comps), "executable url", false)
-}
-
-// TODO
-
-// specWithVersionCompliant
-// - 10 if spec+version in BSI-supported lists,
-// - 5  if spec supported but version not in list,
-// - 0  otherwise.
-func BSISbomWithVersionCompliant(doc sbom.Document) catalog.ProfFeatScore {
-	spec := strings.ToLower(strings.TrimSpace(doc.Spec().GetSpecType()))
-	ver := strings.TrimSpace(doc.Spec().GetVersion())
-
-	switch spec {
-	case string(sbom.SBOMSpecSPDX):
-		if lo.Contains(validBsiSpdxVersions, ver) {
-			return catalog.ProfFeatScore{Score: 10.0, Desc: fmt.Sprintf("supported: %s %s", spec, ver)}
-		}
-		return catalog.ProfFeatScore{Score: 5.0, Desc: fmt.Sprintf("spec supported but not version: %s", ver)}
-
-	case string(sbom.SBOMSpecCDX):
-		if lo.Contains(validBsiCdxVersions, ver) {
-			return catalog.ProfFeatScore{Score: 10.0, Desc: fmt.Sprintf("supported: %s %s", spec, ver)}
-		}
-		return catalog.ProfFeatScore{Score: 5.0, Desc: fmt.Sprintf("spec supported but not version: %s", ver)}
-
-	default:
-		return catalog.ProfFeatScore{Score: 0.0, Desc: fmt.Sprintf("unsupported spec: %s", spec)}
-	}
-}
-
-// sbomWithURICheck
-func BSISbomWithURICheck(doc sbom.Document) catalog.ProfFeatScore {
-	if strings.TrimSpace(doc.Spec().GetURI()) == "" {
-		return formulae.ScoreSBOMProfNA("no URI", false)
-	}
-
-	return formulae.ScoreSBOMProfFull("URI", false)
-}
-
-// TODO
-func BSISBOMLifecycle(doc sbom.Document) catalog.ProfFeatScore {
-	spec := doc.Spec().GetSpecType()
-	specToLower := strings.Trim(strings.ToLower(spec), " ")
-	// version := doc.Spec().GetVersion()
-
-	if specToLower == string(sbom.SBOMSpecSPDX) {
-		return formulae.ScoreSBOMProfFull("spdx spec", false)
-	} else if specToLower == string(sbom.SBOMSpecCDX) {
-		return formulae.ScoreSBOMProfFull("cyclonedx spec", false)
-	}
-
-	return catalog.ProfFeatScore{
-		Score:  0.0,
-		Desc:   "has URI",
-		Ignore: false,
-	}
-}
-
-func BSICompWithUniqID(doc sbom.Document) catalog.ProfFeatScore {
-	comps := doc.Components()
-	if len(comps) == 0 {
-		return formulae.ScoreProfNA(false)
-	}
-
-	have := lo.FilterMap(doc.Components(), func(c sbom.GetComponent, _ int) (string, bool) {
-		if c.GetID() == "" {
-			return "", false
-		}
-		return strings.Join([]string{doc.Spec().GetNamespace(), c.GetID()}, ""), true
-	})
-
-	return formulae.ScoreProfFull(len(have), len(comps), "uniq IDs", false)
 }
