@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/interlynk-io/sbomqs/pkg/compliance/common"
+	"github.com/interlynk-io/sbomqs/pkg/licenses"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/catalog"
 	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/formulae"
@@ -245,7 +246,7 @@ func SBOMDepedencies(doc sbom.Document) catalog.ProfFeatScore {
 func CompName(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
-		formulae.ScoreProfNA(false)
+		formulae.ScoreProfNA(true)
 	}
 
 	have := lo.CountBy(doc.Components(), func(c sbom.GetComponent) bool {
@@ -259,7 +260,7 @@ func CompName(doc sbom.Document) catalog.ProfFeatScore {
 func CompVersion(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
-		formulae.ScoreProfNA(false)
+		formulae.ScoreProfNA(true)
 	}
 
 	have := lo.CountBy(doc.Components(), func(c sbom.GetComponent) bool {
@@ -272,7 +273,7 @@ func CompVersion(doc sbom.Document) catalog.ProfFeatScore {
 func CompSupplier(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
-		return formulae.ScoreProfNA(false)
+		return formulae.ScoreProfNA(true)
 	}
 
 	have := lo.CountBy(doc.Components(), func(c sbom.GetComponent) bool {
@@ -295,7 +296,7 @@ func isSupplierEntity(supplier sbom.GetSupplier) bool {
 func CompLicenses(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
-		return formulae.ScoreProfNA(false)
+		return formulae.ScoreProfNA(true)
 	}
 
 	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
@@ -309,7 +310,7 @@ func CompLicenses(doc sbom.Document) catalog.ProfFeatScore {
 func CompConcludedLicenses(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
-		return formulae.ScoreProfNA(false)
+		return formulae.ScoreProfNA(true)
 	}
 
 	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
@@ -350,7 +351,7 @@ func validateLicenseText(s string) bool {
 func CompHash(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
-		return formulae.ScoreProfNA(false)
+		return formulae.ScoreProfNA(true)
 	}
 
 	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
@@ -388,7 +389,7 @@ func isAnySHA(algo string) bool {
 func CompSHA256(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
-		return formulae.ScoreProfNA(false)
+		return formulae.ScoreProfNA(true)
 	}
 
 	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
@@ -423,7 +424,7 @@ func isSHA256(algo string) bool {
 func CompSHA256Plus(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
-		return formulae.ScoreProfNA(false)
+		return formulae.ScoreProfNA(true)
 	}
 
 	have := 0
@@ -494,7 +495,7 @@ func CompCopyright(doc sbom.Document) catalog.ProfFeatScore {
 func CompDownloadCodeURL(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
-		return formulae.ScoreProfNA(false)
+		return formulae.ScoreProfNA(true)
 	}
 
 	have := lo.CountBy(doc.Components(), func(c sbom.GetComponent) bool {
@@ -534,7 +535,7 @@ func CompSourceCodeHash(doc sbom.Document) catalog.ProfFeatScore {
 func CompDependencies(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
-		return formulae.ScoreProfNA(false)
+		return formulae.ScoreProfNA(true)
 	}
 
 	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
@@ -547,7 +548,7 @@ func CompDependencies(doc sbom.Document) catalog.ProfFeatScore {
 func CompUniqID(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
-		return formulae.ScoreProfNA(false)
+		return formulae.ScoreProfNA(true)
 	}
 
 	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
@@ -555,6 +556,125 @@ func CompUniqID(doc sbom.Document) catalog.ProfFeatScore {
 	})
 
 	return formulae.ScoreProfFull(have, len(comps), "unique ID", false)
+}
+
+func CompPURL(doc sbom.Document) catalog.ProfFeatScore {
+	comps := doc.Components()
+	if len(comps) == 0 {
+		return formulae.ScoreProfNA(true)
+	}
+
+	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
+		return compHasAnyPURLs(c)
+	})
+
+	return formulae.ScoreProfFull(have, len(comps), "PURLs", false)
+}
+
+func CompCPE(doc sbom.Document) catalog.ProfFeatScore {
+	comps := doc.Components()
+	if len(comps) == 0 {
+		return formulae.ScoreProfNA(true)
+	}
+
+	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
+		return compHasAnyCPEs(c)
+	})
+
+	return formulae.ScoreProfFull(have, len(comps), "CPEs", false)
+}
+
+func compHasAnyPURLs(c sbom.GetComponent) bool {
+	for _, p := range c.GetPurls() {
+		if isValidPURL(string(p)) {
+			return true
+		}
+	}
+	return false
+}
+
+func compHasAnyCPEs(c sbom.GetComponent) bool {
+	for _, p := range c.GetCpes() {
+		if isValidCPE(string(p)) {
+			return true
+		}
+	}
+	return false
+}
+
+func CompPurpose(doc sbom.Document) catalog.ProfFeatScore {
+	comps := doc.Components()
+	if len(comps) == 0 {
+		return formulae.ScoreProfNA(true)
+	}
+
+	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
+		return c.PrimaryPurpose() != ""
+	})
+
+	return formulae.ScoreProfFull(have, len(comps), "type", false)
+}
+
+func CompWithNODeprecatedLicenses(doc sbom.Document) catalog.ProfFeatScore {
+	comps := doc.Components()
+	if len(comps) == 0 {
+		return formulae.ScoreProfNA(true)
+	}
+
+	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
+		return componentHasAnyDeprecated(c)
+	})
+
+	description := fmt.Sprintf("%d deprecated", have)
+	if have == 0 {
+		description = "N/A"
+	}
+
+	return catalog.ProfFeatScore{
+		Score:  formulae.PerComponentScore(have, len(comps)),
+		Desc:   description,
+		Ignore: false,
+	}
+}
+
+func componentHasAnyDeprecated(c sbom.GetComponent) bool {
+	for _, l := range c.ConcludedLicenses() {
+		if l.Deprecated() {
+			return true
+		}
+	}
+	return false
+}
+
+func CompWithNORestrictiveLicenses(doc sbom.Document) catalog.ProfFeatScore {
+	comps := doc.Components()
+	if len(comps) == 0 {
+		return formulae.ScoreProfNA(true)
+	}
+
+	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
+		return componentHasAnyRestrictive(c)
+	})
+
+	description := fmt.Sprintf("%d restrictive", have)
+	if have == 0 {
+		description = "N/A"
+	}
+
+	return catalog.ProfFeatScore{
+		Score:  formulae.PerComponentScore(have, len(comps)),
+		Desc:   description,
+		Ignore: false,
+	}
+}
+
+func componentHasAnyRestrictive(c sbom.GetComponent) bool {
+	for _, l := range c.ConcludedLicenses() {
+		if l.Restrictive() {
+			return true
+		}
+	}
+	return false
 }
 
 func checkUniqueID(c sbom.GetComponent) bool {
@@ -610,7 +730,7 @@ func isValidPURL(s string) bool {
 func CompDeclaredLicenses(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
-		return formulae.ScoreProfNA(false)
+		return formulae.ScoreProfNA(true)
 	}
 
 	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
@@ -700,4 +820,132 @@ func SBOMVulnerabilities(doc sbom.Document) catalog.ProfFeatScore {
 	}
 
 	return formulae.ScoreSBOMProfFull("no vulnerabilities", true)
+}
+
+func SBOMPrimaryComponent(doc sbom.Document) catalog.ProfFeatScore {
+	comps := doc.Components()
+	isPrimaryPresent := doc.PrimaryComp().IsPresent()
+
+	if !isPrimaryPresent {
+		return catalog.ProfFeatScore{
+			Score:  formulae.PerComponentScore(0, len(comps)),
+			Desc:   "absent",
+			Ignore: true,
+		}
+	}
+
+	return catalog.ProfFeatScore{
+		Score:  formulae.BooleanScore(isPrimaryPresent),
+		Desc:   "present",
+		Ignore: false,
+	}
+}
+
+func SBOMCompleteness(doc sbom.Document) catalog.ProfFeatScore {
+	comps := doc.Components()
+	if len(comps) == 0 {
+		return formulae.ScoreProfNA(true)
+	}
+
+	spec := doc.Spec().GetSpecType()
+
+	switch spec {
+	case string(sbom.SBOMSpecSPDX):
+		return catalog.ProfFeatScore{
+			Score:  formulae.BooleanScore(false),
+			Desc:   formulae.NonSupportedSPDXField(),
+			Ignore: true,
+		}
+
+	case string(sbom.SBOMSpecCDX):
+		// TODO: to add this method in our sbom module, then only we can fetch it here
+		// Compositions/Aggregate
+		// have := lo.CountBy(doc.Components(), func(c sbom.GetComponent) bool {
+		// 	return c.GetComposition() != ""
+		// })
+		return catalog.ProfFeatScore{
+			Score:  formulae.BooleanScore(false),
+			Desc:   formulae.MissingField("completeness"),
+			Ignore: true,
+		}
+	}
+
+	return catalog.ProfFeatScore{
+		Score:  formulae.BooleanScore(false),
+		Desc:   formulae.UnknownSpec(),
+		Ignore: true,
+	}
+}
+
+func SBOMDataLicense(doc sbom.Document) catalog.ProfFeatScore {
+	specLicenses := doc.Spec().GetLicenses()
+
+	if len(specLicenses) == 0 {
+		return catalog.ProfFeatScore{
+			Score:  formulae.BooleanScore(false),
+			Desc:   formulae.MissingField("data license"),
+			Ignore: false,
+		}
+	}
+
+	if areLicensesValid(specLicenses) {
+		return catalog.ProfFeatScore{
+			Score:  formulae.BooleanScore(true),
+			Desc:   formulae.PresentField("data license"),
+			Ignore: false,
+		}
+	}
+	return catalog.ProfFeatScore{
+		Score:  formulae.BooleanScore(false),
+		Desc:   "invalid data license",
+		Ignore: false,
+	}
+}
+
+func areLicensesValid(licenses []licenses.License) bool {
+	if len(licenses) == 0 {
+		return false
+	}
+	var spdx, aboutcode, custom int
+
+	for _, license := range licenses {
+		switch license.Source() {
+		case "spdx":
+			spdx++
+		case "aboutcode":
+			aboutcode++
+		case "custom":
+			if strings.HasPrefix(license.ShortID(), "LicenseRef-") || strings.HasPrefix(license.Name(), "LicenseRef-") {
+				custom++
+			}
+		}
+	}
+	return spdx+aboutcode+custom == len(licenses)
+}
+
+func SBOMTool(doc sbom.Document) catalog.ProfFeatScore {
+	toolsWithNV := make([]string, 0, len(doc.Tools()))
+
+	for _, t := range doc.Tools() {
+		name := strings.TrimSpace(t.GetName())
+		ver := strings.TrimSpace(t.GetVersion())
+
+		if name != "" && ver != "" {
+			toolsWithNV = append(toolsWithNV, name+"-"+ver)
+		}
+	}
+
+	if len(toolsWithNV) == 0 {
+		return catalog.ProfFeatScore{
+			Score:  formulae.BooleanScore(false),
+			Desc:   formulae.MissingField("tool"),
+			Ignore: false,
+		}
+	}
+
+	return catalog.ProfFeatScore{
+		Score:  formulae.BooleanScore(true),
+		Desc:   fmt.Sprintf("%d tool", len(toolsWithNV)),
+		Ignore: false,
+	}
 }

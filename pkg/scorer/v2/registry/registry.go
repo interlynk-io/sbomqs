@@ -1,3 +1,17 @@
+// Copyright 2025 Interlynk.io
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package registry
 
 import (
@@ -557,42 +571,42 @@ var profileInterlynkSpec = catalog.ProfSpec{
 	Name:        "Interlynk Profile",
 	Description: "Interlynk Default Scoring Profile",
 	Features: []catalog.ProfFeatSpec{
-		{Key: "comp_with_name", Description: "components with name", Required: false, Evaluate: profiles.CompWithName},
-		{Key: "comp_with_version", Description: "components with version", Required: false, Evaluate: profiles.CompWithVersion}, // FIXED: was mapped to completeness
-		{Key: "comp_with_identifiers", Description: "components with local identifiers", Required: false, Evaluate: profiles.CompWithUniqID},
+		{Key: "comp_with_name", Description: "components with name", Required: true, Evaluate: profiles.InterCompWithName},
+		{Key: "comp_with_version", Description: "components with version", Required: true, Evaluate: profiles.InterCompWithVersion},
+		{Key: "comp_with_identifiers", Description: "components with local identifiers", Required: true, Evaluate: profiles.InterCompWithUniqueID},
 
-		{Key: "sbom_creation_timestamp", Description: "Document creation time", Required: false, Evaluate: profiles.SBOMCreationTimestamp},
-		{Key: "sbom_authors", Description: "Document authors", Required: false, Evaluate: profiles.SBOMAuthors},
-		{Key: "sbom_tool_version", Description: "Document creator tool & version", Required: false, Evaluate: profiles.SBOMCreationTimestamp},
-		{Key: "sbom_supplier", Description: "Document supplier", Required: false, Evaluate: profiles.SBOMSupplier},
-		{Key: "sbom_namespace", Description: "Document URI/namespace", Required: false, Evaluate: profiles.SBOMNamespace},
-		{Key: "sbom_lifecycle", Description: "Document Lifecycle", Required: false, Evaluate: profiles.SBOMLifeCycle},
+		{Key: "sbom_creation_timestamp", Description: "Document creation time", Required: true, Evaluate: profiles.InterSBOMTimestamp},
+		{Key: "sbom_authors", Description: "Document authors", Required: true, Evaluate: profiles.InterSBOMAuthors},
+		{Key: "sbom_tool_version", Description: "Document creator tool & version", Required: true, Evaluate: profiles.InterSBOMTOol},
+		{Key: "sbom_supplier", Description: "Document supplier", Required: true, Evaluate: profiles.InterSBOMSupplier},
+		{Key: "sbom_namespace", Description: "Document URI/namespace", Required: true, Evaluate: profiles.InterSBOMNamespace},
+		{Key: "sbom_lifecycle", Description: "Document Lifecycle", Required: true, Evaluate: profiles.InterSBOMLifecycle},
 
-		{Key: "comp_with_checksums", Description: "components with checksums", Required: false, Evaluate: profiles.CompSHA256},
-		{Key: "comp_with_sha256", Description: "components with SHA-256+", Required: false, Evaluate: profiles.CompSHA256Plus},
-		{Key: "sbom_signature", Description: "Document signature	", Required: false, Evaluate: profiles.SBOMSignature},
+		{Key: "comp_with_checksums", Description: "components with checksums", Required: true, Evaluate: profiles.InterCompWithChecksum},
+		{Key: "comp_with_sha256", Description: "components with SHA-256+", Required: true, Evaluate: profiles.InterCompWithChecksum265},
+		{Key: "sbom_signature", Description: "Document signature	", Required: true, Evaluate: profiles.InterSBOMSignature},
 
-		{Key: "comp_with_dependencies", Description: "components with dependencies", Required: false, Evaluate: profiles.CompDependencies},
-		// {Key: "sbom_completeness_declared", Description: "components with declared completeness", Required: false, Evaluate: profiles.CompCompleteness},
-		// {Key: "primary_component", Description: "Primary component identified", Required: false, Evaluate: profiles.SBOMPrimaryComponent },
-		{Key: "comp_with_source_code", Description: "components with source code", Required: false, Evaluate: profiles.CompSourceCodeURL},
-		{Key: "comp_with_supplier", Description: "components with supplier", Required: false, Evaluate: profiles.CompWithSupplier},
-		// {Key: "comp_with_purpose", Description: "components with primary purpose", Required: false, Evaluate: profiles.CompPackagePurpose},
+		{Key: "comp_with_dependencies", Description: "components with dependencies", Required: true, Evaluate: profiles.InterCompWithDependencies},
+		{Key: "sbom_completeness_declared", Description: "components with declared completeness", Required: true, Evaluate: profiles.InterSBOMCompleteness},
+		{Key: "primary_component", Description: "Primary component identified", Required: true, Evaluate: profiles.InterSBOMPrimaryComponent},
+		{Key: "comp_with_source_code", Description: "components with source code", Required: true, Evaluate: profiles.InterCompWithSourceCode},
+		{Key: "comp_with_supplier", Description: "components with supplier", Required: true, Evaluate: profiles.InterCompWithSupplier},
+		{Key: "comp_with_purpose", Description: "components with primary purpose", Required: true, Evaluate: profiles.InterCompWithPurpose},
 
-		{Key: "comp_with_licenses", Description: "components with licenses", Required: false, Evaluate: profiles.CompLicenses},
-		{Key: "comp_with_valid_licenses", Description: "components with valid licenses", Required: false, Evaluate: profiles.CompLicenses},
-		{Key: "comp_with_declared_licenses", Description: "components with original licenses", Required: false, Evaluate: profiles.CompDeclaredLicenses},
-		// {Key: "sbom_data_license", Description: "Document data license", Required: false, Evaluate: profiles.SBOMDataLicense},
-		// {Key: "comp_no_deprecated_licenses", Description: "components without deprecated licenses", Required: false, Evaluate: profiles.CompWithDeprecatedLicenses},
-		// {Key: "comp_no_restrictive_licenses", Description: "components without restrictive licenses", Required: false, Evaluate: profiles.CompWithRestrictiveLicenses},
+		{Key: "comp_with_licenses", Description: "components with licenses", Required: true, Evaluate: profiles.InterCompWithLicenses},
+		{Key: "comp_with_valid_licenses", Description: "components with valid licenses", Required: true, Evaluate: profiles.InterCompWithValidLicenses},
+		{Key: "comp_with_declared_licenses", Description: "components with original licenses", Required: true, Evaluate: profiles.InterCompWithDeclaredLicenses},
+		{Key: "sbom_data_license", Description: "Document data license", Required: true, Evaluate: profiles.InterSBOMDataLicenses},
+		{Key: "comp_no_deprecated_licenses", Description: "components without deprecated licenses", Required: true, Evaluate: profiles.InterCompWithNODeprecatedLicenses},
+		{Key: "comp_no_restrictive_licenses", Description: "components without restrictive licenses", Required: true, Evaluate: profiles.InterCompWithNORestrictiveLicenses},
 
-		{Key: "comp_with_purl", Description: "components with PURL", Required: false, Evaluate: profiles.CompWithUniqID},
-		{Key: "comp_with_cpe", Description: "components with CPE", Required: false, Evaluate: profiles.CompWithUniqID},
+		{Key: "comp_with_purl", Description: "components with PURL", Required: true, Evaluate: profiles.InterCompWithPURL},
+		{Key: "comp_with_cpe", Description: "components with CPE", Required: true, Evaluate: profiles.InterCompWithCPE},
 
-		{Key: "sbom_spec_declared", Description: "SBOM spec declared", Required: false, Evaluate: profiles.SBOMSpec},
-		{Key: "sbom_spec_version", Description: "SBOM spec version", Required: false, Evaluate: profiles.SBOMSpecVersion},
-		{Key: "sbom_file_format", Description: "SBOM file format", Required: false, Evaluate: profiles.SBOMAutomationSpec},
-		{Key: "sbom_schema_valid", Description: "Schema validation", Required: false, Evaluate: profiles.SBOMSchema},
+		{Key: "sbom_spec_declared", Description: "SBOM spec declared", Required: true, Evaluate: profiles.InterSBOMSpec},
+		{Key: "sbom_spec_version", Description: "SBOM spec version", Required: true, Evaluate: profiles.InterSBOMSpecVersion},
+		{Key: "sbom_file_format", Description: "SBOM file format", Required: true, Evaluate: profiles.InterSBOMFileFormat},
+		{Key: "sbom_schema_valid", Description: "Schema validation", Required: true, Evaluate: profiles.InterSBOMSchema},
 	},
 }
 
