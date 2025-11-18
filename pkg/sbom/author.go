@@ -14,7 +14,7 @@
 
 package sbom
 
-//counterfeiter:generate . Author
+//counterfeiter:generate . GetAuthor
 type GetAuthor interface {
 	GetName() string
 	GetType() string

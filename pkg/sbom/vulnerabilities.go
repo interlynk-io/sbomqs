@@ -14,6 +14,8 @@
 
 package sbom
 
+//counterfeiter:generate . GetVulnerabilities
+
 type GetVulnerabilities interface {
 	GetID() string
 }

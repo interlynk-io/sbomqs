@@ -14,7 +14,7 @@
 
 package sbom
 
-//counterfeiter:generate . Contact
+//counterfeiter:generate . GetContact
 
 type GetContact interface {
 	GetName() string

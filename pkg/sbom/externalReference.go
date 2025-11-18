@@ -14,6 +14,8 @@
 
 package sbom
 
+//counterfeiter:generate . GetExternalReference
+
 type GetExternalReference interface {
 	GetRefType() string
 	GetRefLocator() string

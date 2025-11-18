@@ -14,6 +14,8 @@
 
 package sbom
 
+//counterfeiter:generate . GetTool
+
 type GetTool interface {
 	GetName() string
 	GetVersion() string

@@ -14,6 +14,8 @@
 
 package sbom
 
+//counterfeiter:generate . GetSignature
+
 type GetSignature interface {
 	GetSigValue() string
 	GetPublicKey() string
