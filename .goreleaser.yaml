@@ -12,6 +12,9 @@ before:
 gomod:
   proxy: true
 
+metadata:
+  mod_timestamp: "{{ .CommitTimestamp }}"
+
 builds:
   - id: binaries
     binary: sbomqs-{{ .Os }}-{{ .Arch }}
@@ -19,7 +22,6 @@ builds:
     main: .
     flags:
       - -trimpath
-    mod_timestamp: '{{ .CommitTimestamp }}'
     goos:
       - linux
       - darwin
@@ -27,8 +29,15 @@ builds:
     goarch:
       - amd64
       - arm64
+    ignore:
+      - goos: windows
+        goarch: arm64
     ldflags:
       - "{{ .Env.LDFLAGS }}"
+      - -s -w
+      - -X main.version={{ .Version }}
+      - -X main.commit={{ .Commit }}
+      - -X main.date={{ .Date }}
     env:
       - CGO_ENABLED=0
 
@@ -38,34 +47,72 @@ nfpms:
     file_name_template: "{{ .ConventionalFileName }}"
     vendor: Interlynk
     homepage: https://interlynk.io
-    maintainer: Interlynk Authors hello@interlynk.io
+    maintainer: Interlynk Authors <hello@interlynk.io>
     builds:
       - binaries
     description: SBOM quality score - Quality metrics for your sboms.
-    license: "Apache License 2.0"
+    license: Apache-2.0
     formats:
       - apk
       - deb
       - rpm
+    bindir: /usr/bin
     contents:
       - src: /usr/bin/sbomqs-{{ .Os }}-{{ .Arch }}
         dst: /usr/bin/sbomqs
-        type: "symlink"
+        type: symlink
+    rpm:
+      compression: lzma
+    deb:
+      compression: xz
 
 archives:
-- format: binary
-  name_template: "{{ .Binary }}"
-  allow_different_binary_count: true
+  - id: binaries
+    format: binary
+    name_template: "{{ .Binary }}"
+    allow_different_binary_count: true
+
+checksum:
+  name_template: "checksums.txt"
+  algorithm: sha256
+
+changelog:
+  sort: asc
+  use: github
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+      - "^ci:"
+      - Merge pull request
+      - Merge branch
+  groups:
+    - title: Features
+      regexp: '^.*?feat(\([[:word:]]+\))??!?:.+$'
+      order: 0
+    - title: Bug Fixes
+      regexp: '^.*?fix(\([[:word:]]+\))??!?:.+$'
+      order: 1
+    - title: Others
+      order: 999
 
 snapshot:
-  name_template: SNAPSHOT-{{ .ShortCommit }}
+  name_template: "SNAPSHOT-{{ .ShortCommit }}"
 
 release:
   prerelease: allow
   draft: true
+  mode: append
+  header: |
+    ## SBOM Quality Score {{ .Tag }} ({{ .Date }})
+
+    Download the appropriate binary for your platform below.
+  footer: |
+    **Full Changelog**: https://github.com/interlynk-io/sbomqs/compare/{{ .PreviousTag }}...{{ .Tag }}
 
 sboms:
-  -
+  - id: sbom
     artifacts: binary
     documents:
       - "${artifact}.spdx.sbom"
