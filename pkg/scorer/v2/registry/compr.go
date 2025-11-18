@@ -41,11 +41,10 @@ type CatSpec struct {
 	Features    []FeatSpec
 }
 type FeatSpec struct {
-	Name        string
-	Description string
-	Ignore      bool
-	Key         string
-	Weight      float64
+	Name   string
+	Ignore bool
+	Key    string
+	Weight float64
 }
 
 func DefaultComprConfig() string {
@@ -54,12 +53,9 @@ func DefaultComprConfig() string {
 	config.Metadata.Description = "Configuration of SBOM scoring features, grouped by category"
 	config.Metadata.LastUpdated = time.Now().Format("2006-01-02")
 
-	// track categories using Map
-
 	for _, cat := range comprehenssiveCategories {
-
 		category := CatSpec{
-			Name:        string(cat.Name),
+			Name:        cat.Name,
 			Key:         cat.Key,
 			Weight:      cat.Weight,
 			Description: cat.Description,
@@ -68,16 +64,14 @@ func DefaultComprConfig() string {
 		for _, pFeat := range cat.Features {
 
 			feature := FeatSpec{
-				Name:        pFeat.Name,
-				Key:         string(pFeat.Key),
-				Weight:      pFeat.Weight,
-				Description: pFeat.Description,
-				Ignore:      pFeat.Ignore,
+				Name:   pFeat.Name,
+				Key:    pFeat.Key,
+				Weight: pFeat.Weight,
+				Ignore: pFeat.Ignore,
 			}
 			category.Features = append(category.Features, feature)
 		}
 		config.Categories = append(config.Categories, category)
-
 	}
 
 	d, err := yaml.Marshal(&config)
@@ -115,12 +109,11 @@ func ReadComprConfigFile(path string) ([]catalog.ComprCatSpec, error) {
 			}
 
 			feat := catalog.ComprFeatSpec{
-				Name:        f.Name,
-				Description: f.Description,
-				Ignore:      f.Ignore,
-				Key:         f.Key,
-				Weight:      f.Weight,
-				Evaluate:    CompKeyToEvaluatingFunction[f.Key],
+				Name:     f.Name,
+				Ignore:   f.Ignore,
+				Key:      f.Key,
+				Weight:   f.Weight,
+				Evaluate: CompKeyToEvaluatingFunction[f.Key],
 			}
 
 			category.Features = append(category.Features, feat)
