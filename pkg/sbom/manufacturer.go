@@ -14,7 +14,7 @@
 
 package sbom
 
-//counterfeiter:generate . Manufacturer
+//counterfeiter:generate . GetManufacturer
 
 type GetManufacturer interface {
 	GetName() string

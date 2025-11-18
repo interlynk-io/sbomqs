@@ -14,7 +14,7 @@
 
 package sbom
 
-//counterfeiter:generate . Checksum
+//counterfeiter:generate . GetChecksum
 type GetChecksum interface {
 	GetAlgo() string
 	GetContent() string

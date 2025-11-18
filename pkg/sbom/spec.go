@@ -18,6 +18,8 @@ import (
 	"github.com/interlynk-io/sbomqs/pkg/licenses"
 )
 
+//counterfeiter:generate . Spec
+
 type Spec interface {
 	GetVersion() string
 	FileFormat() string

@@ -14,7 +14,7 @@
 
 package sbom
 
-//counterfeiter:generate . Relation
+//counterfeiter:generate . GetRelation
 type GetRelation interface {
 	GetFrom() string
 	GetTo() string

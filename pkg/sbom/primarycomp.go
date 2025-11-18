@@ -14,6 +14,8 @@
 
 package sbom
 
+//counterfeiter:generate . GetPrimaryComp
+
 type GetPrimaryComp interface {
 	IsPresent() bool
 	GetID() string

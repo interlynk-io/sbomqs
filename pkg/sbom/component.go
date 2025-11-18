@@ -14,7 +14,7 @@
 
 package sbom
 
-//counterfeiter:generate . Component
+//counterfeiter:generate . GetComponent
 import (
 	"github.com/interlynk-io/sbomqs/pkg/cpe"
 	"github.com/interlynk-io/sbomqs/pkg/licenses"
