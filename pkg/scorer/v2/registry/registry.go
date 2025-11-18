@@ -413,6 +413,10 @@ func filterProfiles(ctx context.Context, profiles []string) []catalog.ProfSpec {
 			log.Debugf("filterProfiles: selecting profile %q", profile)
 			finalProfiles = append(finalProfiles, profileNTIASpec)
 
+		case "bsi":
+			log.Debugf("filterProfiles: selecting profile %q", profile)
+			finalProfiles = append(finalProfiles, profileBSI11Spec)
+
 		case "bsi-v1.1":
 			log.Debugf("filterProfiles: selecting profile %q", profile)
 			finalProfiles = append(finalProfiles, profileBSI11Spec)
