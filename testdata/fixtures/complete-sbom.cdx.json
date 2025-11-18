@@ -1,0 +1,373 @@
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.6.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.4",
+  "serialNumber": "urn:uuid:4d2edcda-fcc4-42fe-8e9d-87cf33e47b94",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2025-04-25T00:42:27Z",
+    "supplier": {
+      "name": "Acme, Inc",
+      "url": [
+          "https://acme.com",
+          "https://github.com/acme"
+        ]
+    },
+    "lifecycles": [
+      {
+        "phase": "design"
+      },
+      {
+        "phase": "pre-build"
+      }
+    ],
+    "tools": [
+      {
+        "vendor": "CycloneDX",
+        "name": "cyclonedx-gomod",
+        "version": "v1.9.0",
+        "hashes": [
+          {
+            "alg": "MD5",
+            "content": "c3d43dcbd0fe759f08bf015a813a9b8a"
+          },
+          {
+            "alg": "SHA-256",
+            "content": "64440820e5d881ec20bc7b9937fdc9bd67d15ba4637b2e7959a8f31dd12c5b21"
+          }
+        ],
+        "externalReferences": [
+          {
+            "url": "https://github.com/CycloneDX/cyclonedx-gomod",
+            "type": "vcs"
+          },
+          {
+            "url": "https://cyclonedx.org",
+            "type": "website"
+          }
+        ]
+      }
+    ],
+    "licenses": [
+      {
+        "license": {
+          "name": "Acme Customer Data License",
+          "text": {
+            "contentType": "text/plain",
+            "encoding": "base64",
+            "content": "VGhlIHRleHQgZm9yIHRoZSBsaWNlbnNlIGdvZXMgaGVyZS4="
+          }
+        }
+      }  
+    ],
+    "authors": [
+        {
+            "name": "Interlynk",
+            "email": "hello@interlynk.io",
+            "phone": "800-555-1212"
+        },
+        {
+            "name": "VulnCon SBOM Generation Workshop",
+            "email": "vulncon@sbom.dev",
+            "phone": "800-555-1313"
+        },
+        {
+            "name": "Interlynk",
+            "email": "hi@interlynk.io",
+            "phone": "800-555-1414"
+        }
+    ],
+    "component": {
+        "bom-ref": "pkg:golang/github.com/kyverno/kyverno@v1.14.0?type=module#cmd/kyverno",
+        "type": "application",
+        "name": "github.com/kyverno/kyverno",
+        "version": "v1.14.0",
+        "licenses": [
+          {
+            "license": {
+              "id": "Apache-2.0",
+              "acknowledgement": "concluded"
+            }
+          }
+        ],
+        "purl": "pkg:golang/github.com/kyverno/kyverno@v1.14.0?type=module\u0026goos=linux\u0026goarch=amd64#cmd/kyverno",
+        "cpe": "cpe:/golang/github.com/kyverno/kyverno:v1.14.0",
+        "copyright": "Copyright 2025, the Kyverno project",
+        "supplier": {
+            "name": "Kyverno",
+            "url": [
+              "https://kyverno.io"
+            ]
+        },
+        "authors": [
+            {
+              "name": "Jim",
+              "email": "jim@kyverno.com"
+            }
+        ],
+        "description": "Kyverno is a policy engine designed for Kubernetes.",
+        "externalReferences": [
+          {
+            "url": "https://github.com/kyverno/kyverno",
+            "type": "vcs"
+          }
+        ],
+        "hashes": [
+          {
+            "alg": "SHA-256",
+            "content": "89fb71dddbb3389dd3018c7f63dd6350b1611f382613c5c31edfee67006ac28e"
+          }
+        ],
+        "evidence": {
+          "licenses": [
+            {
+              "license": {
+                "id": "Apache-2.0"
+              }
+            }
+          ]
+        }
+    }
+  },
+  "components": [
+    {
+      "bom-ref": "pkg:golang/github.com/fluxcd/pkg/oci@v0.45.0?type=module",
+      "type": "library",
+      "name": "github.com/fluxcd/pkg/oci",
+      "version": "v0.45.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0",
+            "acknowledgement": "concluded"
+          }
+        }
+      ],
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "94fb71aaacc3385dd3018c7e63dd6750b1622f382613c5c31edfee67006ac78e"
+        }
+      ],
+      "purl": "pkg:golang/github.com/fluxcd/pkg/oci@v0.45.0?type=module",
+      "cpe": "cpe:2.3:a:fluxcd:oci:v0.45.0:*:*:*:*:*:*:*",
+      "copyright": "Copyright 2025, the FluxCD project",
+      "supplier": {
+          "name": "Flux",
+          "url": [
+              "https://fluxcd.io"
+          ]
+      },
+      "authors": [
+        {
+          "name": "Stefan Prodan",
+          "email": "stefan@fluxcd.io"
+        }
+      ],
+      "description": "The OCI package provides utilities for working with OCI images and registries.",
+      "externalReferences": [
+        {
+          "url": "https://github.com/fluxcd/pkg/oci",
+          "type": "vcs"
+        }
+      ],
+      "evidence": {
+        "licenses": [
+          {
+            "license": {
+              "id": "Apache-2.0"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "pkg:golang/github.com/Azure/azure-sdk-for-go/sdk/azcore@v1.17.0?type=module",
+      "type": "library",
+      "name": "github.com/Azure/azure-sdk-for-go/sdk/azcore",
+      "version": "v1.17.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0",
+            "acknowledgement": "concluded"
+          }
+        }
+      ],
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "834119270cfbc645d0899008e718bd7f75961580655f508f4eb47e3434e84644"
+        }
+      ],
+      "purl": "pkg:golang/github.com/Azure/azure-sdk-for-go/sdk/azcore@v1.17.0?type=module\u0026goos=linux\u0026goarch=amd64",
+      "cpe": "cpe:/golang/github.com/azure/azure-sdk-for-go/sdk/azcore:v1.17.0",
+      "copyright": "Copyright 2025, the Azure SDK for Go project",
+      "supplier": {
+          "name": "Azure",
+          "url": [
+              "https://azure.microsoft.com"
+          ]
+      },
+        "authors": [
+            {
+            "name": "Nadela",
+            "email": "nadela@azure.com"
+          }
+      ],
+      "description": "The azcore package provides core functionality for Azure SDKs in Go.",
+      "externalReferences": [
+        {
+          "url": "https://github.com/Azure/azure-sdk-for-go/sdk/azcore",
+          "type": "vcs"
+        }
+      ],
+      "evidence": {
+        "licenses": [
+          {
+            "license": {
+              "id": "MIT"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "pkg:golang/github.com/sigstore/rekor@v1.3.9?type=module",
+      "type": "library",
+      "name": "github.com/sigstore/rekor",
+      "version": "v1.3.9",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0",
+            "acknowledgement": "concluded"
+          }
+        }
+      ],
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "b148d1a4a561fe1860a8632cd2df93b9b818b24b00ad9ea9a0b102dccb060335"
+        }
+      ],
+      "purl": "pkg:golang/github.com/sigstore/rekor@v1.3.9?type=module\u0026goos=linux\u0026goarch=amd64",
+      "cpe": "cpe:/golang/github.com/sigstore/rekor:v1.3.9",
+      "copyright": "Copyright 2025, the Sigstore project",
+      "supplier": {
+          "name": "Sigstore",
+          "url": [
+              "https://sigstore.dev"
+          ]
+      },
+      "authors": [
+          {
+              "name": "Dan",
+              "email": "dan@sigstore.dev"
+          }
+      ],
+      "description": "Rekor is a transparency log for software artifacts.",
+      "externalReferences": [
+        {
+          "url": "https://github.com/sigstore/rekor",
+          "type": "vcs"
+        }
+      ],
+      "evidence": {
+        "licenses": [
+          {
+            "license": {
+              "id": "Apache-2.0"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "pkg:golang/cel.dev/expr@v0.19.1?type=module",
+      "type": "library",
+      "name": "cel.dev/expr",
+      "version": "v0.19.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "concluded"
+          }
+        }
+      ],
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "35c898aed0d1211d253429c7d4b1497a0763b29371f5f239f4eed359cb9afd6e"
+        }
+      ],
+      "purl": "pkg:golang/cel.dev/expr@v0.19.1?type=module\u0026goos=linux\u0026goarch=amd64",
+      "cpe": "cpe:/golang/cel.dev/expr:v0.19.1",
+      "copyright": "Copyright 2025, the Cel project",
+      "supplier": {
+          "name": "Cel",
+          "url": [
+              "https://cel.dev"
+          ]
+      },
+        "authors": [
+            {
+                "name": "Pichai",
+                "email": "pichai@cel.dev"
+            }
+        ],
+      "description": "CEL (Common Expression Language) is a non-Turing complete expression language.",
+      "externalReferences": [
+        {
+          "url": "https://cel.dev",
+          "type": "distribution"
+        }
+      ],
+      "evidence": {
+        "licenses": [
+          {
+            "license": {
+              "id": "Apache-2.0"
+            }
+          }
+        ]
+      }
+    }
+],
+"externalReferences": [
+    {
+      "url": "github.com/foo/foo",
+      "type": "vcs"
+    },
+    {
+        "url": "https://kyverno.io/",
+        "type": "vcs"
+    }
+],
+"dependencies": [
+    {
+      "ref": "pkg:golang/github.com/kyverno/kyverno@v1.14.0?type=module#cmd/kyverno",
+      "dependsOn": [
+        "pkg:golang/github.com/fluxcd/pkg/oci@v0.45.0?type=module",
+        "pkg:golang/github.com/sigstore/rekor@v1.3.9?type=module"
+        ]
+    },
+    {
+      "ref": "pkg:golang/github.com/fluxcd/pkg/oci@v0.45.0?type=module",
+      "dependsOn": [
+        "pkg:golang/github.com/Azure/azure-sdk-for-go/sdk/azcore@v1.17.0?type=module"
+      ]
+    },
+    {
+      "ref": "pkg:golang/github.com/sigstore/rekor@v1.3.9?type=module",
+      "dependsOn": [
+        "pkg:golang/cel.dev/expr@v0.19.1?type=module"
+      ]
+    }
+  ]
+}
