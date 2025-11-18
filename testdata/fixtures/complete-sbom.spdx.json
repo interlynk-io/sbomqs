@@ -1,0 +1,216 @@
+{
+  "spdxVersion": "SPDX-2.3",
+  "dataLicense": "CC0-1.0",
+  "SPDXID": "SPDXRef-Document",
+  "name": "CycloneDX BOM converted to SPDX",
+  "documentNamespace": "urn:uuid:4d2edcda-fcc4-42fe-8e9d-87cf33e47b94",
+  "creationInfo": {
+    "creators": [
+        "Organization: Acme, Inc (https://acme.com)",
+        "Organization: Acme, Inc (https://github.com/acme)",
+        "Tool: syft-1.26.1",
+        "Person: VulnCon SBOM Generation Workshop (vuln@con.com)",
+        "Person: Interlynk (hi@interlynk.io)",
+        "Person: Interlynk (hello@interlynk.io)",
+        "Tool: foo-v1.0.1",
+        "Tool: sbomasm-v1.0.4",
+        "Tool: sbomasm-devel"
+   ],
+    "created": "2025-06-06T05:52:18Z",
+    "comment": "lifecycle: pre-build,build,source"
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Package-kyverno-v1.14.0",
+      "name": "github.com/kyverno/kyverno",
+      "versionInfo": "v1.14.0",
+      "packageFileName": "kyverno-v1.14.0",
+      "downloadLocation": "https://github.com/kyverno/kyverno",
+      "supplier": "Organization: NirmataCloud (https://kyverno.io)",
+      "originator" : "Person: Jim (jim@kyverno.com)",
+      "copyrightText": "Copyright 2025, the Kyverno project",
+      "description": "Kyverno is a policy engine designed for Kubernetes.",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "89fb71dddbb3389dd3018c7f63dd6350b1611f382613c5c31edfee67006ac28e"
+        }
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/kyverno/kyverno@v1.14.0?type=module&goos=linux&goarch=amd64#cmd/kyverno"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:kyverno:kyverno:v1.14.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "vcs",
+          "referenceLocator": "https://github.com/kyverno/kyverno"
+        }
+      ],
+      "licenseConcluded": "Apache-2.0",
+      "primaryPackagePurpose": "APPLICATION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-fluxcd-pkg-oci-v0.45.0",
+      "name": "github.com/fluxcd/pkg/oci",
+      "versionInfo": "v0.45.0",
+      "packageFileName": "oci-v0.45.0",
+      "downloadLocation": "https://github.com/fluxcd/pkg/oci",
+      "supplier": "Organization: Flux (https://fluxcd.io)",
+      "originator": "Person: Stefan (stefan@fluxcd.io)",
+      "copyrightText": "Copyright 2025, the FluxCD project",
+      "description": "The OCI package provides utilities for working with OCI images and registries.",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "94fb71aaacc3385dd3018c7e63dd6750b1622f382613c5c31edfee67006ac78e"
+        }
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/fluxcd/pkg/oci@v0.45.0?type=module&goos=linux&goarch=amd64"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/fluxcd/pkg/oci@v0.45.0?type=module&goos=linux&goarch=arm64"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:fluxcd:oci:v0.45.0:*:*:*:*:*:*:*"
+        }
+      ],
+      "licenseConcluded": "Apache-2.0",
+      "primaryPackagePurpose": "LIBRARY"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-azure-sdk-for-go-sdk-azcore-v1.17.0",
+      "name": "github.com/Azure/azure-sdk-for-go/sdk/azcore",
+      "versionInfo": "v1.17.0",
+      "packageFileName": "azcore-v1.17.0",
+      "downloadLocation": "https://github.com/Azure/azure-sdk-for-go/sdk/azcore",
+      "supplier": "Organization: Azure (https://azure.microsoft.com)",
+      "originator": "Person: Nadela (nadela@azure.com)",
+      "copyrightText": "Copyright 2025, the Azure SDK for Go project",
+      "description": "The azcore package provides core functionality for Azure SDKs in Go.",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "834119270cfbc645d0899008e718bd7f75961580655f508f4eb47e3434e84644"
+        }
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/Azure/azure-sdk-for-go/sdk/azcore@v1.17.0?type=module&goos=linux&goarch=amd64"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:azure:azcore:v1.17.0:*:*:*:*:*:*:*"
+        }
+      ],
+      "licenseConcluded": "MIT",
+      "primaryPackagePurpose": "LIBRARY"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-rekor-v1.3.9",
+      "name": "github.com/sigstore/rekor",
+      "versionInfo": "v1.3.9",
+      "packageFileName": "rekor-v1.3.9",
+      "downloadLocation": "https://github.com/sigstore/rekor",
+      "supplier": "Organization: Sigstore (https://sigstore.dev)",
+      "originator": "Person: Dan (dan@sigstore.dev)",
+      "copyrightText": "Copyright 2025, the Sigstore project",
+      "description": "Rekor is a transparency log for software artifacts.",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "b148d1a4a561fe1860a8632cd2df93b9b818b24b00ad9ea9a0b102dccb060335"
+        }
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/sigstore/rekor@v1.3.9?type=module&goos=linux&goarch=amd64"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:sigstore:rekor:v1.3.9:*:*:*:*:*:*:*"
+        }
+      ],
+      "licenseConcluded": "Apache-2.0",
+      "primaryPackagePurpose": "LIBRARY"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-expr-v0.19.1",
+      "name": "cel.dev/expr",
+      "versionInfo": "v0.19.1",
+      "packageFileName": "expr-v0.19.1",
+      "downloadLocation": "https://cel.dev",
+      "supplier": "Organization: Cel (https://cel.dev)",
+      "originator": "Person: Pichai (pichai@cel.dev)",
+      "copyrightText": "Copyright 2025, the Cel project",
+      "description": "CEL (Common Expression Language) is a non-Turing complete expression language.",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "35c898aed0d1211d253429c7d4b1497a0763b29371f5f239f4eed359cb9afd6e"
+        }
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/cel.dev/expr@v0.19.1?type=module&goos=linux&goarch=amd64"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:cel:expr:v0.19.1:*:*:*:*:*:*:*"
+        }
+      ],
+      "licenseConcluded": "Apache-2.0",
+      "primaryPackagePurpose": "LIBRARY"
+    }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-Package-kyverno-v1.14.0",
+      "relatedSpdxElement": "SPDXRef-Package-fluxcd-pkg-oci-v0.45.0",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-kyverno-v1.14.0",
+      "relatedSpdxElement": "SPDXRef-Package-rekor-v1.3.9",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-fluxcd-pkg-oci-v0.45.0",
+      "relatedSpdxElement": "SPDXRef-Package-azure-sdk-for-go-sdk-azcore-v1.17.0",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-rekor-v1.3.9",
+      "relatedSpdxElement": "SPDXRef-Package-expr-v0.19.1",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relatedSpdxElement": "SPDXRef-Package-kyverno-v1.14.0",
+      "relationshipType": "DESCRIBES"
+    }
+  ]
+}

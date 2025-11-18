@@ -62,18 +62,18 @@ func DefaultProfConfig() string {
 
 		profile := &Prof{
 			Key:         string(p.Key),
-			Name:        p.Description,
+			Name:        p.Name,
 			Description: p.Description,
 		}
 
 		for _, pFeat := range p.Features {
-
 			feature := ProfFSpec{
-				Name:        pFeat.Description,
+				Name:        pFeat.Name,
+				Key:         pFeat.Key,
 				Description: pFeat.Description,
 				Required:    pFeat.Required,
-				Key:         string(pFeat.Key),
 			}
+
 			profile.Features = append(profile.Features, feature)
 		}
 		config.Profiles = append(config.Profiles, *profile)
@@ -101,7 +101,6 @@ func ReadProfileConfigFile(path string) ([]catalog.ProfSpec, error) {
 	var pro []catalog.ProfSpec
 
 	for _, p := range cfg.Profiles {
-
 		profile := catalog.ProfSpec{
 			Name:        p.Name,
 			Description: p.Description,
@@ -110,7 +109,6 @@ func ReadProfileConfigFile(path string) ([]catalog.ProfSpec, error) {
 
 		switch p.Key {
 		case string(ProfileNTIA):
-
 			profile.Features = similar(p, NTIAKeyToEvaluatingFunction)
 
 		case string(ProfileBSI11):
@@ -122,14 +120,15 @@ func ReadProfileConfigFile(path string) ([]catalog.ProfSpec, error) {
 		case string(ProfileOCT):
 			profile.Features = similar(p, OCTKeyToEvaluatingFunction)
 
+		case string(ProfileInterlynk):
+			profile.Features = similar(p, InterlynkKeyToEvaluatingFunction)
+
 		default:
 			// kkk
 		}
 
 		pro = append(pro, profile)
-
 	}
-
 	return pro, nil
 }
 

@@ -37,6 +37,20 @@ const (
 var generateCmd = &cobra.Command{
 	Use:   "generate",
 	Short: "provides a comprehensive config generate for your sbom to get specific criteria",
+	Example: `  sbomqs generate <argument>
+	
+ valid <argument> are comprehenssive, profiles, features
+
+  # Generate config file for comprehenssive
+  sbomqs generate comprehenssive
+
+  # Generate config file for profiles
+  sbomqs generate profiles
+
+  # Generate config file for features
+  sbomqs generate features
+`,
+
 	RunE: func(_ *cobra.Command, args []string) error {
 		ctx := logger.WithLogger(context.Background())
 
@@ -51,9 +65,9 @@ var generateCmd = &cobra.Command{
 
 			}
 		} else {
-			return fmt.Errorf("arguments missing%s", "list of valid command eg. features")
+			return fmt.Errorf("arguments missing%s", "list of valid command eg: profiles, comprehenssive, features")
 		}
-		return fmt.Errorf("invalid arguments%s", "list of valid command eg. features")
+		return fmt.Errorf("invalid arguments%s", "list of valid command eg: profiles, comprehenssive, features")
 	},
 }
 
