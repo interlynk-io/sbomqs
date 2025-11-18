@@ -89,7 +89,7 @@ func TestProcessURL(t *testing.T) {
 	}{
 		{
 			name:                 "Successful download",
-			url:                  "https://github.com/interlynk-io/sbomqs/blob/main/samples/sbomqs-spdx-syft.json",
+			url:                  "https://github.com/interlynk-io/sbomqs/blob/main/samples/photon.spdx.json",
 			statusCode:           http.StatusOK,
 			expectedError:        false,
 			expectedErrorMessage: nil,
