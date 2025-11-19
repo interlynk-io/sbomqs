@@ -27,6 +27,7 @@ import (
 // dtrackScoreCmd represents the dtrackScore command
 var dtrackScoreCmd = &cobra.Command{
 	Use:          "dtrackScore <project-id>",
+	Aliases:      []string{"dt"},
 	Short:        "generate an sbom quality score for a given project id from dependency track",
 	Long:         `dtrackScore allows your to score the sbom quality of a project from dependency track.`,
 	SilenceUsage: true,
