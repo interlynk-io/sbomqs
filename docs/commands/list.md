@@ -77,49 +77,60 @@ sbomqs list --feature=<Tab>
 
 The list command supports the following features, categorized into **component-based** (`comp_`) and **SBOM-based** (`sbom_`) features:
 
-#### Component-Based Features (comp_)
+#### Supported Component features (canonical + aliases): "comp_"
 
-These features evaluate individual components in the SBOM:
+```table
+| Canonical feature                | Aliases                                                       | What it checks (short)                                                                         |
+| -------------------------------- | ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `comp_with_name`                 | `comp_name`                                                   | Component has a name.                                                                          |
+| `comp_with_version`              | `comp_version`                                                | Component has a version.                                                                       |
+| `comp_with_supplier`             | `comp_supplier`                                               | Component has a supplier.                                                                      |
+| `comp_with_uniq_ids`             | –                                                             | Component has at least one unique identifier (SPDXID, PURL, CPE, etc. depending on your impl). |
+| `comp_valid_licenses`            | `comp_license`                                                | Component has **valid / normalized** license info.                                             |
+| `comp_with_licenses`             | `comp_with_valid_licenses`                                    | Component has one or more license expressions (may be looser than “valid_licenses”).           |
+| `comp_with_any_vuln_lookup_id`   | –                                                             | Component has any vulnerability lookup identifier (e.g. PURL/CPE/other used for vuln lookup).  |
+| `comp_with_multi_vuln_lookup_id` | –                                                             | Component has **multiple** vulnerability lookup identifiers.                                   |
+| `comp_with_deprecated_licenses`  | `comp_no_deprecated_licenses`, `comp_no_restrictive_licenses` | Component has **deprecated** licenses (same underlying check for all three names).             |
+| `comp_with_restrictive_licenses` | –                                                             | Component has **restrictive** licenses (separate check from deprecated).                       |
+| `comp_with_primary_purpose`      | `comp_with_purpose`, `comp_purpose`                           | Component has a primary purpose / type set.                                                    |
+| `comp_with_checksums`            | `comp_hash`                                                   | Component has at least one checksum.                                                           |
+| `comp_with_checksums_sha256`     | –                                                             | Component has SHA-256 checksums in the checksum list.                                          |
+| `comp_with_sha256`               | `comp_hash_sha256`                                            | Component has a SHA-256 hash (alt representation / helper).                                    |
+| `comp_with_source_code_uri`      | `comp_with_source_code`, `comp_source_code_uri`               | Component has a source code URI (possibly resolved via doc + component).                       |
+| `comp_with_source_code_hash`     | `comp_source_hash`                                            | Component/source has a hash of the source code.                                                |
+| `comp_with_executable_uri`       | –                                                             | Component has an executable / artifact URI.                                                    |
+| `comp_with_associated_license`   | `comp_associated_license`                                     | Component has an **associated** license (e.g. from files/attribution).                         |
+| `comp_with_concluded_license`    | –                                                             | Component has a concluded license.                                                             |
+| `comp_with_declared_license`     | `comp_with_declared_licenses`                                 | Component has a declared license (or list).                                                    |
+| `comp_with_dependencies`         | `comp_dependencies`, `comp_depth`                             | Component has dependencies / is part of a dependency graph.                                    |
+| `comp_with_purl`                 | `comp_purl`                                                   | Component has a Package URL (PURL).                                                            |
+| `comp_with_cpe`                  | `comp_cpe`                                                    | Component has a CPE identifier.                                                                |
+```
 
-- `comp_with_name`: component with a name.
-- `comp_with_version`: component with a version.
-- `comp_with_supplier`: component with a supplier.
-- `comp_with_uniq_ids`: component with unique IDs.
-- `comp_valid_licenses`: component with at least one valid SPDX license.
-- `comp_with_any_vuln_lookup_id`: component with any vulnerability lookup ID (CPE or PURL).
-- `comp_with_deprecated_licenses`: component with deprecated licenses.
-- `comp_with_multi_vuln_lookup_id`: component with both CPE and PURL (multiple vulnerability lookup IDs).
-- `comp_with_primary_purpose`: component with a supported primary purpose.
-- `comp_with_restrictive_licenses`: component with restrictive licenses.
-- `comp_with_checksums`: component with checksums.
-- `comp_with_licenses`: component with licenses.
-- `comp_with_checksums_sha256`: component with checksum algo SHA256
-- `comp_with_source_code_uri`: component with source code URI
-- `comp_with_source_code_hash`: component with source code hash
-- `comp_with_executable_uri`: component with executable URI
-- `comp_with_associated_license`: component with associated license
-- `comp_with_concluded_license`: component with concluded license
-- `comp_with_declared_license`: component with declared license
+#### Supported SBOM features (canonical + aliases): "sbom_"
 
-#### SBOM-Based Features (sbom_)
-
-These features evaluate document-level properties of the SBOM:
-
-- `sbom_creation_timestamp`: Lists the SBOM’s creation timestamp.
-- `sbom_authors`: Lists the SBOM’s authors.
-- `sbom_with_creator_and_version`: Lists the creator tool and its version.
-- `sbom_with_primary_component`: Lists the primary component of the SBOM.
-- `sbom_dependencies`: Lists the dependencies of the primary component.
-- `sbom_sharable`: Lists whether the SBOM has a sharable license (all licenses must be free for any use).
-- `sbom_parsable`: Lists whether the SBOM is parsable.
-- `sbom_spec`: Lists the SBOM specification (e.g., SPDX, CycloneDX).
-- `sbom_spec_file_format`: Lists the SBOM file format (e.g., JSON, YAML).
-- `sbom_spec_version`: Lists the SBOM specification version (e.g., SPDX-2.2).
-- `spec_with_version_compliant`: List the SBOM specification compliant with specific version.
-- `sbom_with_uri`: List the SBOM with URIs.
-- `sbom_with_vuln`: List the SBOM cntaining vulnerability information.
-- `sbom_build_process`: List the SBOM build process.
-- `sbom_with_bomlinks`: List the SBOM bomlinks.
+```table
+| Canonical feature               | Aliases                                        | What it checks (short)                                           |
+| ------------------------------- | ---------------------------------------------- | ---------------------------------------------------------------- |
+| `sbom_creation_timestamp`       | `sbom_timestamp`                               | SBOM has a creation timestamp.                                   |
+| `sbom_authors`                  | `sbom_creator`                                 | SBOM has authors / creators.                                     |
+| `sbom_with_creator_and_version` | `sbom_tool`                                    | SBOM includes creator/tool **and** its version.                  |
+| `sbom_with_primary_component`   | `sbom_primary_component`                       | SBOM defines a primary component (and usually its version).      |
+| `sbom_dependencies`             | `sbom_depth`                                   | SBOM contains dependency relationships.                          |
+| `sbom_sharable`                 | –                                              | SBOM has information to determine if it’s sharable license-wise. |
+| `sbom_parsable`                 | –                                              | SBOM is syntactically parsable.                                  |
+| `sbom_spec`                     | `sbom_spec_declared`, `sbom_name`              | SBOM declares a spec/name (SPDX, CycloneDX, etc.).               |
+| `sbom_file_format`              | `sbom_spec_file_format`, `sbom_machine_format` | Underlying file/machine format (JSON, XML, tag-value, etc.).     |
+| `sbom_spec_version`             | –                                              | Declared SBOM specification version.                             |
+| `spec_with_version_compliant`   | –                                              | SBOM spec + version are compliant (according to your checks).    |
+| `sbom_with_uri`                 | `sbom_uri`                                     | SBOM or its main entity has an associated URI.                   |
+| `sbom_with_vuln`                | `sbom_vulnerabilities`                         | SBOM contains vulnerability data.                                |
+| `sbom_build_process`            | `sbom_build`                                   | SBOM has build lifecycle / build process information.            |
+| `sbom_with_bomlinks`            | `sbom_bomlinks`                                | SBOM has BOM-Link style references.                              |
+| `sbom_spdxid`                   | –                                              | SBOM has a document-level SPDXID (SPDX docs).                    |
+| `sbom_organization`             | –                                              | SBOM lists an owning / producing organization.                   |
+| `sbom_schema_valid`             | –                                              | SBOM validates against the corresponding schema.                 |
+```
 
 ## Examples
 

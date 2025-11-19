@@ -105,7 +105,7 @@ var OCTKeyToEvaluatingFunction = map[string]catalog.ProfFeatEval{
 	"sbom_organization": profiles.OCTSBOMCreationOrganization,
 	"sbom_tool":         profiles.OCTSBOMToolCreation,
 	"sbom_namespace":    profiles.OCTSBOMNamespace,
-	"sbom_license":      profiles.OCTSBOMDataLicense,
+	"sbom_data_license": profiles.OCTSBOMDataLicense,
 
 	"pack_name":         profiles.OCTCompWithName,
 	"pack_version":      profiles.OCTCompWithVersion,
@@ -134,12 +134,12 @@ var InterlynkKeyToEvaluatingFunction = map[string]catalog.ProfFeatEval{
 	"comp_sha256":    profiles.InterCompWithChecksum265,
 	"sbom_signature": profiles.InterSBOMSignature,
 
-	"comp_dependencies": profiles.InterCompWithDependencies,
-	"sbom_completeness": profiles.InterSBOMCompleteness,
-	"primary_component": profiles.InterSBOMPrimaryComponent,
-	"comp_source_code":  profiles.InterCompWithSourceCode,
-	"comp_supplier":     profiles.InterCompWithSupplier,
-	"comp_purpose":      profiles.InterCompWithPurpose,
+	"comp_dependencies":      profiles.InterCompWithDependencies,
+	"sbom_completeness":      profiles.InterSBOMCompleteness,
+	"sbom_primary_component": profiles.InterSBOMPrimaryComponent,
+	"comp_source_code":       profiles.InterCompWithSourceCode,
+	"comp_supplier":          profiles.InterCompWithSupplier,
+	"comp_purpose":           profiles.InterCompWithPurpose,
 
 	"comp_licenses":                profiles.InterCompWithLicenses,
 	"comp_valid_licenses":          profiles.InterCompWithValidLicenses,
@@ -175,7 +175,7 @@ var CompKeyToEvaluatingFunction = map[string]catalog.ComprFeatEval{
 
 	"comp_with_dependencies":     extractors.CompWithDependencies,
 	"sbom_completeness_declared": extractors.CompWithCompleteness,
-	"primary_component":          extractors.SBOMWithPrimaryComponent,
+	"sbom_primary_component":     extractors.SBOMWithPrimaryComponent,
 	"comp_with_source_code":      extractors.CompWithSourceCode,
 	"comp_with_supplier":         extractors.CompWithSupplier,
 	"comp_with_purpose":          extractors.CompWithPackagePurpose,
@@ -536,7 +536,7 @@ var CatCompletenessSpec = catalog.ComprCatSpec{
 	Features: []catalog.ComprFeatSpec{
 		{Key: "comp_with_dependencies", Name: "Component With Dependencies", Weight: 0.25, Ignore: false, Evaluate: extractors.CompWithDependencies},
 		{Key: "sbom_completeness_declared", Name: "Component With Declared Completeness", Weight: 0.15, Ignore: false, Evaluate: extractors.CompWithCompleteness},
-		{Key: "primary_component", Name: "Primary Component", Weight: 0.20, Ignore: false, Evaluate: extractors.SBOMWithPrimaryComponent},
+		{Key: "sbom_primary_component", Name: "Primary Component", Weight: 0.20, Ignore: false, Evaluate: extractors.SBOMWithPrimaryComponent},
 		{Key: "comp_with_source_code", Name: "Component With Source Code", Weight: 0.15, Ignore: false, Evaluate: extractors.CompWithSourceCode},
 		{Key: "comp_with_supplier", Name: "Component With Supplier", Weight: 0.15, Ignore: false, Evaluate: extractors.CompWithSupplier},
 		{Key: "comp_with_purpose", Name: "Component With Primary Purpose", Weight: 0.10, Ignore: false, Evaluate: extractors.CompWithPackagePurpose},
@@ -636,7 +636,7 @@ var profileInterlynkSpec = catalog.ProfSpec{
 
 		{Key: "comp_dependencies", Name: "Component Dependencies", Description: "components with dependencies", Required: true, Evaluate: profiles.InterCompWithDependencies},
 		{Key: "sbom_completeness", Name: "SBOM Completeness ", Description: "components with declared completeness", Required: true, Evaluate: profiles.InterSBOMCompleteness},
-		{Key: "primary_component", Name: "Primary Component", Description: "Primary component identified", Required: true, Evaluate: profiles.InterSBOMPrimaryComponent},
+		{Key: "sbom_primary_component", Name: "Primary Component", Description: "Primary component identified", Required: true, Evaluate: profiles.InterSBOMPrimaryComponent},
 		{Key: "comp_source_code", Name: "Component Source Code", Description: "components with source code", Required: true, Evaluate: profiles.InterCompWithSourceCode},
 		{Key: "comp_supplier", Name: "Component Supplier", Description: "components with supplier", Required: true, Evaluate: profiles.InterCompWithSupplier},
 		{Key: "comp_purpose", Name: "Component Type", Description: "components with primary purpose", Required: true, Evaluate: profiles.InterCompWithPurpose},
@@ -742,7 +742,7 @@ var profileOCTSpec = catalog.ProfSpec{
 		{Key: "sbom_organization", Name: "Creator organization", Required: true, Description: "Organization info", Evaluate: profiles.OCTSBOMCreationOrganization},
 		{Key: "sbom_tool", Name: "Creator Tool", Required: true, Description: "Tool name & version", Evaluate: profiles.OCTSBOMToolCreation},
 		{Key: "sbom_namespace", Name: "Document Namespace", Required: true, Description: "Unique namespace", Evaluate: profiles.OCTSBOMNamespace},
-		{Key: "sbom_license", Name: "Data License", Required: true, Description: "CC0-1.0 or similar", Evaluate: profiles.OCTSBOMDataLicense},
+		{Key: "sbom_data_license", Name: "Data License", Required: true, Description: "CC0-1.0 or similar", Evaluate: profiles.OCTSBOMDataLicense},
 
 		{Key: "pack_name", Name: "Package name", Required: true, Description: "All packages named", Evaluate: profiles.OCTCompWithName},
 		{Key: "pack_version", Name: "Package Version", Required: true, Description: "Package versions", Evaluate: profiles.OCTCompWithVersion},

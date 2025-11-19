@@ -23,6 +23,8 @@ import (
 
 	"github.com/interlynk-io/sbomqs/pkg/logger"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
+	"github.com/knqyf263/go-cpe/naming"
+	purl "github.com/package-url/packageurl-go"
 	"github.com/samber/lo" // Added for lo.Contains
 )
 
@@ -78,6 +80,7 @@ func processPaths(ctx context.Context, ep *Params) ([]*Result, error) {
 				log.Debugf("failed to parse SBOM document for %s: %v", filePath, err)
 				continue
 			}
+
 			// Process each feature for the current SBOM
 			for _, feature := range ep.Features {
 				featureResult, err := processFeatureForSBOM(ctx, ep, currentDoc, filePath, feature)
@@ -148,6 +151,7 @@ func processFeatureForSBOM(ctx context.Context, ep *Params, doc sbom.Document, f
 	log := logger.FromContext(ctx)
 	log.Debug("list.processFeatureForSBOM()")
 	log.Debug("processing feature: ", feature)
+
 	feature = strings.TrimSpace(feature)
 
 	// Validate the feature
@@ -178,6 +182,7 @@ func processFeatureForSBOM(ctx context.Context, ep *Params, doc sbom.Document, f
 func processComponentFeature(ctx context.Context, ep *Params, doc sbom.Document, result *Result) (*Result, error) {
 	log := logger.FromContext(ctx)
 	log.Debug("processing component feature: ", result.Feature)
+
 	result.Components = []ComponentResult{}
 	var totalComponents int
 
@@ -192,6 +197,7 @@ func processComponentFeature(ctx context.Context, ep *Params, doc sbom.Document,
 			result.Errors = append(result.Errors, fmt.Sprintf("failed to evaluate feature %s for component: %v", result.Feature, err))
 			continue
 		}
+
 		matchesCriteria := (hasFeature && !ep.Missing) || (!hasFeature && ep.Missing)
 		if matchesCriteria {
 			result.Components = append(result.Components, ComponentResult{
@@ -200,6 +206,7 @@ func processComponentFeature(ctx context.Context, ep *Params, doc sbom.Document,
 				Values:  value,
 			})
 		}
+
 		totalComponents++
 	}
 	result.TotalComponents = totalComponents
@@ -260,14 +267,26 @@ func evaluateComponentFeature(feature string, comp sbom.GetComponent, doc sbom.D
 	case "comp_with_name":
 		return evaluateCompWithName(comp)
 
+	case "comp_name":
+		return evaluateCompWithName(comp)
+
 	case "comp_with_version":
+		return evaluateCompWithVersion(comp)
+
+	case "comp_version":
 		return evaluateCompWithVersion(comp)
 
 	case "comp_with_supplier":
 		return evaluateCompWithSupplier(comp)
 
+	case "comp_supplier":
+		return evaluateCompWithSupplier(comp)
+
 	case "comp_with_uniq_ids":
 		return evaluateCompWithUniqID(comp)
+
+	case "comp_license":
+		return evaluateCompWithValidLicenses(comp)
 
 	case "comp_valid_licenses":
 		return evaluateCompWithValidLicenses(comp)
@@ -278,7 +297,16 @@ func evaluateComponentFeature(feature string, comp sbom.GetComponent, doc sbom.D
 	case "comp_with_source_code_uri":
 		return evaluateCompWithSourceCodeURI(doc, comp)
 
+	case "comp_with_source_code":
+		return evaluateCompWithSourceCodeURI(doc, comp)
+
+	case "comp_source_code_uri":
+		return evaluateCompWithSourceCodeURI(doc, comp)
+
 	case "comp_with_source_code_hash":
+		return evaluateCompWithSourceCodeHash(doc, comp)
+
+	case "comp_source_hash":
 		return evaluateCompWithSourceCodeHash(doc, comp)
 
 	case "comp_with_executable_uri":
@@ -290,19 +318,37 @@ func evaluateComponentFeature(feature string, comp sbom.GetComponent, doc sbom.D
 	case "comp_with_associated_license":
 		return evaluateCompWithAssociatedLicense(doc, comp)
 
+	case "comp_associated_license":
+		return evaluateCompWithAssociatedLicense(doc, comp)
+
 	case "comp_with_concluded_license":
 		return evaluateCompWithConcludedLicense(comp)
 
 	case "comp_with_declared_license":
 		return evaluateCompWithDeclaredLicense(comp)
 
+	case "comp_with_declared_licenses":
+		return evaluateCompWithDeclaredLicense(comp)
+
 	case "comp_with_dependencies":
+		return evaluateCompWithDependencies(comp)
+
+	case "comp_dependencies":
+		return evaluateCompWithDependencies(comp)
+
+	case "comp_depth":
 		return evaluateCompWithDependencies(comp)
 
 	case "comp_with_any_vuln_lookup_id":
 		return evaluateCompWithAnyVulnLookupID(comp)
 
 	case "comp_with_deprecated_licenses":
+		return evaluateCompWithDeprecatedLicenses(comp)
+
+	case "comp_no_deprecated_licenses":
+		return evaluateCompWithDeprecatedLicenses(comp)
+
+	case "comp_no_restrictive_licenses":
 		return evaluateCompWithDeprecatedLicenses(comp)
 
 	case "comp_with_multi_vuln_lookup_id":
@@ -317,8 +363,38 @@ func evaluateComponentFeature(feature string, comp sbom.GetComponent, doc sbom.D
 	case "comp_with_checksums":
 		return evaluateCompWithChecksums(comp)
 
+	case "comp_hash":
+		return evaluateCompWithChecksums(comp)
+
+	case "comp_with_sha256":
+		return evaluateCompWithChecksums256(comp)
+
+	case "comp_hash_sha256":
+		return evaluateCompWithChecksums256(comp)
+
 	case "comp_with_licenses":
 		return evaluateCompWithLicenses(comp)
+
+	case "comp_with_valid_licenses":
+		return evaluateCompWithLicenses(comp)
+
+	case "comp_with_purpose":
+		return evaluateCompWithPrimaryPurpose(doc, comp)
+
+	case "comp_purpose":
+		return evaluateCompWithPrimaryPurpose(doc, comp)
+
+	case "comp_with_purl":
+		return evaluateCompWithPURL(comp)
+
+	case "comp_with_cpe":
+		return evaluateCompWithCPE(comp)
+
+	case "comp_purl":
+		return evaluateCompWithPURL(comp)
+
+	case "comp_cpe":
+		return evaluateCompWithCPE(comp)
 
 	default:
 		return false, "", fmt.Errorf("unsupported component feature: %s", feature)
@@ -333,16 +409,35 @@ func evaluateSBOMFeature(feature string, doc sbom.Document) (bool, string, error
 		timestamp := doc.Spec().GetCreationTimestamp()
 		return timestamp != "", timestamp, nil
 
+	case "sbom_timestamp":
+		timestamp := doc.Spec().GetCreationTimestamp()
+		return timestamp != "", timestamp, nil
+
 	case "sbom_authors":
 		return evaluateSBOMAuthors(doc)
 
+	case "sbom_creator":
+		return evaluateSBOMAuthors(doc)
+
+	case "sbom_build":
+		return evaluateSBOMBuildLifeCycle(doc)
+
 	case "sbom_with_creator_and_version":
+		return evaluateSBOMWithCreatorAndVersion(doc)
+
+	case "sbom_tool":
 		return evaluateSBOMWithCreatorAndVersion(doc)
 
 	case "sbom_with_primary_component":
 		return evaluateSBOMPrimaryComponent(doc)
 
+	case "sbom_primary_component":
+		return evaluateSBOMPrimaryComponent(doc)
+
 	case "sbom_dependencies":
+		return evaluateSBOMDependencies(doc)
+
+	case "sbom_depth":
 		return evaluateSBOMDependencies(doc)
 
 	case "sbom_sharable":
@@ -354,8 +449,14 @@ func evaluateSBOMFeature(feature string, doc sbom.Document) (bool, string, error
 	case "sbom_spec":
 		return evaluateSBOMSpec(doc)
 
+	case "sbom_spec_declared":
+		return evaluateSBOMSpec(doc)
+
 	case "sbom_spec_file_format":
-		return evaluateSBOMSpecFileFormat(doc)
+		return evaluateSBOMMachineFormat(doc)
+
+	case "sbom_file_format":
+		return evaluateSBOMMachineFormat(doc)
 
 	case "sbom_spec_version":
 		return evaluateSBOMSpecVersion(doc)
@@ -366,6 +467,9 @@ func evaluateSBOMFeature(feature string, doc sbom.Document) (bool, string, error
 	case "sbom_with_uri":
 		return evaluateSBOMWithURI(doc)
 
+	case "sbom_uri":
+		return evaluateSBOMWithURI(doc)
+
 	case "sbom_with_vuln":
 		return evaluateSBOMWithVulnerability(doc)
 
@@ -374,6 +478,27 @@ func evaluateSBOMFeature(feature string, doc sbom.Document) (bool, string, error
 
 	case "sbom_with_bomlinks":
 		return evaluateSBOMWithBomLinks(doc)
+
+	case "sbom_bomlinks":
+		return evaluateSBOMWithBomLinks(doc)
+
+	case "sbom_vulnerabilities":
+		return evaluateSBOMWithVulnerability(doc)
+
+	case "sbom_machine_format":
+		return evaluateSBOMMachineFormat(doc)
+
+	case "sbom_spdxid":
+		return evaluateSBOMSPDXID(doc)
+
+	case "sbom_name":
+		return evaluateSBOMSpec(doc)
+
+	case "sbom_organization":
+		return evaluateSBOMOrganization(doc)
+
+	case "sbom_schema_valid":
+		return evaluateSBOMSchema(doc)
 
 	// case "sbom_with_signature":
 	// 	return evaluateSBOMWithSignature(doc)
@@ -446,6 +571,76 @@ func evaluateCompWithSupplier(comp sbom.GetComponent) (bool, string, error) {
 // evaluateCompWithUniqID evaluates if the component has a unique ID
 func evaluateCompWithUniqID(comp sbom.GetComponent) (bool, string, error) {
 	return comp.GetID() != "", comp.GetID(), nil
+}
+
+func evaluateCompWithPURL(comp sbom.GetComponent) (bool, string, error) {
+	have := compHasAnyPURLs(comp)
+	if have {
+		return true, "contains purls", nil
+	}
+
+	return false, "missing purls", nil
+}
+
+func evaluateCompWithCPE(comp sbom.GetComponent) (bool, string, error) {
+	have := compHasAnyCPEs(comp)
+	if have {
+		return true, "contains cpes", nil
+	}
+
+	return false, "missing cpes", nil
+}
+
+func compHasAnyPURLs(c sbom.GetComponent) bool {
+	for _, p := range c.GetPurls() {
+		if isValidPURL(string(p)) {
+			return true
+		}
+	}
+	return false
+}
+
+func isValidCPE(s string) bool {
+	ls := strings.TrimSpace(s)
+	low := strings.ToLower(ls)
+
+	switch {
+	case strings.HasPrefix(low, "cpe:2.3:"):
+		_, err := naming.UnbindFS(ls)
+		return err == nil
+	case strings.HasPrefix(low, "cpe:/"):
+		_, err := naming.UnbindURI(ls)
+		return err == nil
+	default:
+		return false
+	}
+}
+
+func isValidPURL(s string) bool {
+	s = strings.TrimSpace(s)
+	if s == "" {
+		return false
+	}
+
+	u, err := purl.FromString(s)
+	if err != nil {
+		return false
+	}
+
+	// type and name must be present per spec
+	if strings.TrimSpace(u.Type) == "" || strings.TrimSpace(u.Name) == "" {
+		return false
+	}
+	return true
+}
+
+func compHasAnyCPEs(c sbom.GetComponent) bool {
+	for _, p := range c.GetCpes() {
+		if isValidCPE(string(p)) {
+			return true
+		}
+	}
+	return false
 }
 
 // evaluateCompWithValidLicenses evaluates if the component has valid licenses
@@ -581,14 +776,74 @@ func evaluateCompWithChecksums(comp sbom.GetComponent) (bool, string, error) {
 		return false, "", nil
 	}
 
-	checksumValues := make([]string, 0, len(checksums))
-	for _, checksum := range checksums {
-		checksumValues = append(checksumValues, checksum.GetAlgo()) // Assuming sbom.GetChecksum has a GetAlgo() method
+	if ok, values := hasAnySHA(comp); ok {
+		return true, strings.Join(values, ", "), nil
 	}
-	if len(checksumValues) == 0 {
-		return true, "", nil
+
+	return false, "", nil
+}
+
+func hasAnySHA(c sbom.GetComponent) (bool, []string) {
+	var values []string
+	for _, checksum := range c.GetChecksums() {
+		if isAnySHA(checksum.GetAlgo()) && strings.TrimSpace(checksum.GetContent()) != "" {
+			values = append(values, checksum.GetAlgo())
+		}
 	}
-	return true, strings.Join(checksumValues, ","), nil
+	if values != nil {
+		return true, values
+	}
+
+	return false, nil
+}
+
+func isAnySHA(algo string) bool {
+	n := strings.ToUpper(algo)
+	n = strings.ReplaceAll(n, "-", "")
+	n = strings.ReplaceAll(n, "_", "")
+	n = strings.TrimSpace(n)
+
+	switch n {
+	case "SHA1", "SHA256", "SHA384", "SHA512", "MD5":
+		return true
+	default:
+		return false
+	}
+}
+
+// evaluateCompWithChecksums evaluates if the component has checksums
+func evaluateCompWithChecksums256(comp sbom.GetComponent) (bool, string, error) {
+	checksums := comp.GetChecksums()
+	if len(checksums) == 0 {
+		return false, "", nil
+	}
+
+	ok, value := hasSHA256SHA(comp)
+	if ok {
+		return true, value, nil
+	}
+	return true, "", nil
+}
+
+func hasSHA256SHA(c sbom.GetComponent) (bool, string) {
+	for _, checksum := range c.GetChecksums() {
+		if isSHA256(checksum.GetAlgo()) && strings.TrimSpace(checksum.GetContent()) != "" {
+			return true, checksum.GetAlgo()
+		}
+	}
+	return false, ""
+}
+
+func isSHA256(algo string) bool {
+	n := strings.ToUpper(algo)
+	n = strings.ReplaceAll(n, "-", "")
+	n = strings.ReplaceAll(n, "_", "")
+	n = strings.TrimSpace(n)
+
+	if n == "SHA256" {
+		return true
+	}
+	return false
 }
 
 // evaluateCompWithLicenses
@@ -673,7 +928,7 @@ func evaluateCompWithAssociatedLicense(doc sbom.Document, comp sbom.GetComponent
 	// associatedLicense := comp.AssociatedLicense()
 	spec := doc.Spec().GetSpecType()
 
-	if spec == "spdx" {
+	if spec == string(sbom.SBOMSpecSPDX) {
 		var associatedLicense []string
 		for _, l := range comp.ConcludedLicenses() {
 			if l != nil {
@@ -685,7 +940,7 @@ func evaluateCompWithAssociatedLicense(doc sbom.Document, comp sbom.GetComponent
 			return false, "", nil
 		}
 		return true, strings.Join(associatedLicense, ","), nil
-	} else if spec == "cyclonedx" {
+	} else if spec == string(sbom.SBOMSpecCDX) {
 		var associatedLicense []string
 
 		for _, l := range comp.GetLicenses() {
@@ -774,6 +1029,7 @@ func evaluateSBOMWithCreatorAndVersion(doc sbom.Document) (bool, string, error) 
 		value := fmt.Sprintf("%s v%s", tool.GetName(), tool.GetVersion())
 		return true, value, nil
 	}
+
 	return false, "", nil
 }
 
@@ -837,15 +1093,6 @@ func evaluateSBOMSpec(doc sbom.Document) (bool, string, error) {
 	return false, "", nil
 }
 
-// evaluateSBOMSpecFileFormat evaluates if the SBOM has a file format
-func evaluateSBOMSpecFileFormat(doc sbom.Document) (bool, string, error) {
-	fileFormat := doc.Spec().FileFormat()
-	if fileFormat != "" {
-		return true, fileFormat, nil
-	}
-	return false, "", nil
-}
-
 // evaluateSBOMSpecVersion evaluates if the SBOM has a specification version
 func evaluateSBOMSpecVersion(doc sbom.Document) (bool, string, error) {
 	version := doc.Spec().GetVersion()
@@ -860,13 +1107,13 @@ func evaluateSBOMSpecVersionCompliant(doc sbom.Document) (bool, string, error) {
 	specVersion := doc.Spec().GetVersion()
 	spec := doc.Spec().GetSpecType()
 
-	if spec == "spdx" {
+	if spec == string(sbom.SBOMSpecSPDX) {
 		count := lo.Count(validBsiSpdxVersions, specVersion)
 		if count == 0 {
 			return false, "", fmt.Errorf("SBOM spec version %s is not compliant with BSI SPDX versions", specVersion)
 		}
 		return true, specVersion, nil
-	} else if spec == "cyclonedx" {
+	} else if spec == string(sbom.SBOMSpecCDX) {
 
 		count := lo.Count(validBsiCycloneDXVersions, specVersion)
 		if count == 0 {
@@ -889,7 +1136,7 @@ func evaluateSBOMWithURI(doc sbom.Document) (bool, string, error) {
 
 // evaluateSBOMWithVulnerability evaluates if the SBOM has any vulnerabilities
 func evaluateSBOMWithVulnerability(doc sbom.Document) (bool, string, error) {
-	if doc.Spec().GetSpecType() == "spdx" {
+	if doc.Spec().GetSpecType() == string(sbom.SBOMSpecSPDX) {
 		return true, "", nil
 	}
 
@@ -911,7 +1158,7 @@ func evaluateSBOMWithVulnerability(doc sbom.Document) (bool, string, error) {
 
 // evaluateSBOMBuildProcess evaluates if the SBOM has a build process
 func evaluateSBOMBuildLifeCycle(doc sbom.Document) (bool, string, error) {
-	if doc.Spec().GetSpecType() == "spdx" {
+	if doc.Spec().GetSpecType() == string(sbom.SBOMSpecSPDX) {
 		return false, "no-deterministic-field in spdx", nil
 	}
 
@@ -922,6 +1169,60 @@ func evaluateSBOMBuildLifeCycle(doc sbom.Document) (bool, string, error) {
 	}
 
 	return true, lifecycles[found-1], nil
+}
+
+// evaluateSBOMBuildProcess evaluates if the SBOM has a build process
+func evaluateSBOMSPDXID(doc sbom.Document) (bool, string, error) {
+	if doc.Spec().GetSpecType() == string(sbom.SBOMSpecCDX) {
+		return false, "no-deterministic-field in spdx", nil
+	}
+
+	spdxid := doc.Spec().GetSpdxID()
+	if strings.TrimSpace(spdxid) == "" {
+		return false, "", nil
+	}
+	return true, spdxid, nil
+}
+
+// evaluateSBOMBuildProcess evaluates if the SBOM has a build process
+func evaluateSBOMMachineFormat(doc sbom.Document) (bool, string, error) {
+	spec := strings.TrimSpace(strings.ToLower(doc.Spec().GetSpecType()))
+	format := strings.TrimSpace(strings.ToLower(doc.Spec().FileFormat()))
+
+	if spec == "" {
+		return false, "", nil
+	}
+
+	if format == "" {
+		return false, "", nil
+	}
+
+	supportedFileFormats := sbom.SupportedSBOMFileFormats(spec)
+	for _, f := range supportedFileFormats {
+		if format == strings.ToLower(strings.TrimSpace(f)) {
+			return true, spec + "-" + format, nil
+		}
+	}
+
+	return false, "", nil
+}
+
+// Creator Organization
+func evaluateSBOMOrganization(doc sbom.Document) (bool, string, error) {
+	org := strings.TrimSpace(doc.Spec().GetOrganization())
+	if org == "" {
+		return false, "", nil
+	}
+
+	return true, org, nil
+}
+
+// schema
+func evaluateSBOMSchema(doc sbom.Document) (bool, string, error) {
+	if doc.SchemaValidation() {
+		return true, "valid schema", nil
+	}
+	return false, "invalid schema", nil
 }
 
 // evaluateSBOMWithBomLinks evaluates if the SBOM has BOM links
