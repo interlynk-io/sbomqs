@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/interlynk-io/sbomqs/pkg/logger"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
@@ -48,27 +49,28 @@ func ScoreSBOM(ctx context.Context, cfg config.Config, paths []string) ([]api.Re
 		return nil, fmt.Errorf("failed to initialize catalog: %w", err)
 	}
 
-	// // 3) validate config
-	// if err := validateConfig(ctx, catal, &cfg); err != nil {
-	// 	return nil, fmt.Errorf("failed to validate SBOM configuration: %w", err)
-	// }
-
 	results := make([]api.Result, 0, len(validPaths))
 	processed := 0
 
-	for _, p := range validPaths {
-		res, err := scoreOnePath(ctx, catal, cfg, p)
+	var pathErrors []string
+
+	for _, path := range validPaths {
+		res, err := scoreOnePath(ctx, catal, cfg, path)
 		if err != nil {
-			log.Warnf("skip %s: %v", p, err)
+			msg := fmt.Sprintf("skipping SBOM path %s: %v", path, err)
+			pathErrors = append(pathErrors, msg)
+			log.Debugf(msg)
 			continue
 		}
+
 		results = append(results, res)
 		processed++
 	}
 
 	if processed == 0 {
-		return nil, fmt.Errorf("no valid SBOM files processed")
+		return nil, fmt.Errorf("\n no valid SBOM files processed: %s", strings.Join(pathErrors, "\n"))
 	}
+
 	return results, nil
 }
 
@@ -155,15 +157,6 @@ func evaluateProfiles(ctx context.Context, catal *catalog.Catalog, doc sbom.Docu
 	log.Debugf("evaluate profiles")
 	result := api.NewResult(doc)
 
-	if doc.Spec().GetSpecType() == string(sbom.SBOMSpecCDX) {
-		for _, pk := range catal.Profiles {
-			if pk.Key == registry.ProfileOCT {
-				fmt.Println("OCT Profiles doesn't support for Cyclonedx SBOM")
-				os.Exit(0)
-			}
-		}
-	}
-
 	// Evaluate all profiles and get the results
 	profResults := profiles.Evaluate(ctx, catal, doc)
 	result.Profiles = &profResults
@@ -180,9 +173,6 @@ func evaluateComprehensive(ctx context.Context, catal *catalog.Catalog, doc sbom
 
 	comprResult := comprehenssive.Evaluate(ctx, catal, doc)
 	result.Comprehensive = &comprResult
-
-	// result.InterlynkScore = formulae.ComputeInterlynkComprScore(comprResult.CatResult)
-	// result.Grade = formulae.ToGrade(result.InterlynkScore)
 
 	return *result, nil
 }
