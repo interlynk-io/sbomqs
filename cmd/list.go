@@ -65,16 +65,7 @@ var listCmd = &cobra.Command{
   # List all components with invalid licenses
   sbomqs list --feature comp_valid_licenses --missing samples/sbomqs-spdx-syft.json
 
-  # Component features: 
-  [comp_with_name, comp_with_version, comp_with_supplier, comp_with_uniq_ids, comp_valid_licenses, comp_with_any_vuln_lookup_id, 
-  comp_with_deprecated_licenses, comp_with_multi_vuln_lookup_id, comp_with_primary_purpose, comp_with_restrictive_licenses, 
-  comp_with_checksums, comp_with_licenses, comp_with_checksums_sha256, comp_with_source_code_uri, comp_with_source_code_hash, 
-  comp_with_executable_uri, comp_with_associated_license, comp_with_concluded_license, comp_with_declared_license]
-  
-  # SBOM features:
-  [sbom_creation_timestamp, sbom_authors, sbom_with_creator_and_version, sbom_with_primary_component, sbom_dependencies, 
-  sbom_sharable, sbom_parsable, sbom_spec, sbom_file_format, sbom_spec_version, spec_with_version_compliant, sbom_with_uri,
-  sbom_with_vuln, sbom_build_process, sbom_with_bomlinks]
+  Supporter features are listed here: https://github.com/interlynk-io/sbomqs/blob/main/docs/commands/list.md#supported-features
 `,
 
 	Args: func(_ *cobra.Command, args []string) error {

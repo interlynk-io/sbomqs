@@ -27,6 +27,8 @@ import (
 	"github.com/interlynk-io/sbomqs/pkg/reporter"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/pkg/scorer"
+	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/config"
+	score "github.com/interlynk-io/sbomqs/pkg/scorer/v2/score"
 	"github.com/samber/lo"
 )
 
@@ -38,6 +40,8 @@ type DtParams struct {
 	JSON     bool
 	Basic    bool
 	Detailed bool
+
+	Legacy bool
 
 	TagProjectWithScore bool
 	Timeout             int // handle cutom timeout
@@ -87,47 +91,93 @@ func DtrackScore(ctx context.Context, dtP *DtParams) error {
 				log.Fatalf("Failed to write string: %v", err)
 			}
 
-			ep := &Params{}
+			ep := &Params{
+				Basic:    dtP.Basic,
+				JSON:     dtP.JSON,
+				Detailed: dtP.Detailed,
+			}
+
 			ep.Path = append(ep.Path, f.Name())
-			doc, scores, err := processFile(ctx, ep, ep.Path[0], nil)
-			if err != nil {
-				return err
-			}
 
-			if dtP.TagProjectWithScore {
-				log.Debugf("Project: %+v", prj.Tags)
-				// remove old score
-				prj.Tags = lo.Filter(prj.Tags, func(t dtrack.Tag, _ int) bool {
-					return !strings.HasPrefix(t.Name, "sbomqs=")
-				})
-
-				tag := fmt.Sprintf("sbomqs=%0.1f", scores.AvgScore())
-				prj.Tags = append(prj.Tags, dtrack.Tag{Name: tag})
-
-				log.Debugf("Tagging project with %s", tag)
-				log.Debugf("Project: %+v", prj.Tags)
-
-				_, err = dTrackClient.Project.Update(ctx, prj)
+			if dtP.Legacy {
+				doc, scores, err := processFile(ctx, ep, ep.Path[0], nil)
 				if err != nil {
-					log.Fatalf("Failed to tag project: %s", err)
+					return err
 				}
+
+				if dtP.TagProjectWithScore {
+					log.Debugf("Project: %+v", prj.Tags)
+					// remove old score
+					prj.Tags = lo.Filter(prj.Tags, func(t dtrack.Tag, _ int) bool {
+						return !strings.HasPrefix(t.Name, "sbomqs=")
+					})
+
+					tag := fmt.Sprintf("sbomqs=%0.1f", scores.AvgScore())
+					prj.Tags = append(prj.Tags, dtrack.Tag{Name: tag})
+
+					log.Debugf("Tagging project with %s", tag)
+					log.Debugf("Project: %+v", prj.Tags)
+
+					_, err = dTrackClient.Project.Update(ctx, prj)
+					if err != nil {
+						log.Fatalf("Failed to tag project: %s", err)
+					}
+				}
+
+				path := fmt.Sprintf("ID: %s, Name: %s, Version: %s", prj.UUID, prj.Name, prj.Version)
+
+				reportFormat := "detailed"
+				if dtP.Basic {
+					reportFormat = "basic"
+				} else if dtP.JSON {
+					reportFormat = "json"
+				}
+
+				nr := reporter.NewReport(ctx,
+					[]sbom.Document{doc},
+					[]scorer.Scores{scores},
+					[]string{path},
+					reporter.WithFormat(reportFormat))
+				nr.Report()
+			} else {
+				if dtP.TagProjectWithScore {
+					log.Debugf("Project: %+v", prj.Tags)
+					// remove old score
+					prj.Tags = lo.Filter(prj.Tags, func(t dtrack.Tag, _ int) bool {
+						return !strings.HasPrefix(t.Name, "sbomqs=")
+					})
+
+					cfg := config.Config{
+						Categories: ep.Categories,
+						Features:   ep.Features,
+						ConfigFile: ep.ConfigPath,
+						Profile:    ep.Profiles,
+					}
+
+					results, err := score.ScoreSBOM(ctx, cfg, ep.Path)
+					if err != nil {
+						return err
+					}
+
+					var interlynkScore float64
+
+					for _, r := range results {
+						interlynkScore = r.Comprehensive.InterlynkScore
+					}
+
+					tag := fmt.Sprintf("sbomqs=%0.1f", interlynkScore)
+					prj.Tags = append(prj.Tags, dtrack.Tag{Name: tag})
+
+					log.Debugf("Tagging project with %s", tag)
+					log.Debugf("Project: %+v", prj.Tags)
+
+					_, err = dTrackClient.Project.Update(ctx, prj)
+					if err != nil {
+						log.Fatalf("Failed to tag project: %s", err)
+					}
+				}
+				return scored(ctx, ep)
 			}
-
-			path := fmt.Sprintf("ID: %s, Name: %s, Version: %s", prj.UUID, prj.Name, prj.Version)
-
-			reportFormat := "detailed"
-			if dtP.Basic {
-				reportFormat = "basic"
-			} else if dtP.JSON {
-				reportFormat = "json"
-			}
-
-			nr := reporter.NewReport(ctx,
-				[]sbom.Document{doc},
-				[]scorer.Scores{scores},
-				[]string{path},
-				reporter.WithFormat(reportFormat))
-			nr.Report()
 		}
 	}
 

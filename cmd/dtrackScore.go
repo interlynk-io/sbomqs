@@ -84,6 +84,7 @@ func extractArgs(cmd *cobra.Command, args []string) (*engine.DtParams, error) {
 	}
 
 	params.Timeout, _ = cmd.Flags().GetInt("timeout")
+	params.Legacy, _ = cmd.Flags().GetBool("legacy")
 
 	return params, nil
 }
@@ -111,4 +112,5 @@ func init() {
 
 	dtrackScoreCmd.Flags().BoolP("tag-project-with-score", "t", false, "tag project with sbomqs score")
 	dtrackScoreCmd.Flags().IntP("timeout", "i", 60, "Timeout in seconds for Dependency-Track API requests")
+	dtrackScoreCmd.Flags().BoolP("legacy", "l", false, "legacy, prior to sbomqs version 2.0")
 }

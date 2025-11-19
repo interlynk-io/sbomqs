@@ -16,6 +16,7 @@ package profiles
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/interlynk-io/sbomqs/pkg/logger"
 	"github.com/interlynk-io/sbomqs/pkg/sbom"
@@ -34,6 +35,12 @@ func Evaluate(ctx context.Context, catal *catalog.Catalog, doc sbom.Document) ap
 	results := api.NewProfResults()
 
 	for _, profile := range catal.Profiles {
+		if doc.Spec().GetSpecType() == string(sbom.SBOMSpecCDX) && profile.Key == "oct" {
+			fmt.Printf("Skipping evaluation of oct profile, as it doesn't support for cyclonedx\n")
+			log.Debugf("Skipping evaluation of oct profile, as it doesn't support for cyclonedx")
+			continue
+		}
+
 		profResult := evaluateEachProfile(ctx, doc, profile)
 		results.ProfResult = append(results.ProfResult, profResult)
 	}
@@ -48,6 +55,11 @@ func Evaluate(ctx context.Context, catal *catalog.Catalog, doc sbom.Document) ap
 func evaluateEachProfile(ctx context.Context, doc sbom.Document, profile catalog.ProfSpec) api.ProfileResult {
 	log := logger.FromContext(ctx)
 	log.Debugf("evaluating profile one by one, processing profile: %s", profile.Name)
+
+	// if doc.Spec().GetSpecType() == string(sbom.SBOMSpecCDX) && profile.Key == "oct" {
+	// 	log.Debugf("Skipping evaluation of oct profile, as it doesn't support for cyclonedx")
+	// 	return api.ProfileResult{}
+	// }
 
 	var countNonNA int
 	var sumScore float64
