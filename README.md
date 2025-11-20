@@ -75,7 +75,10 @@ sbomqs score -b my-app.spdx.json
 sbomqs score my-app.spdx.json
 
 # Check specific category
-sbomqs score my-app.spdx.json --category NTIA-minimum-elements
+sbomqs score my-app.spdx.json --category integrity
+
+# check specific profile 
+sbomqs score my-app.spdx.json --category NTIA-minimum-elements --profile ntia
 ```
 
 ### Verify Compliance
