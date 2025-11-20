@@ -11,7 +11,7 @@ before:
     - /bin/bash -c 'if [ -n "$(git --no-pager diff --exit-code go.mod go.sum)" ]; then exit 1; fi'
 
 gomod:
-  proxy: true
+  proxy: false
 
 builds:
   - id: sbomqs
