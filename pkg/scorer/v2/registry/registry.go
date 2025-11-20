@@ -20,11 +20,11 @@ import (
 	"os"
 	"strings"
 
-	"github.com/interlynk-io/sbomqs/pkg/logger"
-	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/catalog"
-	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/config"
-	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/extractors"
-	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/profiles"
+	"github.com/interlynk-io/sbomqs/v2/pkg/logger"
+	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/catalog"
+	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/config"
+	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/extractors"
+	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/profiles"
 )
 
 // ComprCatKey lists all comprehenssive catefories

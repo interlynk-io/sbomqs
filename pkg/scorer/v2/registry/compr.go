@@ -19,7 +19,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/catalog"
+	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/catalog"
 	"go.yaml.in/yaml/v2"
 )
 

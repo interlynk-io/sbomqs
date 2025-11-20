@@ -14,7 +14,7 @@
 
 package fsct
 
-import "github.com/interlynk-io/sbomqs/pkg/compliance/db"
+import "github.com/interlynk-io/sbomqs/v2/pkg/compliance/db"
 
 type fsctScoreResult struct {
 	id              string

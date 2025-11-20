@@ -19,12 +19,12 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/interlynk-io/sbomqs/pkg/compliance/common"
-	"github.com/interlynk-io/sbomqs/pkg/logger"
-	"github.com/interlynk-io/sbomqs/pkg/sbom"
-	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/catalog"
-	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/config"
-	"github.com/interlynk-io/sbomqs/pkg/utils"
+	"github.com/interlynk-io/sbomqs/v2/pkg/compliance/common"
+	"github.com/interlynk-io/sbomqs/v2/pkg/logger"
+	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
+	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/catalog"
+	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/config"
+	"github.com/interlynk-io/sbomqs/v2/pkg/utils"
 )
 
 func ProcessURLPath(ctx context.Context, cfg config.Config, url string) (*os.File, error) {

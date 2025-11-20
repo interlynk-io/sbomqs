@@ -20,8 +20,8 @@ import (
 	"path/filepath"
 	"sort"
 
-	"github.com/interlynk-io/sbomqs/pkg/logger"
-	"github.com/interlynk-io/sbomqs/pkg/utils"
+	"github.com/interlynk-io/sbomqs/v2/pkg/logger"
+	"github.com/interlynk-io/sbomqs/v2/pkg/utils"
 )
 
 // validateAndExpandPaths returns a list of files and URLs.

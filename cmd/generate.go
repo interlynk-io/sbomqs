@@ -18,9 +18,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/interlynk-io/sbomqs/pkg/logger"
-	"github.com/interlynk-io/sbomqs/pkg/scorer"
-	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/registry"
+	"github.com/interlynk-io/sbomqs/v2/pkg/logger"
+	"github.com/interlynk-io/sbomqs/v2/pkg/scorer"
+	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/registry"
 	"github.com/spf13/cobra"
 )
 

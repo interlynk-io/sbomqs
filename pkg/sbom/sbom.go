@@ -24,7 +24,7 @@ import (
 	"log"
 	"strings"
 
-	"github.com/interlynk-io/sbomqs/pkg/logger"
+	"github.com/interlynk-io/sbomqs/v2/pkg/logger"
 	"gopkg.in/yaml.v2"
 )
 

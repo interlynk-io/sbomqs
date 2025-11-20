@@ -15,7 +15,7 @@
 package sbom
 
 import (
-	"github.com/interlynk-io/sbomqs/pkg/licenses"
+	"github.com/interlynk-io/sbomqs/v2/pkg/licenses"
 )
 
 //counterfeiter:generate . Spec

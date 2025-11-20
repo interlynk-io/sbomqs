@@ -17,7 +17,7 @@ package extractors
 import (
 	"testing"
 
-	"github.com/interlynk-io/sbomqs/pkg/sbom"
+	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
 	"github.com/stretchr/testify/assert"
 )
 

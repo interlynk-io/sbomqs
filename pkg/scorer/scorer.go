@@ -18,7 +18,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/interlynk-io/sbomqs/pkg/sbom"
+	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
 )
 
 const EngineVersion = "7"

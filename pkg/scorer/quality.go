@@ -19,8 +19,8 @@ import (
 	"math"
 	"strings"
 
-	"github.com/interlynk-io/sbomqs/pkg/licenses"
-	"github.com/interlynk-io/sbomqs/pkg/sbom"
+	"github.com/interlynk-io/sbomqs/v2/pkg/licenses"
+	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
 	"github.com/samber/lo"
 )
 

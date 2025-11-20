@@ -18,9 +18,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/interlynk-io/sbomqs/pkg/compliance/common"
-	db "github.com/interlynk-io/sbomqs/pkg/compliance/db"
-	"github.com/interlynk-io/sbomqs/pkg/sbom"
+	"github.com/interlynk-io/sbomqs/v2/pkg/compliance/common"
+	db "github.com/interlynk-io/sbomqs/v2/pkg/compliance/db"
+	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
 	"gotest.tools/assert"
 )
 

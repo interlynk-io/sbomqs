@@ -19,9 +19,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/interlynk-io/sbomqs/pkg/compliance/fsct"
-	"github.com/interlynk-io/sbomqs/pkg/logger"
-	"github.com/interlynk-io/sbomqs/pkg/sbom"
+	"github.com/interlynk-io/sbomqs/v2/pkg/compliance/fsct"
+	"github.com/interlynk-io/sbomqs/v2/pkg/logger"
+	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
 )
 
 //nolint:revive,stylecheck

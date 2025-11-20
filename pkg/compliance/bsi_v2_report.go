@@ -19,7 +19,7 @@ import (
 	"fmt"
 	"os"
 
-	db "github.com/interlynk-io/sbomqs/pkg/compliance/db"
+	db "github.com/interlynk-io/sbomqs/v2/pkg/compliance/db"
 	"github.com/olekukonko/tablewriter"
 )
 

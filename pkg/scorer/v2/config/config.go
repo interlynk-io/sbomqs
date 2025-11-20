@@ -15,7 +15,7 @@
 package config
 
 import (
-	"github.com/interlynk-io/sbomqs/pkg/sbom"
+	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
 )
 
 type Config struct {

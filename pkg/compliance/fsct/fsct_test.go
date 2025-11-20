@@ -17,14 +17,14 @@ package fsct
 import (
 	"testing"
 
-	"github.com/interlynk-io/sbomqs/pkg/compliance/common"
-	"github.com/interlynk-io/sbomqs/pkg/compliance/db"
-	"github.com/interlynk-io/sbomqs/pkg/cpe"
-	"github.com/interlynk-io/sbomqs/pkg/omniborid"
-	"github.com/interlynk-io/sbomqs/pkg/purl"
-	"github.com/interlynk-io/sbomqs/pkg/sbom"
-	"github.com/interlynk-io/sbomqs/pkg/swhid"
-	"github.com/interlynk-io/sbomqs/pkg/swid"
+	"github.com/interlynk-io/sbomqs/v2/pkg/compliance/common"
+	"github.com/interlynk-io/sbomqs/v2/pkg/compliance/db"
+	"github.com/interlynk-io/sbomqs/v2/pkg/cpe"
+	"github.com/interlynk-io/sbomqs/v2/pkg/omniborid"
+	"github.com/interlynk-io/sbomqs/v2/pkg/purl"
+	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
+	"github.com/interlynk-io/sbomqs/v2/pkg/swhid"
+	"github.com/interlynk-io/sbomqs/v2/pkg/swid"
 	"gotest.tools/assert"
 )
 

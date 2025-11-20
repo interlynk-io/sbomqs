@@ -14,7 +14,7 @@
 
 package compliance
 
-import "github.com/interlynk-io/sbomqs/pkg/compliance/db"
+import "github.com/interlynk-io/sbomqs/v2/pkg/compliance/db"
 
 type ntiaScoreResult struct {
 	id              string
