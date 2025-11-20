@@ -20,8 +20,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/interlynk-io/sbomqs/pkg/logger"
-	"github.com/interlynk-io/sbomqs/pkg/sbom"
+	"github.com/interlynk-io/sbomqs/v2/pkg/logger"
+	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
 )
 
 func Engine(ctx context.Context, policyConfig *Params, policies []Policy) error {

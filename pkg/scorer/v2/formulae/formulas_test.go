@@ -17,7 +17,7 @@ package formulae
 import (
 	"testing"
 
-	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/api"
+	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/api"
 	"github.com/stretchr/testify/assert"
 )
 

@@ -17,8 +17,8 @@ package engine
 import (
 	"context"
 
-	"github.com/interlynk-io/sbomqs/pkg/list"
-	"github.com/interlynk-io/sbomqs/pkg/logger"
+	"github.com/interlynk-io/sbomqs/v2/pkg/list"
+	"github.com/interlynk-io/sbomqs/v2/pkg/logger"
 )
 
 func parseListParams(ep *Params) *list.Params {

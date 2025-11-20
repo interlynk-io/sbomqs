@@ -18,8 +18,8 @@ import (
 	"context"
 	"regexp"
 
-	"github.com/interlynk-io/sbomqs/pkg/logger"
-	"github.com/interlynk-io/sbomqs/pkg/sbom"
+	"github.com/interlynk-io/sbomqs/v2/pkg/logger"
+	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
 )
 
 // EvaluatePolicyAgainstSBOMs evaluates a single policy against a SBOMs.

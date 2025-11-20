@@ -4,13 +4,13 @@ package sbomfakes
 import (
 	"sync"
 
-	"github.com/interlynk-io/sbomqs/pkg/cpe"
-	"github.com/interlynk-io/sbomqs/pkg/licenses"
-	"github.com/interlynk-io/sbomqs/pkg/omniborid"
-	"github.com/interlynk-io/sbomqs/pkg/purl"
-	"github.com/interlynk-io/sbomqs/pkg/sbom"
-	"github.com/interlynk-io/sbomqs/pkg/swhid"
-	"github.com/interlynk-io/sbomqs/pkg/swid"
+	"github.com/interlynk-io/sbomqs/v2/pkg/cpe"
+	"github.com/interlynk-io/sbomqs/v2/pkg/licenses"
+	"github.com/interlynk-io/sbomqs/v2/pkg/omniborid"
+	"github.com/interlynk-io/sbomqs/v2/pkg/purl"
+	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
+	"github.com/interlynk-io/sbomqs/v2/pkg/swhid"
+	"github.com/interlynk-io/sbomqs/v2/pkg/swid"
 )
 
 type FakeGetComponent struct {

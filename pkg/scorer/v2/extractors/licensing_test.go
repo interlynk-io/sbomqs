@@ -18,8 +18,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/interlynk-io/sbomqs/pkg/licenses"
-	"github.com/interlynk-io/sbomqs/pkg/sbom"
+	"github.com/interlynk-io/sbomqs/v2/pkg/licenses"
+	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
 	"github.com/stretchr/testify/assert"
 )
 

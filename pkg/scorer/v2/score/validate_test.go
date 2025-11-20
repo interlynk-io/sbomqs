@@ -39,14 +39,14 @@ func TestValidateAndExpandPaths_UrlsPreserved(t *testing.T) {
 	ctx := context.Background()
 
 	inputPaths := []string{
-		"https://github.com/interlynk-io/sbomqs",
+		"https://github.com/interlynk-io/sbomqs/v2/v2",
 		"http://github.com/xyz",
 	}
 	got := validateAndExpandPaths(ctx, inputPaths)
 
 	expected := []string{
 		"http://github.com/xyz",
-		"https://github.com/interlynk-io/sbomqs",
+		"https://github.com/interlynk-io/sbomqs/v2/v2",
 	}
 
 	sort.Strings(got)

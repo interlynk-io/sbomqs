@@ -19,10 +19,10 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/interlynk-io/sbomqs/pkg/compliance"
-	"github.com/interlynk-io/sbomqs/pkg/compliance/common"
-	"github.com/interlynk-io/sbomqs/pkg/logger"
-	"github.com/interlynk-io/sbomqs/pkg/sbom"
+	"github.com/interlynk-io/sbomqs/v2/pkg/compliance"
+	"github.com/interlynk-io/sbomqs/v2/pkg/compliance/common"
+	"github.com/interlynk-io/sbomqs/v2/pkg/logger"
+	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
 	"github.com/spf13/afero"
 )
 

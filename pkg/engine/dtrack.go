@@ -23,12 +23,12 @@ import (
 
 	dtrack "github.com/DependencyTrack/client-go"
 	"github.com/google/uuid"
-	"github.com/interlynk-io/sbomqs/pkg/logger"
-	"github.com/interlynk-io/sbomqs/pkg/reporter"
-	"github.com/interlynk-io/sbomqs/pkg/sbom"
-	"github.com/interlynk-io/sbomqs/pkg/scorer"
-	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/config"
-	score "github.com/interlynk-io/sbomqs/pkg/scorer/v2/score"
+	"github.com/interlynk-io/sbomqs/v2/pkg/logger"
+	"github.com/interlynk-io/sbomqs/v2/pkg/reporter"
+	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
+	"github.com/interlynk-io/sbomqs/v2/pkg/scorer"
+	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/config"
+	score "github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/score"
 	"github.com/samber/lo"
 )
 

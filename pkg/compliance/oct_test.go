@@ -17,10 +17,10 @@ package compliance
 import (
 	"testing"
 
-	"github.com/interlynk-io/sbomqs/pkg/compliance/common"
-	"github.com/interlynk-io/sbomqs/pkg/compliance/db"
-	"github.com/interlynk-io/sbomqs/pkg/licenses"
-	"github.com/interlynk-io/sbomqs/pkg/sbom"
+	"github.com/interlynk-io/sbomqs/v2/pkg/compliance/common"
+	"github.com/interlynk-io/sbomqs/v2/pkg/compliance/db"
+	"github.com/interlynk-io/sbomqs/v2/pkg/licenses"
+	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
 	"gotest.tools/assert"
 )
 

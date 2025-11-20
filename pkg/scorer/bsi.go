@@ -19,8 +19,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/interlynk-io/sbomqs/pkg/compliance/common"
-	"github.com/interlynk-io/sbomqs/pkg/sbom"
+	"github.com/interlynk-io/sbomqs/v2/pkg/compliance/common"
+	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
 	"github.com/samber/lo"
 )
 

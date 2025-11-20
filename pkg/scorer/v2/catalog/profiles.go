@@ -14,7 +14,7 @@
 
 package catalog
 
-import "github.com/interlynk-io/sbomqs/pkg/sbom"
+import "github.com/interlynk-io/sbomqs/v2/pkg/sbom"
 
 // ProfSpec represents specification of each profiles.
 // e.g. ntia, bsi-v1.1, bsi-v2.0, oct, etc

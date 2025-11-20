@@ -18,7 +18,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/interlynk-io/sbomqs/pkg/sbom"
+	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
 )
 
 // specCheck checks for spdx or cyclonedx

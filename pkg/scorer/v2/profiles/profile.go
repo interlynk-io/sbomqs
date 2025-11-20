@@ -18,11 +18,11 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/interlynk-io/sbomqs/pkg/logger"
-	"github.com/interlynk-io/sbomqs/pkg/sbom"
-	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/api"
-	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/catalog"
-	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/formulae"
+	"github.com/interlynk-io/sbomqs/v2/pkg/logger"
+	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
+	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/api"
+	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/catalog"
+	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/formulae"
 )
 
 // Evaluate evaluates the profiles against an SBOM and returns their results.

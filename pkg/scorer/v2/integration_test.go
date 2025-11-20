@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/config"
-	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/score"
+	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/config"
+	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/score"
 	"github.com/stretchr/testify/require"
 )
 

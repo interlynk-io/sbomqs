@@ -17,8 +17,8 @@ package formulae
 import (
 	"fmt"
 
-	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/api"
-	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/catalog"
+	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/api"
+	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/catalog"
 )
 
 // ScoreNA score NA for comprehenssive features related to components

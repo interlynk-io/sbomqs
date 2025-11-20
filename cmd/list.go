@@ -21,8 +21,8 @@ import (
 	"log"
 	"strings"
 
-	"github.com/interlynk-io/sbomqs/pkg/engine"
-	"github.com/interlynk-io/sbomqs/pkg/logger"
+	"github.com/interlynk-io/sbomqs/v2/pkg/engine"
+	"github.com/interlynk-io/sbomqs/v2/pkg/logger"
 	"github.com/spf13/cobra"
 )
 
@@ -65,7 +65,7 @@ var listCmd = &cobra.Command{
   # List all components with invalid licenses
   sbomqs list --feature comp_valid_licenses --missing samples/sbomqs-spdx-syft.json
 
-  Supporter features are listed here: https://github.com/interlynk-io/sbomqs/blob/main/docs/commands/list.md#supported-features
+  Supporter features are listed here: https://github.com/interlynk-io/sbomqs/v2/blob/main/docs/commands/list.md#supported-features
 `,
 
 	Args: func(_ *cobra.Command, args []string) error {

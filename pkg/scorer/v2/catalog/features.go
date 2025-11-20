@@ -14,7 +14,7 @@
 
 package catalog
 
-import "github.com/interlynk-io/sbomqs/pkg/sbom"
+import "github.com/interlynk-io/sbomqs/v2/pkg/sbom"
 
 // ComprFeatSpec represents feature of comprehenssive categories.
 type ComprFeatSpec struct {

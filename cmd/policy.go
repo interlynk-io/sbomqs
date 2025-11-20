@@ -20,8 +20,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/interlynk-io/sbomqs/pkg/logger"
-	"github.com/interlynk-io/sbomqs/pkg/policy"
+	"github.com/interlynk-io/sbomqs/v2/pkg/logger"
+	"github.com/interlynk-io/sbomqs/v2/pkg/policy"
 	"github.com/spf13/cobra"
 )
 

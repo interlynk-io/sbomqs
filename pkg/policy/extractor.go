@@ -18,8 +18,8 @@ import (
 	"context"
 	"strings"
 
-	"github.com/interlynk-io/sbomqs/pkg/logger"
-	"github.com/interlynk-io/sbomqs/pkg/sbom"
+	"github.com/interlynk-io/sbomqs/v2/pkg/logger"
+	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
 )
 
 // Extractor provides a simple mapping from canonical field names to

@@ -1,4 +1,4 @@
-module github.com/interlynk-io/sbomqs
+module github.com/interlynk-io/sbomqs/v2
 
 go 1.24.2
 

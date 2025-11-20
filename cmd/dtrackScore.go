@@ -19,8 +19,8 @@ import (
 	"log"
 
 	"github.com/google/uuid"
-	"github.com/interlynk-io/sbomqs/pkg/engine"
-	"github.com/interlynk-io/sbomqs/pkg/logger"
+	"github.com/interlynk-io/sbomqs/v2/pkg/engine"
+	"github.com/interlynk-io/sbomqs/v2/pkg/logger"
 	"github.com/spf13/cobra"
 )
 

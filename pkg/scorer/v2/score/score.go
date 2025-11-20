@@ -20,15 +20,15 @@ import (
 	"os"
 	"strings"
 
-	"github.com/interlynk-io/sbomqs/pkg/logger"
-	"github.com/interlynk-io/sbomqs/pkg/sbom"
-	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/api"
-	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/catalog"
-	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/comprehenssive"
-	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/config"
-	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/profiles"
-	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/registry"
-	"github.com/interlynk-io/sbomqs/pkg/utils"
+	"github.com/interlynk-io/sbomqs/v2/pkg/logger"
+	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
+	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/api"
+	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/catalog"
+	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/comprehenssive"
+	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/config"
+	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/profiles"
+	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/registry"
+	"github.com/interlynk-io/sbomqs/v2/pkg/utils"
 )
 
 // ScoreSBOM scores a SBOM for profile or comprehenssive scoring.

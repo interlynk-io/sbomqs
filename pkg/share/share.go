@@ -23,9 +23,9 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/interlynk-io/sbomqs/pkg/reporter"
-	"github.com/interlynk-io/sbomqs/pkg/sbom"
-	"github.com/interlynk-io/sbomqs/pkg/scorer"
+	"github.com/interlynk-io/sbomqs/v2/pkg/reporter"
+	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
+	"github.com/interlynk-io/sbomqs/v2/pkg/scorer"
 )
 
 func Share(ctx context.Context, doc sbom.Document, scores scorer.Scores, sbomFileName string) (string, error) {

@@ -20,11 +20,11 @@ import (
 	"os"
 	"strings"
 
-	"github.com/interlynk-io/sbomqs/pkg/logger"
-	"github.com/interlynk-io/sbomqs/pkg/reporter"
-	"github.com/interlynk-io/sbomqs/pkg/sbom"
-	"github.com/interlynk-io/sbomqs/pkg/scorer"
-	"github.com/interlynk-io/sbomqs/pkg/share"
+	"github.com/interlynk-io/sbomqs/v2/pkg/logger"
+	"github.com/interlynk-io/sbomqs/v2/pkg/reporter"
+	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
+	"github.com/interlynk-io/sbomqs/v2/pkg/scorer"
+	"github.com/interlynk-io/sbomqs/v2/pkg/share"
 )
 
 func ShareRun(ctx context.Context, ep *Params) error {

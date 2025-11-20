@@ -26,14 +26,14 @@ import (
 	"strings"
 
 	"github.com/go-git/go-billy/v5"
-	"github.com/interlynk-io/sbomqs/pkg/compliance/common"
-	"github.com/interlynk-io/sbomqs/pkg/logger"
-	"github.com/interlynk-io/sbomqs/pkg/reporter"
-	v2 "github.com/interlynk-io/sbomqs/pkg/reporter/v2"
-	"github.com/interlynk-io/sbomqs/pkg/sbom"
-	"github.com/interlynk-io/sbomqs/pkg/scorer"
-	"github.com/interlynk-io/sbomqs/pkg/scorer/v2/config"
-	score "github.com/interlynk-io/sbomqs/pkg/scorer/v2/score"
+	"github.com/interlynk-io/sbomqs/v2/pkg/compliance/common"
+	"github.com/interlynk-io/sbomqs/v2/pkg/logger"
+	"github.com/interlynk-io/sbomqs/v2/pkg/reporter"
+	v2 "github.com/interlynk-io/sbomqs/v2/pkg/reporter/v2"
+	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
+	"github.com/interlynk-io/sbomqs/v2/pkg/scorer"
+	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/config"
+	score "github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/score"
 
 	"github.com/spf13/afero"
 )
