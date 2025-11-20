@@ -58,5 +58,3 @@ require (
 	gotest.tools v2.2.0+incompatible
 	sigs.k8s.io/yaml v1.6.0 // indirect
 )
-
-replace golang.org/x/tools => golang.org/x/tools v0.37.0
