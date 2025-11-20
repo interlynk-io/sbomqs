@@ -1,4 +1,5 @@
 project_name: sbomqs
+
 version: 2
 
 env:
@@ -12,16 +13,13 @@ before:
 gomod:
   proxy: true
 
-metadata:
-  mod_timestamp: "{{ .CommitTimestamp }}"
-
 builds:
-  - id: binaries
-    binary: sbomqs-{{ .Os }}-{{ .Arch }}
-    no_unique_dist_dir: true
+  - id: sbomqs
+    binary: sbomqs
     main: .
     flags:
       - -trimpath
+    mod_timestamp: '{{ .CommitTimestamp }}'
     goos:
       - linux
       - darwin
@@ -29,17 +27,29 @@ builds:
     goarch:
       - amd64
       - arm64
-    ignore:
-      - goos: windows
-        goarch: arm64
     ldflags:
-      - "{{ .Env.LDFLAGS }}"
-      - -s -w
-      - -X main.version={{ .Version }}
-      - -X main.commit={{ .Commit }}
-      - -X main.date={{ .Date }}
+      - -buildid=
+      - -X sigs.k8s.io/release-utils/version.gitVersion={{ .Version }}
+      - -X sigs.k8s.io/release-utils/version.gitCommit={{ .FullCommit }}
+      - -X sigs.k8s.io/release-utils/version.gitTreeState={{ if .IsGitDirty }}dirty{{ else }}clean{{ end }}
+      - -X sigs.k8s.io/release-utils/version.buildDate={{ .CommitDate }}
     env:
       - CGO_ENABLED=0
+
+archives:
+  - id: sbomqs
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- .Version }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+    files:
+      - LICENSE*
+      - README*
+      - CHANGELOG*
 
 nfpms:
   - id: sbomqs
@@ -48,9 +58,7 @@ nfpms:
     vendor: Interlynk
     homepage: https://interlynk.io
     maintainer: Interlynk Authors <hello@interlynk.io>
-    builds:
-      - binaries
-    description: SBOM quality score - Quality metrics for your sboms.
+    description: SBOM Assembler - A tool to edit SBOM or assemble multiple sboms into a single sbom.
     license: Apache-2.0
     formats:
       - apk
@@ -58,35 +66,27 @@ nfpms:
       - rpm
     bindir: /usr/bin
     contents:
-      - src: /usr/bin/sbomqs-{{ .Os }}-{{ .Arch }}
-        dst: /usr/bin/sbomqs
-        type: symlink
-    rpm:
-      compression: lzma
-    deb:
-      compression: xz
-
-archives:
-  - id: binaries
-    format: binary
-    name_template: "{{ .Binary }}"
-    allow_different_binary_count: true
+      - src: LICENSE
+        dst: /usr/share/doc/sbomqs/LICENSE
+        file_info:
+          mode: 0644
 
 checksum:
-  name_template: "checksums.txt"
+  name_template: 'checksums.txt'
   algorithm: sha256
+
+snapshot:
+  version_template: "SNAPSHOT-{{ .ShortCommit }}"
 
 changelog:
   sort: asc
   use: github
   filters:
     exclude:
-      - "^docs:"
-      - "^test:"
-      - "^chore:"
-      - "^ci:"
-      - Merge pull request
-      - Merge branch
+      - '^docs:'
+      - '^test:'
+      - '^chore:'
+      - '^ci:'
   groups:
     - title: Features
       regexp: '^.*?feat(\([[:word:]]+\))??!?:.+$'
@@ -97,22 +97,8 @@ changelog:
     - title: Others
       order: 999
 
-snapshot:
-  name_template: "SNAPSHOT-{{ .ShortCommit }}"
-
 release:
-  prerelease: allow
+  prerelease: auto
   draft: true
-  mode: append
-  header: |
-    ## SBOM Quality Score {{ .Tag }} ({{ .Date }})
+  make_latest: true 
 
-    Download the appropriate binary for your platform below.
-  footer: |
-    **Full Changelog**: https://github.com/interlynk-io/sbomqs/compare/{{ .PreviousTag }}...{{ .Tag }}
-
-sboms:
-  - id: sbom
-    artifacts: binary
-    documents:
-      - "${artifact}.spdx.sbom"

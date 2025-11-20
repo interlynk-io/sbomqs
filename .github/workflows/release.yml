@@ -6,32 +6,93 @@ on:
       - "v*"
   workflow_dispatch:
 
+env:
+  TOOL_NAME: ${{ github.repository }}
+  LATEST_TAG: v0.0.1
+  SUPPLIER_NAME: Interlynk
+  SUPPLIER_URL: https://interlynk.io
+  MS_SBOM_TOOL_VERSION: "4.1.3"
+  MS_SBOM_TOOL_EXCLUDE_DIRS: "**/samples/**"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   releaser:
     runs-on: ubuntu-latest
     permissions:
       id-token: write
       contents: write
+      attestations: write
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Harden Runner
+        uses: step-security/harden-runner@v2
+        with:
+          egress-policy: audit
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - run: git fetch --force --tags
-      - uses: actions/setup-go@v5
+
+      - name: Fetch all tags
+        run: git fetch --force --tags
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
         with:
-          go-version: ">=1.20"
+          go-version-file: 'go.mod'
+          check-latest: true
           cache: true
-      - name: Download syft binary
-        run: curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
-      - name: Run syft
-        run: syft version
-      - name: Goreleaser
+
+      - name: Get Tag
+        id: get_tag
+        run: echo "LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo 'v0.0.1')" >> $GITHUB_ENV
+
+      - name: Install GoReleaser
         uses: goreleaser/goreleaser-action@v6
         with:
           install-only: true
-      - run: go version
-      - run: goreleaser -v
-      - name: Releaser
+
+      - name: Verify Go and GoReleaser versions
+        run: |
+          go version
+          goreleaser -v
+
+      - name: Download and verify sbom-tool
+        run: |
+          curl -Lo /tmp/sbom-tool "https://github.com/microsoft/sbom-tool/releases/download/v${{ env.MS_SBOM_TOOL_VERSION }}/sbom-tool-linux-x64"
+          echo "Verifying sbom-tool download..."
+          if [ ! -f /tmp/sbom-tool ]; then
+            echo "Error: sbom-tool download failed"
+            exit 1
+          fi
+          chmod +x /tmp/sbom-tool
+
+      - name: Run GoReleaser
         run: make release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate SBOM
+        shell: bash
+        run: |
+          mkdir -p sbom-output
+          /tmp/sbom-tool generate \
+            -b sbom-output \
+            -bc . \
+            -pn "${{ env.TOOL_NAME }}" \
+            -pv "${{ env.LATEST_TAG }}" \
+            -ps "${{ env.SUPPLIER_NAME }}" \
+            -nsb "${{ env.SUPPLIER_URL }}" \
+            -cd "--DirectoryExclusionList ${{ env.MS_SBOM_TOOL_EXCLUDE_DIRS }}"
+          ls -lR sbom-output
+
+      - name: Upload SBOM as Release Asset
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: sbom-output/_manifest/spdx_2.2/manifest.spdx.json
+          if-no-files-found: error
