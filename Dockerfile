@@ -1,6 +1,6 @@
 # Use buildx for multi-platform builds
 # Build stage
-FROM --platform=$BUILDPLATFORM golang:1.24-alpine AS builder
+FROM --platform=$BUILDPLATFORM golang:1.25-alpine AS builder
 LABEL org.opencontainers.image.source="https://github.com/interlynk-io/sbomqs"
 
 RUN apk add --no-cache make git
@@ -16,7 +16,7 @@ RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -a -o sbomqs .
 RUN chmod +x sbomqs
 
 # Final stage
-FROM alpine:3.19
+FROM alpine:3.22
 LABEL org.opencontainers.image.source="https://github.com/interlynk-io/sbomqs"
 LABEL org.opencontainers.image.description="Quality & Compliance metrics for your sboms"
 LABEL org.opencontainers.image.licenses=Apache-2.0
