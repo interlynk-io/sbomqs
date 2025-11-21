@@ -165,6 +165,17 @@ update-deps: ## Update all dependencies
 	@go get -u ./...
 	@go mod tidy
 
+.PHONY: update-licenses
+update-licenses: ## Update license database files
+	@echo "Updating license database files..."
+	@curl -fsSL "https://raw.githubusercontent.com/spdx/license-list-data/refs/heads/main/json/licenses.json" \
+		-o pkg/licenses/files/licenses_spdx.json
+	@curl -fsSL "https://raw.githubusercontent.com/spdx/license-list-data/refs/heads/main/json/exceptions.json" \
+		-o pkg/licenses/files/licenses_spdx_exception.json
+	@curl -fsSL "https://scancode-licensedb.aboutcode.org/index.json" \
+		-o pkg/licenses/files/licenses_aboutcode.json
+	@echo "License database files updated successfully"
+
 .PHONY: tidy
 tidy: ## Run go mod tidy
 	@echo "Tidying go.mod..."
