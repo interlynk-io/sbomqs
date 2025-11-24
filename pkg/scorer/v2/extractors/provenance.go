@@ -75,20 +75,11 @@ func SBOMAuthors(doc sbom.Document) catalog.ComprFeatScore {
 	}
 }
 
-// SBOMCreationTool: tool name AND version present for at least one tool.
+// SBOMCreationTool: tool name AND version(represents complete tool) present for at least one tool.
 // SPDX: Creator.Tool; CDX: metadata.tools/tool
 func SBOMCreationTool(doc sbom.Document) catalog.ComprFeatScore {
-	toolsWithNV := make([]string, 0, len(doc.Tools()))
-
-	for _, t := range doc.Tools() {
-		name := strings.TrimSpace(t.GetName())
-		ver := strings.TrimSpace(t.GetVersion())
-		if name != "" && ver != "" {
-			toolsWithNV = append(toolsWithNV, name+"-"+ver)
-		}
-	}
-
-	if len(toolsWithNV) == 0 {
+	tools := doc.Tools()
+	if len(tools) == 0 {
 		return catalog.ComprFeatScore{
 			Score:  formulae.BooleanScore(false),
 			Desc:   formulae.MissingField("tool"),
@@ -96,9 +87,66 @@ func SBOMCreationTool(doc sbom.Document) catalog.ComprFeatScore {
 		}
 	}
 
+	var (
+		withNameAndVersion int
+		missingName        int
+		missingVersion     int
+		missingBoth        int
+	)
+
+	for _, t := range tools {
+		name := strings.TrimSpace(t.GetName())
+		ver := strings.TrimSpace(t.GetVersion())
+
+		switch {
+		case name != "" && ver != "":
+			withNameAndVersion++
+		case name == "" && ver == "":
+			missingBoth++
+		case name == "" && ver != "":
+			missingName++
+		case name != "" && ver == "":
+			missingVersion++
+		}
+	}
+
+	descParts := []string{}
+	if withNameAndVersion > 0 {
+		descParts = append(descParts,
+			fmt.Sprintf("%d complete tool", withNameAndVersion))
+	}
+	if missingName > 0 {
+		descParts = append(descParts,
+			fmt.Sprintf("%d tool missing name", missingName))
+	}
+	if missingVersion > 0 {
+		descParts = append(descParts,
+			fmt.Sprintf("%d tool missing version", missingVersion))
+	}
+	if missingBoth > 0 {
+		descParts = append(descParts,
+			fmt.Sprintf("%d tool missing name & version", missingBoth))
+	}
+
+	desc := strings.Join(descParts, "; ")
+
+	// Scoring rule:
+	// - If at least one tool has both name+version -> full score.
+	// - Otherwise -> zero score.
+	if withNameAndVersion == 0 {
+		if desc == "" {
+			desc = "tool missing"
+		}
+		return catalog.ComprFeatScore{
+			Score:  formulae.BooleanScore(false),
+			Desc:   desc,
+			Ignore: false,
+		}
+	}
+
 	return catalog.ComprFeatScore{
 		Score:  formulae.BooleanScore(true),
-		Desc:   fmt.Sprintf("%d tool", len(toolsWithNV)),
+		Desc:   desc,
 		Ignore: false,
 	}
 }
