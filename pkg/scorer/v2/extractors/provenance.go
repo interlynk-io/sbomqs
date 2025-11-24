@@ -91,7 +91,6 @@ func SBOMCreationTool(doc sbom.Document) catalog.ComprFeatScore {
 		withNameAndVersion int
 		missingName        int
 		missingVersion     int
-		missingBoth        int
 	)
 
 	for _, t := range tools {
@@ -101,8 +100,6 @@ func SBOMCreationTool(doc sbom.Document) catalog.ComprFeatScore {
 		switch {
 		case name != "" && ver != "":
 			withNameAndVersion++
-		case name == "" && ver == "":
-			missingBoth++
 		case name == "" && ver != "":
 			missingName++
 		case name != "" && ver == "":
@@ -115,37 +112,39 @@ func SBOMCreationTool(doc sbom.Document) catalog.ComprFeatScore {
 		descParts = append(descParts,
 			fmt.Sprintf("%d complete tool", withNameAndVersion))
 	}
+
 	if missingName > 0 {
 		descParts = append(descParts,
 			fmt.Sprintf("%d tool missing name", missingName))
 	}
+
 	if missingVersion > 0 {
 		descParts = append(descParts,
 			fmt.Sprintf("%d tool missing version", missingVersion))
 	}
-	if missingBoth > 0 {
-		descParts = append(descParts,
-			fmt.Sprintf("%d tool missing name & version", missingBoth))
-	}
 
 	desc := strings.Join(descParts, "; ")
+	if desc == "" {
+		desc = "missing tool"
+	}
 
 	// Scoring rule:
-	// - If at least one tool has both name+version -> full score.
-	// - Otherwise -> zero score.
-	if withNameAndVersion == 0 {
-		if desc == "" {
-			desc = "tool missing"
-		}
-		return catalog.ComprFeatScore{
-			Score:  formulae.BooleanScore(false),
-			Desc:   desc,
-			Ignore: false,
-		}
+	// - Full-score: at least one tool has both name+version.
+	// - Half-score: no complete tool, but at least one has only name.
+	// - No-score: only versions or nothing present.
+	var score float64
+
+	switch {
+	case withNameAndVersion > 0:
+		score = formulae.BooleanScore(true)
+	case withNameAndVersion == 0 && missingVersion > 0:
+		score = 5.0
+	default:
+		score = 0.0
 	}
 
 	return catalog.ComprFeatScore{
-		Score:  formulae.BooleanScore(true),
+		Score:  score,
 		Desc:   desc,
 		Ignore: false,
 	}

@@ -193,14 +193,34 @@ func Test_SBOMAuthors(t *testing.T) {
 }
 
 func Test_SBOMCreationTool(t *testing.T) {
-	t.Run("one tool missing version → 0", func(t *testing.T) {
+	t.Run("tool not provided → 0.0", func(t *testing.T) {
+		doc := makeSPDXDocForProvenance(spdxOptions{
+			Tools: []struct{ Name, Version string }{},
+		})
+		got := SBOMCreationTool(doc)
+		assert.Equal(t, 0.0, got.Score)
+		assert.Equal(t, "missing tool", got.Desc)
+	})
+
+	t.Run("tool missing both → 0.0", func(t *testing.T) {
+		doc := makeSPDXDocForProvenance(spdxOptions{
+			Tools: []struct{ Name, Version string }{
+				{Name: "", Version: ""},
+			},
+		})
+		got := SBOMCreationTool(doc)
+		assert.Equal(t, 0.0, got.Score)
+		assert.Equal(t, "missing tool", got.Desc)
+	})
+
+	t.Run("one tool missing version → 5.0", func(t *testing.T) {
 		doc := makeSPDXDocForProvenance(spdxOptions{
 			Tools: []struct{ Name, Version string }{
 				{Name: "syft", Version: ""},
 			},
 		})
 		got := SBOMCreationTool(doc)
-		assert.Equal(t, 0.0, got.Score)
+		assert.Equal(t, 5.0, got.Score)
 		assert.Equal(t, "1 tool missing version", got.Desc)
 	})
 
