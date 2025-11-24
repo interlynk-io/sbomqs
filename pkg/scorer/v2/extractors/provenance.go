@@ -21,6 +21,7 @@ import (
 
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/catalog"
+	commonV2 "github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/common"
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/formulae"
 )
 
@@ -59,17 +60,17 @@ func SBOMCreationTimestamp(doc sbom.Document) catalog.ComprFeatScore {
 func SBOMAuthors(doc sbom.Document) catalog.ComprFeatScore {
 	total := len(doc.Authors())
 
-	if total == 0 {
+	if commonV2.IsSBOMAuthorEntity(doc) {
 		return catalog.ComprFeatScore{
-			Score:  formulae.BooleanScore(false),
-			Desc:   formulae.MissingField("author"),
+			Score:  formulae.BooleanScore(true),
+			Desc:   fmt.Sprintf("%d authors", total),
 			Ignore: false,
 		}
 	}
 
 	return catalog.ComprFeatScore{
-		Score:  formulae.BooleanScore(true),
-		Desc:   fmt.Sprintf("%d authors", total),
+		Score:  formulae.BooleanScore(false),
+		Desc:   formulae.MissingField("author"),
 		Ignore: false,
 	}
 }

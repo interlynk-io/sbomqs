@@ -21,6 +21,7 @@ import (
 	"github.com/interlynk-io/sbomqs/v2/pkg/compliance/common"
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/catalog"
+	commonV2 "github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/common"
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/formulae"
 )
 
@@ -34,7 +35,7 @@ func CompWithSHA1Plus(doc sbom.Document) catalog.ComprFeatScore {
 
 	have := 0
 	for _, comp := range comps {
-		if hasSHA1Plus(comp) {
+		if commonV2.HasSHA1Plus(comp) {
 			have++
 		}
 	}
@@ -51,7 +52,7 @@ func CompWithSHA256Plus(doc sbom.Document) catalog.ComprFeatScore {
 
 	have := 0
 	for _, c := range comps {
-		if hasSHA256Plus(c) {
+		if commonV2.HasSHA256Plus(c) {
 			have++
 		}
 	}
@@ -121,51 +122,5 @@ func SBOMSignature(doc sbom.Document) catalog.ComprFeatScore {
 		Desc:  formulae.MissingField("signature"),
 		// Desc:   "signature present but invalid",
 		Ignore: false,
-	}
-}
-
-func hasSHA1Plus(c sbom.GetComponent) bool {
-	for _, checksum := range c.GetChecksums() {
-		if isSHA1Plus(checksum.GetAlgo()) && strings.TrimSpace(checksum.GetContent()) != "" {
-			return true
-		}
-	}
-	return false
-}
-
-func isSHA1Plus(algo string) bool {
-	n := strings.ToUpper(algo)
-	n = strings.ReplaceAll(n, "-", "")
-	n = strings.ReplaceAll(n, "_", "")
-	n = strings.TrimSpace(n)
-
-	switch n {
-	case "SHA1", "SHA256", "SHA384", "SHA512":
-		return true
-	default:
-		return false
-	}
-}
-
-func hasSHA256Plus(c sbom.GetComponent) bool {
-	for _, ch := range c.GetChecksums() {
-		if isSHA256Plus(ch.GetAlgo()) && strings.TrimSpace(ch.GetContent()) != "" {
-			return true
-		}
-	}
-	return false
-}
-
-func isSHA256Plus(algo string) bool {
-	n := strings.ToUpper(algo)
-	n = strings.ReplaceAll(n, "-", "")
-	n = strings.ReplaceAll(n, "_", "")
-	n = strings.TrimSpace(n)
-
-	switch n {
-	case "SHA256", "SHA384", "SHA512":
-		return true
-	default:
-		return false
 	}
 }

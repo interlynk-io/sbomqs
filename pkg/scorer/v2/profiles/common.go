@@ -21,12 +21,10 @@ import (
 	"time"
 
 	"github.com/interlynk-io/sbomqs/v2/pkg/compliance/common"
-	"github.com/interlynk-io/sbomqs/v2/pkg/licenses"
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/catalog"
+	commonV2 "github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/common"
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/formulae"
-	"github.com/knqyf263/go-cpe/naming"
-	purl "github.com/package-url/packageurl-go"
 	"github.com/samber/lo"
 )
 
@@ -160,7 +158,7 @@ func SBOMAuthors(doc sbom.Document) catalog.ProfFeatScore {
 		return formulae.ScoreSBOMProfMissingNA("authors", false)
 	}
 
-	if isSBOMAuthorEntity(doc) {
+	if commonV2.IsSBOMAuthorEntity(doc) {
 		return formulae.ScoreSBOMProfFull(fmt.Sprintf("%d legal authors", total), false)
 	}
 
@@ -197,17 +195,6 @@ func SBOMSupplier(doc sbom.Document) catalog.ProfFeatScore {
 	return formulae.ScoreSBOMProfUnknownNA("lifecycle", false)
 }
 
-// isSBOMAuthorEntity check whether author is a legal entity or not:
-// author should have name + email/phone info.
-func isSBOMAuthorEntity(doc sbom.Document) bool {
-	for _, author := range doc.Authors() {
-		if author.GetName() != "" && (author.GetEmail() != "" || author.GetPhone() != "") {
-			return true
-		}
-	}
-	return false
-}
-
 // SBOMCreationTime check has a valid ISO-8601 timestamp (RFC3339/RFC3339Nano).
 // `Created` for SPDX and `metadata.timestamp` for CDX
 func SBOMCreationTimestamp(doc sbom.Document) catalog.ProfFeatScore {
@@ -232,6 +219,10 @@ func SBOMDepedencies(doc sbom.Document) catalog.ProfFeatScore {
 	var have int
 	if doc.PrimaryComp() != nil {
 		have = doc.PrimaryComp().GetTotalNoOfDependencies()
+	}
+
+	if have == 0 {
+		return formulae.ScoreSBOMProfMissingNA("dependencies", false)
 	}
 
 	return catalog.ProfFeatScore{
@@ -277,20 +268,20 @@ func CompSupplier(doc sbom.Document) catalog.ProfFeatScore {
 	}
 
 	have := lo.CountBy(doc.Components(), func(c sbom.GetComponent) bool {
-		return isSupplierEntity(c.Suppliers())
+		return commonV2.IsSupplierEntity(c.Suppliers())
 	})
 
 	return formulae.ScoreProfFull(have, len(comps), "names", false)
 }
 
-// isSupplierEntity check whether supplier is a legal entity or not:
-// supplier should have name + email/url/contact info.
-func isSupplierEntity(supplier sbom.GetSupplier) bool {
-	if supplier.GetName() != "" && (supplier.GetEmail() != "" || supplier.GetURL() != "" || len(supplier.GetContacts()) > 0) {
-		return true
-	}
-	return false
-}
+// // isSupplierEntity check whether supplier is a legal entity or not:
+// // supplier should have either name/email/url/contact info.
+// func isSupplierEntity(supplier sbom.GetSupplier) bool {
+// 	if supplier.GetName() != "" || supplier.GetEmail() != "" {
+// 		return true
+// 	}
+// 	return false
+// }
 
 // CompLicenses check for concluded valid license and score accordingly
 func CompLicenses(doc sbom.Document) catalog.ProfFeatScore {
@@ -300,7 +291,7 @@ func CompLicenses(doc sbom.Document) catalog.ProfFeatScore {
 	}
 
 	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
-		return componentHasAnyConcluded(c)
+		return commonV2.ComponentHasAnyConcluded(c)
 	})
 
 	return formulae.ScoreProfFull(have, len(comps), "licenses", false)
@@ -314,36 +305,10 @@ func CompConcludedLicenses(doc sbom.Document) catalog.ProfFeatScore {
 	}
 
 	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
-		return componentHasAnyConcluded(c)
+		return commonV2.ComponentHasAnyConcluded(c)
 	})
 
 	return formulae.ScoreProfFull(have, len(comps), "licenses", false)
-}
-
-func componentHasAnyConcluded(c sbom.GetComponent) bool {
-	for _, l := range c.ConcludedLicenses() {
-		if id := strings.TrimSpace(l.ShortID()); validateLicenseText(id) {
-			return true
-		}
-		if nm := strings.TrimSpace(l.Name()); validateLicenseText(nm) {
-			return true
-		}
-	}
-	return false
-}
-
-// license with "NOASSERTION" or "NONE" are considered as
-// non-meaningful licenses
-func validateLicenseText(s string) bool {
-	if s == "" {
-		return false
-	}
-
-	u := strings.ToUpper(strings.TrimSpace(s))
-	if u == "NOASSERTION" || u == "NONE" {
-		return false
-	}
-	return true
 }
 
 // CompHash returns coverage of components that have SHA-1 or stronger
@@ -355,69 +320,10 @@ func CompHash(doc sbom.Document) catalog.ProfFeatScore {
 	}
 
 	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
-		return hasAnySHA(c)
+		return commonV2.HasSHA1Plus(c)
 	})
 
 	return formulae.ScoreProfFull(have, len(comps), "hash", false)
-}
-
-func hasAnySHA(c sbom.GetComponent) bool {
-	for _, checksum := range c.GetChecksums() {
-		if isAnySHA(checksum.GetAlgo()) && strings.TrimSpace(checksum.GetContent()) != "" {
-			return true
-		}
-	}
-	return false
-}
-
-func isAnySHA(algo string) bool {
-	n := strings.ToUpper(algo)
-	n = strings.ReplaceAll(n, "-", "")
-	n = strings.ReplaceAll(n, "_", "")
-	n = strings.TrimSpace(n)
-
-	switch n {
-	case "SHA1", "SHA256", "SHA384", "SHA512", "MD5":
-		return true
-	default:
-		return false
-	}
-}
-
-// CompHash returns coverage of components that have SHA-1 or stronger
-// (MD5, SHA-1, SHA-256, SHA-384, or SHA-512).
-func CompSHA256(doc sbom.Document) catalog.ProfFeatScore {
-	comps := doc.Components()
-	if len(comps) == 0 {
-		return formulae.ScoreProfNA(true)
-	}
-
-	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
-		return hasSHA256SHA(c)
-	})
-
-	return formulae.ScoreProfFull(have, len(comps), "hash256", false)
-}
-
-func hasSHA256SHA(c sbom.GetComponent) bool {
-	for _, checksum := range c.GetChecksums() {
-		if isSHA256(checksum.GetAlgo()) && strings.TrimSpace(checksum.GetContent()) != "" {
-			return true
-		}
-	}
-	return false
-}
-
-func isSHA256(algo string) bool {
-	n := strings.ToUpper(algo)
-	n = strings.ReplaceAll(n, "-", "")
-	n = strings.ReplaceAll(n, "_", "")
-	n = strings.TrimSpace(n)
-
-	if n == "SHA256" {
-		return true
-	}
-	return false
 }
 
 // CompWithSHA256Plus returns coverage of components that have SHA-256 or stronger.
@@ -429,35 +335,12 @@ func CompSHA256Plus(doc sbom.Document) catalog.ProfFeatScore {
 
 	have := 0
 	for _, c := range comps {
-		if hasSHA256Plus(c) {
+		if commonV2.HasSHA256Plus(c) {
 			have++
 		}
 	}
 
 	return formulae.ScoreProfFull(have, len(comps), "SHA-256+", false)
-}
-
-func hasSHA256Plus(c sbom.GetComponent) bool {
-	for _, ch := range c.GetChecksums() {
-		if isSHA256Plus(ch.GetAlgo()) && strings.TrimSpace(ch.GetContent()) != "" {
-			return true
-		}
-	}
-	return false
-}
-
-func isSHA256Plus(algo string) bool {
-	n := strings.ToUpper(algo)
-	n = strings.ReplaceAll(n, "-", "")
-	n = strings.ReplaceAll(n, "_", "")
-	n = strings.TrimSpace(n)
-
-	switch n {
-	case "SHA256", "SHA384", "SHA512":
-		return true
-	default:
-		return false
-	}
 }
 
 // CompSourceCodeURL checks source code repo url
@@ -469,7 +352,7 @@ func CompSourceCodeURL(doc sbom.Document) catalog.ProfFeatScore {
 	}
 
 	have := lo.CountBy(doc.Components(), func(c sbom.GetComponent) bool {
-		return strings.TrimSpace(c.GetSourceCodeURL()) != ""
+		return commonV2.HasComponentSourceCodeURL(c.GetSourceCodeURL())
 	})
 
 	return formulae.ScoreProfFull(have, len(comps), "source code repo", true)
@@ -539,7 +422,7 @@ func CompDependencies(doc sbom.Document) catalog.ProfFeatScore {
 	}
 
 	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
-		return c.HasRelationShips() || c.CountOfDependencies() > 0
+		return commonV2.HasComponentDependencies(c)
 	})
 
 	return formulae.ScoreProfFull(have, len(comps), "dependencies", false)
@@ -565,7 +448,7 @@ func CompPURL(doc sbom.Document) catalog.ProfFeatScore {
 	}
 
 	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
-		return compHasAnyPURLs(c)
+		return commonV2.CompHasAnyPURLs(c)
 	})
 
 	return formulae.ScoreProfFull(have, len(comps), "PURLs", false)
@@ -578,28 +461,10 @@ func CompCPE(doc sbom.Document) catalog.ProfFeatScore {
 	}
 
 	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
-		return compHasAnyCPEs(c)
+		return commonV2.CompHasAnyCPEs(c)
 	})
 
 	return formulae.ScoreProfFull(have, len(comps), "CPEs", false)
-}
-
-func compHasAnyPURLs(c sbom.GetComponent) bool {
-	for _, p := range c.GetPurls() {
-		if isValidPURL(string(p)) {
-			return true
-		}
-	}
-	return false
-}
-
-func compHasAnyCPEs(c sbom.GetComponent) bool {
-	for _, p := range c.GetCpes() {
-		if isValidCPE(string(p)) {
-			return true
-		}
-	}
-	return false
 }
 
 func CompPurpose(doc sbom.Document) catalog.ProfFeatScore {
@@ -609,7 +474,7 @@ func CompPurpose(doc sbom.Document) catalog.ProfFeatScore {
 	}
 
 	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
-		return c.PrimaryPurpose() != ""
+		return commonV2.HasComponentPrimaryPackageType(c.PrimaryPurpose())
 	})
 
 	return formulae.ScoreProfFull(have, len(comps), "type", false)
@@ -622,7 +487,7 @@ func CompWithNODeprecatedLicenses(doc sbom.Document) catalog.ProfFeatScore {
 	}
 
 	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
-		return componentHasAnyDeprecated(c)
+		return commonV2.ComponentHasAnyDeprecated(c)
 	})
 
 	description := fmt.Sprintf("%d deprecated", have)
@@ -637,15 +502,6 @@ func CompWithNODeprecatedLicenses(doc sbom.Document) catalog.ProfFeatScore {
 	}
 }
 
-func componentHasAnyDeprecated(c sbom.GetComponent) bool {
-	for _, l := range c.ConcludedLicenses() {
-		if l.Deprecated() {
-			return true
-		}
-	}
-	return false
-}
-
 func CompWithNORestrictiveLicenses(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
@@ -653,7 +509,7 @@ func CompWithNORestrictiveLicenses(doc sbom.Document) catalog.ProfFeatScore {
 	}
 
 	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
-		return componentHasAnyRestrictive(c)
+		return commonV2.ComponentHasAnyRestrictive(c)
 	})
 
 	description := fmt.Sprintf("%d restrictive", have)
@@ -668,62 +524,17 @@ func CompWithNORestrictiveLicenses(doc sbom.Document) catalog.ProfFeatScore {
 	}
 }
 
-func componentHasAnyRestrictive(c sbom.GetComponent) bool {
-	for _, l := range c.ConcludedLicenses() {
-		if l.Restrictive() {
-			return true
-		}
-	}
-	return false
-}
-
+// checkUniqueID checks for PURL/CPE
 func checkUniqueID(c sbom.GetComponent) bool {
-	for _, p := range c.GetPurls() {
-		if isValidPURL(string(p)) {
-			return true
-		}
+	if commonV2.CompHasAnyPURLs(c) {
+		return true
 	}
 
-	for _, p := range c.GetCpes() {
-		if isValidCPE(string(p)) {
-			return true
-		}
+	if commonV2.CompHasAnyCPEs(c) {
+		return true
 	}
+
 	return false
-}
-
-func isValidCPE(s string) bool {
-	ls := strings.TrimSpace(s)
-	low := strings.ToLower(ls)
-
-	switch {
-	case strings.HasPrefix(low, "cpe:2.3:"):
-		_, err := naming.UnbindFS(ls)
-		return err == nil
-	case strings.HasPrefix(low, "cpe:/"):
-		_, err := naming.UnbindURI(ls)
-		return err == nil
-	default:
-		return false
-	}
-}
-
-func isValidPURL(s string) bool {
-	s = strings.TrimSpace(s)
-	if s == "" {
-		return false
-	}
-
-	u, err := purl.FromString(s)
-	if err != nil {
-		return false
-	}
-
-	// type and name must be present per spec
-	if strings.TrimSpace(u.Type) == "" || strings.TrimSpace(u.Name) == "" {
-		return false
-	}
-	return true
 }
 
 // CompDeclaredLicenses look for declared licenses
@@ -734,22 +545,10 @@ func CompDeclaredLicenses(doc sbom.Document) catalog.ProfFeatScore {
 	}
 
 	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
-		return componentHasAnyDeclared(c)
+		return commonV2.ComponentHasAnyDeclared(c)
 	})
 
 	return formulae.ScoreProfFull(have, len(comps), "declared license", false)
-}
-
-func componentHasAnyDeclared(c sbom.GetComponent) bool {
-	for _, l := range c.DeclaredLicenses() {
-		if id := strings.TrimSpace(l.ShortID()); validateLicenseText(id) {
-			return true
-		}
-		if nm := strings.TrimSpace(l.Name()); validateLicenseText(nm) {
-			return true
-		}
-	}
-	return false
 }
 
 // SBOMSignature look for signature
@@ -824,9 +623,8 @@ func SBOMVulnerabilities(doc sbom.Document) catalog.ProfFeatScore {
 
 func SBOMPrimaryComponent(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
-	isPrimaryPresent := doc.PrimaryComp().IsPresent()
 
-	if !isPrimaryPresent {
+	if !commonV2.HasSBOMPrimaryComponent(doc) {
 		return catalog.ProfFeatScore{
 			Score:  formulae.PerComponentScore(0, len(comps)),
 			Desc:   "absent",
@@ -835,7 +633,7 @@ func SBOMPrimaryComponent(doc sbom.Document) catalog.ProfFeatScore {
 	}
 
 	return catalog.ProfFeatScore{
-		Score:  formulae.BooleanScore(isPrimaryPresent),
+		Score:  formulae.BooleanScore(commonV2.HasSBOMPrimaryComponent(doc)),
 		Desc:   "present",
 		Ignore: false,
 	}
@@ -888,7 +686,7 @@ func SBOMDataLicense(doc sbom.Document) catalog.ProfFeatScore {
 		}
 	}
 
-	if areLicensesValid(specLicenses) {
+	if commonV2.AreLicensesValid(specLicenses) {
 		return catalog.ProfFeatScore{
 			Score:  formulae.BooleanScore(true),
 			Desc:   formulae.PresentField("data license"),
@@ -900,27 +698,6 @@ func SBOMDataLicense(doc sbom.Document) catalog.ProfFeatScore {
 		Desc:   "invalid data license",
 		Ignore: false,
 	}
-}
-
-func areLicensesValid(licenses []licenses.License) bool {
-	if len(licenses) == 0 {
-		return false
-	}
-	var spdx, aboutcode, custom int
-
-	for _, license := range licenses {
-		switch license.Source() {
-		case "spdx":
-			spdx++
-		case "aboutcode":
-			aboutcode++
-		case "custom":
-			if strings.HasPrefix(license.ShortID(), "LicenseRef-") || strings.HasPrefix(license.Name(), "LicenseRef-") {
-				custom++
-			}
-		}
-	}
-	return spdx+aboutcode+custom == len(licenses)
 }
 
 func SBOMTool(doc sbom.Document) catalog.ProfFeatScore {

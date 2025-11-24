@@ -63,7 +63,7 @@ func InterCompWithChecksum(doc sbom.Document) catalog.ProfFeatScore {
 }
 
 func InterCompWithChecksum265(doc sbom.Document) catalog.ProfFeatScore {
-	return CompSHA256(doc)
+	return CompSHA256Plus(doc)
 }
 
 func InterSBOMSignature(doc sbom.Document) catalog.ProfFeatScore {

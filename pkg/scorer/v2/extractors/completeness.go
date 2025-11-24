@@ -15,10 +15,9 @@
 package extractors
 
 import (
-	"strings"
-
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/catalog"
+	commonV2 "github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/common"
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/formulae"
 	"github.com/samber/lo"
 )
@@ -32,7 +31,7 @@ func CompWithDependencies(doc sbom.Document) catalog.ComprFeatScore {
 	}
 
 	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
-		return c.HasRelationShips() || c.CountOfDependencies() > 0
+		return commonV2.HasComponentDependencies(c)
 	})
 
 	return formulae.ScoreCompFull(have, len(comps), "dependencies", false)
@@ -78,9 +77,8 @@ func CompWithCompleteness(doc sbom.Document) catalog.ComprFeatScore {
 // sbom_with_primary_comp: Single primary component defined
 func SBOMWithPrimaryComponent(doc sbom.Document) catalog.ComprFeatScore {
 	comps := doc.Components()
-	isPrimaryPresent := doc.PrimaryComp().IsPresent()
 
-	if !isPrimaryPresent {
+	if !commonV2.HasSBOMPrimaryComponent(doc) {
 		return catalog.ComprFeatScore{
 			Score:  formulae.PerComponentScore(0, len(comps)),
 			Desc:   "absent",
@@ -89,7 +87,7 @@ func SBOMWithPrimaryComponent(doc sbom.Document) catalog.ComprFeatScore {
 	}
 
 	return catalog.ComprFeatScore{
-		Score:  formulae.BooleanScore(isPrimaryPresent),
+		Score:  formulae.BooleanScore(commonV2.HasSBOMPrimaryComponent(doc)),
 		Desc:   "identified",
 		Ignore: false,
 	}
@@ -103,7 +101,7 @@ func CompWithSourceCode(doc sbom.Document) catalog.ComprFeatScore {
 	}
 
 	have := lo.CountBy(doc.Components(), func(c sbom.GetComponent) bool {
-		return strings.TrimSpace(c.GetSourceCodeURL()) != ""
+		return commonV2.HasComponentSourceCodeURL(c.GetSourceCodeURL())
 	})
 
 	return formulae.ScoreCompFull(have, len(comps), "source URIs", false)
@@ -117,10 +115,7 @@ func CompWithSupplier(doc sbom.Document) catalog.ComprFeatScore {
 	}
 
 	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
-		s := c.Suppliers()
-		hasName := strings.TrimSpace(s.GetName()) != ""
-		hasContact := strings.TrimSpace(s.GetEmail()) != "" || strings.TrimSpace(s.GetURL()) != ""
-		return c.Suppliers().IsPresent() && hasName && hasContact
+		return commonV2.IsSupplierEntity(c.Suppliers())
 	})
 
 	return formulae.ScoreCompFull(have, len(comps), "suppliers", false)
@@ -134,7 +129,7 @@ func CompWithPackagePurpose(doc sbom.Document) catalog.ComprFeatScore {
 	}
 
 	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
-		return c.PrimaryPurpose() != ""
+		return commonV2.HasComponentPrimaryPackageType(c.PrimaryPurpose())
 	})
 
 	return formulae.ScoreCompFull(have, len(comps), "type", false)

@@ -19,6 +19,7 @@ import (
 
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/catalog"
+	commonV2 "github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/common"
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/formulae"
 	"github.com/samber/lo"
 )
@@ -31,7 +32,7 @@ func CompWithLicenses(doc sbom.Document) catalog.ComprFeatScore {
 	}
 
 	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
-		return componentHasAnyConcluded(c)
+		return commonV2.ComponentHasAnyConcluded(c)
 	})
 
 	return formulae.ScoreCompFull(have, len(comps), "licenses", false)
@@ -45,7 +46,7 @@ func CompWithValidLicenses(doc sbom.Document) catalog.ComprFeatScore {
 	}
 
 	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
-		return validationCheckConcludedLicenses(c)
+		return commonV2.ValidationCheckConcludedLicenses(c)
 	})
 
 	return formulae.ScoreCompFull(have, len(comps), "valid SPDX licenses", false)
@@ -59,7 +60,7 @@ func CompWithDeclaredLicenses(doc sbom.Document) catalog.ComprFeatScore {
 	}
 
 	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
-		return componentHasAnyDeclared(c)
+		return commonV2.ComponentHasAnyDeclared(c)
 	})
 
 	return formulae.ScoreCompFull(have, len(comps), "declared licenses", false)
@@ -77,7 +78,7 @@ func SBOMDataLicense(doc sbom.Document) catalog.ComprFeatScore {
 		}
 	}
 
-	if areLicensesValid(specLicenses) {
+	if commonV2.AreLicensesValid(specLicenses) {
 		return catalog.ComprFeatScore{
 			Score:  formulae.BooleanScore(true),
 			Desc:   formulae.PresentField("data license"),
@@ -99,7 +100,7 @@ func CompWithDeprecatedLicenses(doc sbom.Document) catalog.ComprFeatScore {
 	}
 
 	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
-		return componentHasAnyDeprecated(c)
+		return commonV2.ComponentHasAnyDeprecated(c)
 	})
 
 	description := fmt.Sprintf("%d deprecated", have)
@@ -123,7 +124,7 @@ func CompWithRestrictiveLicenses(doc sbom.Document) catalog.ComprFeatScore {
 	}
 
 	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
-		return componentHasAnyRestrictive(c)
+		return commonV2.ComponentHasAnyRestrictive(c)
 	})
 
 	description := fmt.Sprintf("%d restrictive", have)
