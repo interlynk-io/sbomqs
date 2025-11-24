@@ -180,7 +180,7 @@ sbomqs has gained significant adoption across the industry for SBOM quality asse
 - **Company:** Harness Inc.
 - **Usage:** Uses sbomqs as the engine powering their SBOM quality scoring feature
 - **Features:** Provides quality scores from 1-10 for generated SBOMs with SBOM drift detection capabilities
-- **Reference:** [Harness Developer Hub](https://developer.harness.io/docs/software-supply-chain-assurance/sbom/)
+- **Reference:** [Harness Developer Hub](https://developer.harness.io/docs/software-supply-chain-assurance/open-source-management/generate-sbom-for-artifacts)
 - **Blog Post:** [Level Up your Zero-day Vulnerability Remediation and SBOM Quality](https://www.harness.io/blog/level-up-your-zero-day-vulnerability-remediation-and-sbom-quality-for-a-more-secure-software-supply-chain) (May 2025)
 
 ### 2. **sbom.sh**
