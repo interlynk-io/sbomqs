@@ -169,9 +169,9 @@ var CompKeyToEvaluatingFunction = map[string]catalog.ComprFeatEval{
 	"sbom_namespace":          extractors.SBOMNamespace,
 	"sbom_lifecycle":          extractors.SBOMLifeCycle,
 
-	"comp_with_checksums": extractors.CompWithSHA1Plus,
-	"comp_with_sha256":    extractors.CompWithSHA256Plus,
-	"sbom_signature":      extractors.SBOMSignature,
+	"comp_with_strong_checksums": extractors.CompWithStrongChecksums,
+	"comp_with_weak_checksums":   extractors.CompWithWeakChecksums,
+	"sbom_signature":             extractors.SBOMSignature,
 
 	"comp_with_dependencies":     extractors.CompWithDependencies,
 	"sbom_completeness_declared": extractors.CompWithCompleteness,
@@ -522,8 +522,8 @@ var CatIntegritySpec = catalog.ComprCatSpec{
 	Description: "Allows for verification if artifacts were altered",
 	Weight:      15,
 	Features: []catalog.ComprFeatSpec{
-		{Key: "comp_with_checksums", Name: "Component With Checksums", Weight: 0.60, Ignore: false, Evaluate: extractors.CompWithSHA1Plus},
-		{Key: "comp_with_sha256", Name: "Component With SHA-256+", Weight: 0.30, Ignore: false, Evaluate: extractors.CompWithSHA256Plus},
+		{Key: "comp_with_strong_checksums", Name: "Component With Strong Checksums", Weight: 0.50, Ignore: false, Evaluate: extractors.CompWithStrongChecksums},
+		{Key: "comp_with_weak_checksums", Name: "Component With Weak Checksums", Weight: 0.40, Ignore: false, Evaluate: extractors.CompWithWeakChecksums},
 		{Key: "sbom_signature", Name: "Document Signature", Weight: 0.10, Ignore: false, Evaluate: extractors.SBOMSignature},
 	},
 }

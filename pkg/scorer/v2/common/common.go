@@ -207,48 +207,117 @@ func ComponentHasAnyRestrictive(c sbom.GetComponent) bool {
 	return false
 }
 
+// HasAnyChecksum checks if component has any recognized checksum algorithm (weak or strong).
+func HasAnyChecksum(c sbom.GetComponent) bool {
+	for _, checksum := range c.GetChecksums() {
+		algo := normalizeAlgoName(checksum.GetAlgo())
+		if isWeakChecksum(algo) || isStrongChecksum(algo) {
+			if strings.TrimSpace(checksum.GetContent()) != "" {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// HasStrongChecksum checks if component has a strong hash algorithm.
+func HasStrongChecksum(c sbom.GetComponent) bool {
+	for _, checksum := range c.GetChecksums() {
+		if isStrongChecksum(normalizeAlgoName(checksum.GetAlgo())) && strings.TrimSpace(checksum.GetContent()) != "" {
+			return true
+		}
+	}
+	return false
+}
+
+// HasWeakChecksum checks if component has only weak hash algorithms (no strong ones).
+func HasWeakChecksum(c sbom.GetComponent) bool {
+	hasWeak := false
+	for _, checksum := range c.GetChecksums() {
+		algo := normalizeAlgoName(checksum.GetAlgo())
+		content := strings.TrimSpace(checksum.GetContent())
+		if content == "" {
+			continue
+		}
+		if isStrongChecksum(algo) {
+			return false // Has strong, so not "weak only"
+		}
+		if isWeakChecksum(algo) {
+			hasWeak = true
+		}
+	}
+	return hasWeak
+}
+
+// isWeakChecksum returns true for weak/broken hash algorithms.
+// Weak algorithms (no credit):
+//   - MD family: MD2, MD4, MD5, MD6
+//   - SHA-1
+//   - Adler-32 (non-cryptographic)
+func isWeakChecksum(algo string) bool {
+	switch algo {
+	case "MD2", "MD4", "MD5", "MD6":
+		return true
+	case "SHA1":
+		return true
+	case "ADLER32":
+		return true
+	default:
+		return false
+	}
+}
+
+// isStrongChecksum returns true for strong hash algorithms.
+// Strong algorithms (full credit):
+//   - SHA-2 family: SHA-224, SHA-256, SHA-384, SHA-512
+//   - SHA-3 family: SHA3-224, SHA3-256, SHA3-384, SHA3-512
+//   - BLAKE family: BLAKE2b-256, BLAKE2b-384, BLAKE2b-512, BLAKE3
+//   - Streebog family: Streebog-256, Streebog-512
+//   - Post-quantum: crystalsDilithium, crystalsKyber, falcon
+func isStrongChecksum(algo string) bool {
+	switch algo {
+	// SHA-2 family (SHA-224 and above)
+	case "SHA224", "SHA256", "SHA384", "SHA512":
+		return true
+	// SHA-3 family
+	case "SHA3224", "SHA3256", "SHA3384", "SHA3512":
+		return true
+	// BLAKE family
+	case "BLAKE2B256", "BLAKE2B384", "BLAKE2B512", "BLAKE3":
+		return true
+	// Streebog (GOST R 34.11-2012)
+	case "STREEBOG256", "STREEBOG512":
+		return true
+	// Post-quantum algorithms
+	case "CRYSTALSDILITHIUM", "CRYSTALSKYBER", "FALCON":
+		return true
+	default:
+		return false
+	}
+}
+
+// HasSHA1Plus checks if component has any recognized checksum (weak or strong).
+// Kept for backward compatibility.
 func HasSHA1Plus(c sbom.GetComponent) bool {
-	for _, checksum := range c.GetChecksums() {
-		if isSHA1Plus(checksum.GetAlgo()) && strings.TrimSpace(checksum.GetContent()) != "" {
-			return true
-		}
-	}
-	return false
+	return HasAnyChecksum(c)
 }
 
-func isSHA1Plus(algo string) bool {
-	n := strings.ToUpper(algo)
-	n = strings.ReplaceAll(n, "-", "")
-	n = strings.ReplaceAll(n, "_", "")
-	n = strings.TrimSpace(n)
-
-	switch n {
-	case "SHA1", "SHA256", "SHA384", "SHA512":
-		return true
-	default:
-		return false
-	}
-}
-
+// HasSHA256Plus checks if component has a strong hash algorithm.
+// Kept for backward compatibility.
 func HasSHA256Plus(c sbom.GetComponent) bool {
-	for _, checksum := range c.GetChecksums() {
-		if isSHA256Plus(checksum.GetAlgo()) && strings.TrimSpace(checksum.GetContent()) != "" {
-			return true
-		}
-	}
-	return false
+	return HasStrongChecksum(c)
 }
 
-func isSHA256Plus(algo string) bool {
+// normalizeAlgoName normalizes algorithm names for comparison.
+// Handles variations from both CycloneDX and SPDX specs:
+//   - CycloneDX: "SHA-256", "SHA3-256", "BLAKE2b-256", "Streebog-256"
+//   - SPDX: "SHA256", "SHA3_256", "BLAKE2b-256"
+//
+// After normalization, "SHA-256", "SHA256", "sha_256" all become "SHA256"
+func normalizeAlgoName(algo string) string {
 	n := strings.ToUpper(algo)
 	n = strings.ReplaceAll(n, "-", "")
 	n = strings.ReplaceAll(n, "_", "")
 	n = strings.TrimSpace(n)
-
-	switch n {
-	case "SHA256", "SHA384", "SHA512":
-		return true
-	default:
-		return false
-	}
+	return n
 }

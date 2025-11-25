@@ -42,7 +42,7 @@ func SBOMCreationTimestamp(doc sbom.Document) catalog.ComprFeatScore {
 		if _, err2 := time.Parse(time.RFC3339Nano, ts); err2 != nil {
 			return catalog.ComprFeatScore{
 				Score:  formulae.BooleanScore(false),
-				Desc:   fmt.Sprintf("invalid timestamp: %s", ts),
+				Desc:   "fix timestamp format",
 				Ignore: false,
 			}
 		}
@@ -50,7 +50,7 @@ func SBOMCreationTimestamp(doc sbom.Document) catalog.ComprFeatScore {
 
 	return catalog.ComprFeatScore{
 		Score:  formulae.BooleanScore(true),
-		Desc:   ts,
+		Desc:   "complete",
 		Ignore: false,
 	}
 }
@@ -58,12 +58,10 @@ func SBOMCreationTimestamp(doc sbom.Document) catalog.ComprFeatScore {
 // SBOMAuthor represents an legal entity created an SBOM.
 // SPDX: Creator.(Person/Organization); CDX: metadata.(authors/author)
 func SBOMAuthors(doc sbom.Document) catalog.ComprFeatScore {
-	total := len(doc.Authors())
-
 	if commonV2.IsSBOMAuthorEntity(doc) {
 		return catalog.ComprFeatScore{
 			Score:  formulae.BooleanScore(true),
-			Desc:   fmt.Sprintf("%d authors", total),
+			Desc:   "complete",
 			Ignore: false,
 		}
 	}
@@ -107,40 +105,26 @@ func SBOMCreationTool(doc sbom.Document) catalog.ComprFeatScore {
 		}
 	}
 
-	descParts := []string{}
-	if withNameAndVersion > 0 {
-		descParts = append(descParts,
-			fmt.Sprintf("%d complete tool", withNameAndVersion))
-	}
-
-	if missingName > 0 {
-		descParts = append(descParts,
-			fmt.Sprintf("%d tool missing name", missingName))
-	}
-
-	if missingVersion > 0 {
-		descParts = append(descParts,
-			fmt.Sprintf("%d tool missing version", missingVersion))
-	}
-
-	desc := strings.Join(descParts, "; ")
-	if desc == "" {
-		desc = "missing tool"
-	}
-
 	// Scoring rule:
 	// - Full-score: at least one tool has both name+version.
 	// - Half-score: no complete tool, but at least one has only name.
 	// - No-score: only versions or nothing present.
 	var score float64
+	var desc string
 
 	switch {
 	case withNameAndVersion > 0:
 		score = formulae.BooleanScore(true)
-	case withNameAndVersion == 0 && missingVersion > 0:
+		desc = "complete"
+	case missingVersion > 0:
 		score = 5.0
+		desc = fmt.Sprintf("add version to %d tools", missingVersion)
+	case missingName > 0:
+		score = 0.0
+		desc = fmt.Sprintf("add name to %d tools", missingName)
 	default:
 		score = 0.0
+		desc = "add tool"
 	}
 
 	return catalog.ComprFeatScore{
@@ -174,7 +158,7 @@ func SBOMSupplier(doc sbom.Document) catalog.ComprFeatScore {
 			if hasName && hasContact {
 				return catalog.ComprFeatScore{
 					Score:  formulae.BooleanScore(true),
-					Desc:   fmt.Sprintf("%d supplier", 1),
+					Desc:   "complete",
 					Ignore: false,
 				}
 			}
@@ -256,7 +240,7 @@ func SBOMLifeCycle(doc sbom.Document) catalog.ComprFeatScore {
 		if len(phases) > 0 {
 			return catalog.ComprFeatScore{
 				Score:  formulae.BooleanScore(true),
-				Desc:   strings.Join(phases, ", "),
+				Desc:   "complete",
 				Ignore: false,
 			}
 		}
