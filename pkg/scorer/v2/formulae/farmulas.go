@@ -48,6 +48,15 @@ func ScoreCompFull(have, comps int, field string, ignore bool) catalog.ComprFeat
 	}
 }
 
+// ScoreCompZero score for comprehenssive features related to components
+func ScoreCompZero(field string, ignore bool) catalog.ComprFeatScore {
+	return catalog.ComprFeatScore{
+		Score:  0.0,
+		Desc:   "N/A (no components with licenses)",
+		Ignore: ignore,
+	}
+}
+
 // ScoreProfNA score NA for profile features related to components
 func ScoreProfNA(ignore bool) catalog.ProfFeatScore {
 	return catalog.ProfFeatScore{
