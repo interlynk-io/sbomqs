@@ -48,7 +48,7 @@ func Test_SBOMSpec(t *testing.T) {
 		got := SBOMSpec(doc)
 
 		assert.Equal(t, 10.0, got.Score)
-		assert.Equal(t, "present spdx", got.Desc)
+		assert.Equal(t, "complete", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -58,7 +58,7 @@ func Test_SBOMSpec(t *testing.T) {
 		got := SBOMSpec(doc)
 
 		assert.Equal(t, 10.0, got.Score)
-		assert.Equal(t, "present spdx", got.Desc)
+		assert.Equal(t, "complete", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -86,7 +86,7 @@ func Test_SBOMSpecVersion(t *testing.T) {
 		got := SBOMSpecVersion(doc)
 
 		assert.Equal(t, 10.0, got.Score)
-		assert.Equal(t, "present SPDX-2.3", got.Desc)
+		assert.Equal(t, "complete", got.Desc)
 	})
 
 	t.Run("UnSupportedSPDXVersion", func(t *testing.T) {
@@ -115,7 +115,7 @@ func Test_SBOMFileFormat(t *testing.T) {
 		got := SBOMAutomationSpec(doc)
 
 		assert.Equal(t, 10.0, got.Score)
-		assert.Equal(t, "present json", got.Desc)
+		assert.Equal(t, "complete", got.Desc)
 	})
 
 	t.Run("UnsupportedFormatForSPDX", func(t *testing.T) {
@@ -174,7 +174,7 @@ func Test_SBOMLifeCycle(t *testing.T) {
 		got := SBOMLifeCycle(doc)
 		assert.False(t, got.Ignore)
 		assert.Equal(t, 10.0, got.Score)
-		assert.Equal(t, "present build", got.Desc)
+		assert.Equal(t, "complete", got.Desc)
 	})
 
 	t.Run("CDX lifecycles present → 10", func(t *testing.T) {
@@ -182,7 +182,7 @@ func Test_SBOMLifeCycle(t *testing.T) {
 		got := SBOMLifeCycle(doc)
 		assert.False(t, got.Ignore)
 		assert.Equal(t, 10.0, got.Score)
-		assert.Equal(t, "present runtime", got.Desc)
+		assert.Equal(t, "complete", got.Desc)
 	})
 
 	t.Run("CDX lifecycles missing → 0", func(t *testing.T) {
@@ -190,7 +190,7 @@ func Test_SBOMLifeCycle(t *testing.T) {
 		got := SBOMLifeCycle(doc)
 		assert.False(t, got.Ignore)
 		assert.Equal(t, 0.0, got.Score)
-		assert.Equal(t, "missing lifecycle", got.Desc)
+		assert.Equal(t, "add lifecycle", got.Desc)
 	})
 }
 
@@ -223,28 +223,28 @@ func Test_SBOMNamespace(t *testing.T) {
 		doc := spdxDocForNamespace("https://example.com/ns")
 		got := SBOMNamespace(doc)
 		assert.Equal(t, 10.0, got.Score)
-		assert.Equal(t, "present namespace", got.Desc)
+		assert.Equal(t, "complete", got.Desc)
 	})
 
 	t.Run("SPDX namespace missing → 0", func(t *testing.T) {
 		doc := spdxDocForNamespace("")
 		got := SBOMNamespace(doc)
 		assert.Equal(t, 0.0, got.Score)
-		assert.Equal(t, "missing namespace", got.Desc)
+		assert.Equal(t, "add namespace", got.Desc)
 	})
 
 	t.Run("CDX uri present → 10", func(t *testing.T) {
 		doc := cdxDocForNamespace("urn:uuid:123e4567-e89b-12d3-a456-426614174000")
 		got := SBOMNamespace(doc)
 		assert.Equal(t, 10.0, got.Score)
-		assert.Equal(t, "present namespace", got.Desc)
+		assert.Equal(t, "complete", got.Desc)
 	})
 
 	t.Run("CDX uri missing → 0", func(t *testing.T) {
 		doc := cdxDocForNamespace("")
 		got := SBOMNamespace(doc)
 		assert.Equal(t, 0.0, got.Score)
-		assert.Equal(t, "missing namespace", got.Desc)
+		assert.Equal(t, "add namespace", got.Desc)
 	})
 }
 
@@ -295,7 +295,7 @@ func Test_SBOMAuthors(t *testing.T) {
 		doc := spdxDocForAuthor(nil)
 		got := SBOMAuthors(doc)
 		assert.Equal(t, 0.0, got.Score)
-		assert.Equal(t, "missing authors", got.Desc)
+		assert.Equal(t, "add authors", got.Desc)
 	})
 
 	// SPDX Doc with 1 author of type person
@@ -310,7 +310,7 @@ func Test_SBOMAuthors(t *testing.T) {
 		)
 		got := SBOMAuthors(doc)
 		assert.Equal(t, 10.0, got.Score)
-		assert.Equal(t, "present 1 legal authors", got.Desc)
+		assert.Equal(t, "complete", got.Desc)
 	})
 
 	// SPDX Doc with 2 authors, one of type person and another of organization
@@ -330,7 +330,7 @@ func Test_SBOMAuthors(t *testing.T) {
 		)
 		got := SBOMAuthors(doc)
 		assert.Equal(t, 10.0, got.Score)
-		assert.Equal(t, got.Desc, "present 2 legal authors")
+		assert.Equal(t, got.Desc, "complete")
 	})
 }
 
@@ -408,7 +408,7 @@ func Test_CompWithPURL(t *testing.T) {
 		got := CompUniqID(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "2/2 have unique ID", got.Desc)
+		assert.Equal(t, "complete", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -422,7 +422,7 @@ func Test_CompWithPURL(t *testing.T) {
 		got := CompUniqID(doc)
 		// 1/3 = 3.333…
 		assert.InDelta(t, 10.0*(1.0/3.0), got.Score, 1e-9)
-		assert.Equal(t, "1/3 have unique ID", got.Desc)
+		assert.Equal(t, "add to 2 components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -435,7 +435,7 @@ func Test_CompWithPURL(t *testing.T) {
 
 		got := CompUniqID(doc)
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "0/3 have unique ID", got.Desc)
+		assert.Equal(t, "add to 3 components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -448,7 +448,7 @@ func Test_CompWithPURL(t *testing.T) {
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.False(t, got.Ignore)
-		assert.Equal(t, "1/1 have unique ID", got.Desc)
+		assert.Equal(t, "complete", got.Desc)
 	})
 
 	// CDX:1.4
@@ -460,7 +460,7 @@ func Test_CompWithPURL(t *testing.T) {
 		got := CompUniqID(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "2/2 have unique ID", got.Desc)
+		assert.Equal(t, "complete", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -474,7 +474,7 @@ func Test_CompWithPURL(t *testing.T) {
 		got := CompUniqID(doc)
 
 		assert.InDelta(t, 10.0*(1.0/3.0), got.Score, 1e-9)
-		assert.Equal(t, "1/3 have unique ID", got.Desc)
+		assert.Equal(t, "add to 2 components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -487,7 +487,7 @@ func Test_CompWithPURL(t *testing.T) {
 		got := CompUniqID(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "0/2 have unique ID", got.Desc)
+		assert.Equal(t, "add to 2 components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 }

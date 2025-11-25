@@ -54,7 +54,7 @@ func ch(algo, content string) sbom.GetChecksum {
 	return sbom.Checksum{Alg: algo, Content: content}
 }
 
-func TestCompWithSHA1Plus(t *testing.T) {
+func TestCompWithStrongChecksums(t *testing.T) {
 	t.Parallel()
 	ctx := context.Background()
 	_ = ctx
@@ -71,66 +71,7 @@ func TestCompWithSHA1Plus(t *testing.T) {
 			want: catalog.ComprFeatScore{Score: 0, Ignore: true},
 		},
 		{
-			name: "all have SHA-1 or stronger",
-			doc: makeSPDXDocForIntegrity(
-				[]sbom.GetChecksum{ch("SHA-1", "a")},
-				[]sbom.GetChecksum{ch("SHA-256", "b")},
-				[]sbom.GetChecksum{ch("SHA-512", "c")},
-			),
-			// 3/3 → 10.0
-			want: catalog.ComprFeatScore{Score: 10, Ignore: false},
-		},
-		{
-			name: "partial coverage",
-			doc: makeSPDXDocForIntegrity(
-				[]sbom.GetChecksum{ch("MD5", "x")},         // not SHA1+
-				[]sbom.GetChecksum{ch("SHA-1", "y")},       // yes
-				[]sbom.GetChecksum{ch("unknown", "z")},     // not
-				[]sbom.GetChecksum{ch("SHA-384", "w")},     // yes
-				[]sbom.GetChecksum{},                       // not
-				[]sbom.GetChecksum{ch("sha-256", "lower")}, // yes (case normalization handled by extractor impl)
-			),
-			// 3/6 → 5.0
-			want: catalog.ComprFeatScore{Score: 5, Ignore: false},
-		},
-		{
-			name: "none",
-			doc: makeSPDXDocForIntegrity(
-				[]sbom.GetChecksum{ch("MD5", "x")},
-				[]sbom.GetChecksum{ch("CRC32", "y")},
-			),
-			want: catalog.ComprFeatScore{Score: 0, Ignore: false},
-		},
-	}
-
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			got := CompWithSHA1Plus(tc.doc)
-			assert.InDelta(t, tc.want.Score, got.Score, 0.001)
-			assert.Equal(t, tc.want.Ignore, got.Ignore)
-			assert.NotEmpty(t, got.Desc)
-		})
-	}
-}
-
-func TestCompWithSHA256Plus(t *testing.T) {
-	t.Parallel()
-	ctx := context.Background()
-	_ = ctx
-
-	tests := []struct {
-		name     string
-		doc      sbom.Document
-		want     catalog.ComprFeatScore
-		wantDesc string
-	}{
-		{
-			name: "no components → N/A",
-			doc:  makeSPDXDocForIntegrity(),
-			want: catalog.ComprFeatScore{Score: 0, Ignore: true},
-		},
-		{
-			name: "all have SHA-256 or stronger",
+			name: "all have strong checksums",
 			doc: makeSPDXDocForIntegrity(
 				[]sbom.GetChecksum{ch("SHA-256", "a")},
 				[]sbom.GetChecksum{ch("SHA-384", "b")},
@@ -140,18 +81,27 @@ func TestCompWithSHA256Plus(t *testing.T) {
 			want: catalog.ComprFeatScore{Score: 10, Ignore: false},
 		},
 		{
-			name: "mixed: SHA-1 should not count",
+			name: "mixed: SHA-1 is weak, should not count",
 			doc: makeSPDXDocForIntegrity(
-				[]sbom.GetChecksum{ch("SHA-1", "old")},   // not strong enough
-				[]sbom.GetChecksum{ch("SHA-256", "ok")},  // yes
-				[]sbom.GetChecksum{ch("MD5", "no")},      // no
-				[]sbom.GetChecksum{ch("SHA-512", "ok2")}, // yes
+				[]sbom.GetChecksum{ch("SHA-1", "old")},   // weak
+				[]sbom.GetChecksum{ch("SHA-256", "ok")},  // strong
+				[]sbom.GetChecksum{ch("MD5", "no")},      // weak
+				[]sbom.GetChecksum{ch("SHA-512", "ok2")}, // strong
 			),
 			// 2/4 → 5.0
 			want: catalog.ComprFeatScore{Score: 5, Ignore: false},
 		},
 		{
-			name: "none",
+			name: "component with both weak and strong counts as strong",
+			doc: makeSPDXDocForIntegrity(
+				[]sbom.GetChecksum{ch("MD5", "x"), ch("SHA-256", "y")}, // has strong
+				[]sbom.GetChecksum{ch("SHA-1", "a")},                   // weak only
+			),
+			// 1/2 → 5.0
+			want: catalog.ComprFeatScore{Score: 5, Ignore: false},
+		},
+		{
+			name: "none have strong",
 			doc: makeSPDXDocForIntegrity(
 				[]sbom.GetChecksum{ch("MD5", "x")},
 				[]sbom.GetChecksum{ch("sha-1", "y")},
@@ -162,10 +112,79 @@ func TestCompWithSHA256Plus(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			got := CompWithSHA256Plus(tc.doc)
+			got := CompWithStrongChecksums(tc.doc)
 			assert.InDelta(t, tc.want.Score, got.Score, 0.001)
 			assert.Equal(t, tc.want.Ignore, got.Ignore)
 			assert.NotEmpty(t, got.Desc)
+		})
+	}
+}
+
+func TestCompWithWeakChecksums(t *testing.T) {
+	t.Parallel()
+	ctx := context.Background()
+	_ = ctx
+
+	tests := []struct {
+		name     string
+		doc      sbom.Document
+		want     catalog.ComprFeatScore
+		wantDesc string
+	}{
+		{
+			name: "no components → N/A",
+			doc:  makeSPDXDocForIntegrity(),
+			want: catalog.ComprFeatScore{Score: 0, Ignore: true},
+		},
+		{
+			name: "no checksums at all → score 0",
+			doc: makeSPDXDocForIntegrity(
+				[]sbom.GetChecksum{},
+				[]sbom.GetChecksum{},
+			),
+			want: catalog.ComprFeatScore{Score: 0, Ignore: false, Desc: "no checksums found"},
+		},
+		{
+			name: "all have strong → complete (no weak-only)",
+			doc: makeSPDXDocForIntegrity(
+				[]sbom.GetChecksum{ch("SHA-256", "a")},
+				[]sbom.GetChecksum{ch("SHA-384", "b")},
+			),
+			// 2 with checksums, 0 weak-only → 2/2 → 10.0
+			want: catalog.ComprFeatScore{Score: 10, Ignore: false},
+		},
+		{
+			name: "all have weak only → need upgrade",
+			doc: makeSPDXDocForIntegrity(
+				[]sbom.GetChecksum{ch("SHA-1", "a")},
+				[]sbom.GetChecksum{ch("MD5", "b")},
+			),
+			// 2 with checksums, 2 weak-only → 0/2 → 0.0
+			want: catalog.ComprFeatScore{Score: 0, Ignore: false},
+		},
+		{
+			name: "mixed: some weak-only, some strong",
+			doc: makeSPDXDocForIntegrity(
+				[]sbom.GetChecksum{ch("SHA-1", "weak")},  // weak-only
+				[]sbom.GetChecksum{ch("SHA-256", "ok")},  // strong
+				[]sbom.GetChecksum{ch("MD5", "weak2")},   // weak-only
+				[]sbom.GetChecksum{ch("SHA-512", "ok2")}, // strong
+			),
+			// 4 with checksums, 2 weak-only → 2/4 → 5.0
+			want: catalog.ComprFeatScore{Score: 5, Ignore: false},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			got := CompWithWeakChecksums(tc.doc)
+			assert.InDelta(t, tc.want.Score, got.Score, 0.001)
+			assert.Equal(t, tc.want.Ignore, got.Ignore)
+			if tc.want.Desc != "" {
+				assert.Equal(t, tc.want.Desc, got.Desc)
+			} else {
+				assert.NotEmpty(t, got.Desc)
+			}
 		})
 	}
 }
@@ -231,34 +250,34 @@ func TestSBOMSignature_VerificationMatrix(t *testing.T) {
 		fs := SBOMSignature(docValidBundle())
 		assert.Equal(t, 10.0, fs.Score)
 		assert.False(t, fs.Ignore)
-		assert.Contains(t, fs.Desc, "present signature") // “signature verification succeeded”
+		assert.Contains(t, fs.Desc, "complete") // "signature verification succeeded"
 	})
 
 	t.Run("unreadable public key -> 5", func(t *testing.T) {
 		fs := SBOMSignature(docUnreadableKey())
 		assert.Equal(t, 5.0, fs.Score)
 		assert.False(t, fs.Ignore)
-		assert.Contains(t, fs.Desc, "missing signature")
+		assert.Contains(t, fs.Desc, "add signature")
 	})
 
 	t.Run("incomplete bundle -> 0", func(t *testing.T) {
 		fs := SBOMSignature(docIncompleteBundle())
 		assert.Equal(t, 0.0, fs.Score)
 		assert.False(t, fs.Ignore)
-		assert.Contains(t, fs.Desc, "missing signature")
+		assert.Contains(t, fs.Desc, "add signature")
 	})
 
 	t.Run("mismatched bundle -> verify fail -> 5", func(t *testing.T) {
 		fs := SBOMSignature(docMismatchedBundle())
 		assert.Equal(t, 5.0, fs.Score)
 		assert.False(t, fs.Ignore)
-		assert.Contains(t, fs.Desc, "missing signature") // “present but verification failed/invalid”
+		assert.Contains(t, fs.Desc, "add signature") // "present but verification failed/invalid"
 	})
 
 	t.Run("no signature -> 0", func(t *testing.T) {
 		fs := SBOMSignature(docNoSignature())
 		assert.Equal(t, 0.0, fs.Score)
 		assert.False(t, fs.Ignore)
-		assert.Contains(t, fs.Desc, "signature") // “missing signature”
+		assert.Contains(t, fs.Desc, "signature") // "add signature"
 	})
 }

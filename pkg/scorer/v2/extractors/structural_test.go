@@ -152,7 +152,7 @@ func Test_SBOMSchemaValid(t *testing.T) {
 		got := SBOMSchemaValid(doc)
 
 		assert.Equal(t, 10.0, got.Score)
-		assert.Equal(t, "schema valid", got.Desc)
+		assert.Equal(t, "complete", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -165,7 +165,7 @@ func Test_SBOMSchemaValid(t *testing.T) {
 		got := SBOMSchemaValid(doc)
 
 		assert.Equal(t, 10.0, got.Score)
-		assert.Equal(t, "schema valid", got.Desc)
+		assert.Equal(t, "complete", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -178,7 +178,7 @@ func Test_SBOMSchemaValid(t *testing.T) {
 		got := SBOMSchemaValid(doc)
 
 		assert.Equal(t, 0.0, got.Score)
-		assert.Equal(t, "schema invalid", got.Desc)
+		assert.Equal(t, "fix schema errors", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -191,7 +191,7 @@ func Test_SBOMSchemaValid(t *testing.T) {
 		got := SBOMSchemaValid(doc)
 
 		assert.Equal(t, 0.0, got.Score)
-		assert.Equal(t, "schema invalid", got.Desc)
+		assert.Equal(t, "fix schema errors", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 }

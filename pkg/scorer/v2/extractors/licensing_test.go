@@ -223,7 +223,7 @@ func Test_CompWithLicenses(t *testing.T) {
 		got := CompWithLicenses(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "2/2 have licenses", got.Desc)
+		assert.Equal(t, "complete", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -236,7 +236,7 @@ func Test_CompWithLicenses(t *testing.T) {
 		got := CompWithLicenses(doc)
 
 		assert.InDelta(t, 5.0, got.Score, 1e-9)
-		assert.Equal(t, "1/2 have licenses", got.Desc)
+		assert.Equal(t, "add to 1 component", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -249,7 +249,7 @@ func Test_CompWithLicenses(t *testing.T) {
 		got := CompWithLicenses(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "0/2 have licenses", got.Desc)
+		assert.Equal(t, "add to 2 components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -273,7 +273,7 @@ func Test_CompWithLicenses(t *testing.T) {
 		got := CompWithLicenses(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "2/2 have licenses", got.Desc)
+		assert.Equal(t, "complete", got.Desc)
 	})
 
 	t.Run("Cdx14ValidIdAndInvalidExpression", func(t *testing.T) {
@@ -284,7 +284,7 @@ func Test_CompWithLicenses(t *testing.T) {
 
 		got := CompWithLicenses(doc)
 		assert.InDelta(t, 5.0, got.Score, 1e-9)
-		assert.Equal(t, "1/2 have licenses", got.Desc)
+		assert.Equal(t, "add to 1 component", got.Desc)
 	})
 
 	t.Run("Cdx14WithBothInvalidExpression", func(t *testing.T) {
@@ -295,7 +295,7 @@ func Test_CompWithLicenses(t *testing.T) {
 
 		got := CompWithLicenses(doc)
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "0/2 have licenses", got.Desc)
+		assert.Equal(t, "add to 2 components", got.Desc)
 	})
 
 	// CDX testing: 1.6
@@ -317,7 +317,7 @@ func Test_CompWithLicenses(t *testing.T) {
 
 		got := CompWithLicenses(doc)
 		assert.InDelta(t, 5.0, got.Score, 1e-9)
-		assert.Equal(t, "1/2 have licenses", got.Desc)
+		assert.Equal(t, "add to 1 component", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -339,7 +339,7 @@ func Test_CompWithLicenses(t *testing.T) {
 
 		got := CompWithLicenses(doc)
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "0/2 have licenses", got.Desc)
+		assert.Equal(t, "add to 2 components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -357,11 +357,11 @@ func Test_CompWithLicenses(t *testing.T) {
 		gotConc := CompWithLicenses(doc)
 
 		assert.InDelta(t, 10.0, gotConc.Score, 1e-9)
-		assert.Equal(t, "1/1 have licenses", gotConc.Desc)
+		assert.Equal(t, "complete", gotConc.Desc)
 
 		gotDecl := CompWithDeclaredLicenses(doc)
 		assert.InDelta(t, 10.0, gotDecl.Score, 1e-9)
-		assert.Equal(t, "1/1 have declared licenses", gotDecl.Desc)
+		assert.Equal(t, "complete", gotDecl.Desc)
 	})
 }
 
@@ -385,7 +385,7 @@ func Test_CompWithValidLicenses(t *testing.T) {
 		got := CompWithValidLicenses(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "2/2 have valid SPDX licenses", got.Desc)
+		assert.Equal(t, "complete", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -399,7 +399,7 @@ func Test_CompWithValidLicenses(t *testing.T) {
 
 		// 2/3 → 6.666...
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "0/2 have valid SPDX licenses", got.Desc)
+		assert.Equal(t, "add to 2 components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -412,7 +412,7 @@ func Test_CompWithValidLicenses(t *testing.T) {
 		got := CompWithValidLicenses(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "2/2 have valid SPDX licenses", got.Desc)
+		assert.Equal(t, "complete", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -425,7 +425,7 @@ func Test_CompWithValidLicenses(t *testing.T) {
 		got := CompWithValidLicenses(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "0/2 have valid SPDX licenses", got.Desc)
+		assert.Equal(t, "add to 2 components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -439,7 +439,7 @@ func Test_CompWithValidLicenses(t *testing.T) {
 		got := CompWithValidLicenses(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "2/2 have valid SPDX licenses", got.Desc)
+		assert.Equal(t, "complete", got.Desc)
 	})
 
 	// CDX:1.6
@@ -462,7 +462,7 @@ func Test_CompWithValidLicenses(t *testing.T) {
 		got := CompWithValidLicenses(doc)
 
 		assert.InDelta(t, 5.0, got.Score, 1e-9)
-		assert.Equal(t, "1/2 have valid SPDX licenses", got.Desc)
+		assert.Equal(t, "add to 1 component", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 }
@@ -487,7 +487,7 @@ func Test_CompWithDeclaredLicenses(t *testing.T) {
 		got := CompWithDeclaredLicenses(doc)
 
 		assert.InDelta(t, 5.0, got.Score, 1e-9)
-		assert.Equal(t, "1/2 have declared licenses", got.Desc)
+		assert.Equal(t, "add to 1 component", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -500,7 +500,7 @@ func Test_CompWithDeclaredLicenses(t *testing.T) {
 		got := CompWithDeclaredLicenses(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "0/2 have declared licenses", got.Desc)
+		assert.Equal(t, "add to 2 components", got.Desc)
 	})
 
 	// CDX:1.4
@@ -513,7 +513,7 @@ func Test_CompWithDeclaredLicenses(t *testing.T) {
 		got := CompWithDeclaredLicenses(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "0/2 have declared licenses", got.Desc)
+		assert.Equal(t, "add to 2 components", got.Desc)
 	})
 
 	// CDX:1.6
@@ -535,7 +535,7 @@ func Test_CompWithDeclaredLicenses(t *testing.T) {
 
 		got := CompWithDeclaredLicenses(doc)
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "2/2 have declared licenses", got.Desc)
+		assert.Equal(t, "complete", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -557,7 +557,7 @@ func Test_CompWithDeclaredLicenses(t *testing.T) {
 
 		got := CompWithDeclaredLicenses(doc)
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "0/2 have declared licenses", got.Desc)
+		assert.Equal(t, "add to 2 components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 }
@@ -570,7 +570,7 @@ func Test_SBOMDataLicense(t *testing.T) {
 
 		assert.Equal(t, 0.0, got.Score)
 		assert.False(t, got.Ignore)
-		assert.Equal(t, "missing data license", got.Desc)
+		assert.Equal(t, "add data license", got.Desc)
 	})
 
 	t.Run("valid SPDX data license -> 10", func(t *testing.T) {
@@ -580,7 +580,7 @@ func Test_SBOMDataLicense(t *testing.T) {
 		got := SBOMDataLicense(doc)
 
 		assert.Equal(t, 10.0, got.Score)
-		assert.Contains(t, got.Desc, "present data license")
+		assert.Equal(t, "complete", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -591,7 +591,7 @@ func Test_SBOMDataLicense(t *testing.T) {
 		got := SBOMDataLicense(doc)
 
 		assert.Equal(t, 0.0, got.Score)
-		assert.Equal(t, "invalid data license", got.Desc)
+		assert.Equal(t, "fix data license", got.Desc)
 	})
 
 	t.Run("non-recommended doc SPDX data license -> 10", func(t *testing.T) {
@@ -601,7 +601,7 @@ func Test_SBOMDataLicense(t *testing.T) {
 		got := SBOMDataLicense(doc)
 
 		assert.Equal(t, 10.0, got.Score)
-		assert.Contains(t, got.Desc, "resent data license")
+		assert.Equal(t, "complete", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 }
@@ -626,7 +626,7 @@ func Test_CompWithDeprecatedLicenses(t *testing.T) {
 		got := CompWithDeprecatedLicenses(doc)
 
 		assert.InDelta(t, 5.0, got.Score, 1e-9)
-		assert.Equal(t, "1 deprecated", got.Desc)
+		assert.Equal(t, "fix 1 component", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -639,8 +639,9 @@ func Test_CompWithDeprecatedLicenses(t *testing.T) {
 
 		got := CompWithDeprecatedLicenses(doc)
 
-		assert.InDelta(t, 10.0*(2.0/3.0), got.Score, 1e-9)
-		assert.Equal(t, "2 deprecated", got.Desc)
+		// 2 deprecated out of 3, so 1 WITHOUT deprecated → 1/3 = 3.33
+		assert.InDelta(t, 10.0*(1.0/3.0), got.Score, 1e-9)
+		assert.Equal(t, "fix 2 components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -652,8 +653,9 @@ func Test_CompWithDeprecatedLicenses(t *testing.T) {
 
 		got := CompWithDeprecatedLicenses(doc)
 
-		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "N/A", got.Desc)
+		// 0 deprecated, so 2 WITHOUT deprecated → 2/2 = 10.0
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "complete", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -665,8 +667,9 @@ func Test_CompWithDeprecatedLicenses(t *testing.T) {
 
 		got := CompWithDeprecatedLicenses(doc)
 
-		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "N/A", got.Desc)
+		// 0 deprecated, so 2 WITHOUT deprecated → 2/2 = 10.0
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "complete", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -690,7 +693,7 @@ func Test_CompWithDeprecatedLicenses(t *testing.T) {
 		got := CompWithDeprecatedLicenses(doc)
 
 		assert.InDelta(t, 5.0, got.Score, 1e-9)
-		assert.Equal(t, "1 deprecated", got.Desc)
+		assert.Equal(t, "fix 1 component", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 }
@@ -714,8 +717,9 @@ func Test_CompWithRestrictiveLicenses(t *testing.T) {
 
 		got := CompWithRestrictiveLicenses(doc)
 
-		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "2 restrictive", got.Desc)
+		// 2 restrictive out of 2, so 0 WITHOUT restrictive → 0/2 = 0.0
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "review 2 components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -728,8 +732,9 @@ func Test_CompWithRestrictiveLicenses(t *testing.T) {
 
 		got := CompWithRestrictiveLicenses(doc)
 
-		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "N/A", got.Desc)
+		// 0 restrictive, so 3 WITHOUT restrictive → 3/3 = 10.0
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "complete", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -742,8 +747,9 @@ func Test_CompWithRestrictiveLicenses(t *testing.T) {
 
 		got := CompWithRestrictiveLicenses(doc)
 
-		assert.InDelta(t, 10.0*(1.0/3.0), got.Score, 1e-9)
-		assert.Equal(t, "1 restrictive", got.Desc)
+		// 1 restrictive out of 3, so 2 WITHOUT restrictive → 2/3 = 6.67
+		assert.InDelta(t, 10.0*(2.0/3.0), got.Score, 1e-9)
+		assert.Equal(t, "review 1 component", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -764,8 +770,9 @@ func Test_CompWithRestrictiveLicenses(t *testing.T) {
 			},
 		}, "CC0-1.0")
 		got := CompWithRestrictiveLicenses(doc)
-		assert.InDelta(t, 10.0*(1.0/2.0), got.Score, 1e-9)
-		assert.Equal(t, "1 restrictive", got.Desc)
+		// 1 restrictive out of 2, so 1 WITHOUT restrictive → 1/2 = 5.0
+		assert.InDelta(t, 5.0, got.Score, 1e-9)
+		assert.Equal(t, "review 1 component", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -786,8 +793,9 @@ func Test_CompWithRestrictiveLicenses(t *testing.T) {
 			},
 		}, "CC0-1.0")
 		got := CompWithRestrictiveLicenses(doc)
-		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "N/A", got.Desc)
+		// 0 restrictive, so 2 WITHOUT restrictive → 2/2 = 10.0
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "complete", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -798,8 +806,9 @@ func Test_CompWithRestrictiveLicenses(t *testing.T) {
 			{id: "SPDXRef-B", name: "b", version: "2", concluded: "MIT"},
 		}, "CC0-1.0")
 		got := CompWithRestrictiveLicenses(doc)
-		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "N/A", got.Desc)
+		// 0 restrictive, so 2 WITHOUT restrictive → 2/2 = 10.0
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "complete", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 }
