@@ -493,9 +493,12 @@ func copyC(cdxc *cydx.Component, c *CdxDoc) *Component {
 	}
 	nc.ID = cdxc.BOMRef
 
-	// license->acknowlegement(1.6+): currently acknowlegement field doesn't support
-	nc.DeclaredLicense = nil
-	nc.ConcludedLicense = nil
+	// For CycloneDX 1.6+, licenses have an acknowledgement field to distinguish
+	// declared vs concluded. For earlier versions, treat all licenses as concluded
+	// (the default semantic when no acknowledgement is specified).
+	if len(nc.ConcludedLicense) == 0 && len(nc.Licenses) > 0 {
+		nc.ConcludedLicense = nc.Licenses
+	}
 	nc.HasRelationships, nc.Count = getComponentRelationship(c, nc.ID)
 
 	return nc
