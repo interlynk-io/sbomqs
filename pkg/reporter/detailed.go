@@ -31,6 +31,9 @@ func (r *Reporter) detailedReport() {
 
 		for _, score := range scores.ScoreList() {
 			var l []string
+			if score.Feature() == "Component With Original Licenses" {
+				outDoc = append(outDoc, []string{"", "", "", ""})
+			}
 			if score.Ignore() {
 				l = []string{score.Category(), score.Feature(), " - ", score.Descr()}
 			} else {

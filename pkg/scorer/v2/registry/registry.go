@@ -551,10 +551,10 @@ var CatLicensingAndComplianceSpec = catalog.ComprCatSpec{
 	Features: []catalog.ComprFeatSpec{
 		{Key: "comp_with_licenses", Name: "Components With Licenses", Weight: 0.20, Ignore: false, Evaluate: extractors.CompWithLicenses},
 		{Key: "comp_with_valid_licenses", Name: "Component With Valid Licenses", Weight: 0.20, Ignore: false, Evaluate: extractors.CompWithValidLicenses},
-		{Key: "comp_with_declared_licenses", Name: "Component With Original Licenses", Weight: 0.15, Ignore: false, Evaluate: extractors.CompWithDeclaredLicenses},
-		{Key: "sbom_data_license", Name: "Document Data License", Weight: 0.10, Ignore: false, Evaluate: extractors.SBOMDataLicense},
 		{Key: "comp_no_deprecated_licenses", Name: "Component Without Deprecated Licenses", Weight: 0.15, Ignore: false, Evaluate: extractors.CompWithDeprecatedLicenses},
 		{Key: "comp_no_restrictive_licenses", Name: "Component Without Restrictive Licenses", Weight: 0.20, Ignore: false, Evaluate: extractors.CompWithRestrictiveLicenses},
+		{Key: "comp_with_declared_licenses", Name: "Component With Original Licenses", Weight: 0.15, Ignore: false, Evaluate: extractors.CompWithDeclaredLicenses},
+		{Key: "sbom_data_license", Name: "Document Data License", Weight: 0.10, Ignore: false, Evaluate: extractors.SBOMDataLicense},
 	},
 }
 
