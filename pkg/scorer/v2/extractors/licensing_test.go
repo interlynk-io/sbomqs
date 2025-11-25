@@ -81,7 +81,13 @@ func makeCDX16DocForLicensing(comps []licCdx16MiniComp, bomDataLicense string) s
 			// normalize/expand via your license DB
 			ls := licenses.LookupExpression(tok, nil)
 			if len(ls) == 0 {
-				continue
+				// Special handling for NOASSERTION and NONE - treat as custom licenses
+				upper := strings.ToUpper(strings.TrimSpace(tok))
+				if upper == "NOASSERTION" || upper == "NONE" {
+					ls = []licenses.License{licenses.CreateCustomLicense(tok, tok)}
+				} else {
+					continue
+				}
 			}
 
 			switch strings.ToLower(strings.TrimSpace(it.acknowledgement)) {
