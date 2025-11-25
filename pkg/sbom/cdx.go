@@ -493,9 +493,16 @@ func copyC(cdxc *cydx.Component, c *CdxDoc) *Component {
 	}
 	nc.ID = cdxc.BOMRef
 
-	// license->acknowlegement(1.6+): currently acknowlegement field doesn't support
-	nc.DeclaredLicense = nil
-	nc.ConcludedLicense = nil
+	// For CycloneDX 1.6+, licenses have an acknowledgement field to distinguish
+	// declared vs concluded. When acknowledgement is not specified but licenses exist,
+	// default to declared for 1.6+ (as per spec), and concluded for earlier versions.
+	if len(nc.Licenses) > 0 && len(nc.DeclaredLicense) == 0 && len(nc.ConcludedLicense) == 0 {
+		if isCdxSpecVersionAtLeast(c.doc.SpecVersion.String(), "1.6") {
+			nc.DeclaredLicense = nc.Licenses
+		} else {
+			nc.ConcludedLicense = nc.Licenses
+		}
+	}
 	nc.HasRelationships, nc.Count = getComponentRelationship(c, nc.ID)
 
 	return nc
@@ -878,4 +885,30 @@ func (c *CdxDoc) parseCompositions() {
 			c.compositions[string(assembly)] = string(composition.Aggregate)
 		}
 	}
+}
+
+// isCdxSpecVersionAtLeast returns true if the given specVersion is at least the minVersion.
+// Both versions are expected in the format "X.Y" (e.g., "1.6").
+func isCdxSpecVersionAtLeast(specVersion, minVersion string) bool {
+	parseVersion := func(v string) (int, int) {
+		parts := strings.Split(v, ".")
+		if len(parts) != 2 {
+			return 0, 0
+		}
+		major, minor := 0, 0
+		fmt.Sscanf(parts[0], "%d", &major)
+		fmt.Sscanf(parts[1], "%d", &minor)
+		return major, minor
+	}
+
+	specMajor, specMinor := parseVersion(specVersion)
+	minMajor, minMinor := parseVersion(minVersion)
+
+	if specMajor > minMajor {
+		return true
+	}
+	if specMajor == minMajor && specMinor >= minMinor {
+		return true
+	}
+	return false
 }
