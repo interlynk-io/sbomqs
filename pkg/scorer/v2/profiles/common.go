@@ -227,7 +227,7 @@ func SBOMDepedencies(doc sbom.Document) catalog.ProfFeatScore {
 
 	return catalog.ProfFeatScore{
 		Score:  formulae.BooleanScore(true),
-		Desc:   fmt.Sprintf("primary comp has %d dependencies", have),
+		Desc:   "complete",
 		Ignore: false,
 	}
 }

@@ -660,7 +660,7 @@ var profileInterlynkSpec = catalog.ProfSpec{
 
 var profileNTIASpec = catalog.ProfSpec{
 	Key:         ProfileNTIA,
-	Name:        "NTIA Minimum Elements",
+	Name:        "NTIA Minimum Elements (2021)",
 	Description: "NTIA Minimum Elements Profile",
 	Features: []catalog.ProfFeatSpec{
 		{Key: "sbom_machine_format", Name: "Automation Support", Required: true, Description: "Valid spec (SPDX/CycloneDX) and format (JSON/XML)", Evaluate: profiles.SBOMAutomationSpec},
