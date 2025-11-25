@@ -19,6 +19,7 @@ import (
 	"os"
 
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/api"
+	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/formulae"
 	"github.com/olekukonko/tablewriter"
 )
 
@@ -51,16 +52,20 @@ func (r *Reporter) detailedReport() {
 				profOutDoc = append(profOutDoc, l)
 			}
 
+			totalCatWeight := calculateTotalCategoryWeight(r.Comprehensive.CatResult)
 			header = []string{"CATEGORY", "FEATURE", "SCORE", "DESC"}
 			for _, cat := range r.Comprehensive.CatResult {
+				isCompInfo := cat.Key == "compinfo"
+				catNameWithWeight := formatCategoryWithWeight(cat.Name, cat.Weight, totalCatWeight, isCompInfo)
 				for _, feat := range cat.Features {
 					scoreStr := formatScore(feat)
-					l := []string{cat.Name, feat.Key, scoreStr, feat.Desc}
+					featNameWithWeight := formatFeatureWithWeight(feat.Key, cat.Weight, feat.Weight, totalCatWeight, isCompInfo)
+					l := []string{catNameWithWeight, featNameWithWeight, scoreStr, feat.Desc}
 					outDoc = append(outDoc, l)
 				}
 
 				if cat.Key == "compinfo" {
-					l := []string{cat.Name, "NOTE: Register Interest for Component Analysis", "", "https://forms.gle/WVoB3DrX9NKnzfhV8"}
+					l := []string{catNameWithWeight, "NOTE: Register Interest for Component Analysis", "", "https://forms.gle/WVoB3DrX9NKnzfhV8"}
 					outDoc = append(outDoc, l)
 				}
 			}
@@ -69,11 +74,15 @@ func (r *Reporter) detailedReport() {
 
 			fmt.Printf("SBOM Quality Score: %0.1f/10.0\t Grade: %s\tComponents: %d \t EngineVersion: %s\tFile: %s\n", r.Comprehensive.InterlynkScore, r.Comprehensive.Grade, r.Meta.NumComponents, EngineVersion, r.Meta.Filename)
 
+			totalCatWeight := calculateTotalCategoryWeight(r.Comprehensive.CatResult)
 			header = []string{"CATEGORY", "FEATURE", "SCORE", "DESC"}
 			for _, cat := range r.Comprehensive.CatResult {
+				isCompInfo := cat.Key == "compinfo"
+				catNameWithWeight := formatCategoryWithWeight(cat.Name, cat.Weight, totalCatWeight, isCompInfo)
 				for _, feat := range cat.Features {
 					scoreStr := formatScore(feat)
-					l := []string{cat.Name, feat.Key, scoreStr, feat.Desc}
+					featNameWithWeight := formatFeatureWithWeight(feat.Key, cat.Weight, feat.Weight, totalCatWeight, isCompInfo)
+					l := []string{catNameWithWeight, featNameWithWeight, scoreStr, feat.Desc}
 					outDoc = append(outDoc, l)
 				}
 			}
@@ -94,6 +103,13 @@ func (r *Reporter) detailedReport() {
 
 		if len(profOutDoc) > 0 {
 			newTable(profOutDoc, profHeader, "Profile Summary Scores:")
+		}
+
+		// Show category summary table before detailed table
+		if r.Comprehensive != nil {
+			totalCatWeight := calculateTotalCategoryWeight(r.Comprehensive.CatResult)
+			catSummaryRows, catSummaryHeader := buildCategorySummary(r.Comprehensive.CatResult, totalCatWeight)
+			newTable(catSummaryRows, catSummaryHeader, "Category Summary:")
 		}
 
 		if len(outDoc) > 0 {
@@ -117,6 +133,67 @@ func formatScore(feat api.FeatureResult) string {
 		return "Coming Soon.."
 	}
 	return fmt.Sprintf("%.1f/10.0", feat.Score)
+}
+
+// calculateTotalCategoryWeight calculates the sum of all category weights excluding compinfo
+func calculateTotalCategoryWeight(catResults []api.CategoryResult) float64 {
+	var total float64
+	for _, cat := range catResults {
+		if cat.Key == "compinfo" {
+			continue
+		}
+		total += cat.Weight
+	}
+	return total
+}
+
+// orFeatures defines features that are OR conditions (either one satisfies the requirement)
+var orFeatures = map[string]bool{
+	"comp_with_purl": true,
+	"comp_with_cpe":  true,
+}
+
+// formatCategoryWithWeight formats category name with its weight percentage
+func formatCategoryWithWeight(catName string, catWeight, totalCatWeight float64, isCompInfo bool) string {
+	if isCompInfo {
+		return catName
+	}
+	effectiveWeight := (catWeight / totalCatWeight) * 100
+	return fmt.Sprintf("%s (%.1f%%)", catName, effectiveWeight)
+}
+
+// formatFeatureWithWeight formats feature key with its effective weight percentage
+func formatFeatureWithWeight(featKey string, catWeight, featWeight, totalCatWeight float64, isCompInfo bool) string {
+	if isCompInfo {
+		return featKey
+	}
+
+	// For OR features, show the full category weight since either one satisfies the requirement
+	if orFeatures[featKey] {
+		effectiveWeight := (catWeight / totalCatWeight) * 100
+		return fmt.Sprintf("%s (%.1f%% OR)", featKey, effectiveWeight)
+	}
+
+	effectiveWeight := (catWeight * featWeight / totalCatWeight) * 100
+	return fmt.Sprintf("%s (%.1f%%)", featKey, effectiveWeight)
+}
+
+// buildCategorySummary builds the category summary table data
+func buildCategorySummary(catResults []api.CategoryResult, totalCatWeight float64) ([][]string, []string) {
+	header := []string{"CATEGORY", "WEIGHT", "SCORE", "GRADE"}
+	var rows [][]string
+
+	for _, cat := range catResults {
+		if cat.Key == "compinfo" {
+			continue // Skip component quality (informational only)
+		}
+		weight := fmt.Sprintf("%.1f%%", (cat.Weight/totalCatWeight)*100)
+		score := fmt.Sprintf("%.1f/10.0", cat.Score)
+		grade := formulae.ToGrade(cat.Score)
+		rows = append(rows, []string{cat.Name, weight, score, grade})
+	}
+
+	return rows, header
 }
 
 func newTable(doc [][]string, header []string, msg string) {

@@ -15,6 +15,7 @@
 package extractors
 
 import (
+	"fmt"
 	"os"
 	"strings"
 
@@ -25,39 +26,78 @@ import (
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/formulae"
 )
 
-// CompWithSHA1Plus returns coverage of components that have SHA-1 or stronger
-// (SHA-1, SHA-256, SHA-384, or SHA-512).
-func CompWithSHA1Plus(doc sbom.Document) catalog.ComprFeatScore {
+// CompWithStrongChecksums returns a score based on components having at least one strong checksum.
+// Strong checksums: SHA-224+, SHA-3, BLAKE, Streebog, post-quantum algorithms.
+// A component with at least one strong checksum gets full credit, even if it also has weak ones.
+func CompWithStrongChecksums(doc sbom.Document) catalog.ComprFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
 		return formulae.ScoreCompNA()
 	}
 
-	have := 0
+	var withStrong int
 	for _, comp := range comps {
-		if commonV2.HasSHA1Plus(comp) {
-			have++
+		if commonV2.HasStrongChecksum(comp) {
+			withStrong++
 		}
 	}
 
-	return formulae.ScoreCompFull(have, len(comps), "SHA-1+", false)
+	return formulae.ScoreCompFull(withStrong, len(comps), "strong checksums", false)
 }
 
-// CompWithSHA256Plus returns coverage of components that have SHA-256 or stronger.
-func CompWithSHA256Plus(doc sbom.Document) catalog.ComprFeatScore {
+// CompWithWeakChecksums returns a score based on components having only weak checksums (no strong).
+// Weak checksums: MD2-6, SHA-1, Adler-32.
+// This identifies components that have checksums but need to be upgraded to stronger algorithms.
+// Components with no checksums are NOT counted here (they're handled by comp_with_strong_checksums).
+func CompWithWeakChecksums(doc sbom.Document) catalog.ComprFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
 		return formulae.ScoreCompNA()
 	}
 
-	have := 0
-	for _, c := range comps {
-		if commonV2.HasSHA256Plus(c) {
-			have++
+	var withWeakOnly, withAnyChecksum int
+	for _, comp := range comps {
+		hasStrong := commonV2.HasStrongChecksum(comp)
+		hasWeak := commonV2.HasWeakChecksum(comp)
+
+		if hasStrong || hasWeak {
+			withAnyChecksum++
+		}
+
+		// Has weak but no strong = weak only (needs upgrade)
+		if hasWeak && !hasStrong {
+			withWeakOnly++
 		}
 	}
 
-	return formulae.ScoreCompFull(have, len(comps), "SHA-256+", false)
+	// If no components have any checksums, this feature is N/A
+	if withAnyChecksum == 0 {
+		return catalog.ComprFeatScore{
+			Score:  0,
+			Desc:   "no checksums found",
+			Ignore: false,
+		}
+	}
+
+	// For weak checksums, we report how many need upgrading
+	var desc string
+	if withWeakOnly == 0 {
+		desc = "complete"
+	} else if withWeakOnly == 1 {
+		desc = "upgrade 1 component to SHA-256+"
+	} else {
+		desc = fmt.Sprintf("upgrade %d components to SHA-256+", withWeakOnly)
+	}
+
+	// Score is based on components with checksums that are NOT weak-only
+	// (i.e., they have strong checksums)
+	withStrongAmongChecksummed := withAnyChecksum - withWeakOnly
+
+	return catalog.ComprFeatScore{
+		Score:  formulae.PerComponentScore(withStrongAmongChecksummed, withAnyChecksum),
+		Desc:   desc,
+		Ignore: false,
+	}
 }
 
 // allow tests to stub this

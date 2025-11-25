@@ -81,13 +81,13 @@ func SBOMDataLicense(doc sbom.Document) catalog.ComprFeatScore {
 	if commonV2.AreLicensesValid(specLicenses) {
 		return catalog.ComprFeatScore{
 			Score:  formulae.BooleanScore(true),
-			Desc:   formulae.PresentField("data license"),
+			Desc:   "complete",
 			Ignore: false,
 		}
 	}
 	return catalog.ComprFeatScore{
 		Score:  formulae.BooleanScore(false),
-		Desc:   "invalid data license",
+		Desc:   "fix data license",
 		Ignore: false,
 	}
 }
@@ -99,23 +99,32 @@ func CompWithDeprecatedLicenses(doc sbom.Document) catalog.ComprFeatScore {
 		return formulae.ScoreCompNA()
 	}
 
-	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
+	// Count components that HAVE deprecated licenses (problematic)
+	withDeprecated := lo.CountBy(comps, func(c sbom.GetComponent) bool {
 		return commonV2.ComponentHasAnyDeprecated(c)
 	})
 
-	description := fmt.Sprintf("%d deprecated", have)
-	if have == 0 {
-		description = "N/A"
+	// Components WITHOUT deprecated licenses (good)
+	withoutDeprecated := len(comps) - withDeprecated
+
+	var description string
+	if withDeprecated == 0 {
+		description = "complete"
+	} else if withDeprecated == 1 {
+		description = "fix 1 component"
+	} else {
+		description = fmt.Sprintf("fix %d components", withDeprecated)
 	}
 
+	// Score based on components WITHOUT deprecated licenses
 	return catalog.ComprFeatScore{
-		Score:  formulae.PerComponentScore(have, len(comps)),
+		Score:  formulae.PerComponentScore(withoutDeprecated, len(comps)),
 		Desc:   description,
 		Ignore: false,
 	}
 }
 
-// CompWithNoDeprecatedLicenses check for concluded license are not
+// CompWithRestrictiveLicenses check for concluded license are not
 // in the restrictive license list (GPL, etc)
 func CompWithRestrictiveLicenses(doc sbom.Document) catalog.ComprFeatScore {
 	comps := doc.Components()
@@ -123,17 +132,26 @@ func CompWithRestrictiveLicenses(doc sbom.Document) catalog.ComprFeatScore {
 		return formulae.ScoreCompNA()
 	}
 
-	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
+	// Count components that HAVE restrictive licenses (problematic)
+	withRestrictive := lo.CountBy(comps, func(c sbom.GetComponent) bool {
 		return commonV2.ComponentHasAnyRestrictive(c)
 	})
 
-	description := fmt.Sprintf("%d restrictive", have)
-	if have == 0 {
-		description = "N/A"
+	// Components WITHOUT restrictive licenses (good)
+	withoutRestrictive := len(comps) - withRestrictive
+
+	var description string
+	if withRestrictive == 0 {
+		description = "complete"
+	} else if withRestrictive == 1 {
+		description = "review 1 component"
+	} else {
+		description = fmt.Sprintf("review %d components", withRestrictive)
 	}
 
+	// Score based on components WITHOUT restrictive licenses
 	return catalog.ComprFeatScore{
-		Score:  formulae.PerComponentScore(have, len(comps)),
+		Score:  formulae.PerComponentScore(withoutRestrictive, len(comps)),
 		Desc:   description,
 		Ignore: false,
 	}

@@ -70,7 +70,7 @@ func SBOMSpecVersion(doc sbom.Document) catalog.ComprFeatScore {
 		if ver == v {
 			return catalog.ComprFeatScore{
 				Score:  formulae.BooleanScore(true),
-				Desc:   ver,
+				Desc:   "v" + ver,
 				Ignore: false,
 			}
 		}
@@ -119,13 +119,13 @@ func SBOMSchemaValid(doc sbom.Document) catalog.ComprFeatScore {
 	if doc.SchemaValidation() {
 		return catalog.ComprFeatScore{
 			Score:  formulae.BooleanScore(true),
-			Desc:   "schema valid",
+			Desc:   "complete",
 			Ignore: false,
 		}
 	}
 	return catalog.ComprFeatScore{
 		Score:  formulae.BooleanScore(false),
-		Desc:   "schema invalid",
+		Desc:   "fix schema errors",
 		Ignore: false,
 	}
 }

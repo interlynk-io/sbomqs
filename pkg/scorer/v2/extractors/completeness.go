@@ -81,14 +81,14 @@ func SBOMWithPrimaryComponent(doc sbom.Document) catalog.ComprFeatScore {
 	if !commonV2.HasSBOMPrimaryComponent(doc) {
 		return catalog.ComprFeatScore{
 			Score:  formulae.PerComponentScore(0, len(comps)),
-			Desc:   "absent",
+			Desc:   "add primary component",
 			Ignore: true,
 		}
 	}
 
 	return catalog.ComprFeatScore{
 		Score:  formulae.BooleanScore(commonV2.HasSBOMPrimaryComponent(doc)),
-		Desc:   "identified",
+		Desc:   "complete",
 		Ignore: false,
 	}
 }

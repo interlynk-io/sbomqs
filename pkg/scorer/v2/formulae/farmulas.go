@@ -103,20 +103,35 @@ func ScoreSBOMProfUnknownNA(field string, ignore bool) catalog.ProfFeatScore {
 }
 func NoComponentsNAA() string          { return "N/A" }
 func NoComponentsNA() string           { return "N/A (no components)" }
-func MissingField(field string) string { return "missing " + field }
-func PresentField(field string) string { return "present " + field }
+func MissingField(field string) string { return "add " + field }
+func PresentField(field string) string { return "complete" }
 func NonSupportedSPDXField() string    { return "N/A (SPDX)" }
 func UnknownSpec() string              { return "N/A (unknown spec)" }
+
+// CompDescription returns an action-oriented description for component features
 func CompDescription(have, total int, field string) string {
-	return fmt.Sprintf("%d/%d have %s", have, total, field)
+	if have == total {
+		return "complete"
+	}
+	missing := total - have
+	if missing == 1 {
+		return "add to 1 component"
+	}
+	return fmt.Sprintf("add to %d components", missing)
 }
 
-// perComponentScore returns 10 × (have/total)
+// PerComponentScore returns 10 × (have/total)
+// If not all components have the feature, caps at 9.9 to avoid false 10.0 display
 func PerComponentScore(have, total int) float64 {
 	if total <= 0 {
 		return 0
 	}
-	return 10.0 * (float64(have) / float64(total))
+	score := 10.0 * (float64(have) / float64(total))
+	// Cap at 9.9 if not complete to avoid rounding to 10.0
+	if have < total && score > 9.9 {
+		return 9.9
+	}
+	return score
 }
 
 // booleanScore returns 10 if present, else 0.
