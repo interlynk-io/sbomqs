@@ -61,7 +61,7 @@ func TestCompWithName_SomeMissing(t *testing.T) {
 
 	// 2 named out of 4 → 10 * (2/4) = 5.0
 	assert.InDelta(t, 5.0, got.Score, 1e-9)
-	assert.Equal(t, got.Desc, "2/4 have names")
+	assert.Equal(t, got.Desc, "add to 2 components")
 	assert.False(t, got.Ignore)
 }
 
@@ -138,7 +138,7 @@ func TestCompWithVersion_SPdx(t *testing.T) {
 
 		got := CompWithVersion(doc)
 		assert.InDelta(t, 10.0, got.Score, 0.0001)
-		assert.Equal(t, "2/2 have versions", got.Desc)
+		assert.Equal(t, "complete", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -150,7 +150,7 @@ func TestCompWithVersion_SPdx(t *testing.T) {
 
 		got := CompWithVersion(doc)
 		assert.InDelta(t, 5.0, got.Score, 0.0001) // 10 * (1/2)
-		assert.Equal(t, "1/2 have versions", got.Desc)
+		assert.Equal(t, "add to 1 component", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -163,7 +163,7 @@ func TestCompWithVersion_SPdx(t *testing.T) {
 		got := CompWithVersion(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 0.0001)
-		assert.Equal(t, "0/2 have versions", got.Desc)
+		assert.Equal(t, "add to 2 components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -188,7 +188,7 @@ func TestCompWithVersion_CycloneDX(t *testing.T) {
 
 	// 2/3 → 6.666..., rounded/float compared with delta
 	assert.InDelta(t, (10.0*2.0)/3.0, got.Score, 0.0001)
-	assert.Equal(t, "2/3 have versions", got.Desc)
+	assert.Equal(t, "add to 1 component", got.Desc)
 	assert.False(t, got.Ignore)
 }
 
@@ -201,7 +201,7 @@ func TestCompWithUniqLocalIDs_SPDX(t *testing.T) {
 
 		got := CompWithUniqLocalIDs(doc)
 		assert.InDelta(t, 10.0, got.Score, 0.0001)
-		assert.Equal(t, "2/2 have unique IDs", got.Desc) // “unique” per current impl = “present”
+		assert.Equal(t, "complete", got.Desc) // “unique” per current impl = “present”
 		assert.False(t, got.Ignore)
 	})
 
@@ -213,7 +213,7 @@ func TestCompWithUniqLocalIDs_SPDX(t *testing.T) {
 
 		out := CompWithUniqLocalIDs(doc)
 		assert.InDelta(t, 5.0, out.Score, 0.0001) // 10 * (1/2)
-		assert.Equal(t, "1/2 have unique IDs", out.Desc)
+		assert.Equal(t, "add to 1 component", out.Desc)
 		assert.False(t, out.Ignore)
 	})
 
@@ -237,6 +237,6 @@ func TestCompWithUniqLocalIDs_CycloneDX(t *testing.T) {
 	got := CompWithUniqLocalIDs(doc)
 	// 2/3 → 6.666...
 	assert.InDelta(t, (10.0*2.0)/3.0, got.Score, 0.0001)
-	assert.Equal(t, "2/3 have unique IDs", got.Desc)
+	assert.Equal(t, "add to 1 component", got.Desc)
 	assert.False(t, got.Ignore)
 }

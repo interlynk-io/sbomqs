@@ -111,7 +111,7 @@ func Test_SBOMCreationTimestamp(t *testing.T) {
 
 		got := SBOMCreationTimestamp(doc)
 		assert.Equal(t, 10.0, got.Score)
-		assert.Equal(t, "2025-01-20T10:30:45Z", got.Desc)
+		assert.Equal(t, "complete", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -122,7 +122,7 @@ func Test_SBOMCreationTimestamp(t *testing.T) {
 
 		got := SBOMCreationTimestamp(doc)
 		assert.Equal(t, 0.0, got.Score)
-		assert.Equal(t, got.Desc, "invalid timestamp: 01/20/2025 10:30:45")
+		assert.Equal(t, got.Desc, "fix timestamp format")
 		assert.False(t, got.Ignore)
 	})
 
@@ -132,7 +132,7 @@ func Test_SBOMCreationTimestamp(t *testing.T) {
 		})
 		got := SBOMCreationTimestamp(doc)
 		assert.Equal(t, 10.0, got.Score)
-		assert.Equal(t, "2025-01-20T10:30:45.123456789Z", got.Desc)
+		assert.Equal(t, "complete", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -140,7 +140,7 @@ func Test_SBOMCreationTimestamp(t *testing.T) {
 		doc := makeCDXDocForProvenance(cdxOptions{})
 		got := SBOMCreationTimestamp(doc)
 		assert.Equal(t, 0.0, got.Score)
-		assert.Equal(t, "missing timestamp", got.Desc)
+		assert.Equal(t, "add timestamp", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 }
@@ -151,7 +151,7 @@ func Test_SBOMAuthors(t *testing.T) {
 		doc := makeSPDXDocForProvenance(spdxOptions{})
 		got := SBOMAuthors(doc)
 		assert.Equal(t, 0.0, got.Score)
-		assert.Equal(t, "missing author", got.Desc)
+		assert.Equal(t, "add author", got.Desc)
 	})
 
 	// SPDX Doc with 1 author of type person
@@ -167,7 +167,7 @@ func Test_SBOMAuthors(t *testing.T) {
 		})
 		got := SBOMAuthors(doc)
 		assert.Equal(t, 10.0, got.Score)
-		assert.Equal(t, "1 authors", got.Desc)
+		assert.Equal(t, "complete", got.Desc)
 	})
 
 	// SPDX Doc with 2 authors, one of type person and another of organization
@@ -188,7 +188,7 @@ func Test_SBOMAuthors(t *testing.T) {
 		})
 		got := SBOMAuthors(doc)
 		assert.Equal(t, 10.0, got.Score)
-		assert.Equal(t, got.Desc, "2 authors")
+		assert.Equal(t, got.Desc, "complete")
 	})
 }
 
@@ -199,7 +199,7 @@ func Test_SBOMCreationTool(t *testing.T) {
 		})
 		got := SBOMCreationTool(doc)
 		assert.Equal(t, 0.0, got.Score)
-		assert.Equal(t, "missing tool", got.Desc)
+		assert.Equal(t, "add tool", got.Desc)
 	})
 
 	t.Run("tool missing both → 0.0", func(t *testing.T) {
@@ -210,7 +210,7 @@ func Test_SBOMCreationTool(t *testing.T) {
 		})
 		got := SBOMCreationTool(doc)
 		assert.Equal(t, 0.0, got.Score)
-		assert.Equal(t, "missing tool", got.Desc)
+		assert.Equal(t, "add tool", got.Desc)
 	})
 
 	t.Run("one tool missing version → 5.0", func(t *testing.T) {
@@ -221,7 +221,7 @@ func Test_SBOMCreationTool(t *testing.T) {
 		})
 		got := SBOMCreationTool(doc)
 		assert.Equal(t, 5.0, got.Score)
-		assert.Equal(t, "1 tool missing version", got.Desc)
+		assert.Equal(t, "add version to 1 tools", got.Desc)
 	})
 
 	t.Run("one tool missing name → 0", func(t *testing.T) {
@@ -232,7 +232,7 @@ func Test_SBOMCreationTool(t *testing.T) {
 		})
 		got := SBOMCreationTool(doc)
 		assert.Equal(t, 0.0, got.Score)
-		assert.Equal(t, "1 tool missing name", got.Desc)
+		assert.Equal(t, "add name to 1 tools", got.Desc)
 	})
 
 	t.Run("2 complete tool → 10", func(t *testing.T) {
@@ -244,7 +244,7 @@ func Test_SBOMCreationTool(t *testing.T) {
 		})
 		got := SBOMCreationTool(doc)
 		assert.Equal(t, 10.0, got.Score)
-		assert.Equal(t, got.Desc, "2 complete tool")
+		assert.Equal(t, got.Desc, "complete")
 	})
 
 	t.Run("2 complete tool and 1 missing name and 1 missing version → 10", func(t *testing.T) {
@@ -258,7 +258,7 @@ func Test_SBOMCreationTool(t *testing.T) {
 		})
 		got := SBOMCreationTool(doc)
 		assert.Equal(t, 10.0, got.Score)
-		assert.Equal(t, got.Desc, "2 complete tool; 1 tool missing name; 1 tool missing version")
+		assert.Equal(t, got.Desc, "complete")
 	})
 }
 
@@ -280,7 +280,7 @@ func Test_SBOMSupplier(t *testing.T) {
 		got := SBOMSupplier(doc)
 		assert.False(t, got.Ignore)
 		assert.Equal(t, 10.0, got.Score)
-		assert.Equal(t, "1 supplier", got.Desc)
+		assert.Equal(t, "complete", got.Desc)
 	})
 
 	t.Run("CDX missing supplier → 0", func(t *testing.T) {
@@ -288,7 +288,7 @@ func Test_SBOMSupplier(t *testing.T) {
 		got := SBOMSupplier(doc)
 		assert.False(t, got.Ignore)
 		assert.Equal(t, 0.0, got.Score)
-		assert.Equal(t, "missing supplier", got.Desc)
+		assert.Equal(t, "add supplier", got.Desc)
 	})
 }
 
@@ -299,14 +299,14 @@ func Test_SBOMNamespace(t *testing.T) {
 		})
 		got := SBOMNamespace(doc)
 		assert.Equal(t, 0.0, got.Score)
-		assert.Equal(t, "missing namespace", got.Desc)
+		assert.Equal(t, "add namespace", got.Desc)
 	})
 
 	t.Run("SPDX namespace missing → 0", func(t *testing.T) {
 		doc := makeSPDXDocForProvenance(spdxOptions{})
 		got := SBOMNamespace(doc)
 		assert.Equal(t, 0.0, got.Score)
-		assert.Equal(t, "missing namespace", got.Desc)
+		assert.Equal(t, "add namespace", got.Desc)
 	})
 
 	t.Run("CDX uri present → 10", func(t *testing.T) {
@@ -315,14 +315,14 @@ func Test_SBOMNamespace(t *testing.T) {
 		})
 		got := SBOMNamespace(doc)
 		assert.Equal(t, 10.0, got.Score)
-		assert.Equal(t, "present namespace", got.Desc)
+		assert.Equal(t, "complete", got.Desc)
 	})
 
 	t.Run("CDX uri missing → 0", func(t *testing.T) {
 		doc := makeCDXDocForProvenance(cdxOptions{})
 		got := SBOMNamespace(doc)
 		assert.Equal(t, 0.0, got.Score)
-		assert.Equal(t, "missing namespace", got.Desc)
+		assert.Equal(t, "add namespace", got.Desc)
 	})
 }
 
@@ -342,7 +342,7 @@ func Test_SBOMLifeCycle(t *testing.T) {
 		got := SBOMLifeCycle(doc)
 		assert.False(t, got.Ignore)
 		assert.Equal(t, 10.0, got.Score)
-		assert.Equal(t, "build, runtime", got.Desc)
+		assert.Equal(t, "complete", got.Desc)
 	})
 
 	t.Run("CDX lifecycles missing → 0", func(t *testing.T) {
@@ -350,6 +350,6 @@ func Test_SBOMLifeCycle(t *testing.T) {
 		got := SBOMLifeCycle(doc)
 		assert.False(t, got.Ignore)
 		assert.Equal(t, 0.0, got.Score)
-		assert.Equal(t, "missing lifecycle", got.Desc)
+		assert.Equal(t, "add lifecycle", got.Desc)
 	})
 }
