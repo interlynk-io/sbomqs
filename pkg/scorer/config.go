@@ -46,7 +46,7 @@ type Features struct {
 // Category descriptions
 var categoryDescriptions = map[string]string{
 	"Structural":            "Features related to the SBOM's spec and format",
-	"NTIA-minimum-elements": "Features ensuring compliance with NTIA minimum elements for SBOMs",
+	"NTIA-minimum-elements": "Features ensuring compliance with NTIA minimum elements (2021) for SBOMs",
 	"bsi-v1.1":              "Features ensuring compliance with BSI v1.1 SBOM requirements",
 	"bsi-v2.0":              "Features ensuring compliance with BSI v2.0 SBOM requirements",
 	"Semantic":              "Features related to the meaning and completeness of SBOM data",
