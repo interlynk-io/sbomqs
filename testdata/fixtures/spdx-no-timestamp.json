@@ -1,0 +1,22 @@
+{
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "spdxVersion": "SPDX-2.3",
+  "creationInfo": {
+    "creators": ["Tool: no-time-tool-1.0"]
+  },
+  "name": "No Timestamp Test",
+  "dataLicense": "CC0-1.0",
+  "documentNamespace": "https://example.com/no-timestamp",
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Package1",
+      "name": "timeless-package",
+      "versionInfo": "1.0.0",
+      "downloadLocation": "https://example.com/timeless",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "Copyright 2024 Test"
+    }
+  ]
+}

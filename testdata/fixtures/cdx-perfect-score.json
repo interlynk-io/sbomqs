@@ -1,0 +1,151 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2024-01-15T10:30:00Z",
+    "tools": [
+      {
+        "vendor": "Test Corp",
+        "name": "sbomqs-test-generator",
+        "version": "1.0.0"
+      }
+    ],
+    "authors": [
+      {
+        "name": "John Doe",
+        "email": "john@example.com"
+      }
+    ],
+    "supplier": {
+      "name": "Test Corp",
+      "url": ["https://testcorp.com"]
+    },
+    "lifecycles": [
+      {
+        "phase": "build"
+      }
+    ],
+    "component": {
+      "type": "application",
+      "bom-ref": "pkg:npm/test-application@1.0.0",
+      "name": "test-application",
+      "version": "1.0.0",
+      "description": "A test application with perfect SBOM",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "d2ca1ac5e3c0efa0e3c2e8e92f3a7f3d3f9c8b8e7f6d5c4b3a2918273645362718"
+        },
+        {
+          "alg": "SHA-512",
+          "content": "8b5f3a5e4d3c2b1a0987654321fedcba9876543210fedcba98765432123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef01234567"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/test-application@1.0.0",
+      "cpe": "cpe:2.3:a:testcorp:test-application:1.0.0:*:*:*:*:*:*:*",
+      "supplier": {
+        "name": "Test Corp",
+        "url": ["https://testcorp.com"]
+      }
+    },
+    "licenses": [
+      {
+        "license": {
+          "id": "CC0-1.0"
+        }
+      }
+    ]
+  },
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/awesome-library@2.3.4",
+      "name": "awesome-library",
+      "version": "2.3.4",
+      "description": "An awesome library for testing",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "purl": "pkg:npm/awesome-library@2.3.4",
+      "cpe": "cpe:2.3:a:awesome:awesome-library:2.3.4:*:*:*:*:*:*:*",
+      "supplier": {
+        "name": "Awesome Inc"
+      },
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/awesome/library"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:github/utils/helper@v3.2.1",
+      "name": "utility-helper",
+      "version": "3.2.1",
+      "description": "Utility helper functions",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210"
+        },
+        {
+          "alg": "SHA-1",
+          "content": "da39a3ee5e6b4b0d3255bfef95601890afd80709"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "purl": "pkg:github/utils/helper@v3.2.1",
+      "supplier": {
+        "name": "Jane Smith",
+        "email": "jane@utils.org"
+      },
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/utils/helper"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "pkg:npm/test-application@1.0.0",
+      "dependsOn": [
+        "pkg:npm/awesome-library@2.3.4",
+        "pkg:github/utils/helper@v3.2.1"
+      ]
+    },
+    {
+      "ref": "pkg:npm/awesome-library@2.3.4",
+      "dependsOn": [
+        "pkg:github/utils/helper@v3.2.1"
+      ]
+    }
+  ]
+}

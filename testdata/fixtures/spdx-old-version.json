@@ -1,0 +1,23 @@
+{
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "spdxVersion": "SPDX-2.1",
+  "creationInfo": {
+    "created": "2024-01-15T10:30:00Z",
+    "creators": ["Tool: old-tool-1.0"]
+  },
+  "name": "Old SPDX Version Test",
+  "dataLicense": "CC0-1.0",
+  "documentNamespace": "https://example.com/old-version",
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Package1",
+      "name": "legacy-package",
+      "versionInfo": "1.0.0",
+      "downloadLocation": "https://example.com/legacy",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "Copyright 2024 Legacy Corp"
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "spdxVersion": "SPDX-2.3",
+  "creationInfo": {
+    "created": "2024-01-15T10:30:00Z",
+    "creators": ["Tool: test-tool-1.0", "Person: Test User"]
+  },
+  "name": "No Checksums Test",
+  "dataLicense": "CC0-1.0",
+  "documentNamespace": "https://example.com/no-checksums",
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Package1",
+      "name": "package-no-checksum",
+      "versionInfo": "1.0.0",
+      "downloadLocation": "https://example.com/package1",
+      "filesAnalyzed": false,
+      "supplier": "Organization: Test Corp",
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "Copyright 2024 Test Corp"
+    },
+    {
+      "SPDXID": "SPDXRef-Package2",
+      "name": "another-package-no-checksum",
+      "versionInfo": "2.0.0",
+      "downloadLocation": "https://example.com/package2",
+      "filesAnalyzed": false,
+      "supplier": "Organization: Another Corp",
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "copyrightText": "Copyright 2024 Another Corp"
+    }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-Package1",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package2"
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "spdxVersion": "SPDX-2.3",
+  "creationInfo": {
+    "created": "2024-01-15T10:30:00Z",
+    "creators": ["Tool: test-tool-1.0"]
+  },
+  "name": "No Version Test",
+  "dataLicense": "CC0-1.0",
+  "documentNamespace": "https://example.com/no-version",
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Package1",
+      "name": "package-without-version",
+      "downloadLocation": "https://example.com/package1",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "Copyright 2024 Test"
+    },
+    {
+      "SPDXID": "SPDXRef-Package2",
+      "name": "another-package",
+      "downloadLocation": "https://example.com/package2",
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "copyrightText": "Copyright 2024 Test"
+    }
+  ]
+}

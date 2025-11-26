@@ -1,0 +1,49 @@
+{
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "spdxVersion": "SPDX-2.3",
+  "creationInfo": {
+    "created": "2024-01-15T10:30:00Z",
+    "creators": ["Tool: nodeps-tool-1.0", "Person: John Doe"]
+  },
+  "name": "No Dependencies Test",
+  "dataLicense": "CC0-1.0",
+  "documentNamespace": "https://example.com/no-deps",
+  "documentDescribes": ["SPDXRef-Package-Root"],
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Package-Root",
+      "name": "standalone-app",
+      "versionInfo": "1.0.0",
+      "downloadLocation": "https://example.com/standalone",
+      "filesAnalyzed": false,
+      "supplier": "Organization: Standalone Corp",
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "Copyright 2024 Standalone Corp",
+      "primaryPackagePurpose": "APPLICATION",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package2",
+      "name": "isolated-lib",
+      "versionInfo": "2.0.0",
+      "downloadLocation": "https://example.com/isolated",
+      "filesAnalyzed": false,
+      "supplier": "Organization: Isolated Inc",
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "copyrightText": "Copyright 2024 Isolated Inc",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "d2ca1ac5e3c0efa0e3c2e8e92f3a7f3d3f9c8b8e7f6d5c4b3a2918273645362718"
+        }
+      ]
+    }
+  ]
+}

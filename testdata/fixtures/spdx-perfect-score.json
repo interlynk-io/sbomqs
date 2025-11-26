@@ -1,0 +1,140 @@
+{
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "spdxVersion": "SPDX-2.3",
+  "creationInfo": {
+    "created": "2024-01-15T10:30:00Z",
+    "creators": [
+      "Tool: sbomqs-test-generator-1.0.0",
+      "Person: John Doe (john@example.com)",
+      "Organization: Test Corp (https://testcorp.com)"
+    ],
+    "licenseListVersion": "3.21"
+  },
+  "name": "Perfect SBOM Test",
+  "dataLicense": "CC0-1.0",
+  "documentNamespace": "https://example.com/sboms/perfect-test-2024-01-15",
+  "documentDescribes": ["SPDXRef-Package-Root"],
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Package-Root",
+      "name": "test-application",
+      "downloadLocation": "https://github.com/example/test-app/releases/download/v1.0.0/test-app.tar.gz",
+      "filesAnalyzed": true,
+      "versionInfo": "1.0.0",
+      "supplier": "Organization: Test Corp",
+      "originator": "Organization: Test Corp",
+      "homepage": "https://example.com/test-app",
+      "sourceInfo": "Built from source at commit abc123",
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "Copyright 2024 Test Corp",
+      "summary": "A test application with perfect SBOM",
+      "description": "This is a comprehensive test application designed to achieve perfect SBOM scoring",
+      "primaryPackagePurpose": "APPLICATION",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "d2ca1ac5e3c0efa0e3c2e8e92f3a7f3d3f9c8b8e7f6d5c4b3a2918273645362718"
+        },
+        {
+          "algorithm": "SHA512",
+          "checksumValue": "8b5f3a5e4d3c2b1a0987654321fedcba9876543210fedcba98765432123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef01234567"
+        }
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:npm/test-application@1.0.0"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:testcorp:test-application:1.0.0:*:*:*:*:*:*:*"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-Lib1",
+      "name": "awesome-library",
+      "downloadLocation": "https://npmjs.org/awesome-library/-/awesome-library-2.3.4.tgz",
+      "filesAnalyzed": false,
+      "versionInfo": "2.3.4",
+      "supplier": "Organization: Awesome Inc",
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "copyrightText": "Copyright 2023 Awesome Inc",
+      "primaryPackagePurpose": "LIBRARY",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456"
+        }
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:npm/awesome-library@2.3.4"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:awesome:awesome-library:2.3.4:*:*:*:*:*:*:*"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-Lib2",
+      "name": "utility-helper",
+      "downloadLocation": "https://github.com/utils/helper/archive/v3.2.1.tar.gz",
+      "filesAnalyzed": false,
+      "versionInfo": "3.2.1",
+      "supplier": "Person: Jane Smith (jane@utils.org)",
+      "sourceInfo": "Source repository at https://github.com/utils/helper",
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "Copyright 2023 Utility Developers",
+      "primaryPackagePurpose": "LIBRARY",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210"
+        },
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "da39a3ee5e6b4b0d3255bfef95601890afd80709"
+        }
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:github/utils/helper@v3.2.1"
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relationshipType": "DESCRIBES",
+      "relatedSpdxElement": "SPDXRef-Package-Root"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-Root",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-Lib1"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-Root",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-Lib2"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-Lib1",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-Lib2"
+    }
+  ]
+}

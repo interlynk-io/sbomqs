@@ -1,0 +1,23 @@
+{
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "spdxVersion": "SPDX-2.3",
+  "creationInfo": {
+    "created": "2024-01-15T10:30:00Z",
+    "creators": []
+  },
+  "name": "No Authors Test",
+  "dataLicense": "CC0-1.0",
+  "documentNamespace": "https://example.com/no-authors",
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Package1",
+      "name": "anonymous-package",
+      "versionInfo": "1.0.0",
+      "downloadLocation": "https://example.com/anon",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "Copyright 2024 Unknown"
+    }
+  ]
+}

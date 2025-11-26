@@ -34,8 +34,8 @@ type compr struct {
 type prof struct {
 	Profile string  `json:"profile"`
 	Score   float64 `json:"score"`
-	Grade   string  `json:grade"`
-	Message string  `json:message"`
+	Grade   string  `json:"grade"`
+	Message string  `json:"message"`
 }
 
 type file struct {
