@@ -99,6 +99,20 @@ func CompWithDeprecatedLicenses(doc sbom.Document) catalog.ComprFeatScore {
 		return formulae.ScoreCompNA()
 	}
 
+	// First check if any components have concluded licenses
+	componentsWithConcluded := lo.CountBy(comps, func(c sbom.GetComponent) bool {
+		return commonV2.ComponentHasAnyConcluded(c)
+	})
+
+	// If no components have concluded licenses, this check is not applicable
+	if componentsWithConcluded == 0 {
+		return catalog.ComprFeatScore{
+			Score:  formulae.BooleanScore(false),
+			Desc:   "add concluded licenses first",
+			Ignore: false,
+		}
+	}
+
 	// Count components that HAVE deprecated licenses (problematic)
 	withDeprecated := lo.CountBy(comps, func(c sbom.GetComponent) bool {
 		return commonV2.ComponentHasAnyDeprecated(c)
@@ -130,6 +144,20 @@ func CompWithRestrictiveLicenses(doc sbom.Document) catalog.ComprFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
 		return formulae.ScoreCompNA()
+	}
+
+	// First check if any components have concluded licenses
+	componentsWithConcluded := lo.CountBy(comps, func(c sbom.GetComponent) bool {
+		return commonV2.ComponentHasAnyConcluded(c)
+	})
+
+	// If no components have concluded licenses, this check is not applicable
+	if componentsWithConcluded == 0 {
+		return catalog.ComprFeatScore{
+			Score:  formulae.BooleanScore(false),
+			Desc:   "add concluded licenses first",
+			Ignore: false,
+		}
 	}
 
 	// Count components that HAVE restrictive licenses (problematic)

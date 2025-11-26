@@ -23,7 +23,7 @@ func Test_ScoreForStaticSBOMFiles(t *testing.T) {
 		filepath.Join(base, "complete-sbom.cdx.json"):          {Interlynk: 8.6, Grade: "B"},
 		filepath.Join(base, "dropwizard-core-2.0.31.cdx.json"): {Interlynk: 7.2, Grade: "C"},
 		filepath.Join(base, "sbomqs-cdx.json"):                 {Interlynk: 5.1, Grade: "D"},
-		filepath.Join(base, "sbomqs-spdx-sbom-tool.json"):      {Interlynk: 5.7, Grade: "D"},
+		filepath.Join(base, "sbomqs-spdx-sbom-tool.json"):      {Interlynk: 5.1, Grade: "D"},
 		filepath.Join(base, "complete-sbom.spdx.json"):         {Interlynk: 9.1, Grade: "A"},
 		filepath.Join(base, "sbomqs-spdx-syft-tool.json"):      {Interlynk: 7.5, Grade: "C"},
 	}

@@ -793,9 +793,10 @@ func Test_CompWithRestrictiveLicenses(t *testing.T) {
 			},
 		}, "CC0-1.0")
 		got := CompWithRestrictiveLicenses(doc)
-		// 0 restrictive, so 2 WITHOUT restrictive → 2/2 = 10.0
-		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "complete", got.Desc)
+		// NOASSERTION and NONE are not considered valid concluded licenses
+		// so this returns 0 with "add concluded licenses first"
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "add concluded licenses first", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
