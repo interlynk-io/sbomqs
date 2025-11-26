@@ -1,0 +1,67 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b84",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2024-01-15T10:30:00Z",
+    "tools": [
+      {
+        "vendor": "Test",
+        "name": "nodeps-tool",
+        "version": "1.0"
+      }
+    ],
+    "authors": [
+      {
+        "name": "John Doe"
+      }
+    ],
+    "component": {
+      "type": "application",
+      "bom-ref": "app-root",
+      "name": "standalone-app",
+      "version": "1.0.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ],
+      "supplier": {
+        "name": "Standalone Corp"
+      },
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    }
+  },
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "comp-1",
+      "name": "isolated-lib",
+      "version": "2.0.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "d2ca1ac5e3c0efa0e3c2e8e92f3a7f3d3f9c8b8e7f6d5c4b3a2918273645362718"
+        }
+      ],
+      "supplier": {
+        "name": "Isolated Inc"
+      },
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ]
+    }
+  ]
+}

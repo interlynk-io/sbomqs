@@ -1,0 +1,43 @@
+{
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "spdxVersion": "SPDX-2.3",
+  "creationInfo": {
+    "created": "2024-01-15T10:30:00Z",
+    "creators": ["Tool: badlicense-tool-1.0"]
+  },
+  "name": "Invalid Licenses Test",
+  "dataLicense": "CC0-1.0",
+  "documentNamespace": "https://example.com/invalid-licenses",
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Package1",
+      "name": "package-invalid-license",
+      "versionInfo": "1.0.0",
+      "downloadLocation": "https://example.com/package1",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MyCustomLicense",
+      "licenseDeclared": "MyCustomLicense",
+      "copyrightText": "Copyright 2024 Test"
+    },
+    {
+      "SPDXID": "SPDXRef-Package2",
+      "name": "package-deprecated-license",
+      "versionInfo": "2.0.0",
+      "downloadLocation": "https://example.com/package2",
+      "filesAnalyzed": false,
+      "licenseConcluded": "GPL-1.0",
+      "licenseDeclared": "GPL-1.0",
+      "copyrightText": "Copyright 2024 Test"
+    },
+    {
+      "SPDXID": "SPDXRef-Package3",
+      "name": "package-restrictive-license",
+      "versionInfo": "3.0.0",
+      "downloadLocation": "https://example.com/package3",
+      "filesAnalyzed": false,
+      "licenseConcluded": "AGPL-3.0",
+      "licenseDeclared": "AGPL-3.0",
+      "copyrightText": "Copyright 2024 Test"
+    }
+  ]
+}

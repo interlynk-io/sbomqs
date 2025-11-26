@@ -94,9 +94,52 @@ lint: ## Run golangci-lint (requires golangci-lint installed)
 ##@ Testing
 
 .PHONY: test
-test: generate ## Run tests
-	@echo "Running tests..."
-	@go test -v -cover -race -failfast -p 1 ./...
+test: generate ## Run all tests (unit tests first, then integration tests)
+	@echo "Running unit tests..."
+	@set +e; \
+	go test -v -cover -race -failfast -p 1 $$(go list ./... | grep -v integration_test); \
+	UNIT_EXIT_CODE=$$?; \
+	echo ""; \
+	echo "=========================================="; \
+	echo "Running SBOM Scoring Integration Tests"; \
+	echo "=========================================="; \
+	echo ""; \
+	go test -v -run Test_ScoreForStaticSBOMFiles_Summary ./pkg/scorer/v2/...; \
+	INTEGRATION_EXIT_CODE=$$?; \
+	echo ""; \
+	echo "=========================================="; \
+	echo "Test Summary"; \
+	echo "=========================================="; \
+	if [ $$UNIT_EXIT_CODE -ne 0 ]; then \
+		echo "✗ Unit tests: FAILED"; \
+	else \
+		echo "✓ Unit tests: PASSED"; \
+	fi; \
+	if [ $$INTEGRATION_EXIT_CODE -ne 0 ]; then \
+		echo "✗ Integration tests: FAILED"; \
+	else \
+		echo "✓ Integration tests: PASSED"; \
+	fi; \
+	echo "=========================================="; \
+	exit $$((UNIT_EXIT_CODE + INTEGRATION_EXIT_CODE))
+
+.PHONY: test-unit
+test-unit: ## Run unit tests only
+	@echo "Running unit tests..."
+	@go test -v -cover -race -failfast -p 1 $$(go list ./... | grep -v integration_test)
+
+.PHONY: test-integration
+test-integration: ## Run integration tests with detailed output
+	@echo ""
+	@echo "=========================================="
+	@echo "Running SBOM Scoring Integration Tests"
+	@echo "=========================================="
+	@echo ""
+	@go test -v -run Test_ScoreForStaticSBOMFiles ./pkg/scorer/v2/...
+
+.PHONY: test-integration-summary
+test-integration-summary: ## Run integration tests with summary table output
+	@go test -v -run Test_ScoreForStaticSBOMFiles_Summary ./pkg/scorer/v2/...
 
 .PHONY: test-coverage
 test-coverage: generate ## Run tests with coverage report
@@ -184,8 +227,11 @@ tidy: ## Run go mod tidy
 ##@ CI/CD
 
 .PHONY: ci
-ci: deps generate vet test ## Run CI pipeline locally
-	@echo "CI pipeline complete"
+ci: deps generate vet test-unit test-integration-summary ## Run CI pipeline locally with test summary
+	@echo ""
+	@echo "=========================================="
+	@echo "CI Pipeline Complete"
+	@echo "=========================================="
 
 .PHONY: pre-commit
 pre-commit: fmt vet lint test-short ## Run pre-commit checks

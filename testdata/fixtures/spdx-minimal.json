@@ -1,0 +1,22 @@
+{
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "spdxVersion": "SPDX-2.3",
+  "creationInfo": {
+    "created": "2024-01-15T10:30:00Z",
+    "creators": ["Tool: minimal-generator"]
+  },
+  "name": "Minimal SBOM",
+  "dataLicense": "CC0-1.0",
+  "documentNamespace": "https://example.com/minimal",
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Package",
+      "name": "minimal-package",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION"
+    }
+  ]
+}

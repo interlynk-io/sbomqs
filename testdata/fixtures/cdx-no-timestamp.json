@@ -1,0 +1,30 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b87",
+  "version": 1,
+  "metadata": {
+    "tools": [
+      {
+        "vendor": "Test",
+        "name": "no-time-tool",
+        "version": "1.0"
+      }
+    ]
+  },
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "comp-1",
+      "name": "timeless-package",
+      "version": "1.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    }
+  ]
+}
