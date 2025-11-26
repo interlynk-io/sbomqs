@@ -259,6 +259,8 @@ var isFeaturePresent = map[string]bool{
 	"comp_associated_license":      true,
 	"comp_with_concluded_license":  true,
 	"comp_with_declared_license":   true,
+	"comp_no_deprecated_licenses":  true,
+	"comp_no_restrictive_licenses": true,
 
 	"comp_with_purpose": true,
 	"comp_purpose":      true,
