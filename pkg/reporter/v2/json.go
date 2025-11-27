@@ -86,8 +86,6 @@ func (r *Reporter) jsonReport() (string, error) {
 
 	for _, r := range r.Results {
 		f := file{}
-		f.InterlynkScore = r.Comprehensive.InterlynkScore
-		f.Grade = r.Comprehensive.Grade
 		f.Components = r.Meta.NumComponents
 		f.FileName = r.Meta.Filename
 		f.Spec = r.Meta.Spec
@@ -95,26 +93,41 @@ func (r *Reporter) jsonReport() (string, error) {
 		f.Format = r.Meta.FileFormat
 		f.CreationTime = r.Meta.CreationTime
 
-		for _, cat := range r.Comprehensive.CatResult {
-			for _, feat := range cat.Features {
-				ns := new(compr)
-				ns.Category = cat.Name
-				ns.Feature = feat.Key
-				ns.Score = feat.Score
-				ns.Desc = feat.Desc
-				ns.Ignored = feat.Ignored
-				f.Comprehenssive = append(f.Comprehenssive, ns)
+		// Handle comprehensive results if present
+		if r.Comprehensive != nil {
+			f.InterlynkScore = r.Comprehensive.InterlynkScore
+			f.Grade = r.Comprehensive.Grade
+
+			for _, cat := range r.Comprehensive.CatResult {
+				for _, feat := range cat.Features {
+					ns := new(compr)
+					ns.Category = cat.Name
+					ns.Feature = feat.Key
+					ns.Score = feat.Score
+					ns.Desc = feat.Desc
+					ns.Ignored = feat.Ignored
+					f.Comprehenssive = append(f.Comprehenssive, ns)
+				}
 			}
 		}
 
-		for _, pr := range r.Profiles.ProfResult {
-			p := new(prof)
-			p.Profile = pr.Name
-			p.Grade = pr.Grade
-			p.Score = pr.InterlynkScore
-			p.Message = pr.Message
+		// Handle profile results if present
+		if r.Profiles != nil {
+			for _, pr := range r.Profiles.ProfResult {
+				p := new(prof)
+				p.Profile = pr.Name
+				p.Grade = pr.Grade
+				p.Score = pr.InterlynkScore
+				p.Message = pr.Message
 
-			f.Profiles = append(f.Profiles, p)
+				f.Profiles = append(f.Profiles, p)
+				
+				// If no comprehensive score, use first profile score for top-level
+				if r.Comprehensive == nil && f.InterlynkScore == 0 {
+					f.InterlynkScore = pr.InterlynkScore
+					f.Grade = pr.Grade
+				}
+			}
 		}
 
 		jr.Files = append(jr.Files, f)

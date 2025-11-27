@@ -86,7 +86,8 @@ func evaluateEachProfile(ctx context.Context, doc sbom.Document, profile catalog
 		// proResult.Score += pFeatResult.Score
 		proResult.Items = append(proResult.Items, pFeatResult)
 
-		if !pFeatScore.Ignore {
+		// Only count required fields for scoring
+		if !pFeatScore.Ignore && spec.Required {
 			sumScore += pFeatScore.Score
 			countNonNA++
 		}

@@ -95,20 +95,15 @@ lint: ## Run golangci-lint (requires golangci-lint installed)
 
 .PHONY: test
 test: generate ## Run all tests (unit tests first, then integration tests)
-	@echo "Running unit tests..."
+	@echo "Running tests..."
 	@set +e; \
-	go test -v -cover -race -failfast -p 1 $$(go list ./... | grep -v integration_test); \
+	go test -cover -race -failfast -p 1 $$(go list ./... | grep -v integration_test) 2>&1 | grep -E "^(ok|FAIL|coverage:)" | sed 's/github.com\/interlynk-io\/sbomqs\/v2\///' ; \
 	UNIT_EXIT_CODE=$$?; \
 	echo ""; \
-	echo "=========================================="; \
-	echo "Running SBOM Scoring Integration Tests"; \
-	echo "=========================================="; \
-	echo ""; \
-	go test -v -run Test_ScoreForStaticSBOMFiles_Summary ./pkg/scorer/v2/...; \
+	echo "Running integration tests..."; \
+	go test -run "Test_ScoreForStaticSBOMFiles_Summary|Test_NTIAProfile" ./pkg/scorer/v2/... 2>&1 | grep -E "(PASS|FAIL|ok|NTIA Profile:)" ; \
 	INTEGRATION_EXIT_CODE=$$?; \
 	echo ""; \
-	echo "=========================================="; \
-	echo "Test Summary"; \
 	echo "=========================================="; \
 	if [ $$UNIT_EXIT_CODE -ne 0 ]; then \
 		echo "✗ Unit tests: FAILED"; \
@@ -228,17 +223,14 @@ tidy: ## Run go mod tidy
 
 .PHONY: ci
 ci: deps generate vet ## Run CI pipeline locally with test summary
-	@echo "Running CI tests..."
+	@echo "Running CI pipeline..."
 	@set +e; \
-	echo "Running unit tests..."; \
-	go test -v -cover -race -failfast -p 1 $$(go list ./... | grep -v integration_test); \
+	echo "Unit tests:"; \
+	go test -cover -race -failfast -p 1 $$(go list ./... | grep -v integration_test) 2>&1 | grep -E "^(ok|FAIL|coverage:)" | sed 's/github.com\/interlynk-io\/sbomqs\/v2\///' ; \
 	UNIT_EXIT_CODE=$$?; \
 	echo ""; \
-	echo "=========================================="; \
-	echo "Running SBOM Scoring Integration Tests"; \
-	echo "=========================================="; \
-	echo ""; \
-	go test -v -run Test_ScoreForStaticSBOMFiles_Summary ./pkg/scorer/v2/...; \
+	echo "Integration tests:"; \
+	go test -run "Test_ScoreForStaticSBOMFiles_Summary|Test_NTIAProfile" ./pkg/scorer/v2/... 2>&1 | grep -E "(PASS|FAIL|ok|NTIA Profile:)" ; \
 	INTEGRATION_EXIT_CODE=$$?; \
 	echo ""; \
 	echo "=========================================="; \
