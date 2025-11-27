@@ -112,6 +112,29 @@ var BSIV20KeyToEvaluatingFunction = map[string]catalog.ProfFeatEval{
 	"comp_associated_license": profiles.BSICompWithAssociatedLicenses,
 }
 
+var OCTV11KeyToEvaluatingFunction = map[string]catalog.ProfFeatEval{
+	"sbom_spec":               profiles.OCTV11SBOMSpec,
+	"sbom_spec_version":       profiles.OCTV11SBOMSpecVersion,
+	"sbom_data_license":       profiles.OCTV11SBOMDataLicense,
+	"sbom_identifier":         profiles.OCTV11SBOMIdentifier,
+	"sbom_name":               profiles.OCTV11SBOMName,
+	"sbom_namespace":          profiles.OCTV11SBOMNamespace,
+	"sbom_creator":            profiles.OCTV11SBOMCreator,
+	"sbom_timestamp":          profiles.OCTV11SBOMTimestamp,
+	"sbom_creator_comment":    profiles.OCTV11SBOMCreatorComment,
+	"comp_name":               profiles.OCTV11CompName,
+	"comp_identifier":         profiles.OCTV11CompIdentifier,
+	"comp_version":            profiles.OCTV11CompVersion,
+	"comp_supplier":           profiles.OCTV11CompSupplier,
+	"comp_download_location":  profiles.OCTV11CompDownloadLocation,
+	"comp_license_concluded":  profiles.OCTV11CompLicenseConcluded,
+	"comp_license_declared":   profiles.OCTV11CompLicenseDeclared,
+	"comp_copyright":          profiles.OCTV11CompCopyright,
+	"sbom_relationships":      profiles.OCTV11SBOMRelationships,
+	"comp_checksum":           profiles.OCTV11CompChecksum,
+	"comp_purl":               profiles.OCTV11CompPURL,
+}
+
 var InterlynkKeyToEvaluatingFunction = map[string]catalog.ProfFeatEval{
 	"comp_name":     profiles.InterCompWithName,
 	"comp_version":  profiles.InterCompWithVersion,
@@ -191,12 +214,13 @@ var CompKeyToEvaluatingFunction = map[string]catalog.ComprFeatEval{
 }
 
 // ProfileKey lists all profiles
-// e.g. ntia, bsi-v1.1, bsi-v2.0, etc
+// e.g. ntia, bsi-v1.1, bsi-v2.0, oct-v1.1, etc
 const (
 	ProfileNTIA      catalog.ProfileKey = "ntia"
 	ProfileNTIA2025  catalog.ProfileKey = "ntia-2025"
 	ProfileBSI11     catalog.ProfileKey = "bsi-v1.1"
 	ProfileBSI20     catalog.ProfileKey = "bsi-v2.0"
+	ProfileOCTV11    catalog.ProfileKey = "oct-v1.1"
 	ProfileInterlynk catalog.ProfileKey = "interlynk"
 )
 
@@ -233,6 +257,9 @@ var profileAliases = map[string]catalog.ProfileKey{
 	"bsi-v1_1":              ProfileBSI11,
 	"BSI-V2.0":              ProfileBSI20,
 	"bsi-v2.0":              ProfileBSI20,
+	"OCT-V1.1":              ProfileOCTV11,
+	"oct-v1.1":              ProfileOCTV11,
+	"OpenChain-Telco-v1.1":  ProfileOCTV11,
 }
 
 // Returns an error on serious IO / decode failures only.
@@ -465,6 +492,10 @@ func filterProfiles(ctx context.Context, profiles []string) []catalog.ProfSpec {
 		case "bsi-v2.0":
 			log.Debugf("filterProfiles: selecting profile %q", profile)
 			finalProfiles = append(finalProfiles, profileBSI20Spec)
+
+		case "oct-v1.1":
+			log.Debugf("filterProfiles: selecting profile %q", profile)
+			finalProfiles = append(finalProfiles, profileOCTV11Spec)
 
 		case "interlynk":
 			log.Debugf("filterProfiles: selecting profile %q", profile)
@@ -753,10 +784,44 @@ var profileBSI20Spec = catalog.ProfSpec{
 	},
 }
 
+var profileOCTV11Spec = catalog.ProfSpec{
+	Key:         ProfileOCTV11,
+	Name:        "OpenChain Telco v1.1",
+	Description: "OpenChain Telco SBOM Guide v1.1 Profile",
+	Features: []catalog.ProfFeatSpec{
+		// Document Creation Information - SHALL
+		{Key: "sbom_spec", Name: "SBOM Format", Required: true, Description: "SPDX or CycloneDX format", Evaluate: profiles.OCTV11SBOMSpec},
+		{Key: "sbom_spec_version", Name: "Spec Version", Required: true, Description: "Valid spec version", Evaluate: profiles.OCTV11SBOMSpecVersion},
+		{Key: "sbom_data_license", Name: "Data License", Required: true, Description: "License for SBOM data", Evaluate: profiles.OCTV11SBOMDataLicense},
+		{Key: "sbom_identifier", Name: "Document Identifier", Required: true, Description: "SPDX ID or serial number", Evaluate: profiles.OCTV11SBOMIdentifier},
+		{Key: "sbom_name", Name: "Document Name", Required: true, Description: "SBOM document name", Evaluate: profiles.OCTV11SBOMName},
+		{Key: "sbom_namespace", Name: "Document Namespace", Required: true, Description: "Unique namespace URI", Evaluate: profiles.OCTV11SBOMNamespace},
+		{Key: "sbom_creator", Name: "Creator", Required: true, Description: "Organization and tool info", Evaluate: profiles.OCTV11SBOMCreator},
+		{Key: "sbom_timestamp", Name: "Created Timestamp", Required: true, Description: "ISO 8601 creation time", Evaluate: profiles.OCTV11SBOMTimestamp},
+		{Key: "sbom_creator_comment", Name: "Creator Comment", Required: true, Description: "Build information or lifecycle", Evaluate: profiles.OCTV11SBOMCreatorComment},
+
+		// Package Information - SHALL
+		{Key: "comp_name", Name: "Package Name", Required: true, Description: "All components named", Evaluate: profiles.OCTV11CompName},
+		{Key: "comp_identifier", Name: "Package Identifier", Required: true, Description: "SPDX ID or bom-ref", Evaluate: profiles.OCTV11CompIdentifier},
+		{Key: "comp_version", Name: "Package Version", Required: true, Description: "Version for each component", Evaluate: profiles.OCTV11CompVersion},
+		{Key: "comp_supplier", Name: "Package Supplier", Required: true, Description: "Component supplier info", Evaluate: profiles.OCTV11CompSupplier},
+		{Key: "comp_download_location", Name: "Download Location", Required: true, Description: "Where to obtain component", Evaluate: profiles.OCTV11CompDownloadLocation},
+		{Key: "comp_license_concluded", Name: "License Concluded", Required: true, Description: "Concluded license info", Evaluate: profiles.OCTV11CompLicenseConcluded},
+		{Key: "comp_license_declared", Name: "License Declared", Required: true, Description: "Declared license info", Evaluate: profiles.OCTV11CompLicenseDeclared},
+		{Key: "comp_copyright", Name: "Copyright Text", Required: true, Description: "Copyright information", Evaluate: profiles.OCTV11CompCopyright},
+		{Key: "sbom_relationships", Name: "Relationships", Required: true, Description: "Dependencies and relationships", Evaluate: profiles.OCTV11SBOMRelationships},
+
+		// Package Information - SHOULD
+		{Key: "comp_checksum", Name: "Package Checksum", Required: false, Description: "Component checksums", Evaluate: profiles.OCTV11CompChecksum},
+		{Key: "comp_purl", Name: "Package URL (PURL)", Required: false, Description: "Package URL identifier", Evaluate: profiles.OCTV11CompPURL},
+	},
+}
+
 var Profile = []catalog.ProfSpec{
 	profileNTIASpec,
 	profileNTIA2025Spec,
 	profileBSI11Spec,
 	profileBSI20Spec,
+	profileOCTV11Spec,
 	profileInterlynkSpec,
 }
