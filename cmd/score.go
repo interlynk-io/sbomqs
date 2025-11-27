@@ -89,8 +89,8 @@ var scoreCmd = &cobra.Command{
   # Score a SBOM for ntia profile
   sbomqs score --profile ntia samples/sbomqs-spdx-syft.json
 
-  # Score a SBOM for ntia, bsi, oct, interlynk profiles
-  sbomqs score --profile ntia,bsi,oct,interlynk samples/sbomqs-spdx-syft.json
+  # Score a SBOM for ntia, bsi, interlynk profiles
+  sbomqs score --profile ntia,bsi,interlynk samples/sbomqs-spdx-syft.json
 
   # To provide signature of a SBOM, use the --sig and --pub flags
   sbomqs score --profile bsi-v2.0 --sig samples/signature-test-data/sbom.sig --pub samples/signature-test-data/public_key.pem samples/signature-test-data/SPDXJSONExample-v2.3.spdx.json
@@ -413,6 +413,6 @@ func init() {
 	scoreCmd.Flags().StringP("sig", "v", "", "signature of sbom")
 	scoreCmd.Flags().StringP("pub", "p", "", "public key of sbom")
 
-	scoreCmd.Flags().StringSlice("profile", nil, "profiles to run ('ntia', 'ntia-2025', 'bsi', 'bsi-v2.0', 'oct', 'interlynk')")
+	scoreCmd.Flags().StringSlice("profile", nil, "profiles to run ('ntia', 'ntia-2025', 'bsi', 'bsi-v2.0', 'interlynk')")
 	scoreCmd.Flags().BoolP("legacy", "e", false, "legacy, prior to sbomqs version 2.0")
 }

@@ -112,28 +112,6 @@ var BSIV20KeyToEvaluatingFunction = map[string]catalog.ProfFeatEval{
 	"comp_associated_license": profiles.BSICompWithAssociatedLicenses,
 }
 
-var OCTKeyToEvaluatingFunction = map[string]catalog.ProfFeatEval{
-	"sbom_spec":         profiles.OCTSBOMSpec,
-	"sbom_spec_version": profiles.OCTSBOMSpecVersion,
-	"sbom_spdxid":       profiles.OCTSBOMSpdxID,
-	"sbom_name":         profiles.OCTSBOMName,
-	"sbom_comment":      profiles.OCTSBOMComment,
-	"sbom_organization": profiles.OCTSBOMCreationOrganization,
-	"sbom_tool":         profiles.OCTSBOMToolCreation,
-	"sbom_namespace":    profiles.OCTSBOMNamespace,
-	"sbom_data_license": profiles.OCTSBOMDataLicense,
-
-	"pack_name":         profiles.OCTCompWithName,
-	"pack_version":      profiles.OCTCompWithVersion,
-	"pack_spdxid":       profiles.OCTCompWithSpdxID,
-	"pack_download_url": profiles.OCTCompWithDownloadURL,
-
-	"pack_file_analyzed": profiles.OCTCompWithFileAnalyzed,
-	"pack_license_con":   profiles.OCTCompWithConcludedLicense,
-	"pack_license_dec":   profiles.OCTCompWithDeclaredLicense,
-	"pack_copyright":     profiles.OCTCompWithCopyright,
-}
-
 var InterlynkKeyToEvaluatingFunction = map[string]catalog.ProfFeatEval{
 	"comp_name":     profiles.InterCompWithName,
 	"comp_version":  profiles.InterCompWithVersion,
@@ -213,13 +191,12 @@ var CompKeyToEvaluatingFunction = map[string]catalog.ComprFeatEval{
 }
 
 // ProfileKey lists all profiles
-// e.g. ntia, bsi-v1.1, bsi-v2.0, oct, etc
+// e.g. ntia, bsi-v1.1, bsi-v2.0, etc
 const (
 	ProfileNTIA      catalog.ProfileKey = "ntia"
 	ProfileNTIA2025  catalog.ProfileKey = "ntia-2025"
 	ProfileBSI11     catalog.ProfileKey = "bsi-v1.1"
 	ProfileBSI20     catalog.ProfileKey = "bsi-v2.0"
-	ProfileOCT       catalog.ProfileKey = "oct"
 	ProfileInterlynk catalog.ProfileKey = "interlynk"
 )
 
@@ -256,9 +233,6 @@ var profileAliases = map[string]catalog.ProfileKey{
 	"bsi-v1_1":              ProfileBSI11,
 	"BSI-V2.0":              ProfileBSI20,
 	"bsi-v2.0":              ProfileBSI20,
-	"OCT":                   ProfileOCT,
-	"oct":                   ProfileOCT,
-	"OpenChain-Telco":       ProfileOCT,
 }
 
 // Returns an error on serious IO / decode failures only.
@@ -491,10 +465,6 @@ func filterProfiles(ctx context.Context, profiles []string) []catalog.ProfSpec {
 		case "bsi-v2.0":
 			log.Debugf("filterProfiles: selecting profile %q", profile)
 			finalProfiles = append(finalProfiles, profileBSI20Spec)
-
-		case "oct":
-			log.Debugf("filterProfiles: selecting profile %q", profile)
-			finalProfiles = append(finalProfiles, profileOCTSpec)
 
 		case "interlynk":
 			log.Debugf("filterProfiles: selecting profile %q", profile)
@@ -783,38 +753,10 @@ var profileBSI20Spec = catalog.ProfSpec{
 	},
 }
 
-var profileOCTSpec = catalog.ProfSpec{
-	Key:         ProfileOCT,
-	Name:        "OpenChain Telco (OCT)",
-	Description: "OpenChain Telco (OCT) Profile",
-	Features: []catalog.ProfFeatSpec{
-		{Key: "sbom_spec", Name: "SBOM Format", Required: true, Description: "Must be SPDX", Evaluate: profiles.OCTSBOMSpec},
-		{Key: "sbom_spec_version", Name: "Spec Version", Required: true, Description: "SPDX version", Evaluate: profiles.OCTSBOMSpecVersion},
-		{Key: "sbom_spdxid", Name: "SPDX ID", Required: true, Description: "Document SPDXID", Evaluate: profiles.OCTSBOMSpdxID},
-		{Key: "sbom_name", Name: "Document Name", Required: true, Description: "SBOM name", Evaluate: profiles.OCTSBOMName},
-		{Key: "sbom_comment", Name: "Document Comment", Required: false, Description: "Additional info", Evaluate: profiles.OCTSBOMComment},
-		{Key: "sbom_organization", Name: "Creator organization", Required: true, Description: "Organization info", Evaluate: profiles.OCTSBOMCreationOrganization},
-		{Key: "sbom_tool", Name: "Creator Tool", Required: true, Description: "Tool name & version", Evaluate: profiles.OCTSBOMToolCreation},
-		{Key: "sbom_namespace", Name: "Document Namespace", Required: true, Description: "Unique namespace", Evaluate: profiles.OCTSBOMNamespace},
-		{Key: "sbom_data_license", Name: "Data License", Required: true, Description: "CC0-1.0 or similar", Evaluate: profiles.OCTSBOMDataLicense},
-
-		{Key: "pack_name", Name: "Package name", Required: true, Description: "All packages named", Evaluate: profiles.OCTCompWithName},
-		{Key: "pack_version", Name: "Package Version", Required: true, Description: "Package versions", Evaluate: profiles.OCTCompWithVersion},
-		{Key: "pack_spdxid", Name: "Package SPDXID", Required: true, Description: "Unique SPDX IDs", Evaluate: profiles.OCTCompWithSpdxID},
-		{Key: "pack_download_url", Name: "Package Download Location", Required: false, Description: "Where to get package", Evaluate: profiles.OCTCompWithDownloadURL},
-
-		{Key: "pack_file_analyzed", Name: "Package Analyzed", Required: false, Description: "File analysis status", Evaluate: profiles.OCTCompWithFileAnalyzed},
-		{Key: "pack_license_con", Name: "Package License Concluded", Required: true, Description: "Concluded license", Evaluate: profiles.OCTCompWithConcludedLicense},
-		{Key: "pack_license_dec", Name: "Package License Declared", Required: true, Description: "Declared license", Evaluate: profiles.OCTCompWithDeclaredLicense},
-		{Key: "pack_copyright", Name: "Package Copyright", Required: true, Description: "Copyright text", Evaluate: profiles.OCTCompWithCopyright},
-	},
-}
-
 var Profile = []catalog.ProfSpec{
 	profileNTIASpec,
 	profileNTIA2025Spec,
 	profileBSI11Spec,
 	profileBSI20Spec,
-	profileOCTSpec,
 	profileInterlynkSpec,
 }

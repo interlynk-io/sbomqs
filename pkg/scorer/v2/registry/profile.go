@@ -120,9 +120,6 @@ func ReadProfileConfigFile(path string) ([]catalog.ProfSpec, error) {
 		case string(ProfileBSI20):
 			profile.Features = similar(p, BSIV20KeyToEvaluatingFunction)
 
-		case string(ProfileOCT):
-			profile.Features = similar(p, OCTKeyToEvaluatingFunction)
-
 		case string(ProfileInterlynk):
 			profile.Features = similar(p, InterlynkKeyToEvaluatingFunction)
 
