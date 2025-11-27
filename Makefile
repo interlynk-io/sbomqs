@@ -101,7 +101,7 @@ test: generate ## Run all tests (unit tests first, then integration tests)
 	UNIT_EXIT_CODE=$$?; \
 	echo ""; \
 	echo "Running integration tests..."; \
-	go test -run "Test_ScoreForStaticSBOMFiles_Summary|Test_NTIAProfile" ./pkg/scorer/v2/... 2>&1 | grep -E "(PASS|FAIL|ok|NTIA Profile:)" ; \
+	go test -run "Test_ScoreForStaticSBOMFiles_Summary|Test_NTIAProfile|Test_NTIA2025Profile|Test_InterlynkProfile" ./pkg/scorer/v2/... 2>&1 | grep -E "(PASS|FAIL|ok|NTIA.*Profile:|Interlynk.*Profile:)" ; \
 	INTEGRATION_EXIT_CODE=$$?; \
 	echo ""; \
 	echo "=========================================="; \
@@ -135,6 +135,15 @@ test-integration: ## Run integration tests with detailed output
 .PHONY: test-integration-summary
 test-integration-summary: ## Run integration tests with summary table output
 	@go test -v -run Test_ScoreForStaticSBOMFiles_Summary ./pkg/scorer/v2/...
+
+.PHONY: test-profiles
+test-profiles: ## Run all profile integration tests
+	@echo ""
+	@echo "=========================================="
+	@echo "Running Profile Integration Tests"
+	@echo "=========================================="
+	@echo ""
+	@go test -v -run "Test_.*Profile.*ForStaticSBOMFiles" ./pkg/scorer/v2/...
 
 .PHONY: test-coverage
 test-coverage: generate ## Run tests with coverage report
@@ -230,7 +239,7 @@ ci: deps generate vet ## Run CI pipeline locally with test summary
 	UNIT_EXIT_CODE=$$?; \
 	echo ""; \
 	echo "Integration tests:"; \
-	go test -run "Test_ScoreForStaticSBOMFiles_Summary|Test_NTIAProfile" ./pkg/scorer/v2/... 2>&1 | grep -E "(PASS|FAIL|ok|NTIA Profile:)" ; \
+	go test -run "Test_ScoreForStaticSBOMFiles_Summary|Test_NTIAProfile|Test_NTIA2025Profile|Test_InterlynkProfile" ./pkg/scorer/v2/... 2>&1 | grep -E "(PASS|FAIL|ok|NTIA.*Profile:|Interlynk.*Profile:)" ; \
 	INTEGRATION_EXIT_CODE=$$?; \
 	echo ""; \
 	echo "=========================================="; \

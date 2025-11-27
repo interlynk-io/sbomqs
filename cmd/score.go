@@ -413,6 +413,6 @@ func init() {
 	scoreCmd.Flags().StringP("sig", "v", "", "signature of sbom")
 	scoreCmd.Flags().StringP("pub", "p", "", "public key of sbom")
 
-	scoreCmd.Flags().StringSlice("profile", nil, "profiles to run ('ntia', 'bsi', 'oct', 'interlynk', 'bsi-v2.0')")
+	scoreCmd.Flags().StringSlice("profile", nil, "profiles to run ('ntia', 'ntia-2025', 'bsi', 'bsi-v2.0', 'oct', 'interlynk')")
 	scoreCmd.Flags().BoolP("legacy", "e", false, "legacy, prior to sbomqs version 2.0")
 }
