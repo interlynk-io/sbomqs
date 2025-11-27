@@ -50,6 +50,22 @@ var NTIAKeyToEvaluatingFunction = map[string]catalog.ProfFeatEval{
 	"sbom_timestamp":      profiles.SBOMCreationTimestamp,
 }
 
+var NTIA2025KeyToEvaluatingFunction = map[string]catalog.ProfFeatEval{
+	"sbom_machine_format":     profiles.SBOMAutomationSpec,
+	"sbom_author":             profiles.SBOMAuthors,
+	"software_producer":       profiles.NTIA2025SoftwareProducer,
+	"comp_name":               profiles.CompName,
+	"comp_version":            profiles.CompVersion,
+	"software_identifiers":    profiles.NTIA2025CompSoftwareIdentifiers,
+	"comp_hash":               profiles.NTIA2025CompHash,
+	"license":                 profiles.NTIA2025CompLicense,
+	"sbom_dependencies":       profiles.SBOMDepedencies,
+	"comp_supplier":           profiles.CompSupplier,
+	"tool_name":               profiles.NTIA2025ToolName,
+	"sbom_timestamp":          profiles.SBOMCreationTimestamp,
+	"generation_context":      profiles.NTIA2025GenerationContext,
+}
+
 var BSIV11KeyToEvaluatingFunction = map[string]catalog.ProfFeatEval{
 	"sbom_spec":         profiles.SBOMAutomationSpec,
 	"sbom_spec_version": profiles.BSISBOMSpecVersion,
@@ -200,6 +216,7 @@ var CompKeyToEvaluatingFunction = map[string]catalog.ComprFeatEval{
 // e.g. ntia, bsi-v1.1, bsi-v2.0, oct, etc
 const (
 	ProfileNTIA      catalog.ProfileKey = "ntia"
+	ProfileNTIA2025  catalog.ProfileKey = "ntia-2025"
 	ProfileBSI11     catalog.ProfileKey = "bsi-v1.1"
 	ProfileBSI20     catalog.ProfileKey = "bsi-v2.0"
 	ProfileOCT       catalog.ProfileKey = "oct"
@@ -228,6 +245,10 @@ var profileAliases = map[string]catalog.ProfileKey{
 	"NTIA-minimum-elements": ProfileNTIA,
 	"NTIA-Minimum-Elements": ProfileNTIA,
 	"NTIA":                  ProfileNTIA,
+	"ntia-2025":             ProfileNTIA2025,
+	"NTIA-2025":             ProfileNTIA2025,
+	"ntia2025":              ProfileNTIA2025,
+	"NTIA2025":              ProfileNTIA2025,
 	"BSI":                   ProfileBSI11,
 	"bsi":                   ProfileBSI11,
 	"BSI-V1.1":              ProfileBSI11,
@@ -455,6 +476,10 @@ func filterProfiles(ctx context.Context, profiles []string) []catalog.ProfSpec {
 			log.Debugf("filterProfiles: selecting profile %q", profile)
 			finalProfiles = append(finalProfiles, profileNTIASpec)
 
+		case "ntia-2025":
+			log.Debugf("filterProfiles: selecting profile %q", profile)
+			finalProfiles = append(finalProfiles, profileNTIA2025Spec)
+
 		case "bsi":
 			log.Debugf("filterProfiles: selecting profile %q", profile)
 			finalProfiles = append(finalProfiles, profileBSI11Spec)
@@ -611,13 +636,14 @@ var comprehenssiveCategories = []catalog.ComprCatSpec{
 var defaultProfiles = []catalog.ProfSpec{
 	profileInterlynkSpec,
 	profileNTIASpec,
+	profileNTIA2025Spec,
 	profileBSI11Spec,
 }
 
 var profileInterlynkSpec = catalog.ProfSpec{
 	Key:         ProfileInterlynk,
-	Name:        "Interlynk Profile",
-	Description: "Interlynk Default Scoring Profile",
+	Name:        "Interlynk",
+	Description: "Interlynk Scoring Profile",
 	Features: []catalog.ProfFeatSpec{
 		{Key: "comp_name", Name: "Component Name", Description: "components with name", Required: true, Evaluate: profiles.InterCompWithName},
 		{Key: "comp_version", Name: "Component Version", Description: "components with version", Required: true, Evaluate: profiles.InterCompWithVersion},
@@ -677,6 +703,27 @@ var profileNTIASpec = catalog.ProfSpec{
 		{Key: "sbom_lifecycle", Name: "Lifecycle Phase", Required: false, Description: "SBOM lifecycle phase (optional)", Evaluate: profiles.NTIASBOMLifecycle},
 		{Key: "comp_relationships", Name: "Other Component Relationships", Required: false, Description: "Additional relationships (optional)", Evaluate: profiles.NTIACompRelationships},
 		{Key: "comp_license", Name: "License Information", Required: false, Description: "Component licenses (optional)", Evaluate: profiles.NTIACompLicense},
+	},
+}
+
+var profileNTIA2025Spec = catalog.ProfSpec{
+	Key:         ProfileNTIA2025,
+	Name:        "NTIA Minimum Elements (2025) - RFC",
+	Description: "NTIA Minimum Elements 2025 Profile (RFC - Request for Comments)",
+	Features: []catalog.ProfFeatSpec{
+		{Key: "sbom_machine_format", Name: "Machine-Readable Formats", Required: true, Description: "Valid spec (SPDX/CycloneDX) and format (JSON/XML)", Evaluate: profiles.SBOMAutomationSpec},
+		{Key: "sbom_author", Name: "SBOM Author", Required: true, Description: "Tool or person who created SBOM", Evaluate: profiles.SBOMAuthors},
+		{Key: "software_producer", Name: "Software Producer", Required: true, Description: "Entity that produced the software", Evaluate: profiles.NTIA2025SoftwareProducer},
+		{Key: "comp_name", Name: "Component Name", Required: true, Description: "All components must have names", Evaluate: profiles.CompName},
+		{Key: "comp_version", Name: "Component Version", Required: true, Description: "Version strings for all components", Evaluate: profiles.CompVersion},
+		{Key: "software_identifiers", Name: "Software Identifiers", Required: true, Description: "SPDX ID, PURL, CPE, or SWID", Evaluate: profiles.NTIA2025CompSoftwareIdentifiers},
+		{Key: "comp_hash", Name: "Component Hash", Required: true, Description: "Checksums for all components", Evaluate: profiles.NTIA2025CompHash},
+		{Key: "license", Name: "License", Required: true, Description: "License information for components", Evaluate: profiles.NTIA2025CompLicense},
+		{Key: "sbom_dependencies", Name: "Dependency Relationship", Required: true, Description: "Component dependency mapping", Evaluate: profiles.SBOMDepedencies},
+		{Key: "comp_supplier", Name: "Component Supplier", Required: true, Description: "Supplier information for components", Evaluate: profiles.CompSupplier},
+		{Key: "tool_name", Name: "Tool Name", Required: true, Description: "Name of the tool that created SBOM", Evaluate: profiles.NTIA2025ToolName},
+		{Key: "sbom_timestamp", Name: "Timestamp", Required: true, Description: "ISO 8601 creation timestamp", Evaluate: profiles.SBOMCreationTimestamp},
+		{Key: "generation_context", Name: "Generation Context", Required: true, Description: "Context of SBOM generation", Evaluate: profiles.NTIA2025GenerationContext},
 	},
 }
 
@@ -765,6 +812,7 @@ var profileOCTSpec = catalog.ProfSpec{
 
 var Profile = []catalog.ProfSpec{
 	profileNTIASpec,
+	profileNTIA2025Spec,
 	profileBSI11Spec,
 	profileBSI20Spec,
 	profileOCTSpec,

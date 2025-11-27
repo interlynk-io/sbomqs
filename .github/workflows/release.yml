@@ -19,7 +19,16 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  ci-tests:
+    name: Run CI Tests
+    uses: ./.github/workflows/ci.yml
+    permissions:
+      contents: read
+      packages: read
+      security-events: write
+      
   releaser:
+    needs: ci-tests
     runs-on: ubuntu-latest
     permissions:
       id-token: write

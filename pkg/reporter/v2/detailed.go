@@ -109,18 +109,18 @@ func (r *Reporter) detailedReport() {
 		}
 
 		if len(profOutDoc) > 0 {
-			newTable(profOutDoc, profHeader, "Profile Summary Scores:")
+			newTable(profOutDoc, profHeader, "Industry Profile Overviews:")
 		}
 
 		// Show category summary table before detailed table
 		if r.Comprehensive != nil {
 			totalCatWeight := calculateTotalCategoryWeight(r.Comprehensive.CatResult)
 			catSummaryRows, catSummaryHeader := buildCategorySummary(r.Comprehensive.CatResult, totalCatWeight)
-			newTable(catSummaryRows, catSummaryHeader, "Category Summary:")
+			newTable(catSummaryRows, catSummaryHeader, "Category Breakdown:")
 		}
 
 		if len(outDoc) > 0 {
-			newTable(outDoc, header, "Interlynk Detailed Score:")
+			newTable(outDoc, header, "Score Breakdown:")
 		}
 
 		if len(pros) > 0 {
@@ -129,10 +129,10 @@ func (r *Reporter) detailedReport() {
 				fmt.Println()
 				newTable(prs.profilesDoc, prs.profilesHeader, "")
 				
-				// Add summary for NTIA profile showing required vs optional fields
+				// Add summary for NTIA profiles showing required vs optional fields
 				if r.Profiles != nil && len(r.Profiles.ProfResult) > 0 {
 					for _, proResult := range r.Profiles.ProfResult {
-						if proResult.Name == "NTIA Minimum Elements (2021)" {
+						if proResult.Name == "NTIA Minimum Elements (2021)" || proResult.Name == "NTIA Minimum Elements (2025) - RFC" {
 							requiredCount, requiredCompliant := 0, 0
 							optionalCount, optionalPresent := 0, 0
 							
@@ -154,7 +154,9 @@ func (r *Reporter) detailedReport() {
 								fmt.Println()
 								fmt.Println("Summary:")
 								fmt.Printf("Required Fields : %d/%d compliant\n", requiredCompliant, requiredCount)
-								fmt.Printf("Optional Fields : %d/%d present\n", optionalPresent, optionalCount)
+								if optionalCount > 0 {
+									fmt.Printf("Optional Fields : %d/%d present\n", optionalPresent, optionalCount)
+								}
 							}
 							break
 						}
