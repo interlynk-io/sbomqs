@@ -639,6 +639,7 @@ var defaultProfiles = []catalog.ProfSpec{
 	profileNTIASpec,
 	profileNTIA2025Spec,
 	profileBSI11Spec,
+	profileOCTV11Spec,
 }
 
 var profileInterlynkSpec = catalog.ProfSpec{
