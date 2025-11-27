@@ -94,7 +94,14 @@ func (r *Reporter) detailedReport() {
 				prs.messages = fmt.Sprintf("SBOM Quality Score: %0.1f/10.0\t Grade: %s\tComponents: %d \t EngineVersion: %s\tFile: %s", proResult.InterlynkScore, proResult.Grade, r.Meta.NumComponents, EngineVersion, r.Meta.Filename)
 
 				for _, pFeatResult := range proResult.Items {
-					l := []string{proResult.Name, pFeatResult.Key, fmt.Sprintf("%.1f/10.0", pFeatResult.Score), pFeatResult.Desc}
+					var status string
+					if pFeatResult.Required {
+						status = fmt.Sprintf("%.1f/10.0", pFeatResult.Score)
+					} else {
+						// Optional fields show score format but marked as optional
+						status = fmt.Sprintf("%.1f/10.0 (optional)", pFeatResult.Score)
+					}
+					l := []string{proResult.Name, pFeatResult.Key, status, pFeatResult.Desc}
 					prs.profilesDoc = append(prs.profilesDoc, l)
 				}
 				pros = append(pros, prs)
@@ -119,8 +126,40 @@ func (r *Reporter) detailedReport() {
 		if len(pros) > 0 {
 			for _, prs := range pros {
 				fmt.Println(prs.messages)
-				fmt.Println() 
+				fmt.Println()
 				newTable(prs.profilesDoc, prs.profilesHeader, "")
+				
+				// Add summary for NTIA profile showing required vs optional fields
+				if r.Profiles != nil && len(r.Profiles.ProfResult) > 0 {
+					for _, proResult := range r.Profiles.ProfResult {
+						if proResult.Name == "NTIA Minimum Elements (2021)" {
+							requiredCount, requiredCompliant := 0, 0
+							optionalCount, optionalPresent := 0, 0
+							
+							for _, item := range proResult.Items {
+								if item.Required {
+									requiredCount++
+									if item.Score >= 10.0 {
+										requiredCompliant++
+									}
+								} else {
+									optionalCount++
+									if item.Score >= 10.0 {
+										optionalPresent++
+									}
+								}
+							}
+							
+							if requiredCount > 0 || optionalCount > 0 {
+								fmt.Println()
+								fmt.Println("Summary:")
+								fmt.Printf("Required Fields : %d/%d compliant\n", requiredCompliant, requiredCount)
+								fmt.Printf("Optional Fields : %d/%d present\n", optionalPresent, optionalCount)
+							}
+							break
+						}
+					}
+				}
 			}
 		}
 

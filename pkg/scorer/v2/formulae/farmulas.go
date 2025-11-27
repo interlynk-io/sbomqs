@@ -236,8 +236,14 @@ func ComputeInterlynkProfScore(result api.ProfileResult) float64 {
 
 	var total int
 	for _, res := range result.Items {
-		total++
-		totalScore += res.Score
+		// Only include required fields in the score calculation
+		if res.Required {
+			total++
+			totalScore += res.Score
+		}
+	}
+	if total == 0 {
+		return 0.0
 	}
 	return totalScore / float64(total)
 }

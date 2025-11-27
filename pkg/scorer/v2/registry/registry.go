@@ -663,13 +663,20 @@ var profileNTIASpec = catalog.ProfSpec{
 	Name:        "NTIA Minimum Elements (2021)",
 	Description: "NTIA Minimum Elements Profile",
 	Features: []catalog.ProfFeatSpec{
+		// Required (SHALL) fields
 		{Key: "sbom_machine_format", Name: "Automation Support", Required: true, Description: "Valid spec (SPDX/CycloneDX) and format (JSON/XML)", Evaluate: profiles.SBOMAutomationSpec},
+		{Key: "comp_supplier", Name: "Supplier Name", Required: true, Description: "Component supplier information", Evaluate: profiles.CompWithSupplier},
 		{Key: "comp_name", Name: "Component Name", Required: true, Description: "All components must have names", Evaluate: profiles.CompName},
 		{Key: "comp_version", Name: "Component Version", Required: true, Description: "Version strings for all components", Evaluate: profiles.CompVersion},
 		{Key: "comp_uniq_id", Name: "Component Other Identifiers", Required: true, Description: "PURL, CPE, or other unique IDs", Evaluate: profiles.CompWithUniqID},
 		{Key: "sbom_dependencies", Name: "Dependency Relationships", Required: true, Description: "Component dependency mapping", Evaluate: profiles.SBOMDepedencies},
 		{Key: "sbom_creator", Name: "SBOM Author", Required: true, Description: "Tool or person who created SBOM", Evaluate: profiles.SBOMAuthors},
 		{Key: "sbom_timestamp", Name: "SBOM Timestamp", Required: true, Description: "ISO 8601 creation timestamp", Evaluate: profiles.SBOMCreationTimestamp},
+		// Optional (SHOULD) fields - don't impact score
+		{Key: "comp_hash", Name: "Component Hash", Required: false, Description: "Component checksums (optional)", Evaluate: profiles.NTIACompHash},
+		{Key: "sbom_lifecycle", Name: "Lifecycle Phase", Required: false, Description: "SBOM lifecycle phase (optional)", Evaluate: profiles.NTIASBOMLifecycle},
+		{Key: "comp_relationships", Name: "Other Component Relationships", Required: false, Description: "Additional relationships (optional)", Evaluate: profiles.NTIACompRelationships},
+		{Key: "comp_license", Name: "License Information", Required: false, Description: "Component licenses (optional)", Evaluate: profiles.NTIACompLicense},
 	},
 }
 
