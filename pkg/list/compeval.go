@@ -36,14 +36,46 @@ func evaluateCompWithVersion(comp sbom.GetComponent) (bool, string, error) {
 
 // evaluateCompWithSupplier evaluates if the component has a supplier
 func evaluateCompWithSupplier(comp sbom.GetComponent) (bool, string, error) {
-	if !comp.Suppliers().IsPresent() {
-		return false, "", nil
+	if comp.Suppliers().GetName() != "" || comp.Suppliers().GetEmail() != "" {
+		if comp.Suppliers().GetName() != "" {
+			return true, comp.Suppliers().GetName(), nil
+		}
+		return true, comp.Suppliers().GetEmail(), nil
 	}
-	return comp.Suppliers().IsPresent(), comp.Suppliers().GetName() + "," + comp.Suppliers().GetEmail(), nil
+
+	return false, "", nil
 }
 
 // evaluateCompWithUniqID evaluates if the component has a unique ID
 func evaluateCompWithUniqID(comp sbom.GetComponent) (bool, string, error) {
+	var allPurls []string
+	for _, p := range comp.GetPurls() {
+		allPurls = append(allPurls, p.String())
+	}
+
+	var allCPEs []string
+	for _, c := range comp.GetCpes() {
+		allCPEs = append(allCPEs, c.String())
+	}
+
+	switch {
+	case len(allPurls) > 0 && len(allCPEs) > 0:
+		combined := append(allPurls, allCPEs...)
+		return true, strings.Join(combined, ", "), nil
+
+	case len(allPurls) > 0:
+		return true, strings.Join(allPurls, ", "), nil
+
+	case len(allCPEs) > 0:
+		return true, strings.Join(allCPEs, ", "), nil
+
+	default:
+		return false, "missing", nil
+	}
+}
+
+// evaluateCompWithUniqID evaluates if the component has a unique ID
+func evaluateCompWithLocalID(comp sbom.GetComponent) (bool, string, error) {
 	return comp.GetID() != "", comp.GetID(), nil
 }
 

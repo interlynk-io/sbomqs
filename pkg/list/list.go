@@ -61,7 +61,7 @@ func collectResultsForInputPaths(ctx context.Context, ep *Params) ([]*Result, er
 		return nil, err
 	}
 
-	return collectResultsForFiles(ctx, ep, filePaths)
+	return collectResultsForSBOMs(ctx, ep, filePaths)
 }
 
 // expandPathsToFiles resolves a mix of files/directories into concrete SBOM file paths.
@@ -107,12 +107,12 @@ func filesFromPath(ctx context.Context, path string) ([]string, error) {
 	return paths, nil
 }
 
-// collectResultsForFiles parses each SBOM file and evaluates all requested features.
-func collectResultsForFiles(ctx context.Context, ep *Params, filePaths []string) ([]*Result, error) {
+// collectResultsForSBOMs parses each SBOM file and evaluates all requested features.
+func collectResultsForSBOMs(ctx context.Context, ep *Params, filePaths []string) ([]*Result, error) {
 	var results []*Result
 
 	for _, filePath := range filePaths {
-		fileResults, err := collectResultsForFile(ctx, ep, filePath)
+		fileResults, err := collectResultsForSBOM(ctx, ep, filePath)
 		if err != nil {
 			continue
 		}
@@ -123,7 +123,7 @@ func collectResultsForFiles(ctx context.Context, ep *Params, filePaths []string)
 }
 
 // collectResultsForFile parses a single SBOM file and evaluates all requested features.
-func collectResultsForFile(ctx context.Context, ep *Params, filePath string) ([]*Result, error) {
+func collectResultsForSBOM(ctx context.Context, ep *Params, filePath string) ([]*Result, error) {
 	doc, err := parseSBOMDocument(ctx, filePath)
 	if err != nil {
 		return nil, err
@@ -132,7 +132,7 @@ func collectResultsForFile(ctx context.Context, ep *Params, filePath string) ([]
 	var results []*Result
 	for _, rawFeature := range ep.Features {
 		feature := strings.TrimSpace(rawFeature)
-		res, err := evaluateFeature(ctx, ep, doc, filePath, feature)
+		res, err := evaluateFeature(ctx, ep.Missing, doc, filePath, feature)
 		if err != nil {
 			continue
 		}
@@ -159,7 +159,7 @@ func parseSBOMDocument(ctx context.Context, filePath string) (sbom.Document, err
 }
 
 // evaluateFeature processes a single feature for an SBOM document and returns a ListResult
-func evaluateFeature(ctx context.Context, ep *Params, doc sbom.Document, filePath, feature string) (*Result, error) {
+func evaluateFeature(ctx context.Context, missing bool, doc sbom.Document, filePath, feature string) (*Result, error) {
 	log := logger.FromContext(ctx)
 	log.Debug("list.processFeatureForSBOM()")
 	log.Debug("processing feature: ", feature)
@@ -171,32 +171,30 @@ func evaluateFeature(ctx context.Context, ep *Params, doc sbom.Document, filePat
 		return nil, fmt.Errorf("feature cannot be empty")
 	}
 
-	result := &Result{
-		FilePath: filePath,
-		Feature:  feature,
-		Missing:  ep.Missing,
-	}
-
 	switch {
 
 	case strings.HasPrefix(feature, "comp_"):
-		return evaluateFeatureForComponent(ctx, ep, doc, result)
+		return evaluateFeatureForComponent(ctx, doc, filePath, feature, missing)
 
 	case strings.HasPrefix(feature, "sbom_"):
-		return evaluateFeatureForDocument(ctx, ep, doc, result)
+		return evaluateFeatureForDocument(ctx, doc, filePath, feature, missing)
 
 	default:
 		msg := fmt.Sprintf("feature %s must start with 'comp_' or 'sbom_'", feature)
-		log.Debugf("list.processFeatureForSBOM(): %s", msg)
-		result.Errors = append(result.Errors, msg)
-		return result, fmt.Errorf(msg)
+		return nil, fmt.Errorf(msg)
 	}
 }
 
 // evaluateFeatureForComponent evaluates a component-based feature across all components.
-func evaluateFeatureForComponent(ctx context.Context, ep *Params, doc sbom.Document, result *Result) (*Result, error) {
+func evaluateFeatureForComponent(ctx context.Context, doc sbom.Document, filePath, feature string, missing bool) (*Result, error) {
 	log := logger.FromContext(ctx)
-	log.Debug("processing component feature: ", result.Feature)
+	log.Debug("processing component feature: ", feature)
+
+	result := &Result{
+		FilePath: filePath,
+		Feature:  feature,
+		Missing:  missing,
+	}
 
 	result.Components = []ComponentResult{}
 	var totalComponents int
@@ -204,14 +202,14 @@ func evaluateFeatureForComponent(ctx context.Context, ep *Params, doc sbom.Docum
 	for _, comp := range doc.Components() {
 		log.Debugf("evaluating feature %s for component %s", result.Feature, comp.GetName())
 
-		hasFeature, value, err := evaluateComponentFeature(result.Feature, comp, doc)
+		hasFeature, value, err := evaluateFeaturePerComponent(result.Feature, comp, doc)
 		if err != nil {
 			log.Debugf("failed to evaluate feature %s for component: %v", result.Feature, err)
 			result.Errors = append(result.Errors, fmt.Sprintf("failed to evaluate feature %s for component: %v", result.Feature, err))
 			continue
 		}
 
-		matchesCriteria := (hasFeature && !ep.Missing) || (!hasFeature && ep.Missing)
+		matchesCriteria := (hasFeature && !missing) || (!hasFeature && missing)
 		if matchesCriteria {
 			result.Components = append(result.Components, ComponentResult{
 				Name:    comp.GetName(),
@@ -227,9 +225,15 @@ func evaluateFeatureForComponent(ctx context.Context, ep *Params, doc sbom.Docum
 }
 
 // evaluateFeatureForDocument evaluates an SBOM-based feature for the SBOM document.
-func evaluateFeatureForDocument(ctx context.Context, ep *Params, doc sbom.Document, result *Result) (*Result, error) {
+func evaluateFeatureForDocument(ctx context.Context, doc sbom.Document, filePath, feature string, missing bool) (*Result, error) {
 	log := logger.FromContext(ctx)
-	log.Debugf("processing SBOM feature=%q", result.Feature)
+	log.Debugf("processing SBOM feature=%q", feature)
+
+	result := &Result{
+		FilePath: filePath,
+		Feature:  feature,
+		Missing:  missing,
+	}
 
 	// SBOM-based feature
 	hasFeature, value, err := evaluateSBOMFeature(result.Feature, doc)
@@ -239,7 +243,7 @@ func evaluateFeatureForDocument(ctx context.Context, ep *Params, doc sbom.Docume
 		return result, err
 	}
 
-	matchesCriteria := (hasFeature && !ep.Missing) || (!hasFeature && ep.Missing)
+	matchesCriteria := (hasFeature && !missing) || (!hasFeature && missing)
 	result.DocumentProperty = DocumentResult{
 		Key:     featureToPropertyName(result.Feature),
 		Present: hasFeature,
@@ -255,6 +259,36 @@ func evaluateFeatureForDocument(ctx context.Context, ep *Params, doc sbom.Docume
 	}
 
 	return result, nil
+}
+
+// evaluateFeaturePerComponent evaluates a component-based feature for a single component
+func evaluateFeaturePerComponent(feature string, comp sbom.GetComponent, doc sbom.Document) (bool, string, error) {
+	// resolve aliases
+	if f, ok := compFeatureAliases[feature]; ok {
+		feature = f
+	}
+
+	eval, ok := compFeatureRegistry[feature]
+	if !ok {
+		return false, "", fmt.Errorf("unsupported component feature: %s", feature)
+	}
+
+	return eval(comp, doc)
+}
+
+// evaluateSBOMFeature evaluates an SBOM-based feature for the document
+func evaluateSBOMFeature(feature string, doc sbom.Document) (bool, string, error) {
+	// resolve alias
+	if f, ok := sbomFeatureAliases[feature]; ok {
+		feature = f
+	}
+
+	eval, ok := sbomFeatureRegistry[feature]
+	if !ok {
+		return false, "", fmt.Errorf("unsupported SBOM feature: %s", feature)
+	}
+
+	return eval(doc)
 }
 
 // generateReport generates the report for the list command results
@@ -280,36 +314,6 @@ func generateReport(ctx context.Context, results []*Result, ep *Params) error {
 	lnr.Report()
 
 	return nil
-}
-
-// evaluateComponentFeature evaluates a component-based feature for a single component
-func evaluateComponentFeature(feature string, comp sbom.GetComponent, doc sbom.Document) (bool, string, error) {
-	// resolve aliases
-	if canon, ok := compFeatureAliases[feature]; ok {
-		feature = canon
-	}
-
-	eval, ok := compFeatureRegistry[feature]
-	if !ok {
-		return false, "", fmt.Errorf("unsupported component feature: %s", feature)
-	}
-
-	return eval(comp, doc)
-}
-
-// evaluateSBOMFeature evaluates an SBOM-based feature for the document
-func evaluateSBOMFeature(feature string, doc sbom.Document) (bool, string, error) {
-	// resolve alias
-	if canon, ok := sbomFeatureAliases[feature]; ok {
-		feature = canon
-	}
-
-	eval, ok := sbomFeatureRegistry[feature]
-	if !ok {
-		return false, "", fmt.Errorf("unsupported SBOM feature: %s", feature)
-	}
-
-	return eval(doc)
 }
 
 // featureToPropertyName converts a feature name to a human-readable property name

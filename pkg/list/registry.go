@@ -37,6 +37,7 @@ var compFeatureRegistry = map[string]compFeatureEval{
 	"comp_with_version":              compOnly(evaluateCompWithVersion),
 	"comp_with_supplier":             compOnly(evaluateCompWithSupplier),
 	"comp_with_uniq_ids":             compOnly(evaluateCompWithUniqID),
+	"comp_with_local_id":             compOnly(evaluateCompWithLocalID),
 	"comp_valid_licenses":            compOnly(evaluateCompWithValidLicenses),
 	"comp_with_checksums_sha256":     compOnly(evaluateCompWithSHA256Checksums),
 	"comp_with_source_code_uri":      docAndComp(evaluateCompWithSourceCodeURI),
@@ -56,18 +57,29 @@ var compFeatureRegistry = map[string]compFeatureEval{
 	"comp_with_licenses":             compOnly(evaluateCompWithLicenses),
 	"comp_with_purl":                 compOnly(evaluateCompWithPURL),
 	"comp_with_cpe":                  compOnly(evaluateCompWithCPE),
+	// "comp_with_copyright":            compOnly(evaluateCompWithCopyright),
 }
 
 var compFeatureAliases = map[string]string{
 	"comp_name":                    "comp_with_name",
+	"pack_name":                    "comp_with_name",
 	"comp_version":                 "comp_with_version",
+	"pack_version":                 "comp_with_version",
 	"comp_supplier":                "comp_with_supplier",
 	"comp_license":                 "comp_valid_licenses",
+	"comp_uniq_id":                 "comp_with_uniq_ids",
+	"comp_unique_identifiers":      "comp_with_uniq_ids",
+	"comp_with_uniq_id":            "comp_with_uniq_ids",
 	"comp_with_source_code":        "comp_with_source_code_uri",
 	"comp_source_code_uri":         "comp_with_source_code_uri",
+	"comp_source_code_url":         "comp_with_source_code_uri",
+	"comp_download_url":            "comp_with_executable_uri",
+	"pack_download_url":            "comp_with_executable_uri",
 	"comp_source_hash":             "comp_with_source_code_hash",
 	"comp_associated_license":      "comp_with_associated_license",
 	"comp_with_declared_licenses":  "comp_with_declared_license",
+	"pack_license_dec":             "comp_with_declared_license",
+	"pack_license_con":             "comp_with_concluded_license",
 	"comp_dependencies":            "comp_with_dependencies",
 	"comp_depth":                   "comp_with_dependencies",
 	"comp_no_deprecated_licenses":  "comp_with_deprecated_licenses",
@@ -79,6 +91,7 @@ var compFeatureAliases = map[string]string{
 	"comp_with_valid_licenses":     "comp_with_licenses",
 	"comp_purl":                    "comp_with_purl",
 	"comp_cpe":                     "comp_with_cpe",
+	"pack_copyright":               "comp_with_copyright",
 }
 
 type sbomFeatureEval func(sbom.Document) (bool, string, error)
@@ -86,8 +99,11 @@ type sbomFeatureEval func(sbom.Document) (bool, string, error)
 var sbomFeatureAliases = map[string]string{
 	"sbom_timestamp":         "sbom_creation_timestamp",
 	"sbom_creator":           "sbom_authors",
+	"sbom_data_license":      "sbom_license",
 	"sbom_build_process":     "sbom_build",
+	"sbom_lifecycle":         "sbom_build",
 	"sbom_tool":              "sbom_with_creator_and_version",
+	"sbom_tool_version":      "sbom_with_creator_and_version",
 	"sbom_primary_component": "sbom_with_primary_component",
 	"sbom_depth":             "sbom_dependencies",
 	"sbom_spec_declared":     "sbom_spec",
@@ -95,8 +111,10 @@ var sbomFeatureAliases = map[string]string{
 	"sbom_file_format":       "sbom_spec_file_format",
 	"sbom_machine_format":    "sbom_spec_file_format",
 	"sbom_uri":               "sbom_with_uri",
+	"sbom_namespace":         "sbom_with_uri",
 	"sbom_vulnerabilities":   "sbom_with_vuln",
 	"sbom_bomlinks":          "sbom_with_bomlinks",
+	"sbom_with_comment":      "sbom_comment",
 }
 
 var sbomFeatureRegistry = map[string]sbomFeatureEval{
@@ -118,4 +136,7 @@ var sbomFeatureRegistry = map[string]sbomFeatureEval{
 	"sbom_spdxid":                   evaluateSBOMSPDXID,
 	"sbom_organization":             evaluateSBOMOrganization,
 	"sbom_schema_valid":             evaluateSBOMSchema,
+	"sbom_license":                  evaluateSBOMLicense,
+	"sbom_comment":                  evaluateSBOMComment,
+	"sbom_supplier":                 evaluateSBOMSupplier,
 }
