@@ -297,7 +297,11 @@ func InitializeCatalog(ctx context.Context, conf config.Config) (*catalog.Catalo
 	if len(conf.Profile) > 0 {
 		log.Debugf("InitializeCatalog: profiles provided inline (%d): %v", len(conf.Profile), conf.Profile)
 
-		catal.Profiles = filterProfiles(ctx, conf.Profile)
+		profiles, err := filterProfiles(ctx, conf.Profile)
+		if err != nil {
+			return nil, err
+		}
+		catal.Profiles = profiles
 		log.Debugf("InitializeCatalog: selected %d profile(s) after filtering", len(catal.Profiles))
 
 		return catal, nil
@@ -451,7 +455,7 @@ func filterCategories(ctx context.Context, categories []string) []catalog.ComprC
 }
 
 // filterProfiles keeps only requested profile keys (preserving order).
-func filterProfiles(ctx context.Context, profiles []string) []catalog.ProfSpec {
+func filterProfiles(ctx context.Context, profiles []string) ([]catalog.ProfSpec, error) {
 	log := logger.FromContext(ctx)
 	log.Debugf("filterProfiles: received %d requested profiles: %v", len(profiles), profiles)
 
@@ -509,10 +513,10 @@ func filterProfiles(ctx context.Context, profiles []string) []catalog.ProfSpec {
 	}
 	log.Debugf("filterProfiles: selected %d profile(s): %v", len(finalProfiles), finalProfiles)
 	if len(unknown) > 0 {
-		log.Debugf("filterProfiles: ignored %d unknown profile(s): %v", len(unknown), unknown)
+		return nil, fmt.Errorf("unknown profile(s): %v", unknown)
 	}
 
-	return finalProfiles
+	return finalProfiles, nil
 }
 
 var CatIdentificationSpec = catalog.ComprCatSpec{
