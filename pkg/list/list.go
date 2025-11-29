@@ -181,7 +181,7 @@ func evaluateFeature(ctx context.Context, missing bool, doc sbom.Document, fileP
 
 	default:
 		msg := fmt.Sprintf("feature %s must start with 'comp_' or 'sbom_'", feature)
-		return nil, fmt.Errorf(msg)
+		return nil, fmt.Errorf("%s", msg)
 	}
 }
 
