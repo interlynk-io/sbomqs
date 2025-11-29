@@ -57,7 +57,9 @@ var compFeatureRegistry = map[string]compFeatureEval{
 	"comp_with_licenses":             compOnly(evaluateCompWithLicenses),
 	"comp_with_purl":                 compOnly(evaluateCompWithPURL),
 	"comp_with_cpe":                  compOnly(evaluateCompWithCPE),
-	// "comp_with_copyright":            compOnly(evaluateCompWithCopyright),
+	"comp_with_copyright":            compOnly(evaluateCompWithCopyright),
+	"comp_with_strong_checksums":     compOnly(evaluateCompWithStrongChecksums),
+	"comp_with_weak_checksums":       compOnly(evaluateCompWithWeakChecksums),
 }
 
 var compFeatureAliases = map[string]string{
@@ -92,6 +94,7 @@ var compFeatureAliases = map[string]string{
 	"comp_purl":                    "comp_with_purl",
 	"comp_cpe":                     "comp_with_cpe",
 	"pack_copyright":               "comp_with_copyright",
+	"comp_copyright":               "comp_with_copyright",
 }
 
 type sbomFeatureEval func(sbom.Document) (bool, string, error)

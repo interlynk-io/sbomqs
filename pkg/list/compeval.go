@@ -19,31 +19,44 @@ import (
 	"strings"
 
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
-	"github.com/knqyf263/go-cpe/naming"
-	purl "github.com/package-url/packageurl-go"
+	commonV2 "github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/common"
 	"github.com/samber/lo"
 )
 
 // evaluate comp with name
 func evaluateCompWithName(comp sbom.GetComponent) (bool, string, error) {
-	return comp.GetName() != "", comp.GetName(), nil
+	if comp.GetName() != "" {
+		return true, comp.GetName(), nil
+	}
+	return false, "missing", nil
 }
 
 // evaluateCompWithVersion evaluates if the component has a version
 func evaluateCompWithVersion(comp sbom.GetComponent) (bool, string, error) {
-	return comp.GetVersion() != "", comp.GetVersion(), nil
+	if comp.GetVersion() != "" {
+		return true, comp.GetVersion(), nil
+	}
+	return false, "missing", nil
 }
 
 // evaluateCompWithSupplier evaluates if the component has a supplier
 func evaluateCompWithSupplier(comp sbom.GetComponent) (bool, string, error) {
-	if comp.Suppliers().GetName() != "" || comp.Suppliers().GetEmail() != "" {
-		if comp.Suppliers().GetName() != "" {
-			return true, comp.Suppliers().GetName(), nil
-		}
-		return true, comp.Suppliers().GetEmail(), nil
-	}
+	name := comp.Suppliers().GetName()
+	email := comp.Suppliers().GetEmail()
 
-	return false, "", nil
+	switch {
+	case name != "" && email != "":
+		return true, name + ", " + email, nil
+
+	case name != "":
+		return true, name, nil
+
+	case email != "":
+		return true, email, nil
+
+	default:
+		return false, "missing", nil
+	}
 }
 
 // evaluateCompWithUniqID evaluates if the component has a unique ID
@@ -80,73 +93,76 @@ func evaluateCompWithLocalID(comp sbom.GetComponent) (bool, string, error) {
 }
 
 func evaluateCompWithPURL(comp sbom.GetComponent) (bool, string, error) {
-	have := compHasAnyPURLs(comp)
-	if have {
-		return true, "contains purls", nil
+	var all []string
+	for _, p := range comp.GetPurls() {
+		all = append(all, p.String())
 	}
 
-	return false, "missing purls", nil
+	if len(all) > 0 {
+		return true, strings.Join(all, ", "), nil
+	}
+
+	return false, "missing", nil
 }
 
 func evaluateCompWithCPE(comp sbom.GetComponent) (bool, string, error) {
-	have := compHasAnyCPEs(comp)
-	if have {
-		return true, "contains cpes", nil
+	var all []string
+	for _, c := range comp.GetCpes() {
+		all = append(all, c.String())
 	}
 
-	return false, "missing cpes", nil
+	if len(all) > 0 {
+		return true, strings.Join(all, ", "), nil
+	}
+	return false, "missing", nil
 }
 
-func compHasAnyPURLs(c sbom.GetComponent) bool {
-	for _, p := range c.GetPurls() {
-		if isValidPURL(string(p)) {
-			return true
+// evaluateCompWithCopyright
+func evaluateCompWithCopyright(comp sbom.GetComponent) (bool, string, error) {
+	cp := strings.ToLower(strings.TrimSpace(comp.GetCopyRight()))
+	if cp != "" {
+		return true, cp, nil
+	}
+	return false, "missing", nil
+}
+
+// evaluateCompWithStrongChecksums
+func evaluateCompWithStrongChecksums(comp sbom.GetComponent) (bool, string, error) {
+	var strong []string
+	for _, checksum := range comp.GetChecksums() {
+		if commonV2.IsStrongChecksum(normalizeAlgoName(checksum.GetAlgo())) && strings.TrimSpace(checksum.GetContent()) != "" {
+			strong = append(strong, checksum.GetAlgo()+": "+checksum.GetContent())
 		}
 	}
-	return false
+	if len(strong) > 0 {
+		return true, strings.Join(strong, ", "), nil
+	}
+
+	return false, "missing", nil
 }
 
-func isValidCPE(s string) bool {
-	ls := strings.TrimSpace(s)
-	low := strings.ToLower(ls)
-
-	switch {
-	case strings.HasPrefix(low, "cpe:2.3:"):
-		_, err := naming.UnbindFS(ls)
-		return err == nil
-	case strings.HasPrefix(low, "cpe:/"):
-		_, err := naming.UnbindURI(ls)
-		return err == nil
-	default:
-		return false
-	}
-}
-
-func isValidPURL(s string) bool {
-	s = strings.TrimSpace(s)
-	if s == "" {
-		return false
-	}
-
-	u, err := purl.FromString(s)
-	if err != nil {
-		return false
-	}
-
-	// type and name must be present per spec
-	if strings.TrimSpace(u.Type) == "" || strings.TrimSpace(u.Name) == "" {
-		return false
-	}
-	return true
-}
-
-func compHasAnyCPEs(c sbom.GetComponent) bool {
-	for _, p := range c.GetCpes() {
-		if isValidCPE(string(p)) {
-			return true
+// evaluateCompWithWeakChecksums
+func evaluateCompWithWeakChecksums(comp sbom.GetComponent) (bool, string, error) {
+	var weak []string
+	for _, checksum := range comp.GetChecksums() {
+		if commonV2.IsWeakChecksum(normalizeAlgoName(checksum.GetAlgo())) && strings.TrimSpace(checksum.GetContent()) != "" {
+			weak = append(weak, checksum.GetAlgo()+": "+checksum.GetContent())
 		}
 	}
-	return false
+
+	if len(weak) > 0 {
+		return true, strings.Join(weak, ", "), nil
+	}
+
+	return false, "missing", nil
+}
+
+func normalizeAlgoName(algo string) string {
+	n := strings.ToUpper(algo)
+	n = strings.ReplaceAll(n, "-", "")
+	n = strings.ReplaceAll(n, "_", "")
+	n = strings.TrimSpace(n)
+	return n
 }
 
 // evaluateCompWithValidLicenses evaluates if the component has valid licenses
@@ -356,20 +372,33 @@ func isSHA256(algo string) bool {
 func evaluateCompWithLicenses(comp sbom.GetComponent) (bool, string, error) {
 	licenses := comp.GetLicenses()
 	if len(licenses) == 0 {
-		return false, "", nil
+		return false, "missing", nil
 	}
 
 	licenseNames := make([]string, 0, len(licenses))
+	licenseIDs := make([]string, 0, len(licenses))
 	for _, l := range licenses {
 		if l != nil {
 			licenseNames = append(licenseNames, l.Name())
+			licenseIDs = append(licenseIDs, l.ShortID())
 		}
 	}
-	if len(licenseNames) == 0 {
-		return true, "", nil
-	}
 
-	return true, strings.Join(licenseNames, ","), nil
+	switch {
+
+	case len(licenseNames) > 0 && len(licenseIDs) > 0:
+		combined := append(licenseNames, licenseIDs...)
+		return true, strings.Join(combined, ", "), nil
+
+	case len(licenseNames) > 0:
+		return true, strings.Join(licenseNames, ", "), nil
+
+	case len(licenseIDs) > 0:
+		return true, strings.Join(licenseIDs, ", "), nil
+
+	default:
+		return false, "missing", nil
+	}
 }
 
 // evaluateCompWithSHA256Checksums evaluates if the component has SHA-256 checksums

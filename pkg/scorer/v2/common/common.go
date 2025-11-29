@@ -211,7 +211,7 @@ func ComponentHasAnyRestrictive(c sbom.GetComponent) bool {
 func HasAnyChecksum(c sbom.GetComponent) bool {
 	for _, checksum := range c.GetChecksums() {
 		algo := normalizeAlgoName(checksum.GetAlgo())
-		if isWeakChecksum(algo) || isStrongChecksum(algo) {
+		if IsWeakChecksum(algo) || IsStrongChecksum(algo) {
 			if strings.TrimSpace(checksum.GetContent()) != "" {
 				return true
 			}
@@ -223,7 +223,7 @@ func HasAnyChecksum(c sbom.GetComponent) bool {
 // HasStrongChecksum checks if component has a strong hash algorithm.
 func HasStrongChecksum(c sbom.GetComponent) bool {
 	for _, checksum := range c.GetChecksums() {
-		if isStrongChecksum(normalizeAlgoName(checksum.GetAlgo())) && strings.TrimSpace(checksum.GetContent()) != "" {
+		if IsStrongChecksum(normalizeAlgoName(checksum.GetAlgo())) && strings.TrimSpace(checksum.GetContent()) != "" {
 			return true
 		}
 	}
@@ -239,10 +239,10 @@ func HasWeakChecksum(c sbom.GetComponent) bool {
 		if content == "" {
 			continue
 		}
-		if isStrongChecksum(algo) {
+		if IsStrongChecksum(algo) {
 			return false // Has strong, so not "weak only"
 		}
-		if isWeakChecksum(algo) {
+		if IsWeakChecksum(algo) {
 			hasWeak = true
 		}
 	}
@@ -254,7 +254,7 @@ func HasWeakChecksum(c sbom.GetComponent) bool {
 //   - MD family: MD2, MD4, MD5, MD6
 //   - SHA-1
 //   - Adler-32 (non-cryptographic)
-func isWeakChecksum(algo string) bool {
+func IsWeakChecksum(algo string) bool {
 	switch algo {
 	case "MD2", "MD4", "MD5", "MD6":
 		return true
@@ -274,7 +274,7 @@ func isWeakChecksum(algo string) bool {
 //   - BLAKE family: BLAKE2b-256, BLAKE2b-384, BLAKE2b-512, BLAKE3
 //   - Streebog family: Streebog-256, Streebog-512
 //   - Post-quantum: crystalsDilithium, crystalsKyber, falcon
-func isStrongChecksum(algo string) bool {
+func IsStrongChecksum(algo string) bool {
 	switch algo {
 	// SHA-2 family (SHA-224 and above)
 	case "SHA224", "SHA256", "SHA384", "SHA512":
