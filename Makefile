@@ -86,7 +86,7 @@ vet: ## Run go vet
 lint: ## Run golangci-lint (requires golangci-lint installed)
 	@echo "Running linter..."
 	@if command -v golangci-lint >/dev/null 2>&1; then \
-		golangci-lint run; \
+		golangci-lint run --config .golangci.yml; \
 	else \
 		echo "golangci-lint not found. Install it from https://golangci-lint.run/"; \
 	fi
@@ -94,68 +94,9 @@ lint: ## Run golangci-lint (requires golangci-lint installed)
 ##@ Testing
 
 .PHONY: test
-test: generate ## Run all tests (unit tests first, then integration tests)
+test: generate ## Run all tests
 	@echo "Running tests..."
-	@set +e; \
-	go test -cover -race -failfast -p 1 $$(go list ./... | grep -v integration_test) 2>&1 | grep -E "^(ok|FAIL|coverage:)" | sed 's/github.com\/interlynk-io\/sbomqs\/v2\///' ; \
-	UNIT_EXIT_CODE=$$?; \
-	echo ""; \
-	echo "Running integration tests..."; \
-	go test -run "Test_ScoreForStaticSBOMFiles_Summary|Test_NTIAProfile|Test_NTIA2025Profile|Test_InterlynkProfile" ./pkg/scorer/v2/... 2>&1 | grep -E "(PASS|FAIL|ok|NTIA.*Profile:|Interlynk.*Profile:)" ; \
-	INTEGRATION_EXIT_CODE=$$?; \
-	echo ""; \
-	echo "=========================================="; \
-	if [ $$UNIT_EXIT_CODE -ne 0 ]; then \
-		echo "✗ Unit tests: FAILED"; \
-	else \
-		echo "✓ Unit tests: PASSED"; \
-	fi; \
-	if [ $$INTEGRATION_EXIT_CODE -ne 0 ]; then \
-		echo "✗ Integration tests: FAILED"; \
-	else \
-		echo "✓ Integration tests: PASSED"; \
-	fi; \
-	echo "=========================================="; \
-	exit $$((UNIT_EXIT_CODE + INTEGRATION_EXIT_CODE))
-
-.PHONY: test-unit
-test-unit: ## Run unit tests only
-	@echo "Running unit tests..."
-	@go test -v -cover -race -failfast -p 1 $$(go list ./... | grep -v integration_test)
-
-.PHONY: test-integration
-test-integration: ## Run integration tests with detailed output
-	@echo ""
-	@echo "=========================================="
-	@echo "Running SBOM Scoring Integration Tests"
-	@echo "=========================================="
-	@echo ""
-	@go test -v -run Test_ScoreForStaticSBOMFiles ./pkg/scorer/v2/...
-
-.PHONY: test-integration-summary
-test-integration-summary: ## Run integration tests with summary table output
-	@go test -v -run Test_ScoreForStaticSBOMFiles_Summary ./pkg/scorer/v2/...
-
-.PHONY: test-profiles
-test-profiles: ## Run all profile integration tests
-	@echo ""
-	@echo "=========================================="
-	@echo "Running Profile Integration Tests"
-	@echo "=========================================="
-	@echo ""
-	@go test -v -run "Test_.*Profile.*ForStaticSBOMFiles" ./pkg/scorer/v2/...
-
-.PHONY: test-coverage
-test-coverage: generate ## Run tests with coverage report
-	@echo "Running tests with coverage..."
-	@go test -v -coverprofile=coverage.out -covermode=atomic ./...
-	@go tool cover -html=coverage.out -o coverage.html
-	@echo "Coverage report generated: coverage.html"
-
-.PHONY: test-short
-test-short: ## Run short tests
-	@echo "Running short tests..."
-	@go test -short -v ./...
+	@go test -cover -race ./...
 
 ##@ Building
 
@@ -265,5 +206,5 @@ ci: deps generate vet ## Run CI pipeline locally with test summary
 	exit $$((UNIT_EXIT_CODE + INTEGRATION_EXIT_CODE))
 
 .PHONY: pre-commit
-pre-commit: fmt vet lint test-short ## Run pre-commit checks
+pre-commit: fmt vet lint test ## Run pre-commit checks
 	@echo "Pre-commit checks passed"
