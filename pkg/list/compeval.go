@@ -87,9 +87,20 @@ func evaluateCompWithUniqID(comp sbom.GetComponent) (bool, string, error) {
 	}
 }
 
-// evaluateCompWithUniqID evaluates if the component has a unique ID
-func evaluateCompWithLocalID(comp sbom.GetComponent) (bool, string, error) {
-	return comp.GetID() != "", comp.GetID(), nil
+// evaluateCompWithLocalID evaluates if the component has a unique ID
+func evaluateCompWithLocalID(doc sbom.Document, comp sbom.GetComponent) (bool, string, error) {
+	spec := doc.Spec().GetSpecType()
+
+	switch spec {
+	case string(sbom.SBOMSpecSPDX):
+		return true, "SPDXRef-" + comp.GetID(), nil
+
+	case string(sbom.SBOMSpecCDX):
+		return true, comp.GetID(), nil
+
+	default:
+		return false, "missing", nil
+	}
 }
 
 func evaluateCompWithPURL(comp sbom.GetComponent) (bool, string, error) {
@@ -378,30 +389,17 @@ func evaluateCompWithLicenses(comp sbom.GetComponent) (bool, string, error) {
 		return false, "missing", nil
 	}
 
-	licenseNames := make([]string, 0, len(licenses))
 	licenseIDs := make([]string, 0, len(licenses))
 	for _, l := range licenses {
 		if l != nil {
-			licenseNames = append(licenseNames, l.Name())
 			licenseIDs = append(licenseIDs, l.ShortID())
 		}
 	}
 
-	switch {
-
-	case len(licenseNames) > 0 && len(licenseIDs) > 0:
-		combined := append(licenseNames, licenseIDs...)
-		return true, strings.Join(combined, ", "), nil
-
-	case len(licenseNames) > 0:
-		return true, strings.Join(licenseNames, ", "), nil
-
-	case len(licenseIDs) > 0:
+	if len(licenseIDs) > 0 {
 		return true, strings.Join(licenseIDs, ", "), nil
-
-	default:
-		return false, "missing", nil
 	}
+	return false, "missing", nil
 }
 
 // evaluateCompWithSHA256Checksums evaluates if the component has SHA-256 checksums

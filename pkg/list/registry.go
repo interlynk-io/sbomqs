@@ -37,7 +37,7 @@ var compFeatureRegistry = map[string]compFeatureEval{
 	"comp_with_version":              compOnly(evaluateCompWithVersion),
 	"comp_with_supplier":             compOnly(evaluateCompWithSupplier),
 	"comp_with_uniq_ids":             compOnly(evaluateCompWithUniqID),
-	"comp_with_local_id":             compOnly(evaluateCompWithLocalID),
+	"comp_with_local_id":             docAndComp(evaluateCompWithLocalID),
 	"comp_valid_licenses":            compOnly(evaluateCompWithValidLicenses),
 	"comp_with_checksums_sha256":     compOnly(evaluateCompWithSHA256Checksums),
 	"comp_with_source_code_uri":      docAndComp(evaluateCompWithSourceCodeURI),
@@ -67,6 +67,7 @@ var compFeatureAliases = map[string]string{
 	"pack_name":                    "comp_with_name",
 	"comp_version":                 "comp_with_version",
 	"pack_version":                 "comp_with_version",
+	"comp_with_local_ids":          "comp_with_local_id",
 	"comp_supplier":                "comp_with_supplier",
 	"comp_license":                 "comp_valid_licenses",
 	"comp_uniq_id":                 "comp_with_uniq_ids",
@@ -142,4 +143,5 @@ var sbomFeatureRegistry = map[string]sbomFeatureEval{
 	"sbom_license":                  evaluateSBOMLicense,
 	"sbom_comment":                  evaluateSBOMComment,
 	"sbom_supplier":                 evaluateSBOMSupplier,
+	"sbom_completeness_declared":    evaluateSBOMCompleteness,
 }

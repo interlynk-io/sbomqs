@@ -260,7 +260,7 @@ func (s *SpdxDoc) parseComps() {
 		nc.Licenses = s.licenses(index)
 		nc.DeclaredLicense = s.declaredLicenses(index)
 		nc.ConcludedLicense = s.concludedLicenses(index)
-		nc.ID = string(sc.PackageSPDXIdentifier)
+		nc.ID = nc.Spdxid
 		nc.PackageLicenseConcluded = sc.PackageLicenseConcluded
 		if strings.Contains(s.PrimaryComponent.ID, string(sc.PackageSPDXIdentifier)) {
 			nc.PrimaryCompt = s.PrimaryComponent
@@ -352,8 +352,13 @@ func getComponentDependencies(s *SpdxDoc, componentID string) (bool, int, []stri
 				continue
 			}
 
+			bBytes, err := r.RefB.MarshalJSON()
+			if err != nil {
+				continue
+			}
+
 			if CleanKey(string(aBytes)) == newID {
-				deps = append(deps, newID)
+				deps = append(deps, string(bBytes))
 				count++
 			}
 		}
