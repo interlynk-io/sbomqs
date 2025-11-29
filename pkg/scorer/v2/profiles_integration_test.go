@@ -427,34 +427,38 @@ func Test_InterlynkProfileForStaticSBOMFiles(t *testing.T) {
 }
 
 // Test_OCTV11ProfileForStaticSBOMFiles tests OpenChain Telco v1.1 profile
-// Supporting both SPDX and CycloneDX formats
 func Test_OCTV11ProfileForStaticSBOMFiles(t *testing.T) {
+	fmt.Println()
+	fmt.Println("==========================================")
+	fmt.Println("Running OCT v1.1 Profile Integration Tests")
+	fmt.Println("==========================================")
+	
 	base := filepath.Join("..", "..", "..", "testdata", "fixtures")
 
 	testCases := map[string]expectedProfileScore{
 		// SPDX test cases
-		filepath.Join(base, "spdx-perfect-score.json"):    {Score: 7.7, Grade: "B", Required: 16, Optional: 1},
-		filepath.Join(base, "spdx-minimal.json"):          {Score: 2.4, Grade: "F", Required: 5, Optional: 0},
-		filepath.Join(base, "spdx-no-version.json"):       {Score: 2.4, Grade: "F", Required: 5, Optional: 0},
-		filepath.Join(base, "spdx-no-checksums.json"):     {Score: 7.2, Grade: "B", Required: 15, Optional: 0},
-		filepath.Join(base, "spdx-weak-checksums.json"):   {Score: 7.2, Grade: "B", Required: 15, Optional: 1},
-		filepath.Join(base, "spdx-no-dependencies.json"):  {Score: 7.2, Grade: "B", Required: 15, Optional: 1},
-		filepath.Join(base, "spdx-invalid-licenses.json"): {Score: 5.8, Grade: "D", Required: 12, Optional: 1},
-		filepath.Join(base, "spdx-no-authors.json"):       {Score: 6.8, Grade: "D", Required: 14, Optional: 1},
-		filepath.Join(base, "spdx-no-timestamp.json"):     {Score: 6.8, Grade: "D", Required: 14, Optional: 1},
-		filepath.Join(base, "spdx-old-version.json"):      {Score: 7.2, Grade: "B", Required: 15, Optional: 1},
+		filepath.Join(base, "spdx-perfect-score.json"):    {Score: 8.9, Grade: "B", Required: 16, Optional: 2},
+		filepath.Join(base, "spdx-minimal.json"):          {Score: 5.6, Grade: "D", Required: 10, Optional: 0},
+		filepath.Join(base, "spdx-no-version.json"):       {Score: 7.2, Grade: "C", Required: 13, Optional: 0},
+		filepath.Join(base, "spdx-no-checksums.json"):     {Score: 8.9, Grade: "B", Required: 16, Optional: 0},
+		filepath.Join(base, "spdx-weak-checksums.json"):   {Score: 7.8, Grade: "C", Required: 14, Optional: 1},
+		filepath.Join(base, "spdx-no-dependencies.json"):  {Score: 8.9, Grade: "B", Required: 16, Optional: 1},
+		filepath.Join(base, "spdx-invalid-licenses.json"): {Score: 7.8, Grade: "C", Required: 14, Optional: 0},
+		filepath.Join(base, "spdx-no-authors.json"):       {Score: 7.8, Grade: "C", Required: 14, Optional: 0},
+		filepath.Join(base, "spdx-no-timestamp.json"):     {Score: 7.2, Grade: "C", Required: 13, Optional: 0},
+		filepath.Join(base, "spdx-old-version.json"):      {Score: 7.8, Grade: "C", Required: 14, Optional: 0},
 
 		// CycloneDX test cases
-		filepath.Join(base, "cdx-perfect-score.json"):    {Score: 7.5, Grade: "B", Required: 14, Optional: 2},
-		filepath.Join(base, "cdx-minimal.json"):          {Score: 3.5, Grade: "F", Required: 6, Optional: 0},
-		filepath.Join(base, "cdx-no-version.json"):       {Score: 3.0, Grade: "F", Required: 5, Optional: 0},
-		filepath.Join(base, "cdx-no-checksums.json"):     {Score: 7.0, Grade: "B", Required: 13, Optional: 1},
-		filepath.Join(base, "cdx-weak-checksums.json"):   {Score: 7.0, Grade: "B", Required: 13, Optional: 2},
-		filepath.Join(base, "cdx-no-dependencies.json"):  {Score: 7.0, Grade: "B", Required: 13, Optional: 2},
-		filepath.Join(base, "cdx-invalid-licenses.json"): {Score: 6.5, Grade: "C", Required: 12, Optional: 2},
-		filepath.Join(base, "cdx-no-authors.json"):       {Score: 6.5, Grade: "C", Required: 12, Optional: 2},
-		filepath.Join(base, "cdx-no-timestamp.json"):     {Score: 6.5, Grade: "C", Required: 12, Optional: 2},
-		filepath.Join(base, "cdx-old-version.json"):      {Score: 7.0, Grade: "B", Required: 13, Optional: 2},
+		filepath.Join(base, "cdx-perfect-score.json"):    {Score: 6.7, Grade: "D", Required: 12, Optional: 2},
+		filepath.Join(base, "cdx-minimal.json"):          {Score: 1.7, Grade: "F", Required: 3, Optional: 0},
+		filepath.Join(base, "cdx-no-version.json"):       {Score: 3.3, Grade: "F", Required: 6, Optional: 0},
+		filepath.Join(base, "cdx-no-checksums.json"):     {Score: 5.6, Grade: "D", Required: 10, Optional: 0},
+		filepath.Join(base, "cdx-weak-checksums.json"):   {Score: 3.9, Grade: "F", Required: 7, Optional: 1},
+		filepath.Join(base, "cdx-no-dependencies.json"):  {Score: 5.0, Grade: "D", Required: 9, Optional: 1},
+		filepath.Join(base, "cdx-invalid-licenses.json"): {Score: 3.9, Grade: "F", Required: 7, Optional: 0},
+		filepath.Join(base, "cdx-no-authors.json"):       {Score: 3.9, Grade: "F", Required: 7, Optional: 0},
+		filepath.Join(base, "cdx-no-timestamp.json"):     {Score: 3.3, Grade: "F", Required: 6, Optional: 0},
+		filepath.Join(base, "cdx-old-version.json"):      {Score: 3.9, Grade: "F", Required: 7, Optional: 0},
 	}
 
 	for path, want := range testCases {
@@ -506,9 +510,6 @@ func Test_OCTV11ProfileForStaticSBOMFiles(t *testing.T) {
 				t.Logf("  Expected: Score: %.1f | Grade: %s | Required: %d/18 | Optional: %d/2",
 					want.Score, want.Grade, want.Required, want.Optional)
 
-				// For initial run, just pass to see actual scores
-				// Later uncomment these assertions when scores are validated
-				/*
 				// compare OCT v1.1 score
 				require.InDelta(t, want.Score, gotRounded, 1e-9,
 					"OCT v1.1 score (rounded to 1 decimal) mismatch for %s", filename)
@@ -524,7 +525,6 @@ func Test_OCTV11ProfileForStaticSBOMFiles(t *testing.T) {
 				// compare optional fields count
 				require.Equal(t, want.Optional, optionalPresent,
 					"Optional fields present count mismatch for %s", filename)
-				*/
 			}
 		})
 	}
