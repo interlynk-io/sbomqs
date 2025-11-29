@@ -54,6 +54,16 @@ type FakeGetComponent struct {
 	declaredLicensesReturnsOnCall map[int]struct {
 		result1 []licenses.License
 	}
+	DepsStub        func() []string
+	depsMutex       sync.RWMutex
+	depsArgsForCall []struct {
+	}
+	depsReturns struct {
+		result1 []string
+	}
+	depsReturnsOnCall map[int]struct {
+		result1 []string
+	}
 	ExternalReferencesStub        func() []sbom.GetExternalReference
 	externalReferencesMutex       sync.RWMutex
 	externalReferencesArgsForCall []struct {
@@ -548,6 +558,59 @@ func (fake *FakeGetComponent) DeclaredLicensesReturnsOnCall(i int, result1 []lic
 	}
 	fake.declaredLicensesReturnsOnCall[i] = struct {
 		result1 []licenses.License
+	}{result1}
+}
+
+func (fake *FakeGetComponent) Deps() []string {
+	fake.depsMutex.Lock()
+	ret, specificReturn := fake.depsReturnsOnCall[len(fake.depsArgsForCall)]
+	fake.depsArgsForCall = append(fake.depsArgsForCall, struct {
+	}{})
+	stub := fake.DepsStub
+	fakeReturns := fake.depsReturns
+	fake.recordInvocation("Deps", []interface{}{})
+	fake.depsMutex.Unlock()
+	if stub != nil {
+		return stub()
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeGetComponent) DepsCallCount() int {
+	fake.depsMutex.RLock()
+	defer fake.depsMutex.RUnlock()
+	return len(fake.depsArgsForCall)
+}
+
+func (fake *FakeGetComponent) DepsCalls(stub func() []string) {
+	fake.depsMutex.Lock()
+	defer fake.depsMutex.Unlock()
+	fake.DepsStub = stub
+}
+
+func (fake *FakeGetComponent) DepsReturns(result1 []string) {
+	fake.depsMutex.Lock()
+	defer fake.depsMutex.Unlock()
+	fake.DepsStub = nil
+	fake.depsReturns = struct {
+		result1 []string
+	}{result1}
+}
+
+func (fake *FakeGetComponent) DepsReturnsOnCall(i int, result1 []string) {
+	fake.depsMutex.Lock()
+	defer fake.depsMutex.Unlock()
+	fake.DepsStub = nil
+	if fake.depsReturnsOnCall == nil {
+		fake.depsReturnsOnCall = make(map[int]struct {
+			result1 []string
+		})
+	}
+	fake.depsReturnsOnCall[i] = struct {
+		result1 []string
 	}{result1}
 }
 

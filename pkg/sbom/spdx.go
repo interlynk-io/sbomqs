@@ -260,7 +260,7 @@ func (s *SpdxDoc) parseComps() {
 		nc.Licenses = s.licenses(index)
 		nc.DeclaredLicense = s.declaredLicenses(index)
 		nc.ConcludedLicense = s.concludedLicenses(index)
-		nc.ID = string(sc.PackageSPDXIdentifier)
+		nc.ID = nc.Spdxid
 		nc.PackageLicenseConcluded = sc.PackageLicenseConcluded
 		if strings.Contains(s.PrimaryComponent.ID, string(sc.PackageSPDXIdentifier)) {
 			nc.PrimaryCompt = s.PrimaryComponent
@@ -309,7 +309,7 @@ func (s *SpdxDoc) parseComps() {
 
 		// nc.hasRelationships = fromRelsPresent(s.Rels, string(sc.PackageSPDXIdentifier))
 		// nc.RelationshipState = "not-specified"
-		nc.HasRelationships, nc.Count = getComponentDependencies(s, nc.Spdxid)
+		nc.HasRelationships, nc.Count, nc.Dep = getComponentDependencies(s, nc.Spdxid)
 
 		s.Comps = append(s.Comps, nc)
 	}
@@ -340,9 +340,10 @@ func (s *SpdxDoc) parseAuthors() {
 }
 
 // return true if a component has DEPENDS_ON relationship
-func getComponentDependencies(s *SpdxDoc, componentID string) (bool, int) {
+func getComponentDependencies(s *SpdxDoc, componentID string) (bool, int, []string) {
 	newID := "SPDXRef-" + componentID
 	count := 0
+	var deps []string
 	for _, r := range s.doc.Relationships {
 		// some sbom generating tools specify relationship type as contain and some as depends-on
 		if strings.ToUpper(r.Relationship) == spdx.RelationshipDependsOn || strings.ToUpper(r.Relationship) == spdx.RelationshipContains {
@@ -351,13 +352,19 @@ func getComponentDependencies(s *SpdxDoc, componentID string) (bool, int) {
 				continue
 			}
 
+			bBytes, err := r.RefB.MarshalJSON()
+			if err != nil {
+				continue
+			}
+
 			if CleanKey(string(aBytes)) == newID {
+				deps = append(deps, string(bBytes))
 				count++
 			}
 		}
 	}
 
-	return count > 0, count
+	return count > 0, count, deps
 }
 
 func (s *SpdxDoc) parsePrimaryCompAndRelationships() {

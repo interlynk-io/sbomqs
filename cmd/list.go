@@ -209,14 +209,14 @@ func validateparsedListCmd(uCmd *userListCmd) error {
 
 	uCmd.feature = cleaned
 
-	// Validate against supported features
-	if _, ok := isFeaturePresent[cleaned]; !ok {
-		var supportedFeatures []string
-		for f := range isFeaturePresent {
-			supportedFeatures = append(supportedFeatures, f)
-		}
-		return fmt.Errorf("feature %q is not supported; supported features are: %s", cleaned, strings.Join(supportedFeatures, ", "))
-	}
+	// // Validate against supported features
+	// if _, ok := isFeaturePresent[cleaned]; !ok {
+	// 	var supportedFeatures []string
+	// 	for f := range isFeaturePresent {
+	// 		supportedFeatures = append(supportedFeatures, f)
+	// 	}
+	// 	return fmt.Errorf("feature %q is not supported; supported features are: %s", cleaned, strings.Join(supportedFeatures, ", "))
+	// }
 
 	return nil
 }
@@ -262,12 +262,16 @@ var isFeaturePresent = map[string]bool{
 	"comp_no_deprecated_licenses":  true,
 	"comp_no_restrictive_licenses": true,
 
-	"comp_with_purpose": true,
-	"comp_purpose":      true,
-	"comp_with_purl":    true,
-	"comp_with_cpe":     true,
-	"comp_purl":         true,
-	"comp_cpe":          true,
+	"comp_with_purpose":          true,
+	"comp_purpose":               true,
+	"comp_with_purl":             true,
+	"comp_with_cpe":              true,
+	"comp_purl":                  true,
+	"comp_cpe":                   true,
+	"comp_with_weak_checksums":   true,
+	"comp_with_strong_checksums": true,
+	"comp_with_copyright":        true,
+	"comp_with_local_id":         true,
 
 	"sbom_creation_timestamp":       true,
 	"sbom_timestamp":                true,

@@ -51,19 +51,19 @@ var NTIAKeyToEvaluatingFunction = map[string]catalog.ProfFeatEval{
 }
 
 var NTIA2025KeyToEvaluatingFunction = map[string]catalog.ProfFeatEval{
-	"sbom_machine_format":     profiles.SBOMAutomationSpec,
-	"sbom_author":             profiles.SBOMAuthors,
-	"software_producer":       profiles.NTIA2025SoftwareProducer,
-	"comp_name":               profiles.CompName,
-	"comp_version":            profiles.CompVersion,
-	"software_identifiers":    profiles.NTIA2025CompSoftwareIdentifiers,
-	"comp_hash":               profiles.NTIA2025CompHash,
-	"license":                 profiles.NTIA2025CompLicense,
-	"sbom_dependencies":       profiles.SBOMDepedencies,
-	"comp_supplier":           profiles.CompSupplier,
-	"tool_name":               profiles.NTIA2025ToolName,
-	"sbom_timestamp":          profiles.SBOMCreationTimestamp,
-	"generation_context":      profiles.NTIA2025GenerationContext,
+	"sbom_machine_format":  profiles.SBOMAutomationSpec,
+	"sbom_author":          profiles.SBOMAuthors,
+	"software_producer":    profiles.NTIA2025SoftwareProducer,
+	"comp_name":            profiles.CompName,
+	"comp_version":         profiles.CompVersion,
+	"software_identifiers": profiles.NTIA2025CompSoftwareIdentifiers,
+	"comp_hash":            profiles.NTIA2025CompHash,
+	"license":              profiles.NTIA2025CompLicense,
+	"sbom_dependencies":    profiles.SBOMDepedencies,
+	"comp_supplier":        profiles.CompSupplier,
+	"tool_name":            profiles.NTIA2025ToolName,
+	"sbom_timestamp":       profiles.SBOMCreationTimestamp,
+	"generation_context":   profiles.NTIA2025GenerationContext,
 }
 
 var BSIV11KeyToEvaluatingFunction = map[string]catalog.ProfFeatEval{
@@ -174,9 +174,9 @@ var InterlynkKeyToEvaluatingFunction = map[string]catalog.ProfFeatEval{
 }
 
 var CompKeyToEvaluatingFunction = map[string]catalog.ComprFeatEval{
-	"comp_with_name":        extractors.CompWithName,
-	"comp_with_version":     extractors.CompWithVersion,
-	"comp_with_identifiers": extractors.CompWithUniqLocalIDs,
+	"comp_with_name":     extractors.CompWithName,
+	"comp_with_version":  extractors.CompWithVersion,
+	"comp_with_local_id": extractors.CompWithUniqLocalIDs,
 
 	"sbom_creation_timestamp": extractors.SBOMCreationTimestamp,
 	"sbom_authors":            extractors.SBOMAuthors,
@@ -522,7 +522,7 @@ var CatIdentificationSpec = catalog.ComprCatSpec{
 	Features: []catalog.ComprFeatSpec{
 		{Key: "comp_with_name", Name: "Component With Name", Weight: 0.40, Ignore: false, Evaluate: extractors.CompWithName},
 		{Key: "comp_with_version", Name: "Component With Version", Weight: 0.35, Ignore: false, Evaluate: extractors.CompWithVersion}, // FIXED: was mapped to completeness
-		{Key: "comp_with_identifiers", Name: "Component With Local IDs", Weight: 0.25, Ignore: false, Evaluate: extractors.CompWithUniqLocalIDs},
+		{Key: "comp_with_local_id", Name: "Component With Local IDs", Weight: 0.25, Ignore: false, Evaluate: extractors.CompWithUniqLocalIDs},
 	},
 }
 
