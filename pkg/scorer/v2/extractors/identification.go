@@ -51,7 +51,8 @@ func CompWithVersion(doc sbom.Document) catalog.ComprFeatScore {
 	return formulae.ScoreCompFull(have, len(comps), "versions", false)
 }
 
-// CompWithUniqIDs: percentage of components whose ID is present and unique within the SBOM.
+// CompWithUniqLocalIDs: percentage of components whose local ID is present and unique within the SBOM.
+// such as bom-ref, spdxid
 func CompWithUniqLocalIDs(doc sbom.Document) catalog.ComprFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
