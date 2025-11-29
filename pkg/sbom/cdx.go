@@ -503,26 +503,28 @@ func copyC(cdxc *cydx.Component, c *CdxDoc) *Component {
 			nc.ConcludedLicense = nc.Licenses
 		}
 	}
-	nc.HasRelationships, nc.Count = getComponentRelationship(c, nc.ID)
+	nc.HasRelationships, nc.Count, nc.Dep = getComponentRelationship(c, nc.ID)
 
 	return nc
 }
 
 // return true if a component has relationship
-func getComponentRelationship(c *CdxDoc, compID string) (bool, int) {
+func getComponentRelationship(c *CdxDoc, compID string) (bool, int, []string) {
 	count := 0
+	var deps []string
 	if c.doc.Dependencies == nil {
 		c.addToLogs(fmt.Sprintf("cdx doc component %s has no dependencies", compID))
-		return false, count
+		return false, count, nil
 	}
 	for _, rel := range *c.doc.Dependencies {
 		if rel.Ref == compID {
 			if len(lo.FromPtr(rel.Dependencies)) > 0 {
 				count++
+				deps = append(deps, compID)
 			}
 		}
 	}
-	return count > 0, count
+	return count > 0, count, deps
 }
 
 func (c *CdxDoc) parseComps() {
@@ -821,11 +823,9 @@ func (c *CdxDoc) assignAuthor(comp *cydx.Component) []GetAuthor {
 	// ParseAddressList handles comma-separated lists and quoted names.
 	addrs, err := mail.ParseAddressList(authorStr)
 	if err != nil {
-		// parse single address
 		if a, perr := mail.ParseAddress(authorStr); perr == nil {
 			addrs = []*mail.Address{a}
 		} else {
-			// parsing failed -- treat whole string as a name without an email
 			c.addToLogs(fmt.Sprintf("assignAuthor: cannot parse author string %q: %v", authorStr, err))
 			return []GetAuthor{Author{Name: authorStr}}
 		}

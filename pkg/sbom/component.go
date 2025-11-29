@@ -43,6 +43,7 @@ type GetComponent interface {
 	Authors() []GetAuthor
 	Manufacturer() GetManufacturer
 	CountOfDependencies() int
+	Deps() []string
 	GetSourceCodeURL() string
 	GetDownloadLocationURL() string
 	SourceCodeHash() string
@@ -78,6 +79,7 @@ type Component struct {
 	Supplier                Supplier
 	manufacturer            Manufacturer
 	Count                   int
+	Dep                     []string
 	SourceCodeURL           string
 	DownloadLocation        string
 	sourceCodeHash          string
@@ -172,6 +174,10 @@ func (c Component) Authors() []GetAuthor {
 
 func (c Component) CountOfDependencies() int {
 	return c.Count
+}
+
+func (c Component) Deps() []string {
+	return c.Dep
 }
 
 func (c Component) GetSourceCodeURL() string {

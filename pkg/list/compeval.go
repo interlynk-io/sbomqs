@@ -169,7 +169,7 @@ func normalizeAlgoName(algo string) string {
 func evaluateCompWithValidLicenses(comp sbom.GetComponent) (bool, string, error) {
 	licenses := comp.GetLicenses()
 	if len(licenses) == 0 {
-		return false, "", nil
+		return false, "missing", nil
 	}
 
 	validLicenses := make([]string, 0, len(licenses))
@@ -180,7 +180,7 @@ func evaluateCompWithValidLicenses(comp sbom.GetComponent) (bool, string, error)
 	}
 
 	if len(validLicenses) == 0 {
-		return true, "", nil
+		return false, "missing", nil
 	}
 	return true, strings.Join(validLicenses, ","), nil
 }
@@ -191,19 +191,20 @@ func evaluateCompWithAnyVulnLookupID(comp sbom.GetComponent) (bool, string, erro
 	purls := comp.GetPurls()
 
 	if len(cpes) == 0 || len(purls) == 0 {
-		return false, "", nil
+		return false, "missing", nil
 	}
 
 	allIDs := make([]string, 0, len(cpes)+len(purls))
 	for _, cpe := range cpes {
 		allIDs = append(allIDs, cpe.String()) // Assuming cpe.CPE has a String() method
 	}
+
 	for _, purl := range purls {
 		allIDs = append(allIDs, purl.String()) // Assuming purl.PURL has a String() method
 	}
 
 	if len(allIDs) == 0 {
-		return true, "", nil
+		return false, "missing", nil
 	}
 	return true, strings.Join(allIDs, ","), nil
 }
@@ -216,7 +217,7 @@ func evaluateCompWithMultiVulnLookupID(comp sbom.GetComponent) (bool, string, er
 	hasFeature := len(cpes) > 0 && len(purls) > 0
 
 	if len(cpes) == 0 && len(purls) == 0 {
-		return false, "", nil
+		return false, "missing", nil
 	}
 
 	allIDs := make([]string, 0, len(cpes)+len(purls))
@@ -227,7 +228,7 @@ func evaluateCompWithMultiVulnLookupID(comp sbom.GetComponent) (bool, string, er
 		allIDs = append(allIDs, purl.String()) // Assuming purl.PURL has a String() method
 	}
 	if len(allIDs) == 0 {
-		return true, "", nil
+		return false, "missing", nil
 	}
 
 	return hasFeature, strings.Join(allIDs, ","), nil
@@ -237,7 +238,7 @@ func evaluateCompWithMultiVulnLookupID(comp sbom.GetComponent) (bool, string, er
 func evaluateCompWithDeprecatedLicenses(comp sbom.GetComponent) (bool, string, error) {
 	licenses := comp.GetLicenses()
 	if len(licenses) == 0 {
-		return false, "", nil
+		return false, "missing", nil
 	}
 
 	deprecatedLicenses := make([]string, 0, len(licenses))
@@ -261,15 +262,17 @@ func evaluateCompWithDeprecatedLicenses(comp sbom.GetComponent) (bool, string, e
 // evaluateCompWithPrimaryPurpose evaluates if the component has a primary purpose
 func evaluateCompWithPrimaryPurpose(doc sbom.Document, comp sbom.GetComponent) (bool, string, error) {
 	purpose := comp.PrimaryPurpose()
-	hasFeature := purpose != "" && lo.Contains(sbom.SupportedPrimaryPurpose(doc.Spec().GetSpecType()), strings.ToLower(purpose))
-	return hasFeature, purpose, nil
+	if purpose != "" {
+		return true, purpose, nil
+	}
+	return false, "missing", nil
 }
 
 // evaluateCompWithRestrictedLicenses evaluates if the component has any restrictive licenses
 func evaluateCompWithRestrictedLicenses(comp sbom.GetComponent) (bool, string, error) {
 	licenses := comp.GetLicenses()
 	if len(licenses) == 0 {
-		return false, "", nil
+		return false, "missing", nil
 	}
 
 	restrictiveLicenses := make([]string, 0, len(licenses))
@@ -302,7 +305,7 @@ func evaluateCompWithChecksums(comp sbom.GetComponent) (bool, string, error) {
 		return true, strings.Join(values, ", "), nil
 	}
 
-	return false, "", nil
+	return false, "missing", nil
 }
 
 func hasAnySHA(c sbom.GetComponent) (bool, []string) {
@@ -344,7 +347,7 @@ func evaluateCompWithChecksums256(comp sbom.GetComponent) (bool, string, error) 
 	if ok {
 		return true, value, nil
 	}
-	return true, "", nil
+	return false, "missing", nil
 }
 
 func hasSHA256SHA(c sbom.GetComponent) (bool, string) {
@@ -407,7 +410,7 @@ func evaluateCompWithSHA256Checksums(comp sbom.GetComponent) (bool, string, erro
 
 	checksums := comp.GetChecksums()
 	if len(checksums) == 0 {
-		return false, "", nil
+		return false, "missing", nil
 	}
 
 	sha256Checksums := make([]string, 0, len(checksums))
@@ -418,35 +421,35 @@ func evaluateCompWithSHA256Checksums(comp sbom.GetComponent) (bool, string, erro
 	}
 
 	if len(sha256Checksums) == 0 {
-		return true, "", nil
+		return true, "missing", nil
 	}
 	return true, strings.Join(sha256Checksums, ","), nil
 }
 
 // evaluateCompWithSourceCodeURI evaluates if the component has a source code URI
 func evaluateCompWithSourceCodeURI(doc sbom.Document, comp sbom.GetComponent) (bool, string, error) {
-	if doc.Spec().GetSpecType() == "spdx" {
-		return false, "source code URI is not supported for SPDX documents", nil
+	if doc.Spec().GetSpecType() == string(sbom.SBOMSpecSPDX) {
+		return false, "non-deterministic field in spdx", nil
 	}
 
 	sourceCodeURI := comp.GetSourceCodeURL()
 	if sourceCodeURI != "" {
 		return true, sourceCodeURI, nil
 	}
-	return false, "", nil
+	return false, "missing", nil
 }
 
 // evaluateCompWithSourceCodeHash evaluates if the component has a source code hash
 func evaluateCompWithSourceCodeHash(doc sbom.Document, comp sbom.GetComponent) (bool, string, error) {
-	if doc.Spec().GetSpecType() == "cyclonedx" {
-		return false, "no-deterministic-field in cdx", nil
+	if doc.Spec().GetSpecType() == string(sbom.SBOMSpecCDX) {
+		return false, "non-deterministic-field in cdx", nil
 	}
 
 	sourceCodeHash := comp.SourceCodeHash()
 	if sourceCodeHash != "" {
 		return true, sourceCodeHash, nil
 	}
-	return false, "", nil
+	return false, "missing", nil
 }
 
 // evaluateCompWithExecutableURI evaluates if the component has an executable URI
@@ -455,12 +458,11 @@ func evaluateCompWithExecutableURI(comp sbom.GetComponent) (bool, string, error)
 	if executableURI != "" {
 		return true, executableURI, nil
 	}
-	return false, "", nil
+	return false, "missing", nil
 }
 
 // evaluateCompWithAssociatedLicense evaluates if the component has an associated license
 func evaluateCompWithAssociatedLicense(doc sbom.Document, comp sbom.GetComponent) (bool, string, error) {
-	// associatedLicense := comp.AssociatedLicense()
 	spec := doc.Spec().GetSpecType()
 
 	if spec == string(sbom.SBOMSpecSPDX) {
@@ -472,7 +474,7 @@ func evaluateCompWithAssociatedLicense(doc sbom.Document, comp sbom.GetComponent
 		}
 
 		if len(associatedLicense) == 0 {
-			return false, "", nil
+			return false, "missing", nil
 		}
 		return true, strings.Join(associatedLicense, ","), nil
 	} else if spec == string(sbom.SBOMSpecCDX) {
@@ -485,11 +487,11 @@ func evaluateCompWithAssociatedLicense(doc sbom.Document, comp sbom.GetComponent
 		}
 
 		if len(associatedLicense) == 0 {
-			return false, "", nil
+			return false, "missing", nil
 		}
 		return true, strings.Join(associatedLicense, ","), nil
 	}
-	return false, "", nil
+	return false, "missing", nil
 }
 
 // evaluateCompWithConcludedLicense evaluates if the component has a concluded license
@@ -502,7 +504,7 @@ func evaluateCompWithConcludedLicense(comp sbom.GetComponent) (bool, string, err
 	}
 
 	if len(concludedLicense) == 0 {
-		return false, "", nil
+		return false, "missing", nil
 	}
 	return true, strings.Join(concludedLicense, ","), nil
 }
@@ -517,7 +519,7 @@ func evaluateCompWithDeclaredLicense(comp sbom.GetComponent) (bool, string, erro
 	}
 
 	if len(declaredLicense) == 0 {
-		return false, "", nil
+		return false, "missing", nil
 	}
 	return true, strings.Join(declaredLicense, ","), nil
 }
@@ -525,7 +527,7 @@ func evaluateCompWithDeclaredLicense(comp sbom.GetComponent) (bool, string, erro
 // evaluateCompWithDependencies evaluates if the component has dependencies
 func evaluateCompWithDependencies(comp sbom.GetComponent) (bool, string, error) {
 	if comp == nil {
-		return false, "", fmt.Errorf("component is nil")
+		return false, "missing", fmt.Errorf("component is nil")
 	}
 
 	dependencies := comp.HasRelationShips()
@@ -533,5 +535,7 @@ func evaluateCompWithDependencies(comp sbom.GetComponent) (bool, string, error) 
 		return false, "no-dependencies", nil
 	}
 
-	return true, "contains dependencies", nil
+	total := fmt.Sprintf("total %d dependencies\n", comp.CountOfDependencies())
+	msg := total + strings.Join(comp.Deps(), ", ")
+	return true, msg, nil
 }
