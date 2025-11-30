@@ -36,8 +36,8 @@ func NTIA2025ToolName(doc sbom.Document) catalog.ProfFeatScore {
 	}
 
 	return catalog.ProfFeatScore{
-		Score: score,
-		Desc:  desc,
+		Score:  score,
+		Desc:   desc,
 		Ignore: false,
 	}
 }
@@ -63,8 +63,8 @@ func NTIA2025GenerationContext(doc sbom.Document) catalog.ProfFeatScore {
 	}
 
 	return catalog.ProfFeatScore{
-		Score: score,
-		Desc:  desc,
+		Score:  score,
+		Desc:   desc,
 		Ignore: false,
 	}
 }
@@ -105,8 +105,8 @@ func NTIA2025SoftwareProducer(doc sbom.Document) catalog.ProfFeatScore {
 	}
 
 	return catalog.ProfFeatScore{
-		Score: score,
-		Desc:  desc,
+		Score:  score,
+		Desc:   desc,
 		Ignore: false,
 	}
 }
@@ -116,8 +116,8 @@ func NTIA2025CompHash(doc sbom.Document) catalog.ProfFeatScore {
 	totalComponents := len(doc.Components())
 	if totalComponents == 0 {
 		return catalog.ProfFeatScore{
-			Score: 0.0,
-			Desc:  "no components found",
+			Score:  0.0,
+			Desc:   "no components found",
 			Ignore: false,
 		}
 	}
@@ -132,7 +132,7 @@ func NTIA2025CompHash(doc sbom.Document) catalog.ProfFeatScore {
 
 	score := (float64(componentsWithHash) / float64(totalComponents)) * 10.0
 	desc := ""
-	
+
 	if componentsWithHash == 0 {
 		desc = fmt.Sprintf("add to %d components", totalComponents)
 	} else if componentsWithHash == totalComponents {
@@ -147,8 +147,8 @@ func NTIA2025CompHash(doc sbom.Document) catalog.ProfFeatScore {
 	}
 
 	return catalog.ProfFeatScore{
-		Score: score,
-		Desc:  desc,
+		Score:  score,
+		Desc:   desc,
 		Ignore: false,
 	}
 }
@@ -158,8 +158,8 @@ func NTIA2025CompLicense(doc sbom.Document) catalog.ProfFeatScore {
 	totalComponents := len(doc.Components())
 	if totalComponents == 0 {
 		return catalog.ProfFeatScore{
-			Score: 0.0,
-			Desc:  "no components found",
+			Score:  0.0,
+			Desc:   "no components found",
 			Ignore: false,
 		}
 	}
@@ -194,7 +194,7 @@ func NTIA2025CompLicense(doc sbom.Document) catalog.ProfFeatScore {
 
 	score := (float64(componentsWithLicense) / float64(totalComponents)) * 10.0
 	desc := ""
-	
+
 	if componentsWithLicense == 0 {
 		desc = fmt.Sprintf("add to %d components", totalComponents)
 	} else if componentsWithLicense == totalComponents {
@@ -209,8 +209,8 @@ func NTIA2025CompLicense(doc sbom.Document) catalog.ProfFeatScore {
 	}
 
 	return catalog.ProfFeatScore{
-		Score: score,
-		Desc:  desc,
+		Score:  score,
+		Desc:   desc,
 		Ignore: false,
 	}
 }
@@ -220,8 +220,8 @@ func NTIA2025CompSoftwareIdentifiers(doc sbom.Document) catalog.ProfFeatScore {
 	totalComponents := len(doc.Components())
 	if totalComponents == 0 {
 		return catalog.ProfFeatScore{
-			Score: 0.0,
-			Desc:  "no components found",
+			Score:  0.0,
+			Desc:   "no components found",
 			Ignore: false,
 		}
 	}
@@ -231,7 +231,7 @@ func NTIA2025CompSoftwareIdentifiers(doc sbom.Document) catalog.ProfFeatScore {
 
 	for _, comp := range doc.Components() {
 		hasId := false
-		
+
 		if spec == "spdx" {
 			// Check for SPDX ID first
 			if spdxID := comp.GetSpdxID(); spdxID != "" {
@@ -255,7 +255,7 @@ func NTIA2025CompSoftwareIdentifiers(doc sbom.Document) catalog.ProfFeatScore {
 				hasId = true
 			}
 		}
-		
+
 		if hasId {
 			componentsWithId++
 		}
@@ -263,7 +263,7 @@ func NTIA2025CompSoftwareIdentifiers(doc sbom.Document) catalog.ProfFeatScore {
 
 	score := (float64(componentsWithId) / float64(totalComponents)) * 10.0
 	desc := ""
-	
+
 	if componentsWithId == 0 {
 		desc = fmt.Sprintf("add to %d components", totalComponents)
 	} else if componentsWithId == totalComponents {
@@ -278,8 +278,8 @@ func NTIA2025CompSoftwareIdentifiers(doc sbom.Document) catalog.ProfFeatScore {
 	}
 
 	return catalog.ProfFeatScore{
-		Score: score,
-		Desc:  desc,
+		Score:  score,
+		Desc:   desc,
 		Ignore: false,
 	}
 }

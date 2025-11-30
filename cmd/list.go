@@ -51,8 +51,8 @@ var listCmd = &cobra.Command{
 	Use:          "list",
 	Short:        "List components or SBOM properties based on feature",
 	SilenceUsage: true,
-	Example: `  sbomqs list --feature <feature> --option <path-to-sbom-file> 
-	
+	Example: `  sbomqs list --feature <feature> --option <path-to-sbom-file>
+
   # List all components with suppliers
   sbomqs list --feature comp_with_supplier samples/sbomqs-spdx-syft.json
 

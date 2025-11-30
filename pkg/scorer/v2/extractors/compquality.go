@@ -48,6 +48,6 @@ func CompWithPurlValid(doc sbom.Document) catalog.ComprFeatScore {
 	return formulae.ScoreCompNAA()
 }
 
-func CompWithCpeValid(doc sbom.Document) catalog.ComprFeatScore{
-	return  formulae.ScoreCompNAA()
+func CompWithCpeValid(doc sbom.Document) catalog.ComprFeatScore {
+	return formulae.ScoreCompNAA()
 }

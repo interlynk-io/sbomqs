@@ -38,7 +38,7 @@ var generateCmd = &cobra.Command{
 	Use:   "generate",
 	Short: "provides a comprehensive config generate for your sbom to get specific criteria",
 	Example: `  sbomqs generate <argument>
-	
+
  valid <argument> are comprehenssive, profiles, features
 
   # Generate config file for comprehenssive

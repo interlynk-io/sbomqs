@@ -38,7 +38,7 @@ func OCTV11SBOMSpecVersion(doc sbom.Document) catalog.ProfFeatScore {
 // OCTV11SBOMDataLicense: Data License / metadata.licenses
 func OCTV11SBOMDataLicense(doc sbom.Document) catalog.ProfFeatScore {
 	spec := doc.Spec().GetSpecType()
-	
+
 	if spec == "spdx" {
 		// For SPDX: check data license
 		for _, lic := range doc.Spec().GetLicenses() {
@@ -48,7 +48,7 @@ func OCTV11SBOMDataLicense(doc sbom.Document) catalog.ProfFeatScore {
 		}
 		return formulae.ScoreSBOMProfMissingNA("data license", false)
 	}
-	
+
 	// For CycloneDX: check metadata.licenses
 	for _, lic := range doc.Spec().GetLicenses() {
 		if lic.Name() != "" || lic.ShortID() != "" {
@@ -61,7 +61,7 @@ func OCTV11SBOMDataLicense(doc sbom.Document) catalog.ProfFeatScore {
 // OCTV11SBOMIdentifier: SPDX ID / serialNumber
 func OCTV11SBOMIdentifier(doc sbom.Document) catalog.ProfFeatScore {
 	spec := doc.Spec().GetSpecType()
-	
+
 	if spec == "spdx" {
 		// For SPDX: check SPDXID
 		id := strings.TrimSpace(doc.Spec().GetSpdxID())
@@ -70,7 +70,7 @@ func OCTV11SBOMIdentifier(doc sbom.Document) catalog.ProfFeatScore {
 		}
 		return formulae.ScoreSBOMProfFull("document identifier", false)
 	}
-	
+
 	// For CycloneDX: serialNumber is not directly exposed, use N/A
 	// CycloneDX uses serial number but it's not exposed in the interface
 	return formulae.ScoreProfNA(false)
@@ -79,12 +79,12 @@ func OCTV11SBOMIdentifier(doc sbom.Document) catalog.ProfFeatScore {
 // OCTV11SBOMName: Document Name (SPDX only)
 func OCTV11SBOMName(doc sbom.Document) catalog.ProfFeatScore {
 	spec := doc.Spec().GetSpecType()
-	
+
 	if spec == "cyclonedx" {
 		// CycloneDX doesn't have document name - N/A
 		return formulae.ScoreProfNA(false)
 	}
-	
+
 	// For SPDX: check document name
 	name := strings.TrimSpace(doc.Spec().GetName())
 	if name == "" {
@@ -96,12 +96,12 @@ func OCTV11SBOMName(doc sbom.Document) catalog.ProfFeatScore {
 // OCTV11SBOMNamespace: Document Namespace (SPDX only)
 func OCTV11SBOMNamespace(doc sbom.Document) catalog.ProfFeatScore {
 	spec := doc.Spec().GetSpecType()
-	
+
 	if spec == "cyclonedx" {
 		// CycloneDX doesn't have namespace - N/A
 		return formulae.ScoreProfNA(false)
 	}
-	
+
 	// For SPDX: check namespace/URI
 	ns := strings.TrimSpace(doc.Spec().GetURI())
 	if ns == "" {
@@ -115,12 +115,12 @@ func OCTV11SBOMCreator(doc sbom.Document) catalog.ProfFeatScore {
 	// Check for both organization and tool
 	hasOrg := false
 	hasTool := false
-	
+
 	// Check organization
 	if org := strings.TrimSpace(doc.Spec().GetOrganization()); org != "" {
 		hasOrg = true
 	}
-	
+
 	// Check authors (for CycloneDX metadata.authors)
 	if !hasOrg {
 		authors := doc.Authors()
@@ -133,7 +133,7 @@ func OCTV11SBOMCreator(doc sbom.Document) catalog.ProfFeatScore {
 			}
 		}
 	}
-	
+
 	// Check tool
 	tools := doc.Tools()
 	for _, tool := range tools {
@@ -142,7 +142,7 @@ func OCTV11SBOMCreator(doc sbom.Document) catalog.ProfFeatScore {
 			break
 		}
 	}
-	
+
 	if hasOrg && hasTool {
 		return formulae.ScoreSBOMProfFull("creator info", false)
 	}
@@ -158,7 +158,7 @@ func OCTV11SBOMTimestamp(doc sbom.Document) catalog.ProfFeatScore {
 // OCTV11SBOMCreatorComment: Creator Comment / lifecycles
 func OCTV11SBOMCreatorComment(doc sbom.Document) catalog.ProfFeatScore {
 	spec := doc.Spec().GetSpecType()
-	
+
 	if spec == "spdx" {
 		// For SPDX: check creator comment
 		comment := strings.TrimSpace(doc.Spec().GetComment())
@@ -167,7 +167,7 @@ func OCTV11SBOMCreatorComment(doc sbom.Document) catalog.ProfFeatScore {
 		}
 		return formulae.ScoreSBOMProfMissingNA("creator comment", false)
 	}
-	
+
 	// For CycloneDX: check lifecycles
 	lifecycle := doc.Lifecycles()
 	if len(lifecycle) > 0 {
@@ -188,10 +188,10 @@ func OCTV11CompIdentifier(doc sbom.Document) catalog.ProfFeatScore {
 	if len(comps) == 0 {
 		return formulae.ScoreSBOMProfMissingNA("component identifier", false)
 	}
-	
+
 	spec := doc.Spec().GetSpecType()
 	have := 0
-	
+
 	if spec == "spdx" {
 		// For SPDX: check SPDXID
 		have = lo.CountBy(comps, func(c sbom.GetComponent) bool {
@@ -203,7 +203,7 @@ func OCTV11CompIdentifier(doc sbom.Document) catalog.ProfFeatScore {
 			return strings.TrimSpace(c.GetID()) != ""
 		})
 	}
-	
+
 	return formulae.ScoreProfFull(have, len(comps), "component identifier", false)
 }
 
@@ -246,7 +246,7 @@ func OCTV11CompCopyright(doc sbom.Document) catalog.ProfFeatScore {
 // OCTV11SBOMRelationships: Relationships (DESCRIBES and CONTAINS)
 func OCTV11SBOMRelationships(doc sbom.Document) catalog.ProfFeatScore {
 	spec := doc.Spec().GetSpecType()
-	
+
 	if spec == "spdx" {
 		// For SPDX: check for relations
 		relations := doc.Relations()
@@ -255,7 +255,7 @@ func OCTV11SBOMRelationships(doc sbom.Document) catalog.ProfFeatScore {
 		}
 		return formulae.ScoreSBOMProfMissingNA("relationships", false)
 	}
-	
+
 	// For CycloneDX: check for component relationships
 	comps := doc.Components()
 	for _, comp := range comps {
@@ -263,7 +263,7 @@ func OCTV11SBOMRelationships(doc sbom.Document) catalog.ProfFeatScore {
 			return formulae.ScoreSBOMProfFull("dependencies", false)
 		}
 	}
-	
+
 	return formulae.ScoreSBOMProfMissingNA("dependencies", false)
 }
 
@@ -273,11 +273,11 @@ func OCTV11CompChecksum(doc sbom.Document) catalog.ProfFeatScore {
 	if len(comps) == 0 {
 		return formulae.ScoreProfNA(true)
 	}
-	
+
 	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
 		return len(c.GetChecksums()) > 0
 	})
-	
+
 	return formulae.ScoreProfFull(have, len(comps), "component checksums", true)
 }
 
@@ -287,10 +287,10 @@ func OCTV11CompPURL(doc sbom.Document) catalog.ProfFeatScore {
 	if len(comps) == 0 {
 		return formulae.ScoreProfNA(true)
 	}
-	
+
 	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
 		return len(c.GetPurls()) > 0
 	})
-	
+
 	return formulae.ScoreProfFull(have, len(comps), "component PURL", true)
 }
