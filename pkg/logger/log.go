@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package logger provides structured logging capabilities for the sbomqs application
+// using the Uber Zap logger library with context-aware logging support.
 package logger
 
 import (

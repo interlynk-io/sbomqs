@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package sbom provides core SBOM (Software Bill of Materials) parsing, processing,
+// and manipulation functionality for handling SPDX and CycloneDX format documents.
 package sbom
 
 import (

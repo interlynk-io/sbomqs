@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package main provides the entry point for the sbomqs application,
+// which calculates SBOM quality scores to help assess SBOM acceptance risk.
 package main
 
 import "github.com/interlynk-io/sbomqs/v2/cmd"

@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package swhid provides Software Heritage Identifier (SWHID) validation and handling
+// functionality for processing persistent identifiers in SBOM documents.
 package swhid
 
 import "regexp"

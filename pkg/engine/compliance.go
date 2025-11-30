@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package engine provides the core execution engine for sbomqs operations,
+// including compliance checking, scoring, and report generation functionality.
 package engine
 
 import (

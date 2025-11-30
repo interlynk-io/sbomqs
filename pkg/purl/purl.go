@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package purl provides Package URL (PURL) parsing and validation functionality
+// for handling package identifiers in SBOM documents.
 package purl
 
 import (

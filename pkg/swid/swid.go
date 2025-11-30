@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package swid provides Software Identification (SWID) tag handling and validation
+// functionality for processing SWID tags in SBOM documents.
 package swid
 
 type SWID interface {

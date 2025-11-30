@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package omniborid provides OmniBOR identifier validation and handling
+// functionality for processing GitOID-based identifiers in SBOM documents.
 package omniborid
 
 import "regexp"

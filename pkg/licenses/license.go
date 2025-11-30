@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package licenses provides license validation and handling functionality
+// for processing and validating license identifiers in SBOM documents.
 package licenses
 
 import (
