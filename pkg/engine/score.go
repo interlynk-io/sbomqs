@@ -26,6 +26,7 @@ import (
 	"strings"
 
 	"github.com/go-git/go-billy/v5"
+	pkgcommon "github.com/interlynk-io/sbomqs/v2/pkg/common"
 	"github.com/interlynk-io/sbomqs/v2/pkg/compliance/common"
 	"github.com/interlynk-io/sbomqs/v2/pkg/logger"
 	"github.com/interlynk-io/sbomqs/v2/pkg/reporter"
@@ -107,11 +108,11 @@ func scored(ctx context.Context, ep *Params) error {
 		return err
 	}
 
-	reportFormat := "detailed"
+	reportFormat := pkgcommon.ReportDetailed
 	if ep.Basic {
-		reportFormat = "basic"
+		reportFormat = pkgcommon.ReportBasic
 	} else if ep.JSON {
-		reportFormat = "json"
+		reportFormat = pkgcommon.FormatJSON
 	}
 
 	nr := v2.NewReport(ctx, results, reportFormat)
@@ -285,11 +286,11 @@ func handlePaths(ctx context.Context, ep *Params) error {
 		}
 	}
 
-	reportFormat := "detailed"
+	reportFormat := pkgcommon.ReportDetailed
 	if ep.Basic {
-		reportFormat = "basic"
+		reportFormat = pkgcommon.ReportBasic
 	} else if ep.JSON {
-		reportFormat = "json"
+		reportFormat = pkgcommon.FormatJSON
 	}
 	coloredOutput := ep.Color
 

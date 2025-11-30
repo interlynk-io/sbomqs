@@ -21,6 +21,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/interlynk-io/sbomqs/v2/pkg/common"
 	"github.com/interlynk-io/sbomqs/v2/pkg/logger"
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
 )
@@ -295,11 +296,11 @@ func evaluateSBOMFeature(feature string, doc sbom.Document) (bool, string, error
 func generateReport(ctx context.Context, results []*Result, ep *Params) error {
 	log := logger.FromContext(ctx)
 
-	reportFormat := "detailed"
+	reportFormat := common.ReportDetailed
 	if ep.Basic {
-		reportFormat = "basic"
+		reportFormat = common.ReportBasic
 	} else if ep.JSON {
-		reportFormat = "json"
+		reportFormat = common.FormatJSON
 	}
 
 	log.Debugf(

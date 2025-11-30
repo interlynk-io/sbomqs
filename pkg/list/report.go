@@ -24,6 +24,7 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/google/uuid"
+	"github.com/interlynk-io/sbomqs/v2/pkg/common"
 	"github.com/olekukonko/tablewriter"
 	"sigs.k8s.io/release-utils/version"
 )
@@ -71,11 +72,11 @@ type Report struct {
 
 // Report renders the list command results in the specified format
 func (r *Report) Report() {
-	if r.Format == "basic" {
+	if r.Format == common.ReportBasic {
 		r.basicReport()
-	} else if r.Format == "detailed" {
+	} else if r.Format == common.ReportDetailed {
 		r.detailedReport()
-	} else if r.Format == "json" {
+	} else if r.Format == common.FormatJSON {
 		r.jsonReport()
 	} else {
 		r.detailedReport()

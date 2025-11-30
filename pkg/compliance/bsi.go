@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"strings"
 
+	pkgcommon "github.com/interlynk-io/sbomqs/v2/pkg/common"
 	"github.com/interlynk-io/sbomqs/v2/pkg/compliance/common"
 	db "github.com/interlynk-io/sbomqs/v2/pkg/compliance/db"
 	"github.com/interlynk-io/sbomqs/v2/pkg/logger"
@@ -103,15 +104,15 @@ func bsiResult(ctx context.Context, doc sbom.Document, fileName string, outForma
 	dtb.AddRecord(bsiSbomURI(doc))
 	dtb.AddRecords(bsiComponents(doc))
 
-	if outFormat == "json" {
+	if outFormat == pkgcommon.FormatJSON {
 		bsiJSONReport(dtb, fileName)
 	}
 
-	if outFormat == "basic" {
+	if outFormat == pkgcommon.ReportBasic {
 		bsiBasicReport(dtb, fileName)
 	}
 
-	if outFormat == "detailed" {
+	if outFormat == pkgcommon.ReportDetailed {
 		bsiDetailedReport(dtb, fileName, colorOutput)
 	}
 }

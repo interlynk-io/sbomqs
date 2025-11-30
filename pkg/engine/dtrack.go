@@ -23,6 +23,7 @@ import (
 
 	dtrack "github.com/DependencyTrack/client-go"
 	"github.com/google/uuid"
+	"github.com/interlynk-io/sbomqs/v2/pkg/common"
 	"github.com/interlynk-io/sbomqs/v2/pkg/logger"
 	"github.com/interlynk-io/sbomqs/v2/pkg/reporter"
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
@@ -126,11 +127,11 @@ func DtrackScore(ctx context.Context, dtP *DtParams) error {
 
 				path := fmt.Sprintf("ID: %s, Name: %s, Version: %s", prj.UUID, prj.Name, prj.Version)
 
-				reportFormat := "detailed"
+				reportFormat := common.ReportDetailed
 				if dtP.Basic {
-					reportFormat = "basic"
+					reportFormat = common.ReportBasic
 				} else if dtP.JSON {
-					reportFormat = "json"
+					reportFormat = common.FormatJSON
 				}
 
 				nr := reporter.NewReport(ctx,

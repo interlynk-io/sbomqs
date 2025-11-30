@@ -19,6 +19,7 @@ import (
 	"errors"
 	"fmt"
 
+	pkgcommon "github.com/interlynk-io/sbomqs/v2/pkg/common"
 	"github.com/interlynk-io/sbomqs/v2/pkg/compliance/fsct"
 	"github.com/interlynk-io/sbomqs/v2/pkg/logger"
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
@@ -79,7 +80,7 @@ func ComplianceResult(ctx context.Context, doc sbom.Document, reportType, fileNa
 		ntiaResult(ctx, doc, fileName, outFormat, coloredOutput)
 
 	case reportType == OCT_TELCO:
-		if doc.Spec().GetSpecType() != "spdx" {
+		if doc.Spec().GetSpecType() != pkgcommon.FormatSPDX {
 			fmt.Println("The Provided SBOM spec is other than SPDX. Open Chain Telco only support SPDX specs SBOMs.")
 			return nil
 		}

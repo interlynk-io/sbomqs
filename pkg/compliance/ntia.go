@@ -20,6 +20,7 @@ import (
 	"strings"
 	"time"
 
+	pkgcommon "github.com/interlynk-io/sbomqs/v2/pkg/common"
 	"github.com/interlynk-io/sbomqs/v2/pkg/compliance/common"
 	db "github.com/interlynk-io/sbomqs/v2/pkg/compliance/db"
 	"github.com/interlynk-io/sbomqs/v2/pkg/logger"
@@ -28,8 +29,8 @@ import (
 )
 
 var (
-	validSpec    = []string{"cyclonedx", "spdx"}
-	validFormats = []string{"json", "xml", "yaml", "yml", "tag-value"}
+	validSpec    = []string{pkgcommon.FormatCycloneDX, pkgcommon.FormatSPDX}
+	validFormats = []string{pkgcommon.FormatJSON, pkgcommon.FormatXML, pkgcommon.FormatYAML, pkgcommon.FormatYML, pkgcommon.FormatTagValue}
 )
 
 //nolint
@@ -50,15 +51,15 @@ func ntiaResult(ctx context.Context, doc sbom.Document, fileName string, outForm
 	db.AddRecord(ntiaSBOMDependency(doc))
 	db.AddRecords(ntiaComponents(doc))
 
-	if outFormat == "json" {
+	if outFormat == pkgcommon.FormatJSON {
 		ntiaJSONReport(db, fileName)
 	}
 
-	if outFormat == "basic" {
+	if outFormat == pkgcommon.ReportBasic {
 		ntiaBasicReport(db, fileName)
 	}
 
-	if outFormat == "detailed" {
+	if outFormat == pkgcommon.ReportDetailed {
 		ntiaDetailedReport(db, fileName, colorOutput)
 	}
 }
@@ -267,7 +268,7 @@ func ntiaComponentCreator(doc sbom.Document, component sbom.GetComponent) *db.Re
 	result, score := "", SCORE_ZERO
 
 	switch spec {
-	case "spdx":
+	case pkgcommon.FormatSPDX:
 		if supplier := component.Suppliers(); supplier != nil {
 			if supplierResult, found := getSupplierInfo(supplier); found {
 				result = supplierResult
@@ -275,7 +276,7 @@ func ntiaComponentCreator(doc sbom.Document, component sbom.GetComponent) *db.Re
 				break
 			}
 		}
-	case "cyclonedx":
+	case pkgcommon.FormatCycloneDX:
 		if supplier := component.Suppliers(); supplier != nil {
 			if supplierResult, found := getSupplierInfo(supplier); found {
 				result = supplierResult
@@ -310,7 +311,7 @@ func ntiaComponentDependencies(doc sbom.Document, component sbom.GetComponent) *
 	var dependencies []string
 	var allDepByName []string
 
-	if doc.Spec().GetSpecType() == "spdx" {
+	if doc.Spec().GetSpecType() == pkgcommon.FormatSPDX {
 		if component.GetPrimaryCompInfo().IsPresent() {
 			result = strings.Join(GetAllPrimaryDepenciesByName, ", ")
 			score = 10.0
@@ -337,7 +338,7 @@ func ntiaComponentDependencies(doc sbom.Document, component sbom.GetComponent) *
 		result = strings.Join(allDepByName, ", ")
 		return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), result, 10.0, "")
 
-	} else if doc.Spec().GetSpecType() == "cyclonedx" {
+	} else if doc.Spec().GetSpecType() == pkgcommon.FormatCycloneDX {
 		if component.GetPrimaryCompInfo().IsPresent() {
 			result = strings.Join(GetAllPrimaryDepenciesByName, ", ")
 			score = 10.0
@@ -367,7 +368,7 @@ func ntiaComponentDependencies(doc sbom.Document, component sbom.GetComponent) *
 func ntiaComponentOtherUniqIDs(doc sbom.Document, component sbom.GetComponent) *db.Record {
 	spec := doc.Spec().GetSpecType()
 
-	if spec == "spdx" {
+	if spec == pkgcommon.FormatSPDX {
 		result, score, totalElements, containPurlElement := "", SCORE_ZERO, 0, 0
 
 		if extRefs := component.ExternalReferences(); extRefs != nil {
@@ -385,7 +386,7 @@ func ntiaComponentOtherUniqIDs(doc sbom.Document, component sbom.GetComponent) *
 			result += x
 		}
 		return db.NewRecordStmt(COMP_OTHER_UNIQ_IDS, common.UniqueElementID(component), result, score, "")
-	} else if spec == "cyclonedx" {
+	} else if spec == pkgcommon.FormatCycloneDX {
 		result := ""
 
 		purl := component.GetPurls()

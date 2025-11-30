@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"os"
 
+	pkgcommon "github.com/interlynk-io/sbomqs/v2/pkg/common"
 	"github.com/interlynk-io/sbomqs/v2/pkg/compliance"
 	"github.com/interlynk-io/sbomqs/v2/pkg/compliance/common"
 	"github.com/interlynk-io/sbomqs/v2/pkg/logger"
@@ -64,11 +65,11 @@ func ComplianceRun(ctx context.Context, ep *Params) error {
 
 	switch {
 	case ep.Basic:
-		outFormat = "basic"
+		outFormat = pkgcommon.ReportBasic
 	case ep.JSON:
-		outFormat = "json"
+		outFormat = pkgcommon.FormatJSON
 	default:
-		outFormat = "detailed"
+		outFormat = pkgcommon.ReportDetailed
 	}
 
 	coloredOutput := ep.Color

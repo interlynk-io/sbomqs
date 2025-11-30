@@ -18,6 +18,7 @@ import (
 	"context"
 	"strings"
 
+	pkgcommon "github.com/interlynk-io/sbomqs/v2/pkg/common"
 	"github.com/interlynk-io/sbomqs/v2/pkg/compliance/common"
 	"github.com/interlynk-io/sbomqs/v2/pkg/compliance/db"
 	"github.com/interlynk-io/sbomqs/v2/pkg/logger"
@@ -40,15 +41,15 @@ func Result(ctx context.Context, doc sbom.Document, fileName string, outFormat s
 	// component Level
 	dtb.AddRecords(Components(doc))
 
-	if outFormat == "json" {
+	if outFormat == pkgcommon.FormatJSON {
 		fsctJSONReport(dtb, fileName)
 	}
 
-	if outFormat == "basic" {
+	if outFormat == pkgcommon.ReportBasic {
 		fsctBasicReport(dtb, fileName)
 	}
 
-	if outFormat == "detailed" {
+	if outFormat == pkgcommon.ReportDetailed {
 		fsctDetailedReport(dtb, fileName, coloredOutput)
 	}
 }
