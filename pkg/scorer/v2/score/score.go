@@ -84,7 +84,11 @@ func scoreOnePath(ctx context.Context, catalog *catalog.Catalog, cfg config.Conf
 	if err != nil {
 		return api.Result{}, err
 	}
-	defer file.Close()
+	defer func() {
+		if err := file.Close(); err != nil {
+			log.Warnf("failed to close file: %v", err)
+		}
+	}()
 
 	res, err := SBOMEvaluation(ctx, catalog, cfg, doc)
 	res.Meta.Filename = path
@@ -116,13 +120,13 @@ func openAndParse(ctx context.Context, cfg config.Config, path string) (*os.File
 
 	sig, err := ExtractSignature(ctx, cfg, f.Name())
 	if err != nil {
-		f.Close()
+		_ = f.Close()
 		return nil, nil, fmt.Errorf("get signature for %q: %w", path, err)
 	}
 
 	doc, err := sbom.NewSBOMDocument(ctx, f, sig)
 	if err != nil {
-		f.Close()
+		_ = f.Close()
 		return nil, nil, fmt.Errorf("parse error for %q: %w", path, err)
 	}
 

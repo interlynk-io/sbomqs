@@ -52,15 +52,15 @@ func ProcessURLPath(ctx context.Context, cfg config.Config, url string) (*os.Fil
 	}
 
 	if _, err := tmpFile.Write(sbomData); err != nil {
-		tmpFile.Close()
-		os.Remove(tmpFile.Name())
+		_ = tmpFile.Close()
+		_ = os.Remove(tmpFile.Name())
 		return nil, fmt.Errorf("failed to write to temp SBOM file: %w", err)
 	}
 
 	// Rewind file pointer for reading later
 	if _, err := tmpFile.Seek(0, 0); err != nil {
-		tmpFile.Close()
-		os.Remove(tmpFile.Name())
+		_ = tmpFile.Close()
+		_ = os.Remove(tmpFile.Name())
 		return nil, fmt.Errorf("failed to reset temp file pointer: %w", err)
 	}
 

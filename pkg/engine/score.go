@@ -158,12 +158,17 @@ func IsGit(in string) bool {
 }
 
 func ProcessURL(url string, file afero.File) (afero.File, error) {
+	log := logger.FromContext(context.Background())
 	//nolint: gosec
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get data: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			log.Warnf("failed to close response body: %v", err)
+		}
+	}()
 
 	// Ensure the response is OK
 	if resp.StatusCode != http.StatusOK {
@@ -330,7 +335,11 @@ func processFile(ctx context.Context, ep *Params, path string, fs billy.Filesyst
 			fmt.Printf("failed to open %s\n", path)
 			return nil, nil, err
 		}
-		defer f.Close()
+		defer func() {
+			if err := f.Close(); err != nil {
+				log.Warnf("failed to close file: %v", err)
+			}
+		}()
 
 		doc, err = sbom.NewSBOMDocument(ctx, f, sig)
 		if err != nil {
@@ -352,7 +361,11 @@ func processFile(ctx context.Context, ep *Params, path string, fs billy.Filesyst
 			fmt.Printf("failed to open %s\n", path)
 			return nil, nil, err
 		}
-		defer f.Close()
+		defer func() {
+			if err := f.Close(); err != nil {
+				log.Warnf("failed to close file: %v", err)
+			}
+		}()
 
 		doc, err = sbom.NewSBOMDocument(ctx, f, sig)
 		if err != nil {

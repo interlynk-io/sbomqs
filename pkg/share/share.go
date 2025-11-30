@@ -23,6 +23,7 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/interlynk-io/sbomqs/v2/pkg/logger"
 	"github.com/interlynk-io/sbomqs/v2/pkg/reporter"
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer"
@@ -48,6 +49,7 @@ type shareResonse struct {
 }
 
 func sentToBenchmark(js string) (string, error) {
+	log := logger.FromContext(context.Background())
 	req := &http.Request{
 		Method: "POST",
 		URL:    &url.URL{Scheme: "https", Host: "sbombenchmark.dev", Path: "/user/score"},
@@ -62,7 +64,11 @@ func sentToBenchmark(js string) (string, error) {
 		return "", err
 	}
 
-	defer resp.Body.Close()
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			log.Warnf("failed to close response body: %v", err)
+		}
+	}()
 
 	if resp.StatusCode != 200 {
 		return "", fmt.Errorf("bad response from Benchmark: %s", resp.Status)

@@ -145,7 +145,11 @@ func getSbomDocument(ctx context.Context, ep *Params) (*sbom.Document, error) {
 			fmt.Printf("failed to open %s\n", path)
 			return nil, err
 		}
-		defer f.Close()
+		defer func() {
+			if err := f.Close(); err != nil {
+				log.Warnf("failed to close file: %v", err)
+			}
+		}()
 
 		doc, err = sbom.NewSBOMDocument(ctx, f, sig)
 		if err != nil {

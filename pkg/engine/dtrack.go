@@ -84,8 +84,16 @@ func DtrackScore(ctx context.Context, dtP *DtParams) error {
 				log.Fatal(err)
 			}
 
-			defer f.Close()
-			defer os.Remove(f.Name())
+			defer func() {
+				if err := f.Close(); err != nil {
+					log.Warnf("failed to close file: %v", err)
+				}
+			}()
+			defer func() {
+				if err := os.Remove(f.Name()); err != nil {
+					log.Warnf("failed to remove temporary file: %v", err)
+				}
+			}()
 
 			_, err = f.WriteString(bom)
 			if err != nil {

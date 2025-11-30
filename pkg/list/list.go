@@ -145,11 +145,16 @@ func collectResultsForSBOM(ctx context.Context, ep *Params, filePath string) ([]
 
 // parseSBOMDocument parses an SBOM document from a local file path
 func parseSBOMDocument(ctx context.Context, filePath string) (sbom.Document, error) {
+	log := logger.FromContext(ctx)
 	f, err := os.Open(filePath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open file %s: %w", filePath, err)
 	}
-	defer f.Close()
+	defer func() {
+		if err := f.Close(); err != nil {
+			log.Warnf("failed to close file: %v", err)
+		}
+	}()
 
 	currentDoc, err := sbom.NewSBOMDocument(ctx, f, sbom.Signature{})
 	if err != nil {

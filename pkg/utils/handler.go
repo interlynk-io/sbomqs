@@ -15,6 +15,7 @@
 package utils
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -22,6 +23,8 @@ import (
 	"os"
 	"regexp"
 	"strings"
+
+	"github.com/interlynk-io/sbomqs/v2/pkg/logger"
 )
 
 func IsDir(path string) bool {
@@ -101,12 +104,17 @@ func HandleURL(path string) (string, string, error) {
 }
 
 func DownloadSBOMFromURL(url string) ([]byte, error) {
+	log := logger.FromContext(context.Background())
 	//nolint: gosec
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get data: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			log.Warnf("failed to close response body: %v", err)
+		}
+	}()
 
 	// Ensure the response is OK
 	if resp.StatusCode != http.StatusOK {
