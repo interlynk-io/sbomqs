@@ -32,7 +32,7 @@ var (
 	validFormats = []string{"json", "xml", "yaml", "yml", "tag-value"}
 )
 
-// nolint
+//nolint
 const (
 	SCORE_FULL = 10.0
 	SCORE_ZERO = 0.0

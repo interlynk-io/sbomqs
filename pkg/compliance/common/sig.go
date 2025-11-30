@@ -61,10 +61,10 @@ func RetrieveSignatureFromSBOM(ctx context.Context, sbomFile string) (string, st
 
 	var sbom SBOM
 
-	// nolint
+	//nolint
 	extracted_signature := "extracted_signature.bin"
 
-	// nolint
+	//nolint
 	extracted_publick_key := "extracted_public_key.pem"
 
 	if err := json.Unmarshal(data, &sbom); err != nil {
