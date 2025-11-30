@@ -16,14 +16,18 @@ package sbom
 
 //counterfeiter:generate . GetVulnerabilities
 
+// GetVulnerabilities defines the interface for accessing vulnerability information in SBOMs
 type GetVulnerabilities interface {
+	// GetID returns the unique identifier of the vulnerability (e.g., CVE ID)
 	GetID() string
 }
 
+// Vulnerability represents a concrete implementation of vulnerability information
 type Vulnerability struct {
 	ID string
 }
 
+// GetID returns the unique identifier of the vulnerability (e.g., CVE ID)
 func (v Vulnerability) GetID() string {
 	return v.ID
 }

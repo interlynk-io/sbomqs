@@ -30,25 +30,37 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+// SpecFormat represents the SBOM specification format type (SPDX, CycloneDX, etc.)
 type SpecFormat string
 
 const (
+	// SBOMSpecSPDX represents the SPDX SBOM specification format
 	SBOMSpecSPDX    SpecFormat = "spdx"
+	// SBOMSpecCDX represents the CycloneDX SBOM specification format
 	SBOMSpecCDX     SpecFormat = "cyclonedx"
+	// SBOMSpecUnknown represents an unknown or unsupported SBOM specification format
 	SBOMSpecUnknown SpecFormat = "unknown"
 )
 
 type (
+	// FileFormat represents the file encoding format of an SBOM (JSON, XML, YAML, etc.)
 	FileFormat    string
+	// FormatVersion represents the version string of an SBOM specification
 	FormatVersion string
 )
 
 const (
+	// FileFormatJSON represents JSON file format
 	FileFormatJSON     FileFormat = "json"
+	// FileFormatRDF represents RDF file format
 	FileFormatRDF      FileFormat = "rdf"
+	// FileFormatYAML represents YAML file format
 	FileFormatYAML     FileFormat = "yaml"
+	// FileFormatTagValue represents SPDX tag-value file format
 	FileFormatTagValue FileFormat = "tag-value"
+	// FileFormatXML represents XML file format
 	FileFormatXML      FileFormat = "xml"
+	// FileFormatUnknown represents an unknown or unsupported file format
 	FileFormatUnknown  FileFormat = "unknown"
 )
 
@@ -62,10 +74,12 @@ type cdxbasic struct {
 	BOMFormat string `json:"bomFormat" xml:"-"`
 }
 
+// SupportedSBOMSpecs returns a list of all supported SBOM specification formats
 func SupportedSBOMSpecs() []string {
 	return []string{string(SBOMSpecSPDX), string(SBOMSpecCDX)}
 }
 
+// SupportedSBOMSpecVersions returns a list of supported versions for the given SBOM specification format
 func SupportedSBOMSpecVersions(f string) []string {
 	switch strings.ToLower(f) {
 	case string(SBOMSpecCDX):
@@ -77,6 +91,7 @@ func SupportedSBOMSpecVersions(f string) []string {
 	}
 }
 
+// SupportedSBOMFileFormats returns a list of supported file formats for the given SBOM specification
 func SupportedSBOMFileFormats(f string) []string {
 	switch strings.ToLower(f) {
 	case string(SBOMSpecCDX):
@@ -88,6 +103,7 @@ func SupportedSBOMFileFormats(f string) []string {
 	}
 }
 
+// SupportedPrimaryPurpose returns a list of supported primary purpose values for the given SBOM specification
 func SupportedPrimaryPurpose(f string) []string {
 	switch strings.ToLower(f) {
 	case "cyclonedx":
@@ -167,6 +183,7 @@ func detectSbomFormat(f io.ReadSeeker) (SpecFormat, FileFormat, FormatVersion, e
 	return SBOMSpecUnknown, FileFormatUnknown, "", nil
 }
 
+// NewSBOMDocument creates a new SBOM document from the provided reader, automatically detecting the format and specification
 func NewSBOMDocument(ctx context.Context, f io.ReadSeeker, sig Signature) (Document, error) {
 	log := logger.FromContext(ctx)
 

@@ -16,26 +16,34 @@ package sbom
 
 //counterfeiter:generate . GetContact
 
+// GetContact defines the interface for accessing contact information in SBOMs
 type GetContact interface {
+	// GetName returns the name of the contact
 	GetName() string
+	// GetEmail returns the email address of the contact
 	GetEmail() string
+	// GetPhone returns the phone number of the contact
 	GetPhone() string
 }
 
+// Contact represents a concrete implementation of contact information
 type Contact struct {
 	Name  string
 	Email string
 	Phone string
 }
 
+// GetName returns the name of the contact
 func (c Contact) GetName() string {
 	return c.Name
 }
 
+// GetEmail returns the email address of the contact
 func (c Contact) GetEmail() string {
 	return c.Email
 }
 
+// GetPhone returns the phone number of the contact
 func (c Contact) GetPhone() string {
 	return c.Phone
 }

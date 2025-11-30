@@ -15,20 +15,26 @@
 package sbom
 
 //counterfeiter:generate . GetRelation
+// GetRelation defines the interface for accessing SBOM relationship information between components
 type GetRelation interface {
+	// GetFrom returns the source component identifier in the relationship
 	GetFrom() string
+	// GetTo returns the target component identifier in the relationship
 	GetTo() string
 }
 
+// Relation represents a concrete implementation of component relationships in an SBOM
 type Relation struct {
 	From string
 	To   string
 }
 
+// GetFrom returns the source component identifier in the relationship
 func (r Relation) GetFrom() string {
 	return r.From
 }
 
+// GetTo returns the target component identifier in the relationship
 func (r Relation) GetTo() string {
 	return r.To
 }

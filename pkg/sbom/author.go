@@ -15,13 +15,19 @@
 package sbom
 
 //counterfeiter:generate . GetAuthor
+// GetAuthor defines the interface for accessing author information in SBOMs
 type GetAuthor interface {
+	// GetName returns the name of the author
 	GetName() string
+	// GetType returns the type of author (person or organization)
 	GetType() string
+	// GetEmail returns the email address of the author
 	GetEmail() string
+	// GetPhone returns the phone number of the author
 	GetPhone() string
 }
 
+// Author represents a concrete implementation of author information
 type Author struct {
 	Name       string
 	Email      string
@@ -29,18 +35,22 @@ type Author struct {
 	Phone      string
 }
 
+// GetName returns the name of the author
 func (a Author) GetName() string {
 	return a.Name
 }
 
+// GetType returns the type of author (person or organization)
 func (a Author) GetType() string {
 	return a.AuthorType
 }
 
+// GetEmail returns the email address of the author
 func (a Author) GetEmail() string {
 	return a.Email
 }
 
+// GetPhone returns the phone number of the author
 func (a Author) GetPhone() string {
 	return a.Phone
 }
