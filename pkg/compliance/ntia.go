@@ -33,9 +33,13 @@ var (
 	validFormats = []string{pkgcommon.FormatJSON, pkgcommon.FormatXML, pkgcommon.FormatYAML, pkgcommon.FormatYML, pkgcommon.FormatTagValue}
 )
 
+// Scoring constants for NTIA compliance evaluation.
+// These values represent the maximum and minimum scores for compliance checks.
 //nolint
 const (
+	// SCORE_FULL represents the maximum score (10.0) when a compliance requirement is fully met.
 	SCORE_FULL = 10.0
+	// SCORE_ZERO represents the minimum score (0.0) when a compliance requirement is not met.
 	SCORE_ZERO = 0.0
 )
 
@@ -224,6 +228,8 @@ var (
 	compIDWithName               = make(map[string]string)
 	componentList                = make(map[string]bool)
 	primaryDependencies          = make(map[string]bool)
+	// GetAllPrimaryDepenciesByName holds the names of all primary component dependencies
+	// found in the SBOM document, used for NTIA compliance reporting.
 	GetAllPrimaryDepenciesByName = []string{}
 )
 

@@ -25,12 +25,24 @@ import (
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
 )
 
+// Report type constants define the supported compliance frameworks.
+// These constants are used to specify which compliance standard to evaluate
+// SBOM documents against.
 //nolint:revive,stylecheck
 const (
+	// BSI_REPORT represents the German Federal Office for Information Security (BSI)
+	// SBOM compliance framework.
 	BSI_REPORT    = "BSI"
+	// BSI_V2_REPORT represents version 2 of the BSI compliance framework.
 	BSI_V2_REPORT = "BSI-V2"
+	// NTIA_REPORT represents the NTIA (National Telecommunications and Information
+	// Administration) minimum elements compliance framework.
 	NTIA_REPORT   = "NTIA"
+	// OCT_TELCO represents the OpenChain Telco SBOM compliance framework
+	// specifically for telecommunications industry requirements.
 	OCT_TELCO     = "OCT"
+	// FSCT_V3 represents version 3 of the FSCT (FinTech Supply Chain Transparency)
+	// compliance framework.
 	FSCT_V3       = "FSCT"
 )
 
@@ -44,6 +56,20 @@ func validReportTypes() map[string]bool {
 	}
 }
 
+// ComplianceResult evaluates an SBOM document against the specified compliance framework
+// and generates a compliance report in the requested format.
+//
+// Parameters:
+//   - ctx: Context for logging and cancellation
+//   - doc: The SBOM document to evaluate for compliance
+//   - reportType: The compliance framework to evaluate against (use constants: BSI_REPORT, NTIA_REPORT, etc.)
+//   - fileName: The name of the SBOM file being evaluated (used for reporting)
+//   - outFormat: Output format for the report ("json", "basic", "detailed")
+//   - coloredOutput: Whether to use colored output in detailed reports
+//
+// Returns an error if the inputs are invalid or evaluation fails.
+// Supported report types: BSI, BSI-V2, NTIA, OCT (OpenChain Telco), and FSCT.
+// Note: OCT compliance only supports SPDX format SBOM documents.
 //nolint:revive,stylecheck
 func ComplianceResult(ctx context.Context, doc sbom.Document, reportType, fileName, outFormat string, coloredOutput bool) error {
 	log := logger.FromContext(ctx)

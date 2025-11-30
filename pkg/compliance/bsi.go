@@ -33,8 +33,13 @@ var (
 	validBsiCdxVersions  = []string{"1.4", "1.5", "1.6"}
 )
 
+// BSI compliance check identifiers.
+// These constants represent different elements and attributes that are evaluated
+// for BSI (German Federal Office for Information Security) SBOM compliance.
+// Each constant corresponds to a specific requirement in the BSI guidelines.
 //nolint:revive,stylecheck
 const (
+	// SBOM document specification identifiers
 	SBOM_SPEC = iota
 	SBOM_SPDXID
 	SBOM_NAME
@@ -51,26 +56,34 @@ const (
 	SBOM_COMPONENTS
 	SBOM_PACKAGES
 	SBOM_URI
+	
+	// Component-level compliance identifiers
 	COMP_CREATOR
-	PACK_SUPPLIER
 	COMP_NAME
 	COMP_VERSION
-	PACK_HASH
 	COMP_HASH
 	COMP_SOURCE_CODE_URL
+	COMP_DOWNLOAD_URL
+	COMP_OTHER_UNIQ_IDS
+	COMP_SOURCE_HASH
+	COMP_LICENSE
+	COMP_DEPTH
+	
+	// Package-level compliance identifiers (SPDX specific)
+	PACK_SUPPLIER
+	PACK_HASH
 	PACK_FILE_ANALYZED
 	PACK_SPDXID
 	PACK_NAME
 	PACK_VERSION
 	PACK_DOWNLOAD_URL
-	COMP_DOWNLOAD_URL
-	COMP_OTHER_UNIQ_IDS
-	COMP_SOURCE_HASH
-	COMP_LICENSE
 	PACK_LICENSE_CON
 	PACK_LICENSE_DEC
 	PACK_COPYRIGHT
-	COMP_DEPTH
+	PACK_INFO
+	PACK_EXT_REF
+	
+	// Format and metadata identifiers
 	SBOM_MACHINE_FORMAT
 	SBOM_DEPENDENCY
 	SBOM_HUMAN_FORMAT
@@ -78,14 +91,16 @@ const (
 	SBOM_DELIVERY_TIME
 	SBOM_DELIVERY_METHOD
 	SBOM_SCOPE
-	PACK_INFO
 	SBOM_TYPE
-	PACK_EXT_REF
 	SBOM_VULNERABILITIES
 	SBOM_BOM_LINKS
+	
+	// License-related identifiers
 	COMP_ASSOCIATED_LICENSE
 	COMP_CONCLUDED_LICENSE
 	COMP_DECLARED_LICENSE
+	
+	// Security identifiers
 	SBOM_SIGNATURE
 )
 
