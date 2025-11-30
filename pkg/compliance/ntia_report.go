@@ -175,7 +175,7 @@ func ntiaDetailedReport(db *db.DB, fileName string, colorOutput bool) {
 	for _, section := range sections {
 		sectionID := section.ID
 		if !section.Required {
-			sectionID = sectionID + "*"
+			sectionID += "*"
 		}
 
 		if colorOutput {

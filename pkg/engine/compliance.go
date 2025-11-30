@@ -32,7 +32,7 @@ func ComplianceRun(ctx context.Context, ep *Params) error {
 	log := logger.FromContext(ctx)
 	log.Debug("engine.ComplianceRun()")
 
-	if len(ep.Path) <= 0 {
+	if len(ep.Path) == 0 {
 		log.Fatal("path is required")
 	}
 

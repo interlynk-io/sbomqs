@@ -100,8 +100,8 @@ var scoreCmd = &cobra.Command{
 `,
 
 	Args: func(_ *cobra.Command, args []string) error {
-		if len(args) <= 0 {
-			if len(inFile) <= 0 && len(inDirPath) <= 0 {
+		if len(args) == 0 {
+			if len(inFile) == 0 && len(inDirPath) == 0 {
 				return fmt.Errorf("provide a path to an sbom file or directory of sbom files")
 			}
 		}
@@ -218,7 +218,7 @@ func toUserCmd(cmd *cobra.Command, args []string) *userCmd {
 	uCmd := &userCmd{}
 
 	// input control
-	if len(args) <= 0 {
+	if len(args) == 0 {
 		if len(inFile) > 0 {
 			uCmd.path = append(uCmd.path, inFile)
 		}

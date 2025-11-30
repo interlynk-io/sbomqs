@@ -186,7 +186,7 @@ func init() {
 
 func validateparsedListCmd(uCmd *userListCmd) error {
 	// Check path
-	if len(uCmd.path) <= 0 {
+	if len(uCmd.path) == 0 {
 		return errors.New("path is required")
 	}
 

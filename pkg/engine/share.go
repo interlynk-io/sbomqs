@@ -31,7 +31,7 @@ func ShareRun(ctx context.Context, ep *Params) error {
 	log := logger.FromContext(ctx)
 	log.Debug("engine.ShareRun()")
 
-	if len(ep.Path) <= 0 {
+	if len(ep.Path) == 0 {
 		log.Fatal("path is required")
 	}
 

@@ -80,7 +80,7 @@ func Run(ctx context.Context, ep *Params) error {
 	log.Debug("engine.Run()")
 	log.Debug(ep)
 
-	if len(ep.Path) <= 0 {
+	if len(ep.Path) == 0 {
 		log.Fatal("path is required")
 	}
 
@@ -367,7 +367,7 @@ func processFile(ctx context.Context, ep *Params, path string, fs billy.Filesyst
 	if len(ep.Categories) > 0 {
 		if len(ep.Features) == 0 {
 			for _, category := range ep.Categories {
-				if len(category) <= 0 {
+				if len(category) == 0 {
 					continue
 				}
 				filter := scorer.Filter{
@@ -378,11 +378,11 @@ func processFile(ctx context.Context, ep *Params, path string, fs billy.Filesyst
 			}
 		} else if len(ep.Features) > 0 {
 			for _, cat := range ep.Categories {
-				if len(cat) <= 0 {
+				if len(cat) == 0 {
 					continue
 				}
 				for _, feat := range ep.Features {
-					if len(feat) <= 0 {
+					if len(feat) == 0 {
 						continue
 					}
 					filter := scorer.Filter{
@@ -396,7 +396,7 @@ func processFile(ctx context.Context, ep *Params, path string, fs billy.Filesyst
 		}
 	} else if len(ep.Features) > 0 {
 		for _, feature := range ep.Features {
-			if len(feature) <= 0 {
+			if len(feature) == 0 {
 				continue
 			}
 			filter := scorer.Filter{
@@ -413,7 +413,7 @@ func processFile(ctx context.Context, ep *Params, path string, fs billy.Filesyst
 			log.Fatalf("failed to read config file %s : %s", ep.ConfigPath, er)
 		}
 
-		if len(filters) <= 0 {
+		if len(filters) == 0 {
 			log.Fatalf("no enabled filters found in config file %s", ep.ConfigPath)
 		}
 

@@ -382,7 +382,7 @@ func ntiaComponentOtherUniqIDs(doc sbom.Document, component sbom.GetComponent) *
 		if containPurlElement != 0 {
 			score = (float64(containPurlElement) / float64(totalElements)) * SCORE_FULL
 			x := fmt.Sprintf(":(%d/%d)", containPurlElement, totalElements)
-			result = result + x
+			result += x
 		}
 		return db.NewRecordStmt(COMP_OTHER_UNIQ_IDS, common.UniqueElementID(component), result, score, "")
 	} else if spec == "cyclonedx" {

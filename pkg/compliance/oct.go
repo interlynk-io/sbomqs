@@ -400,7 +400,7 @@ func octPackageExternalRefs(component sbom.GetComponent) *db.Record {
 	if containPurlElement != 0 {
 		score = (float64(containPurlElement) / float64(totalElements)) * 10.0
 		x := fmt.Sprintf(":(%d/%d)", containPurlElement, totalElements)
-		result = result + x
+		result += x
 	}
 	return db.NewRecordStmt(PACK_EXT_REF, common.UniqueElementID(component), result, score, "")
 }
