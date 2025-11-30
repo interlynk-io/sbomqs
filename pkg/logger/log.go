@@ -27,6 +27,8 @@ var logger *zap.SugaredLogger
 
 type logKey struct{}
 
+// InitProdLogger initializes a production-ready logger with JSON formatting
+// and appropriate log levels for production environments.
 func InitProdLogger() {
 	l, err := zap.NewProduction()
 	if err != nil {
@@ -45,6 +47,8 @@ func InitProdLogger() {
 	logger = l.Sugar()
 }
 
+// InitDebugLogger initializes a development logger with console formatting
+// and debug-level logging for development and testing environments.
 func InitDebugLogger() {
 	l, err := zap.NewDevelopment()
 	if err != nil {
@@ -63,6 +67,8 @@ func InitDebugLogger() {
 	logger = l.Sugar()
 }
 
+// WithLogger returns a new context with the logger attached.
+// This enables context-aware logging throughout the application.
 func WithLogger(ctx context.Context) context.Context {
 	return context.WithValue(ctx, logKey{}, logger)
 }
@@ -71,6 +77,8 @@ func WithLoggerAndCancel(ctx context.Context) (context.Context, context.CancelFu
 	return context.WithCancel(context.WithValue(ctx, logKey{}, logger))
 }
 
+// FromContext retrieves a logger from the provided context.
+// Returns a no-op logger if no logger is found in the context.
 func FromContext(ctx context.Context) *zap.SugaredLogger {
 	if logger, ok := ctx.Value(logKey{}).(*zap.SugaredLogger); ok {
 		return logger

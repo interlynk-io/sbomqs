@@ -18,14 +18,20 @@ package swhid
 
 import "regexp"
 
+// SWHID represents a Software Heritage Identifier that provides persistent
+// identifiers for software artifacts stored in the Software Heritage archive.
 type SWHID string
 
 const swhidRegex = `^swh:1:cnt:[a-fA-F0-9]{40}$`
 
+// Valid checks whether the SWHID string conforms to the Software Heritage
+// identifier specification format (swh:1:cnt:<sha1_hash>).
 func (swhid SWHID) Valid() bool {
 	return regexp.MustCompile(swhidRegex).MatchString(swhid.String())
 }
 
+// NewSWHID creates a new SWHID instance from the provided string.
+// It does not perform validation; use Valid() method to check format compliance.
 func NewSWHID(swhid string) SWHID {
 	return SWHID(swhid)
 }
