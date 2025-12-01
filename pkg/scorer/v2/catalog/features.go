@@ -16,7 +16,10 @@ package catalog
 
 import "github.com/interlynk-io/sbomqs/v2/pkg/sbom"
 
-// ComprFeatSpec represents feature of comprehenssive categories.
+// ComprFeatSpec represents a feature specification for comprehensive scoring.
+// Features define specific SBOM characteristics to be evaluated, such as
+// "components have names" or "dependencies are defined". Each feature has
+// a weight and an evaluation function.
 type ComprFeatSpec struct {
 	Name        string
 	Description string
@@ -26,10 +29,14 @@ type ComprFeatSpec struct {
 	Evaluate    ComprFeatEval
 }
 
-// ComprFeatEval function represents evaluation of corresponding feature.
+// ComprFeatEval represents an evaluation function for a comprehensive feature.
+// It takes an SBOM document and returns a score with descriptive information
+// about the evaluation outcome.
 type ComprFeatEval func(doc sbom.Document) ComprFeatScore
 
-// ComprFeatScore carries score of a comprehenssive feature
+// ComprFeatScore represents the evaluation result for a comprehensive feature.
+// It contains the numeric score, a human-readable description of the outcome,
+// and whether the feature should be ignored in scoring calculations.
 type ComprFeatScore struct {
 	Score  float64
 	Desc   string // e.g. "235/247 have versions"

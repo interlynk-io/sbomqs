@@ -27,6 +27,18 @@ import (
 	"github.com/interlynk-io/sbomqs/v2/pkg/utils"
 )
 
+// ProcessURLPath downloads an SBOM from a URL and returns a temporary file handle.
+// It handles both regular URLs and Git repository URLs, downloading the SBOM
+// content and storing it in a temporary file for processing. The caller is
+// responsible for closing the file and cleaning up the temporary file.
+//
+// Parameters:
+//   - ctx: Context for cancellation and logging
+//   - cfg: Configuration (currently unused but maintained for API consistency)
+//   - url: URL pointing to an SBOM file or Git repository
+//
+// Returns a file handle to the downloaded SBOM content, or an error if
+// the download or file creation fails.
 func ProcessURLPath(ctx context.Context, cfg config.Config, url string) (*os.File, error) {
 	log := logger.FromContext(ctx)
 	log.Debugf("Processing URL: %s", url)
@@ -67,8 +79,17 @@ func ProcessURLPath(ctx context.Context, cfg config.Config, url string) (*os.Fil
 	return tmpFile, nil
 }
 
-// GetFileHandle opens a file in read-only mode and returns the handle.
-// The caller is responsible for calling Close() on the returned file.
+// GetFileHandle opens a file in read-only mode and returns the file handle.
+// This function provides a simple wrapper around os.Open with logging support.
+// The caller is responsible for calling Close() on the returned file to
+// prevent resource leaks.
+//
+// Parameters:
+//   - ctx: Context for cancellation and logging
+//   - filePath: Path to the file to be opened
+//
+// Returns a file handle opened for reading, or an error if the file
+// cannot be opened.
 func GetFileHandle(ctx context.Context, filePath string) (*os.File, error) {
 	log := logger.FromContext(ctx)
 
@@ -84,7 +105,18 @@ func GetFileHandle(ctx context.Context, filePath string) (*os.File, error) {
 	return file, nil
 }
 
-// ExtractSignature extracts signature provided externally via config or even from SBOM itself incase of cyclonedx
+// ExtractSignature extracts cryptographic signature information for SBOM verification.
+// It retrieves signatures either from external configuration or from the SBOM
+// itself (in the case of CycloneDX format). If no signature configuration is
+// provided, it returns an empty signature without error.
+//
+// Parameters:
+//   - ctx: Context for cancellation and logging
+//   - cfg: Configuration containing signature bundle information
+//   - path: Path to the SBOM file for signature extraction
+//
+// Returns a Signature containing validation data, or an empty signature
+// if no signature configuration is available.
 func ExtractSignature(ctx context.Context, cfg config.Config, path string) (sbom.Signature, error) {
 	log := logger.FromContext(ctx)
 
@@ -106,7 +138,14 @@ func ExtractSignature(ctx context.Context, cfg config.Config, path string) (sbom
 	}, nil
 }
 
-// helper for logging
+// CategoryNames extracts the display names from a slice of comprehensive category specifications.
+// This utility function is primarily used for logging and debugging purposes to provide
+// human-readable category names.
+//
+// Parameters:
+//   - cats: Slice of comprehensive category specifications
+//
+// Returns a slice of category names in the same order as the input specifications.
 func CategoryNames(cats []catalog.ComprCatSpec) []string {
 	out := make([]string, 0, len(cats))
 	for _, c := range cats {

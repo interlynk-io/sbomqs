@@ -31,8 +31,18 @@ import (
 	"github.com/interlynk-io/sbomqs/v2/pkg/utils"
 )
 
-// ScoreSBOM scores a SBOM for profile or comprehenssive scoring.
-// returns successful scoring results
+// ScoreSBOM evaluates one or more SBOMs according to the specified configuration.
+// It accepts file paths or URLs and returns scoring results for profile-based 
+// or comprehensive analysis. The function validates input paths, initializes
+// the scoring catalog, and processes each SBOM independently.
+//
+// Parameters:
+//   - ctx: Context for cancellation and logging
+//   - cfg: Configuration specifying scoring parameters (profiles, categories, features)
+//   - paths: File paths or URLs to SBOM files to be evaluated
+//
+// Returns a slice of Result objects containing scoring outcomes, or an error
+// if no valid SBOMs could be processed.
 func ScoreSBOM(ctx context.Context, cfg config.Config, paths []string) ([]api.Result, error) {
 	log := logger.FromContext(ctx)
 	log.Debugf("Running ScoreSBOM: to score a SBOM")
@@ -133,8 +143,18 @@ func openAndParse(ctx context.Context, cfg config.Config, path string) (*os.File
 	return f, doc, nil
 }
 
-// SBOMEvaluation decides between profile-based and comprehensive scoring,
-// delegates to a focused helper, and returns a single SBOM scoring result.
+// SBOMEvaluation performs the core evaluation logic for a single SBOM document.
+// It determines the appropriate scoring approach based on the catalog configuration:
+// profile-based scoring, comprehensive scoring, or both. The function delegates
+// to specialized evaluation methods and returns a unified result structure.
+//
+// Parameters:
+//   - ctx: Context for cancellation and logging
+//   - catal: Initialized catalog containing scoring specifications
+//   - cfg: Configuration parameters (not currently used in evaluation logic)
+//   - doc: Parsed SBOM document to be evaluated
+//
+// Returns a Result containing the evaluation outcome and scores.
 func SBOMEvaluation(ctx context.Context, catal *catalog.Catalog, cfg config.Config, doc sbom.Document) (api.Result, error) {
 	log := logger.FromContext(ctx)
 	log.Debugf("Starting SBOM Evaluation")
