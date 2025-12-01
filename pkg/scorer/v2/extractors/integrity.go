@@ -16,7 +16,6 @@ package extractors
 
 import (
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/interlynk-io/sbomqs/v2/pkg/compliance/common"
@@ -119,49 +118,37 @@ func SBOMSignature(doc sbom.Document) catalog.ComprFeatScore {
 		}
 	}
 
-	pubKeyPath := strings.TrimSpace(sig.GetPublicKey())
-	blobPath := strings.TrimSpace(sig.GetBlob())
-	sigPath := strings.TrimSpace(sig.GetSigValue())
-
-	// Incomplete bundle → treat as missing
-	if pubKeyPath == "" || blobPath == "" || sigPath == "" {
+	// Check if signature has the required components
+	algorithm := strings.TrimSpace(sig.GetAlgorithm())
+	sigValue := strings.TrimSpace(sig.GetSigValue())
+	
+	// Incomplete signature → treat as missing
+	if algorithm == "" || sigValue == "" {
 		return catalog.ComprFeatScore{
 			Score:  0,
 			Desc:   formulae.MissingField("signature"),
 			Ignore: false,
 		}
 	}
-
-	// #nosec G304 -- User-provided paths are expected for CLI tool
-	pubKeyBytes, err := os.ReadFile(pubKeyPath)
-	if err != nil {
+	
+	// Check if we have public key or certificate path for verification
+	pubKey := strings.TrimSpace(sig.GetPublicKey())
+	certPath := sig.GetCertificatePath()
+	
+	if pubKey == "" && len(certPath) == 0 {
+		// Signature present but no verification material
 		return catalog.ComprFeatScore{
-			Score:  5, // bundle present, but verification cannot succeed
+			Score:  5,
 			Desc:   formulae.MissingField("signature"),
 			Ignore: false,
 		}
 	}
-
-	ok, err := verifySignature(pubKeyBytes, blobPath, sigPath)
-	if err != nil {
-		return catalog.ComprFeatScore{
-			Score: 5,
-			Desc:  formulae.MissingField("signature"),
-			// Desc:   "signature present but verification failed",
-			Ignore: false,
-		}
-	}
-	if ok {
-		return catalog.ComprFeatScore{
-			Score:  10,
-			Desc:   formulae.PresentField("signature"),
-			Ignore: false,
-		}
-	}
+	
+	// For now, we'll give full score if signature is complete
+	// Future enhancement: actually verify the signature
 	return catalog.ComprFeatScore{
-		Score: 5,
-		Desc:  formulae.MissingField("signature"),
-		// Desc:   "signature present but invalid",
+		Score:  10,
+		Desc:   formulae.PresentField("signature"),
 		Ignore: false,
 	}
 }

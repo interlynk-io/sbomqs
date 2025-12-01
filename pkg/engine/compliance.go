@@ -91,7 +91,7 @@ func getSbomDocument(ctx context.Context, ep *Params) (*sbom.Document, error) {
 
 	path := ep.Path[0]
 
-	blob, signature, publicKey, err := common.GetSignatureBundle(ctx, path, ep.Signature, ep.PublicKey)
+	_, signature, publicKey, err := common.GetSignatureBundle(ctx, path, ep.Signature, ep.PublicKey)
 	if err != nil {
 		log.Debugf("common.GetSignatureBundle failed for file :%s\n", path)
 		fmt.Printf("failed to get signature bundle for %s\n", path)
@@ -101,7 +101,6 @@ func getSbomDocument(ctx context.Context, ep *Params) (*sbom.Document, error) {
 	sig := sbom.Signature{
 		SigValue:  signature,
 		PublicKey: publicKey,
-		Blob:      blob,
 	}
 	var doc sbom.Document
 

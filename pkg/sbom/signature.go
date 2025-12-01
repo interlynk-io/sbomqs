@@ -18,19 +18,38 @@ package sbom
 
 // GetSignature defines the interface for accessing cryptographic signature information in SBOMs
 type GetSignature interface {
+	// GetAlgorithm returns the signature algorithm (e.g., RS256, ES256)
+	GetAlgorithm() string
+	// GetKeyID returns the key identifier
+	GetKeyID() string
 	// GetSigValue returns the cryptographic signature value
 	GetSigValue() string
 	// GetPublicKey returns the public key used for signature verification
 	GetPublicKey() string
-	// GetBlob returns the signature blob or additional signature data
-	GetBlob() string
+	// GetCertificatePath returns the certificate chain path
+	GetCertificatePath() []string
+	// GetExcludes returns the list of properties excluded from signing
+	GetExcludes() []string
 }
 
 // Signature represents a concrete implementation of cryptographic signature information
 type Signature struct {
-	SigValue  string
-	PublicKey string
-	Blob      string
+	Algorithm       string
+	KeyID           string
+	SigValue        string
+	PublicKey       string
+	CertificatePath []string
+	Excludes        []string
+}
+
+// GetAlgorithm returns the signature algorithm
+func (s *Signature) GetAlgorithm() string {
+	return s.Algorithm
+}
+
+// GetKeyID returns the key identifier
+func (s *Signature) GetKeyID() string {
+	return s.KeyID
 }
 
 // GetSigValue returns the cryptographic signature value
@@ -43,7 +62,12 @@ func (s *Signature) GetPublicKey() string {
 	return s.PublicKey
 }
 
-// GetBlob returns the signature blob or additional signature data
-func (s *Signature) GetBlob() string {
-	return s.Blob
+// GetCertificatePath returns the certificate chain path
+func (s *Signature) GetCertificatePath() []string {
+	return s.CertificatePath
+}
+
+// GetExcludes returns the list of properties excluded from signing
+func (s *Signature) GetExcludes() []string {
+	return s.Excludes
 }

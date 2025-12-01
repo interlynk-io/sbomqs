@@ -8,14 +8,44 @@ import (
 )
 
 type FakeGetSignature struct {
-	GetBlobStub        func() string
-	getBlobMutex       sync.RWMutex
-	getBlobArgsForCall []struct {
+	GetAlgorithmStub        func() string
+	getAlgorithmMutex       sync.RWMutex
+	getAlgorithmArgsForCall []struct {
 	}
-	getBlobReturns struct {
+	getAlgorithmReturns struct {
 		result1 string
 	}
-	getBlobReturnsOnCall map[int]struct {
+	getAlgorithmReturnsOnCall map[int]struct {
+		result1 string
+	}
+	GetCertificatePathStub        func() []string
+	getCertificatePathMutex       sync.RWMutex
+	getCertificatePathArgsForCall []struct {
+	}
+	getCertificatePathReturns struct {
+		result1 []string
+	}
+	getCertificatePathReturnsOnCall map[int]struct {
+		result1 []string
+	}
+	GetExcludesStub        func() []string
+	getExcludesMutex       sync.RWMutex
+	getExcludesArgsForCall []struct {
+	}
+	getExcludesReturns struct {
+		result1 []string
+	}
+	getExcludesReturnsOnCall map[int]struct {
+		result1 []string
+	}
+	GetKeyIDStub        func() string
+	getKeyIDMutex       sync.RWMutex
+	getKeyIDArgsForCall []struct {
+	}
+	getKeyIDReturns struct {
+		result1 string
+	}
+	getKeyIDReturnsOnCall map[int]struct {
 		result1 string
 	}
 	GetPublicKeyStub        func() string
@@ -42,15 +72,15 @@ type FakeGetSignature struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeGetSignature) GetBlob() string {
-	fake.getBlobMutex.Lock()
-	ret, specificReturn := fake.getBlobReturnsOnCall[len(fake.getBlobArgsForCall)]
-	fake.getBlobArgsForCall = append(fake.getBlobArgsForCall, struct {
+func (fake *FakeGetSignature) GetAlgorithm() string {
+	fake.getAlgorithmMutex.Lock()
+	ret, specificReturn := fake.getAlgorithmReturnsOnCall[len(fake.getAlgorithmArgsForCall)]
+	fake.getAlgorithmArgsForCall = append(fake.getAlgorithmArgsForCall, struct {
 	}{})
-	stub := fake.GetBlobStub
-	fakeReturns := fake.getBlobReturns
-	fake.recordInvocation("GetBlob", []interface{}{})
-	fake.getBlobMutex.Unlock()
+	stub := fake.GetAlgorithmStub
+	fakeReturns := fake.getAlgorithmReturns
+	fake.recordInvocation("GetAlgorithm", []interface{}{})
+	fake.getAlgorithmMutex.Unlock()
 	if stub != nil {
 		return stub()
 	}
@@ -60,37 +90,196 @@ func (fake *FakeGetSignature) GetBlob() string {
 	return fakeReturns.result1
 }
 
-func (fake *FakeGetSignature) GetBlobCallCount() int {
-	fake.getBlobMutex.RLock()
-	defer fake.getBlobMutex.RUnlock()
-	return len(fake.getBlobArgsForCall)
+func (fake *FakeGetSignature) GetAlgorithmCallCount() int {
+	fake.getAlgorithmMutex.RLock()
+	defer fake.getAlgorithmMutex.RUnlock()
+	return len(fake.getAlgorithmArgsForCall)
 }
 
-func (fake *FakeGetSignature) GetBlobCalls(stub func() string) {
-	fake.getBlobMutex.Lock()
-	defer fake.getBlobMutex.Unlock()
-	fake.GetBlobStub = stub
+func (fake *FakeGetSignature) GetAlgorithmCalls(stub func() string) {
+	fake.getAlgorithmMutex.Lock()
+	defer fake.getAlgorithmMutex.Unlock()
+	fake.GetAlgorithmStub = stub
 }
 
-func (fake *FakeGetSignature) GetBlobReturns(result1 string) {
-	fake.getBlobMutex.Lock()
-	defer fake.getBlobMutex.Unlock()
-	fake.GetBlobStub = nil
-	fake.getBlobReturns = struct {
+func (fake *FakeGetSignature) GetAlgorithmReturns(result1 string) {
+	fake.getAlgorithmMutex.Lock()
+	defer fake.getAlgorithmMutex.Unlock()
+	fake.GetAlgorithmStub = nil
+	fake.getAlgorithmReturns = struct {
 		result1 string
 	}{result1}
 }
 
-func (fake *FakeGetSignature) GetBlobReturnsOnCall(i int, result1 string) {
-	fake.getBlobMutex.Lock()
-	defer fake.getBlobMutex.Unlock()
-	fake.GetBlobStub = nil
-	if fake.getBlobReturnsOnCall == nil {
-		fake.getBlobReturnsOnCall = make(map[int]struct {
+func (fake *FakeGetSignature) GetAlgorithmReturnsOnCall(i int, result1 string) {
+	fake.getAlgorithmMutex.Lock()
+	defer fake.getAlgorithmMutex.Unlock()
+	fake.GetAlgorithmStub = nil
+	if fake.getAlgorithmReturnsOnCall == nil {
+		fake.getAlgorithmReturnsOnCall = make(map[int]struct {
 			result1 string
 		})
 	}
-	fake.getBlobReturnsOnCall[i] = struct {
+	fake.getAlgorithmReturnsOnCall[i] = struct {
+		result1 string
+	}{result1}
+}
+
+func (fake *FakeGetSignature) GetCertificatePath() []string {
+	fake.getCertificatePathMutex.Lock()
+	ret, specificReturn := fake.getCertificatePathReturnsOnCall[len(fake.getCertificatePathArgsForCall)]
+	fake.getCertificatePathArgsForCall = append(fake.getCertificatePathArgsForCall, struct {
+	}{})
+	stub := fake.GetCertificatePathStub
+	fakeReturns := fake.getCertificatePathReturns
+	fake.recordInvocation("GetCertificatePath", []interface{}{})
+	fake.getCertificatePathMutex.Unlock()
+	if stub != nil {
+		return stub()
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeGetSignature) GetCertificatePathCallCount() int {
+	fake.getCertificatePathMutex.RLock()
+	defer fake.getCertificatePathMutex.RUnlock()
+	return len(fake.getCertificatePathArgsForCall)
+}
+
+func (fake *FakeGetSignature) GetCertificatePathCalls(stub func() []string) {
+	fake.getCertificatePathMutex.Lock()
+	defer fake.getCertificatePathMutex.Unlock()
+	fake.GetCertificatePathStub = stub
+}
+
+func (fake *FakeGetSignature) GetCertificatePathReturns(result1 []string) {
+	fake.getCertificatePathMutex.Lock()
+	defer fake.getCertificatePathMutex.Unlock()
+	fake.GetCertificatePathStub = nil
+	fake.getCertificatePathReturns = struct {
+		result1 []string
+	}{result1}
+}
+
+func (fake *FakeGetSignature) GetCertificatePathReturnsOnCall(i int, result1 []string) {
+	fake.getCertificatePathMutex.Lock()
+	defer fake.getCertificatePathMutex.Unlock()
+	fake.GetCertificatePathStub = nil
+	if fake.getCertificatePathReturnsOnCall == nil {
+		fake.getCertificatePathReturnsOnCall = make(map[int]struct {
+			result1 []string
+		})
+	}
+	fake.getCertificatePathReturnsOnCall[i] = struct {
+		result1 []string
+	}{result1}
+}
+
+func (fake *FakeGetSignature) GetExcludes() []string {
+	fake.getExcludesMutex.Lock()
+	ret, specificReturn := fake.getExcludesReturnsOnCall[len(fake.getExcludesArgsForCall)]
+	fake.getExcludesArgsForCall = append(fake.getExcludesArgsForCall, struct {
+	}{})
+	stub := fake.GetExcludesStub
+	fakeReturns := fake.getExcludesReturns
+	fake.recordInvocation("GetExcludes", []interface{}{})
+	fake.getExcludesMutex.Unlock()
+	if stub != nil {
+		return stub()
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeGetSignature) GetExcludesCallCount() int {
+	fake.getExcludesMutex.RLock()
+	defer fake.getExcludesMutex.RUnlock()
+	return len(fake.getExcludesArgsForCall)
+}
+
+func (fake *FakeGetSignature) GetExcludesCalls(stub func() []string) {
+	fake.getExcludesMutex.Lock()
+	defer fake.getExcludesMutex.Unlock()
+	fake.GetExcludesStub = stub
+}
+
+func (fake *FakeGetSignature) GetExcludesReturns(result1 []string) {
+	fake.getExcludesMutex.Lock()
+	defer fake.getExcludesMutex.Unlock()
+	fake.GetExcludesStub = nil
+	fake.getExcludesReturns = struct {
+		result1 []string
+	}{result1}
+}
+
+func (fake *FakeGetSignature) GetExcludesReturnsOnCall(i int, result1 []string) {
+	fake.getExcludesMutex.Lock()
+	defer fake.getExcludesMutex.Unlock()
+	fake.GetExcludesStub = nil
+	if fake.getExcludesReturnsOnCall == nil {
+		fake.getExcludesReturnsOnCall = make(map[int]struct {
+			result1 []string
+		})
+	}
+	fake.getExcludesReturnsOnCall[i] = struct {
+		result1 []string
+	}{result1}
+}
+
+func (fake *FakeGetSignature) GetKeyID() string {
+	fake.getKeyIDMutex.Lock()
+	ret, specificReturn := fake.getKeyIDReturnsOnCall[len(fake.getKeyIDArgsForCall)]
+	fake.getKeyIDArgsForCall = append(fake.getKeyIDArgsForCall, struct {
+	}{})
+	stub := fake.GetKeyIDStub
+	fakeReturns := fake.getKeyIDReturns
+	fake.recordInvocation("GetKeyID", []interface{}{})
+	fake.getKeyIDMutex.Unlock()
+	if stub != nil {
+		return stub()
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeGetSignature) GetKeyIDCallCount() int {
+	fake.getKeyIDMutex.RLock()
+	defer fake.getKeyIDMutex.RUnlock()
+	return len(fake.getKeyIDArgsForCall)
+}
+
+func (fake *FakeGetSignature) GetKeyIDCalls(stub func() string) {
+	fake.getKeyIDMutex.Lock()
+	defer fake.getKeyIDMutex.Unlock()
+	fake.GetKeyIDStub = stub
+}
+
+func (fake *FakeGetSignature) GetKeyIDReturns(result1 string) {
+	fake.getKeyIDMutex.Lock()
+	defer fake.getKeyIDMutex.Unlock()
+	fake.GetKeyIDStub = nil
+	fake.getKeyIDReturns = struct {
+		result1 string
+	}{result1}
+}
+
+func (fake *FakeGetSignature) GetKeyIDReturnsOnCall(i int, result1 string) {
+	fake.getKeyIDMutex.Lock()
+	defer fake.getKeyIDMutex.Unlock()
+	fake.GetKeyIDStub = nil
+	if fake.getKeyIDReturnsOnCall == nil {
+		fake.getKeyIDReturnsOnCall = make(map[int]struct {
+			result1 string
+		})
+	}
+	fake.getKeyIDReturnsOnCall[i] = struct {
 		result1 string
 	}{result1}
 }

@@ -126,7 +126,7 @@ func ExtractSignature(ctx context.Context, cfg config.Config, path string) (sbom
 		return sbom.Signature{}, nil
 	}
 
-	blob, signature, pubKey, err := common.GetSignatureBundle(ctx, path, sigValue, publicKey)
+	_, signature, pubKey, err := common.GetSignatureBundle(ctx, path, sigValue, publicKey)
 	if err != nil {
 		log.Debugf("failed to get signature bundle for file: %s: %v", path, err)
 		return sbom.Signature{}, err
@@ -135,7 +135,6 @@ func ExtractSignature(ctx context.Context, cfg config.Config, path string) (sbom
 	return sbom.Signature{
 		SigValue:  signature,
 		PublicKey: pubKey,
-		Blob:      blob,
 	}, nil
 }
 
