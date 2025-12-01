@@ -16,13 +16,19 @@ package sbom
 
 //counterfeiter:generate . GetManufacturer
 
+// GetManufacturer defines the interface for accessing manufacturer information in SBOMs
 type GetManufacturer interface {
+	// GetName returns the name of the manufacturer
 	GetName() string
+	// GetURL returns the website URL of the manufacturer
 	GetURL() string
+	// GetEmail returns the email address of the manufacturer
 	GetEmail() string
+	// GetContacts returns the contact information for the manufacturer
 	GetContacts() []Contact
 }
 
+// Manufacturer represents a concrete implementation of manufacturer information
 type Manufacturer struct {
 	Name     string
 	URL      string
@@ -30,18 +36,22 @@ type Manufacturer struct {
 	Contacts []Contact
 }
 
+// GetName returns the name of the manufacturer
 func (m Manufacturer) GetName() string {
 	return m.Name
 }
 
+// GetURL returns the website URL of the manufacturer
 func (m Manufacturer) GetURL() string {
 	return m.URL
 }
 
+// GetEmail returns the email address of the manufacturer
 func (m Manufacturer) GetEmail() string {
 	return m.Email
 }
 
+// GetContacts returns the contact information for the manufacturer
 func (m Manufacturer) GetContacts() []Contact {
 	return m.Contacts
 }

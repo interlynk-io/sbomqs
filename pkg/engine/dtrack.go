@@ -23,6 +23,7 @@ import (
 
 	dtrack "github.com/DependencyTrack/client-go"
 	"github.com/google/uuid"
+	"github.com/interlynk-io/sbomqs/v2/pkg/common"
 	"github.com/interlynk-io/sbomqs/v2/pkg/logger"
 	"github.com/interlynk-io/sbomqs/v2/pkg/reporter"
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
@@ -83,8 +84,16 @@ func DtrackScore(ctx context.Context, dtP *DtParams) error {
 				log.Fatal(err)
 			}
 
-			defer f.Close()
-			defer os.Remove(f.Name())
+			defer func() {
+				if err := f.Close(); err != nil {
+					log.Warnf("failed to close file: %v", err)
+				}
+			}()
+			defer func() {
+				if err := os.Remove(f.Name()); err != nil {
+					log.Warnf("failed to remove temporary file: %v", err)
+				}
+			}()
 
 			_, err = f.WriteString(bom)
 			if err != nil {
@@ -126,11 +135,11 @@ func DtrackScore(ctx context.Context, dtP *DtParams) error {
 
 				path := fmt.Sprintf("ID: %s, Name: %s, Version: %s", prj.UUID, prj.Name, prj.Version)
 
-				reportFormat := "detailed"
+				reportFormat := common.ReportDetailed
 				if dtP.Basic {
-					reportFormat = "basic"
+					reportFormat = common.ReportBasic
 				} else if dtP.JSON {
-					reportFormat = "json"
+					reportFormat = common.FormatJSON
 				}
 
 				nr := reporter.NewReport(ctx,

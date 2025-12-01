@@ -20,6 +20,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/interlynk-io/sbomqs/v2/pkg/common"
 	"github.com/interlynk-io/sbomqs/v2/pkg/logger"
 	"github.com/interlynk-io/sbomqs/v2/pkg/reporter"
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
@@ -31,7 +32,7 @@ func ShareRun(ctx context.Context, ep *Params) error {
 	log := logger.FromContext(ctx)
 	log.Debug("engine.ShareRun()")
 
-	if len(ep.Path) <= 0 {
+	if len(ep.Path) == 0 {
 		log.Fatal("path is required")
 	}
 
@@ -61,7 +62,7 @@ func ShareRun(ctx context.Context, ep *Params) error {
 		[]sbom.Document{doc},
 		[]scorer.Scores{scores},
 		[]string{ep.Path[0]},
-		reporter.WithFormat(strings.ToLower("basic")))
+		reporter.WithFormat(strings.ToLower(common.ReportBasic)))
 	nr.Report()
 	fmt.Printf("ShareLink: %s\n", url)
 

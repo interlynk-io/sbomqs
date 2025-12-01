@@ -53,6 +53,7 @@ func RetrieveSignatureFromSBOM(ctx context.Context, sbomFile string) (string, st
 	log.Debugf("common.RetrieveSignatureFromSBOM()")
 	var err error
 
+	// #nosec G304 -- User-provided paths are expected for CLI tool
 	data, err := os.ReadFile(sbomFile)
 	if err != nil {
 		log.Debug("error reading SBOM file: %w", err)
@@ -61,10 +62,10 @@ func RetrieveSignatureFromSBOM(ctx context.Context, sbomFile string) (string, st
 
 	var sbom SBOM
 
-	// nolint
+	//nolint
 	extracted_signature := "extracted_signature.bin"
 
-	// nolint
+	//nolint
 	extracted_publick_key := "extracted_public_key.pem"
 
 	if err := json.Unmarshal(data, &sbom); err != nil {
@@ -198,6 +199,7 @@ func detectSBOMFormatDirectlyFromSBOMFile(ctx context.Context, path string) (str
 	var content []byte
 	var err error
 
+	// #nosec G304 -- User-provided paths are expected for CLI tool
 	content, err = os.ReadFile(path)
 	if err != nil {
 		return "", fmt.Errorf("failed to read file %s: %w", path, err)

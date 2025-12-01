@@ -26,6 +26,7 @@ import (
 	"strings"
 
 	"github.com/go-git/go-billy/v5"
+	pkgcommon "github.com/interlynk-io/sbomqs/v2/pkg/common"
 	"github.com/interlynk-io/sbomqs/v2/pkg/compliance/common"
 	"github.com/interlynk-io/sbomqs/v2/pkg/logger"
 	"github.com/interlynk-io/sbomqs/v2/pkg/reporter"
@@ -80,7 +81,7 @@ func Run(ctx context.Context, ep *Params) error {
 	log.Debug("engine.Run()")
 	log.Debug(ep)
 
-	if len(ep.Path) <= 0 {
+	if len(ep.Path) == 0 {
 		log.Fatal("path is required")
 	}
 
@@ -107,11 +108,11 @@ func scored(ctx context.Context, ep *Params) error {
 		return err
 	}
 
-	reportFormat := "detailed"
+	reportFormat := pkgcommon.ReportDetailed
 	if ep.Basic {
-		reportFormat = "basic"
+		reportFormat = pkgcommon.ReportBasic
 	} else if ep.JSON {
-		reportFormat = "json"
+		reportFormat = pkgcommon.FormatJSON
 	}
 
 	nr := v2.NewReport(ctx, results, reportFormat)
@@ -157,12 +158,17 @@ func IsGit(in string) bool {
 }
 
 func ProcessURL(url string, file afero.File) (afero.File, error) {
+	log := logger.FromContext(context.Background())
 	//nolint: gosec
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get data: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			log.Warnf("failed to close response body: %v", err)
+		}
+	}()
 
 	// Ensure the response is OK
 	if resp.StatusCode != http.StatusOK {
@@ -285,11 +291,11 @@ func handlePaths(ctx context.Context, ep *Params) error {
 		}
 	}
 
-	reportFormat := "detailed"
+	reportFormat := pkgcommon.ReportDetailed
 	if ep.Basic {
-		reportFormat = "basic"
+		reportFormat = pkgcommon.ReportBasic
 	} else if ep.JSON {
-		reportFormat = "json"
+		reportFormat = pkgcommon.FormatJSON
 	}
 	coloredOutput := ep.Color
 
@@ -329,7 +335,11 @@ func processFile(ctx context.Context, ep *Params, path string, fs billy.Filesyst
 			fmt.Printf("failed to open %s\n", path)
 			return nil, nil, err
 		}
-		defer f.Close()
+		defer func() {
+			if err := f.Close(); err != nil {
+				log.Warnf("failed to close file: %v", err)
+			}
+		}()
 
 		doc, err = sbom.NewSBOMDocument(ctx, f, sig)
 		if err != nil {
@@ -345,13 +355,18 @@ func processFile(ctx context.Context, ep *Params, path string, fs billy.Filesyst
 			return nil, nil, err
 		}
 
+		// #nosec G304 -- User-provided paths are expected for CLI tool
 		f, err := os.Open(path)
 		if err != nil {
 			log.Debugf("os.Open failed for file :%s\n", path)
 			fmt.Printf("failed to open %s\n", path)
 			return nil, nil, err
 		}
-		defer f.Close()
+		defer func() {
+			if err := f.Close(); err != nil {
+				log.Warnf("failed to close file: %v", err)
+			}
+		}()
 
 		doc, err = sbom.NewSBOMDocument(ctx, f, sig)
 		if err != nil {
@@ -367,7 +382,7 @@ func processFile(ctx context.Context, ep *Params, path string, fs billy.Filesyst
 	if len(ep.Categories) > 0 {
 		if len(ep.Features) == 0 {
 			for _, category := range ep.Categories {
-				if len(category) <= 0 {
+				if len(category) == 0 {
 					continue
 				}
 				filter := scorer.Filter{
@@ -378,11 +393,11 @@ func processFile(ctx context.Context, ep *Params, path string, fs billy.Filesyst
 			}
 		} else if len(ep.Features) > 0 {
 			for _, cat := range ep.Categories {
-				if len(cat) <= 0 {
+				if len(cat) == 0 {
 					continue
 				}
 				for _, feat := range ep.Features {
-					if len(feat) <= 0 {
+					if len(feat) == 0 {
 						continue
 					}
 					filter := scorer.Filter{
@@ -396,7 +411,7 @@ func processFile(ctx context.Context, ep *Params, path string, fs billy.Filesyst
 		}
 	} else if len(ep.Features) > 0 {
 		for _, feature := range ep.Features {
-			if len(feature) <= 0 {
+			if len(feature) == 0 {
 				continue
 			}
 			filter := scorer.Filter{
@@ -413,7 +428,7 @@ func processFile(ctx context.Context, ep *Params, path string, fs billy.Filesyst
 			log.Fatalf("failed to read config file %s : %s", ep.ConfigPath, er)
 		}
 
-		if len(filters) <= 0 {
+		if len(filters) == 0 {
 			log.Fatalf("no enabled filters found in config file %s", ep.ConfigPath)
 		}
 

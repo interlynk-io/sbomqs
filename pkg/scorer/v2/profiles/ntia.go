@@ -72,7 +72,7 @@ func NTIACompHash(doc sbom.Document) catalog.ProfFeatScore {
 			Desc:  "no components",
 		}
 	}
-	
+
 	have := 0
 	for _, c := range comps {
 		checksums := c.GetChecksums()
@@ -80,10 +80,10 @@ func NTIACompHash(doc sbom.Document) catalog.ProfFeatScore {
 			have++
 		}
 	}
-	
+
 	total := len(comps)
 	score := (float64(have) / float64(total)) * 10.0
-	
+
 	var desc string
 	if have == total {
 		desc = "complete"
@@ -92,7 +92,7 @@ func NTIACompHash(doc sbom.Document) catalog.ProfFeatScore {
 	} else {
 		desc = fmt.Sprintf("add to %d components", total-have)
 	}
-	
+
 	return catalog.ProfFeatScore{
 		Score: score,
 		Desc:  desc,
@@ -123,7 +123,7 @@ func NTIACompRelationships(doc sbom.Document) catalog.ProfFeatScore {
 			Desc:  "no components",
 		}
 	}
-	
+
 	have := 0
 	for _, comp := range comps {
 		// Check for pedigree info in CycloneDX or additional relationships in SPDX
@@ -131,10 +131,10 @@ func NTIACompRelationships(doc sbom.Document) catalog.ProfFeatScore {
 			have++
 		}
 	}
-	
+
 	total := len(comps)
 	score := (float64(have) / float64(total)) * 10.0
-	
+
 	var desc string
 	if have == total {
 		desc = "complete"
@@ -143,7 +143,7 @@ func NTIACompRelationships(doc sbom.Document) catalog.ProfFeatScore {
 	} else {
 		desc = fmt.Sprintf("add to %d components", total-have)
 	}
-	
+
 	return catalog.ProfFeatScore{
 		Score: score,
 		Desc:  desc,
@@ -159,7 +159,7 @@ func NTIACompLicense(doc sbom.Document) catalog.ProfFeatScore {
 			Desc:  "no components",
 		}
 	}
-	
+
 	have := 0
 	for _, c := range comps {
 		licenses := c.GetLicenses()
@@ -167,10 +167,10 @@ func NTIACompLicense(doc sbom.Document) catalog.ProfFeatScore {
 			have++
 		}
 	}
-	
+
 	total := len(comps)
 	score := (float64(have) / float64(total)) * 10.0
-	
+
 	var desc string
 	if have == total {
 		desc = "complete"
@@ -179,7 +179,7 @@ func NTIACompLicense(doc sbom.Document) catalog.ProfFeatScore {
 	} else {
 		desc = fmt.Sprintf("add to %d components", total-have)
 	}
-	
+
 	return catalog.ProfFeatScore{
 		Score: score,
 		Desc:  desc,

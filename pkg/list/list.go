@@ -21,6 +21,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/interlynk-io/sbomqs/v2/pkg/common"
 	"github.com/interlynk-io/sbomqs/v2/pkg/logger"
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
 )
@@ -144,11 +145,17 @@ func collectResultsForSBOM(ctx context.Context, ep *Params, filePath string) ([]
 
 // parseSBOMDocument parses an SBOM document from a local file path
 func parseSBOMDocument(ctx context.Context, filePath string) (sbom.Document, error) {
+	log := logger.FromContext(ctx)
+	// #nosec G304 -- User-provided paths are expected for CLI tool
 	f, err := os.Open(filePath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open file %s: %w", filePath, err)
 	}
-	defer f.Close()
+	defer func() {
+		if err := f.Close(); err != nil {
+			log.Warnf("failed to close file: %v", err)
+		}
+	}()
 
 	currentDoc, err := sbom.NewSBOMDocument(ctx, f, sbom.Signature{})
 	if err != nil {
@@ -295,11 +302,11 @@ func evaluateSBOMFeature(feature string, doc sbom.Document) (bool, string, error
 func generateReport(ctx context.Context, results []*Result, ep *Params) error {
 	log := logger.FromContext(ctx)
 
-	reportFormat := "detailed"
+	reportFormat := common.ReportDetailed
 	if ep.Basic {
-		reportFormat = "basic"
+		reportFormat = common.ReportBasic
 	} else if ep.JSON {
-		reportFormat = "json"
+		reportFormat = common.FormatJSON
 	}
 
 	log.Debugf(

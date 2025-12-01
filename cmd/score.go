@@ -70,7 +70,8 @@ type userCmd struct {
 	legacy bool
 }
 
-// scoreCmd represents the score command
+// scoreCmd represents the score command for generating comprehensive quality scores for SBOM documents.
+// It supports various output formats (table, JSON, basic) and can filter by categories and features.
 var scoreCmd = &cobra.Command{
 	Use:          "score",
 	Short:        "comprehensive quality score for your sbom",
@@ -100,8 +101,8 @@ var scoreCmd = &cobra.Command{
 `,
 
 	Args: func(_ *cobra.Command, args []string) error {
-		if len(args) <= 0 {
-			if len(inFile) <= 0 && len(inDirPath) <= 0 {
+		if len(args) == 0 {
+			if len(inFile) == 0 && len(inDirPath) == 0 {
 				return fmt.Errorf("provide a path to an sbom file or directory of sbom files")
 			}
 		}
@@ -218,7 +219,7 @@ func toUserCmd(cmd *cobra.Command, args []string) *userCmd {
 	uCmd := &userCmd{}
 
 	// input control
-	if len(args) <= 0 {
+	if len(args) == 0 {
 		if len(inFile) > 0 {
 			uCmd.path = append(uCmd.path, inFile)
 		}

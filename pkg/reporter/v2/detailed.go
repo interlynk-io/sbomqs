@@ -128,14 +128,14 @@ func (r *Reporter) detailedReport() {
 				fmt.Println(prs.messages)
 				fmt.Println()
 				newTable(prs.profilesDoc, prs.profilesHeader, "")
-				
+
 				// Add summary for NTIA and OCT profiles showing required vs optional fields
 				if r.Profiles != nil && len(r.Profiles.ProfResult) > 0 {
 					for _, proResult := range r.Profiles.ProfResult {
 						if proResult.Name == "NTIA Minimum Elements (2021)" || proResult.Name == "NTIA Minimum Elements (2025) - RFC" || proResult.Name == "OpenChain Telco v1.1" {
 							requiredCount, requiredCompliant := 0, 0
 							optionalCount, optionalPresent := 0, 0
-							
+
 							for _, item := range proResult.Items {
 								if item.Required {
 									requiredCount++
@@ -149,7 +149,7 @@ func (r *Reporter) detailedReport() {
 									}
 								}
 							}
-							
+
 							if requiredCount > 0 || optionalCount > 0 {
 								fmt.Println()
 								fmt.Println("Summary:")

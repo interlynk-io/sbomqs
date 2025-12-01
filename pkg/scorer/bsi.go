@@ -337,6 +337,7 @@ func sbomWithSignatureCheck(doc sbom.Document, c *check) score {
 		blob := doc.Signature().GetBlob()
 		sig := doc.Signature().GetSigValue()
 
+		// #nosec G304 -- User-provided paths are expected for CLI tool
 		pubKeyData, err := os.ReadFile(pubKey)
 		if err != nil {
 			s.setScore(0.0)

@@ -14,8 +14,10 @@
 
 package catalog
 
-// ComprCatSpec represent specification of
-// each comprehenssive category.
+// ComprCatSpec represents the specification for a comprehensive scoring category.
+// Categories group related features and define how they contribute to the overall
+// SBOM quality score through weights. Examples include structural, semantic,
+// and quality categories.
 type ComprCatSpec struct {
 	Name        string
 	Description string

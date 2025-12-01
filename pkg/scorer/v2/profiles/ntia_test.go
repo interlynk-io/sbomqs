@@ -116,13 +116,13 @@ func createDocWithAllSuppliers() sbom.Document {
 		},
 	}
 	comp2 := sbom.Component{
-		Name:    "comp2", 
+		Name:    "comp2",
 		Version: "2.0",
 		Supplier: sbom.Supplier{
 			Email: "supplier2@example.com",
 		},
 	}
-	
+
 	return sbom.SpdxDoc{
 		Comps: []sbom.GetComponent{comp1, comp2},
 	}
@@ -141,7 +141,7 @@ func createDocWithHalfSuppliers() sbom.Document {
 		Version: "2.0",
 		// No supplier
 	}
-	
+
 	return sbom.SpdxDoc{
 		Comps: []sbom.GetComponent{comp1, comp2},
 	}
@@ -156,7 +156,7 @@ func createDocWithNoSuppliers() sbom.Document {
 		Name:    "comp2",
 		Version: "2.0",
 	}
-	
+
 	return sbom.SpdxDoc{
 		Comps: []sbom.GetComponent{comp1, comp2},
 	}
@@ -167,14 +167,14 @@ func createDocWithOptionalFields() sbom.Document {
 		Alg:     "SHA-256",
 		Content: "abc123",
 	}
-	
+
 	comp1 := sbom.Component{
 		Name:             "comp1",
 		Version:          "1.0",
 		Checksums:        []sbom.GetChecksum{chk1},
 		HasRelationships: true, // Has relationships
 	}
-	
+
 	return sbom.SpdxDoc{
 		Comps:     []sbom.GetComponent{comp1},
 		Lifecycle: "build", // Has lifecycle

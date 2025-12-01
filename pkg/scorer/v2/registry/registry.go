@@ -113,26 +113,26 @@ var BSIV20KeyToEvaluatingFunction = map[string]catalog.ProfFeatEval{
 }
 
 var OCTV11KeyToEvaluatingFunction = map[string]catalog.ProfFeatEval{
-	"sbom_spec":               profiles.OCTV11SBOMSpec,
-	"sbom_spec_version":       profiles.OCTV11SBOMSpecVersion,
-	"sbom_data_license":       profiles.OCTV11SBOMDataLicense,
-	"sbom_identifier":         profiles.OCTV11SBOMIdentifier,
-	"sbom_name":               profiles.OCTV11SBOMName,
-	"sbom_namespace":          profiles.OCTV11SBOMNamespace,
-	"sbom_creator":            profiles.OCTV11SBOMCreator,
-	"sbom_timestamp":          profiles.OCTV11SBOMTimestamp,
-	"sbom_creator_comment":    profiles.OCTV11SBOMCreatorComment,
-	"comp_name":               profiles.OCTV11CompName,
-	"comp_identifier":         profiles.OCTV11CompIdentifier,
-	"comp_version":            profiles.OCTV11CompVersion,
-	"comp_supplier":           profiles.OCTV11CompSupplier,
-	"comp_download_location":  profiles.OCTV11CompDownloadLocation,
-	"comp_license_concluded":  profiles.OCTV11CompLicenseConcluded,
-	"comp_license_declared":   profiles.OCTV11CompLicenseDeclared,
-	"comp_copyright":          profiles.OCTV11CompCopyright,
-	"sbom_relationships":      profiles.OCTV11SBOMRelationships,
-	"comp_checksum":           profiles.OCTV11CompChecksum,
-	"comp_purl":               profiles.OCTV11CompPURL,
+	"sbom_spec":              profiles.OCTV11SBOMSpec,
+	"sbom_spec_version":      profiles.OCTV11SBOMSpecVersion,
+	"sbom_data_license":      profiles.OCTV11SBOMDataLicense,
+	"sbom_identifier":        profiles.OCTV11SBOMIdentifier,
+	"sbom_name":              profiles.OCTV11SBOMName,
+	"sbom_namespace":         profiles.OCTV11SBOMNamespace,
+	"sbom_creator":           profiles.OCTV11SBOMCreator,
+	"sbom_timestamp":         profiles.OCTV11SBOMTimestamp,
+	"sbom_creator_comment":   profiles.OCTV11SBOMCreatorComment,
+	"comp_name":              profiles.OCTV11CompName,
+	"comp_identifier":        profiles.OCTV11CompIdentifier,
+	"comp_version":           profiles.OCTV11CompVersion,
+	"comp_supplier":          profiles.OCTV11CompSupplier,
+	"comp_download_location": profiles.OCTV11CompDownloadLocation,
+	"comp_license_concluded": profiles.OCTV11CompLicenseConcluded,
+	"comp_license_declared":  profiles.OCTV11CompLicenseDeclared,
+	"comp_copyright":         profiles.OCTV11CompCopyright,
+	"sbom_relationships":     profiles.OCTV11SBOMRelationships,
+	"comp_checksum":          profiles.OCTV11CompChecksum,
+	"comp_purl":              profiles.OCTV11CompPURL,
 }
 
 var InterlynkKeyToEvaluatingFunction = map[string]catalog.ProfFeatEval{
@@ -344,6 +344,7 @@ func mergeConfigFileIntoCatalogYAML(ctx context.Context, path string) ([]catalog
 	var cat []catalog.ComprCatSpec
 	var prof []catalog.ProfSpec
 
+	// #nosec G304 -- User-provided paths are expected for CLI tool
 	b, err := os.ReadFile(path)
 	if err != nil {
 		log.Errorf("mergeConfigFileIntoCatalogYAML: failed to read file %q: %v", path, err)

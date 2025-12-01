@@ -19,6 +19,7 @@ import (
 	"os"
 	"strings"
 
+	pkgcommon "github.com/interlynk-io/sbomqs/v2/pkg/common"
 	"github.com/interlynk-io/sbomqs/v2/pkg/compliance/common"
 	db "github.com/interlynk-io/sbomqs/v2/pkg/compliance/db"
 	"github.com/interlynk-io/sbomqs/v2/pkg/licenses"
@@ -51,15 +52,15 @@ func bsiV2Result(ctx context.Context, doc sbom.Document, fileName string, outFor
 	dtb.AddRecord(bsiV2SbomSignature(doc))
 	dtb.AddRecord(bsiV2SbomLinks(doc))
 
-	if outFormat == "json" {
+	if outFormat == pkgcommon.FormatJSON {
 		bsiV2JSONReport(dtb, fileName)
 	}
 
-	if outFormat == "basic" {
+	if outFormat == pkgcommon.ReportBasic {
 		bsiV2BasicReport(dtb, fileName)
 	}
 
-	if outFormat == "detailed" {
+	if outFormat == pkgcommon.ReportDetailed {
 		bsiV2DetailedReport(dtb, fileName)
 	}
 }
@@ -83,7 +84,7 @@ func bsiV2Vulnerabilities(doc sbom.Document) *db.Record {
 	result, score := "no-vulnerability", 10.0
 
 	vulns := doc.Vulnerabilities()
-	var allVulnIDs []string
+	allVulnIDs := make([]string, 0, len(vulns))
 
 	for _, v := range vulns {
 		if vulnID := v.GetID(); vulnID != "" {
@@ -108,6 +109,7 @@ func bsiV2SbomSignature(doc sbom.Document) *db.Record {
 		blob := doc.Signature().GetBlob()
 		sig := doc.Signature().GetSigValue()
 
+		// #nosec G304 -- User-provided paths are expected for CLI tool
 		pubKeyData, err := os.ReadFile(pubKey)
 		if err != nil {
 			return db.NewRecordStmt(SBOM_SIGNATURE, "doc", "Sig not detected!", 0.0, "")

@@ -16,8 +16,10 @@ package catalog
 
 import "github.com/interlynk-io/sbomqs/v2/pkg/sbom"
 
-// ProfSpec represents specification of each profiles.
-// e.g. ntia, bsi-v1.1, bsi-v2.0, oct, etc
+// ProfSpec represents the specification for a compliance profile.
+// Profiles define specific requirements for SBOM compliance standards
+// such as NTIA, BSI v1.1, BSI v2.0, OpenChain Telco, etc. Each profile
+// contains features that must be evaluated for compliance determination.
 type ProfSpec struct {
 	Name        string
 	Description string
@@ -25,7 +27,9 @@ type ProfSpec struct {
 	Features    []ProfFeatSpec
 }
 
-// ProfFeatSpec represents specification of feature of each profiles.
+// ProfFeatSpec represents a feature specification within a compliance profile.
+// Profile features define specific requirements that an SBOM must meet,
+// with some features being required (must pass) and others being optional.
 type ProfFeatSpec struct {
 	Name        string
 	Required    bool
@@ -34,14 +38,20 @@ type ProfFeatSpec struct {
 	Evaluate    ProfFeatEval
 }
 
-// ProfFeatEval represents evaluation of corresponding feature.
+// ProfFeatEval represents an evaluation function for a profile feature.
+// It takes an SBOM document and returns a score with descriptive information
+// about whether the feature requirement is satisfied.
 type ProfFeatEval func(doc sbom.Document) ProfFeatScore
 
-// ProfFeatScore carries score of a profiles feature
+// ProfFeatScore represents the evaluation result for a profile feature.
+// It contains the numeric score, a description of the evaluation outcome,
+// and whether the feature should be ignored in compliance calculations.
 type ProfFeatScore struct {
 	Score  float64
 	Desc   string
 	Ignore bool
 }
 
+// ProfComplianceState represents the compliance status of a profile evaluation.
+// It indicates whether an SBOM meets the requirements of a specific compliance profile.
 type ProfComplianceState string

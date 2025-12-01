@@ -54,7 +54,7 @@ func ReportBasic(ctx context.Context, results []PolicyResult) error {
 	copy(sorted, results)
 	sort.Slice(sorted, func(i, j int) bool { return sorted[i].PolicyName < sorted[j].PolicyName })
 
-	fmt.Fprintf(os.Stdout, "\n\033[36m \t\t\t BASIC POLICY REPORT\033[36m\n")
+	_, _ = fmt.Fprintf(os.Stdout, "\n\033[36m \t\t\t BASIC POLICY REPORT\033[36m\n")
 	// === Summary Table ===
 	summary := tablewriter.NewWriter(os.Stdout)
 	summary.SetHeader([]string{"POLICY", "TYPE", "ACTION", "RESULT", "COMPONENTS", "VIOLATIONS", "RULES APPLIED"})
@@ -85,12 +85,12 @@ func ReportTable(ctx context.Context, results []PolicyResult) error {
 	copy(sorted, results)
 	sort.Slice(sorted, func(i, j int) bool { return sorted[i].PolicyName < sorted[j].PolicyName })
 
-	fmt.Fprintf(os.Stdout, "\n\033[1m DETAILED POLICY REPORT\033[0m\n")
+	_, _ = fmt.Fprintf(os.Stdout, "\n\033[1m DETAILED POLICY REPORT\033[0m\n")
 
 	// Per-policy tables
 	for _, res := range sorted {
 		// Policy header
-		fmt.Fprintf(os.Stdout, "\n\033[1mPolicy: %s (result=%s, violations=%d, total_checks=%d, components=%d, total_rules_applied=%d)\033[0m\n",
+		_, _ = fmt.Fprintf(os.Stdout, "\n\033[1mPolicy: %s (result=%s, violations=%d, total_checks=%d, components=%d, total_rules_applied=%d)\033[0m\n",
 			res.PolicyName, res.OverallResult, res.ViolationCnt, res.TotalChecks, res.TotalComponents, res.TotalRules)
 
 		// Prepare table writer per policy
@@ -174,7 +174,7 @@ func ReportTable(ctx context.Context, results []PolicyResult) error {
 		tw.Render()
 	}
 
-	fmt.Fprintf(os.Stdout, "\n\033[1m\033[32m \t\t--- SUMMARY TABLE ---\033[1m\n")
+	_, _ = fmt.Fprintf(os.Stdout, "\n\033[1m\033[32m \t\t--- SUMMARY TABLE ---\033[1m\n")
 
 	sum := tablewriter.NewWriter(os.Stdout)
 	sum.SetHeader([]string{"POLICY", "RESULT", "COMPONENTS", "VIOLATIONS", "RULES APPLIED"})

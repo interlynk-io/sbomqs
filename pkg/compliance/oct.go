@@ -20,6 +20,7 @@ import (
 	"strings"
 	"time"
 
+	pkgcommon "github.com/interlynk-io/sbomqs/v2/pkg/common"
 	"github.com/interlynk-io/sbomqs/v2/pkg/compliance/common"
 	db "github.com/interlynk-io/sbomqs/v2/pkg/compliance/db"
 	"github.com/interlynk-io/sbomqs/v2/pkg/logger"
@@ -222,7 +223,7 @@ func octMachineFormat(doc sbom.Document) *db.Record {
 	spec := doc.Spec().GetSpecType()
 	result, score := "", 0.0
 
-	if fileFormat := doc.Spec().FileFormat(); fileFormat == "json" || fileFormat == "tag-value" {
+	if fileFormat := doc.Spec().FileFormat(); fileFormat == pkgcommon.FormatJSON || fileFormat == pkgcommon.FormatTagValue {
 		result = spec + ", " + fileFormat
 		score = 10.0
 	} else {
@@ -234,7 +235,7 @@ func octMachineFormat(doc sbom.Document) *db.Record {
 func octHumanFormat(doc sbom.Document) *db.Record {
 	result, score := "", 0.0
 
-	if fileFormat := doc.Spec().FileFormat(); fileFormat == "json" || fileFormat == "tag-value" {
+	if fileFormat := doc.Spec().FileFormat(); fileFormat == pkgcommon.FormatJSON || fileFormat == pkgcommon.FormatTagValue {
 		result = fileFormat
 		score = 10.0
 	} else {
@@ -400,7 +401,7 @@ func octPackageExternalRefs(component sbom.GetComponent) *db.Record {
 	if containPurlElement != 0 {
 		score = (float64(containPurlElement) / float64(totalElements)) * 10.0
 		x := fmt.Sprintf(":(%d/%d)", containPurlElement, totalElements)
-		result = result + x
+		result += x
 	}
 	return db.NewRecordStmt(PACK_EXT_REF, common.UniqueElementID(component), result, score, "")
 }

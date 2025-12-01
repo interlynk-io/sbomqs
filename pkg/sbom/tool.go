@@ -16,19 +16,25 @@ package sbom
 
 //counterfeiter:generate . GetTool
 
+// GetTool defines the interface for accessing tool information used in SBOM creation
 type GetTool interface {
+	// GetName returns the name of the tool
 	GetName() string
+	// GetVersion returns the version of the tool
 	GetVersion() string
 }
+// Tool represents a concrete implementation of tool information used in SBOM creation
 type Tool struct {
 	Name    string
 	Version string
 }
 
+// GetName returns the name of the tool
 func (t Tool) GetName() string {
 	return t.Name
 }
 
+// GetVersion returns the version of the tool
 func (t Tool) GetVersion() string {
 	return t.Version
 }

@@ -125,10 +125,10 @@ func fsctIDScore(db *db.DB, id string) *fsctScoreResult {
 }
 
 func fsctAggregateScore(db *db.DB) *fsctScoreResult {
-	var results []fsctScoreResult
 	var finalResult fsctScoreResult
 
 	ids := db.GetAllIDs()
+	results := make([]fsctScoreResult, 0, len(ids))
 	for _, id := range ids {
 		results = append(results, *fsctIDScore(db, id))
 	}

@@ -12,8 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package swid provides Software Identification (SWID) tag handling and validation
+// functionality for processing SWID tags in SBOM documents.
 package swid
 
+// SWID represents a Software Identification tag interface that provides
+// methods to access and validate SWID tag information for software components.
 type SWID interface {
 	GetName() string
 	GetTagID() string
@@ -43,6 +47,8 @@ func (s swid) String() string {
 	return s.TagID
 }
 
+// NewSWID creates a new SWID instance with the specified tag ID and name.
+// The tag ID serves as the unique identifier for the software component.
 func NewSWID(tagID, name string) SWID {
 	return swid{
 		TagID: tagID,

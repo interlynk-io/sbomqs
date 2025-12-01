@@ -22,11 +22,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// complianceCmd represents the compliance command for checking SBOM compliance against various standards.
+// Supports NTIA minimum elements, BSI TR-03183-2 (v1.1 and v2.0), FSCT v3, and OpenChain Telco standards.
 var complianceCmd = &cobra.Command{
 	Use:   "compliance [flags]",
 	Short: "compliance command checks an SBOM for compliance with SBOM standards",
 	Long: `
-Check if our SBOM meets compliance requirements for various standards, such as NTIA minimum elements, 
+Check if our SBOM meets compliance requirements for various standards, such as NTIA minimum elements,
 BSI TR-03183-2, Framing Software Component Transparency (v3) and OpenChain Telco.
 	`,
 	Example: ` sbomqs compliance  < --ntia | --bsi | --bsi-v2 | --fsct | --oct >  [--basic | --json]   <SBOM file>

@@ -121,7 +121,7 @@ func (r *Reporter) jsonReport() (string, error) {
 				p.Message = pr.Message
 
 				f.Profiles = append(f.Profiles, p)
-				
+
 				// If no comprehensive score, use first profile score for top-level
 				if r.Comprehensive == nil && f.InterlynkScore == 0 {
 					f.InterlynkScore = pr.InterlynkScore

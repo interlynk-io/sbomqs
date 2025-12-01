@@ -132,6 +132,7 @@ func SBOMSignature(doc sbom.Document) catalog.ComprFeatScore {
 		}
 	}
 
+	// #nosec G304 -- User-provided paths are expected for CLI tool
 	pubKeyBytes, err := os.ReadFile(pubKeyPath)
 	if err != nil {
 		return catalog.ComprFeatScore{

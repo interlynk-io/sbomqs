@@ -84,7 +84,7 @@ func (d *DB) GetRecordsByKeyID(key int, id string) []*Record {
 }
 
 // dumpAll prints all records, optionally filtered by the given keys
-// nolint
+//nolint
 func (d *DB) dumpAll(keys []int) {
 	for _, records := range d.keyRecords {
 		for _, r := range records {

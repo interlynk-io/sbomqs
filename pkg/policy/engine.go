@@ -48,9 +48,10 @@ func Engine(ctx context.Context, policyConfig *Params, policies []Policy) error 
 
 	log.Debugf("field mapping done via extractor")
 
-	var policyResults []PolicyResult
-
 	log.Debugf("Evaluation of policy against SBOM begins...")
+
+	// Pre-allocate policy results slice with known capacity
+	policyResults := make([]PolicyResult, 0, len(policies))
 
 	// Evaluate policies
 	for _, policy := range policies {

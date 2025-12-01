@@ -22,7 +22,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// shareCmd represents the share command
+// shareCmd represents the share command for creating permanent links to SBOM quality scores.
+// The SBOM data stays local while only the score report is sent to sbombenchmark.dev for sharing.
 var shareCmd = &cobra.Command{
 	Use:   "share <sbom file>",
 	Short: "share your sbom quality score with others",

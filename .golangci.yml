@@ -1,0 +1,250 @@
+# golangci-lint configuration for sbomqs project
+# https://golangci-lint.run/usage/configuration/
+
+version: "2"
+
+run:
+  # Timeout for analysis
+  timeout: 5m
+  
+  # Which dirs to skip: vendor$, third_party$, testdata$, examples$, Godeps$, builtin$
+  skip-dirs:
+    - vendor
+    - testdata
+    - pkg/sbom/sbomfakes # Generated fake implementations
+  
+  # Which files to skip: they will be analyzed, but issues from them won't be reported
+  skip-files:
+    - ".*\\.pb\\.go$"
+    - ".*_gen\\.go$"
+    - "bindata\\.go$"
+  
+  # List of build tags, all linters use it. Default: empty list.
+  build-tags:
+    - integration
+
+  # Include test files or not
+  tests: true
+
+  # Go version to target
+  go: "1.24"
+
+output:
+  # Format of output: colored-line-number, json, tab, checkstyle, junit-xml
+  format: colored-line-number
+  
+  # Sort results by: filepath, line and column
+  sort-results: true
+
+linters:
+  enable-all: false
+  enable:
+    # Default linters
+    - errcheck       # Checking for unchecked errors
+    - govet         # Reports suspicious constructs
+    - ineffassign   # Detects when assignments to existing variables are not used
+    - staticcheck   # Static analysis checks
+    - unused        # Checks for unused constants, variables, functions and types
+    
+    # Additional linters for code quality
+    - bodyclose     # Checks whether HTTP response body is closed successfully
+    - dogsled       # Checks assignments with too many blank identifiers (e.g. x, _, _, _, := f())
+    - dupl          # Tool for code clone detection
+    - copyloopvar   # Detects places where loop variables are copied
+    - gocognit      # Computes cognitive complexity of functions
+    - goconst       # Finds repeated strings that could be replaced by constants
+    - gocritic      # Provides diagnostics that check for bugs, performance and style issues
+    - gocyclo       # Computes cyclomatic complexity of functions
+    - goprintffuncname # Checks that printf-like functions are named with f at the end
+    - gosec         # Security checker
+    - misspell      # Finds commonly misspelled English words
+    - nakedret      # Finds naked returns in functions greater than a specified function length
+    - nolintlint    # Reports ill-formed or insufficient nolint directives
+    - prealloc      # Finds slice declarations that could potentially be preallocated
+    - revive        # Fast, configurable, extensible Go linter
+    - unconvert     # Removes unnecessary type conversions
+    - unparam       # Reports unused function parameters
+    - whitespace    # Detects leading and trailing whitespace
+    
+    # Performance linters
+    - gomoddirectives # Manage the use of 'replace', 'retract', and 'excludes' in go.mod
+    - nilerr        # Finds the code that returns nil even if it checks that the error is not nil
+
+  disable:
+    - godot         # Check comments end in period
+    - godox         # Tool for detection of FIXME, TODO comments
+    - err113        # Error wrapping rules (formerly goerr113)
+    - testpackage   # Makes you use a separate _test package
+    - wrapcheck     # Checks that errors are wrapped
+    - wsl           # Whitespace linter
+    - exhaustruct   # Checks if all struct's fields are initialized
+    - varnamelen    # Checks variable name length
+    - tagliatelle   # Checks struct tags
+    - interfacebloat # Checks for large interfaces
+    - cyclop        # Similar to gocyclo but stricter
+    - nestif        # Reports deeply nested if statements
+    - maintidx      # Maintainability index
+    - gochecknoglobals # Checks that no global variables exist
+    - gochecknoinits # Checks that no init functions are present
+    - funlen        # Function length limits (handled by gocognit/gocyclo)
+
+linters-settings:
+  errcheck:
+    # Report about not checking of errors in type assertions
+    check-type-assertions: true
+    # Report about assignment of errors to blank identifier
+    check-blank: true
+    
+  govet:
+    # Report about shadowed variables
+    enable:
+      - shadow
+      - atomicalign
+      - fieldalignment
+    
+  gocyclo:
+    # Minimal code complexity to report
+    min-complexity: 20
+    
+  gocognit:
+    # Minimal cognitive complexity to report
+    min-complexity: 40
+    
+  dupl:
+    # Minimum lines count to report duplicate code
+    threshold: 150
+    
+  goconst:
+    # Minimum length of string constant
+    min-len: 3
+    # Minimum occurrences count to trigger
+    min-occurrences: 3
+    # Ignore test files
+    ignore-tests: true
+    
+  misspell:
+    # Correct spellings using locale preferences for US or UK
+    locale: US
+    
+  unparam:
+    # Check exported functions and methods
+    check-exported: true
+    
+  nakedret:
+    # Maximum length of function to allow naked returns
+    max-func-lines: 30
+    
+  gocritic:
+    enabled-tags:
+      - diagnostic
+      - performance
+      - style
+      - opinionated
+    disabled-checks:
+      - commentedOutCode
+      - whyNoLint
+      - importShadow
+      - hugeParam # SBOM structures can be large
+      - paramTypeCombine
+      - unnamedResult
+      - rangeValCopy # Sometimes necessary for SBOM processing
+    settings:
+      captLocal:
+        paramsOnly: true
+      rangeValCopy:
+        sizeThreshold: 512
+        
+  gosec:
+    # Exclude specific rules
+    excludes:
+      - G104 # Duplicated errcheck
+      - G304 # File path provided by user input (necessary for CLI tool)
+      - G306 # Poor file permissions (handled by the tool)
+    confidence: medium
+    
+  revive:
+    severity: warning
+    confidence: 0.8
+    rules:
+      - name: blank-imports
+      - name: context-keys-type
+      - name: time-naming
+      - name: var-declaration
+      - name: unexported-return
+      - name: indent-error-flow
+      - name: error-return
+      - name: error-naming
+      - name: increment-decrement
+      - name: package-comments
+        disabled: true
+      - name: exported
+        arguments:
+          - "checkPrivateReceivers"
+          - "disableStutteringCheck"
+
+issues:
+  # Maximum issues count per one linter
+  max-issues-per-linter: 0
+  
+  # Maximum count of issues with the same text
+  max-same-issues: 0
+  
+  # Exclude some issues by text, regexp
+  exclude-rules:
+    # Exclude some linters from running on tests files
+    - path: _test\.go
+      linters:
+        - dupl
+        - gosec
+        - goconst
+        - gocognit
+        - gocyclo
+        - errcheck
+    
+    # Exclude some linters for generated files
+    - path: "sbomfakes"
+      linters:
+        - gocritic
+        - golint
+        - stylecheck
+        - revive
+    
+    # Exclude lll issues for long lines with go:generate
+    - linters:
+        - lll
+      source: "^//go:generate "
+    
+    # Exclude certain patterns in test files
+    - path: _test\.go
+      text: "Error return value is not checked"
+    
+    # Ignore missing comments for exported types/functions in certain packages
+    - path: "pkg/(cpe|purl|swhid|swid|omniborid)"
+      linters:
+        - revive
+      text: "exported .* should have comment"
+    
+    # Allow certain patterns in CLI commands
+    - path: "cmd/"
+      linters:
+        - gocognit
+        - gocyclo
+      text: "cyclomatic complexity|cognitive complexity"
+    
+    # Allow panic in main and cmd packages
+    - path: "(main|cmd)/.+\\.go"
+      linters:
+        - gosec
+      text: "G104|G304"
+      
+    # Allow embedding of license files
+    - path: "pkg/licenses/embed_licenses.go"
+      linters:
+        - gosec
+      text: "G304"
+      
+  # Show only new issues created since branching from main/master
+  new: false
+  
+  # Fix found issues (if it's supported by the linter)
+  fix: false

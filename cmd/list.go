@@ -46,13 +46,14 @@ type userListCmd struct {
 	debug bool
 }
 
-// listCmd lists components or SBOM properties based on specified features
+// listCmd represents the list command for listing components or SBOM properties based on specified features.
+// It can show components that have or are missing specific features like suppliers, licenses, etc.
 var listCmd = &cobra.Command{
 	Use:          "list",
 	Short:        "List components or SBOM properties based on feature",
 	SilenceUsage: true,
-	Example: `  sbomqs list --feature <feature> --option <path-to-sbom-file> 
-	
+	Example: `  sbomqs list --feature <feature> --option <path-to-sbom-file>
+
   # List all components with suppliers
   sbomqs list --feature comp_with_supplier samples/sbomqs-spdx-syft.json
 
@@ -186,7 +187,7 @@ func init() {
 
 func validateparsedListCmd(uCmd *userListCmd) error {
 	// Check path
-	if len(uCmd.path) <= 0 {
+	if len(uCmd.path) == 0 {
 		return errors.New("path is required")
 	}
 

@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package engine provides the core execution engine for sbomqs operations,
+// including compliance checking, scoring, and report generation functionality.
 package engine
 
 import (
@@ -19,6 +21,7 @@ import (
 	"fmt"
 	"os"
 
+	pkgcommon "github.com/interlynk-io/sbomqs/v2/pkg/common"
 	"github.com/interlynk-io/sbomqs/v2/pkg/compliance"
 	"github.com/interlynk-io/sbomqs/v2/pkg/compliance/common"
 	"github.com/interlynk-io/sbomqs/v2/pkg/logger"
@@ -30,7 +33,7 @@ func ComplianceRun(ctx context.Context, ep *Params) error {
 	log := logger.FromContext(ctx)
 	log.Debug("engine.ComplianceRun()")
 
-	if len(ep.Path) <= 0 {
+	if len(ep.Path) == 0 {
 		log.Fatal("path is required")
 	}
 
@@ -62,11 +65,11 @@ func ComplianceRun(ctx context.Context, ep *Params) error {
 
 	switch {
 	case ep.Basic:
-		outFormat = "basic"
+		outFormat = pkgcommon.ReportBasic
 	case ep.JSON:
-		outFormat = "json"
+		outFormat = pkgcommon.FormatJSON
 	default:
-		outFormat = "detailed"
+		outFormat = pkgcommon.ReportDetailed
 	}
 
 	coloredOutput := ep.Color
@@ -136,13 +139,18 @@ func getSbomDocument(ctx context.Context, ep *Params) (*sbom.Document, error) {
 			return nil, err
 		}
 
+		// #nosec G304 -- User-provided paths are expected for CLI tool
 		f, err := os.Open(path)
 		if err != nil {
 			log.Debugf("os.Open failed for file :%s\n", path)
 			fmt.Printf("failed to open %s\n", path)
 			return nil, err
 		}
-		defer f.Close()
+		defer func() {
+			if err := f.Close(); err != nil {
+				log.Warnf("failed to close file: %v", err)
+			}
+		}()
 
 		doc, err = sbom.NewSBOMDocument(ctx, f, sig)
 		if err != nil {

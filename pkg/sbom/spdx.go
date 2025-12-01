@@ -343,7 +343,7 @@ func (s *SpdxDoc) parseAuthors() {
 func getComponentDependencies(s *SpdxDoc, componentID string) (bool, int, []string) {
 	newID := "SPDXRef-" + componentID
 	count := 0
-	var deps []string
+	deps := make([]string, 0, len(s.doc.Relationships))
 	for _, r := range s.doc.Relationships {
 		// some sbom generating tools specify relationship type as contain and some as depends-on
 		if strings.ToUpper(r.Relationship) == spdx.RelationshipDependsOn || strings.ToUpper(r.Relationship) == spdx.RelationshipContains {
@@ -553,14 +553,14 @@ func (s *SpdxDoc) pkgRequiredFields(index int) bool {
 }
 
 func (s *SpdxDoc) purls(index int) []purl.PURL {
-	urls := []purl.PURL{}
 	pkg := s.doc.Packages[index]
 
 	if len(pkg.PackageExternalReferences) == 0 {
 		s.addToLogs(fmt.Sprintf("spdx doc pkg %s at index %d no purls found", pkg.PackageName, index))
-		return urls
+		return []purl.PURL{}
 	}
 
+	urls := make([]purl.PURL, 0, len(pkg.PackageExternalReferences))
 	for _, p := range pkg.PackageExternalReferences {
 		if strings.ToLower(p.RefType) == spdx_common.TypePackageManagerPURL {
 			prl := purl.NewPURL(p.Locator)
@@ -580,13 +580,13 @@ func (s *SpdxDoc) purls(index int) []purl.PURL {
 }
 
 func (s *SpdxDoc) cpes(index int) []cpe.CPE {
-	urls := []cpe.CPE{}
 	pkg := s.doc.Packages[index]
 	if len(pkg.PackageExternalReferences) == 0 {
 		s.addToLogs(fmt.Sprintf("spdx doc pkg %s at index %d no cpes found", pkg.PackageName, index))
-		return urls
+		return []cpe.CPE{}
 	}
 
+	urls := make([]cpe.CPE, 0, len(pkg.PackageExternalReferences))
 	for _, p := range pkg.PackageExternalReferences {
 		if p.RefType == spdx_common.TypeSecurityCPE23Type || p.RefType == spdx_common.TypeSecurityCPE22Type {
 			cpeV := cpe.NewCPE(p.Locator)
@@ -605,14 +605,14 @@ func (s *SpdxDoc) cpes(index int) []cpe.CPE {
 }
 
 func (s *SpdxDoc) checksums(index int) []GetChecksum {
-	chks := []GetChecksum{}
 	pkg := s.doc.Packages[index]
 
 	if len(pkg.PackageChecksums) == 0 {
 		s.addToLogs(fmt.Sprintf("spdx doc pkg %s at index %d no checksum found", pkg.PackageName, index))
-		return chks
+		return []GetChecksum{}
 	}
 
+	chks := make([]GetChecksum, 0, len(pkg.PackageChecksums))
 	for _, c := range pkg.PackageChecksums {
 		ck := Checksum{}
 		ck.Alg = string(c.Algorithm)
@@ -624,14 +624,14 @@ func (s *SpdxDoc) checksums(index int) []GetChecksum {
 }
 
 func (s *SpdxDoc) externalRefs(index int) []GetExternalReference {
-	extRefs := []GetExternalReference{}
 	pkg := s.doc.Packages[index]
 
 	if len(pkg.PackageExternalReferences) == 0 {
 		s.addToLogs(fmt.Sprintf("spdx doc pkg %s at index %d no externalReferences found", pkg.PackageName, index))
-		return extRefs
+		return []GetExternalReference{}
 	}
 
+	extRefs := make([]GetExternalReference, 0, len(pkg.PackageExternalReferences))
 	for _, ext := range pkg.PackageExternalReferences {
 		extRef := ExternalReference{}
 		extRef.RefType = ext.RefType

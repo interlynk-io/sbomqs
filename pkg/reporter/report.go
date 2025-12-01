@@ -18,6 +18,7 @@ import (
 	"context"
 	"log"
 
+	"github.com/interlynk-io/sbomqs/v2/pkg/common"
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer"
 )
@@ -34,7 +35,7 @@ type Reporter struct {
 	Color  bool
 }
 
-var ReportFormats = []string{"basic", "detailed", "json"}
+var ReportFormats = []string{common.ReportBasic, common.ReportDetailed, common.FormatJSON}
 
 type Option func(r *Reporter)
 
@@ -65,11 +66,11 @@ func NewReport(ctx context.Context, doc []sbom.Document, scores []scorer.Scores,
 }
 
 func (r *Reporter) Report() {
-	if r.Format == "basic" {
+	if r.Format == common.ReportBasic {
 		r.simpleReport()
-	} else if r.Format == "detailed" {
+	} else if r.Format == common.ReportDetailed {
 		r.detailedReport()
-	} else if r.Format == "json" {
+	} else if r.Format == common.FormatJSON {
 		_, err := r.jsonReport(false)
 		if err != nil {
 			log.Printf("Failed to print json report: %v", err)

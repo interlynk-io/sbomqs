@@ -15,20 +15,26 @@
 package sbom
 
 //counterfeiter:generate . GetChecksum
+// GetChecksum defines the interface for accessing cryptographic checksum information
 type GetChecksum interface {
+	// GetAlgo returns the cryptographic algorithm used for the checksum
 	GetAlgo() string
+	// GetContent returns the hexadecimal checksum value
 	GetContent() string
 }
 
+// Checksum represents a concrete implementation of cryptographic checksum information
 type Checksum struct {
 	Alg     string
 	Content string
 }
 
+// GetAlgo returns the cryptographic algorithm used for the checksum
 func (c Checksum) GetAlgo() string {
 	return c.Alg
 }
 
+// GetContent returns the hexadecimal checksum value
 func (c Checksum) GetContent() string {
 	return c.Content
 }

@@ -16,20 +16,26 @@ package sbom
 
 //counterfeiter:generate . GetExternalReference
 
+// GetExternalReference defines the interface for accessing external reference information in SBOMs
 type GetExternalReference interface {
+	// GetRefType returns the type of the external reference (e.g., website, vcs, etc.)
 	GetRefType() string
+	// GetRefLocator returns the locator/URL of the external reference
 	GetRefLocator() string
 }
 
+// ExternalReference represents a concrete implementation of external reference information
 type ExternalReference struct {
 	RefType    string
 	RefLocator string
 }
 
+// GetRefType returns the type of the external reference (e.g., website, vcs, etc.)
 func (e ExternalReference) GetRefType() string {
 	return e.RefType
 }
 
+// GetRefLocator returns the locator/URL of the external reference
 func (e ExternalReference) GetRefLocator() string {
 	return e.RefLocator
 }

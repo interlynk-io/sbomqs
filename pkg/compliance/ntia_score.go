@@ -93,10 +93,10 @@ func ntiaKeyIDScore(db *db.DB, key int, id string) *ntiaScoreResult {
 }
 
 func ntiaAggregateScore(db *db.DB) *ntiaScoreResult {
-	var results []ntiaScoreResult
 	var finalResult ntiaScoreResult
 
 	ids := db.GetAllIDs()
+	results := make([]ntiaScoreResult, 0, len(ids))
 	for _, id := range ids {
 		results = append(results, *ntiaIDScore(db, id))
 	}

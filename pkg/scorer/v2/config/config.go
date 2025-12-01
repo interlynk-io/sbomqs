@@ -18,18 +18,32 @@ import (
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
 )
 
+// Config represents the configuration parameters for SBOM scoring operations.
+// It specifies which aspects of an SBOM to evaluate, including categories,
+// features, and compliance profiles. The configuration can be used for both
+// comprehensive scoring and profile-based compliance assessment.
 type Config struct {
-	// categories to score (e.g., "provenance", "completeness")
+	// Categories specifies which comprehensive scoring categories to evaluate.
+	// Examples include "provenance", "completeness", "structural", and "semantic".
+	// If empty, all available categories will be evaluated.
 	Categories []string
 
-	// features to score (e.g., "components", "dependencies")
+	// Features specifies which individual features to evaluate within categories.
+	// Examples include "components", "dependencies", "licenses", and "vulnerabilities".
+	// If empty, all available features within selected categories will be evaluated.
 	Features []string
 
-	// pptional path to a config file for filters
+	// ConfigFile provides an optional path to a configuration file for additional
+	// filtering and customization options. This is typically used for advanced
+	// scoring configurations.
 	ConfigFile string
 
-	// profiles such as ntia, bsi-v1.1, bsi-v2.0, oct, etc
+	// Profile specifies which compliance profiles to evaluate the SBOM against.
+	// Supported profiles include "ntia", "bsi-v1.1", "bsi-v2.0", "oct" (OpenChain Telco), etc.
+	// Multiple profiles can be evaluated simultaneously.
 	Profile []string
 
+	// SignatureBundle contains cryptographic signature information for SBOM verification.
+	// This includes the signature value, public key, and blob data for validation.
 	SignatureBundle sbom.Signature
 }

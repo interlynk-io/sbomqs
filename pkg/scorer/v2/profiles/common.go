@@ -567,6 +567,7 @@ func SBOMSignature(doc sbom.Document) catalog.ProfFeatScore {
 		return formulae.ScoreSBOMProfMissingNA("signature bundle", false)
 	}
 
+	// #nosec G304 -- User-provided paths are expected for CLI tool
 	pubKeyBytes, err := os.ReadFile(pubKeyPath)
 	if err != nil {
 		return catalog.ProfFeatScore{

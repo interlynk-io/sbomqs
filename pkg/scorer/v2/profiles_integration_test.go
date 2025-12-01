@@ -30,8 +30,8 @@ import (
 type expectedProfileScore struct {
 	Score    float64
 	Grade    string
-	Required int  // Number of required fields compliant
-	Optional int  // Number of optional fields present (if applicable)
+	Required int // Number of required fields compliant
+	Optional int // Number of optional fields present (if applicable)
 }
 
 // Test_NTIA2025ProfileForStaticSBOMFiles tests NTIA 2025 profile
@@ -40,7 +40,7 @@ func Test_NTIA2025ProfileForStaticSBOMFiles(t *testing.T) {
 	fmt.Println("==========================================")
 	fmt.Println("Running NTIA-2025 Profile Integration Tests")
 	fmt.Println("==========================================")
-	
+
 	base := filepath.Join("..", "..", "..", "testdata", "fixtures")
 
 	testCases := map[string]expectedProfileScore{
@@ -55,8 +55,8 @@ func Test_NTIA2025ProfileForStaticSBOMFiles(t *testing.T) {
 		filepath.Join(base, "spdx-no-authors.json"):       {Score: 5.4, Grade: "D", Required: 7},
 		filepath.Join(base, "spdx-no-timestamp.json"):     {Score: 4.6, Grade: "F", Required: 6},
 		filepath.Join(base, "spdx-old-version.json"):      {Score: 6.2, Grade: "D", Required: 8},
-		
-		// CycloneDX test cases  
+
+		// CycloneDX test cases
 		filepath.Join(base, "cdx-perfect-score.json"):    {Score: 10.0, Grade: "A", Required: 13},
 		filepath.Join(base, "cdx-minimal.json"):          {Score: 1.5, Grade: "F", Required: 2},
 		filepath.Join(base, "cdx-no-version.json"):       {Score: 4.6, Grade: "F", Required: 6},
@@ -72,7 +72,7 @@ func Test_NTIA2025ProfileForStaticSBOMFiles(t *testing.T) {
 	for path, want := range testCases {
 		filename := filepath.Base(path)
 		testName := "NTIA2025_" + filename
-		
+
 		t.Run(testName, func(t *testing.T) {
 			t.Parallel()
 
@@ -89,16 +89,16 @@ func Test_NTIA2025ProfileForStaticSBOMFiles(t *testing.T) {
 			for _, r := range results {
 				require.NotNil(t, r.Profiles, "Profile results should not be nil")
 				require.Len(t, r.Profiles.ProfResult, 1, "Should have exactly one profile result")
-				
+
 				profResult := r.Profiles.ProfResult[0]
 				require.Equal(t, "NTIA Minimum Elements (2025) - RFC", profResult.Name)
-				
+
 				gotRaw := profResult.InterlynkScore
 				gotRounded := math.Round(gotRaw*10) / 10
 
 				// Count required fields (all fields are required in NTIA 2025)
 				requiredCompliant := 0
-				
+
 				for _, item := range profResult.Items {
 					if item.Required && item.Score >= 10.0 {
 						requiredCompliant++
@@ -106,7 +106,7 @@ func Test_NTIA2025ProfileForStaticSBOMFiles(t *testing.T) {
 				}
 
 				// Log the score for visibility
-				t.Logf("File: %s | Score: %.1f/10.0 | Grade: %s | Required: %d/13", 
+				t.Logf("File: %s | Score: %.1f/10.0 | Grade: %s | Required: %d/13",
 					filename, gotRounded, profResult.Grade, requiredCompliant)
 				t.Logf("  Expected: Score: %.1f | Grade: %s | Required: %d/13",
 					want.Score, want.Grade, want.Required)
@@ -118,14 +118,14 @@ func Test_NTIA2025ProfileForStaticSBOMFiles(t *testing.T) {
 				// compare grade
 				require.Equal(t, want.Grade, profResult.Grade,
 					"Grade mismatch for %s", filename)
-					
+
 				// compare required fields count
 				require.Equal(t, want.Required, requiredCompliant,
 					"Required fields compliance count mismatch for %s", filename)
 			}
 		})
 	}
-	
+
 	fmt.Printf("NTIA-2025 Profile: ✓ All %d test cases completed\n", len(testCases))
 }
 
@@ -147,8 +147,8 @@ func Test_BSI11ProfileForStaticSBOMFiles(t *testing.T) {
 		filepath.Join(base, "spdx-no-authors.json"):       {Score: 5.0, Grade: "D", Required: 6, Optional: 1},
 		filepath.Join(base, "spdx-no-timestamp.json"):     {Score: 3.3, Grade: "F", Required: 4, Optional: 1},
 		filepath.Join(base, "spdx-old-version.json"):      {Score: 5.0, Grade: "D", Required: 6, Optional: 1},
-		
-		// CycloneDX test cases  
+
+		// CycloneDX test cases
 		filepath.Join(base, "cdx-perfect-score.json"):    {Score: 10.0, Grade: "A", Required: 12, Optional: 2},
 		filepath.Join(base, "cdx-minimal.json"):          {Score: 2.5, Grade: "F", Required: 3, Optional: 0},
 		filepath.Join(base, "cdx-no-version.json"):       {Score: 3.3, Grade: "F", Required: 4, Optional: 0},
@@ -164,7 +164,7 @@ func Test_BSI11ProfileForStaticSBOMFiles(t *testing.T) {
 	for path, want := range testCases {
 		filename := filepath.Base(path)
 		testName := "BSI11_" + filename
-		
+
 		t.Run(testName, func(t *testing.T) {
 			t.Parallel()
 
@@ -181,17 +181,17 @@ func Test_BSI11ProfileForStaticSBOMFiles(t *testing.T) {
 			for _, r := range results {
 				require.NotNil(t, r.Profiles, "Profile results should not be nil")
 				require.Len(t, r.Profiles.ProfResult, 1, "Should have exactly one profile result")
-				
+
 				profResult := r.Profiles.ProfResult[0]
 				require.Equal(t, "BSI TR-03183-2 v1.1", profResult.Name)
-				
+
 				gotRaw := profResult.InterlynkScore
 				gotRounded := math.Round(gotRaw*10) / 10
 
 				// Count required and optional fields
 				requiredCompliant := 0
 				optionalPresent := 0
-				
+
 				for _, item := range profResult.Items {
 					if item.Required {
 						if item.Score >= 10.0 {
@@ -205,7 +205,7 @@ func Test_BSI11ProfileForStaticSBOMFiles(t *testing.T) {
 				}
 
 				// Log the score for visibility
-				t.Logf("File: %s | Score: %.1f/10.0 | Grade: %s | Required: %d/12 | Optional: %d/3", 
+				t.Logf("File: %s | Score: %.1f/10.0 | Grade: %s | Required: %d/12 | Optional: %d/3",
 					filename, gotRounded, profResult.Grade, requiredCompliant, optionalPresent)
 				t.Logf("  Expected: Score: %.1f | Grade: %s | Required: %d/12 | Optional: %d/3",
 					want.Score, want.Grade, want.Required, want.Optional)
@@ -217,11 +217,11 @@ func Test_BSI11ProfileForStaticSBOMFiles(t *testing.T) {
 				// compare grade
 				require.Equal(t, want.Grade, profResult.Grade,
 					"Grade mismatch for %s", filename)
-					
+
 				// compare required fields count
 				require.Equal(t, want.Required, requiredCompliant,
 					"Required fields compliance count mismatch for %s", filename)
-					
+
 				// compare optional fields count
 				require.Equal(t, want.Optional, optionalPresent,
 					"Optional fields present count mismatch for %s", filename)
@@ -249,8 +249,8 @@ func Test_BSI20ProfileForStaticSBOMFiles(t *testing.T) {
 		filepath.Join(base, "spdx-no-authors.json"):       {Score: 3.8, Grade: "F", Required: 6, Optional: 1},
 		filepath.Join(base, "spdx-no-timestamp.json"):     {Score: 2.5, Grade: "F", Required: 4, Optional: 1},
 		filepath.Join(base, "spdx-old-version.json"):      {Score: 3.8, Grade: "F", Required: 6, Optional: 1},
-		
-		// CycloneDX test cases  
+
+		// CycloneDX test cases
 		filepath.Join(base, "cdx-perfect-score.json"):    {Score: 7.6, Grade: "C", Required: 13, Optional: 2},
 		filepath.Join(base, "cdx-minimal.json"):          {Score: 1.9, Grade: "F", Required: 3, Optional: 0},
 		filepath.Join(base, "cdx-no-version.json"):       {Score: 2.5, Grade: "F", Required: 4, Optional: 0},
@@ -266,7 +266,7 @@ func Test_BSI20ProfileForStaticSBOMFiles(t *testing.T) {
 	for path, want := range testCases {
 		filename := filepath.Base(path)
 		testName := "BSI20_" + filename
-		
+
 		t.Run(testName, func(t *testing.T) {
 			t.Parallel()
 
@@ -283,17 +283,17 @@ func Test_BSI20ProfileForStaticSBOMFiles(t *testing.T) {
 			for _, r := range results {
 				require.NotNil(t, r.Profiles, "Profile results should not be nil")
 				require.Len(t, r.Profiles.ProfResult, 1, "Should have exactly one profile result")
-				
+
 				profResult := r.Profiles.ProfResult[0]
 				require.Equal(t, "BSI TR-03183-2 v2.0", profResult.Name)
-				
+
 				gotRaw := profResult.InterlynkScore
 				gotRounded := math.Round(gotRaw*10) / 10
 
 				// Count required and optional fields
 				requiredCompliant := 0
 				optionalPresent := 0
-				
+
 				for _, item := range profResult.Items {
 					if item.Required {
 						if item.Score >= 10.0 {
@@ -307,7 +307,7 @@ func Test_BSI20ProfileForStaticSBOMFiles(t *testing.T) {
 				}
 
 				// Log the score for visibility
-				t.Logf("File: %s | Score: %.1f/10.0 | Grade: %s | Required: %d/16 | Optional: %d/3", 
+				t.Logf("File: %s | Score: %.1f/10.0 | Grade: %s | Required: %d/16 | Optional: %d/3",
 					filename, gotRounded, profResult.Grade, requiredCompliant, optionalPresent)
 				t.Logf("  Expected: Score: %.1f | Grade: %s | Required: %d/16 | Optional: %d/3",
 					want.Score, want.Grade, want.Required, want.Optional)
@@ -319,11 +319,11 @@ func Test_BSI20ProfileForStaticSBOMFiles(t *testing.T) {
 				// compare grade
 				require.Equal(t, want.Grade, profResult.Grade,
 					"Grade mismatch for %s", filename)
-					
+
 				// compare required fields count
 				require.Equal(t, want.Required, requiredCompliant,
 					"Required fields compliance count mismatch for %s", filename)
-					
+
 				// compare optional fields count
 				require.Equal(t, want.Optional, optionalPresent,
 					"Optional fields present count mismatch for %s", filename)
@@ -339,7 +339,7 @@ func Test_InterlynkProfileForStaticSBOMFiles(t *testing.T) {
 	fmt.Println("==========================================")
 	fmt.Println("Running Interlynk Profile Integration Tests")
 	fmt.Println("==========================================")
-	
+
 	base := filepath.Join("..", "..", "..", "testdata", "fixtures")
 
 	testCases := map[string]expectedProfileScore{
@@ -354,8 +354,8 @@ func Test_InterlynkProfileForStaticSBOMFiles(t *testing.T) {
 		filepath.Join(base, "spdx-no-authors.json"):       {Score: 4.0, Grade: "F"},
 		filepath.Join(base, "spdx-no-timestamp.json"):     {Score: 4.0, Grade: "F"},
 		filepath.Join(base, "spdx-old-version.json"):      {Score: 4.3, Grade: "F"},
-		
-		// CycloneDX test cases  
+
+		// CycloneDX test cases
 		filepath.Join(base, "cdx-perfect-score.json"):    {Score: 8.0, Grade: "B"},
 		filepath.Join(base, "cdx-minimal.json"):          {Score: 2.3, Grade: "F"},
 		filepath.Join(base, "cdx-no-version.json"):       {Score: 3.7, Grade: "F"},
@@ -371,7 +371,7 @@ func Test_InterlynkProfileForStaticSBOMFiles(t *testing.T) {
 	for path, want := range testCases {
 		filename := filepath.Base(path)
 		testName := "Interlynk_" + filename
-		
+
 		t.Run(testName, func(t *testing.T) {
 			t.Parallel()
 
@@ -388,17 +388,17 @@ func Test_InterlynkProfileForStaticSBOMFiles(t *testing.T) {
 			for _, r := range results {
 				require.NotNil(t, r.Profiles, "Profile results should not be nil")
 				require.Len(t, r.Profiles.ProfResult, 1, "Should have exactly one profile result")
-				
+
 				profResult := r.Profiles.ProfResult[0]
 				require.Equal(t, "Interlynk", profResult.Name)
-				
+
 				gotRaw := profResult.InterlynkScore
 				gotRounded := math.Round(gotRaw*10) / 10
 
 				// Count compliant features (all are required in Interlynk profile)
 				compliant := 0
 				total := 0
-				
+
 				for _, item := range profResult.Items {
 					total++
 					if item.Score >= 10.0 {
@@ -407,7 +407,7 @@ func Test_InterlynkProfileForStaticSBOMFiles(t *testing.T) {
 				}
 
 				// Log the score for visibility
-				t.Logf("File: %s | Score: %.1f/10.0 | Grade: %s | Compliant: %d/%d", 
+				t.Logf("File: %s | Score: %.1f/10.0 | Grade: %s | Compliant: %d/%d",
 					filename, gotRounded, profResult.Grade, compliant, total)
 				t.Logf("  Expected: Score: %.1f | Grade: %s",
 					want.Score, want.Grade)
@@ -422,7 +422,7 @@ func Test_InterlynkProfileForStaticSBOMFiles(t *testing.T) {
 			}
 		})
 	}
-	
+
 	fmt.Printf("Interlynk Profile: ✓ All %d test cases completed\n", len(testCases))
 }
 
@@ -432,7 +432,7 @@ func Test_OCTV11ProfileForStaticSBOMFiles(t *testing.T) {
 	fmt.Println("==========================================")
 	fmt.Println("Running OCT v1.1 Profile Integration Tests")
 	fmt.Println("==========================================")
-	
+
 	base := filepath.Join("..", "..", "..", "testdata", "fixtures")
 
 	testCases := map[string]expectedProfileScore{
@@ -528,7 +528,7 @@ func Test_OCTV11ProfileForStaticSBOMFiles(t *testing.T) {
 			}
 		})
 	}
-	
+
 	fmt.Printf("OCT v1.1 Profile: ✓ All %d test cases completed\n", len(testCases))
 }
 
