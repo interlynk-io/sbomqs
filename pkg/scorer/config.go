@@ -145,6 +145,7 @@ func DefaultConfig() string {
 }
 
 func ReadConfigFile(path string) ([]Filter, error) {
+	// #nosec G304 -- User-provided paths are expected for CLI tool
 	f, err := os.Open(path)
 	if err != nil {
 		return nil, err

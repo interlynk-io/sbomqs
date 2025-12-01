@@ -146,6 +146,7 @@ func collectResultsForSBOM(ctx context.Context, ep *Params, filePath string) ([]
 // parseSBOMDocument parses an SBOM document from a local file path
 func parseSBOMDocument(ctx context.Context, filePath string) (sbom.Document, error) {
 	log := logger.FromContext(ctx)
+	// #nosec G304 -- User-provided paths are expected for CLI tool
 	f, err := os.Open(filePath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open file %s: %w", filePath, err)

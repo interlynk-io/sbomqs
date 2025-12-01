@@ -139,6 +139,7 @@ func getSbomDocument(ctx context.Context, ep *Params) (*sbom.Document, error) {
 			return nil, err
 		}
 
+		// #nosec G304 -- User-provided paths are expected for CLI tool
 		f, err := os.Open(path)
 		if err != nil {
 			log.Debugf("os.Open failed for file :%s\n", path)

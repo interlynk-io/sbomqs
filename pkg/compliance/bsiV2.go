@@ -109,6 +109,7 @@ func bsiV2SbomSignature(doc sbom.Document) *db.Record {
 		blob := doc.Signature().GetBlob()
 		sig := doc.Signature().GetSigValue()
 
+		// #nosec G304 -- User-provided paths are expected for CLI tool
 		pubKeyData, err := os.ReadFile(pubKey)
 		if err != nil {
 			return db.NewRecordStmt(SBOM_SIGNATURE, "doc", "Sig not detected!", 0.0, "")

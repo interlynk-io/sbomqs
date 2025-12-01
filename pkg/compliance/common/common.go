@@ -526,6 +526,7 @@ func VerifySignature(pubKeyData []byte, sbomPath, signaturePath string) (bool, e
 	}
 
 	// Load and decode the signature
+	// #nosec G304 -- User-provided paths are expected for CLI tool
 	sig, err := os.ReadFile(signaturePath)
 	if err != nil {
 		return false, err
@@ -541,6 +542,7 @@ func VerifySignature(pubKeyData []byte, sbomPath, signaturePath string) (bool, e
 }
 
 func HashSBOM(sbomPath string) ([]byte, error) {
+	// #nosec G304 -- User-provided paths are expected for CLI tool
 	sbomData, err := os.ReadFile(sbomPath)
 	if err != nil {
 		return nil, err

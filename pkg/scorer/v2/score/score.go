@@ -122,6 +122,7 @@ func openAndParse(ctx context.Context, cfg config.Config, path string) (*os.File
 			return nil, nil, fmt.Errorf("process URL: %s: %w", path, err)
 		}
 	} else {
+		// #nosec G304 -- User-provided paths are expected for CLI tool
 		f, err = os.Open(path)
 		if err != nil {
 			return nil, nil, fmt.Errorf("open file for reading: %q: %w", path, err)

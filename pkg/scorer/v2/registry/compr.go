@@ -84,6 +84,7 @@ func DefaultComprConfig() string {
 
 // ReadComprConfigFile decodes a YAML file into the ComprConfig struct.
 func ReadComprConfigFile(path string) ([]catalog.ComprCatSpec, error) {
+	// #nosec G304 -- User-provided paths are expected for CLI tool
 	b, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err

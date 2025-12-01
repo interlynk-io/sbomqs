@@ -52,6 +52,7 @@ type Policy struct {
 
 // LoadPoliciesFromFile reads a YAML policy file and unmarshals it into policies.
 func LoadPoliciesFromFile(path string) ([]Policy, error) {
+	// #nosec G304 -- User-provided paths are expected for CLI tool
 	policyBytes, err := os.ReadFile(path)
 	if err != nil {
 		return nil, fmt.Errorf("read policy file: %w", err)

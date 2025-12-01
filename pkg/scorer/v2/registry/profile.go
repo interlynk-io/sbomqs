@@ -89,6 +89,7 @@ func DefaultProfConfig() string {
 
 // ReadProfileConfigFile decodes a YAML file into the ProfileConfig struct.
 func ReadProfileConfigFile(path string) ([]catalog.ProfSpec, error) {
+	// #nosec G304 -- User-provided paths are expected for CLI tool
 	b, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err

@@ -355,6 +355,7 @@ func processFile(ctx context.Context, ep *Params, path string, fs billy.Filesyst
 			return nil, nil, err
 		}
 
+		// #nosec G304 -- User-provided paths are expected for CLI tool
 		f, err := os.Open(path)
 		if err != nil {
 			log.Debugf("os.Open failed for file :%s\n", path)

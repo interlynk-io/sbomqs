@@ -344,6 +344,7 @@ func mergeConfigFileIntoCatalogYAML(ctx context.Context, path string) ([]catalog
 	var cat []catalog.ComprCatSpec
 	var prof []catalog.ProfSpec
 
+	// #nosec G304 -- User-provided paths are expected for CLI tool
 	b, err := os.ReadFile(path)
 	if err != nil {
 		log.Errorf("mergeConfigFileIntoCatalogYAML: failed to read file %q: %v", path, err)

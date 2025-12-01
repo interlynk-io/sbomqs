@@ -95,6 +95,7 @@ func GetFileHandle(ctx context.Context, filePath string) (*os.File, error) {
 
 	log.Debugf("Opening file for reading: %q", filePath)
 
+	// #nosec G304 -- User-provided paths are expected for CLI tool
 	file, err := os.Open(filePath)
 	if err != nil {
 		log.Debugf("Failed to open %q: %v", filePath, err)
