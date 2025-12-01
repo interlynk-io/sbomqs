@@ -125,10 +125,10 @@ func bsiIDScore(dtb *db.DB, id string) *bsiScoreResult {
 }
 
 func bsiAggregateScore(dtb *db.DB) *bsiScoreResult {
-	var results []bsiScoreResult
 	var finalResult bsiScoreResult
 
 	ids := dtb.GetAllIDs()
+	results := make([]bsiScoreResult, 0, len(ids))
 	for _, id := range ids {
 		results = append(results, *bsiIDScore(dtb, id))
 	}

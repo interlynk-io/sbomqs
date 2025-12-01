@@ -93,10 +93,10 @@ func octKeyIDScore(dtb *db.DB, key int, id string) *octScoreResult {
 }
 
 func octAggregateScore(dtb *db.DB) *octScoreResult {
-	var results []octScoreResult
 	var finalResult octScoreResult
 
 	ids := dtb.GetAllIDs()
+	results := make([]octScoreResult, 0, len(ids))
 	for _, id := range ids {
 		results = append(results, *octIDScore(dtb, id))
 	}

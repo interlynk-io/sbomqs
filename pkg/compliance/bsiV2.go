@@ -84,7 +84,7 @@ func bsiV2Vulnerabilities(doc sbom.Document) *db.Record {
 	result, score := "no-vulnerability", 10.0
 
 	vulns := doc.Vulnerabilities()
-	var allVulnIDs []string
+	allVulnIDs := make([]string, 0, len(vulns))
 
 	for _, v := range vulns {
 		if vulnID := v.GetID(); vulnID != "" {

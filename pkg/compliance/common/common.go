@@ -263,7 +263,7 @@ func CheckHash(checksums []sbom.GetChecksum) (string, bool, bool) {
 // ConvertMapToString converts a map of type map[string]string into a string
 // representation where each key-value pair is formatted as "key:value".
 func ConvertMapToString(m map[string]string) string {
-	var result []string
+	result := make([]string, 0, len(m))
 
 	for key, value := range m {
 		result = append(result, key+": "+value)
@@ -348,7 +348,7 @@ func CheckPrimaryDependenciesInComponentList(dependencies []string, componentLis
 
 // GetDependenciesByName returns the names of all dependencies based on their IDs.
 func GetDependenciesByName(dependencies []string, compIDWithName map[string]string) []string {
-	var allDepByName []string
+	allDepByName := make([]string, 0, len(dependencies))
 	for _, dep := range dependencies {
 		allDepByName = append(allDepByName, compIDWithName[dep])
 	}

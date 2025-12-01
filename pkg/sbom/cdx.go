@@ -511,11 +511,12 @@ func copyC(cdxc *cydx.Component, c *CdxDoc) *Component {
 // return true if a component has relationship
 func getComponentRelationship(c *CdxDoc, compID string) (bool, int, []string) {
 	count := 0
-	var deps []string
 	if c.doc.Dependencies == nil {
 		c.addToLogs(fmt.Sprintf("cdx doc component %s has no dependencies", compID))
 		return false, count, nil
 	}
+	
+	deps := make([]string, 0, len(*c.doc.Dependencies))
 	for _, rel := range *c.doc.Dependencies {
 		if rel.Ref == compID {
 			if len(lo.FromPtr(rel.Dependencies)) > 0 {
@@ -528,7 +529,6 @@ func getComponentRelationship(c *CdxDoc, compID string) (bool, int, []string) {
 }
 
 func (c *CdxDoc) parseComps() {
-	c.Comps = []GetComponent{}
 	comps := map[string]*Component{}
 	if c.doc.Metadata != nil && c.doc.Metadata.Component != nil {
 		walkComponents(&[]cydx.Component{*c.doc.Metadata.Component}, c, comps)
@@ -538,6 +538,7 @@ func (c *CdxDoc) parseComps() {
 		walkComponents(c.doc.Components, c, comps)
 	}
 
+	c.Comps = make([]GetComponent, 0, len(comps))
 	for _, v := range comps {
 		c.Comps = append(c.Comps, v)
 	}
@@ -591,14 +592,14 @@ func (c *CdxDoc) pkgRequiredFields(comp *cydx.Component) bool {
 }
 
 func (c *CdxDoc) checksums(comp *cydx.Component) []GetChecksum {
-	chks := []GetChecksum{}
-
-	if len(lo.FromPtr(comp.Hashes)) == 0 {
+	hashes := lo.FromPtr(comp.Hashes)
+	if len(hashes) == 0 {
 		c.addToLogs(fmt.Sprintf("cdx doc comp %s no checksum found", comp.Name))
-		return chks
+		return []GetChecksum{}
 	}
 
-	for _, cl := range lo.FromPtr(comp.Hashes) {
+	chks := make([]GetChecksum, 0, len(hashes))
+	for _, cl := range hashes {
 		ck := Checksum{}
 		ck.Alg = string(cl.Algorithm)
 		ck.Content = cl.Value
@@ -624,7 +625,7 @@ func aggregateLicenses(clicenses cydx.Licenses, filter string) []licenses.Licens
 		return []licenses.License{}
 	}
 
-	lics := []licenses.License{}
+	lics := make([]licenses.License, 0, len(clicenses))
 
 	getLicenses := func(exp string) []licenses.License {
 		return licenses.LookupExpression(exp, []licenses.License{})
@@ -648,8 +649,6 @@ func aggregateLicenses(clicenses cydx.Licenses, filter string) []licenses.Licens
 }
 
 func (c *CdxDoc) parseTool() {
-	c.CdxTools = []GetTool{}
-
 	if c.doc.Metadata == nil {
 		return
 	}
@@ -658,21 +657,29 @@ func (c *CdxDoc) parseTool() {
 		return
 	}
 
-	for _, tt := range lo.FromPtr(c.doc.Metadata.Tools.Tools) {
+	// Calculate capacity based on all tool sources
+	tools := lo.FromPtr(c.doc.Metadata.Tools.Tools)
+	components := lo.FromPtr(c.doc.Metadata.Tools.Components)
+	services := lo.FromPtr(c.doc.Metadata.Tools.Services)
+	totalCapacity := len(tools) + len(components) + len(services)
+	
+	c.CdxTools = make([]GetTool, 0, totalCapacity)
+
+	for _, tt := range tools {
 		t := Tool{}
 		t.Name = tt.Name
 		t.Version = tt.Version
 		c.CdxTools = append(c.CdxTools, t)
 	}
 
-	for _, ct := range lo.FromPtr(c.doc.Metadata.Tools.Components) {
+	for _, ct := range components {
 		t := Tool{}
 		t.Name = ct.Name
 		t.Version = ct.Version
 		c.CdxTools = append(c.CdxTools, t)
 	}
 
-	for _, ct := range lo.FromPtr(c.doc.Metadata.Tools.Services) {
+	for _, ct := range services {
 		t := Tool{}
 		t.Name = ct.Name
 		t.Version = ct.Version
@@ -681,13 +688,14 @@ func (c *CdxDoc) parseTool() {
 }
 
 func (c *CdxDoc) parseAuthors() {
-	c.CdxAuthors = []GetAuthor{}
-
 	if c.doc.Metadata == nil {
 		return
 	}
 
-	for _, auth := range lo.FromPtr(c.doc.Metadata.Authors) {
+	authors := lo.FromPtr(c.doc.Metadata.Authors)
+	c.CdxAuthors = make([]GetAuthor, 0, len(authors))
+	
+	for _, auth := range authors {
 		a := Author{}
 		a.Name = auth.Name
 		a.Email = auth.Email

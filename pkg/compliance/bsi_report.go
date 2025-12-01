@@ -130,8 +130,12 @@ func bsiJSONReport(dtb *db.DB, fileName string) {
 }
 
 func constructSections(dtb *db.DB) []bsiSection {
-	var sections []bsiSection
 	allIDs := dtb.GetAllIDs()
+	
+	// Estimate capacity based on the number of IDs and potential records per ID
+	estimatedCapacity := len(allIDs) * 5 // rough estimate
+	sections := make([]bsiSection, 0, estimatedCapacity)
+	
 	for _, id := range allIDs {
 		records := dtb.GetRecordsByID(id)
 
@@ -163,7 +167,7 @@ func constructSections(dtb *db.DB) []bsiSection {
 	}
 
 	// Sort each group of sections by section.ID and ensure "SBOM" comes first within its group if it exists
-	var sortedSections []bsiSection
+	sortedSections := make([]bsiSection, 0, len(sections))
 	var sbomLevelSections []bsiSection
 	for elementID, group := range sectionsByElementID {
 		if elementID == "SBOM" {

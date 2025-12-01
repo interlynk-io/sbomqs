@@ -142,7 +142,7 @@ var (
 )
 
 func getDepByName(dependencies []string) []string {
-	var allDepByName []string
+	allDepByName := make([]string, 0, len(dependencies))
 	for _, dep := range dependencies {
 		allDepByName = append(allDepByName, CompIDWithName[dep])
 	}

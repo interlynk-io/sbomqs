@@ -99,8 +99,12 @@ func ntiaJSONReport(db *db.DB, fileName string) {
 }
 
 func ntiaConstructSections(db *db.DB) []ntiaSection {
-	var sections []ntiaSection
 	allIDs := db.GetAllIDs()
+	
+	// Estimate capacity based on the number of IDs and potential records per ID
+	estimatedCapacity := len(allIDs) * 5 // rough estimate
+	sections := make([]ntiaSection, 0, estimatedCapacity)
+	
 	for _, id := range allIDs {
 		records := db.GetRecordsByID(id)
 
@@ -132,7 +136,7 @@ func ntiaConstructSections(db *db.DB) []ntiaSection {
 	}
 
 	// Sort each group of sections by section.ID and ensure "SBOM Data Fields" comes first within its group if it exists
-	var sortedSections []ntiaSection
+	sortedSections := make([]ntiaSection, 0, len(sections))
 	var sbomLevelSections []ntiaSection
 	for elementID, group := range sectionsByElementID {
 		sort.Slice(group, func(i, j int) bool {
