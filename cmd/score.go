@@ -70,7 +70,8 @@ type userCmd struct {
 	legacy bool
 }
 
-// scoreCmd represents the score command
+// scoreCmd represents the score command for generating comprehensive quality scores for SBOM documents.
+// It supports various output formats (table, JSON, basic) and can filter by categories and features.
 var scoreCmd = &cobra.Command{
 	Use:          "score",
 	Short:        "comprehensive quality score for your sbom",

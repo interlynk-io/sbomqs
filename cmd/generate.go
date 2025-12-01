@@ -33,7 +33,8 @@ const (
 	profFileName     = "profiles.yaml"
 )
 
-// generateCmd represents the generate command
+// generateCmd represents the generate command for creating configuration files.
+// It can generate YAML configs for features, comprehensive scoring, and profiles.
 var generateCmd = &cobra.Command{
 	Use:   "generate",
 	Short: "provides a comprehensive config generate for your sbom to get specific criteria",

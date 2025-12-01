@@ -24,7 +24,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// dtrackScoreCmd represents the dtrackScore command
+// dtrackScoreCmd represents the dtrackScore command for scoring SBOM quality from Dependency-Track projects.
+// It requires a Dependency-Track URL and API key to access and score projects by their UUID.
 var dtrackScoreCmd = &cobra.Command{
 	Use:          "dtrackScore <project-id>",
 	Aliases:      []string{"dt"},

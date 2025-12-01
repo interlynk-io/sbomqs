@@ -46,7 +46,8 @@ type userListCmd struct {
 	debug bool
 }
 
-// listCmd lists components or SBOM properties based on specified features
+// listCmd represents the list command for listing components or SBOM properties based on specified features.
+// It can show components that have or are missing specific features like suppliers, licenses, etc.
 var listCmd = &cobra.Command{
 	Use:          "list",
 	Short:        "List components or SBOM properties based on feature",

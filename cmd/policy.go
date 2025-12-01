@@ -44,7 +44,8 @@ type policyCmdConfig struct {
 	debug bool
 }
 
-// applyCmd represents the sbomqs apply command
+// policyCmd represents the policy command for applying SBOM policies to documents.
+// It supports both file-based policies and inline policy definitions with various actions.
 var policyCmd = &cobra.Command{
 	Use:          "policy",
 	Short:        "Apply SBOM policies to an SBOM document",
