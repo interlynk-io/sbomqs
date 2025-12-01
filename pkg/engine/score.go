@@ -68,8 +68,6 @@ type Params struct {
 	Fsct  bool
 
 	Color     bool
-	Signature string
-	PublicKey string
 	Blob      string
 
 	Legacy   bool
@@ -224,7 +222,7 @@ func handlePaths(ctx context.Context, ep *Params) error {
 				return err
 			}
 
-			_, signature, publicKey, err := common.GetSignatureBundle(ctx, path, ep.Signature, ep.PublicKey)
+			_, signature, publicKey, err := common.GetSignatureBundle(ctx, path, "", "")
 			if err != nil {
 				log.Debugf("common.GetSignatureBundle failed for file :%s\n", path)
 				fmt.Printf("failed to get signature bundle for %s\n", path)
@@ -314,7 +312,7 @@ func processFile(ctx context.Context, ep *Params, path string, fs billy.Filesyst
 	log.Debugf("Processing file :%s\n", path)
 	var doc sbom.Document
 
-	_, signature, publicKey, err := common.GetSignatureBundle(ctx, path, ep.Signature, ep.PublicKey)
+	_, signature, publicKey, err := common.GetSignatureBundle(ctx, path, "", "")
 	if err != nil {
 		log.Debugf("common.GetSignatureBundle failed for file :%s\n", path)
 		fmt.Printf("failed to get signature bundle for %s\n", path)

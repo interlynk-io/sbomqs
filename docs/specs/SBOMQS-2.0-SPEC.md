@@ -494,8 +494,8 @@ $ sbomqs score --profile ntia samples/example.cdx.json
 # BSI v1.1 profile
 $ sbomqs score --profile bsi-v1.1 samples/example.cdx.json
 
-# BSI v2.0 with signature verification
-$ sbomqs score --profile bsi-v2.0 --sig sbom.sig --pub public.key samples/example.cdx.json
+# BSI v2.0 profile
+$ sbomqs score --profile bsi-v2.0 samples/example.cdx.json
 
 # OpenChain Telco (SPDX only)
 $ sbomqs score --profile oct samples/example.spdx.json
@@ -728,7 +728,7 @@ Some profile requirements exist outside the v2.0 scoring framework:
 #### Important Differences
 1. **Profiles use --profile flag** for profile-based evaluation
 2. **All profiles return scores** (0-10), not just pass/fail status
-3. **BSI v2.0 requires signature files** via --sig and --pub flags
+3. **BSI v2.0 includes signature scoring** for CycloneDX files with embedded signatures
 4. **OCT is SPDX-only** and will fail on CycloneDX files
 5. **Feature names differ** between profiles and v2.0 scoring (see tables above)
 

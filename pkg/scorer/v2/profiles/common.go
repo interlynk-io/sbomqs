@@ -551,6 +551,15 @@ func CompDeclaredLicenses(doc sbom.Document) catalog.ProfFeatScore {
 
 // SBOMSignature look for signature
 func SBOMSignature(doc sbom.Document) catalog.ProfFeatScore {
+	// SPDX does not support signatures in its specification
+	if strings.ToLower(doc.Spec().GetSpecType()) == "spdx" {
+		return catalog.ProfFeatScore{
+			Score:  0.0,
+			Desc:   formulae.NonSupportedSPDXField(),
+			Ignore: true,
+		}
+	}
+
 	sig := doc.Signature()
 	if sig == nil {
 		return formulae.ScoreSBOMProfMissingNA("signature", false)

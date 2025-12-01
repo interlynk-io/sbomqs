@@ -44,10 +44,6 @@ sbomqs score [flags] <SBOM file(s)>
 - `--profile <profiles>`: Apply specific compliance profiles (comma-separated: 'ntia', 'bsi', 'oct', 'interlynk', 'bsi-v2.0')
 - `--legacy, -e`: Use legacy scoring mode (prior to sbomqs version 2.0)
 
-### Input Flags
-- `--sig, -v <path>`: Path to SBOM signature file
-- `--pub, -p <path>`: Path to public key for signature verification
-
 ### Other Flags
 - `--debug, -D`: Enable debug logging
 
@@ -219,8 +215,8 @@ $ sbomqs score --profile ntia my-app.spdx.json
 # Multiple profiles
 $ sbomqs score --profile ntia,bsi,oct my-app.spdx.json
 
-# BSI v2.0 with signature verification
-$ sbomqs score --profile bsi-v2.0 --sig sbom.sig --pub public_key.pem my-app.spdx.json
+# BSI v2.0 profile
+$ sbomqs score --profile bsi-v2.0 my-app.spdx.json
 ```
 
 #### Category-Specific Scoring
@@ -315,11 +311,8 @@ $ sbomqs score --profile ntia my-app.spdx.json
 # Multiple profiles
 $ sbomqs score --profile ntia,bsi,oct,interlynk my-app.spdx.json
 
-# BSI with signature verification
-$ sbomqs score --profile bsi-v2.0 \
-    --sig samples/sbom.sig \
-    --pub samples/public_key.pem \
-    samples/app.spdx.json
+# BSI profile
+$ sbomqs score --profile bsi-v2.0 samples/app.spdx.json
 ```
 
 ### Version 2.0 vs Legacy Mode

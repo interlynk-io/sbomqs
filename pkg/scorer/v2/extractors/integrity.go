@@ -109,6 +109,15 @@ var verifySignature = common.VerifySignature
 //	 5 = signature present but verification failed
 //	 0 = no signature / incomplete bundle
 func SBOMSignature(doc sbom.Document) catalog.ComprFeatScore {
+	// SPDX does not support signatures in its specification
+	if strings.ToLower(doc.Spec().GetSpecType()) == "spdx" {
+		return catalog.ComprFeatScore{
+			Score:  0,
+			Desc:   "not supported by SPDX",
+			Ignore: true,
+		}
+	}
+
 	sig := doc.Signature()
 	if sig == nil {
 		return catalog.ComprFeatScore{
