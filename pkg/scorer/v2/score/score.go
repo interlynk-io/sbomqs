@@ -32,7 +32,7 @@ import (
 )
 
 // ScoreSBOM evaluates one or more SBOMs according to the specified configuration.
-// It accepts file paths or URLs and returns scoring results for profile-based 
+// It accepts file paths or URLs and returns scoring results for profile-based
 // or comprehensive analysis. The function validates input paths, initializes
 // the scoring catalog, and processes each SBOM independently.
 //

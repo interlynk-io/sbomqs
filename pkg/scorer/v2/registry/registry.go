@@ -50,6 +50,21 @@ var NTIAKeyToEvaluatingFunction = map[string]catalog.ProfFeatEval{
 	"sbom_timestamp":      profiles.SBOMCreationTimestamp,
 }
 
+var FSCTKeyToEvaluatingFunction = map[string]catalog.ProfFeatEval{
+	"sbom_author":            profiles.FSCTSBOMAuthors,
+	"sbom_timestamp":         profiles.FSCTSBOMTimeStamp,
+	"sbom_build":             profiles.FSCTSBOMBuildLifecycle,
+	"sbom_primary_component": profiles.FSCTSBOMPrimaryComponent,
+	"comp_name":              profiles.FSCTCompName,
+	"comp_version":           profiles.FSCTCompVersion,
+	"comp_supplier":          profiles.FSCTCompSupplier,
+	"comp_uniq_id":           profiles.FSCTCompUniqID,
+	"comp_hash":              profiles.FSCTCompHash,
+	"comp_dependencies":      profiles.FSCTCompDependencies,
+	"comp_license":           profiles.FSCTCompLicense,
+	"comp_copyright":         profiles.FSCTCompCopyright,
+}
+
 var NTIA2025KeyToEvaluatingFunction = map[string]catalog.ProfFeatEval{
 	"sbom_machine_format":  profiles.SBOMAutomationSpec,
 	"sbom_author":          profiles.SBOMAuthors,
@@ -222,6 +237,7 @@ const (
 	ProfileBSI20     catalog.ProfileKey = "bsi-v2.0"
 	ProfileOCTV11    catalog.ProfileKey = "oct-v1.1"
 	ProfileInterlynk catalog.ProfileKey = "interlynk"
+	ProfileFSCT      catalog.ProfileKey = "fsct"
 )
 
 var categoryAlias = map[string]catalog.ComprCatKey{
@@ -250,6 +266,7 @@ var profileAliases = map[string]catalog.ProfileKey{
 	"NTIA-2025":             ProfileNTIA2025,
 	"ntia2025":              ProfileNTIA2025,
 	"NTIA2025":              ProfileNTIA2025,
+	"fsct":                  ProfileFSCT,
 	"BSI":                   ProfileBSI11,
 	"bsi":                   ProfileBSI11,
 	"BSI-V1.1":              ProfileBSI11,
@@ -478,31 +495,35 @@ func filterProfiles(ctx context.Context, profiles []string) ([]catalog.ProfSpec,
 
 		switch profile {
 
-		case "ntia":
+		case string(ProfileNTIA):
 			log.Debugf("filterProfiles: selecting profile %q", profile)
 			finalProfiles = append(finalProfiles, profileNTIASpec)
 
-		case "ntia-2025":
+		case string(ProfileNTIA2025):
 			log.Debugf("filterProfiles: selecting profile %q", profile)
 			finalProfiles = append(finalProfiles, profileNTIA2025Spec)
+
+		case string(ProfileFSCT):
+			log.Debugf("filterProfiles: selecting profile %q", profile)
+			finalProfiles = append(finalProfiles, profileFSCTSpec)
 
 		case "bsi":
 			log.Debugf("filterProfiles: selecting profile %q", profile)
 			finalProfiles = append(finalProfiles, profileBSI11Spec)
 
-		case "bsi-v1.1":
+		case string(ProfileBSI11):
 			log.Debugf("filterProfiles: selecting profile %q", profile)
 			finalProfiles = append(finalProfiles, profileBSI11Spec)
 
-		case "bsi-v2.0":
+		case string(ProfileBSI20):
 			log.Debugf("filterProfiles: selecting profile %q", profile)
 			finalProfiles = append(finalProfiles, profileBSI20Spec)
 
-		case "oct-v1.1":
+		case string(ProfileOCTV11):
 			log.Debugf("filterProfiles: selecting profile %q", profile)
 			finalProfiles = append(finalProfiles, profileOCTV11Spec)
 
-		case "interlynk":
+		case string(ProfileInterlynk):
 			log.Debugf("filterProfiles: selecting profile %q", profile)
 			finalProfiles = append(finalProfiles, profileInterlynkSpec)
 
@@ -734,6 +755,29 @@ var profileNTIA2025Spec = catalog.ProfSpec{
 	},
 }
 
+var profileFSCTSpec = catalog.ProfSpec{
+	Key:         ProfileFSCT,
+	Name:        "Framing Third Edition Compliance",
+	Description: "Framing Third Edition Compliance Profile",
+	Features: []catalog.ProfFeatSpec{
+		// Required (SHALL) fields
+		{Key: "sbom_author", Name: "SBOM Author", Required: true, Description: "Tool or person who created SBOM", Evaluate: profiles.FSCTSBOMAuthors},
+		{Key: "sbom_timestamp", Name: "SBOM Timestamp", Required: true, Description: "ISO 8601 creation timestamp", Evaluate: profiles.FSCTSBOMTimeStamp},
+		{Key: "sbom_primary_component", Name: "Primary Component", Required: true, Description: "Primary Component for which SBOM is created", Evaluate: profiles.FSCTSBOMPrimaryComponent},
+		{Key: "comp_name", Name: "Component Name", Required: true, Description: "All components must have names", Evaluate: profiles.FSCTCompName},
+		{Key: "comp_version", Name: "Component Version", Required: true, Description: "Version strings for all components", Evaluate: profiles.FSCTCompVersion},
+		{Key: "comp_supplier", Name: "Component Supplier", Required: true, Description: "Component supplier info", Evaluate: profiles.FSCTCompSupplier},
+		{Key: "comp_uniq_id", Name: "Component Other Identifiers", Required: true, Description: "PURL, CPE, or other unique IDs", Evaluate: profiles.FSCTCompUniqID},
+		{Key: "comp_hash", Name: "Component Hash", Required: true, Description: "Component checksums", Evaluate: profiles.FSCTCompHash},
+		{Key: "comp_dependencies", Name: "Component Dependencies", Required: true, Description: "Dependency relationships", Evaluate: profiles.FSCTCompDependencies},
+		{Key: "comp_license", Name: "License Information", Required: true, Description: "Component licenses (optional)", Evaluate: profiles.FSCTCompLicense},
+		{Key: "comp_copyright", Name: "Copyright Text", Required: true, Description: "Copyright information", Evaluate: profiles.FSCTCompCopyright},
+
+		// Optional (SHOULD) fields - don't impact score
+		{Key: "sbom_build", Name: "Build Information", Required: false, Description: "Build phase indication", Evaluate: profiles.FSCTSBOMBuildLifecycle},
+	},
+}
+
 var profileBSI11Spec = catalog.ProfSpec{
 	Key:         ProfileBSI11,
 	Name:        "BSI TR-03183-2 v1.1",
@@ -830,4 +874,5 @@ var Profile = []catalog.ProfSpec{
 	profileBSI20Spec,
 	profileOCTV11Spec,
 	profileInterlynkSpec,
+	profileFSCTSpec,
 }

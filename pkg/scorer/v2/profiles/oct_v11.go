@@ -204,7 +204,7 @@ func OCTV11CompIdentifier(doc sbom.Document) catalog.ProfFeatScore {
 		})
 	}
 
-	return formulae.ScoreProfFull(have, len(comps), "component identifier", false)
+	return formulae.ScoreProfFull(have, len(comps), false)
 }
 
 // OCTV11CompVersion: Package Version
@@ -278,7 +278,7 @@ func OCTV11CompChecksum(doc sbom.Document) catalog.ProfFeatScore {
 		return len(c.GetChecksums()) > 0
 	})
 
-	return formulae.ScoreProfFull(have, len(comps), "component checksums", true)
+	return formulae.ScoreProfFull(have, len(comps), true)
 }
 
 // OCTV11CompPURL: External Reference PURL (SHOULD)
@@ -292,5 +292,5 @@ func OCTV11CompPURL(doc sbom.Document) catalog.ProfFeatScore {
 		return len(c.GetPurls()) > 0
 	})
 
-	return formulae.ScoreProfFull(have, len(comps), "component PURL", true)
+	return formulae.ScoreProfFull(have, len(comps), true)
 }

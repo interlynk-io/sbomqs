@@ -242,7 +242,7 @@ func CompName(doc sbom.Document) catalog.ProfFeatScore {
 		return strings.TrimSpace(c.GetName()) != ""
 	})
 
-	return formulae.ScoreProfFull(have, len(comps), "name", false)
+	return formulae.ScoreProfFull(have, len(comps), false)
 }
 
 // CompVersion: percentage of components that have a non-empty version.
@@ -256,7 +256,7 @@ func CompVersion(doc sbom.Document) catalog.ProfFeatScore {
 		return strings.TrimSpace(c.GetVersion()) != ""
 	})
 
-	return formulae.ScoreProfFull(have, len(comps), "versions", false)
+	return formulae.ScoreProfFull(have, len(comps), false)
 }
 
 func CompSupplier(doc sbom.Document) catalog.ProfFeatScore {
@@ -269,17 +269,8 @@ func CompSupplier(doc sbom.Document) catalog.ProfFeatScore {
 		return commonV2.IsSupplierEntity(c.Suppliers())
 	})
 
-	return formulae.ScoreProfFull(have, len(comps), "names", false)
+	return formulae.ScoreProfFull(have, len(comps), false)
 }
-
-// // isSupplierEntity check whether supplier is a legal entity or not:
-// // supplier should have either name/email/url/contact info.
-// func isSupplierEntity(supplier sbom.GetSupplier) bool {
-// 	if supplier.GetName() != "" || supplier.GetEmail() != "" {
-// 		return true
-// 	}
-// 	return false
-// }
 
 // CompLicenses check for concluded valid license and score accordingly
 func CompLicenses(doc sbom.Document) catalog.ProfFeatScore {
@@ -292,7 +283,7 @@ func CompLicenses(doc sbom.Document) catalog.ProfFeatScore {
 		return commonV2.ComponentHasAnyConcluded(c)
 	})
 
-	return formulae.ScoreProfFull(have, len(comps), "licenses", false)
+	return formulae.ScoreProfFull(have, len(comps), false)
 }
 
 // CompConcludedLicenses check for concluded valid license and score accordingly
@@ -306,7 +297,7 @@ func CompConcludedLicenses(doc sbom.Document) catalog.ProfFeatScore {
 		return commonV2.ComponentHasAnyConcluded(c)
 	})
 
-	return formulae.ScoreProfFull(have, len(comps), "licenses", false)
+	return formulae.ScoreProfFull(have, len(comps), false)
 }
 
 // CompHash returns coverage of components that have SHA-1 or stronger
@@ -318,10 +309,25 @@ func CompHash(doc sbom.Document) catalog.ProfFeatScore {
 	}
 
 	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
+		return commonV2.HasAnyChecksum(c)
+	})
+
+	return formulae.ScoreProfFull(have, len(comps), false)
+}
+
+// CompHashSHA1Plus returns coverage of components that have SHA-1 or stronger
+// (MD5, SHA-1, SHA-256, SHA-384, or SHA-512).
+func CompHashSHA1Plus(doc sbom.Document) catalog.ProfFeatScore {
+	comps := doc.Components()
+	if len(comps) == 0 {
+		return formulae.ScoreProfNA(true)
+	}
+
+	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
 		return commonV2.HasSHA1Plus(c)
 	})
 
-	return formulae.ScoreProfFull(have, len(comps), "hash", false)
+	return formulae.ScoreProfFull(have, len(comps), false)
 }
 
 // CompWithSHA256Plus returns coverage of components that have SHA-256 or stronger.
@@ -338,7 +344,7 @@ func CompSHA256Plus(doc sbom.Document) catalog.ProfFeatScore {
 		}
 	}
 
-	return formulae.ScoreProfFull(have, len(comps), "SHA-256+", false)
+	return formulae.ScoreProfFull(have, len(comps), false)
 }
 
 // CompSourceCodeURL checks source code repo url
@@ -353,7 +359,7 @@ func CompSourceCodeURL(doc sbom.Document) catalog.ProfFeatScore {
 		return commonV2.HasComponentSourceCodeURL(c.GetSourceCodeURL())
 	})
 
-	return formulae.ScoreProfFull(have, len(comps), "source code repo", true)
+	return formulae.ScoreProfFull(have, len(comps), true)
 }
 
 // CompCopyright
@@ -368,7 +374,7 @@ func CompCopyright(doc sbom.Document) catalog.ProfFeatScore {
 		return dl != "" && dl != "none" && dl != "noassertion"
 	})
 
-	return formulae.ScoreProfFull(have, len(comps), "copyright", true)
+	return formulae.ScoreProfFull(have, len(comps), true)
 }
 
 // CompDownloadCodeURL checks download url
@@ -383,7 +389,7 @@ func CompDownloadCodeURL(doc sbom.Document) catalog.ProfFeatScore {
 		return strings.TrimSpace(c.GetDownloadLocationURL()) != ""
 	})
 
-	return formulae.ScoreProfFull(have, len(comps), "download URIs", false)
+	return formulae.ScoreProfFull(have, len(comps), false)
 }
 
 // CompSourceCodeHash checks for source code has
@@ -408,7 +414,7 @@ func CompSourceCodeHash(doc sbom.Document) catalog.ProfFeatScore {
 		return c.SourceCodeHash() != ""
 	})
 
-	return formulae.ScoreProfFull(have, len(comps), "source code hash", true)
+	return formulae.ScoreProfFull(have, len(comps), true)
 }
 
 // CompDependencies checks for component level dependencies
@@ -423,7 +429,7 @@ func CompDependencies(doc sbom.Document) catalog.ProfFeatScore {
 		return commonV2.HasComponentDependencies(c)
 	})
 
-	return formulae.ScoreProfFull(have, len(comps), "dependencies", false)
+	return formulae.ScoreProfFull(have, len(comps), false)
 }
 
 func CompUniqID(doc sbom.Document) catalog.ProfFeatScore {
@@ -436,7 +442,7 @@ func CompUniqID(doc sbom.Document) catalog.ProfFeatScore {
 		return checkUniqueID(c)
 	})
 
-	return formulae.ScoreProfFull(have, len(comps), "unique ID", false)
+	return formulae.ScoreProfFull(have, len(comps), false)
 }
 
 func CompPURL(doc sbom.Document) catalog.ProfFeatScore {
@@ -449,7 +455,7 @@ func CompPURL(doc sbom.Document) catalog.ProfFeatScore {
 		return commonV2.CompHasAnyPURLs(c)
 	})
 
-	return formulae.ScoreProfFull(have, len(comps), "PURLs", false)
+	return formulae.ScoreProfFull(have, len(comps), false)
 }
 
 func CompCPE(doc sbom.Document) catalog.ProfFeatScore {
@@ -462,7 +468,7 @@ func CompCPE(doc sbom.Document) catalog.ProfFeatScore {
 		return commonV2.CompHasAnyCPEs(c)
 	})
 
-	return formulae.ScoreProfFull(have, len(comps), "CPEs", false)
+	return formulae.ScoreProfFull(have, len(comps), false)
 }
 
 func CompPurpose(doc sbom.Document) catalog.ProfFeatScore {
@@ -475,7 +481,7 @@ func CompPurpose(doc sbom.Document) catalog.ProfFeatScore {
 		return commonV2.HasComponentPrimaryPackageType(c.PrimaryPurpose())
 	})
 
-	return formulae.ScoreProfFull(have, len(comps), "type", false)
+	return formulae.ScoreProfFull(have, len(comps), false)
 }
 
 func CompWithNODeprecatedLicenses(doc sbom.Document) catalog.ProfFeatScore {
@@ -546,7 +552,7 @@ func CompDeclaredLicenses(doc sbom.Document) catalog.ProfFeatScore {
 		return commonV2.ComponentHasAnyDeclared(c)
 	})
 
-	return formulae.ScoreProfFull(have, len(comps), "declared license", false)
+	return formulae.ScoreProfFull(have, len(comps), false)
 }
 
 // SBOMSignature look for signature
@@ -568,16 +574,16 @@ func SBOMSignature(doc sbom.Document) catalog.ProfFeatScore {
 	// Check if signature has the required components
 	algorithm := strings.TrimSpace(sig.GetAlgorithm())
 	sigValue := strings.TrimSpace(sig.GetSigValue())
-	
+
 	// Incomplete signature → treat as missing
 	if algorithm == "" || sigValue == "" {
 		return formulae.ScoreSBOMProfMissingNA("signature", false)
 	}
-	
+
 	// Check if we have public key or certificate path for verification
 	pubKey := strings.TrimSpace(sig.GetPublicKey())
 	certPath := sig.GetCertificatePath()
-	
+
 	if pubKey == "" && len(certPath) == 0 {
 		// Signature present but no verification material
 		return catalog.ProfFeatScore{
@@ -586,7 +592,7 @@ func SBOMSignature(doc sbom.Document) catalog.ProfFeatScore {
 			Ignore: false,
 		}
 	}
-	
+
 	// For now, we'll give full score if signature is complete
 	// Future enhancement: actually verify the signature
 	return catalog.ProfFeatScore{
