@@ -76,6 +76,7 @@ func extractArgs(cmd *cobra.Command, args []string) (*engine.DtParams, error) {
 	params.Detailed = detailed
 
 	params.TagProjectWithScore, _ = cmd.Flags().GetBool("tag-project-with-score")
+	params.TagProjectWithGrade, _ = cmd.Flags().GetBool("tag-project-with-grade")
 
 	for _, arg := range args {
 		argID, err := uuid.Parse(arg)
@@ -112,7 +113,8 @@ func init() {
 	dtrackScoreCmd.Flags().BoolP("detailed", "d", false, "results in table format, default")
 	dtrackScoreCmd.Flags().BoolP("basic", "b", false, "results in single line format")
 
-	dtrackScoreCmd.Flags().BoolP("tag-project-with-score", "t", false, "tag project with sbomqs score")
+	dtrackScoreCmd.Flags().BoolP("tag-project-with-score", "s", false, "tag project with sbomqs score")
+	dtrackScoreCmd.Flags().BoolP("tag-project-with-grade", "g", false, "tag project with sbomqs grade")
 	dtrackScoreCmd.Flags().IntP("timeout", "i", 60, "Timeout in seconds for Dependency-Track API requests")
 	dtrackScoreCmd.Flags().BoolP("legacy", "l", false, "legacy, prior to sbomqs version 2.0")
 }

@@ -28,8 +28,6 @@ import (
 	"github.com/interlynk-io/sbomqs/v2/pkg/reporter"
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer"
-	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/config"
-	score "github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/score"
 	"github.com/samber/lo"
 )
 
@@ -45,6 +43,7 @@ type DtParams struct {
 	Legacy bool
 
 	TagProjectWithScore bool
+	TagProjectWithGrade bool
 	Timeout             int // handle cutom timeout
 }
 
@@ -115,22 +114,7 @@ func DtrackScore(ctx context.Context, dtP *DtParams) error {
 				}
 
 				if dtP.TagProjectWithScore {
-					log.Debugf("Project: %+v", prj.Tags)
-					// remove old score
-					prj.Tags = lo.Filter(prj.Tags, func(t dtrack.Tag, _ int) bool {
-						return !strings.HasPrefix(t.Name, "sbomqs=")
-					})
-
-					tag := fmt.Sprintf("sbomqs=%0.1f", scores.AvgScore())
-					prj.Tags = append(prj.Tags, dtrack.Tag{Name: tag})
-
-					log.Debugf("Tagging project with %s", tag)
-					log.Debugf("Project: %+v", prj.Tags)
-
-					_, err = dTrackClient.Project.Update(ctx, prj)
-					if err != nil {
-						log.Fatalf("Failed to tag project: %s", err)
-					}
+					tagProjectWithScore(ctx, dTrackClient, prj, scores.AvgScore())
 				}
 
 				path := fmt.Sprintf("ID: %s, Name: %s, Version: %s", prj.UUID, prj.Name, prj.Version)
@@ -148,36 +132,51 @@ func DtrackScore(ctx context.Context, dtP *DtParams) error {
 					[]string{path},
 					reporter.WithFormat(reportFormat))
 				nr.Report()
+
 			} else {
-				if dtP.TagProjectWithScore {
+
+				results, err := scored(ctx, ep)
+				if err != nil {
+					return err
+				}
+
+				if dtP.TagProjectWithScore || dtP.TagProjectWithGrade {
 					log.Debugf("Project: %+v", prj.Tags)
-					// remove old score
+
+					// remove old score/grade
 					prj.Tags = lo.Filter(prj.Tags, func(t dtrack.Tag, _ int) bool {
-						return !strings.HasPrefix(t.Name, "sbomqs=")
+						if dtP.TagProjectWithScore && strings.HasPrefix(t.Name, "sbomqs=") {
+							return false
+						}
+						if dtP.TagProjectWithGrade && strings.HasPrefix(t.Name, "sbomqs-grade=") {
+							return false
+						}
+
+						return true
 					})
 
-					cfg := config.Config{
-						Categories: ep.Categories,
-						Features:   ep.Features,
-						ConfigFile: ep.ConfigPath,
-						Profile:    ep.Profiles,
-					}
-
-					results, err := score.ScoreSBOM(ctx, cfg, ep.Path)
-					if err != nil {
-						return err
-					}
-
 					var interlynkScore float64
+					var grade string
 
 					for _, r := range results {
-						interlynkScore = r.Comprehensive.InterlynkScore
+						if r.Comprehensive != nil {
+							interlynkScore = r.Comprehensive.InterlynkScore
+							grade = r.Comprehensive.Grade
+						}
 					}
 
-					tag := fmt.Sprintf("sbomqs=%0.1f", interlynkScore)
-					prj.Tags = append(prj.Tags, dtrack.Tag{Name: tag})
+					if dtP.TagProjectWithScore {
+						scoreTag := fmt.Sprintf("sbomqs=%0.1f", interlynkScore)
+						prj.Tags = append(prj.Tags, dtrack.Tag{Name: scoreTag})
+						log.Debugf("Tagging project with %s", scoreTag)
+					}
 
-					log.Debugf("Tagging project with %s", tag)
+					if dtP.TagProjectWithGrade {
+						gradeTag := fmt.Sprintf("sbomqs-grade=%s", grade)
+						prj.Tags = append(prj.Tags, dtrack.Tag{Name: gradeTag})
+						log.Debugf("Tagging project with %s", gradeTag)
+					}
+
 					log.Debugf("Project: %+v", prj.Tags)
 
 					_, err = dTrackClient.Project.Update(ctx, prj)
@@ -185,10 +184,33 @@ func DtrackScore(ctx context.Context, dtP *DtParams) error {
 						log.Fatalf("Failed to tag project: %s", err)
 					}
 				}
-				return scored(ctx, ep)
+
+				renderReport(ctx, ep, results)
+				return nil
 			}
 		}
 	}
 
 	return nil
+}
+
+func tagProjectWithScore(ctx context.Context, dTrackClient *dtrack.Client, prj dtrack.Project, finalScore float64) {
+	log := logger.FromContext(ctx)
+
+	log.Debugf("Project: %+v", prj.Tags)
+	// remove old score
+	prj.Tags = lo.Filter(prj.Tags, func(t dtrack.Tag, _ int) bool {
+		return !strings.HasPrefix(t.Name, "sbomqs=")
+	})
+
+	tag := fmt.Sprintf("sbomqs=%0.1f", finalScore)
+	prj.Tags = append(prj.Tags, dtrack.Tag{Name: tag})
+
+	log.Debugf("Tagging project with %s", tag)
+	log.Debugf("Project: %+v", prj.Tags)
+
+	_, err := dTrackClient.Project.Update(ctx, prj)
+	if err != nil {
+		log.Fatalf("Failed to tag project: %s", err)
+	}
 }

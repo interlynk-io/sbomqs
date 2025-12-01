@@ -33,6 +33,7 @@ import (
 	v2 "github.com/interlynk-io/sbomqs/v2/pkg/reporter/v2"
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer"
+	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/api"
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/config"
 	score "github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/score"
 
@@ -67,8 +68,8 @@ type Params struct {
 	Oct   bool
 	Fsct  bool
 
-	Color     bool
-	Blob      string
+	Color bool
+	Blob  string
 
 	Legacy   bool
 	Profiles []string
@@ -87,10 +88,11 @@ func Run(ctx context.Context, ep *Params) error {
 		return handlePaths(ctx, ep)
 	}
 
-	return scored(ctx, ep)
+	return runV2Score(ctx, ep)
 }
 
-func scored(ctx context.Context, ep *Params) error {
+// scored runs the v2 scoring engine once and returns the results.
+func scored(ctx context.Context, ep *Params) ([]api.Result, error) {
 	log := logger.FromContext(ctx)
 	log.Debugf("Starting score engine to score v2")
 
@@ -101,11 +103,10 @@ func scored(ctx context.Context, ep *Params) error {
 		Profile:    ep.Profiles,
 	}
 
-	results, err := score.ScoreSBOM(ctx, cfg, ep.Path)
-	if err != nil {
-		return err
-	}
+	return score.ScoreSBOM(ctx, cfg, ep.Path)
+}
 
+func renderReport(ctx context.Context, ep *Params, results []api.Result) {
 	reportFormat := pkgcommon.ReportDetailed
 	if ep.Basic {
 		reportFormat = pkgcommon.ReportBasic
@@ -115,7 +116,18 @@ func scored(ctx context.Context, ep *Params) error {
 
 	nr := v2.NewReport(ctx, results, reportFormat)
 	nr.Report()
+}
 
+// runV2Score handle v2 scoring and v2 reporting
+func runV2Score(ctx context.Context, ep *Params) error {
+	log := logger.FromContext(ctx)
+	log.Debugf("Starting score engine to score v2")
+
+	results, err := scored(ctx, ep)
+	if err != nil {
+		return err
+	}
+	renderReport(ctx, ep, results)
 	return nil
 }
 
