@@ -1,0 +1,104 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b84",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2024-01-15T10:30:00Z",
+    "tools": [
+      {
+        "vendor": "Test Corp",
+        "name": "sbomqs-test-generator",
+        "version": "1.0.0"
+      }
+    ],
+    "authors": [
+      {
+        "name": "John Doe",
+        "email": "john@example.com"
+      }
+    ],
+    "supplier": {
+      "name": "Test Corp",
+      "url": ["https://testcorp.com"]
+    },
+    "component": {
+      "type": "application",
+      "bom-ref": "pkg:npm/test-application@1.0.0",
+      "name": "test-application",
+      "version": "1.0.0",
+      "description": "A test application with multiple signers",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "d2ca1ac5e3c0efa0e3c2e8e92f3a7f3d3f9c8b8e7f6d5c4b3a2918273645362718"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/test-application@1.0.0"
+    }
+  },
+  "signature": {
+    "signers": [
+      {
+        "algorithm": "RS256",
+        "keyId": "primary-signer",
+        "publicKey": {
+          "kty": "RSA",
+          "n": "xGOr-H7A-PWG3z0LINt-5Zx7L9Ma7nPBYe0GS0rCFhUbiK-mTtdiGNUA5bNawF8hcL5akIM7bpEyMxW1GkHcHPh9LlNcNhw4AcCVDYNdiovggNWGeDo7xGlwm8N5cUA0cz7D6SHHiXGLnCmNRlBkMK5gCPva7TriVq2JKGnD92Q8KvNUGkNmDqKRRvhj4nKqMPnwT0soMPqzXaWHJbm1u6gkouNoDyTK_yGCaHD9e9oiN1OWpXB7gLgqOJfAoUjnCIvSJhZ834OLGfvQfO8F8lNQgmAkucnm9UtUOCMZfEQ2oqMY3T_1QnIBYA9kW3HocGmlqaYfrCJW0OwlmDfUgQ",
+          "e": "AQAB"
+        },
+        "value": "MEUCIQDxV8hfZDvUexc8qBS5X9OqKpnDx5XcF8TGTvRLz9FjqAIgMRGHwmRvLmhaYFhCusV3OM5NSZdsoVUMZ7bQoMpWats"
+      },
+      {
+        "algorithm": "ES256",
+        "keyId": "secondary-signer",
+        "publicKey": {
+          "kty": "EC",
+          "crv": "P-256",
+          "x": "f83OJ3D2xF1Bg8vub9tLe1gHMzV76e8Tus9uPHvRVEU",
+          "y": "x_FEzRu9m36HLN_tue659LNpXW6pCyStikYjKIWI5a0"
+        },
+        "value": "MEYCIQDUeVLPqNPDPRLSKfBCFqVcpwSLA3r5PoV8fPZK5VWgLAIhAPkTfbgJLWk2rTtjMB8L0Xp5d0kg2v4nAB8H5vT7dDKx"
+      }
+    ]
+  },
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/dependency-a@2.0.0",
+      "name": "dependency-a",
+      "version": "2.0.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "purl": "pkg:npm/dependency-a@2.0.0"
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "pkg:npm/test-application@1.0.0",
+      "dependsOn": ["pkg:npm/dependency-a@2.0.0"]
+    },
+    {
+      "ref": "pkg:npm/dependency-a@2.0.0",
+      "dependsOn": []
+    }
+  ]
+}

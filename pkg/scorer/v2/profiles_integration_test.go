@@ -532,6 +532,131 @@ func Test_OCTV11ProfileForStaticSBOMFiles(t *testing.T) {
 	fmt.Printf("OCT v1.1 Profile: ✓ All %d test cases completed\n", len(testCases))
 }
 
+// Test_CycloneDXSignatureSupport tests CycloneDX signature parsing and scoring
+func Test_CycloneDXSignatureSupport(t *testing.T) {
+	fmt.Println()
+	fmt.Println("==========================================")
+	fmt.Println("Running CycloneDX Signature Tests")
+	fmt.Println("==========================================")
+
+	base := filepath.Join("..", "..", "..", "testdata", "fixtures")
+
+	// Define test cases with expected signature scores
+	// Signature scoring: 10 = complete with verification material, 5 = partial, 0 = missing/incomplete
+	testCases := map[string]struct {
+		expectedSignatureScore float64
+		description           string
+		hasSignature         bool
+		hasPublicKey         bool
+		hasCertPath          bool
+		algorithm            string
+	}{
+		filepath.Join(base, "cdx-with-complete-signature.json"): {
+			expectedSignatureScore: 10.0,
+			description:           "Complete signature with RSA key and certificate path",
+			hasSignature:         true,
+			hasPublicKey:         true,
+			hasCertPath:          true,
+			algorithm:            "RS256",
+		},
+		filepath.Join(base, "cdx-with-signature-no-key.json"): {
+			expectedSignatureScore: 5.0,
+			description:           "Signature present but no verification key",
+			hasSignature:         true,
+			hasPublicKey:         false,
+			hasCertPath:          false,
+			algorithm:            "RS256",
+		},
+		filepath.Join(base, "cdx-with-incomplete-signature.json"): {
+			expectedSignatureScore: 0.0,
+			description:           "Incomplete signature (missing value)",
+			hasSignature:         false, // Incomplete counts as no signature
+			hasPublicKey:         true,
+			hasCertPath:          false,
+			algorithm:            "RS256",
+		},
+		filepath.Join(base, "cdx-with-ec-signature.json"): {
+			expectedSignatureScore: 10.0,
+			description:           "Complete EC signature",
+			hasSignature:         true,
+			hasPublicKey:         true,
+			hasCertPath:          false,
+			algorithm:            "ES256",
+		},
+		filepath.Join(base, "cdx-with-multiple-signers.json"): {
+			expectedSignatureScore: 10.0,
+			description:           "Multiple signers (uses first signer)",
+			hasSignature:         true,
+			hasPublicKey:         true,
+			hasCertPath:          false,
+			algorithm:            "RS256",
+		},
+		filepath.Join(base, "cdx-minimal.json"): {
+			expectedSignatureScore: 0.0,
+			description:           "No signature present",
+			hasSignature:         false,
+			hasPublicKey:         false,
+			hasCertPath:          false,
+			algorithm:            "",
+		},
+	}
+
+	for path, tc := range testCases {
+		filename := filepath.Base(path)
+		testName := "CDX_Signature_" + filename
+
+		t.Run(testName, func(t *testing.T) {
+			t.Parallel()
+
+			// Test with Interlynk profile which includes signature scoring
+			cfg := config.Config{
+				Profile: []string{string(registry.ProfileInterlynk)},
+			}
+			paths := []string{path}
+
+			ctx := context.Background()
+
+			results, err := score.ScoreSBOM(ctx, cfg, paths)
+			require.NoError(t, err)
+
+			for _, r := range results {
+				require.NotNil(t, r.Profiles, "Profile results should not be nil")
+				require.Len(t, r.Profiles.ProfResult, 1, "Should have exactly one profile result")
+
+				profResult := r.Profiles.ProfResult[0]
+
+				// Find the signature score in the profile items
+				var signatureScore float64
+				signatureFound := false
+				for _, item := range profResult.Items {
+					if item.Key == "sbom_signature" {
+						signatureScore = item.Score
+						signatureFound = true
+						
+						// Log detailed signature information
+						t.Logf("File: %s", filename)
+						t.Logf("  Description: %s", tc.description)
+						t.Logf("  Signature Score: %.1f/10.0", signatureScore)
+						t.Logf("  Expected Score: %.1f/10.0", tc.expectedSignatureScore)
+						t.Logf("  Algorithm: %s", tc.algorithm)
+						t.Logf("  Has Signature: %v, Has PublicKey: %v, Has CertPath: %v",
+							tc.hasSignature, tc.hasPublicKey, tc.hasCertPath)
+						break
+					}
+				}
+
+				require.True(t, signatureFound, "Signature score should be present in profile results")
+				
+				// Check signature score matches expectation
+				require.InDelta(t, tc.expectedSignatureScore, signatureScore, 1e-9,
+					"Signature score mismatch for %s", filename)
+			}
+		})
+	}
+
+	fmt.Printf("CycloneDX Signature Tests: ✓ All %d test cases completed\n", len(testCases))
+}
+
 // Test_ProfileIntegrationSummary provides a summary of all profile integration tests
 func Test_ProfileIntegrationSummary(t *testing.T) {
 	fmt.Println()
@@ -541,9 +666,10 @@ func Test_ProfileIntegrationSummary(t *testing.T) {
 	fmt.Println("✓ NTIA-2025 Profile: Active (20 test cases)")
 	fmt.Println("✓ Interlynk Profile: Active (20 test cases)")
 	fmt.Println("✓ OCT v1.1 Profile: Active (20 test cases)")
+	fmt.Println("✓ CycloneDX Signatures: Active (6 test cases)")
 	fmt.Println("○ BSI v1.1 Profile: TODO (placeholder)")
 	fmt.Println("○ BSI v2.0 Profile: TODO (placeholder)")
 	fmt.Println("==========================================")
-	fmt.Println("Total Active Tests: 60")
+	fmt.Println("Total Active Tests: 66")
 	fmt.Println("==========================================")
 }

@@ -1,0 +1,46 @@
+{
+  "bomFormat": "CycloneDX",
+  "components": [
+    {
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "name": "example-library",
+      "purl": "pkg:maven/org.example/example-library@2.0.0",
+      "type": "library",
+      "version": "2.0.0"
+    }
+  ],
+  "dependencies": [
+    {
+      "dependsOn": [],
+      "ref": "pkg:maven/org.example/example-library@2.0.0"
+    }
+  ],
+  "metadata": {
+    "component": {
+      "name": "Example Application",
+      "type": "application",
+      "version": "1.0.0"
+    },
+    "timestamp": "2024-10-22T12:00:00Z",
+    "tools": [
+      {
+        "name": "SBOM Generator",
+        "vendor": "ACME Corp",
+        "version": "1.0.0"
+      }
+    ]
+  },
+  "serialNumber": "urn:uuid:123e4567-e89b-12d3-a456-426614174000",
+  "signature": {
+    "algorithm": "ES256",
+    "value": "MEUCIG9lOD40k/frCtBGY6bVXincsOoXUz83uxHU3pdvdY2XAiEApU6pHZDzKym1msnAOpTZNPBwa+wLriwGMZIY1ScOzDs="
+  },
+  "specVersion": "1.6",
+  "version": 1
+}

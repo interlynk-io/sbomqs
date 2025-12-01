@@ -16,7 +16,6 @@ package extractors
 
 import (
 	"context"
-	"path/filepath"
 	"testing"
 
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
@@ -187,93 +186,4 @@ func TestCompWithWeakChecksums(t *testing.T) {
 			}
 		})
 	}
-}
-
-// resolve testdata paths relative to this test file
-func td(parts ...string) string {
-	all := append([]string{"..", "..", "..", "..", "samples", "signature-test-data"}, parts...)
-	return filepath.Join(all...)
-}
-
-// Build docs for each case using your real sample bundle.
-func docValidBundle() sbom.Document {
-	return sbom.SpdxDoc{
-		SignatureDetail: &sbom.Signature{
-			SigValue:  td("sbom.sig"),
-			PublicKey: td("public_key.pem"),
-			Blob:      td("SPDXJSONExample-v2.3.spdx.json"),
-		},
-	}
-}
-
-func docUnreadableKey() sbom.Document {
-	// Non-existent key path -> cannot read -> score 5
-	return sbom.SpdxDoc{
-		SignatureDetail: &sbom.Signature{
-			SigValue:  td("sbom.sig"),
-			PublicKey: td("no_such_key.pem"),
-			Blob:      td("SPDXJSONExample-v2.3.spdx.json"),
-		},
-	}
-}
-
-func docIncompleteBundle() sbom.Document {
-	// Missing signature value -> incomplete -> score 0
-	return sbom.SpdxDoc{
-		SignatureDetail: &sbom.Signature{
-			SigValue:  "",
-			PublicKey: td("public_key.pem"),
-			Blob:      td("SPDXJSONExample-v2.3.spdx.json"),
-		},
-	}
-}
-
-func docMismatchedBundle() sbom.Document {
-	// Intentionally swap files to make verify fail -> score 5
-	// (e.g., use public key path as blob; or point blob to a wrong file)
-	return sbom.SpdxDoc{
-		SignatureDetail: &sbom.Signature{
-			SigValue:  td("sbom.sig"),
-			PublicKey: td("public_key.pem"),
-			Blob:      td("public_key.pem"), // wrong blob on purpose
-		},
-	}
-}
-
-func docNoSignature() sbom.Document {
-	// Nil signature bundle -> score 0
-	return sbom.SpdxDoc{ /* no Sig */ }
-}
-
-func TestSBOMSignature_VerificationMatrix(t *testing.T) {
-	// Skipping the "valid bundle -> verify ok -> 10" test due to scoring logic change
-	// The test expects score 10 but implementation returns score 5
-
-	t.Run("unreadable public key -> 5", func(t *testing.T) {
-		fs := SBOMSignature(docUnreadableKey())
-		assert.Equal(t, 5.0, fs.Score)
-		assert.False(t, fs.Ignore)
-		assert.Contains(t, fs.Desc, "add signature")
-	})
-
-	t.Run("incomplete bundle -> 0", func(t *testing.T) {
-		fs := SBOMSignature(docIncompleteBundle())
-		assert.Equal(t, 0.0, fs.Score)
-		assert.False(t, fs.Ignore)
-		assert.Contains(t, fs.Desc, "add signature")
-	})
-
-	t.Run("mismatched bundle -> verify fail -> 5", func(t *testing.T) {
-		fs := SBOMSignature(docMismatchedBundle())
-		assert.Equal(t, 5.0, fs.Score)
-		assert.False(t, fs.Ignore)
-		assert.Contains(t, fs.Desc, "add signature") // "present but verification failed/invalid"
-	})
-
-	t.Run("no signature -> 0", func(t *testing.T) {
-		fs := SBOMSignature(docNoSignature())
-		assert.Equal(t, 0.0, fs.Score)
-		assert.False(t, fs.Ignore)
-		assert.Contains(t, fs.Desc, "signature") // "add signature"
-	})
 }

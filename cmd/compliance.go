@@ -90,8 +90,6 @@ func setupEngineParams(cmd *cobra.Command, args []string) *engine.Params {
 
 	engParams.Debug, _ = cmd.Flags().GetBool("debug")
 
-	engParams.Signature, _ = cmd.Flags().GetString("sig")
-	engParams.PublicKey, _ = cmd.Flags().GetString("pub")
 
 	engParams.Path = append(engParams.Path, args[0])
 	engParams.Blob = args[0]
@@ -121,6 +119,4 @@ func init() {
 	complianceCmd.Flags().BoolP("oct", "t", false, "OpenChain Telco SBOM (v1.0)")
 	complianceCmd.Flags().BoolP("fsct", "f", false, "Framing Software Component Transparency (v3)")
 
-	complianceCmd.Flags().StringP("sig", "v", "", "signature of sbom")
-	complianceCmd.Flags().StringP("pub", "p", "", "public key of sbom")
 }

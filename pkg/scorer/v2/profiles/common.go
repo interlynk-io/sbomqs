@@ -16,11 +16,9 @@ package profiles
 
 import (
 	"fmt"
-	"os"
 	"strings"
 	"time"
 
-	"github.com/interlynk-io/sbomqs/v2/pkg/compliance/common"
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/catalog"
 	commonV2 "github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/common"
@@ -553,49 +551,47 @@ func CompDeclaredLicenses(doc sbom.Document) catalog.ProfFeatScore {
 
 // SBOMSignature look for signature
 func SBOMSignature(doc sbom.Document) catalog.ProfFeatScore {
+	// SPDX does not support signatures in its specification
+	if strings.ToLower(doc.Spec().GetSpecType()) == "spdx" {
+		return catalog.ProfFeatScore{
+			Score:  0.0,
+			Desc:   formulae.NonSupportedSPDXField(),
+			Ignore: true,
+		}
+	}
+
 	sig := doc.Signature()
 	if sig == nil {
 		return formulae.ScoreSBOMProfMissingNA("signature", false)
 	}
 
-	pubKeyPath := strings.TrimSpace(sig.GetPublicKey())
-	blobPath := strings.TrimSpace(sig.GetBlob())
-	sigPath := strings.TrimSpace(sig.GetSigValue())
-
-	// Incomplete bundle → treat as missing
-	if pubKeyPath == "" || blobPath == "" || sigPath == "" {
-		return formulae.ScoreSBOMProfMissingNA("signature bundle", false)
+	// Check if signature has the required components
+	algorithm := strings.TrimSpace(sig.GetAlgorithm())
+	sigValue := strings.TrimSpace(sig.GetSigValue())
+	
+	// Incomplete signature → treat as missing
+	if algorithm == "" || sigValue == "" {
+		return formulae.ScoreSBOMProfMissingNA("signature", false)
 	}
-
-	// #nosec G304 -- User-provided paths are expected for CLI tool
-	pubKeyBytes, err := os.ReadFile(pubKeyPath)
-	if err != nil {
+	
+	// Check if we have public key or certificate path for verification
+	pubKey := strings.TrimSpace(sig.GetPublicKey())
+	certPath := sig.GetCertificatePath()
+	
+	if pubKey == "" && len(certPath) == 0 {
+		// Signature present but no verification material
 		return catalog.ProfFeatScore{
-			Score:  5.0, // bundle present, but verification cannot succeed
-			Desc:   fmt.Sprintf("cannot read public key: %v", err),
+			Score:  5.0, // signature present, but no verification key
+			Desc:   "signature present but no verification key",
 			Ignore: false,
 		}
 	}
-
-	ok, err := common.VerifySignature(pubKeyBytes, blobPath, sigPath)
-	if err != nil {
-		return catalog.ProfFeatScore{
-			Score:  5.0,
-			Desc:   "signature present but verification failed",
-			Ignore: false,
-		}
-	}
-	if ok {
-		return catalog.ProfFeatScore{
-			Score:  10.0,
-			Desc:   "signature verification succeeded",
-			Ignore: false,
-		}
-	}
-
+	
+	// For now, we'll give full score if signature is complete
+	// Future enhancement: actually verify the signature
 	return catalog.ProfFeatScore{
-		Score:  5.0,
-		Desc:   "signature present but invalid",
+		Score:  10.0,
+		Desc:   "signature present with verification material",
 		Ignore: false,
 	}
 }

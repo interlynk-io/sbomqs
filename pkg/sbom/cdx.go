@@ -15,17 +15,17 @@
 package sbom
 
 import (
+	"bytes"
 	"context"
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/base64"
+	"encoding/json"
 	"encoding/pem"
 	"fmt"
 	"io"
-	"log"
 	"math/big"
 	"net/mail"
-	"os"
 	"strings"
 
 	cydx "github.com/CycloneDX/cyclonedx-go"
@@ -66,28 +66,33 @@ type CdxDoc struct {
 	composition      map[string]string
 	Vuln             []GetVulnerabilities
 	SignatureDetail  GetSignature
+	rawContent       []byte // Store raw content for manual parsing
 }
 
 func newCDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat, sig Signature) (Document, error) {
 	var err error
 
-	_, err = f.Seek(0, io.SeekStart)
+	// Read the content for manual parsing if needed
+	rawContent, err := io.ReadAll(f)
 	if err != nil {
-		log.Printf("Failed to seek: %v", err)
+		return nil, err
 	}
+
+	// Reset the reader for the decoder
+	reader := bytes.NewReader(rawContent)
 
 	var bom *cydx.BOM
 
 	switch format {
 	case FileFormatJSON:
 		bom = new(cydx.BOM)
-		decoder := cydx.NewBOMDecoder(f, cydx.BOMFileFormatJSON)
+		decoder := cydx.NewBOMDecoder(reader, cydx.BOMFileFormatJSON)
 		if err = decoder.Decode(bom); err != nil {
 			return nil, err
 		}
 	case FileFormatXML:
 		bom = new(cydx.BOM)
-		decoder := cydx.NewBOMDecoder(f, cydx.BOMFileFormatXML)
+		decoder := cydx.NewBOMDecoder(reader, cydx.BOMFileFormatXML)
 		if err = decoder.Decode(bom); err != nil {
 			return nil, err
 		}
@@ -96,11 +101,11 @@ func newCDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat, sig Sign
 	}
 
 	doc := &CdxDoc{
-		doc:             bom,
-		format:          format,
-		ctx:             ctx,
-		cdxValidSchema:  true,
-		SignatureDetail: &sig,
+		doc:            bom,
+		format:         format,
+		ctx:            ctx,
+		cdxValidSchema: true,
+		rawContent:     rawContent,
 	}
 	doc.parse()
 
@@ -177,8 +182,8 @@ func (c *CdxDoc) parse() {
 	c.parseCompositions()
 	c.parsePrimaryCompAndRelationships()
 	c.parseVulnerabilities()
-	if c.Signature().GetSigValue() == "" && c.Signature().GetPublicKey() == "" {
-		c.addToLogs("extract public key and signature from cylonedx sbom itself")
+	// Parse signature if not already present
+	if c.SignatureDetail == nil {
 		c.parseSignature()
 	}
 	c.parseComps()
@@ -260,90 +265,210 @@ func (c *CdxDoc) parseVulnerabilities() {
 	}
 }
 
-// until and unless cyclondx-go library supports signature, this part is useless
-// So, we are using tech hack to parse signature directly from JSON sbom file
+// parseSignature extracts signature information from CyclonDX BOM
 func (c *CdxDoc) parseSignature() {
 	log := logger.FromContext(c.ctx)
-
 	log.Debug("parseSignature()")
-	c.SignatureDetail = &Signature{}
-	if c.doc.Declarations != nil {
-		if c.doc.Declarations.Signature != nil {
-			sigValue := c.doc.Declarations.Signature.Value
-			pubKeyModulus := c.doc.Declarations.Signature.PublicKey.N
-			pubKeyExponent := c.doc.Declarations.Signature.PublicKey.E
-
-			// decode the signature
-			signatureValue, err := base64.StdEncoding.DecodeString(sigValue)
-			if err != nil {
-				log.Debug("Error decoding signature:", err)
-				return
+	
+	// Since cyclonedx-go doesn't properly unmarshal signatures yet,
+	// we need to parse it manually from the raw JSON
+	if c.format != FileFormatJSON {
+		return // Only JSON format is supported for now
+	}
+	
+	var rawBOM map[string]interface{}
+	if err := json.Unmarshal(c.rawContent, &rawBOM); err != nil {
+		log.Debug("Error unmarshalling raw JSON:", err)
+		return
+	}
+	
+	sigData, ok := rawBOM["signature"]
+	if !ok || sigData == nil {
+		return // No signature present
+	}
+	
+	sigMap, ok := sigData.(map[string]interface{})
+	if !ok {
+		return
+	}
+	
+	// Parse the signature based on its structure
+	var sig *Signature
+	
+	// Check for single signer format (direct algorithm/value)
+	if algorithm, ok := sigMap["algorithm"].(string); ok {
+		// Single signer format
+		sig = &Signature{
+			Algorithm: algorithm,
+		}
+		
+		if keyID, ok := sigMap["keyId"].(string); ok {
+			sig.KeyID = keyID
+		}
+		
+		if value, ok := sigMap["value"].(string); ok {
+			sig.SigValue = value
+		}
+		
+		// Parse public key
+		if pubKeyData, ok := sigMap["publicKey"].(map[string]interface{}); ok {
+			sig.PublicKey = c.parsePublicKey(pubKeyData)
+		}
+		
+		// Parse certificate path
+		if certPath, ok := sigMap["certificatePath"].([]interface{}); ok {
+			for _, cert := range certPath {
+				if certStr, ok := cert.(string); ok {
+					sig.CertificatePath = append(sig.CertificatePath, certStr)
+				}
 			}
-
-			// write the signature to a file
-			if err := os.WriteFile("extracted_signature.bin", signatureValue, 0o600); err != nil {
-				log.Debug("Error writing signature to file: %s", err)
-				return
+		}
+		
+		// Parse excludes
+		if excludes, ok := sigMap["excludes"].([]interface{}); ok {
+			for _, exclude := range excludes {
+				if excludeStr, ok := exclude.(string); ok {
+					sig.Excludes = append(sig.Excludes, excludeStr)
+				}
 			}
-			c.addToLogs("Signature written to file: extracted_signature.bin")
-
-			// extract the public key modulus and exponent
-			modulus, err := base64.StdEncoding.DecodeString(pubKeyModulus)
-			if err != nil {
-				log.Debug("Error decoding public key modulus:", err)
-				return
-			}
-
-			exponent := decodeBase64URLEncodingToInt(pubKeyExponent)
-			if exponent == 0 {
-				c.addToLogs("Invalid public key exponent.")
-				return
-			}
-
-			// create the RSA public key
-			pubKey := &rsa.PublicKey{
-				N: decodeBigInt(modulus),
-				E: exponent,
-			}
-
-			// write the public key to a PEM file
-			pubKeyPEM := publicKeyToPEM(pubKey)
-			if err := os.WriteFile("extracted_public_key.pem", pubKeyPEM, 0o600); err != nil {
-				log.Debug("Error writing public key to file:", err)
-				return
-			}
-
-			sig := Signature{}
-			sig.PublicKey = string(pubKeyPEM)
-			sig.SigValue = string(signatureValue)
-
-			c.SignatureDetail = &sig
-
-			c.addToLogs("Public key written to file: extracted_public_key.pem")
+		}
+	} else if signers, ok := sigMap["signers"].([]interface{}); ok && len(signers) > 0 {
+		// Multiple signers format - use the first one
+		if firstSigner, ok := signers[0].(map[string]interface{}); ok {
+			sig = c.parseSignerMap(firstSigner)
+		}
+	} else if chain, ok := sigMap["chain"].([]interface{}); ok && len(chain) > 0 {
+		// Certificate chain format - use the first one
+		if firstSigner, ok := chain[0].(map[string]interface{}); ok {
+			sig = c.parseSignerMap(firstSigner)
 		}
 	}
+	
+	if sig != nil {
+		c.SignatureDetail = sig
+		c.addToLogs("CyclonDX signature parsed successfully")
+	}
 }
 
-func decodeBase64URLEncodingToInt(input string) int {
-	bytes, err := base64.StdEncoding.DecodeString(input)
+// parseSignerMap parses a signer object from a map
+func (c *CdxDoc) parseSignerMap(signerMap map[string]interface{}) *Signature {
+	sig := &Signature{}
+	
+	if algorithm, ok := signerMap["algorithm"].(string); ok {
+		sig.Algorithm = algorithm
+	}
+	
+	if keyID, ok := signerMap["keyId"].(string); ok {
+		sig.KeyID = keyID
+	}
+	
+	if value, ok := signerMap["value"].(string); ok {
+		sig.SigValue = value
+	}
+	
+	// Parse public key
+	if pubKeyData, ok := signerMap["publicKey"].(map[string]interface{}); ok {
+		sig.PublicKey = c.parsePublicKey(pubKeyData)
+	}
+	
+	// Parse certificate path
+	if certPath, ok := signerMap["certificatePath"].([]interface{}); ok {
+		for _, cert := range certPath {
+			if certStr, ok := cert.(string); ok {
+				sig.CertificatePath = append(sig.CertificatePath, certStr)
+			}
+		}
+	}
+	
+	// Parse excludes
+	if excludes, ok := signerMap["excludes"].([]interface{}); ok {
+		for _, exclude := range excludes {
+			if excludeStr, ok := exclude.(string); ok {
+				sig.Excludes = append(sig.Excludes, excludeStr)
+			}
+		}
+	}
+	
+	return sig
+}
+
+// parsePublicKey parses a public key from the signature data
+func (c *CdxDoc) parsePublicKey(pubKeyData map[string]interface{}) string {
+	kty, _ := pubKeyData["kty"].(string)
+	
+	if kty == "RSA" {
+		n, _ := pubKeyData["n"].(string)
+		e, _ := pubKeyData["e"].(string)
+		if n != "" && e != "" {
+			return c.convertRSAPublicKeyToPEM(n, e)
+		}
+	} else if kty == "EC" {
+		crv, _ := pubKeyData["crv"].(string)
+		x, _ := pubKeyData["x"].(string)
+		y, _ := pubKeyData["y"].(string)
+		if crv != "" && x != "" && y != "" {
+			// For EC keys, store the raw key data for now
+			// Full EC key conversion would require more complex handling
+			return fmt.Sprintf("EC Key - Curve: %s", crv)
+		}
+	}
+	
+	return ""
+}
+
+// convertRSAPublicKeyToPEM converts RSA public key components to PEM format
+func (c *CdxDoc) convertRSAPublicKeyToPEM(modulusB64, exponentB64 string) string {
+	log := logger.FromContext(c.ctx)
+	
+	// Try URL-safe base64 decoding first, then standard
+	modulus, err := base64.URLEncoding.DecodeString(modulusB64)
 	if err != nil {
-		return 0
+		// Try standard base64
+		modulus, err = base64.StdEncoding.DecodeString(modulusB64)
+		if err != nil {
+			// Try raw URL encoding (no padding)
+			modulus, err = base64.RawURLEncoding.DecodeString(modulusB64)
+			if err != nil {
+				log.Debug("Error decoding public key modulus:", err)
+				return ""
+			}
+		}
 	}
-	if len(bytes) == 0 {
-		return 0
+	
+	// Decode the base64-encoded exponent
+	exponentBytes, err := base64.URLEncoding.DecodeString(exponentB64)
+	if err != nil {
+		exponentBytes, err = base64.StdEncoding.DecodeString(exponentB64)
+		if err != nil {
+			exponentBytes, err = base64.RawURLEncoding.DecodeString(exponentB64)
+			if err != nil {
+				log.Debug("Error decoding public key exponent:", err)
+				return ""
+			}
+		}
 	}
-	result := 0
-	for _, b := range bytes {
-		result = result<<8 + int(b)
+	
+	// Convert exponent bytes to integer
+	exponent := 0
+	for _, b := range exponentBytes {
+		exponent = exponent<<8 + int(b)
 	}
-	return result
+	
+	if exponent == 0 {
+		c.addToLogs("Invalid public key exponent")
+		return ""
+	}
+	
+	// Create the RSA public key
+	pubKey := &rsa.PublicKey{
+		N: new(big.Int).SetBytes(modulus),
+		E: exponent,
+	}
+	
+	// Convert to PEM format
+	return string(publicKeyToPEM(pubKey))
 }
 
-func decodeBigInt(input []byte) *big.Int {
-	result := new(big.Int)
-	result.SetBytes(input)
-	return result
-}
 
 func publicKeyToPEM(pub *rsa.PublicKey) []byte {
 	pubASN1, err := x509.MarshalPKIXPublicKey(pub)

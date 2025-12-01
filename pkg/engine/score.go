@@ -68,8 +68,6 @@ type Params struct {
 	Fsct  bool
 
 	Color     bool
-	Signature string
-	PublicKey string
 	Blob      string
 
 	Legacy   bool
@@ -224,7 +222,7 @@ func handlePaths(ctx context.Context, ep *Params) error {
 				return err
 			}
 
-			blob, signature, publicKey, err := common.GetSignatureBundle(ctx, path, ep.Signature, ep.PublicKey)
+			_, signature, publicKey, err := common.GetSignatureBundle(ctx, path, "", "")
 			if err != nil {
 				log.Debugf("common.GetSignatureBundle failed for file :%s\n", path)
 				fmt.Printf("failed to get signature bundle for %s\n", path)
@@ -234,7 +232,6 @@ func handlePaths(ctx context.Context, ep *Params) error {
 			sig := sbom.Signature{
 				SigValue:  signature,
 				PublicKey: publicKey,
-				Blob:      blob,
 			}
 
 			doc, err := sbom.NewSBOMDocument(ctx, f, sig)
@@ -315,7 +312,7 @@ func processFile(ctx context.Context, ep *Params, path string, fs billy.Filesyst
 	log.Debugf("Processing file :%s\n", path)
 	var doc sbom.Document
 
-	blob, signature, publicKey, err := common.GetSignatureBundle(ctx, path, ep.Signature, ep.PublicKey)
+	_, signature, publicKey, err := common.GetSignatureBundle(ctx, path, "", "")
 	if err != nil {
 		log.Debugf("common.GetSignatureBundle failed for file :%s\n", path)
 		fmt.Printf("failed to get signature bundle for %s\n", path)
@@ -325,7 +322,6 @@ func processFile(ctx context.Context, ep *Params, path string, fs billy.Filesyst
 	sig := sbom.Signature{
 		SigValue:  signature,
 		PublicKey: publicKey,
-		Blob:      blob,
 	}
 
 	if fs != nil {

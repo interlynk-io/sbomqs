@@ -60,8 +60,6 @@ type userCmd struct {
 	// config control
 	configPath string
 
-	signature string
-	publicKey string
 
 	// profiles
 	profile []string
@@ -92,9 +90,6 @@ var scoreCmd = &cobra.Command{
 
   # Score a SBOM for ntia, bsi, oct-v1.1, interlynk profiles
   sbomqs score --profile ntia,bsi,oct-v1.1,interlynk samples/sbomqs-spdx-syft.json
-
-  # To provide signature of a SBOM, use the --sig and --pub flags
-  sbomqs score --profile bsi-v2.0 --sig samples/signature-test-data/sbom.sig --pub samples/signature-test-data/public_key.pem samples/signature-test-data/SPDXJSONExample-v2.3.spdx.json
 
   # Get a score for multiple comprehenssive categories
   sbomqs score -c identification,integrity samples/sbomqs-spdx-syft.json
@@ -261,8 +256,6 @@ func toUserCmd(cmd *cobra.Command, args []string) *userCmd {
 	uCmd.basic, _ = cmd.Flags().GetBool("basic")
 	uCmd.detailed, _ = cmd.Flags().GetBool("detailed")
 	uCmd.color, _ = cmd.Flags().GetBool("color")
-	uCmd.signature, _ = cmd.Flags().GetString("sig")
-	uCmd.publicKey, _ = cmd.Flags().GetString("pub")
 	uCmd.legacy, _ = cmd.Flags().GetBool("legacy")
 	uCmd.profile, _ = cmd.Flags().GetStringSlice("profile")
 
@@ -290,8 +283,6 @@ func toEngineParams(uCmd *userCmd) *engine.Params {
 		Recurse:    uCmd.recurse,
 		Debug:      uCmd.debug,
 		ConfigPath: uCmd.configPath,
-		Signature:  uCmd.signature,
-		PublicKey:  uCmd.publicKey,
 		Legacy:     uCmd.legacy,
 		Profiles:   uCmd.profile,
 	}
@@ -411,8 +402,6 @@ func init() {
 		log.Fatalf("Failed to mark flag as deprecated: %v", err)
 	}
 
-	scoreCmd.Flags().StringP("sig", "v", "", "signature of sbom")
-	scoreCmd.Flags().StringP("pub", "p", "", "public key of sbom")
 
 	scoreCmd.Flags().StringSlice("profile", nil, "profiles to run ('ntia', 'ntia-2025', 'bsi', 'bsi-v2.0', 'oct-v1.1', 'interlynk')")
 	scoreCmd.Flags().BoolP("legacy", "e", false, "legacy, prior to sbomqs version 2.0")
