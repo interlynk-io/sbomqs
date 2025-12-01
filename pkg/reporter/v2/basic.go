@@ -31,14 +31,15 @@ func (r *Reporter) basicReport() {
 			version = strings.Replace(version, "SPDX-", "", 1)
 		}
 
-		// Handle profile mode
-		if r.Profiles != nil && len(r.Profiles.ProfResult) > 0 {
+		// If comprehensive scoring is present, we're in default mode (no specific profile requested)
+		// Show only the Interlynk comprehensive score
+		if r.Comprehensive != nil {
+			fmt.Printf("%0.1f\t%s\t%s\t%s\t%s\t%s\n", r.Comprehensive.InterlynkScore, r.Comprehensive.Grade, "Interlynk", version, format, r.Meta.Filename)
+		} else if r.Profiles != nil && len(r.Profiles.ProfResult) > 0 {
+			// Profile-only mode: specific profiles were requested, show them
 			for _, prof := range r.Profiles.ProfResult {
 				fmt.Printf("%0.1f\t%s\t%s\t%s\t%s\t%s\n", prof.InterlynkScore, prof.Grade, prof.Name, version, format, r.Meta.Filename)
 			}
-		} else if r.Comprehensive != nil {
-			// Handle comprehensive mode
-			fmt.Printf("%0.1f\t%s\t%s\t%s\t%s\n", r.Comprehensive.InterlynkScore, r.Comprehensive.Grade, version, format, r.Meta.Filename)
 		}
 	}
 }
