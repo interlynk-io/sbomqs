@@ -40,7 +40,8 @@ type DtParams struct {
 	Basic    bool
 	Detailed bool
 
-	Legacy bool
+	Legacy  bool
+	Profile []string
 
 	TagProjectWithScore bool
 	TagProjectWithGrade bool
@@ -103,6 +104,7 @@ func DtrackScore(ctx context.Context, dtP *DtParams) error {
 				Basic:    dtP.Basic,
 				JSON:     dtP.JSON,
 				Detailed: dtP.Detailed,
+				Profiles: dtP.Profile,
 			}
 
 			ep.Path = append(ep.Path, f.Name())
@@ -143,41 +145,88 @@ func DtrackScore(ctx context.Context, dtP *DtParams) error {
 				if dtP.TagProjectWithScore || dtP.TagProjectWithGrade {
 					log.Debugf("Project: %+v", prj.Tags)
 
-					// remove old score/grade
-					prj.Tags = lo.Filter(prj.Tags, func(t dtrack.Tag, _ int) bool {
-						if dtP.TagProjectWithScore && strings.HasPrefix(t.Name, "sbomqs=") {
-							return false
-						}
-						if dtP.TagProjectWithGrade && strings.HasPrefix(t.Name, "sbomqs-grade=") {
-							return false
-						}
+					profileKeys := dtP.Profile
+					if len(profileKeys) == 0 {
+						profileKeys = []string{""}
+					}
 
+					prefixes := lo.Uniq(lo.Map(profileKeys, func(p string, _ int) string {
+						return profileTagPrefix(p)
+					}))
+
+					// Remove old score/grade tags only for those prefixes.
+					prj.Tags = lo.Filter(prj.Tags, func(t dtrack.Tag, _ int) bool {
+						for _, prefix := range prefixes {
+							if dtP.TagProjectWithScore && strings.HasPrefix(t.Name, prefix+"=") {
+								return false
+							}
+							if dtP.TagProjectWithGrade && strings.HasPrefix(t.Name, prefix+"-grade=") {
+								return false
+							}
+						}
 						return true
 					})
 
-					var interlynkScore float64
-					var grade string
+					// var interlynkScore float64
+					// var grade string
 
 					for _, r := range results {
+						// Case 1: comprehensive (Interlynk) is present
 						if r.Comprehensive != nil {
-							interlynkScore = r.Comprehensive.InterlynkScore
-							grade = r.Comprehensive.Grade
+							prefix := profileTagPrefix("sbomqs")
+							score := r.Comprehensive.InterlynkScore
+							grade := r.Comprehensive.Grade
+
+							if dtP.TagProjectWithScore {
+								scoreTag := fmt.Sprintf("%s=%0.1f", prefix, score)
+								prj.Tags = append(prj.Tags, dtrack.Tag{Name: scoreTag})
+								log.Debugf("Tagging project with %s", scoreTag)
+							}
+							if dtP.TagProjectWithGrade {
+								gradeTag := fmt.Sprintf("%s-grade=%s", prefix, grade)
+								prj.Tags = append(prj.Tags, dtrack.Tag{Name: gradeTag})
+								log.Debugf("Tagging project with %s", gradeTag)
+							}
+						}
+
+						// Case 2: profile-based scoring
+						if r.Profiles != nil {
+							// NOTE: assuming ProfResult entries correspond to requested profiles.
+							for _, proResult := range r.Profiles.ProfResult {
+								// You may have proResult.Key or ID;
+								// if not, wire this to your profile identifier.
+								profileKey := strings.ToLower(proResult.Key) // or proResult.ID / Name mapping
+								prefix := profileTagPrefix(profileKey)
+
+								if dtP.TagProjectWithScore {
+									scoreTag := fmt.Sprintf("%s=%0.1f", prefix, proResult.Score)
+									prj.Tags = append(prj.Tags, dtrack.Tag{Name: scoreTag})
+									log.Debugf("Tagging project with %s", scoreTag)
+								}
+								if dtP.TagProjectWithGrade {
+									gradeTag := fmt.Sprintf("%s-grade=%s", prefix, proResult.Grade)
+									prj.Tags = append(prj.Tags, dtrack.Tag{Name: gradeTag})
+									log.Debugf("Tagging project with %s", gradeTag)
+								}
+							}
 						}
 					}
 
-					if dtP.TagProjectWithScore {
-						scoreTag := fmt.Sprintf("sbomqs=%0.1f", interlynkScore)
-						prj.Tags = append(prj.Tags, dtrack.Tag{Name: scoreTag})
-						log.Debugf("Tagging project with %s", scoreTag)
-					}
+					log.Debugf("Project (after tagging): %+v", prj.Tags)
 
-					if dtP.TagProjectWithGrade {
-						gradeTag := fmt.Sprintf("sbomqs-grade=%s", grade)
-						prj.Tags = append(prj.Tags, dtrack.Tag{Name: gradeTag})
-						log.Debugf("Tagging project with %s", gradeTag)
-					}
+					// if dtP.TagProjectWithScore {
+					// 	scoreTag := fmt.Sprintf("sbomqs=%0.1f", interlynkScore)
+					// 	prj.Tags = append(prj.Tags, dtrack.Tag{Name: scoreTag})
+					// 	log.Debugf("Tagging project with %s", scoreTag)
+					// }
 
-					log.Debugf("Project: %+v", prj.Tags)
+					// if dtP.TagProjectWithGrade {
+					// 	gradeTag := fmt.Sprintf("sbomqs-grade=%s", grade)
+					// 	prj.Tags = append(prj.Tags, dtrack.Tag{Name: gradeTag})
+					// 	log.Debugf("Tagging project with %s", gradeTag)
+					// }
+
+					// log.Debugf("Project: %+v", prj.Tags)
 
 					_, err = dTrackClient.Project.Update(ctx, prj)
 					if err != nil {
@@ -192,6 +241,17 @@ func DtrackScore(ctx context.Context, dtP *DtParams) error {
 	}
 
 	return nil
+}
+
+// profileTagPrefix returns the tag prefix for a given profile key.
+// By default, for interlynk (or empty) we keep "sbomqs" for backward compatibility,
+// and for other profiles we use the profile string itself (e.g. "ntia", "bsi-v2.0").
+func profileTagPrefix(profile string) string {
+	p := strings.TrimSpace(strings.ToLower(profile))
+	if p == "" || p == "interlynk" {
+		return "sbomqs"
+	}
+	return p
 }
 
 func tagProjectWithScore(ctx context.Context, dTrackClient *dtrack.Client, prj dtrack.Project, finalScore float64) {

@@ -67,6 +67,7 @@ func extractArgs(cmd *cobra.Command, args []string) (*engine.DtParams, error) {
 	json, _ := cmd.Flags().GetBool("json")
 	basic, _ := cmd.Flags().GetBool("basic")
 	detailed, _ := cmd.Flags().GetBool("detailed")
+	profile, _ := cmd.Flags().GetStringSlice("profile")
 
 	params.URL = url
 	params.APIKey = apiKey
@@ -74,6 +75,7 @@ func extractArgs(cmd *cobra.Command, args []string) (*engine.DtParams, error) {
 	params.JSON = json
 	params.Basic = basic
 	params.Detailed = detailed
+	params.Profile = profile
 
 	params.TagProjectWithScore, _ = cmd.Flags().GetBool("tag-project-with-score")
 	params.TagProjectWithGrade, _ = cmd.Flags().GetBool("tag-project-with-grade")
@@ -117,4 +119,5 @@ func init() {
 	dtrackScoreCmd.Flags().BoolP("tag-project-with-grade", "g", false, "tag project with sbomqs grade")
 	dtrackScoreCmd.Flags().IntP("timeout", "i", 60, "Timeout in seconds for Dependency-Track API requests")
 	dtrackScoreCmd.Flags().BoolP("legacy", "l", false, "legacy, prior to sbomqs version 2.0")
+	dtrackScoreCmd.Flags().StringSlice("profile", nil, "profile(default: interlynk) to score ('ntia', 'ntia-2025', 'fsct', 'bsi', 'bsi-v2.0', 'oct-v1.1', 'interlynk')")
 }
