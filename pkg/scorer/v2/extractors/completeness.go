@@ -47,7 +47,7 @@ func CompWithCompleteness(doc sbom.Document) catalog.ComprFeatScore {
 	spec := doc.Spec().GetSpecType()
 
 	switch spec {
-	case string(sbom.SBOMSpecSPDX):
+	case string(sbom.SBOMSpecSPDX), string(sbom.SBOMSpecSPDX3):
 		return catalog.ComprFeatScore{
 			Score:  formulae.BooleanScore(false),
 			Desc:   formulae.NonSupportedSPDXField(),

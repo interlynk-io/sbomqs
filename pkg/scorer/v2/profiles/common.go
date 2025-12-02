@@ -105,17 +105,32 @@ func SBOMSchema(doc sbom.Document) catalog.ProfFeatScore {
 
 // SBOMLifeCycle check whether cyclonedx has lifecycle build
 // and score accordingly
-// SPDX doesn't support this field
+// SPDX 2.x doesn't support this field, but SPDX 3.0 does (Software/Sbom/sbomType)
 func SBOMLifeCycle(doc sbom.Document) catalog.ProfFeatScore {
 	spec := doc.Spec().GetSpecType()
 
 	switch spec {
 	case string(sbom.SBOMSpecSPDX):
+		// SPDX 2.x doesn't support lifecycle
 		return catalog.ProfFeatScore{
 			Score:  formulae.BooleanScore(false),
 			Desc:   formulae.NonSupportedSPDXField(),
 			Ignore: true,
 		}
+	
+	case string(sbom.SBOMSpecSPDX3):
+		// SPDX 3.0 supports lifecycle/sbomType
+		var phases []string
+		for _, p := range doc.Lifecycles() {
+			if strings.TrimSpace(p) != "" {
+				phases = append(phases, p)
+			}
+		}
+		
+		if len(phases) > 0 {
+			return formulae.ScoreSBOMProfFull(strings.Join(phases, ", "), false)
+		}
+		return formulae.ScoreSBOMProfMissingNA("lifecycle", false)
 
 	case string(sbom.SBOMSpecCDX):
 		var phases []string
@@ -171,16 +186,31 @@ func SBOMSupplier(doc sbom.Document) catalog.ProfFeatScore {
 
 	switch spec {
 	case string(sbom.SBOMSpecSPDX):
-		// N/A for SPDX
-		return formulae.ScoreSBOMProfMissingNA("authors", false)
+		// N/A for SPDX 2.x
+		return formulae.ScoreSBOMProfMissingNA("supplier", false)
+	
+	case string(sbom.SBOMSpecSPDX3):
+		// SPDX 3.0 supports supplier at document level
+		s := doc.Supplier()
+		if s != nil {
+			name := strings.TrimSpace(s.GetName())
+			nameUpper := strings.ToUpper(name)
+			hasValidName := name != "" && nameUpper != "NOASSERTION" && nameUpper != "NONE"
+			if hasValidName {
+				return formulae.ScoreSBOMProfFull("1 supplier", false)
+			}
+		}
+		return formulae.ScoreSBOMProfMissingNA("supplier", false)
 
 	case string(sbom.SBOMSpecCDX):
 		s := doc.Supplier()
 		if s != nil {
-			hasName := strings.TrimSpace(s.GetName()) != ""
+			name := strings.TrimSpace(s.GetName())
+			nameUpper := strings.ToUpper(name)
+			hasValidName := name != "" && nameUpper != "NOASSERTION" && nameUpper != "NONE"
 			hasContact := strings.TrimSpace(s.GetEmail()) != "" || strings.TrimSpace(s.GetURL()) != ""
 
-			if hasName && hasContact {
+			if hasValidName && hasContact {
 				return formulae.ScoreSBOMProfFull("1 supplier", false)
 			}
 		}
@@ -645,7 +675,7 @@ func SBOMCompleteness(doc sbom.Document) catalog.ProfFeatScore {
 	spec := doc.Spec().GetSpecType()
 
 	switch spec {
-	case string(sbom.SBOMSpecSPDX):
+	case string(sbom.SBOMSpecSPDX), string(sbom.SBOMSpecSPDX3):
 		return catalog.ProfFeatScore{
 			Score:  formulae.BooleanScore(false),
 			Desc:   formulae.NonSupportedSPDXField(),

@@ -142,20 +142,44 @@ func SBOMSupplier(doc sbom.Document) catalog.ComprFeatScore {
 
 	switch spec {
 	case string(sbom.SBOMSpecSPDX):
-		// N/A for SPDX
+		// N/A for SPDX 2.x
 		return catalog.ComprFeatScore{
 			Score:  formulae.BooleanScore(false),
 			Desc:   formulae.NonSupportedSPDXField(),
 			Ignore: true,
 		}
+	
+	case string(sbom.SBOMSpecSPDX3):
+		// SPDX 3.0 supports supplier at document level (Core/Classes/Artifact.suppliedBy)
+		s := doc.Supplier()
+		if s != nil {
+			name := strings.TrimSpace(s.GetName())
+			nameUpper := strings.ToUpper(name)
+			email := strings.TrimSpace(s.GetEmail())
+			// Check if name is not empty and not NOASSERTION/NONE
+			if (name != "" && nameUpper != "NOASSERTION" && nameUpper != "NONE") || email != "" {
+				return catalog.ComprFeatScore{
+					Score:  formulae.BooleanScore(true),
+					Desc:   formulae.PresentField("supplier"),
+					Ignore: false,
+				}
+			}
+		}
+		return catalog.ComprFeatScore{
+			Score:  formulae.BooleanScore(false),
+			Desc:   formulae.MissingField("supplier"),
+			Ignore: false,
+		}
 
 	case string(sbom.SBOMSpecCDX):
 		s := doc.Supplier()
 		if s != nil {
-			hasName := strings.TrimSpace(s.GetName()) != ""
+			name := strings.TrimSpace(s.GetName())
+			nameUpper := strings.ToUpper(name)
+			hasValidName := name != "" && nameUpper != "NOASSERTION" && nameUpper != "NONE"
 			hasEmail := strings.TrimSpace(s.GetEmail()) != "" || strings.TrimSpace(s.GetURL()) != ""
 
-			if hasName || hasEmail {
+			if hasValidName || hasEmail {
 				return catalog.ComprFeatScore{
 					Score:  formulae.BooleanScore(true),
 					Desc:   "complete",
@@ -184,7 +208,7 @@ func SBOMNamespace(doc sbom.Document) catalog.ComprFeatScore {
 	spec := doc.Spec().GetSpecType()
 
 	switch spec {
-	case string(sbom.SBOMSpecSPDX):
+	case string(sbom.SBOMSpecSPDX), string(sbom.SBOMSpecSPDX3):
 		ns := strings.TrimSpace(doc.Spec().GetURI())
 		if ns != "" {
 			return catalog.ComprFeatScore{
@@ -229,10 +253,31 @@ func SBOMLifeCycle(doc sbom.Document) catalog.ComprFeatScore {
 
 	switch spec {
 	case string(sbom.SBOMSpecSPDX):
+		// N/A for SPDX 2.x
 		return catalog.ComprFeatScore{
 			Score:  formulae.BooleanScore(false),
 			Desc:   formulae.NonSupportedSPDXField(),
 			Ignore: true,
+		}
+	
+	case string(sbom.SBOMSpecSPDX3):
+		// SPDX 3.0 supports lifecycle/sbomType (Software/Sbom/sbomType)
+		lcs := doc.Lifecycles()
+		if len(lcs) > 0 {
+			for _, lc := range lcs {
+				if strings.TrimSpace(lc) != "" {
+					return catalog.ComprFeatScore{
+						Score:  formulae.BooleanScore(true),
+						Desc:   formulae.PresentField("lifecycle"),
+						Ignore: false,
+					}
+				}
+			}
+		}
+		return catalog.ComprFeatScore{
+			Score:  formulae.BooleanScore(false),
+			Desc:   formulae.MissingField("lifecycle"),
+			Ignore: false,
 		}
 
 	case string(sbom.SBOMSpecCDX):

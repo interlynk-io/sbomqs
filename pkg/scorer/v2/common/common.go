@@ -28,7 +28,15 @@ import (
 // supplier should have either name/email info.
 // these info represents a legal entity
 func IsSupplierEntity(supplier sbom.GetSupplier) bool {
-	if supplier.GetName() != "" || supplier.GetEmail() != "" {
+	name := strings.ToUpper(strings.TrimSpace(supplier.GetName()))
+	email := strings.TrimSpace(supplier.GetEmail())
+	
+	// Check if name is not empty and not NOASSERTION/NONE
+	if name != "" && name != "NOASSERTION" && name != "NONE" {
+		return true
+	}
+	// Check if email is not empty
+	if email != "" {
 		return true
 	}
 	return false
