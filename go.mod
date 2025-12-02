@@ -4,14 +4,13 @@ go 1.24.2
 
 toolchain go1.24.5
 
-replace github.com/interlynk-io/spdx-zen => /Users/riteshnoronha/wrk/interlynk-io/spdx_zen
 
 require (
 	github.com/CycloneDX/cyclonedx-go v0.9.3
 	github.com/DependencyTrack/client-go v0.17.0
 	github.com/github/go-spdx/v2 v2.3.4
 	github.com/google/uuid v1.6.0
-	github.com/interlynk-io/spdx-zen v0.0.0-00010101000000-000000000000
+	github.com/interlynk-io/spdx-zen v0.0.2
 	github.com/knqyf263/go-cpe v0.0.0-20230627041855-cb0794d06872
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.12.0
 	github.com/olekukonko/tablewriter v0.0.5
