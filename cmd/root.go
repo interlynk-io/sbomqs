@@ -26,11 +26,11 @@ import (
 var rootCmd = &cobra.Command{
 	Use:   "sbomqs",
 	Short: "sbomqs application provides sbom quality scores.",
-	Long: `SBOM Quality Score (sbomqs) is a standardized metric to
-produce a calculated score that represents a level of “quality”
-when using an SBOM. The sbomqs is intended to help customers make
-an assessment of a SBOM acceptance risk based on their personal risk tolerance.
-`,
+	Long: `sbomqs is the industry-leading tool for evaluating SBOM quality,
+ensuring compliance, and managing your software supply chain security.
+From quality scoring to compliance validation, component analysis
+to vulnerability tracking - sbomqs provides everything you need
+to work with SBOMs effectively.`,
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.

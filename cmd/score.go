@@ -60,7 +60,6 @@ type userCmd struct {
 	// config control
 	configPath string
 
-
 	// profiles
 	profile []string
 
@@ -402,7 +401,6 @@ func init() {
 		log.Fatalf("Failed to mark flag as deprecated: %v", err)
 	}
 
-
-	scoreCmd.Flags().StringSlice("profile", nil, "profiles to run ('ntia', 'ntia-2025', 'bsi', 'bsi-v2.0', 'oct-v1.1', 'interlynk')")
+	scoreCmd.Flags().StringSlice("profile", nil, "profiles to run ('ntia', 'ntia-2025', 'fsct', 'bsi', 'bsi-v2.0', 'oct-v1.1', 'interlynk')")
 	scoreCmd.Flags().BoolP("legacy", "e", false, "legacy, prior to sbomqs version 2.0")
 }
