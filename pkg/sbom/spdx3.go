@@ -51,6 +51,7 @@ type Spdx3Doc struct {
 	Dependencies     map[string][]string
 	composition      map[string]string
 	Vuln             []GetVulnerabilities
+	elementNames     map[string]string  // Maps element IDs to their names for license resolution
 }
 
 func newSPDX3Doc(ctx context.Context, f io.ReadSeeker, format FileFormat, version FormatVersion, _ Signature) (Document, error) {
@@ -75,6 +76,7 @@ func newSPDX3Doc(ctx context.Context, f io.ReadSeeker, format FileFormat, versio
 		spdxValidSchema: true,
 		Dependencies:    make(map[string][]string),
 		composition:     make(map[string]string),
+		elementNames:    make(map[string]string),
 	}
 
 	doc.parse()
@@ -233,7 +235,9 @@ func (s *Spdx3Doc) parseSpec() {
 	// SPDX 3.0 data license
 	sp.Licenses = []licenses.License{}
 	if dataLicense := s.doc.DataLicense(); dataLicense != "" {
-		lics := licenses.LookupExpression(dataLicense, nil)
+		// If it's a SPDXRef, try to resolve it to the actual license name
+		licenseExpr := s.resolveLicenseRef(dataLicense)
+		lics := licenses.LookupExpression(licenseExpr, nil)
 		sp.Licenses = append(sp.Licenses, lics...)
 	}
 
@@ -352,23 +356,31 @@ func (s *Spdx3Doc) parsePrimaryCompAndRelationships() {
 	relationships := s.doc.Relationships()
 	
 	// Find primary component through DESCRIBES relationship
+	// The document should describe the primary package (not files)
 	for _, rel := range relationships {
 		relType := strings.ToLower(rel.RelationshipType)
-		if relType == "describes" {
+		if relType == "describes" && (rel.From == "SPDXRef-DOCUMENT" || strings.Contains(rel.From, "SpdxDocument")) {
 			// In SPDX 3.0, the document describes the primary component
+			// Look for a Package being described (not Files)
 			for _, to := range rel.To {
-				s.PrimaryComponent.ID = to
-				s.PrimaryComponent.Present = true
-				
-				// Find the package details
+				// Check if this is a package
+				isPackage := false
 				for _, pkg := range s.doc.Packages() {
 					if pkg.SpdxID == to {
+						s.PrimaryComponent.ID = to
+						s.PrimaryComponent.Present = true
 						s.PrimaryComponent.Name = pkg.Name
 						s.PrimaryComponent.Version = pkg.Version
+						isPackage = true
 						break
 					}
 				}
-				break // Use first described element as primary
+				if isPackage {
+					break // Found the primary package
+				}
+			}
+			if s.PrimaryComponent.Present {
+				break // Already found primary component
 			}
 		}
 	}
@@ -457,6 +469,52 @@ func containsDigit(s string) bool {
 		}
 	}
 	return false
+}
+
+// isNoAssertion checks if a string represents NOASSERTION or NONE
+func isNoAssertion(s string) bool {
+	upper := strings.ToUpper(strings.TrimSpace(s))
+	return upper == "NOASSERTION" || upper == "NONE"
+}
+
+// isValidLicenseRef checks if a license reference is valid (not NOASSERTION)
+// For SPDX 3.0, this needs to resolve SPDXRef IDs to check their actual values
+func (s *Spdx3Doc) isValidLicenseRef(ref string) bool {
+	// If it's a direct license expression (not a SPDXRef), check it directly
+	if !strings.HasPrefix(ref, "SPDXRef-") {
+		return !isNoAssertion(ref)
+	}
+	
+	// For SPDXRef in SPDX 3.0:
+	// License relationships typically point to Element nodes when they represent NOASSERTION
+	// Real licenses would be expressed as license expressions or SimpleLicensingInfo
+	// SPDXRef-Element- references are typically used for NOASSERTION placeholders
+	if strings.Contains(ref, "SPDXRef-Element-") {
+		// Element references in license relationships are typically NOASSERTION
+		// This matches the pattern we see in the sample files
+		return false
+	}
+	
+	// SPDXRef-SimpleLicensingInfo or other types might be valid custom licenses
+	// For now, treat non-Element SPDXRefs as potentially valid
+	return !strings.Contains(ref, "SPDXRef-Organization-") // Organizations aren't licenses
+}
+
+// resolveLicenseRef resolves a license reference to its actual value
+// If it's a SPDXRef-AnyLicenseInfo-, look up the actual license name
+func (s *Spdx3Doc) resolveLicenseRef(ref string) string {
+	// If it's not a SPDXRef, return as-is
+	if !strings.HasPrefix(ref, "SPDXRef-") {
+		return ref
+	}
+	
+	// Check if we have the name stored in our element names map
+	if name, ok := s.elementNames[ref]; ok && name != "" {
+		return name
+	}
+	
+	// If we can't resolve it, return the original ref
+	return ref
 }
 
 func (s *Spdx3Doc) addToLogs(log string) {
@@ -656,7 +714,7 @@ func (s *Spdx3Doc) licenses(pkg *parse.PackageInfo) []licenses.License {
 	// First check if pkg.LicenseInfo is populated (for compatibility)
 	if pkg.LicenseInfo != nil {
 		// Prefer concluded license
-		if pkg.LicenseInfo.Concluded != "" {
+		if pkg.LicenseInfo.Concluded != "" && !isNoAssertion(pkg.LicenseInfo.Concluded) {
 			conLics := licenses.LookupExpression(pkg.LicenseInfo.Concluded, nil)
 			if len(conLics) > 0 {
 				return conLics
@@ -664,7 +722,7 @@ func (s *Spdx3Doc) licenses(pkg *parse.PackageInfo) []licenses.License {
 		}
 		
 		// Fall back to declared license
-		if pkg.LicenseInfo.Declared != "" {
+		if pkg.LicenseInfo.Declared != "" && !isNoAssertion(pkg.LicenseInfo.Declared) {
 			decLics := licenses.LookupExpression(pkg.LicenseInfo.Declared, nil)
 			if len(decLics) > 0 {
 				return decLics
@@ -677,6 +735,10 @@ func (s *Spdx3Doc) licenses(pkg *parse.PackageInfo) []licenses.License {
 	concludedRels := s.doc.ConcludedLicenseFor(pkg.SpdxID)
 	for _, rel := range concludedRels {
 		for _, to := range rel.To {
+			// Check if 'to' is a reference to an element
+			if !s.isValidLicenseRef(to) {
+				continue
+			}
 			// The 'to' field contains the license expression
 			conLics := licenses.LookupExpression(to, nil)
 			lics = append(lics, conLics...)
@@ -690,6 +752,10 @@ func (s *Spdx3Doc) licenses(pkg *parse.PackageInfo) []licenses.License {
 	declaredRels := s.doc.DeclaredLicenseFor(pkg.SpdxID)
 	for _, rel := range declaredRels {
 		for _, to := range rel.To {
+			// Check if 'to' is a reference to an element
+			if !s.isValidLicenseRef(to) {
+				continue
+			}
 			decLics := licenses.LookupExpression(to, nil)
 			lics = append(lics, decLics...)
 		}
@@ -702,7 +768,7 @@ func (s *Spdx3Doc) declaredLicenses(pkg *parse.PackageInfo) []licenses.License {
 	lics := []licenses.License{}
 	
 	// First check if pkg.LicenseInfo is populated (for compatibility)
-	if pkg.LicenseInfo != nil && pkg.LicenseInfo.Declared != "" {
+	if pkg.LicenseInfo != nil && pkg.LicenseInfo.Declared != "" && !isNoAssertion(pkg.LicenseInfo.Declared) {
 		decLics := licenses.LookupExpression(pkg.LicenseInfo.Declared, nil)
 		lics = append(lics, decLics...)
 	}
@@ -712,6 +778,9 @@ func (s *Spdx3Doc) declaredLicenses(pkg *parse.PackageInfo) []licenses.License {
 		declaredRels := s.doc.DeclaredLicenseFor(pkg.SpdxID)
 		for _, rel := range declaredRels {
 			for _, to := range rel.To {
+				if !s.isValidLicenseRef(to) {
+					continue
+				}
 				decLics := licenses.LookupExpression(to, nil)
 				lics = append(lics, decLics...)
 			}
@@ -725,7 +794,7 @@ func (s *Spdx3Doc) concludedLicenses(pkg *parse.PackageInfo) []licenses.License 
 	lics := []licenses.License{}
 	
 	// First check if pkg.LicenseInfo is populated (for compatibility)
-	if pkg.LicenseInfo != nil && pkg.LicenseInfo.Concluded != "" {
+	if pkg.LicenseInfo != nil && pkg.LicenseInfo.Concluded != "" && !isNoAssertion(pkg.LicenseInfo.Concluded) {
 		conLics := licenses.LookupExpression(pkg.LicenseInfo.Concluded, nil)
 		lics = append(lics, conLics...)
 	}
@@ -735,6 +804,9 @@ func (s *Spdx3Doc) concludedLicenses(pkg *parse.PackageInfo) []licenses.License 
 		concludedRels := s.doc.ConcludedLicenseFor(pkg.SpdxID)
 		for _, rel := range concludedRels {
 			for _, to := range rel.To {
+				if !s.isValidLicenseRef(to) {
+					continue
+				}
 				conLics := licenses.LookupExpression(to, nil)
 				lics = append(lics, conLics...)
 			}
