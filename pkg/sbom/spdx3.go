@@ -51,7 +51,6 @@ type Spdx3Doc struct {
 	Dependencies     map[string][]string
 	composition      map[string]string
 	Vuln             []GetVulnerabilities
-	elementNames     map[string]string  // Maps element IDs to their names for license resolution
 }
 
 func newSPDX3Doc(ctx context.Context, f io.ReadSeeker, format FileFormat, version FormatVersion, _ Signature) (Document, error) {
@@ -73,10 +72,9 @@ func newSPDX3Doc(ctx context.Context, f io.ReadSeeker, format FileFormat, versio
 		format:          format,
 		ctx:             ctx,
 		version:         version,
-		spdxValidSchema: true,
+		spdxValidSchema: true, // Will be validated in requiredFields()
 		Dependencies:    make(map[string][]string),
 		composition:     make(map[string]string),
-		elementNames:    make(map[string]string),
 	}
 
 	doc.parse()
@@ -127,26 +125,29 @@ func (s Spdx3Doc) Manufacturer() GetManufacturer {
 
 func (s Spdx3Doc) Supplier() GetSupplier {
 	// SPDX 3.0 maps supplier to Core/Classes/Artifact.suppliedBy
-	// Check if the document itself has a supplier (from the root/primary package)
 	if s.doc == nil {
 		return nil
 	}
 	
-	// First, check if we have a primary component with supplier
-	if s.PrimaryComponent.ID != "" {
-		for _, pkg := range s.doc.Packages() {
-			if pkg.SpdxID == s.PrimaryComponent.ID && pkg.Supplier != nil {
-				return &Supplier{
-					Name:  pkg.Supplier.Name,
-					Email: "", // SPDX 3.0 doesn't have email in AgentInfo
+	// Check packages for supplier information
+	for _, pkg := range s.doc.Packages() {
+		if pkg.Supplier != nil && pkg.Supplier.Name != "" {
+			supplier := &Supplier{
+				Name: pkg.Supplier.Name,
+			}
+			// Try to extract email from name if in format "Name <email>"
+			if strings.Contains(pkg.Supplier.Name, "<") && strings.Contains(pkg.Supplier.Name, ">") {
+				if idx := strings.Index(pkg.Supplier.Name, "<"); idx > 0 {
+					if endIdx := strings.Index(pkg.Supplier.Name, ">"); endIdx > idx {
+						supplier.Email = strings.TrimSpace(pkg.Supplier.Name[idx+1 : endIdx])
+						supplier.Name = strings.TrimSpace(pkg.Supplier.Name[:idx])
+					}
 				}
 			}
+			return supplier
 		}
 	}
 	
-	// If no primary component supplier, check if the document has a supplier
-	// This would be stored as the supplier of the SBOM itself (if it exists)
-	// For now, return nil as document-level supplier is not directly available
 	return nil
 }
 
@@ -185,11 +186,10 @@ func (s *Spdx3Doc) parseDoc() {
 		s.addToLogs("spdx3 doc is not parsable")
 		return
 	}
-	// SPDX 3.0 maps lifecycle to Software/Sbom/sbomType
-	// Check creation info comment for lifecycle information
+	// Check for lifecycle information in creation info comment
 	if creationInfo := s.doc.CreationInfo(); creationInfo != nil && creationInfo.Comment != "" {
+		// Fallback to checking creation info comment
 		comment := strings.ToLower(creationInfo.Comment)
-		// Look for lifecycle phase keywords
 		if strings.Contains(comment, "build") || strings.Contains(comment, "runtime") || 
 		   strings.Contains(comment, "design") || strings.Contains(comment, "source") ||
 		   strings.Contains(comment, "analyzed") || strings.Contains(comment, "deployed") {
@@ -232,12 +232,10 @@ func (s *Spdx3Doc) parseSpec() {
 
 	sp.isReqFieldsPresent = s.requiredFields()
 	
-	// SPDX 3.0 data license
+	// SPDX 3.0 data license - use the direct data license field
 	sp.Licenses = []licenses.License{}
 	if dataLicense := s.doc.DataLicense(); dataLicense != "" {
-		// If it's a SPDXRef, try to resolve it to the actual license name
-		licenseExpr := s.resolveLicenseRef(dataLicense)
-		lics := licenses.LookupExpression(licenseExpr, nil)
+		lics := licenses.LookupExpression(dataLicense, nil)
 		sp.Licenses = append(sp.Licenses, lics...)
 	}
 
@@ -265,6 +263,14 @@ func (s *Spdx3Doc) parseComps() {
 		nc.DeclaredLicense = s.declaredLicenses(pkg)
 		nc.ConcludedLicense = s.concludedLicenses(pkg)
 		nc.ID = nc.Spdxid
+		
+		// Set source code URL from external references
+		for _, extRef := range pkg.ExternalRefs {
+			if extRef.Type == "sourceArtifact" || extRef.Type == "vcs" {
+				nc.SourceCodeURL = extRef.Locator
+				break
+			}
+		}
 		
 		// Set PackageLicenseConcluded for compatibility with some scorers
 		if len(nc.ConcludedLicense) > 0 {
@@ -294,27 +300,60 @@ func (s *Spdx3Doc) parseComps() {
 			nc.PrimaryCompt = s.PrimaryComponent
 		}
 
-		// Handle supplier
-		if supplier := pkg.Supplier; supplier != nil {
+		// Handle supplier - check if it's not NOASSERTION
+		if supplier := pkg.Supplier; supplier != nil && supplier.Name != "" && !strings.Contains(strings.ToUpper(supplier.Name), "NOASSERTION") {
 			nc.Supplier = Supplier{
-				Name:  supplier.Name,
-				Email: "", // SPDX 3.0 doesn't have email in AgentInfo
+				Name: supplier.Name,
+			}
+			// Try to extract email from name if in format "Name <email>"
+			if strings.Contains(supplier.Name, "<") && strings.Contains(supplier.Name, ">") {
+				if idx := strings.Index(supplier.Name, "<"); idx > 0 {
+					if endIdx := strings.Index(supplier.Name, ">"); endIdx > idx {
+						nc.Supplier.Email = strings.TrimSpace(supplier.Name[idx+1 : endIdx])
+						nc.Supplier.Name = strings.TrimSpace(supplier.Name[:idx])
+					}
+				}
 			}
 		}
 
 		// Handle originator/manufacturer
 		if originators := pkg.Originator; len(originators) > 0 {
-			nc.manufacturer = Manufacturer{
-				Name:  originators[0].Name,
-				Email: "",
-			}
-			// Also set as author
+			// Find first valid originator for manufacturer
 			for _, orig := range originators {
-				nc.Athrs = append(nc.Athrs, Author{
-					Name:       orig.Name,
-					Email:      "",
-					AuthorType: strings.ToLower(orig.Type),
-				})
+				if orig.Name != "" && !strings.Contains(strings.ToUpper(orig.Name), "NOASSERTION") {
+					nc.manufacturer = Manufacturer{
+						Name: orig.Name,
+					}
+					// Try to extract email from name if in format "Name <email>"
+					if strings.Contains(orig.Name, "<") && strings.Contains(orig.Name, ">") {
+						if idx := strings.Index(orig.Name, "<"); idx > 0 {
+							if endIdx := strings.Index(orig.Name, ">"); endIdx > idx {
+								nc.manufacturer.Email = strings.TrimSpace(orig.Name[idx+1 : endIdx])
+								nc.manufacturer.Name = strings.TrimSpace(orig.Name[:idx])
+							}
+						}
+					}
+					break
+				}
+			}
+			// Also set all valid originators as authors
+			for _, orig := range originators {
+				if orig.Name != "" && !strings.Contains(strings.ToUpper(orig.Name), "NOASSERTION") {
+					author := Author{
+						Name:       orig.Name,
+						AuthorType: strings.ToLower(orig.Type),
+					}
+					// Try to extract email from name
+					if strings.Contains(orig.Name, "<") && strings.Contains(orig.Name, ">") {
+						if idx := strings.Index(orig.Name, "<"); idx > 0 {
+							if endIdx := strings.Index(orig.Name, ">"); endIdx > idx {
+								author.Email = strings.TrimSpace(orig.Name[idx+1 : endIdx])
+								author.Name = strings.TrimSpace(orig.Name[:idx])
+							}
+						}
+					}
+					nc.Athrs = append(nc.Athrs, author)
+				}
 			}
 		}
 
@@ -334,13 +373,25 @@ func (s *Spdx3Doc) parseAuthors() {
 	}
 
 	for _, creator := range creationInfo.CreatedBy {
+		// Filter out tools and software agents
 		if strings.ToLower(creator.Type) != "tool" && strings.ToLower(creator.Type) != "softwareagent" {
-			a := Author{
-				Name:       creator.Name,
-				Email:      "", // SPDX 3.0 doesn't have email in AgentInfo
-				AuthorType: strings.ToLower(creator.Type),
+			// Check if it's not NOASSERTION
+			if creator.Name != "" && !strings.Contains(strings.ToUpper(creator.Name), "NOASSERTION") {
+				a := Author{
+					Name:       creator.Name,
+					AuthorType: strings.ToLower(creator.Type),
+				}
+				// Try to extract email from name if in format "Name <email>"
+				if strings.Contains(creator.Name, "<") && strings.Contains(creator.Name, ">") {
+					if idx := strings.Index(creator.Name, "<"); idx > 0 {
+						if endIdx := strings.Index(creator.Name, ">"); endIdx > idx {
+							a.Email = strings.TrimSpace(creator.Name[idx+1 : endIdx])
+							a.Name = strings.TrimSpace(creator.Name[:idx])
+							}
+						}
+				}
+				s.Auths = append(s.Auths, a)
 			}
-			s.Auths = append(s.Auths, a)
 		}
 	}
 }
@@ -354,42 +405,21 @@ func (s *Spdx3Doc) parsePrimaryCompAndRelationships() {
 	s.Dependencies = make(map[string][]string)
 	
 	relationships := s.doc.Relationships()
-	
-	// Find primary component through DESCRIBES relationship
-	// The document should describe the primary package (not files)
-	for _, rel := range relationships {
-		relType := strings.ToLower(rel.RelationshipType)
-		if relType == "describes" && (rel.From == "SPDXRef-DOCUMENT" || strings.Contains(rel.From, "SpdxDocument")) {
-			// In SPDX 3.0, the document describes the primary component
-			// Look for a Package being described (not Files)
-			for _, to := range rel.To {
-				// Check if this is a package
-				isPackage := false
-				for _, pkg := range s.doc.Packages() {
-					if pkg.SpdxID == to {
-						s.PrimaryComponent.ID = to
-						s.PrimaryComponent.Present = true
-						s.PrimaryComponent.Name = pkg.Name
-						s.PrimaryComponent.Version = pkg.Version
-						isPackage = true
-						break
-					}
-				}
-				if isPackage {
-					break // Found the primary package
-				}
-			}
-			if s.PrimaryComponent.Present {
-				break // Already found primary component
-			}
-		}
+
+	// Use spdx-zen helper to find primary component
+	if primaryPkg := s.doc.PrimaryPackage(); primaryPkg != nil {
+		s.PrimaryComponent.ID = primaryPkg.SpdxID
+		s.PrimaryComponent.Present = true
+		s.PrimaryComponent.Name = primaryPkg.Name
+		s.PrimaryComponent.Version = primaryPkg.Version
 	}
 
 	// Build dependency map
 	for _, rel := range relationships {
-		relType := strings.ToLower(rel.RelationshipType)
-		// Handle both SPDX 2.x style (CONTAINS, DEPENDS_ON) and SPDX 3.0 style (contains, dependsOn)
-		if relType == "contains" || relType == "depends_on" || relType == "dependson" {
+		// Check relationship types
+		if rel.RelationshipType == "contains" || 
+		   rel.RelationshipType == "dependsOn" ||
+		   rel.RelationshipType == "depends_on" || rel.RelationshipType == "dependson" { // fallback for older formats
 			from := rel.From
 			for _, to := range rel.To {
 				s.Dependencies[from] = append(s.Dependencies[from], to)
@@ -425,26 +455,27 @@ func (s *Spdx3Doc) parseTool() {
 		return
 	}
 
-	// In SPDX 3.0, tools can be in CreatedBy or CreatedUsing
+	// Parse tools from CreatedBy (tools) and CreatedUsing
+	var allTools []parse.AgentInfo
+	allTools = append(allTools, creationInfo.CreatedUsing...)
+	
+	// Add tools from CreatedBy
 	for _, creator := range creationInfo.CreatedBy {
 		if strings.ToLower(creator.Type) == "tool" || strings.ToLower(creator.Type) == "softwareagent" {
-			t := Tool{
-				Name:    creator.Name,
-				Version: "", // Version might be embedded in the name
-			}
-			// Try to extract version from name (e.g., "tool-1.2.3")
-			t.Name, t.Version = extractToolVersion(creator.Name)
-			s.SpdxTools = append(s.SpdxTools, t)
+			allTools = append(allTools, creator)
 		}
 	}
-	
-	for _, tool := range creationInfo.CreatedUsing {
-		t := Tool{
-			Name:    tool.Name,
-			Version: "",
+
+	for _, tool := range allTools {
+		if tool.Name != "" && !strings.Contains(strings.ToUpper(tool.Name), "NOASSERTION") { // Filter out NOASSERTION tools
+			t := Tool{
+				Name:    tool.Name,
+				Version: "", // Version might be embedded in the name or URL
+			}
+			// Try to extract version from name (e.g., "tool-1.2.3")
+			t.Name, t.Version = extractToolVersion(tool.Name)
+			s.SpdxTools = append(s.SpdxTools, t)
 		}
-		t.Name, t.Version = extractToolVersion(tool.Name)
-		s.SpdxTools = append(s.SpdxTools, t)
 	}
 }
 
@@ -471,51 +502,6 @@ func containsDigit(s string) bool {
 	return false
 }
 
-// isNoAssertion checks if a string represents NOASSERTION or NONE
-func isNoAssertion(s string) bool {
-	upper := strings.ToUpper(strings.TrimSpace(s))
-	return upper == "NOASSERTION" || upper == "NONE"
-}
-
-// isValidLicenseRef checks if a license reference is valid (not NOASSERTION)
-// For SPDX 3.0, this needs to resolve SPDXRef IDs to check their actual values
-func (s *Spdx3Doc) isValidLicenseRef(ref string) bool {
-	// If it's a direct license expression (not a SPDXRef), check it directly
-	if !strings.HasPrefix(ref, "SPDXRef-") {
-		return !isNoAssertion(ref)
-	}
-	
-	// For SPDXRef in SPDX 3.0:
-	// License relationships typically point to Element nodes when they represent NOASSERTION
-	// Real licenses would be expressed as license expressions or SimpleLicensingInfo
-	// SPDXRef-Element- references are typically used for NOASSERTION placeholders
-	if strings.Contains(ref, "SPDXRef-Element-") {
-		// Element references in license relationships are typically NOASSERTION
-		// This matches the pattern we see in the sample files
-		return false
-	}
-	
-	// SPDXRef-SimpleLicensingInfo or other types might be valid custom licenses
-	// For now, treat non-Element SPDXRefs as potentially valid
-	return !strings.Contains(ref, "SPDXRef-Organization-") // Organizations aren't licenses
-}
-
-// resolveLicenseRef resolves a license reference to its actual value
-// If it's a SPDXRef-AnyLicenseInfo-, look up the actual license name
-func (s *Spdx3Doc) resolveLicenseRef(ref string) string {
-	// If it's not a SPDXRef, return as-is
-	if !strings.HasPrefix(ref, "SPDXRef-") {
-		return ref
-	}
-	
-	// Check if we have the name stored in our element names map
-	if name, ok := s.elementNames[ref]; ok && name != "" {
-		return name
-	}
-	
-	// If we can't resolve it, return the original ref
-	return ref
-}
 
 func (s *Spdx3Doc) addToLogs(log string) {
 	s.logs = append(s.logs, log)
@@ -527,30 +513,35 @@ func (s *Spdx3Doc) requiredFields() bool {
 		return false
 	}
 	
-	// SPDX 3.0 required fields
-	if s.doc.SpdxID() == "" {
-		s.addToLogs("spdx3 doc is missing SPDXIdentifier")
+	// Check basic required fields
+	if s.doc.Name() == "" {
+		s.addToLogs("spdx3 doc missing name")
 		return false
 	}
 	
-	if s.doc.Name() == "" {
-		s.addToLogs("spdx3 doc is missing Name")
+	if s.doc.SpdxID() == "" {
+		s.addToLogs("spdx3 doc missing spdx identifier")
+		return false
+	}
+	
+	if s.doc.SpecVersion() == "" {
+		s.addToLogs("spdx3 doc missing spec version")
+		return false
+	}
+	
+	if s.doc.DataLicense() == "" {
+		s.addToLogs("spdx3 doc missing data license")
 		return false
 	}
 	
 	creationInfo := s.doc.CreationInfo()
 	if creationInfo == nil {
-		s.addToLogs("spdx3 doc is missing creation info")
+		s.addToLogs("spdx3 doc missing creation info")
 		return false
 	}
 	
 	if len(creationInfo.CreatedBy) == 0 {
-		s.addToLogs("spdx3 doc is missing creators")
-		return false
-	}
-	
-	if creationInfo.Created.IsZero() {
-		s.addToLogs("spdx3 doc is missing created timestamp")
+		s.addToLogs("spdx3 doc missing creators")
 		return false
 	}
 	
@@ -579,47 +570,15 @@ func (s *Spdx3Doc) pkgRequiredFields(pkg *parse.PackageInfo) bool {
 
 func (s *Spdx3Doc) purls(pkg *parse.PackageInfo) []purl.PURL {
 	urls := make([]purl.PURL, 0)
-	seenPurls := make(map[string]bool)
 	
-	// Check PackageURL field (primary source for SPDX 3.0)
-	if pkg.PackageURL != "" {
-		prl := purl.NewPURL(pkg.PackageURL)
+	// Use spdx-zen helper to get PURLs
+	purlStrs := pkg.PURLs()
+	for _, purlStr := range purlStrs {
+		prl := purl.NewPURL(purlStr)
 		if prl.Valid() {
-			purlStr := prl.String()
-			if !seenPurls[purlStr] {
-				urls = append(urls, prl)
-				seenPurls[purlStr] = true
-			}
+			urls = append(urls, prl)
 		} else {
-			s.addToLogs(fmt.Sprintf("spdx3 doc pkg %s invalid purl found: %s", pkg.Name, pkg.PackageURL))
-		}
-	}
-	
-	// Check external IDs for PURLs
-	for _, extID := range pkg.ExternalIDs {
-		if strings.ToLower(extID.Type) == "purl" || strings.ToLower(extID.Type) == "packageurl" || strings.HasPrefix(extID.Identifier, "pkg:") {
-			prl := purl.NewPURL(extID.Identifier)
-			if prl.Valid() {
-				purlStr := prl.String()
-				if !seenPurls[purlStr] {
-					urls = append(urls, prl)
-					seenPurls[purlStr] = true
-				}
-			}
-		}
-	}
-	
-	// Also check external references for package manager type
-	for _, extRef := range pkg.ExternalRefs {
-		if strings.Contains(strings.ToLower(extRef.Type), "package") || strings.HasPrefix(extRef.Locator, "pkg:") {
-			prl := purl.NewPURL(extRef.Locator)
-			if prl.Valid() {
-				purlStr := prl.String()
-				if !seenPurls[purlStr] {
-					urls = append(urls, prl)
-					seenPurls[purlStr] = true
-				}
-			}
+			s.addToLogs(fmt.Sprintf("spdx3 doc pkg %s invalid purl found: %s", pkg.Name, purlStr))
 		}
 	}
 	
@@ -632,35 +591,15 @@ func (s *Spdx3Doc) purls(pkg *parse.PackageInfo) []purl.PURL {
 
 func (s *Spdx3Doc) cpes(pkg *parse.PackageInfo) []cpe.CPE {
 	cpes := make([]cpe.CPE, 0)
-	seenCpes := make(map[string]bool)
 	
-	// Check external IDs for CPEs
-	for _, extID := range pkg.ExternalIDs {
-		if strings.Contains(strings.ToLower(extID.Type), "cpe") || strings.HasPrefix(extID.Identifier, "cpe:") {
-			cpeV := cpe.NewCPE(extID.Identifier)
-			if cpeV.Valid() {
-				cpeStr := cpeV.String()
-				if !seenCpes[cpeStr] {
-					cpes = append(cpes, cpeV)
-					seenCpes[cpeStr] = true
-				}
-			} else {
-				s.addToLogs(fmt.Sprintf("spdx3 doc pkg %s invalid cpe found: %s", pkg.Name, extID.Identifier))
-			}
-		}
-	}
-	
-	// Also check external references for CPE type
-	for _, extRef := range pkg.ExternalRefs {
-		if strings.Contains(strings.ToLower(extRef.Type), "cpe") || strings.HasPrefix(extRef.Locator, "cpe:") {
-			cpeV := cpe.NewCPE(extRef.Locator)
-			if cpeV.Valid() {
-				cpeStr := cpeV.String()
-				if !seenCpes[cpeStr] {
-					cpes = append(cpes, cpeV)
-					seenCpes[cpeStr] = true
-				}
-			}
+	// Use spdx-zen helper to get CPEs
+	cpeStrs := pkg.CPEs()
+	for _, cpeStr := range cpeStrs {
+		cpeV := cpe.NewCPE(cpeStr)
+		if cpeV.Valid() {
+			cpes = append(cpes, cpeV)
+		} else {
+			s.addToLogs(fmt.Sprintf("spdx3 doc pkg %s invalid cpe found: %s", pkg.Name, cpeStr))
 		}
 	}
 	
@@ -707,111 +646,33 @@ func (s *Spdx3Doc) externalRefs(pkg *parse.PackageInfo) []GetExternalReference {
 	return extRefs
 }
 
-func (s *Spdx3Doc) licenses(pkg *parse.PackageInfo) []licenses.License {
+// Helper function to convert license expressions to license objects
+func (s *Spdx3Doc) licenseExpressionsToLicenses(expressions []string) []licenses.License {
 	lics := []licenses.License{}
-	
-	// SPDX 3.0 uses relationships for licenses
-	// First check if pkg.LicenseInfo is populated (for compatibility)
-	if pkg.LicenseInfo != nil {
-		// Prefer concluded license
-		if pkg.LicenseInfo.Concluded != "" && !isNoAssertion(pkg.LicenseInfo.Concluded) {
-			conLics := licenses.LookupExpression(pkg.LicenseInfo.Concluded, nil)
-			if len(conLics) > 0 {
-				return conLics
-			}
-		}
-		
-		// Fall back to declared license
-		if pkg.LicenseInfo.Declared != "" && !isNoAssertion(pkg.LicenseInfo.Declared) {
-			decLics := licenses.LookupExpression(pkg.LicenseInfo.Declared, nil)
-			if len(decLics) > 0 {
-				return decLics
-			}
-		}
+	for _, licenseExpr := range expressions {
+		parsedLics := licenses.LookupExpression(licenseExpr, nil)
+		lics = append(lics, parsedLics...)
 	}
-	
-	// If no LicenseInfo, check relationships (SPDX 3.0 way)
-	// First try concluded licenses
-	concludedRels := s.doc.ConcludedLicenseFor(pkg.SpdxID)
-	for _, rel := range concludedRels {
-		for _, to := range rel.To {
-			// Check if 'to' is a reference to an element
-			if !s.isValidLicenseRef(to) {
-				continue
-			}
-			// The 'to' field contains the license expression
-			conLics := licenses.LookupExpression(to, nil)
-			lics = append(lics, conLics...)
-		}
-	}
-	if len(lics) > 0 {
-		return lics
+	return lics
+}
+
+func (s *Spdx3Doc) licenses(pkg *parse.PackageInfo) []licenses.License {
+	// Try concluded licenses first
+	concludedLics := s.concludedLicenses(pkg)
+	if len(concludedLics) > 0 {
+		return concludedLics
 	}
 	
 	// Fall back to declared licenses
-	declaredRels := s.doc.DeclaredLicenseFor(pkg.SpdxID)
-	for _, rel := range declaredRels {
-		for _, to := range rel.To {
-			// Check if 'to' is a reference to an element
-			if !s.isValidLicenseRef(to) {
-				continue
-			}
-			decLics := licenses.LookupExpression(to, nil)
-			lics = append(lics, decLics...)
-		}
-	}
-	
-	return lics
+	return s.declaredLicenses(pkg)
 }
 
 func (s *Spdx3Doc) declaredLicenses(pkg *parse.PackageInfo) []licenses.License {
-	lics := []licenses.License{}
-	
-	// First check if pkg.LicenseInfo is populated (for compatibility)
-	if pkg.LicenseInfo != nil && pkg.LicenseInfo.Declared != "" && !isNoAssertion(pkg.LicenseInfo.Declared) {
-		decLics := licenses.LookupExpression(pkg.LicenseInfo.Declared, nil)
-		lics = append(lics, decLics...)
-	}
-	
-	// Also check relationships (SPDX 3.0 way)
-	if len(lics) == 0 {
-		declaredRels := s.doc.DeclaredLicenseFor(pkg.SpdxID)
-		for _, rel := range declaredRels {
-			for _, to := range rel.To {
-				if !s.isValidLicenseRef(to) {
-					continue
-				}
-				decLics := licenses.LookupExpression(to, nil)
-				lics = append(lics, decLics...)
-			}
-		}
-	}
-	
-	return lics
+	licenseStrs := pkg.DeclaredLicenses(s.doc)
+	return s.licenseExpressionsToLicenses(licenseStrs)
 }
 
 func (s *Spdx3Doc) concludedLicenses(pkg *parse.PackageInfo) []licenses.License {
-	lics := []licenses.License{}
-	
-	// First check if pkg.LicenseInfo is populated (for compatibility)
-	if pkg.LicenseInfo != nil && pkg.LicenseInfo.Concluded != "" && !isNoAssertion(pkg.LicenseInfo.Concluded) {
-		conLics := licenses.LookupExpression(pkg.LicenseInfo.Concluded, nil)
-		lics = append(lics, conLics...)
-	}
-	
-	// Also check relationships (SPDX 3.0 way)
-	if len(lics) == 0 {
-		concludedRels := s.doc.ConcludedLicenseFor(pkg.SpdxID)
-		for _, rel := range concludedRels {
-			for _, to := range rel.To {
-				if !s.isValidLicenseRef(to) {
-					continue
-				}
-				conLics := licenses.LookupExpression(to, nil)
-				lics = append(lics, conLics...)
-			}
-		}
-	}
-	
-	return lics
+	licenseStrs := pkg.ConcludedLicenses(s.doc)
+	return s.licenseExpressionsToLicenses(licenseStrs)
 }
