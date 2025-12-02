@@ -30,7 +30,7 @@ import (
 
 var (
 	spdx3FileFormats    = []string{"json"}
-	spdx3SpecVersions   = []string{"SPDX-3.0", "SPDX-3.0.1"}
+	spdx3SpecVersions   = []string{"3.0", "3.0.0", "3.0.1", "SPDX-3.0", "SPDX-3.0.0", "SPDX-3.0.1"}
 	spdx3PrimaryPurpose = []string{"application", "framework", "library", "container", "operating-system", "device", "firmware", "source", "archive", "file", "install", "other"}
 )
 
