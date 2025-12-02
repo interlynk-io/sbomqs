@@ -70,10 +70,6 @@ func FSCTCompDependencies(doc sbom.Document) catalog.ProfFeatScore {
 	return CompDependencies(doc)
 }
 
-// func FSCTRelationshipAssertion(doc sbom.Document) catalog.ProfFeatScore {
-// 	return nil
-// }
-
 // Component License(Must)
 func FSCTCompLicense(doc sbom.Document) catalog.ProfFeatScore {
 	return CompLicenses(doc)

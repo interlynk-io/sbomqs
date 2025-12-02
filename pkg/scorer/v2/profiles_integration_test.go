@@ -129,6 +129,101 @@ func Test_NTIA2025ProfileForStaticSBOMFiles(t *testing.T) {
 	fmt.Printf("NTIA-2025 Profile: ✓ All %d test cases completed\n", len(testCases))
 }
 
+// Test_FSCTProfileForStaticSBOMFiles tests FSCT profile
+func Test_FSCTProfileForStaticSBOMFiles(t *testing.T) {
+	fmt.Println()
+	fmt.Println("==========================================")
+	fmt.Println("Running FSCT Profile Integration Tests")
+	fmt.Println("==========================================")
+
+	base := filepath.Join("..", "..", "..", "testdata", "fixtures")
+
+	testCases := map[string]expectedProfileScore{
+		// SPDX test cases
+		filepath.Join(base, "spdx-perfect-score.json"):    {Score: 9.7, Grade: "A", Required: 10},
+		filepath.Join(base, "spdx-minimal.json"):          {Score: 1.8, Grade: "F", Required: 2},
+		filepath.Join(base, "spdx-no-version.json"):       {Score: 3.6, Grade: "F", Required: 4},
+		filepath.Join(base, "spdx-no-checksums.json"):     {Score: 6.8, Grade: "D", Required: 7},
+		filepath.Join(base, "spdx-weak-checksums.json"):   {Score: 5.5, Grade: "D", Required: 6},
+		filepath.Join(base, "spdx-no-dependencies.json"):  {Score: 8.2, Grade: "B", Required: 9},
+		filepath.Join(base, "spdx-invalid-licenses.json"): {Score: 4.5, Grade: "F", Required: 5},
+		filepath.Join(base, "spdx-no-authors.json"):       {Score: 4.5, Grade: "F", Required: 5},
+		filepath.Join(base, "spdx-no-timestamp.json"):     {Score: 3.6, Grade: "F", Required: 4},
+		filepath.Join(base, "spdx-old-version.json"):      {Score: 4.5, Grade: "F", Required: 5},
+
+		// CycloneDX test cases
+		filepath.Join(base, "cdx-perfect-score.json"):    {Score: 8.8, Grade: "B", Required: 9},
+		filepath.Join(base, "cdx-minimal.json"):          {Score: 0.9, Grade: "F", Required: 1},
+		filepath.Join(base, "cdx-no-version.json"):       {Score: 2.7, Grade: "F", Required: 3},
+		filepath.Join(base, "cdx-no-checksums.json"):     {Score: 5.9, Grade: "D", Required: 6},
+		filepath.Join(base, "cdx-weak-checksums.json"):   {Score: 4.5, Grade: "F", Required: 5},
+		filepath.Join(base, "cdx-no-dependencies.json"):  {Score: 7.3, Grade: "C", Required: 8},
+		filepath.Join(base, "cdx-invalid-licenses.json"): {Score: 3.6, Grade: "F", Required: 4},
+		filepath.Join(base, "cdx-no-authors.json"):       {Score: 3.6, Grade: "F", Required: 4},
+		filepath.Join(base, "cdx-no-timestamp.json"):     {Score: 2.7, Grade: "F", Required: 3},
+		filepath.Join(base, "cdx-old-version.json"):      {Score: 3.6, Grade: "F", Required: 4},
+	}
+
+	for path, want := range testCases {
+		filename := filepath.Base(path)
+		testName := "FSCT_" + filename
+
+		t.Run(testName, func(t *testing.T) {
+			t.Parallel()
+
+			cfg := config.Config{
+				Profile: []string{string(registry.ProfileFSCT)},
+			}
+			paths := []string{path}
+
+			ctx := context.Background()
+
+			results, err := score.ScoreSBOM(ctx, cfg, paths)
+			require.NoError(t, err)
+
+			for _, r := range results {
+				require.NotNil(t, r.Profiles, "Profile results should not be nil")
+				require.Len(t, r.Profiles.ProfResult, 1, "Should have exactly one profile result")
+
+				profResult := r.Profiles.ProfResult[0]
+				require.Equal(t, "Framing Third Edition Compliance", profResult.Name)
+
+				gotRaw := profResult.InterlynkScore
+				gotRounded := math.Round(gotRaw*10) / 10
+
+				// Count required fields (all fields are required in NTIA 2025)
+				requiredCompliant := 0
+
+				for _, item := range profResult.Items {
+					if item.Required && item.Score >= 10.0 {
+						requiredCompliant++
+					}
+				}
+
+				// Log the score for visibility
+				t.Logf("File: %s | Score: %.1f/10.0 | Grade: %s | Required: %d/13",
+					filename, gotRounded, profResult.Grade, requiredCompliant)
+				t.Logf("  Expected: Score: %.1f | Grade: %s | Required: %d/13",
+					want.Score, want.Grade, want.Required)
+
+				// compare FSCT score
+				require.InDelta(t, want.Score, gotRounded, 1e-9,
+					"FSCT score (rounded to 1 decimal) mismatch for %s", filename)
+
+				// compare grade
+				require.Equal(t, want.Grade, profResult.Grade,
+					"Grade mismatch for %s", filename)
+
+				// compare required fields count
+				require.Equal(t, want.Required, requiredCompliant,
+					"Required fields compliance count mismatch for %s", filename)
+			}
+		})
+	}
+
+	fmt.Printf("FSCT Profile: ✓ All %d test cases completed\n", len(testCases))
+}
+
 // TODO: Test_BSI11ProfileForStaticSBOMFiles tests BSI v1.1 profile
 // Uncomment and update expected scores after running actual tests
 /*
@@ -545,59 +640,59 @@ func Test_CycloneDXSignatureSupport(t *testing.T) {
 	// Signature scoring: 10 = complete with verification material, 5 = partial, 0 = missing/incomplete
 	testCases := map[string]struct {
 		expectedSignatureScore float64
-		description           string
-		hasSignature         bool
-		hasPublicKey         bool
-		hasCertPath          bool
-		algorithm            string
+		description            string
+		hasSignature           bool
+		hasPublicKey           bool
+		hasCertPath            bool
+		algorithm              string
 	}{
 		filepath.Join(base, "cdx-with-complete-signature.json"): {
 			expectedSignatureScore: 10.0,
-			description:           "Complete signature with RSA key and certificate path",
-			hasSignature:         true,
-			hasPublicKey:         true,
-			hasCertPath:          true,
-			algorithm:            "RS256",
+			description:            "Complete signature with RSA key and certificate path",
+			hasSignature:           true,
+			hasPublicKey:           true,
+			hasCertPath:            true,
+			algorithm:              "RS256",
 		},
 		filepath.Join(base, "cdx-with-signature-no-key.json"): {
 			expectedSignatureScore: 5.0,
-			description:           "Signature present but no verification key",
-			hasSignature:         true,
-			hasPublicKey:         false,
-			hasCertPath:          false,
-			algorithm:            "RS256",
+			description:            "Signature present but no verification key",
+			hasSignature:           true,
+			hasPublicKey:           false,
+			hasCertPath:            false,
+			algorithm:              "RS256",
 		},
 		filepath.Join(base, "cdx-with-incomplete-signature.json"): {
 			expectedSignatureScore: 0.0,
-			description:           "Incomplete signature (missing value)",
-			hasSignature:         false, // Incomplete counts as no signature
-			hasPublicKey:         true,
-			hasCertPath:          false,
-			algorithm:            "RS256",
+			description:            "Incomplete signature (missing value)",
+			hasSignature:           false, // Incomplete counts as no signature
+			hasPublicKey:           true,
+			hasCertPath:            false,
+			algorithm:              "RS256",
 		},
 		filepath.Join(base, "cdx-with-ec-signature.json"): {
 			expectedSignatureScore: 10.0,
-			description:           "Complete EC signature",
-			hasSignature:         true,
-			hasPublicKey:         true,
-			hasCertPath:          false,
-			algorithm:            "ES256",
+			description:            "Complete EC signature",
+			hasSignature:           true,
+			hasPublicKey:           true,
+			hasCertPath:            false,
+			algorithm:              "ES256",
 		},
 		filepath.Join(base, "cdx-with-multiple-signers.json"): {
 			expectedSignatureScore: 10.0,
-			description:           "Multiple signers (uses first signer)",
-			hasSignature:         true,
-			hasPublicKey:         true,
-			hasCertPath:          false,
-			algorithm:            "RS256",
+			description:            "Multiple signers (uses first signer)",
+			hasSignature:           true,
+			hasPublicKey:           true,
+			hasCertPath:            false,
+			algorithm:              "RS256",
 		},
 		filepath.Join(base, "cdx-minimal.json"): {
 			expectedSignatureScore: 0.0,
-			description:           "No signature present",
-			hasSignature:         false,
-			hasPublicKey:         false,
-			hasCertPath:          false,
-			algorithm:            "",
+			description:            "No signature present",
+			hasSignature:           false,
+			hasPublicKey:           false,
+			hasCertPath:            false,
+			algorithm:              "",
 		},
 	}
 
@@ -632,7 +727,7 @@ func Test_CycloneDXSignatureSupport(t *testing.T) {
 					if item.Key == "sbom_signature" {
 						signatureScore = item.Score
 						signatureFound = true
-						
+
 						// Log detailed signature information
 						t.Logf("File: %s", filename)
 						t.Logf("  Description: %s", tc.description)
@@ -646,7 +741,7 @@ func Test_CycloneDXSignatureSupport(t *testing.T) {
 				}
 
 				require.True(t, signatureFound, "Signature score should be present in profile results")
-				
+
 				// Check signature score matches expectation
 				require.InDelta(t, tc.expectedSignatureScore, signatureScore, 1e-9,
 					"Signature score mismatch for %s", filename)

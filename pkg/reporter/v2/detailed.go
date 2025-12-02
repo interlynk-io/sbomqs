@@ -132,7 +132,7 @@ func (r *Reporter) detailedReport() {
 				// Add summary for NTIA and OCT profiles showing required vs optional fields
 				if r.Profiles != nil && len(r.Profiles.ProfResult) > 0 {
 					for _, proResult := range r.Profiles.ProfResult {
-						if proResult.Name == "NTIA Minimum Elements (2021)" || proResult.Name == "NTIA Minimum Elements (2025) - RFC" || proResult.Name == "OpenChain Telco v1.1" {
+						if proResult.Name == "NTIA Minimum Elements (2021)" || proResult.Name == "NTIA Minimum Elements (2025) - RFC" || proResult.Name == "OpenChain Telco v1.1" || proResult.Name == "Framing Third Edition Compliance" {
 							requiredCount, requiredCompliant := 0, 0
 							optionalCount, optionalPresent := 0, 0
 
