@@ -59,7 +59,7 @@ func InterSBOMLifecycle(doc sbom.Document) catalog.ProfFeatScore {
 
 // Integrity
 func InterCompWithChecksum(doc sbom.Document) catalog.ProfFeatScore {
-	return CompHash(doc)
+	return CompHashSHA1Plus(doc)
 }
 
 func InterCompWithChecksum265(doc sbom.Document) catalog.ProfFeatScore {

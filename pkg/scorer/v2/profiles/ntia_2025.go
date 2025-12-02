@@ -15,9 +15,9 @@
 package profiles
 
 import (
-	"fmt"
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/catalog"
+	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/formulae"
 )
 
 // NTIA2025 Tool Name - New requirement for NTIA 2025
@@ -48,13 +48,13 @@ func NTIA2025GenerationContext(doc sbom.Document) catalog.ProfFeatScore {
 	desc := "add generation context"
 	spec := doc.Spec().GetSpecType()
 
-	if spec == "cyclonedx" {
+	if spec == string(sbom.SBOMSpecCDX) {
 		// For CycloneDX, check for lifecycles or metadata
 		if doc.Spec().GetCreationTimestamp() != "" {
 			score = 10.0
 			desc = "complete"
 		}
-	} else if spec == "spdx" {
+	} else if spec == string(sbom.SBOMSpecSPDX) {
 		// For SPDX, check if creation timestamp is present as it indicates generation context
 		if timestamp := doc.Spec().GetCreationTimestamp(); timestamp != "" {
 			score = 10.0
@@ -113,58 +113,44 @@ func NTIA2025SoftwareProducer(doc sbom.Document) catalog.ProfFeatScore {
 
 // NTIA2025 Component Hash - Enhanced requirement for NTIA 2025
 func NTIA2025CompHash(doc sbom.Document) catalog.ProfFeatScore {
-	totalComponents := len(doc.Components())
-	if totalComponents == 0 {
+	total := len(doc.Components())
+	if total == 0 {
 		return catalog.ProfFeatScore{
 			Score:  0.0,
-			Desc:   "no components found",
+			Desc:   formulae.NoComponentsNA(),
 			Ignore: false,
 		}
 	}
 
-	componentsWithHash := 0
+	have := 0
 	for _, comp := range doc.Components() {
 		checksums := comp.GetChecksums()
 		if len(checksums) > 0 {
-			componentsWithHash++
+			have++
 		}
 	}
 
-	score := (float64(componentsWithHash) / float64(totalComponents)) * 10.0
-	desc := ""
-
-	if componentsWithHash == 0 {
-		desc = fmt.Sprintf("add to %d components", totalComponents)
-	} else if componentsWithHash == totalComponents {
-		desc = "complete"
-	} else {
-		missing := totalComponents - componentsWithHash
-		if missing == 1 {
-			desc = "add to 1 component"
-		} else {
-			desc = fmt.Sprintf("add to %d components", missing)
-		}
-	}
+	score := (float64(have) / float64(total)) * 10.0
 
 	return catalog.ProfFeatScore{
 		Score:  score,
-		Desc:   desc,
+		Desc:   formulae.CompDescription(have, total),
 		Ignore: false,
 	}
 }
 
 // NTIA2025 License - Required for all components in NTIA 2025
 func NTIA2025CompLicense(doc sbom.Document) catalog.ProfFeatScore {
-	totalComponents := len(doc.Components())
-	if totalComponents == 0 {
+	total := len(doc.Components())
+	if total == 0 {
 		return catalog.ProfFeatScore{
 			Score:  0.0,
-			Desc:   "no components found",
+			Desc:   formulae.NoComponentsNA(),
 			Ignore: false,
 		}
 	}
 
-	componentsWithLicense := 0
+	have := 0
 	for _, comp := range doc.Components() {
 		hasLicense := false
 		// Check for concluded license
@@ -188,51 +174,37 @@ func NTIA2025CompLicense(doc sbom.Document) catalog.ProfFeatScore {
 			}
 		}
 		if hasLicense {
-			componentsWithLicense++
+			have++
 		}
 	}
 
-	score := (float64(componentsWithLicense) / float64(totalComponents)) * 10.0
-	desc := ""
-
-	if componentsWithLicense == 0 {
-		desc = fmt.Sprintf("add to %d components", totalComponents)
-	} else if componentsWithLicense == totalComponents {
-		desc = "complete"
-	} else {
-		missing := totalComponents - componentsWithLicense
-		if missing == 1 {
-			desc = "add to 1 component"
-		} else {
-			desc = fmt.Sprintf("add to %d components", missing)
-		}
-	}
+	score := (float64(have) / float64(total)) * 10.0
 
 	return catalog.ProfFeatScore{
 		Score:  score,
-		Desc:   desc,
+		Desc:   formulae.CompDescription(have, total),
 		Ignore: false,
 	}
 }
 
 // NTIA2025 Software Identifiers - Enhanced requirement for NTIA 2025
 func NTIA2025CompSoftwareIdentifiers(doc sbom.Document) catalog.ProfFeatScore {
-	totalComponents := len(doc.Components())
-	if totalComponents == 0 {
+	total := len(doc.Components())
+	if total == 0 {
 		return catalog.ProfFeatScore{
 			Score:  0.0,
-			Desc:   "no components found",
+			Desc:   formulae.NoComponentsNA(),
 			Ignore: false,
 		}
 	}
 
-	componentsWithId := 0
+	have := 0
 	spec := doc.Spec().GetSpecType()
 
 	for _, comp := range doc.Components() {
 		hasId := false
 
-		if spec == "spdx" {
+		if spec == string(sbom.SBOMSpecSPDX) {
 			// Check for SPDX ID first
 			if spdxID := comp.GetSpdxID(); spdxID != "" {
 				hasId = true
@@ -247,7 +219,7 @@ func NTIA2025CompSoftwareIdentifiers(doc sbom.Document) catalog.ProfFeatScore {
 					}
 				}
 			}
-		} else if spec == "cyclonedx" {
+		} else if spec == string(sbom.SBOMSpecCDX) {
 			// Check for PURLs, CPEs, or SWIDs
 			if purls := comp.GetPurls(); len(purls) > 0 {
 				hasId = true
@@ -257,29 +229,15 @@ func NTIA2025CompSoftwareIdentifiers(doc sbom.Document) catalog.ProfFeatScore {
 		}
 
 		if hasId {
-			componentsWithId++
+			have++
 		}
 	}
 
-	score := (float64(componentsWithId) / float64(totalComponents)) * 10.0
-	desc := ""
-
-	if componentsWithId == 0 {
-		desc = fmt.Sprintf("add to %d components", totalComponents)
-	} else if componentsWithId == totalComponents {
-		desc = "complete"
-	} else {
-		missing := totalComponents - componentsWithId
-		if missing == 1 {
-			desc = "add to 1 component"
-		} else {
-			desc = fmt.Sprintf("add to %d components", missing)
-		}
-	}
+	score := (float64(have) / float64(total)) * 10.0
 
 	return catalog.ProfFeatScore{
 		Score:  score,
-		Desc:   desc,
+		Desc:   formulae.CompDescription(have, total),
 		Ignore: false,
 	}
 }

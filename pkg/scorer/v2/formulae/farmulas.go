@@ -43,7 +43,7 @@ func ScoreCompNAA() catalog.ComprFeatScore {
 func ScoreCompFull(have, comps int, field string, ignore bool) catalog.ComprFeatScore {
 	return catalog.ComprFeatScore{
 		Score:  PerComponentScore(have, comps),
-		Desc:   CompDescription(have, comps, field),
+		Desc:   CompDescription(have, comps),
 		Ignore: ignore,
 	}
 }
@@ -58,10 +58,10 @@ func ScoreProfNA(ignore bool) catalog.ProfFeatScore {
 }
 
 // ScoreProfNA score for profile features related to components
-func ScoreProfFull(have, comps int, feat string, ignore bool) catalog.ProfFeatScore {
+func ScoreProfFull(have, comps int, ignore bool) catalog.ProfFeatScore {
 	return catalog.ProfFeatScore{
 		Score:  PerComponentScore(have, comps),
-		Desc:   CompDescription(have, comps, feat),
+		Desc:   CompDescription(have, comps),
 		Ignore: ignore,
 	}
 }
@@ -109,7 +109,7 @@ func NonSupportedSPDXField() string    { return "N/A (SPDX)" }
 func UnknownSpec() string              { return "N/A (unknown spec)" }
 
 // CompDescription returns an action-oriented description for component features
-func CompDescription(have, total int, field string) string {
+func CompDescription(have, total int) string {
 	if have == total {
 		return "complete"
 	}

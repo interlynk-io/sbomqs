@@ -19,11 +19,6 @@ import (
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/catalog"
 )
 
-var (
-	validBsiSpdxVersions = []string{"SPDX-2.3"}
-	validBsiCdxVersions  = []string{"1.4", "1.5", "1.6"}
-)
-
 // BSISBOMSpec checks SBOM Formats
 func BSISBOMSpec(doc sbom.Document) catalog.ProfFeatScore {
 	return SBOMSpec(doc)
