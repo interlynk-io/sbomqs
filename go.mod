@@ -9,6 +9,7 @@ require (
 	github.com/DependencyTrack/client-go v0.17.0
 	github.com/github/go-spdx/v2 v2.3.4
 	github.com/google/uuid v1.6.0
+	github.com/interlynk-io/spdx_zen v0.0.2
 	github.com/knqyf263/go-cpe v0.0.0-20230627041855-cb0794d06872
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.12.0
 	github.com/olekukonko/tablewriter v0.0.5
@@ -58,3 +59,5 @@ require (
 	gotest.tools v2.2.0+incompatible
 	sigs.k8s.io/yaml v1.6.0 // indirect
 )
+
+replace github.com/interlynk-io/spdx_zen => /home/linuzz/go/src/github.com/interlynk-io/spdx_zen
