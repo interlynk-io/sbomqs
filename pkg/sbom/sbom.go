@@ -35,33 +35,35 @@ type SpecFormat string
 
 const (
 	// SBOMSpecSPDX represents the SPDX SBOM specification format
-	SBOMSpecSPDX    SpecFormat = "spdx"
+	SBOMSpecSPDX SpecFormat = "spdx"
 	// SBOMSpecCDX represents the CycloneDX SBOM specification format
-	SBOMSpecCDX     SpecFormat = "cyclonedx"
+	SBOMSpecCDX SpecFormat = "cyclonedx"
 	// SBOMSpecUnknown represents an unknown or unsupported SBOM specification format
 	SBOMSpecUnknown SpecFormat = "unknown"
+	// spdx3
+	SBOMSpecSPDX3 SpecFormat = "spdx3"
 )
 
 type (
 	// FileFormat represents the file encoding format of an SBOM (JSON, XML, YAML, etc.)
-	FileFormat    string
+	FileFormat string
 	// FormatVersion represents the version string of an SBOM specification
 	FormatVersion string
 )
 
 const (
 	// FileFormatJSON represents JSON file format
-	FileFormatJSON     FileFormat = "json"
+	FileFormatJSON FileFormat = "json"
 	// FileFormatRDF represents RDF file format
-	FileFormatRDF      FileFormat = "rdf"
+	FileFormatRDF FileFormat = "rdf"
 	// FileFormatYAML represents YAML file format
-	FileFormatYAML     FileFormat = "yaml"
+	FileFormatYAML FileFormat = "yaml"
 	// FileFormatTagValue represents SPDX tag-value file format
 	FileFormatTagValue FileFormat = "tag-value"
 	// FileFormatXML represents XML file format
-	FileFormatXML      FileFormat = "xml"
+	FileFormatXML FileFormat = "xml"
 	// FileFormatUnknown represents an unknown or unsupported file format
-	FileFormatUnknown  FileFormat = "unknown"
+	FileFormatUnknown FileFormat = "unknown"
 )
 
 type spdxbasic struct {
@@ -76,7 +78,7 @@ type cdxbasic struct {
 
 // SupportedSBOMSpecs returns a list of all supported SBOM specification formats
 func SupportedSBOMSpecs() []string {
-	return []string{string(SBOMSpecSPDX), string(SBOMSpecCDX)}
+	return []string{string(SBOMSpecSPDX), string(SBOMSpecCDX), string(SBOMSpecSPDX3)}
 }
 
 // SupportedSBOMSpecVersions returns a list of supported versions for the given SBOM specification format
@@ -115,6 +117,11 @@ func SupportedPrimaryPurpose(f string) []string {
 	}
 }
 
+type spdx3basic struct {
+	Context interface{} `json:"@context"`
+	Graph   interface{} `json:"@graph"`
+}
+
 func detectSbomFormat(f io.ReadSeeker) (SpecFormat, FileFormat, FormatVersion, error) {
 	defer func() {
 		_, err := f.Seek(0, io.SeekStart)
@@ -126,6 +133,40 @@ func detectSbomFormat(f io.ReadSeeker) (SpecFormat, FileFormat, FormatVersion, e
 	_, err := f.Seek(0, io.SeekStart)
 	if err != nil {
 		log.Fatalf("Failed to seek: %v", err)
+	}
+
+	// Check for SPDX 3.0 first (has @context field)
+	var s3 spdx3basic
+	if err := json.NewDecoder(f).Decode(&s3); err == nil {
+		if s3.Context != nil {
+			// Check if context contains SPDX 3.0 URI
+			contextStr := ""
+			switch v := s3.Context.(type) {
+			case string:
+				contextStr = v
+			case []interface{}:
+				if len(v) > 0 {
+					if s, ok := v[0].(string); ok {
+						contextStr = s
+					}
+				}
+			}
+			if strings.Contains(contextStr, "spdx.org/rdf/3.0") {
+				// Extract version from context URL
+				version := "3.0.1"
+				if strings.Contains(contextStr, "3.0.0") {
+					version = "3.0.0"
+				} else if strings.Contains(contextStr, "3.0.1") {
+					version = "3.0.1"
+				}
+				return SBOMSpecSPDX3, FileFormatJSON, FormatVersion(version), nil
+			}
+		}
+	}
+
+	_, err = f.Seek(0, io.SeekStart)
+	if err != nil {
+		log.Printf("Failed to seek: %v", err)
 	}
 
 	var s spdxbasic
@@ -199,8 +240,13 @@ func NewSBOMDocument(ctx context.Context, f io.ReadSeeker, sig Signature) (Docum
 	switch spec {
 	case SBOMSpecSPDX:
 		doc, err = newSPDXDoc(ctx, f, format, version, sig)
+
 	case SBOMSpecCDX:
 		doc, err = newCDXDoc(ctx, f, format, sig)
+
+	case SBOMSpecSPDX3:
+		doc, err = newSPDX3Doc(ctx, f, format, version, sig)
+
 	default:
 		return nil, errors.New("unsupported sbom format")
 	}
