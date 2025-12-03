@@ -6,6 +6,7 @@ on:
   pull_request:
     branches: [main, master]
   workflow_dispatch:
+  workflow_call:
 
 env:
   GO_VERSION: "1.21"
