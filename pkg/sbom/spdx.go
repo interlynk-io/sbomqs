@@ -38,7 +38,7 @@ import (
 
 var (
 	spdxFileFormats    = []string{"json", "yaml", "rdf", "tag-value"}
-	spdxSpecVersions   = []string{"SPDX-2.1", "SPDX-2.2", "SPDX-2.3"}
+	spdxSpecVersions   = []string{"SPDX-2.1", "SPDX-2.2", "SPDX-2.3", "SPDX-3.0", "SPDX-3.0.1"}
 	spdxPrimaryPurpose = []string{"application", "framework", "library", "container", "operating-system", "device", "firmware", "source", "archive", "file", "install", "other"}
 )
 
@@ -64,6 +64,12 @@ type SpdxDoc struct {
 func newSPDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat, version FormatVersion, _ Signature) (Document, error) {
 	_ = logger.FromContext(ctx)
 	var err error
+
+	// Check if this is SPDX 3.x - not yet implemented
+	versionStr := string(version)
+	if strings.HasPrefix(versionStr, "SPDX-3.") {
+		return nil, fmt.Errorf("SPDX 3.x parsing is not yet implemented (detected version: %s)", versionStr)
+	}
 
 	_, err = f.Seek(0, io.SeekStart)
 	if err != nil {
