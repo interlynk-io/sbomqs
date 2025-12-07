@@ -35,6 +35,7 @@ import (
 	"github.com/interlynk-io/sbomqs/v2/pkg/logger"
 	"github.com/interlynk-io/sbomqs/v2/pkg/omniborid"
 	"github.com/interlynk-io/sbomqs/v2/pkg/purl"
+	"github.com/interlynk-io/sbomqs/v2/pkg/sbom/internal/parser"
 	"github.com/interlynk-io/sbomqs/v2/pkg/swhid"
 	"github.com/interlynk-io/sbomqs/v2/pkg/swid"
 	"github.com/samber/lo"
@@ -46,17 +47,18 @@ var (
 	cdxPrimaryPurpose = []string{"application", "framework", "library", "container", "operating-system", "device", "firmware", "file"}
 )
 
+// CdxDoc represents a CycloneDX document with its parsed components
 type CdxDoc struct {
 	doc              *cydx.BOM
 	format           FileFormat
-	ctx              context.Context
+	config           *parser.Config
 	CdxSpec          *Specs
 	cdxValidSchema   bool
 	Comps            []GetComponent
 	CdxAuthors       []GetAuthor
 	CdxTools         []GetTool
 	rels             []GetRelation
-	logs             []string
+	logger           *parser.LogCollector
 	Lifecycle        []string
 	CdxSupplier      GetSupplier
 	CdxManufacturer  GetManufacturer
@@ -69,13 +71,29 @@ type CdxDoc struct {
 	rawContent       []byte // Store raw content for manual parsing
 }
 
+// CDXOption is a functional option for CDX document creation
+type CDXOption parser.Option
+
 func newCDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat, sig Signature) (Document, error) {
+	// Default options with context
+	opts := []CDXOption{parser.WithContext(ctx)}
+	return newCDXDocWithOptions(f, format, opts...)
+}
+
+// newCDXDocWithOptions creates a new CDX document with functional options
+func newCDXDocWithOptions(f io.ReadSeeker, format FileFormat, opts ...CDXOption) (Document, error) {
+	// Apply options
+	config := parser.DefaultConfig()
+	for _, opt := range opts {
+		opt.Apply(config)
+	}
+	
 	var err error
 
 	// Read the content for manual parsing if needed
 	rawContent, err := io.ReadAll(f)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to read CDX content: %w", err)
 	}
 
 	// Reset the reader for the decoder
@@ -88,28 +106,29 @@ func newCDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat, sig Sign
 		bom = new(cydx.BOM)
 		decoder := cydx.NewBOMDecoder(reader, cydx.BOMFileFormatJSON)
 		if err = decoder.Decode(bom); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to decode CDX JSON: %w", err)
 		}
 	case FileFormatXML:
 		bom = new(cydx.BOM)
 		decoder := cydx.NewBOMDecoder(reader, cydx.BOMFileFormatXML)
 		if err = decoder.Decode(bom); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to decode CDX XML: %w", err)
 		}
 	default:
-		err = fmt.Errorf("unsupported cdx file format: %s", string(format))
+		return nil, fmt.Errorf("unsupported cdx file format: %s", string(format))
 	}
 
 	doc := &CdxDoc{
 		doc:            bom,
 		format:         format,
-		ctx:            ctx,
-		cdxValidSchema: true,
+		config:         config,
+		cdxValidSchema: !config.SkipValidation,
+		logger:         config.Logger,
 		rawContent:     rawContent,
 	}
 	doc.parse()
 
-	return doc, err
+	return doc, nil
 }
 
 func (c CdxDoc) PrimaryComp() GetPrimaryComp {
@@ -137,7 +156,10 @@ func (c CdxDoc) Relations() []GetRelation {
 }
 
 func (c CdxDoc) Logs() []string {
-	return c.logs
+	if c.logger != nil {
+		return c.logger.Logs()
+	}
+	return nil
 }
 
 func (c CdxDoc) Lifecycles() []string {
@@ -189,8 +211,10 @@ func (c *CdxDoc) parse() {
 	c.parseComps()
 }
 
-func (c *CdxDoc) addToLogs(log string) {
-	c.logs = append(c.logs, log)
+func (c *CdxDoc) addToLogs(format string, args ...interface{}) {
+	if c.logger != nil {
+		c.logger.Add(format, args...)
+	}
 }
 
 func (c *CdxDoc) parseDoc() {
@@ -267,7 +291,7 @@ func (c *CdxDoc) parseVulnerabilities() {
 
 // parseSignature extracts signature information from CyclonDX BOM
 func (c *CdxDoc) parseSignature() {
-	log := logger.FromContext(c.ctx)
+	log := logger.FromContext(c.config.Context)
 	log.Debug("parseSignature()")
 	
 	// Since cyclonedx-go doesn't properly unmarshal signatures yet,
@@ -418,7 +442,7 @@ func (c *CdxDoc) parsePublicKey(pubKeyData map[string]interface{}) string {
 
 // convertRSAPublicKeyToPEM converts RSA public key components to PEM format
 func (c *CdxDoc) convertRSAPublicKeyToPEM(modulusB64, exponentB64 string) string {
-	log := logger.FromContext(c.ctx)
+	log := logger.FromContext(c.config.Context)
 	
 	// Try URL-safe base64 decoding first, then standard
 	modulus, err := base64.URLEncoding.DecodeString(modulusB64)
@@ -489,20 +513,22 @@ func (c *CdxDoc) requiredFields() bool {
 		return false
 	}
 
+	hasRequiredFields := true
+	
 	// This field is only required for JSON not for XML.
 	if c.format == FileFormatJSON && c.doc.BOMFormat == "" {
 		c.addToLogs("cdx doc is missing BOMFormat")
-		return false
+		hasRequiredFields = false
 	}
 
 	if c.doc.SpecVersion.String() == "" {
 		c.addToLogs("cdx doc is missing specVersion")
-		return false
+		hasRequiredFields = false
 	}
 
 	if c.doc.Version < 1 {
 		c.addToLogs("cdx doc is missing doc version")
-		return false
+		hasRequiredFields = false
 	}
 
 	if c.doc.Dependencies != nil {
@@ -511,11 +537,11 @@ func (c *CdxDoc) requiredFields() bool {
 		})
 
 		if deps > 0 {
-			c.addToLogs("cdx doc is missing dependencies")
-			return false
+			c.addToLogs("cdx doc has empty dependency references")
+			hasRequiredFields = false
 		}
 	}
-	return true
+	return hasRequiredFields
 }
 
 func copyC(cdxc *cydx.Component, c *CdxDoc) *Component {
@@ -533,14 +559,14 @@ func copyC(cdxc *cydx.Component, c *CdxDoc) *Component {
 	if ncpe.Valid() {
 		nc.Cpes = []cpe.CPE{ncpe}
 	} else {
-		c.addToLogs(fmt.Sprintf("cdx base doc component %s at index %d invalid cpes found", cdxc.Name, -1))
+		c.addToLogs("cdx base doc component %s at index %d invalid cpes found", cdxc.Name, -1)
 	}
 
 	npurl := purl.NewPURL(cdxc.PackageURL)
 	if npurl.Valid() {
 		nc.Purls = []purl.PURL{npurl}
 	} else {
-		c.addToLogs(fmt.Sprintf("cdx base doc component %s at index %d invalid purl found", cdxc.Name, -1))
+		c.addToLogs("cdx base doc component %s at index %d invalid purl found", cdxc.Name, -1)
 	}
 
 	if cdxc.SWHID != nil {
@@ -549,11 +575,11 @@ func copyC(cdxc *cydx.Component, c *CdxDoc) *Component {
 			if nswhid.Valid() {
 				nc.Swhid = append(nc.Swhid, nswhid)
 			} else {
-				c.addToLogs(fmt.Sprintf("cdx base doc component %s at index %d invalid swhid found", cdxc.Name, -1))
+				c.addToLogs("cdx base doc component %s at index %d invalid swhid found", cdxc.Name, -1)
 			}
 		}
 	} else {
-		c.addToLogs(fmt.Sprintf("cdx base doc component %s has nil SWHID", cdxc.Name))
+		c.addToLogs("cdx base doc component %s has nil SWHID", cdxc.Name)
 	}
 
 	if cdxc.SWID != nil {
@@ -561,10 +587,10 @@ func copyC(cdxc *cydx.Component, c *CdxDoc) *Component {
 		if nswid.Valid() {
 			nc.Swid = []swid.SWID{nswid}
 		} else {
-			c.addToLogs(fmt.Sprintf("cdx base doc component %s at index %d invalid swid found", cdxc.Name, -1))
+			c.addToLogs("cdx base doc component %s at index %d invalid swid found", cdxc.Name, -1)
 		}
 	} else {
-		c.addToLogs(fmt.Sprintf("cdx base doc component %s has nil SWID or SWID.Name", cdxc.Name))
+		c.addToLogs("cdx base doc component %s has nil SWID or SWID.Name", cdxc.Name)
 	}
 
 	if cdxc.OmniborID != nil {
@@ -573,11 +599,11 @@ func copyC(cdxc *cydx.Component, c *CdxDoc) *Component {
 			if omniID.Valid() {
 				nc.OmniID = append(nc.OmniID, omniID)
 			} else {
-				c.addToLogs(fmt.Sprintf("cdx base doc component %s at index %d invalid omniborid found", cdxc.Name, -1))
+				c.addToLogs("cdx base doc component %s at index %d invalid omniborid found", cdxc.Name, -1)
 			}
 		}
 	} else {
-		c.addToLogs(fmt.Sprintf("cdx base doc component %s has nil OmniborID", cdxc.Name))
+		c.addToLogs("cdx base doc component %s has nil OmniborID", cdxc.Name)
 	}
 
 	nc.Checksums = c.checksums(cdxc)
@@ -637,7 +663,7 @@ func copyC(cdxc *cydx.Component, c *CdxDoc) *Component {
 func getComponentRelationship(c *CdxDoc, compID string) (bool, int, []string) {
 	count := 0
 	if c.doc.Dependencies == nil {
-		c.addToLogs(fmt.Sprintf("cdx doc component %s has no dependencies", compID))
+		c.addToLogs("cdx doc component %s has no dependencies", compID)
 		return false, count, nil
 	}
 	
@@ -703,23 +729,25 @@ func compID(comp *cydx.Component) string {
 }
 
 func (c *CdxDoc) pkgRequiredFields(comp *cydx.Component) bool {
+	hasRequiredFields := true
+	
 	if string(comp.Type) == "" {
-		c.addToLogs(fmt.Sprintf("cdx doc comp %s missing type field", comp.Name))
-		return false
+		c.addToLogs("cdx doc comp %s missing type field", comp.Name)
+		hasRequiredFields = false
 	}
 
 	if comp.Name == "" {
-		c.addToLogs(fmt.Sprintf("cdx doc comp %s missing type field", comp.BOMRef))
-		return false
+		c.addToLogs("cdx doc comp %s missing name field", comp.BOMRef)
+		hasRequiredFields = false
 	}
 
-	return true
+	return hasRequiredFields
 }
 
 func (c *CdxDoc) checksums(comp *cydx.Component) []GetChecksum {
 	hashes := lo.FromPtr(comp.Hashes)
 	if len(hashes) == 0 {
-		c.addToLogs(fmt.Sprintf("cdx doc comp %s no checksum found", comp.Name))
+		c.addToLogs("cdx doc comp %s no checksum found", comp.Name)
 		return []GetChecksum{}
 	}
 
@@ -959,7 +987,7 @@ func (c *CdxDoc) assignAuthor(comp *cydx.Component) []GetAuthor {
 		if a, perr := mail.ParseAddress(authorStr); perr == nil {
 			addrs = []*mail.Address{a}
 		} else {
-			c.addToLogs(fmt.Sprintf("assignAuthor: cannot parse author string %q: %v", authorStr, err))
+			c.addToLogs("assignAuthor: cannot parse author string %q: %v", authorStr, err)
 			return []GetAuthor{Author{Name: authorStr}}
 		}
 	}
@@ -977,7 +1005,7 @@ func (c *CdxDoc) assignAuthor(comp *cydx.Component) []GetAuthor {
 
 func (c *CdxDoc) assignSupplier(comp *cydx.Component) *Supplier {
 	if comp.Supplier == nil {
-		c.addToLogs(fmt.Sprintf("cdx doc comp %s no supplier found", comp.Name))
+		c.addToLogs("cdx doc comp %s no supplier found", comp.Name)
 		return nil
 	}
 
