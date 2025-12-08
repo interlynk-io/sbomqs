@@ -16,6 +16,7 @@ package cmd
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/google/uuid"
@@ -32,7 +33,13 @@ var dtrackScoreCmd = &cobra.Command{
 	Short:        "generate an sbom quality score for a given project id from dependency track",
 	Long:         `dtrackScore allows your to score the sbom quality of a project from dependency track.`,
 	SilenceUsage: true,
-	Args:         cobra.MinimumNArgs(1),
+	Args: func(cmd *cobra.Command, args []string) error {
+		if err := cobra.ExactArgs(1)(cmd, args); err != nil {
+			_ = cmd.Help()
+			return fmt.Errorf("require at least 1 argument as project ID")
+		}
+		return nil
+	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		debug, _ := cmd.Flags().GetBool("debug")
 		if debug {

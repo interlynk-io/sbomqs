@@ -70,35 +70,37 @@ type userCmd struct {
 // scoreCmd represents the score command for generating comprehensive quality scores for SBOM documents.
 // It supports various output formats (table, JSON, basic) and can filter by categories and features.
 var scoreCmd = &cobra.Command{
-	Use:          "score",
+	Use:          "score [flags] <sbom_file>",
 	Short:        "comprehensive quality score for your sbom",
 	SilenceUsage: true,
-	Example: ` sbomqs score [--category <category>] [--basic|--json]  <SBOM file>
+	Example: `sbomqs score [--category <category>] [--basic|--json|--detailed] [--profile <profile>] <SBOM file>
 
-  # Get a score against a SBOM in a table output
+  # Get a score for a SBOM in table output
   sbomqs score samples/sbomqs-spdx-syft.json
 
-  # Get a score against a SBOM in a basic output
+  # Get a score for a SBOM in basic output
   sbomqs score --basic samples/sbomqs-spdx-syft.json
 
-  # Get a score against a SBOM in a JSON output
+  # Get a score for a SBOM in JSON output
   sbomqs score --json samples/sbomqs-spdx-syft.json
 
-  # Score a SBOM for ntia profile
+  # Get a detailed score for a SBOM
+  sbomqs score --detailed samples/sbomqs-spdx-syft.json
+
+  # Score a SBOM for the ntia profile
   sbomqs score --profile ntia samples/sbomqs-spdx-syft.json
 
   # Score a SBOM for ntia, bsi, oct-v1.1, interlynk profiles
   sbomqs score --profile ntia,bsi,oct-v1.1,interlynk samples/sbomqs-spdx-syft.json
 
-  # Get a score for multiple comprehenssive categories
-  sbomqs score -c identification,integrity samples/sbomqs-spdx-syft.json
+  # Get a score for multiple comprehensive categories
+  sbomqs score --category identification,integrity samples/sbomqs-spdx-syft.json
 `,
 
-	Args: func(_ *cobra.Command, args []string) error {
-		if len(args) == 0 {
-			if len(inFile) == 0 && len(inDirPath) == 0 {
-				return fmt.Errorf("provide a path to an sbom file or directory of sbom files")
-			}
+	Args: func(cmd *cobra.Command, args []string) error {
+		if len(args) == 0 && len(inFile) == 0 && len(inDirPath) == 0 {
+			_ = cmd.Help()
+			return fmt.Errorf("please provide a path to an SBOM file or directory")
 		}
 		return nil
 	},
