@@ -12,8 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package main provides the entry point for the sbomqs application,
-// which calculates SBOM quality scores to help assess SBOM acceptance risk.
+// sbomqs is a CLI tool for scoring SBOM quality, checking compliance
+// (BSI, NTIA, FSCT, OpenChain Telco), listing components, and sharing results.
+//
+// It exposes these main subcommands:
+// - score: calculate SBOM quality score
+// - compliance: run regulatory compliance checks
+// - list: explore and filter SBOM components
+// - share: create shareable score links
+//
+// See https://github.com/interlynk-io/sbomqs
+// for installation, guides, and examples.
 package main
 
 import "github.com/interlynk-io/sbomqs/v2/cmd"

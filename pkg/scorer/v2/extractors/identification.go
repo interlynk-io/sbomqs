@@ -12,6 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Identification category extractors.
+// These checks ask how uniquely components can be identified: do they
+// have good identifiers like Name, Version and Local Unique IDs
 package extractors
 
 import (

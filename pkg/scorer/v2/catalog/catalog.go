@@ -12,6 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package catalog defines the scoring “rulebook” used by sbomqs.
+// It describes all comprehensive categories and features, all compliance
+// profiles, and the aliases that map human-friendly names to internal keys.
+// The catalog is the central source of truth that scoring and compliance
+// evaluators use to understand what to check and how to weight it.
 package catalog
 
 import (

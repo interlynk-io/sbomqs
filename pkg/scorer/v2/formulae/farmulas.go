@@ -12,6 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package formulae contains the scoring math for sbomqs.
+// It turns raw counts and booleans into feature scores, category scores,
+// profile scores, and final Interlynk grades, and also produces the short,
+// human-friendly descriptions shown in the CLI. Other packages call these
+// helpers instead of re-implementing scoring rules by hand.
 package formulae
 
 import (

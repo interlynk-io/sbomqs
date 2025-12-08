@@ -12,6 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package api defines the result types returned by sbomqs scoring.
+// It includes SBOM metadata, category/feature scores, and profile results,
+// so other tools can integrate sbomqs easily.
 package api
 
 import (

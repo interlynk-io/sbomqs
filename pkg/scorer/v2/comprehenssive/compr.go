@@ -12,6 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package comprehenssive runs the comprehenssive categories to produces the final Interlynk score
+// and grade. Higher-level code can call Evaluate once and get a complete
+// comprehensive scoring result.
 package comprehenssive
 
 import (

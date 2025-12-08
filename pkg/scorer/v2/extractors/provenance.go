@@ -12,6 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Provenance category extractors.
+// These checks look at who created the SBOM and when: authors, tools,
+// creation time, SBOM supplier, SBOM creation type, i.e build type
+// and related metadata such as SBOM Namespace.
 package extractors
 
 import (

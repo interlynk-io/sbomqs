@@ -12,6 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package profiles evaluates SBOMs scoring against compliance profiles such as NTIA,
+// BSI, OCT and others. It runs each profile’s feature checks, decides which
+// requirements passed, computes Interlynk profile scores and grades, and
+// returns a structured result that higher-level code or the CLI can display
 package profiles
 
 import (

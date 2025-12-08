@@ -12,6 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package registry wires together the built-in scoring configuration for sbomqs.
+// It defines all comprehensive categories and compliance profiles, maps their
+// keys to the right evaluation functions, handles aliases, and initializes a
+// Catalog from CLI options or YAML files so the scorer knows what to run.
 package registry
 
 import (

@@ -12,6 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Licensing category extractors.
+// These checks look at license data on components: are licenses present,
+// meaningful, and valid, and do they reveal deprecated or restrictive
+// terms that matter for compliance.
 package extractors
 
 import (

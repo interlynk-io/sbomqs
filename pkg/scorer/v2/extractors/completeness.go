@@ -12,6 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package extractors defines each comprehenssive categories and their features evaluation in details.
+// Each function in this package looks at an SBOM document
+// through the lens of a single category (provenance, completeness, structural
+// quality, identification, integrity, licensing, vulnerability, etc.) and
+// returns a score for that feature. Higher-level code uses these helpers to
+// build up category and overall scores.
 package extractors
 
 import (
