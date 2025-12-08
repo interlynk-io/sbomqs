@@ -37,7 +37,8 @@ For more information, please visit https://sbombenchmark.dev
 	SilenceUsage: true,
 	Args: func(cmd *cobra.Command, args []string) error {
 		if err := cobra.ExactArgs(1)(cmd, args); err != nil {
-			return fmt.Errorf("share requires a single argument, the path to the sbom file")
+			_ = cmd.Help()
+			return fmt.Errorf("please provide a path to an SBOM file")
 		}
 
 		return nil

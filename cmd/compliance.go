@@ -25,8 +25,9 @@ import (
 // complianceCmd represents the compliance command for checking SBOM compliance against various standards.
 // Supports NTIA minimum elements, BSI TR-03183-2 (v1.1 and v2.0), FSCT v3, and OpenChain Telco standards.
 var complianceCmd = &cobra.Command{
-	Use:   "compliance [flags]",
-	Short: "compliance command checks an SBOM for compliance with SBOM standards",
+	Use:          "compliance [flags] <sbom_file>",
+	SilenceUsage: true,
+	Short:        "compliance command checks an SBOM for compliance with SBOM standards",
 	Long: `
 Check if our SBOM meets compliance requirements for various standards, such as NTIA minimum elements,
 BSI TR-03183-2, Framing Software Component Transparency (v3) and OpenChain Telco.
@@ -54,7 +55,8 @@ BSI TR-03183-2, Framing Software Component Transparency (v3) and OpenChain Telco
 `,
 	Args: func(cmd *cobra.Command, args []string) error {
 		if err := cobra.ExactArgs(1)(cmd, args); err != nil {
-			return fmt.Errorf("compliance requires a single argument, the path to an SBOM file")
+			_ = cmd.Help()
+			return fmt.Errorf("please provide a path to an SBOM file or directory")
 		}
 
 		return nil
@@ -90,7 +92,6 @@ func setupEngineParams(cmd *cobra.Command, args []string) *engine.Params {
 
 	engParams.Debug, _ = cmd.Flags().GetBool("debug")
 
-
 	engParams.Path = append(engParams.Path, args[0])
 	engParams.Blob = args[0]
 
@@ -118,5 +119,4 @@ func init() {
 	complianceCmd.Flags().BoolP("bsi-v2", "s", false, "BSI TR-03183-2 (v2.0.0)")
 	complianceCmd.Flags().BoolP("oct", "t", false, "OpenChain Telco SBOM (v1.0)")
 	complianceCmd.Flags().BoolP("fsct", "f", false, "Framing Software Component Transparency (v3)")
-
 }

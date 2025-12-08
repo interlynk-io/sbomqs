@@ -69,9 +69,10 @@ var listCmd = &cobra.Command{
   Supporter features are listed here: https://github.com/interlynk-io/sbomqs/v2/blob/main/docs/commands/list.md#supported-features
 `,
 
-	Args: func(_ *cobra.Command, args []string) error {
+	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
-			return fmt.Errorf("requires a path to an SBOM file or directory of SBOM files")
+			_ = cmd.Help()
+			return fmt.Errorf("please provide a path to an SBOM file or directory")
 		}
 		if len(args) > 1 {
 			return fmt.Errorf("only one file path is allowed, got %d: %v", len(args), args)
