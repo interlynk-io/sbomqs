@@ -12,6 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package config defines the configuration for sbomqs scoring.
+// It lets callers choose which categories, features, and profiles to run,
+// point to optional config files, and attach signature bundles. Higher-level
+// code builds a Config and passes it to the scorer to shape how an SBOM
+// should be evaluated.
 package config
 
 import (

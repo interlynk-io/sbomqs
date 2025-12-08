@@ -12,6 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package score is the main entrypoint for running sbomqs as a library.
+// It wires together catalog initialization, SBOM loading, and both
+// comprehensive and profile-based evaluation. Call ScoreSBOM with a
+// config and one or more SBOM paths/URLs to get back structured results
+// that are identical to what the CLI would print.package score
 package score
 
 import (

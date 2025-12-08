@@ -12,6 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Structural category extractors.
+// These checks examine the shape of the SBOM: spec, specVersion, specFileFormat
+// and validSpecSchema
 package extractors
 
 import (

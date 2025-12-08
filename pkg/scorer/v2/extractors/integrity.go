@@ -12,6 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Integrity category extractors.
+// These checks focus on trust signals: checksums, strong hashes, and
+// and the SBOM Signature itself
 package extractors
 
 import (
@@ -130,7 +133,7 @@ func SBOMSignature(doc sbom.Document) catalog.ComprFeatScore {
 	// Check if signature has the required components
 	algorithm := strings.TrimSpace(sig.GetAlgorithm())
 	sigValue := strings.TrimSpace(sig.GetSigValue())
-	
+
 	// Incomplete signature → treat as missing
 	if algorithm == "" || sigValue == "" {
 		return catalog.ComprFeatScore{
@@ -139,11 +142,11 @@ func SBOMSignature(doc sbom.Document) catalog.ComprFeatScore {
 			Ignore: false,
 		}
 	}
-	
+
 	// Check if we have public key or certificate path for verification
 	pubKey := strings.TrimSpace(sig.GetPublicKey())
 	certPath := sig.GetCertificatePath()
-	
+
 	if pubKey == "" && len(certPath) == 0 {
 		// Signature present but no verification material
 		return catalog.ComprFeatScore{
@@ -152,7 +155,7 @@ func SBOMSignature(doc sbom.Document) catalog.ComprFeatScore {
 			Ignore: false,
 		}
 	}
-	
+
 	// For now, we'll give full score if signature is complete
 	// Future enhancement: actually verify the signature
 	return catalog.ComprFeatScore{

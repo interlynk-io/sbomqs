@@ -12,6 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package common provides shared helper functions used across sbomqs checks.
+// It focuses on simple yes/no style questions about an SBOM: does it have a
+// real supplier or author, valid PURLs or CPEs, meaningful licenses, or strong
+// checksums. Higher-level scoring and compliance code builds on these helpers
+// instead of re-implementing the validation logic.
 package common
 
 import (
