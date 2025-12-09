@@ -31,7 +31,7 @@ In today's software landscape, understanding and managing your software supply c
 - **Find vulnerabilities** - Identify components missing security identifiers
 - **Automate workflows** - Integrate into CI/CD pipelines with ease
 - **Share results** - Generate shareable reports and quality scores
-- **Using as library** - Integrating abomqs into your software to get quality score 
+- **Using as library** - Integrating sbomqs into your software programatically
 
 ## Key Features
 
