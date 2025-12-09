@@ -1,6 +1,144 @@
 # Integration Guide
 
-This guide covers how to integrate SBOMQS into various CI/CD pipelines, development workflows, and third-party tools.
+This guide explains how to:
+
+- Use SBOMQS as a Go library inside your own software
+- Plug SBOMQS into CI/CD pipelines (example: GitHub Actions), development workflows, and third-party tools.
+
+## Integrating into your software
+
+The examples below show how to use sbomqs programatically for scoring into your software.
+> 💡 Make sure you have a valid SBOM file (CycloneDX or SPDX) available at the path you pass into ScoreSBOM.
+
+### 1. Default scoring
+
+This example runs the default Comprehensive scoring on one or more SBOMs and prints the overall Interlynk score, grade.
+
+```go
+package main
+
+import (
+  "context"
+  "fmt"
+  "log"
+
+  "github.com/interlynk-io/sbomqs/pkg/config"
+  "github.com/interlynk-io/sbomqs/pkg/score"
+)
+
+func main() {
+  cfg := config.Config{}              
+  // make sure current dir has sbom file: `sbom.cdx.json`
+  paths := []string{"sbom.cdx.json"} // one or more SBOM file paths or URLs
+
+  results, err := score.ScoreSBOM(context.Background(), cfg, paths)
+  if err != nil {
+    log.Fatalf("scoring failed: %v", err)
+  }
+
+  for _, r := range results {
+    // Comprehensive result is the default evaluation
+    if r.Comprehensive != nil {
+      fmt.Printf("Interlynk score: %.2f  Grade: %s\n", r.Comprehensive.InterlynkScore, r.Comprehensive.Grade)
+    }
+  }
+}
+
+```
+
+o/p would be:
+
+```bash
+Interlynk score: 4.52  Grade: F
+```
+
+### 2. Scoring for single profile: "ntia"
+
+If you want to evaluate an SBOM against a single profile (for example, ntia), you can set the Profile field in `config.Config`.
+
+```go
+package main
+
+import (
+  "context"
+  "fmt"
+  "log"
+
+  "github.com/interlynk-io/sbomqs/pkg/config"
+  "github.com/interlynk-io/sbomqs/pkg/score"
+)
+
+func main() {
+  cfg := config.Config{
+    // single profiles: "ntia"
+    Profile: []string{"ntia"},
+  }
+  paths := []string{"sbom.cdx.json"}
+
+  results, err := score.ScoreSBOM(context.Background(), cfg, paths)
+  if err != nil {
+    log.Fatalf("scoring failed: %v", err)
+  }
+
+  for _, r := range results {
+    for _, pr := range r.Profiles.ProfResult {
+      fmt.Printf("Profile: %s  Score: %.2f\n", pr.Name, pr.Score)
+    }
+  }
+}
+
+```
+
+o/p would be:
+
+```bash
+Profile: NTIA Minimum Elements (2021)  Score: 7.50
+```
+
+### 3. Scoring for multiple profiles: "ntia", "fsct", "bsi"
+
+You can also evaluate the same SBOM against multiple profiles.
+
+```go
+package main
+
+import (
+  "context"
+  "fmt"
+  "log"
+
+  "github.com/interlynk-io/sbomqs/pkg/config"
+  "github.com/interlynk-io/sbomqs/pkg/score"
+)
+
+func main() {
+  cfg := config.Config{
+    // multiple profiles "ntia", "fsct", "bsi"
+    Profile: []string{"ntia", "fsct", "bsi"},
+  }
+  paths := []string{"sbom.cdx.json"}
+
+  results, err := score.ScoreSBOM(context.Background(), cfg, paths)
+  if err != nil {
+    log.Fatalf("scoring failed: %v", err)
+  }
+
+  for _, r := range results {
+    for _, pr := range r.Profiles.ProfResult {
+      fmt.Printf("Profile: %s  Score: %.2f\n", pr.Name, pr.Score)
+    }
+  }
+}
+
+```
+
+o/p would be:
+
+```bash
+Profile: NTIA Minimum Elements (2021)  Score: 7.50
+Profile: Framing Third Edition Compliance  Score: 5.48
+Profile: BSI TR-03183-2 v1.1  Score: 6.23
+```
 
 ## CI/CD Integrations
 

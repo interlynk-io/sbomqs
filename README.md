@@ -31,6 +31,7 @@ In today's software landscape, understanding and managing your software supply c
 - **Find vulnerabilities** - Identify components missing security identifiers
 - **Automate workflows** - Integrate into CI/CD pipelines with ease
 - **Share results** - Generate shareable reports and quality scores
+- **Using as library** - Integrating sbomqs into your software programatically
 
 ## Key Features
 
@@ -47,6 +48,7 @@ In today's software landscape, understanding and managing your software supply c
 📚 **[Getting Started](docs/getting-started.md)** - Installation and basic usage
 
 ### 📖 Command Reference
+
 - **[score](docs/commands/score.md)** - Calculate SBOM quality score
 - **[compliance](docs/commands/compliance.md)** - Check regulatory compliance  
 - **[list](docs/commands/list.md)** - List and filter components
@@ -56,17 +58,20 @@ In today's software landscape, understanding and managing your software supply c
 - **[version](docs/commands/version.md)** - Version information
 
 ### 🎯 Guides
+
 - **[Customization](docs/guides/customization.md)** - Create custom scoring profiles
 - **[Integrations](docs/guides/integrations.md)** - CI/CD and tool integrations
 - **[Policy](docs/guides/policy.md)** - Policy enforcement and validation
 
 ### 📋 Reference
+
 - **[Quality Checks](docs/reference/quality-checks.md)** - All scoring criteria explained
 - **[Compliance Standards](docs/reference/compliance-standards.md)** - BSI, NTIA, FSCT mappings
 
 ## Basic Examples
 
 ### Check SBOM Quality
+
 ```bash
 # Get a quality score (0-10)
 sbomqs score -b my-app.spdx.json
@@ -82,6 +87,7 @@ sbomqs score my-app.spdx.json --category NTIA-minimum-elements --profile ntia
 ```
 
 ### Verify Compliance
+
 ```bash
 # BSI TR-03183-2 v2.0
 sbomqs compliance --bsi-v2 my-app.spdx.json
@@ -94,6 +100,7 @@ sbomqs compliance --oct my-app.spdx.json
 ```
 
 ### Find Missing Data
+
 ```bash
 # Components without versions
 sbomqs list my-app.spdx.json --feature comp_with_version --missing
@@ -103,10 +110,44 @@ sbomqs list my-app.spdx.json --feature comp_with_supplier --missing
 ```
 
 ### Share Results
+
 ```bash
 # Generate shareable link (doesn't upload SBOM content)
 sbomqs share my-app.spdx.json
 ```
+
+### Integrating sbomqs into your software
+
+```go
+package main
+
+import (
+   "context"
+   "fmt"
+
+   "github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/config"
+   "github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/score"
+)
+
+func main() {
+   cfg := config.Config{}
+   // make sure current dir has sbom file: `sbom.cdx.json`
+   paths := []string{"sbom.cdx.json"}
+
+   results, err := score.ScoreSBOM(context.Background(), cfg, paths)
+   if err != nil {
+      log.Fatalf("scoring failed: %v", err)
+   }
+
+   for _, r := range results {
+      // Comprehensive result is the default evaluation
+      if r.Comprehensive != nil {
+         fmt.Printf("Interlynk score: %.2f  Grade: %s\n", r.Comprehensive.InterlynkScore, r.Comprehensive.Grade)
+      }
+   }
+```
+
+For more examples, refer here: <https://github.com/interlynk-io/sbomqs/blob/main/docs/guides/integrations.md>
 
 ## Industry Use Cases
 
