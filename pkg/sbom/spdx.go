@@ -53,7 +53,6 @@ type SpdxDoc struct {
 	Auths            []GetAuthor
 	SpdxTools        []GetTool
 	Rels             []GetRelation
-	logger           *parser.LogCollector
 	PrimaryComponent PrimaryComp
 	Lifecycle        string
 	Dependencies     map[string][]string
@@ -117,7 +116,6 @@ func newSPDXDocWithOptions(f io.ReadSeeker, format FileFormat, version FormatVer
 		config:          config,
 		version:         version,
 		spdxValidSchema: !config.SkipValidation,
-		logger:          config.Logger,
 	}
 
 	doc.parse()
@@ -150,9 +148,6 @@ func (s SpdxDoc) Relations() []GetRelation {
 }
 
 func (s SpdxDoc) Logs() []string {
-	if s.logger != nil {
-		return s.logger.Logs()
-	}
 	return nil
 }
 
@@ -200,8 +195,10 @@ func (s *SpdxDoc) parse() {
 }
 
 func (s *SpdxDoc) parseDoc() {
+	log := logger.FromContext(s.config.Context)
+
 	if s.doc == nil {
-		s.addToLogs("spdx doc is not parsable")
+		log.Debug("spdx doc is not parsable")
 		return
 	}
 	if s.doc.CreationInfo != nil {
@@ -491,66 +488,63 @@ func (s *SpdxDoc) parseTool() {
 	}
 }
 
-func (s *SpdxDoc) addToLogs(format string, args ...interface{}) {
-	if s.logger != nil {
-		s.logger.Add(format, args...)
-	}
-}
 
 func (s *SpdxDoc) requiredFields() bool {
+	log := logger.FromContext(s.config.Context)
+
 	if s.doc == nil {
-		s.addToLogs("spdx doc is not parsable")
+		log.Debug("spdx doc is not parsable")
 		return false
 	}
-	
+
 	hasRequiredFields := true
-	
+
 	// Creation info is a required section
 	if s.doc.CreationInfo == nil {
-		s.addToLogs("spdx doc is missing creation info")
+		log.Debug("spdx doc is missing creation info")
 		hasRequiredFields = false
 	} else {
 		// Identify who (or what, in the case of a tool) created the SPDX document.
 		if len(s.doc.CreationInfo.Creators) == 0 {
-			s.addToLogs("spdx doc is missing creators")
+			log.Debug("spdx doc is missing creators")
 			hasRequiredFields = false
 		}
-		
+
 		// Identify when the SPDX document was originally created.
 		if s.doc.CreationInfo.Created == "" {
-			s.addToLogs("spdx doc is missing created timestamp")
+			log.Debug("spdx doc is missing created timestamp")
 			hasRequiredFields = false
 		}
 	}
 
 	// SPDXVersion is required
 	if s.doc.SPDXVersion == "" {
-		s.addToLogs("spdx doc is missing SPDXVersion")
+		log.Debug("spdx doc is missing SPDXVersion")
 		hasRequiredFields = false
 	}
 
 	// data license is required
 	if s.doc.DataLicense == "" {
-		s.addToLogs("spdx doc is missing DataLicense")
+		log.Debug("spdx doc is missing DataLicense")
 		hasRequiredFields = false
 	}
-	
+
 	// Identify the current SPDX document which may be referenced in relationships
 	// by other files, packages internally and documents externally
 	if s.doc.SPDXIdentifier == "" {
-		s.addToLogs("spdx doc is missing SPDXIdentifier")
+		log.Debug("spdx doc is missing SPDXIdentifier")
 		hasRequiredFields = false
 	}
-	
+
 	// Identify name of this document as designated by creator
 	if s.doc.DocumentName == "" {
-		s.addToLogs("spdx doc is missing DocumentName")
+		log.Debug("spdx doc is missing DocumentName")
 		hasRequiredFields = false
 	}
 
 	// The URI provides an unambiguous mechanism for other SPDX documents to reference SPDX elements within this SPDX document
 	if s.doc.DocumentNamespace == "" {
-		s.addToLogs("spdx doc is missing Document Namespace")
+		log.Debug("spdx doc is missing Document Namespace")
 		hasRequiredFields = false
 	}
 
@@ -558,37 +552,41 @@ func (s *SpdxDoc) requiredFields() bool {
 }
 
 func (s *SpdxDoc) pkgRequiredFields(index int) bool {
+	log := logger.FromContext(s.config.Context)
+
 	pkg := s.doc.Packages[index]
 	hasRequiredFields := true
 
 	if pkg.PackageName == "" {
-		s.addToLogs("spdx doc pkg %s at index %d missing name", pkg.PackageSPDXIdentifier, index)
+		log.Debugf("spdx doc pkg %s at index %d missing name", pkg.PackageSPDXIdentifier, index)
 		hasRequiredFields = false
 	}
 
 	if pkg.PackageSPDXIdentifier == "" {
-		s.addToLogs("spdx doc pkg %s at index %d missing identifier", pkg.PackageName, index)
+		log.Debugf("spdx doc pkg %s at index %d missing identifier", pkg.PackageName, index)
 		hasRequiredFields = false
 	}
 
 	// What is the correct behaviour for NONE and NOASSERTION?
 	if pkg.PackageDownloadLocation == "" {
-		s.addToLogs("spdx doc pkg %s at index %d missing downloadLocation", pkg.PackageName, index)
+		log.Debugf("spdx doc pkg %s at index %d missing downloadLocation", pkg.PackageName, index)
 		hasRequiredFields = false
 	}
 
 	if pkg.FilesAnalyzed && pkg.PackageVerificationCode == nil {
-		s.addToLogs("spdx doc pkg %s at index %d missing packageVerificationCode", pkg.PackageName, index)
+		log.Debugf("spdx doc pkg %s at index %d missing packageVerificationCode", pkg.PackageName, index)
 		hasRequiredFields = false
 	}
 	return hasRequiredFields
 }
 
 func (s *SpdxDoc) purls(index int) []purl.PURL {
+	log := logger.FromContext(s.config.Context)
+
 	pkg := s.doc.Packages[index]
 
 	if len(pkg.PackageExternalReferences) == 0 {
-		s.addToLogs("spdx doc pkg %s at index %d no purls found", pkg.PackageName, index)
+		log.Debugf("spdx doc pkg %s at index %d no purls found", pkg.PackageName, index)
 		return []purl.PURL{}
 	}
 
@@ -599,22 +597,24 @@ func (s *SpdxDoc) purls(index int) []purl.PURL {
 			if prl.Valid() {
 				urls = append(urls, prl)
 			} else {
-				s.addToLogs("spdx doc pkg %s at index %d invalid purl found", pkg.PackageName, index)
+				log.Debugf("spdx doc pkg %s at index %d invalid purl found", pkg.PackageName, index)
 			}
 		}
 	}
 
 	if len(urls) == 0 {
-		s.addToLogs("spdx doc pkg %s at index %d no purls found", pkg.PackageName, index)
+		log.Debugf("spdx doc pkg %s at index %d no purls found", pkg.PackageName, index)
 	}
 
 	return urls
 }
 
 func (s *SpdxDoc) cpes(index int) []cpe.CPE {
+	log := logger.FromContext(s.config.Context)
+
 	pkg := s.doc.Packages[index]
 	if len(pkg.PackageExternalReferences) == 0 {
-		s.addToLogs("spdx doc pkg %s at index %d no cpes found", pkg.PackageName, index)
+		log.Debugf("spdx doc pkg %s at index %d no cpes found", pkg.PackageName, index)
 		return []cpe.CPE{}
 	}
 
@@ -625,22 +625,24 @@ func (s *SpdxDoc) cpes(index int) []cpe.CPE {
 			if cpeV.Valid() {
 				urls = append(urls, cpeV)
 			} else {
-				s.addToLogs("spdx doc pkg %s at index %d invalid cpes found", pkg.PackageName, index)
+				log.Debugf("spdx doc pkg %s at index %d invalid cpes found", pkg.PackageName, index)
 			}
 		}
 	}
 	if len(urls) == 0 {
-		s.addToLogs("spdx doc pkg %s at index %d no cpes found", pkg.PackageName, index)
+		log.Debugf("spdx doc pkg %s at index %d no cpes found", pkg.PackageName, index)
 	}
 
 	return urls
 }
 
 func (s *SpdxDoc) checksums(index int) []GetChecksum {
+	log := logger.FromContext(s.config.Context)
+
 	pkg := s.doc.Packages[index]
 
 	if len(pkg.PackageChecksums) == 0 {
-		s.addToLogs("spdx doc pkg %s at index %d no checksum found", pkg.PackageName, index)
+		log.Debugf("spdx doc pkg %s at index %d no checksum found", pkg.PackageName, index)
 		return []GetChecksum{}
 	}
 
@@ -656,10 +658,12 @@ func (s *SpdxDoc) checksums(index int) []GetChecksum {
 }
 
 func (s *SpdxDoc) externalRefs(index int) []GetExternalReference {
+	log := logger.FromContext(s.config.Context)
+
 	pkg := s.doc.Packages[index]
 
 	if len(pkg.PackageExternalReferences) == 0 {
-		s.addToLogs("spdx doc pkg %s at index %d no externalReferences found", pkg.PackageName, index)
+		log.Debugf("spdx doc pkg %s at index %d no externalReferences found", pkg.PackageName, index)
 		return []GetExternalReference{}
 	}
 

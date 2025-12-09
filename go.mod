@@ -7,6 +7,7 @@ require (
 	github.com/DependencyTrack/client-go v0.17.0
 	github.com/github/go-spdx/v2 v2.3.4
 	github.com/google/uuid v1.6.0
+	github.com/interlynk-io/spdx-zen v0.1.0
 	github.com/knqyf263/go-cpe v0.0.0-20230627041855-cb0794d06872
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.12.0
 	github.com/olekukonko/tablewriter v0.0.5
@@ -28,8 +29,10 @@ require (
 	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
+	github.com/piprate/json-gold v0.7.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/pquerna/cachecontrol v0.2.0 // indirect
 	github.com/tidwall/gjson v1.18.0 // indirect
 	github.com/tidwall/match v1.2.0 // indirect
 	github.com/tidwall/pretty v1.2.1 // indirect
