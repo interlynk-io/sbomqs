@@ -59,6 +59,20 @@ sudo mv sbomqs-darwin-* /usr/local/bin/sbomqs
 sbomqs version
 ```
 
+#### Verifying sbomqs artifacts with cosign
+
+Download signature and certificate fom release:
+
+- `sbomqs-linux-amd64.sig`
+- `sbomqs-linux-amd64.pem`
+
+```bash
+cosign verify-blob \
+  --certificate sbomqs-linux-amd64.pem \
+  --signature sbomqs-linux-amd64.sig \
+  sbomqs-linux-amd64
+```
+
 ### Linux
 
 #### Using Package Managers
