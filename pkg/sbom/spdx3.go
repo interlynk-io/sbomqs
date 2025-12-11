@@ -20,6 +20,7 @@ import (
 	"io"
 	"os"
 
+	"github.com/interlynk-io/sbomqs/v2/pkg/licenses"
 	"github.com/interlynk-io/sbomqs/v2/pkg/logger"
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom/internal/parser"
 	"github.com/interlynk-io/spdx-zen/parse"
@@ -155,4 +156,84 @@ func (s *Spdx3Doc) parseDoc() {
 }
 
 func (s *Spdx3Doc) parseSpec() {
+	sp := NewSpec()
+	log := logger.FromContext(s.config.Context)
+	log.Debug("parseSpec: starting spec parsing")
+
+	sp.Format = string(s.format)
+	sp.Version = string(s.version)
+	sp.SpecType = string(SBOMSpecSPDX)
+
+	log.Debugf("parseSpec: format=%s, version=%s, specType=%s", sp.Format, sp.Version, sp.SpecType)
+
+	sp.Name = s.doc.SpdxDocument.Name
+	sp.Spdxid = s.doc.SpdxDocument.SpdxID
+
+	log.Debugf("parseSpec: document name=%s, spdxId=%s", sp.Name, sp.Spdxid)
+
+	if s.doc.SpdxDocument.DataLicense != nil {
+		log.Debugf("parseSpec: processing data license with spdxID=%s", s.doc.SpdxDocument.DataLicense.SpdxID)
+		if lic := s.doc.GetAnyLicenseInfoByID(s.doc.SpdxDocument.DataLicense.SpdxID); lic != nil && lic.Name != "" {
+			log.Debugf("parseSpec: found license info name=%s", lic.Name)
+			lics := licenses.LookupExpression(lic.Name, nil)
+
+			sp.Licenses = append(sp.Licenses, lics...)
+			log.Debugf("parseSpec: added %d licenses from license info", len(lics))
+		} else if s.doc.SpdxDocument.DataLicense.Name != "" {
+			log.Debugf("parseSpec: using data license name=%s", s.doc.SpdxDocument.DataLicense.Name)
+			lics := licenses.LookupExpression(s.doc.SpdxDocument.Name, nil)
+
+			sp.Licenses = append(sp.Licenses, lics...)
+			log.Debugf("parseSpec: added %d licenses from data license", len(lics))
+		}
+	} else {
+		log.Debug("parseSpec: no data license found")
+	}
+
+	if s.doc.CreationInfo != nil {
+		log.Debug("parseSpec: processing creation info")
+		if !s.doc.CreationInfo.Created.IsZero() {
+			sp.CreationTimestamp = s.doc.CreationInfo.Created.Format("2006-01-02T15:04:05Z")
+			log.Debugf("parseSpec: creation timestamp=%s", sp.CreationTimestamp)
+		} else {
+			log.Debugf("parseSpec: creation timestamp not set")
+		}
+	} else {
+		log.Debug("parseSpec: no creation info found")
+	}
+
+	if len(s.doc.SpdxDocument.NamespaceMap) > 0 {
+		nmMap := s.doc.SpdxDocument.NamespaceMap[0]
+
+		sp.Namespace = nmMap.Namespace
+		sp.URI = fmt.Sprintf("%s:%s", nmMap.Namespace, nmMap.Prefix)
+		log.Debugf("parseSpec: namespace=%s, uri=%s", sp.Namespace, sp.URI)
+	} else {
+		log.Debug("parseSpec: no namespace map found")
+	}
+
+	if len(s.doc.CreationInfo.CreatedBy) > 0 {
+		log.Debugf("parseSpec: processing %d created by agents", len(s.doc.CreationInfo.CreatedBy))
+
+		for _, agentRef := range s.doc.CreationInfo.CreatedBy {
+			agentType := s.doc.GetAgentTypeByID(agentRef.SpdxID)
+			log.Debugf("parseSpec: checking agent spdxID=%s, type=%v", agentRef.SpdxID, agentType)
+
+			if agentType != parse.AgentTypeOrganization {
+				continue
+			}
+
+			agent := s.doc.GetAgentByID(agentRef.SpdxID)
+			sp.Organization = agent.Name
+			log.Debugf("parseSpec: found organization=%s", sp.Organization)
+			break
+		}
+	} else {
+		log.Debug("parseSpec: no created by agents found")
+	}
+
+	sp.isReqFieldsPresent = true
+
+	log.Debugf("parseSpec: completed parsing spec for document=%s", sp.Name)
+	s.SpdxSpec = sp
 }

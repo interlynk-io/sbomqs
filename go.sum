@@ -61,6 +61,8 @@ github.com/interlynk-io/spdx-zen v0.1.1 h1:Fs0k1WkR/dKbIn+hbDtouhyPijeAJqHo6VQZQ
 github.com/interlynk-io/spdx-zen v0.1.1/go.mod h1:zBFKjrz3JTQKMWZsVxGdi2iwL3MN0hNHVQ7QOg1FamY=
 github.com/interlynk-io/spdx-zen v0.1.2 h1:sZuEgm5jGz980Lr8N/GIffVIbX54ygN90lYUn7a9Aho=
 github.com/interlynk-io/spdx-zen v0.1.2/go.mod h1:zBFKjrz3JTQKMWZsVxGdi2iwL3MN0hNHVQ7QOg1FamY=
+github.com/interlynk-io/spdx-zen v0.1.3 h1:HfO74hVw6kIew4BjCx7ViX2UrjCJfGG9Se/oqMnb8+w=
+github.com/interlynk-io/spdx-zen v0.1.3/go.mod h1:zBFKjrz3JTQKMWZsVxGdi2iwL3MN0hNHVQ7QOg1FamY=
 github.com/klauspost/compress v1.16.0 h1:iULayQNOReoYUe+1qtKOqw9CwJv3aNQu8ivo7lw1HU4=
 github.com/klauspost/compress v1.16.0/go.mod h1:ntbaceVETuRiXiv4DpjP66DpAtAGkEQskQzEyD//IeE=
 github.com/knqyf263/go-cpe v0.0.0-20230627041855-cb0794d06872 h1:snH0nDYi3kizy9vxYBhZm5KXkGt9VXdGEtr6/1SGUqY=
