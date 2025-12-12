@@ -69,6 +69,15 @@ type spdxbasic struct {
 	Version string `json:"spdxVersion" yaml:"spdxVersion"`
 }
 
+// spdx3basic represents the basic structure of SPDX 3.0/3.0.1 documents
+type spdx3basic struct {
+	Context      interface{} `json:"@context"`
+	Graph        []map[string]interface{} `json:"@graph,omitempty"`
+	SpdxId       string `json:"spdxId,omitempty"`
+	Type         interface{} `json:"type,omitempty"`
+	CreationInfo map[string]interface{} `json:"creationInfo,omitempty"`
+}
+
 type cdxbasic struct {
 	XMLNS     string `json:"-" xml:"xmlns,attr"`
 	BOMFormat string `json:"bomFormat" xml:"-"`
@@ -128,6 +137,66 @@ func detectSbomFormat(f io.ReadSeeker) (SpecFormat, FileFormat, FormatVersion, e
 		log.Fatalf("Failed to seek: %v", err)
 	}
 
+	// Check for SPDX 3.0/3.0.1 first (JSON-LD format)
+	var s3 spdx3basic
+	if err := json.NewDecoder(f).Decode(&s3); err == nil {
+		// Check if it's SPDX 3.0 or 3.0.1 by examining the @context field
+		// Context can be a string or an array of strings
+		contextStr := ""
+		switch ctx := s3.Context.(type) {
+		case string:
+			contextStr = ctx
+		case []interface{}:
+			// If it's an array, check the first element
+			if len(ctx) > 0 {
+				if s, ok := ctx[0].(string); ok {
+					contextStr = s
+				}
+			}
+		}
+		
+		if contextStr != "" {
+			// Check for SPDX 3.0.1 (handles both .json and .jsonld extensions)
+			if strings.Contains(contextStr, "spdx.org/rdf/3.0.1/") {
+				// Extract version from CreationInfo if available
+				if s3.CreationInfo != nil {
+					if specVersion, ok := s3.CreationInfo["specVersion"].(string); ok {
+						return SBOMSpecSPDX, FileFormatJSON, FormatVersion("SPDX-" + specVersion), nil
+					}
+				}
+				return SBOMSpecSPDX, FileFormatJSON, FormatVersion("SPDX-3.0.1"), nil
+			} else if strings.Contains(contextStr, "spdx.org/rdf/3.0/") {
+				// Extract version from CreationInfo if available
+				if s3.CreationInfo != nil {
+					if specVersion, ok := s3.CreationInfo["specVersion"].(string); ok {
+						return SBOMSpecSPDX, FileFormatJSON, FormatVersion("SPDX-" + specVersion), nil
+					}
+				}
+				return SBOMSpecSPDX, FileFormatJSON, FormatVersion("SPDX-3.0"), nil
+			}
+		}
+		
+		// Also check for @graph structure which indicates SPDX 3.x
+		if s3.Graph != nil && len(s3.Graph) > 0 {
+			// Try to find version info in graph elements
+			for _, elem := range s3.Graph {
+				if creationInfo, ok := elem["creationInfo"].(map[string]interface{}); ok {
+					if specVersion, ok := creationInfo["specVersion"].(string); ok {
+						return SBOMSpecSPDX, FileFormatJSON, FormatVersion("SPDX-" + specVersion), nil
+					}
+				}
+			}
+			// If we have a @graph but no version info, assume 3.0.1 (latest)
+			return SBOMSpecSPDX, FileFormatJSON, FormatVersion("SPDX-3.0.1"), nil
+		}
+	}
+
+	_, err = f.Seek(0, io.SeekStart)
+	if err != nil {
+		log.Printf("Failed to seek: %v", err)
+	}
+
+	// Check for SPDX 2.x
 	var s spdxbasic
 	if err := json.NewDecoder(f).Decode(&s); err == nil {
 		if strings.HasPrefix(s.ID, "SPDX") {

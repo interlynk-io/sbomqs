@@ -98,6 +98,12 @@ test: generate ## Run all tests
 	@echo "Running tests..."
 	@go test -cover -race ./...
 
+
+.PHONY: test-verbose
+test-verbose: generate ## Run all tests in verbose mode
+	@echo "Running verbose tests..."
+	@go test -v -cover -race ./...
+
 ##@ Building
 
 .PHONY: build
