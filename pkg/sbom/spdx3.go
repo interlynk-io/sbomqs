@@ -19,6 +19,8 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
+	"unicode"
 
 	"github.com/interlynk-io/sbomqs/v2/pkg/licenses"
 	"github.com/interlynk-io/sbomqs/v2/pkg/logger"
@@ -37,8 +39,10 @@ type Spdx3Doc struct {
 	Auths            []GetAuthor
 	SpdxTools        []GetTool
 	Rels             []GetRelation
+	SuppliedBy       GetSupplier
+	OriginatedBy     GetManufacturer
 	PrimaryComponent PrimaryComp
-	Lifecycle        string
+	Lifecycle        []string
 	Dependencies     map[string][]string
 	composition      map[string]string
 	Vuln             []GetVulnerabilities
@@ -116,15 +120,15 @@ func (s Spdx3Doc) Logs() []string {
 }
 
 func (s Spdx3Doc) Lifecycles() []string {
-	return []string{s.Lifecycle}
+	return s.Lifecycle
 }
 
 func (s Spdx3Doc) Manufacturer() GetManufacturer {
-	return nil
+	return s.OriginatedBy
 }
 
 func (s Spdx3Doc) Supplier() GetSupplier {
-	return nil
+	return s.SuppliedBy
 }
 
 func (s Spdx3Doc) GetRelationships(componentID string) []string {
@@ -151,9 +155,17 @@ func (s Spdx3Doc) SchemaValidation() bool {
 func (s *Spdx3Doc) parse() {
 	s.parseDoc()
 	s.parseSpec()
+	s.parseAuthors()
+	s.parseTool()
 }
 
 func (s *Spdx3Doc) parseDoc() {
+	log := logger.FromContext(s.config.Context)
+
+	if s.doc == nil {
+		log.Debug("spdx doc is not parsable")
+		return
+	}
 }
 
 func (s *Spdx3Doc) parseSpec() {
@@ -232,4 +244,102 @@ func (s *Spdx3Doc) parseSpec() {
 
 	log.Debugf("parseSpec: completed parsing spec for document=%s", sp.Name)
 	s.SpdxSpec = sp
+}
+func (s *Spdx3Doc) parseAuthors() {
+	log := logger.FromContext(s.config.Context)
+	log.Debug("parseAuthors: starting author parsing")
+
+	s.Auths = []GetAuthor{}
+
+	if s.doc.CreationInfo == nil {
+		log.Debugf("parseAuthors: no created by agents found")
+		return
+	}
+
+	if len(s.doc.CreationInfo.CreatedBy) <= 0 {
+		log.Debugf("parseAuthors: no created by agents found")
+		return
+	}
+
+	log.Debugf("parseAuthors: processing %d created by agents", len(s.doc.CreationInfo.CreatedBy))
+
+	for _, agentRef := range s.doc.CreationInfo.CreatedBy {
+		agentType := s.doc.GetAgentTypeByID(agentRef.SpdxID)
+		agent := s.doc.GetAgentByID(agentRef.SpdxID)
+		log.Debugf("parseAuthors: checking agent spdxID=%s, type=%v, name=%s", agentRef.SpdxID, agentType, agent.Name)
+
+		//TODO: SPDX3 does not have email????
+		s.Auths = append(s.Auths, Author{
+			Name:       agent.Name,
+			Email:      "",
+			AuthorType: string(agentType),
+		})
+	}
+
+	log.Debug("parseAuthors: completed")
+}
+
+func (s *Spdx3Doc) parseTool() {
+	log := logger.FromContext(s.config.Context)
+	log.Debug("parseTools: starting author parsing")
+
+	s.SpdxTools = []GetTool{}
+
+	if s.doc.CreationInfo == nil {
+		log.Debugf("parseTools: no created by agents found")
+		return
+	}
+
+	if len(s.doc.CreationInfo.CreatedUsing) <= 0 {
+		log.Debugf("parseTools: no created by agents found")
+		return
+	}
+
+	// https://spdx.github.io/spdx-spec/v2.3/document-creation-information/#68-creator-field
+	// spdx2.3 spec says If the SPDX document was created using a software tool,
+	// indicate the name and version for that tool
+	extractVersion := func(inputName string) (string, string) {
+		// Split the input string by "-"
+		parts := strings.Split(inputName, "-")
+
+		// if there are no "-" its a bad string
+		if len(parts) == 1 {
+			return inputName, ""
+		}
+		// The last element after splitting is the version
+		version := parts[len(parts)-1]
+
+		// The name is everything before the last element
+		name := strings.Join(parts[:len(parts)-1], "-")
+
+		// check if version has atleast one-digit
+		// if not, then it is not a version
+		for _, r := range version {
+			if unicode.IsDigit(r) {
+				return name, version
+			}
+		}
+
+		// This is a bad case
+		return inputName, ""
+	}
+
+	for _, tool := range s.doc.Tools {
+		resolvedTool := s.doc.GetToolByID(tool.SpdxID)
+		if resolvedTool == nil {
+			continue
+		}
+
+		log.Debugf("parseTools: checking tool spdxID=%s, name=%s", resolvedTool.SpdxID, resolvedTool.Name)
+
+		name, version := extractVersion(resolvedTool.Name)
+
+		//TODO:SPDX3 does not have version for tools WTF
+		s.SpdxTools = append(s.SpdxTools, Tool{
+			Name:    name,
+			Version: version,
+		})
+	}
+
+	log.Debug("parseTools: completed")
 }
