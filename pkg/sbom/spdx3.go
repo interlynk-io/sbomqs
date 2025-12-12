@@ -75,10 +75,11 @@ func newSPDX3DocWithOptions(f io.ReadSeeker, format FileFormat, version FormatVe
 	}
 
 	doc := &Spdx3Doc{
-		doc:     d,
-		format:  format,
-		config:  config,
-		version: version,
+		doc:             d,
+		format:          format,
+		config:          config,
+		version:         version,
+		spdxValidSchema: true,
 	}
 
 	doc.parse()
@@ -202,15 +203,10 @@ func (s *Spdx3Doc) parseSpec() {
 		log.Debug("parseSpec: no creation info found")
 	}
 
-	if len(s.doc.SpdxDocument.NamespaceMap) > 0 {
-		nmMap := s.doc.SpdxDocument.NamespaceMap[0]
-
-		sp.Namespace = nmMap.Namespace
-		sp.URI = fmt.Sprintf("%s:%s", nmMap.Namespace, nmMap.Prefix)
-		log.Debugf("parseSpec: namespace=%s, uri=%s", sp.Namespace, sp.URI)
-	} else {
-		log.Debug("parseSpec: no namespace map found")
-	}
+	// Document namespace is not a thing for SPDX3 as i believe
+	// SPDXID in spdx3 are globally unique.
+	sp.Namespace = ""
+	sp.URI = s.doc.SpdxDocument.SpdxID
 
 	if len(s.doc.CreationInfo.CreatedBy) > 0 {
 		log.Debugf("parseSpec: processing %d created by agents", len(s.doc.CreationInfo.CreatedBy))
