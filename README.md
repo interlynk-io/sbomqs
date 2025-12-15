@@ -177,6 +177,7 @@ We welcome contributions! Here's how to get started:
 5. Open a Pull Request
 
 Please ensure:
+
 - All commits are signed
 - Tests pass (`make test`)
 - Code follows our style guide (`make lint`)
@@ -186,7 +187,6 @@ Please ensure:
 ## Community Recognition
 
 sbomqs has gained significant adoption across the industry for SBOM quality assessment and compliance validation:
-
 
 ## 📚 Academic Research & Publications
 
@@ -218,6 +218,7 @@ sbomqs has gained significant adoption across the industry for SBOM quality asse
 ### Major Platforms & Companies
 
 ### 1. **Harness Software Supply Chain Assurance (SSCA)**
+
 - **Company:** Harness Inc.
 - **Usage:** Uses sbomqs as the engine powering their SBOM quality scoring feature
 - **Features:** Provides quality scores from 1-10 for generated SBOMs with SBOM drift detection capabilities
@@ -225,20 +226,28 @@ sbomqs has gained significant adoption across the industry for SBOM quality asse
 - **Blog Post:** [Level Up your Zero-day Vulnerability Remediation and SBOM Quality](https://www.harness.io/blog/level-up-your-zero-day-vulnerability-remediation-and-sbom-quality-for-a-more-secure-software-supply-chain) (May 2025)
 
 ### 2. **sbom.sh**
+
 - **Platform:** [sbom.sh](https://sbom.sh)
 - **Usage:** Uses the sbomqs engine to evaluate and score uploaded SBOMs
 - **Features:** Automatically generates a quality score (1–10) based on metadata completeness, component coverage, and spec compliance (SPDX/CycloneDX), displaying results directly in the web interface
 
 ### 3. **SBOM Benchmark Platform**
+
 - **Platform:** [sbombenchmark.dev](https://sbombenchmark.dev/)
 - **Usage:** Uses the sbomqs engine for scoring CycloneDX and SPDX SBOMs
 - **Features:** Provides shareable quality reports without requiring SBOM uploads
 
 ### 4. **Interlynk Platform**
+
 - **Company:** Interlynk Inc.
 - **Milestone:** Reached 100 customers on community tier, including four Fortune 500 companies
 - **Integration:** sbomqs integrated for SBOM quality assessment across the platform
 
+### 5. **SBOMly**
+
+- **Platform:**  [SBOMly](https://sbomly.com/).
+- **Usage:** Uses the sbomqs engine for scoring CycloneDX and SPDX SBOMs to check how complete and useful SBOMs are.
+- **Features:** SBOMly makes it easy to scan your project dependencies for known vulnerabilities. It generates SBOM using Syft, then scan it for vulnerabilities using both Grype and OSV-Scanner for comprehensive coverage and gives detailed report showing all components, vulnerabilities, severity levels, and fix commands you can run to remediate issues.
 
 ### CI/CD & Package Manager Support
 
@@ -251,6 +260,7 @@ sbomqs has gained significant adoption across the industry for SBOM quality asse
 ### Compliance Standards
 
 Trusted for validating compliance with:
+
 - NTIA Minimum Elements
 - BSI TR-03183-2 (v1.1 & v2.0)
 - OpenChain Telco (OCT)
@@ -271,7 +281,6 @@ Interlynk provides a comprehensive suite of SBOM tools:
 - [sbomqs and SBOM Policies](https://sbom-insights.dev/posts/sbomqs-and-sbom-policies-turning-transparency-into-action/)
 - [sbomqs scoring support for BSI-1.1 and BSI-2.0](https://sbom-insights.dev/posts/sbomqs-scoring-support-for-bsi-1.1-and-bsi-2.0-in-a-summarized-way/)
 - [What’s Missing in Your SBOM](https://sbom-insights.dev/posts/whats-missing-in-your-sbom-sbomqs-list-can-help-you-in-inspecting.../)
-
 
 ## Contact
 
