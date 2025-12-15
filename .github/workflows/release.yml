@@ -100,7 +100,7 @@ jobs:
           ls -lR sbom-output
 
       - name: Upload SBOM as Release Asset
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: sbom
           path: sbom-output/_manifest/spdx_2.2/manifest.spdx.json
