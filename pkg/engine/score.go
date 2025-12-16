@@ -55,8 +55,8 @@ type Params struct {
 	Spdx bool
 	Cdx  bool
 
-	Recurse bool
-	Missing bool
+	Recursive bool
+	Missing   bool
 
 	Debug bool
 	Show  bool
@@ -115,6 +115,7 @@ func scored(ctx context.Context, ep *Params) ([]api.Result, error) {
 		Features:   ep.Features,
 		ConfigFile: ep.ConfigPath,
 		Profile:    ep.Profiles,
+		Recursive:  ep.Recursive,
 	}
 
 	results, err := score.ScoreSBOM(ctx, cfg, ep.Path)

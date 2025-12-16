@@ -27,8 +27,9 @@ import (
 
 // validateAndExpandPaths returns a list of files and URLs.
 // - URLs are kept as-is (no normalization here).
-// - Directories are expanded to their immediate files (non-recursive).
-func validateAndExpandPaths(ctx context.Context, paths []string) []string {
+// - Directories are expanded to one leve only by default
+// - If recursive is true, directories are walked recursively.
+func validateAndExpandPaths(ctx context.Context, paths []string, recursive bool) []string {
 	log := logger.FromContext(ctx)
 	log.Debug("Validating and expanding input paths",
 		zap.Int("input", len(paths)),
@@ -66,7 +67,27 @@ func validateAndExpandPaths(ctx context.Context, paths []string) []string {
 			// irs: expand to files.
 		case info.IsDir():
 
-			// expand only one level (intentional).
+			if recursive {
+				// recursive walk into sub-dir
+				err := filepath.WalkDir(path, func(p string, d os.DirEntry, err error) error {
+					if err != nil {
+						log.Debugf("skip: cannot access %q: %v", p, err)
+						return nil
+					}
+
+					if d.Type().IsRegular() {
+						utils.AppendUnique(&validPaths, alreadyExist, p)
+					}
+
+					return nil
+				})
+				if err != nil {
+					log.Debugf("skip: cannot walk dir %q: %v", path, err)
+				}
+				continue
+			}
+
+			// non-recursive (existing behavior)
 			files, err := os.ReadDir(path)
 			if err != nil {
 				log.Debug("Skipping directory: cannot read",
@@ -81,6 +102,7 @@ func validateAndExpandPaths(ctx context.Context, paths []string) []string {
 					utils.AppendUnique(&validPaths, alreadyExist, filepath.Join(path, file.Name()))
 				}
 			}
+
 		default:
 			log.Debug("Skipping unsupported path type",
 				zap.String("path", path),
@@ -95,6 +117,20 @@ func validateAndExpandPaths(ctx context.Context, paths []string) []string {
 		zap.Int("valid", len(validPaths)),
 	)
 	return validPaths
+}
+
+// containsDirectory reports whether the "paths" includes at least one directory path.
+func containsDirectory(paths []string) bool {
+	for _, p := range paths {
+		info, err := os.Stat(p)
+		if err != nil {
+			continue
+		}
+		if info.IsDir() {
+			return true
+		}
+	}
+	return false
 }
 
 // // validateConfig verifies that user-supplied categories, features (and profiles) exist in the catalog.

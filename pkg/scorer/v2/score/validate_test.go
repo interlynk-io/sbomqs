@@ -31,7 +31,7 @@ func TestValidateAndExpandPaths_EmptyPath(t *testing.T) {
 		"   ",
 		"",
 	}
-	got := validateAndExpandPaths(ctx, inputPaths)
+	got := validateAndExpandPaths(ctx, inputPaths, false)
 	assert.Empty(t, got)
 }
 
@@ -42,7 +42,7 @@ func TestValidateAndExpandPaths_UrlsPreserved(t *testing.T) {
 		"https://github.com/interlynk-io/sbomqs/v2/v2",
 		"http://github.com/xyz",
 	}
-	got := validateAndExpandPaths(ctx, inputPaths)
+	got := validateAndExpandPaths(ctx, inputPaths, false)
 
 	expected := []string{
 		"http://github.com/xyz",
@@ -70,7 +70,7 @@ func TestValidateAndExpandPaths_ValidFilePaths_TempDir(t *testing.T) {
 	}
 
 	inputPaths := []string{f1, f2}
-	got := validateAndExpandPaths(ctx, inputPaths)
+	got := validateAndExpandPaths(ctx, inputPaths, false)
 
 	expected := []string{f1, f2}
 	sort.Strings(expected)
@@ -87,7 +87,7 @@ func TestValidateAndExpandPaths_InvalidFilePaths(t *testing.T) {
 		"/tmp/definitely-not-a-file.txt",
 	}
 
-	got := validateAndExpandPaths(ctx, inputPaths)
+	got := validateAndExpandPaths(ctx, inputPaths, false)
 
 	assert.Empty(t, got)
 }
@@ -118,10 +118,50 @@ func TestValidateAndExpandPaths_FileAndDirExpansion(t *testing.T) {
 	}
 
 	in := []string{parentDir, f1}
-	got := validateAndExpandPaths(ctx, in)
+	got := validateAndExpandPaths(ctx, in, false)
 
 	// build expected - expansion of `parendDir` includes file1 and file2 (nested file in subdir should NOT be included)
 	expected := []string{f1, f2}
+	sort.Strings(expected)
+	sort.Strings(got)
+
+	assert.Equal(t, expected, got)
+}
+
+func TestValidateAndExpandPaths_RecursiveDir(t *testing.T) {
+	ctx := context.Background()
+	parentDir := t.TempDir()
+
+	// create a sub-dir `sub1` under `parentDir` dir
+	temp1 := filepath.Join(parentDir, "temp1")
+	if err := os.Mkdir(temp1, 0o755); err != nil {
+		t.Fatalf("mkdir subdir: %v", err)
+	}
+
+	f3 := filepath.Join(temp1, "sbom3.json")
+	if err := os.WriteFile(f3, []byte("hi"), 0o644); err != nil {
+		t.Fatalf("write sbom3: %v", err)
+	}
+
+	// create a sub-dir `sub2` under `parentDir` dir
+	temp2 := filepath.Join(parentDir, "temp2")
+	if err := os.Mkdir(temp2, 0o755); err != nil {
+		t.Fatalf("mkdir subdir: %v", err)
+	}
+
+	f4 := filepath.Join(temp2, "sbom4.json")
+	if err := os.WriteFile(f4, []byte("hi"), 0o644); err != nil {
+		t.Fatalf("write sbom4: %v", err)
+	}
+
+	in := []string{parentDir}
+
+	// recursive == true
+	got := validateAndExpandPaths(ctx, in, true)
+
+	// build expected - recursive expansion of `parentDir`
+	// includes files from nested sub-directories(`temp1` and `temp2`)
+	expected := []string{f3, f4}
 	sort.Strings(expected)
 	sort.Strings(got)
 

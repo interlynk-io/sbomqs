@@ -37,14 +37,18 @@ import (
 )
 
 // ScoreSBOM evaluates one or more SBOMs according to the specified configuration.
-// It accepts file paths or URLs and returns scoring results for profile-based
-// or comprehensive analysis. The function validates input paths, initializes
-// the scoring catalog, and processes each SBOM independently.
+// It accepts file paths, directory paths, or URLs and returns scoring results for
+// profile-based or comprehensive analysis. Directory paths may be expanded
+// recursively based on the provided configuration.
+//
+// The function validates input paths, initializes the scoring catalog, and
+// processes each SBOM independently.
 //
 // Parameters:
 //   - ctx: Context for cancellation and logging
-//   - cfg: Configuration specifying scoring parameters (profiles, categories, features)
-//   - paths: File paths or URLs to SBOM files to be evaluated
+//   - cfg: Configuration specifying scoring parameters (profiles, categories,
+//     features, and directory traversal behavior)
+//   - paths: File paths, directory paths, or URLs pointing to SBOMs to be evaluated
 //
 // Returns a slice of Result objects containing scoring outcomes, or an error
 // if no valid SBOMs could be processed.
@@ -55,7 +59,7 @@ func ScoreSBOM(ctx context.Context, cfg config.Config, paths []string) ([]api.Re
 	)
 
 	// 1. Validate paths
-	validPaths := validateAndExpandPaths(ctx, paths)
+	validPaths := validateAndExpandPaths(ctx, paths, cfg.Recursive)
 	if len(validPaths) == 0 {
 		log.Error("No valid SBOM paths provided")
 		return nil, fmt.Errorf("no valid paths provided")
