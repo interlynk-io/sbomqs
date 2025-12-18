@@ -1,6 +1,9 @@
 package validation
 
-import "fmt"
+import (
+	"encoding/json"
+	"fmt"
+)
 
 func Validate(spec string, version string, sbomBytes []byte) Result {
 
@@ -24,8 +27,13 @@ func Validate(spec string, version string, sbomBytes []byte) Result {
 		return result
 	}
 
+	var instance any
+	if err := json.Unmarshal(sbomBytes, &instance); err != nil {
+		return result
+	}
+
 	// 3. Validate SBOM JSON against official schema
-	err = schema.Validate(sbomBytes)
+	err = schema.Validate(instance)
 	if err == nil {
 		result.Valid = true
 		return result
