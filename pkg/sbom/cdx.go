@@ -37,6 +37,7 @@ import (
 	"github.com/interlynk-io/sbomqs/v2/pkg/purl"
 	"github.com/interlynk-io/sbomqs/v2/pkg/swhid"
 	"github.com/interlynk-io/sbomqs/v2/pkg/swid"
+	"github.com/interlynk-io/sbomqs/v2/pkg/validation"
 	"github.com/samber/lo"
 	"go.uber.org/zap"
 )
@@ -70,7 +71,7 @@ type CdxDoc struct {
 	rawContent       []byte // Store raw content for manual parsing
 }
 
-func newCDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat, sig Signature) (Document, error) {
+func newCDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat, _ Signature) (Document, error) {
 	var err error
 
 	// Read the content for manual parsing if needed
@@ -102,11 +103,11 @@ func newCDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat, sig Sign
 	}
 
 	doc := &CdxDoc{
-		doc:            bom,
-		format:         format,
-		ctx:            ctx,
-		cdxValidSchema: true,
-		rawContent:     rawContent,
+		doc:    bom,
+		format: format,
+		ctx:    ctx,
+		// cdxValidSchema: true,
+		rawContent: rawContent,
 	}
 	doc.parse()
 
@@ -176,6 +177,7 @@ func (c CdxDoc) SchemaValidation() bool {
 func (c *CdxDoc) parse() {
 	c.parseDoc()
 	c.parseSpec()
+	c.parseSchemaValidation()
 	c.parseAuthors()
 	c.parseSupplier()
 	c.parseManufacturer()
@@ -221,6 +223,26 @@ func (c *CdxDoc) parseDoc() {
 
 		return ""
 	})
+}
+
+func (c *CdxDoc) parseSchemaValidation() {
+	c.cdxValidSchema = false
+
+	if c.format != FileFormatJSON {
+		c.addToLogs("schema validation skipped: non-JSON SBOM")
+		return
+	}
+
+	fmt.Println("Version: ", c.Spec().GetVersion())
+
+	result := validation.Validate("cyclonedx", c.Spec().GetVersion(), c.rawContent)
+	fmt.Println("Result: ", result.Valid)
+	fmt.Println("Result Errors: ", result.Errors)
+
+	c.cdxValidSchema = result.Valid
+	for _, e := range result.Errors {
+		c.addToLogs(e)
+	}
 }
 
 func (c *CdxDoc) parseSpec() {
@@ -397,13 +419,14 @@ func (c *CdxDoc) parseSignerMap(signerMap map[string]interface{}) *Signature {
 func (c *CdxDoc) parsePublicKey(pubKeyData map[string]interface{}) string {
 	kty, _ := pubKeyData["kty"].(string)
 
-	if kty == "RSA" {
+	switch kty {
+	case "RSA":
 		n, _ := pubKeyData["n"].(string)
 		e, _ := pubKeyData["e"].(string)
 		if n != "" && e != "" {
 			return c.convertRSAPublicKeyToPEM(n, e)
 		}
-	} else if kty == "EC" {
+	case "EC":
 		crv, _ := pubKeyData["crv"].(string)
 		x, _ := pubKeyData["x"].(string)
 		y, _ := pubKeyData["y"].(string)
