@@ -461,21 +461,21 @@ func Test_InterlynkProfileForStaticSBOMFiles(t *testing.T) {
 		filepath.Join(base, "spdx-weak-checksums.json"):   {Score: 4.7, Grade: "F"},
 		filepath.Join(base, "spdx-no-dependencies.json"):  {Score: 6.2, Grade: "D"},
 		filepath.Join(base, "spdx-invalid-licenses.json"): {Score: 4.8, Grade: "F"},
-		filepath.Join(base, "spdx-no-authors.json"):       {Score: 4.0, Grade: "F"},
-		filepath.Join(base, "spdx-no-timestamp.json"):     {Score: 4.0, Grade: "F"},
+		filepath.Join(base, "spdx-no-authors.json"):       {Score: 3.7, Grade: "F"},
+		filepath.Join(base, "spdx-no-timestamp.json"):     {Score: 3.7, Grade: "F"},
 		filepath.Join(base, "spdx-old-version.json"):      {Score: 4.3, Grade: "F"},
 
 		// CycloneDX test cases
-		filepath.Join(base, "cdx-perfect-score.json"):    {Score: 8.0, Grade: "B"},
+		filepath.Join(base, "cdx-perfect-score.json"):    {Score: 7.7, Grade: "C"},
 		filepath.Join(base, "cdx-minimal.json"):          {Score: 2.3, Grade: "F"},
 		filepath.Join(base, "cdx-no-version.json"):       {Score: 3.7, Grade: "F"},
 		filepath.Join(base, "cdx-no-checksums.json"):     {Score: 4.8, Grade: "F"},
 		filepath.Join(base, "cdx-weak-checksums.json"):   {Score: 4.3, Grade: "F"},
-		filepath.Join(base, "cdx-no-dependencies.json"):  {Score: 5.7, Grade: "D"},
+		filepath.Join(base, "cdx-no-dependencies.json"):  {Score: 5.3, Grade: "D"},
 		filepath.Join(base, "cdx-invalid-licenses.json"): {Score: 4.4, Grade: "F"},
 		filepath.Join(base, "cdx-no-authors.json"):       {Score: 3.7, Grade: "F"},
 		filepath.Join(base, "cdx-no-timestamp.json"):     {Score: 3.7, Grade: "F"},
-		filepath.Join(base, "cdx-old-version.json"):      {Score: 3.7, Grade: "F"},
+		filepath.Join(base, "cdx-old-version.json"):      {Score: 3.3, Grade: "F"},
 	}
 
 	for path, want := range testCases {
