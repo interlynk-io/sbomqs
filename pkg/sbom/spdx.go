@@ -64,8 +64,10 @@ type SpdxDoc struct {
 }
 
 func newSPDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat, version FormatVersion, _ Signature) (Document, error) {
-	_ = logger.FromContext(ctx)
+	log := logger.FromContext(ctx)
 	var err error
+
+	log.Debugf("constructing new instance of spdx")
 
 	// Read the content for manual parsing if needed
 	rawContent, err := io.ReadAll(f)
@@ -101,10 +103,12 @@ func newSPDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat, version
 		ctx:        ctx,
 		version:    version,
 		rawContent: rawContent,
-		// spdxValidSchema: true,
 	}
 
 	doc.parse()
+	for _, l := range doc.Logs() {
+		log.Debugf(l)
+	}
 
 	return doc, err
 }
@@ -246,25 +250,23 @@ func (s *SpdxDoc) parseSpec() {
 
 func (s *SpdxDoc) parseSchemaValidation() {
 	s.spdxValidSchema = false
+	s.addToLogs("processing parseSchemaValidation")
 
 	if s.format != FileFormatJSON {
 		s.addToLogs("schema validation skipped: non-JSON SBOM")
 		return
 	}
-	fmt.Println("Spec: ", s.Spec().GetSpecType())
-	fmt.Println("Version: ", s.Spec().GetVersion())
 
-	// version, _ := strings.CutPrefix(s.Spec().GetVersion(), "SPDX-")
 	version := normalizeSpdxVersion(s.Spec().GetVersion())
-	fmt.Println("NEW Version: ", version)
+	s.addToLogs(fmt.Sprintf("spec: %s, version: %s", s.Spec().GetSpecType(), version))
 
 	result := validation.Validate("spdx", version, s.rawContent)
-	fmt.Println("Result: ", result.Valid)
-	fmt.Println("Result Errors: ", result.Errors)
 
+	s.addToLogs(fmt.Sprintf("schema valid: %v", result.Valid))
 	s.spdxValidSchema = result.Valid
-	for _, e := range result.Errors {
-		s.addToLogs(e)
+
+	for _, l := range result.Logs {
+		s.addToLogs(l)
 	}
 }
 

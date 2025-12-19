@@ -73,7 +73,8 @@ type CdxDoc struct {
 
 func newCDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat, _ Signature) (Document, error) {
 	var err error
-
+	log := logger.FromContext(ctx)
+	log.Debugf("constructing new instance of cdx")
 	// Read the content for manual parsing if needed
 	rawContent, err := io.ReadAll(f)
 	if err != nil {
@@ -103,14 +104,15 @@ func newCDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat, _ Signat
 	}
 
 	doc := &CdxDoc{
-		doc:    bom,
-		format: format,
-		ctx:    ctx,
-		// cdxValidSchema: true,
+		doc:        bom,
+		format:     format,
+		ctx:        ctx,
 		rawContent: rawContent,
 	}
 	doc.parse()
-
+	for _, l := range doc.Logs() {
+		log.Debugf(l)
+	}
 	return doc, err
 }
 
@@ -232,16 +234,15 @@ func (c *CdxDoc) parseSchemaValidation() {
 		c.addToLogs("schema validation skipped: non-JSON SBOM")
 		return
 	}
-	fmt.Println("Spec: ", c.Spec().GetSpecType())
-	fmt.Println("Version: ", c.Spec().GetVersion())
 
+	c.addToLogs(fmt.Sprintf("spec: %s, version: %s", c.Spec().GetSpecType(), c.Spec().GetVersion()))
 	result := validation.Validate("cyclonedx", c.Spec().GetVersion(), c.rawContent)
-	fmt.Println("Result: ", result.Valid)
-	fmt.Println("Result Errors: ", result.Errors)
 
+	c.addToLogs(fmt.Sprintf("schema valid: %v", result.Valid))
 	c.cdxValidSchema = result.Valid
-	for _, e := range result.Errors {
-		c.addToLogs(e)
+
+	for _, l := range result.Logs {
+		c.addToLogs(l)
 	}
 }
 
