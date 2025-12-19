@@ -232,7 +232,7 @@ func (c *CdxDoc) parseSchemaValidation() {
 		c.addToLogs("schema validation skipped: non-JSON SBOM")
 		return
 	}
-
+	fmt.Println("Spec: ", c.Spec().GetSpecType())
 	fmt.Println("Version: ", c.Spec().GetVersion())
 
 	result := validation.Validate("cyclonedx", c.Spec().GetVersion(), c.rawContent)

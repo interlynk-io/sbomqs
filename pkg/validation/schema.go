@@ -16,6 +16,11 @@ func schemaPath(spec, version string) string {
 	case "cyclonedx":
 		return fmt.Sprintf("http://cyclonedx.org/schema/bom-%s.schema.json", version)
 		// return fmt.Sprintf("pkg/validation/schemas/cyclonedx/%s/bom-%s.schema.json", version, version)
+	case "spdx":
+		return fmt.Sprintf("spdx:%s", version)
+
+		// return fmt.Sprintf("schemas/spdx/%s/spdx-schema.json", version)
+
 	default:
 		return ""
 	}
@@ -33,6 +38,12 @@ var schemaRegistry = map[string]string{
 	"http://cyclonedx.org/schema/bom-1.5.schema.json": "schemas/cyclonedx/1.5/bom-1.5.schema.json",
 	"http://cyclonedx.org/schema/bom-1.6.schema.json": "schemas/cyclonedx/1.6/bom-1.6.schema.json",
 	"http://cyclonedx.org/schema/bom-1.7.schema.json": "schemas/cyclonedx/1.7/bom-1.7.schema.json",
+
+	// ---- SPDX ----
+	"spdx:2.2.1": "schemas/spdx/2.2.1/spdx-schema.json",
+	"spdx:2.2.2": "schemas/spdx/2.2.2/spdx-schema.json",
+	"spdx:2.3":   "schemas/spdx/2.3/spdx-schema.json",
+	"spdx:2.3.1": "schemas/spdx/2.3.1/spdx-schema.json",
 }
 
 func loadSchema(schemaURL string) (*jsonschema.Schema, error) {

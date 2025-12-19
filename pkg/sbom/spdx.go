@@ -15,10 +15,10 @@
 package sbom
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"io"
-	"log"
 	"regexp"
 	"strings"
 	"unicode"
@@ -27,6 +27,7 @@ import (
 	"github.com/interlynk-io/sbomqs/v2/pkg/licenses"
 	"github.com/interlynk-io/sbomqs/v2/pkg/logger"
 	"github.com/interlynk-io/sbomqs/v2/pkg/purl"
+	"github.com/interlynk-io/sbomqs/v2/pkg/validation"
 	"github.com/samber/lo"
 	spdx_json "github.com/spdx/tools-golang/json"
 	spdx_rdf "github.com/spdx/tools-golang/rdf"
@@ -59,28 +60,33 @@ type SpdxDoc struct {
 	Dependencies     map[string][]string
 	composition      map[string]string
 	Vuln             []GetVulnerabilities
+	rawContent       []byte // Store raw content for manual parsing
 }
 
 func newSPDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat, version FormatVersion, _ Signature) (Document, error) {
 	_ = logger.FromContext(ctx)
 	var err error
 
-	_, err = f.Seek(0, io.SeekStart)
+	// Read the content for manual parsing if needed
+	rawContent, err := io.ReadAll(f)
 	if err != nil {
-		log.Printf("Failed to seek: %v", err)
+		return nil, err
 	}
+
+	// Reset the reader for the decoder
+	reader := bytes.NewReader(rawContent)
 
 	var d *spdx.Document
 
 	switch format {
 	case FileFormatJSON:
-		d, err = spdx_json.Read(f)
+		d, err = spdx_json.Read(reader)
 	case FileFormatTagValue:
-		d, err = spdx_tv.Read(f)
+		d, err = spdx_tv.Read(reader)
 	case FileFormatYAML:
-		d, err = spdx_yaml.Read(f)
+		d, err = spdx_yaml.Read(reader)
 	case FileFormatRDF:
-		d, err = spdx_rdf.Read(f)
+		d, err = spdx_rdf.Read(reader)
 	default:
 		err = fmt.Errorf("unsupported spdx format %s", string(format))
 	}
@@ -90,11 +96,12 @@ func newSPDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat, version
 	}
 
 	doc := &SpdxDoc{
-		doc:             d,
-		format:          format,
-		ctx:             ctx,
-		version:         version,
-		spdxValidSchema: true,
+		doc:        d,
+		format:     format,
+		ctx:        ctx,
+		version:    version,
+		rawContent: rawContent,
+		// spdxValidSchema: true,
 	}
 
 	doc.parse()
@@ -171,6 +178,7 @@ func (s SpdxDoc) SchemaValidation() bool {
 func (s *SpdxDoc) parse() {
 	s.parseDoc()
 	s.parseSpec()
+	s.parseSchemaValidation()
 	s.parseAuthors()
 	s.parseTool()
 	s.parsePrimaryCompAndRelationships()
@@ -234,6 +242,38 @@ func (s *SpdxDoc) parseSpec() {
 	s.Vuln = nil
 
 	s.SpdxSpec = sp
+}
+
+func (s *SpdxDoc) parseSchemaValidation() {
+	s.spdxValidSchema = false
+
+	if s.format != FileFormatJSON {
+		s.addToLogs("schema validation skipped: non-JSON SBOM")
+		return
+	}
+	fmt.Println("Spec: ", s.Spec().GetSpecType())
+	fmt.Println("Version: ", s.Spec().GetVersion())
+
+	// version, _ := strings.CutPrefix(s.Spec().GetVersion(), "SPDX-")
+	version := normalizeSpdxVersion(s.Spec().GetVersion())
+	fmt.Println("NEW Version: ", version)
+
+	result := validation.Validate("spdx", version, s.rawContent)
+	fmt.Println("Result: ", result.Valid)
+	fmt.Println("Result Errors: ", result.Errors)
+
+	s.spdxValidSchema = result.Valid
+	for _, e := range result.Errors {
+		s.addToLogs(e)
+	}
+}
+
+func normalizeSpdxVersion(v string) string {
+	// SPDX-2.3 → 2.3
+	if strings.HasPrefix(v, "SPDX-") {
+		return strings.TrimPrefix(v, "SPDX-")
+	}
+	return v
 }
 
 func (s *SpdxDoc) parseComps() {
