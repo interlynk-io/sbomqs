@@ -19,6 +19,7 @@ import (
 
 	"github.com/interlynk-io/sbomqs/v2/pkg/list"
 	"github.com/interlynk-io/sbomqs/v2/pkg/logger"
+	"go.uber.org/zap"
 )
 
 func parseListParams(ep *Params) *list.Params {
@@ -37,14 +38,20 @@ func parseListParams(ep *Params) *list.Params {
 
 func ListRun(ctx context.Context, ep *Params) error {
 	log := logger.FromContext(ctx)
-	log.Debug("engine.ListRun()")
+	log.Info("Starting SBOM component listing")
 
 	lep := parseListParams(ep)
+	log.Debug("List parameters resolved",
+		zap.Any("list_params", lep),
+	)
 
+	log.Info("Processing SBOMs for component listing")
 	// Process the SBOMs and features
 	_, err := list.ComponentsListResult(ctx, lep)
 	if err != nil {
-		log.Debugf("failed to process SBOMs: %v", err)
+		log.Error("Failed to list SBOM components",
+			zap.Error(err),
+		)
 		return err
 	}
 

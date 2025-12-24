@@ -23,6 +23,7 @@ import (
 	"github.com/interlynk-io/sbomqs/v2/pkg/logger"
 	"github.com/interlynk-io/sbomqs/v2/pkg/policy"
 	"github.com/spf13/cobra"
+	"go.uber.org/zap"
 )
 
 // policyCmdConfig holds configuration parsed from CLI flags for the apply command
@@ -72,11 +73,12 @@ var policyCmd = &cobra.Command{
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		// Setup logger
-		if debug, _ := cmd.Flags().GetBool("debug"); debug {
-			logger.InitDebugLogger()
-		} else {
-			logger.InitProdLogger()
-		}
+		debug, _ := cmd.Flags().GetBool("debug")
+
+		// Initialize logger once
+		logger.Init(debug)
+		defer logger.DeinitLogger()
+		defer logger.Sync()
 
 		ctx := logger.WithLogger(context.Background())
 
@@ -88,21 +90,21 @@ var policyCmd = &cobra.Command{
 		cfg.inputPath = args[0]
 
 		log := logger.FromContext(ctx)
-		log.Debugf("Parsed Policy command: %+v", cfg)
+		log.Debug("Parsed policy command", zap.Any("path", cfg))
 
 		// Load policies
 		var policies []policy.Policy
 		var err error
 
 		if cfg.policyFile != "" {
-			log.Debugf("loading policy from file")
+			log.Debug("Loading policy from file")
 
 			policies, err = policy.LoadPoliciesFromFile(cfg.policyFile)
 			if err != nil {
 				return fmt.Errorf("failed to load policy file %s: %w", cfg.policyFile, err)
 			}
 		} else {
-			logger.FromContext(ctx).Debugf("loading policy from inline commands")
+			log.Debug("loading policy from inline commands")
 
 			p, err := policy.BuildPolicyFromCLI(cfg.policyName, cfg.policyType, cfg.policyAction, cfg.policyRules)
 			if err != nil {
@@ -112,7 +114,7 @@ var policyCmd = &cobra.Command{
 		}
 
 		policyConfig := convertPolicyCmdToEngineParams(cfg)
-		log.Debugf("policies: %s", policies)
+		log.Debug("policies", zap.Int("total", len(policies)))
 
 		// proceed with policy engine
 		if err := policy.Engine(ctx, policyConfig, policies); err != nil {

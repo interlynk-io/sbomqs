@@ -27,6 +27,7 @@ import (
 	"strings"
 
 	"github.com/interlynk-io/sbomqs/v2/pkg/logger"
+	"go.uber.org/zap"
 	"gopkg.in/yaml.v2"
 )
 
@@ -35,33 +36,33 @@ type SpecFormat string
 
 const (
 	// SBOMSpecSPDX represents the SPDX SBOM specification format
-	SBOMSpecSPDX    SpecFormat = "spdx"
+	SBOMSpecSPDX SpecFormat = "spdx"
 	// SBOMSpecCDX represents the CycloneDX SBOM specification format
-	SBOMSpecCDX     SpecFormat = "cyclonedx"
+	SBOMSpecCDX SpecFormat = "cyclonedx"
 	// SBOMSpecUnknown represents an unknown or unsupported SBOM specification format
 	SBOMSpecUnknown SpecFormat = "unknown"
 )
 
 type (
 	// FileFormat represents the file encoding format of an SBOM (JSON, XML, YAML, etc.)
-	FileFormat    string
+	FileFormat string
 	// FormatVersion represents the version string of an SBOM specification
 	FormatVersion string
 )
 
 const (
 	// FileFormatJSON represents JSON file format
-	FileFormatJSON     FileFormat = "json"
+	FileFormatJSON FileFormat = "json"
 	// FileFormatRDF represents RDF file format
-	FileFormatRDF      FileFormat = "rdf"
+	FileFormatRDF FileFormat = "rdf"
 	// FileFormatYAML represents YAML file format
-	FileFormatYAML     FileFormat = "yaml"
+	FileFormatYAML FileFormat = "yaml"
 	// FileFormatTagValue represents SPDX tag-value file format
 	FileFormatTagValue FileFormat = "tag-value"
 	// FileFormatXML represents XML file format
-	FileFormatXML      FileFormat = "xml"
+	FileFormatXML FileFormat = "xml"
 	// FileFormatUnknown represents an unknown or unsupported file format
-	FileFormatUnknown  FileFormat = "unknown"
+	FileFormatUnknown FileFormat = "unknown"
 )
 
 type spdxbasic struct {
@@ -187,23 +188,59 @@ func detectSbomFormat(f io.ReadSeeker) (SpecFormat, FileFormat, FormatVersion, e
 func NewSBOMDocument(ctx context.Context, f io.ReadSeeker, sig Signature) (Document, error) {
 	log := logger.FromContext(ctx)
 
+	log.Debug("Detecting SBOM format")
 	spec, format, version, err := detectSbomFormat(f)
 	if err != nil {
+		log.Error("Failed to detect SBOM format",
+			zap.Error(err),
+		)
 		return nil, err
 	}
 
-	log.Debugf("SBOM detect spec:%s version:%s format:%s ", spec, version, format)
+	log.Info("Detected SBOM",
+		zap.String("spec", string(spec)),
+		zap.String("format", string(format)),
+		zap.String("version", string(version)),
+	)
 
 	var doc Document
 
 	switch spec {
 	case SBOMSpecSPDX:
+		log.Debug("Initializing SPDX document parser",
+			zap.String("format", string(format)),
+			zap.String("version", string(version)),
+		)
 		doc, err = newSPDXDoc(ctx, f, format, version, sig)
+
 	case SBOMSpecCDX:
+		log.Debug("Initializing CycloneDX document parser",
+			zap.String("format", string(format)),
+		)
 		doc, err = newCDXDoc(ctx, f, format, sig)
+
 	default:
+		log.Error("Unsupported SBOM specification",
+			zap.String("spec", string(spec)),
+		)
 		return nil, errors.New("unsupported sbom format")
 	}
 
-	return doc, err
+	if err != nil {
+		log.Error("Failed to parse SBOM document",
+			zap.String("spec", string(spec)),
+			zap.String("format", string(format)),
+			zap.String("version", string(version)),
+			zap.Error(err),
+		)
+		return nil, err
+	}
+
+	log.Debug("SBOM document parsed successfully",
+		zap.String("spec", string(spec)),
+		zap.String("format", string(format)),
+		zap.String("version", string(version)),
+	)
+
+	return doc, nil
 }

@@ -24,6 +24,7 @@ import (
 	"github.com/interlynk-io/sbomqs/v2/pkg/logger"
 	"github.com/interlynk-io/sbomqs/v2/pkg/reporter"
 	"github.com/samber/lo"
+	"go.uber.org/zap"
 
 	"github.com/spf13/cobra"
 )
@@ -142,13 +143,17 @@ var (
 
 func processScore(cmd *cobra.Command, args []string) error {
 	debug, _ := cmd.Flags().GetBool("debug")
-	if debug {
-		logger.InitDebugLogger()
-	} else {
-		logger.InitProdLogger()
-	}
+
+	// Initialize logger once
+	logger.Init(debug)
+	defer logger.DeinitLogger()
+	defer logger.Sync()
 
 	ctx := logger.WithLogger(context.Background())
+	log := logger.FromContext(ctx)
+
+	log.Info("Scoring started")
+
 	uCmd := toUserCmd(cmd, args)
 
 	if err := validateFlags(uCmd); err != nil {
@@ -199,15 +204,21 @@ func removeEmptyStrings(input []string) []string {
 // validatePaths returns the valid paths.
 func validatePaths(ctx context.Context, paths []string) []string {
 	log := logger.FromContext(ctx)
-	log.Debug("validating paths")
+	log.Debug("Validating paths")
+
 	var validPaths []string
 	for _, path := range paths {
 		if _, err := os.Stat(path); err != nil {
-			log.Debugf("skipping invalid path: %s, error: %v", path, err)
+			log.Warn("Skipping invalid path", zap.String("path", path), zap.Error(err))
 			continue
 		}
 		validPaths = append(validPaths, path)
 	}
+
+	log.Debug("Path validation completed",
+		zap.Int("valid", len(validPaths)),
+	)
+
 	return validPaths
 }
 

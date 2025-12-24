@@ -20,13 +20,13 @@ package profiles
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/interlynk-io/sbomqs/v2/pkg/logger"
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/api"
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/catalog"
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/formulae"
+	"go.uber.org/zap"
 )
 
 // Evaluate evaluates the profiles against an SBOM and returns their results.
@@ -34,14 +34,18 @@ import (
 // Returns collected profile results
 func Evaluate(ctx context.Context, catal *catalog.Catalog, doc sbom.Document) api.ProfilesResult {
 	log := logger.FromContext(ctx)
-	log.Debugf("Intializing Profiles Evaluation ")
+	log.Info("Starting profile evaluation",
+		zap.Int("profiles", len(catal.Profiles)),
+	)
 
 	results := api.NewProfResults()
 
 	for _, profile := range catal.Profiles {
 		if doc.Spec().GetSpecType() == string(sbom.SBOMSpecCDX) && profile.Key == "oct" {
-			fmt.Printf("Skipping evaluation of oct profile, as it doesn't support for cyclonedx\n")
-			log.Debugf("Skipping evaluation of oct profile, as it doesn't support for cyclonedx")
+			log.Warn("Skipping profile evaluation due to unsupported SBOM spec",
+				zap.String("profile", profile.Name),
+				zap.String("spec", doc.Spec().GetSpecType()),
+			)
 			continue
 		}
 
@@ -49,6 +53,9 @@ func Evaluate(ctx context.Context, catal *catalog.Catalog, doc sbom.Document) ap
 		results.ProfResult = append(results.ProfResult, profResult)
 	}
 
+	log.Info("Profile evaluation completed",
+		zap.Int("evaluated", len(results.ProfResult)),
+	)
 	return results
 }
 
@@ -58,7 +65,10 @@ func Evaluate(ctx context.Context, catal *catalog.Catalog, doc sbom.Document) ap
 // returns a completed ProfileResult (with metadata included).
 func evaluateEachProfile(ctx context.Context, doc sbom.Document, profile catalog.ProfSpec) api.ProfileResult {
 	log := logger.FromContext(ctx)
-	log.Debugf("evaluating profile one by one, processing profile: %s", profile.Name)
+	log.Debug("Evaluating profile",
+		zap.String("profile", profile.Name),
+		zap.Int("features", len(profile.Features)),
+	)
 
 	// if doc.Spec().GetSpecType() == string(sbom.SBOMSpecCDX) && profile.Key == "oct" {
 	// 	log.Debugf("Skipping evaluation of oct profile, as it doesn't support for cyclonedx")
@@ -103,5 +113,9 @@ func evaluateEachProfile(ctx context.Context, doc sbom.Document, profile catalog
 		proResult.Score = sumScore / float64(countNonNA)
 	}
 
+	log.Debug("Evaluating profile",
+		zap.String("profile", profile.Name),
+		zap.Int("features", len(profile.Features)),
+	)
 	return proResult
 }

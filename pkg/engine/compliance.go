@@ -18,7 +18,7 @@ package engine
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"os"
 
 	pkgcommon "github.com/interlynk-io/sbomqs/v2/pkg/common"
@@ -27,23 +27,35 @@ import (
 	"github.com/interlynk-io/sbomqs/v2/pkg/logger"
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
 	"github.com/spf13/afero"
+	"go.uber.org/zap"
 )
 
 func ComplianceRun(ctx context.Context, ep *Params) error {
 	log := logger.FromContext(ctx)
-	log.Debug("engine.ComplianceRun()")
+
+	log.Info("Starting compliance run",
+		zap.Strings("paths", ep.Path),
+	)
 
 	if len(ep.Path) == 0 {
-		log.Fatal("path is required")
+		log.Error("Compliance run failed: input path missing")
+		return errors.New("path is required")
 	}
 
-	log.Debugf("Config: %+v", ep)
+	log.Debug("Compliance configuration resolved",
+		zap.Bool("bsi", ep.Bsi),
+		zap.Bool("bsi_v2", ep.BsiV2),
+		zap.Bool("oct", ep.Oct),
+		zap.Bool("fsct", ep.Fsct),
+		zap.Bool("basic", ep.Basic),
+		zap.Bool("json", ep.JSON),
+		zap.Bool("color", ep.Color),
+	)
 
+	log.Debug("Loading SBOM document", zap.String("path", ep.Path[0]))
 	doc, err := getSbomDocument(ctx, ep)
 	if err != nil {
-		log.Debugf("getSbomDocument failed for file :%s\n", ep.Path[0])
-		fmt.Printf("failed to get sbom document for %s\n", ep.Path[0])
-		return err
+		log.Error("Failed to load SBOM document", zap.String("path", ep.Path[0]), zap.Error(err))
 	}
 
 	var reportType string
@@ -61,6 +73,8 @@ func ComplianceRun(ctx context.Context, ep *Params) error {
 		reportType = "NTIA"
 	}
 
+	log.Debug("Compliance report type selected", zap.String("report_type", reportType))
+
 	var outFormat string
 
 	switch {
@@ -74,27 +88,44 @@ func ComplianceRun(ctx context.Context, ep *Params) error {
 
 	coloredOutput := ep.Color
 
+	log.Debug("Output format selected", zap.String("format", outFormat), zap.Bool("colored", coloredOutput))
+
 	err = compliance.ComplianceResult(ctx, *doc, reportType, ep.Path[0], outFormat, coloredOutput)
 	if err != nil {
-		log.Debugf("compliance.ComplianceResult failed for file :%s\n", ep.Path[0])
-		fmt.Printf("failed to get compliance result for %s\n", ep.Path[0])
+		log.Error("Compliance check failed",
+			zap.String("path", ep.Path[0]),
+			zap.String("report_type", reportType),
+			zap.Error(err),
+		)
 		return err
 	}
 
-	log.Debugf("Compliance Report: %s\n", ep.Path[0])
+	log.Info("Compliance report generated successfully",
+		zap.String("path", ep.Path[0]),
+		zap.String("report_type", reportType),
+		zap.String("format", outFormat),
+	)
 	return nil
 }
 
 func getSbomDocument(ctx context.Context, ep *Params) (*sbom.Document, error) {
 	log := logger.FromContext(ctx)
-	log.Debugf("engine.getSbomDocument()")
+	log.Debug("Resolving SBOM document",
+		zap.String("path", ep.Path[0]),
+	)
 
 	path := ep.Path[0]
 
+	log.Debug("Fetching signature bundle",
+		zap.String("path", path),
+	)
+
 	_, signature, publicKey, err := common.GetSignatureBundle(ctx, path, "", "")
 	if err != nil {
-		log.Debugf("common.GetSignatureBundle failed for file :%s\n", path)
-		fmt.Printf("failed to get signature bundle for %s\n", path)
+		log.Error("Failed to fetch signature bundle",
+			zap.String("path", path),
+			zap.Error(err),
+		)
 		return nil, err
 	}
 
@@ -104,16 +135,23 @@ func getSbomDocument(ctx context.Context, ep *Params) (*sbom.Document, error) {
 	}
 	var doc sbom.Document
 
+	log.Debug("SBOM source resolved",
+		zap.String("path", path),
+		zap.Bool("is_url", IsURL(path)),
+	)
+
 	if IsURL(path) {
-		log.Debugf("Processing Git URL path :%s\n", path)
+		log.Info("Processing SBOM from URL", zap.String("url", path))
 		url, sbomFilePath := path, path
 		var err error
 
 		if IsGit(url) {
+			log.Debug("Detected Git-based SBOM URL", zap.String("url", path))
 			sbomFilePath, url, err = handleURL(path)
 			if err != nil {
-				log.Fatal("failed to get sbomFilePath, rawURL: %w", err)
+				log.Error("Failed to resolve SBOM URL", zap.String("url", path), zap.Error(err))
 			}
+			return nil, err
 		}
 		fs := afero.NewMemMapFs()
 
@@ -127,35 +165,37 @@ func getSbomDocument(ctx context.Context, ep *Params) (*sbom.Document, error) {
 			return nil, err
 		}
 
+		log.Debug("Parsing SBOM document", zap.String("path", path))
 		doc, err = sbom.NewSBOMDocument(ctx, f, sig)
 		if err != nil {
-			log.Fatalf("failed to parse SBOM document: %w", err)
-		}
-	} else {
-		if _, err := os.Stat(path); err != nil {
-			log.Debugf("os.Stat failed for file :%s\n", path)
-			fmt.Printf("failed to stat %s\n", path)
+			log.Error("Failed to parse SBOM document", zap.String("path", path), zap.Error(err))
 			return nil, err
 		}
 
+	} else {
+		log.Debug("Validating SBOM file path", zap.String("path", path))
+		if _, err := os.Stat(path); err != nil {
+			log.Error("SBOM file not accessible", zap.String("path", path), zap.Error(err))
+			return nil, err
+		}
+
+		log.Debug("Opening SBOM file", zap.String("path", path))
 		// #nosec G304 -- User-provided paths are expected for CLI tool
 		f, err := os.Open(path)
 		if err != nil {
-			log.Debugf("os.Open failed for file :%s\n", path)
-			fmt.Printf("failed to open %s\n", path)
+			log.Error("Failed to open SBOM file", zap.String("path", path), zap.Error(err))
 			return nil, err
 		}
 		defer func() {
 			if err := f.Close(); err != nil {
-				log.Warnf("failed to close file: %v", err)
+				log.Warn("failed to close file", zap.Error(err))
 			}
 		}()
 
+		log.Debug("Parsing SBOM document", zap.String("path", path))
 		doc, err = sbom.NewSBOMDocument(ctx, f, sig)
 		if err != nil {
-			log.Debugf("failed to create sbom document for  :%s\n", path)
-			log.Debugf("%s\n", err)
-			fmt.Printf("failed to parse %s : %s\n", path, err)
+			log.Error("Failed to parse SBOM document", zap.String("path", path), zap.Error(err))
 			return nil, err
 		}
 	}

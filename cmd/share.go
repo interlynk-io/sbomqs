@@ -46,11 +46,11 @@ For more information, please visit https://sbombenchmark.dev
 
 	RunE: func(cmd *cobra.Command, args []string) error {
 		debug, _ := cmd.Flags().GetBool("debug")
-		if debug {
-			logger.InitDebugLogger()
-		} else {
-			logger.InitProdLogger()
-		}
+
+		// Initialize logger once
+		logger.Init(debug)
+		defer logger.DeinitLogger()
+		defer logger.Sync()
 
 		ctx := logger.WithLogger(context.Background())
 		sbomFileName := args[0]

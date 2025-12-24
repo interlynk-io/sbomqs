@@ -22,6 +22,7 @@ import (
 
 	"github.com/interlynk-io/sbomqs/v2/pkg/logger"
 	"github.com/interlynk-io/sbomqs/v2/pkg/utils"
+	"go.uber.org/zap"
 )
 
 // validateAndExpandPaths returns a list of files and URLs.
@@ -29,7 +30,9 @@ import (
 // - Directories are expanded to their immediate files (non-recursive).
 func validateAndExpandPaths(ctx context.Context, paths []string) []string {
 	log := logger.FromContext(ctx)
-	log.Debug("validating paths")
+	log.Debug("Validating and expanding input paths",
+		zap.Int("input", len(paths)),
+	)
 
 	validPaths := make([]string, 0, len(paths))
 	alreadyExist := utils.Set[string]{}
@@ -48,7 +51,10 @@ func validateAndExpandPaths(ctx context.Context, paths []string) []string {
 		// accept existing local files/dirs
 		info, err := os.Stat(path)
 		if err != nil {
-			log.Debugf("skip: cannot stat %q: %v", path, err)
+			log.Debug("Skipping path: cannot stat",
+				zap.String("path", path),
+				zap.Error(err),
+			)
 			continue
 		}
 
@@ -63,7 +69,10 @@ func validateAndExpandPaths(ctx context.Context, paths []string) []string {
 			// expand only one level (intentional).
 			files, err := os.ReadDir(path)
 			if err != nil {
-				log.Debugf("skip: cannot read dir %q: %v", path, err)
+				log.Debug("Skipping directory: cannot read",
+					zap.String("path", path),
+					zap.Error(err),
+				)
 				continue
 			}
 
@@ -73,12 +82,18 @@ func validateAndExpandPaths(ctx context.Context, paths []string) []string {
 				}
 			}
 		default:
-			log.Debugf("skip: unsupported path type %q", path)
+			log.Debug("Skipping unsupported path type",
+				zap.String("path", path),
+			)
 		}
 	}
 
 	// optional: ensure deterministic order (helps tests & diffs)
 	sort.Strings(validPaths)
+
+	log.Debug("Path validation completed",
+		zap.Int("valid", len(validPaths)),
+	)
 	return validPaths
 }
 
