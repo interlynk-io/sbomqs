@@ -28,7 +28,7 @@ import (
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/api"
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/catalog"
-	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/comprehenssive"
+	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/compr"
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/config"
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/profiles"
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/registry"
@@ -240,7 +240,7 @@ func evaluateComprehensive(ctx context.Context, catal *catalog.Catalog, doc sbom
 
 	result := api.NewResult(doc)
 
-	comprResult := comprehenssive.Evaluate(ctx, catal, doc)
+	comprResult := compr.Evaluate(ctx, catal, doc)
 	result.Comprehensive = &comprResult
 
 	return *result, nil
@@ -256,7 +256,7 @@ func evaluateBoth(ctx context.Context, catal *catalog.Catalog, doc sbom.Document
 	profResults := profiles.Evaluate(ctx, catal, doc)
 	result.Profiles = &profResults
 
-	comprResult := comprehenssive.Evaluate(ctx, catal, doc)
+	comprResult := compr.Evaluate(ctx, catal, doc)
 	result.Comprehensive = &comprResult
 
 	return *result, nil
