@@ -18,8 +18,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"log"
-	"regexp"
 	"strings"
 	"unicode"
 
@@ -27,6 +25,7 @@ import (
 	"github.com/interlynk-io/sbomqs/v2/pkg/licenses"
 	"github.com/interlynk-io/sbomqs/v2/pkg/logger"
 	"github.com/interlynk-io/sbomqs/v2/pkg/purl"
+	"github.com/interlynk-io/sbomqs/v2/pkg/sbom/internal/parser"
 	"github.com/samber/lo"
 	spdx_json "github.com/spdx/tools-golang/json"
 	spdx_rdf "github.com/spdx/tools-golang/rdf"
@@ -38,22 +37,22 @@ import (
 
 var (
 	spdxFileFormats    = []string{"json", "yaml", "rdf", "tag-value"}
-	spdxSpecVersions   = []string{"SPDX-2.1", "SPDX-2.2", "SPDX-2.3"}
+	spdxSpecVersions   = []string{"SPDX-2.1", "SPDX-2.2", "SPDX-2.3", "SPDX-3.0", "SPDX-3.0.1"}
 	spdxPrimaryPurpose = []string{"application", "framework", "library", "container", "operating-system", "device", "firmware", "source", "archive", "file", "install", "other"}
 )
 
+// SpdxDoc represents an SPDX document with its parsed components
 type SpdxDoc struct {
 	doc              *spdx.Document
 	format           FileFormat
 	version          FormatVersion
-	ctx              context.Context
+	config           *parser.Config
 	SpdxSpec         *Specs
 	spdxValidSchema  bool
 	Comps            []GetComponent
 	Auths            []GetAuthor
 	SpdxTools        []GetTool
 	Rels             []GetRelation
-	logs             []string
 	PrimaryComponent PrimaryComp
 	Lifecycle        string
 	Dependencies     map[string][]string
@@ -61,13 +60,35 @@ type SpdxDoc struct {
 	Vuln             []GetVulnerabilities
 }
 
+// SPDXOption is a functional option for SPDX document creation
+type SPDXOption parser.Option
+
 func newSPDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat, version FormatVersion, _ Signature) (Document, error) {
-	_ = logger.FromContext(ctx)
+	// Default options with context
+	opts := []SPDXOption{parser.WithContext(ctx)}
+	return newSPDXDocWithOptions(f, format, version, opts...)
+}
+
+// newSPDXDocWithOptions creates a new SPDX document with functional options
+func newSPDXDocWithOptions(f io.ReadSeeker, format FileFormat, version FormatVersion, opts ...SPDXOption) (Document, error) {
+	// Apply options
+	config := parser.DefaultConfig()
+	for _, opt := range opts {
+		opt.Apply(config)
+	}
+	
+	_ = logger.FromContext(config.Context)
 	var err error
+
+	// Check if this is SPDX 3.x - use new parser
+	versionStr := string(version)
+	if strings.HasPrefix(versionStr, "SPDX-3.") {
+		return newSPDX3Doc(config.Context, f, format, version)
+	}
 
 	_, err = f.Seek(0, io.SeekStart)
 	if err != nil {
-		log.Printf("Failed to seek: %v", err)
+		return nil, fmt.Errorf("failed to seek: %w", err)
 	}
 
 	var d *spdx.Document
@@ -86,20 +107,20 @@ func newSPDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat, version
 	}
 
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to parse SPDX document: %w", err)
 	}
 
 	doc := &SpdxDoc{
 		doc:             d,
 		format:          format,
-		ctx:             ctx,
+		config:          config,
 		version:         version,
-		spdxValidSchema: true,
+		spdxValidSchema: !config.SkipValidation,
 	}
 
 	doc.parse()
 
-	return doc, err
+	return doc, nil
 }
 
 func (s SpdxDoc) PrimaryComp() GetPrimaryComp {
@@ -127,7 +148,7 @@ func (s SpdxDoc) Relations() []GetRelation {
 }
 
 func (s SpdxDoc) Logs() []string {
-	return s.logs
+	return nil
 }
 
 func (s SpdxDoc) Lifecycles() []string {
@@ -146,10 +167,6 @@ func (s SpdxDoc) GetRelationships(componentID string) []string {
 	return s.Dependencies[componentID]
 }
 
-// Helper function to clean up keys
-func CleanKey(key string) string {
-	return strings.Trim(key, `"`)
-}
 
 func (s SpdxDoc) GetComposition(componentID string) string {
 	return s.composition[componentID]
@@ -178,12 +195,16 @@ func (s *SpdxDoc) parse() {
 }
 
 func (s *SpdxDoc) parseDoc() {
+	log := logger.FromContext(s.config.Context)
+
 	if s.doc == nil {
-		s.addToLogs("cdx doc is not parsable")
+		log.Debug("spdx doc is not parsable")
 		return
 	}
-	if comment := s.doc.CreationInfo.CreatorComment; comment != "" {
-		s.Lifecycle = comment
+	if s.doc.CreationInfo != nil {
+		if comment := s.doc.CreationInfo.CreatorComment; comment != "" {
+			s.Lifecycle = comment
+		}
 	}
 }
 
@@ -328,10 +349,10 @@ func (s *SpdxDoc) parseAuthors() {
 		}
 		a := Author{}
 
-		entity := parseEntity(fmt.Sprintf("%s: %s", c.CreatorType, c.Creator))
+		entity := parser.ParseEntity(fmt.Sprintf("%s: %s", c.CreatorType, c.Creator))
 		if entity != nil {
-			a.Name = entity.name
-			a.Email = entity.email
+			a.Name = entity.Name
+			a.Email = entity.Email
 			a.AuthorType = ctType
 			s.Auths = append(s.Auths, a)
 		}
@@ -356,7 +377,7 @@ func getComponentDependencies(s *SpdxDoc, componentID string) (bool, int, []stri
 				continue
 			}
 
-			if CleanKey(string(aBytes)) == newID {
+			if parser.CleanKey(string(aBytes)) == newID {
 				deps = append(deps, string(bBytes))
 				count++
 			}
@@ -380,7 +401,7 @@ func (s *SpdxDoc) parsePrimaryCompAndRelationships() {
 			if err != nil {
 				continue
 			}
-			primaryComponent = CleanKey(string(bBytes))
+			primaryComponent = parser.CleanKey(string(bBytes))
 			s.PrimaryComponent.ID = primaryComponent
 			s.PrimaryComponent.Present = true
 			modified := strings.TrimPrefix(primaryComponent, "SPDXRef-")
@@ -404,14 +425,14 @@ func (s *SpdxDoc) parsePrimaryCompAndRelationships() {
 			if err != nil {
 				continue
 			}
-			if CleanKey(string(aBytes)) == s.PrimaryComponent.ID {
+			if parser.CleanKey(string(aBytes)) == s.PrimaryComponent.ID {
 				totalDependencies++
 				s.PrimaryComponent.HasDependency = true
-				s.PrimaryComponent.AllDependencies = append(s.PrimaryComponent.AllDependencies, CleanKey(string(bBytes)))
-				s.Dependencies[CleanKey(string(aBytes))] = append(s.Dependencies[CleanKey(string(aBytes))], CleanKey(string(bBytes)))
+				s.PrimaryComponent.AllDependencies = append(s.PrimaryComponent.AllDependencies, parser.CleanKey(string(bBytes)))
+				s.Dependencies[parser.CleanKey(string(aBytes))] = append(s.Dependencies[parser.CleanKey(string(aBytes))], parser.CleanKey(string(bBytes)))
 
 			} else {
-				s.Dependencies[CleanKey(string(aBytes))] = append(s.Dependencies[CleanKey(string(aBytes))], CleanKey(string(bBytes)))
+				s.Dependencies[parser.CleanKey(string(aBytes))] = append(s.Dependencies[parser.CleanKey(string(aBytes))], parser.CleanKey(string(bBytes)))
 			}
 		}
 	}
@@ -467,95 +488,105 @@ func (s *SpdxDoc) parseTool() {
 	}
 }
 
-func (s *SpdxDoc) addToLogs(log string) {
-	s.logs = append(s.logs, log)
-}
 
 func (s *SpdxDoc) requiredFields() bool {
+	log := logger.FromContext(s.config.Context)
+
 	if s.doc == nil {
-		s.addToLogs("spdx doc is not parsable")
+		log.Debug("spdx doc is not parsable")
 		return false
 	}
+
+	hasRequiredFields := true
+
 	// Creation info is a required section
 	if s.doc.CreationInfo == nil {
-		s.addToLogs("spdx doc is missing creation info")
-		return false
+		log.Debug("spdx doc is missing creation info")
+		hasRequiredFields = false
+	} else {
+		// Identify who (or what, in the case of a tool) created the SPDX document.
+		if len(s.doc.CreationInfo.Creators) == 0 {
+			log.Debug("spdx doc is missing creators")
+			hasRequiredFields = false
+		}
+
+		// Identify when the SPDX document was originally created.
+		if s.doc.CreationInfo.Created == "" {
+			log.Debug("spdx doc is missing created timestamp")
+			hasRequiredFields = false
+		}
 	}
 
 	// SPDXVersion is required
 	if s.doc.SPDXVersion == "" {
-		s.addToLogs("spdx doc is missing SPDXVersion")
-		return false
+		log.Debug("spdx doc is missing SPDXVersion")
+		hasRequiredFields = false
 	}
 
 	// data license is required
 	if s.doc.DataLicense == "" {
-		s.addToLogs("spdx doc is missing Datalicense")
-		return false
+		log.Debug("spdx doc is missing DataLicense")
+		hasRequiredFields = false
 	}
+
 	// Identify the current SPDX document which may be referenced in relationships
 	// by other files, packages internally and documents externally
 	if s.doc.SPDXIdentifier == "" {
-		s.addToLogs("spdx doc is missing SPDXIdentifier")
-		return false
+		log.Debug("spdx doc is missing SPDXIdentifier")
+		hasRequiredFields = false
 	}
+
 	// Identify name of this document as designated by creator
 	if s.doc.DocumentName == "" {
-		s.addToLogs("spdx doc is missing DocumentName")
-		return false
+		log.Debug("spdx doc is missing DocumentName")
+		hasRequiredFields = false
 	}
 
 	// The URI provides an unambiguous mechanism for other SPDX documents to reference SPDX elements within this SPDX document
 	if s.doc.DocumentNamespace == "" {
-		s.addToLogs("spdx doc is missing Document Namespace")
-		return false
+		log.Debug("spdx doc is missing Document Namespace")
+		hasRequiredFields = false
 	}
 
-	// Identify who (or what, in the case of a tool) created the SPDX document.
-	if len(s.doc.CreationInfo.Creators) == 0 {
-		s.addToLogs("spdx doc is missing creators")
-		return false
-	}
-
-	// Identify when the SPDX document was originally created.
-	if s.doc.CreationInfo.Created == "" {
-		s.addToLogs("spdx doc is missing created timestamp")
-		return false
-	}
-	return true
+	return hasRequiredFields
 }
 
 func (s *SpdxDoc) pkgRequiredFields(index int) bool {
+	log := logger.FromContext(s.config.Context)
+
 	pkg := s.doc.Packages[index]
+	hasRequiredFields := true
 
 	if pkg.PackageName == "" {
-		s.addToLogs(fmt.Sprintf("spdx doc pkg %s at index %d missing name", pkg.PackageSPDXIdentifier, index))
-		return false
+		log.Debugf("spdx doc pkg %s at index %d missing name", pkg.PackageSPDXIdentifier, index)
+		hasRequiredFields = false
 	}
 
 	if pkg.PackageSPDXIdentifier == "" {
-		s.addToLogs(fmt.Sprintf("spdx doc pkg %s at index %d missing identifier", pkg.PackageName, index))
-		return false
+		log.Debugf("spdx doc pkg %s at index %d missing identifier", pkg.PackageName, index)
+		hasRequiredFields = false
 	}
 
 	// What is the correct behaviour for NONE and NOASSERTION?
 	if pkg.PackageDownloadLocation == "" {
-		s.addToLogs(fmt.Sprintf("spdx doc pkg %s at index %d missing downloadLocation", pkg.PackageName, index))
-		return false
+		log.Debugf("spdx doc pkg %s at index %d missing downloadLocation", pkg.PackageName, index)
+		hasRequiredFields = false
 	}
 
 	if pkg.FilesAnalyzed && pkg.PackageVerificationCode == nil {
-		s.addToLogs(fmt.Sprintf("spdx doc pkg %s at index %d missing packageVerificationCode", pkg.PackageName, index))
-		return false
+		log.Debugf("spdx doc pkg %s at index %d missing packageVerificationCode", pkg.PackageName, index)
+		hasRequiredFields = false
 	}
-	return true
+	return hasRequiredFields
 }
 
 func (s *SpdxDoc) purls(index int) []purl.PURL {
+	log := logger.FromContext(s.config.Context)
+
 	pkg := s.doc.Packages[index]
 
 	if len(pkg.PackageExternalReferences) == 0 {
-		s.addToLogs(fmt.Sprintf("spdx doc pkg %s at index %d no purls found", pkg.PackageName, index))
+		log.Debugf("spdx doc pkg %s at index %d no purls found", pkg.PackageName, index)
 		return []purl.PURL{}
 	}
 
@@ -566,22 +597,24 @@ func (s *SpdxDoc) purls(index int) []purl.PURL {
 			if prl.Valid() {
 				urls = append(urls, prl)
 			} else {
-				s.addToLogs(fmt.Sprintf("spdx doc pkg %s at index %d invalid purl found", pkg.PackageName, index))
+				log.Debugf("spdx doc pkg %s at index %d invalid purl found", pkg.PackageName, index)
 			}
 		}
 	}
 
 	if len(urls) == 0 {
-		s.addToLogs(fmt.Sprintf("spdx doc pkg %s at index %d no purls found", pkg.PackageName, index))
+		log.Debugf("spdx doc pkg %s at index %d no purls found", pkg.PackageName, index)
 	}
 
 	return urls
 }
 
 func (s *SpdxDoc) cpes(index int) []cpe.CPE {
+	log := logger.FromContext(s.config.Context)
+
 	pkg := s.doc.Packages[index]
 	if len(pkg.PackageExternalReferences) == 0 {
-		s.addToLogs(fmt.Sprintf("spdx doc pkg %s at index %d no cpes found", pkg.PackageName, index))
+		log.Debugf("spdx doc pkg %s at index %d no cpes found", pkg.PackageName, index)
 		return []cpe.CPE{}
 	}
 
@@ -592,22 +625,24 @@ func (s *SpdxDoc) cpes(index int) []cpe.CPE {
 			if cpeV.Valid() {
 				urls = append(urls, cpeV)
 			} else {
-				s.addToLogs(fmt.Sprintf("spdx doc pkg %s at index %d invalid cpes found", pkg.PackageName, index))
+				log.Debugf("spdx doc pkg %s at index %d invalid cpes found", pkg.PackageName, index)
 			}
 		}
 	}
 	if len(urls) == 0 {
-		s.addToLogs(fmt.Sprintf("spdx doc pkg %s at index %d no cpes found", pkg.PackageName, index))
+		log.Debugf("spdx doc pkg %s at index %d no cpes found", pkg.PackageName, index)
 	}
 
 	return urls
 }
 
 func (s *SpdxDoc) checksums(index int) []GetChecksum {
+	log := logger.FromContext(s.config.Context)
+
 	pkg := s.doc.Packages[index]
 
 	if len(pkg.PackageChecksums) == 0 {
-		s.addToLogs(fmt.Sprintf("spdx doc pkg %s at index %d no checksum found", pkg.PackageName, index))
+		log.Debugf("spdx doc pkg %s at index %d no checksum found", pkg.PackageName, index)
 		return []GetChecksum{}
 	}
 
@@ -623,10 +658,12 @@ func (s *SpdxDoc) checksums(index int) []GetChecksum {
 }
 
 func (s *SpdxDoc) externalRefs(index int) []GetExternalReference {
+	log := logger.FromContext(s.config.Context)
+
 	pkg := s.doc.Packages[index]
 
 	if len(pkg.PackageExternalReferences) == 0 {
-		s.addToLogs(fmt.Sprintf("spdx doc pkg %s at index %d no externalReferences found", pkg.PackageName, index))
+		log.Debugf("spdx doc pkg %s at index %d no externalReferences found", pkg.PackageName, index)
 		return []GetExternalReference{}
 	}
 
@@ -721,14 +758,14 @@ func (s *SpdxDoc) getManufacturer(index int) *Manufacturer {
 		return nil
 	}
 
-	entity := parseEntity(fmt.Sprintf("%s: %s", pkg.PackageOriginator.OriginatorType, pkg.PackageOriginator.Originator))
+	entity := parser.ParseEntity(fmt.Sprintf("%s: %s", pkg.PackageOriginator.OriginatorType, pkg.PackageOriginator.Originator))
 	if entity == nil {
 		return nil
 	}
 
 	return &Manufacturer{
-		Name:  entity.name,
-		Email: entity.email,
+		Name:  entity.Name,
+		Email: entity.Email,
 	}
 }
 
@@ -742,13 +779,13 @@ func (s *SpdxDoc) getAuthor(index int) []GetAuthor {
 		return nil
 	}
 
-	entity := parseEntity(fmt.Sprintf("%s: %s", pkg.PackageOriginator.OriginatorType, pkg.PackageOriginator.Originator))
+	entity := parser.ParseEntity(fmt.Sprintf("%s: %s", pkg.PackageOriginator.OriginatorType, pkg.PackageOriginator.Originator))
 	if entity == nil {
 		return nil
 	}
 
-	a.Name = entity.name
-	a.Email = entity.email
+	a.Name = entity.Name
+	a.Email = entity.Email
 
 	authors = append(authors, a)
 	return authors
@@ -763,46 +800,14 @@ func (s *SpdxDoc) getSupplier(index int) *Supplier {
 		return nil
 	}
 
-	entity := parseEntity(fmt.Sprintf("%s: %s", pkg.PackageSupplier.SupplierType, pkg.PackageSupplier.Supplier))
+	entity := parser.ParseEntity(fmt.Sprintf("%s: %s", pkg.PackageSupplier.SupplierType, pkg.PackageSupplier.Supplier))
 	if entity == nil {
 		return nil
 	}
 
 	return &Supplier{
-		Name:  entity.name,
-		Email: entity.email,
+		Name:  entity.Name,
+		Email: entity.Email,
 	}
 }
 
-type entity struct {
-	name  string
-	email string
-}
-
-func parseEntity(in string) *entity {
-	if strings.HasPrefix(in, ":") {
-		in = strings.TrimSpace(strings.TrimLeft(in, ":"))
-	}
-
-	if strings.ToUpper(in) == "NOASSERTION" || strings.ToUpper(in) == "NONE" {
-		return &entity{name: in}
-	}
-
-	// Regex pattern to match organization or person and email
-	pattern := `(Organization|Person)\s*:\s*([^(]+)\s*(?:\(\s*([^)]+)\s*\))?`
-	regex := regexp.MustCompile(pattern)
-	match := regex.FindStringSubmatch(in)
-
-	if len(match) == 0 {
-		return nil
-	}
-
-	name := strings.TrimSpace(match[2])
-	var email string
-	if len(match) > 3 {
-		email = strings.TrimSpace(match[3])
-	}
-
-	entity := &entity{name: name, email: email}
-	return entity
-}
