@@ -18,6 +18,7 @@ package licenses
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/github/go-spdx/v2/spdxexp"
@@ -165,9 +166,26 @@ func LookupExpression(expression string, customLicenses []License) []License {
 		return []License{}
 	}
 
-	extLicenses, err := spdxexp.ExtractLicenses(expression)
-	if err != nil {
-		return []License{CreateCustomLicense(expression, expression)}
+	fmt.Println("-5. expression: ", expression)
+	var extLicenses []string
+	var err error
+
+	// --- IMPORTANT FIX ---
+	// SPDX expression parser treats '+' as a grammatical operator.
+	// Deprecated SPDX IDs ending with '+' (e.g. LGPL-2.0+) get normalized
+	// and lose their original deprecated form.
+	if lickk, ok := licenseList[expression]; ok &&
+		lickk.deprecated && strings.HasSuffix(lickk.ShortID(), "+") {
+
+		// Preserve deprecated '+' license exactly as authored
+		extLicenses = []string{lickk.ShortID()}
+
+	} else {
+		// Normal path: semantic parsing
+		extLicenses, err = spdxexp.ExtractLicenses(expression)
+		if err != nil {
+			return []License{CreateCustomLicense(expression, expression)}
+		}
 	}
 
 	licenses := []License{}
