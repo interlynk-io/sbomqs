@@ -18,7 +18,6 @@ package logger
 
 import (
 	"context"
-	"log"
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -51,7 +50,7 @@ func Init(debug bool) {
 			EncodeLevel:  zapcore.CapitalColorLevelEncoder,
 			EncodeCaller: zapcore.ShortCallerEncoder,
 		},
-		OutputPaths:      []string{"stderr"},
+		OutputPaths:      []string{"stdout"},
 		ErrorOutputPaths: []string{"stderr"},
 	}
 
@@ -61,13 +60,6 @@ func Init(debug bool) {
 	}
 
 	logger = l
-}
-
-func DeinitLogger() {
-	if logger != nil {
-		_ = logger.Sync()
-		logger = nil
-	}
 }
 
 // WithLogger attaches logger to context.
@@ -86,8 +78,6 @@ func FromContext(ctx context.Context) *zap.Logger {
 // Sync flushes buffered logs.
 func Sync() {
 	if logger != nil {
-		if err := logger.Sync(); err != nil {
-			log.Printf("logger sync failed: %v", err)
-		}
+		_ = logger.Sync()
 	}
 }

@@ -49,7 +49,6 @@ For more information, please visit https://sbombenchmark.dev
 
 		// Initialize logger once
 		logger.Init(debug)
-		defer logger.DeinitLogger()
 		defer logger.Sync()
 
 		ctx := logger.WithLogger(context.Background())

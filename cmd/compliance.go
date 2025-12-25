@@ -66,7 +66,6 @@ BSI TR-03183-2, Framing Software Component Transparency (v3) and OpenChain Telco
 
 		// Initialize logger once
 		logger.Init(debug)
-		defer logger.DeinitLogger()
 		defer logger.Sync()
 
 		ctx := logger.WithLogger(context.Background())

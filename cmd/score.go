@@ -146,7 +146,6 @@ func processScore(cmd *cobra.Command, args []string) error {
 
 	// Initialize logger once
 	logger.Init(debug)
-	defer logger.DeinitLogger()
 	defer logger.Sync()
 
 	ctx := logger.WithLogger(context.Background())
