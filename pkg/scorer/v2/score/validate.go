@@ -71,7 +71,7 @@ func validateAndExpandPaths(ctx context.Context, paths []string, recursive bool)
 				// recursive walk into sub-dir
 				err := filepath.WalkDir(path, func(p string, d os.DirEntry, err error) error {
 					if err != nil {
-						log.Debugf("skip: cannot access %q: %v", p, err)
+						log.Debug("skip: cannot access", zap.String("path", p), zap.Error(err))
 						return nil
 					}
 
@@ -82,7 +82,7 @@ func validateAndExpandPaths(ctx context.Context, paths []string, recursive bool)
 					return nil
 				})
 				if err != nil {
-					log.Debugf("skip: cannot walk dir %q: %v", path, err)
+					log.Debug("skip: cannot access", zap.String("path", path), zap.Error(err))
 				}
 				continue
 			}
