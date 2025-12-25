@@ -18,7 +18,6 @@ package licenses
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 
 	"github.com/github/go-spdx/v2/spdxexp"
@@ -166,7 +165,6 @@ func LookupExpression(expression string, customLicenses []License) []License {
 		return []License{}
 	}
 
-	fmt.Println("-5. expression: ", expression)
 	var extLicenses []string
 	var err error
 
