@@ -32,7 +32,7 @@ func Evaluate(ctx context.Context, catal *catalog.Catalog, doc sbom.Document) ap
 	log := logger.FromContext(ctx)
 
 	log.Info("Starting comprehensive SBOM evaluation",
-		zap.Int("categories", len(catal.ComprCategories)),
+		zap.Int("total_categories", len(catal.ComprCategories)),
 	)
 
 	results := api.NewComprResult()

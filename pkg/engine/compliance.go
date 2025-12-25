@@ -47,6 +47,7 @@ func ComplianceRun(ctx context.Context, ep *Params) error {
 		zap.Bool("bsi_v2", ep.BsiV2),
 		zap.Bool("oct", ep.Oct),
 		zap.Bool("fsct", ep.Fsct),
+		zap.Bool("ntia", ep.Ntia),
 		zap.Bool("basic", ep.Basic),
 		zap.Bool("json", ep.JSON),
 		zap.Bool("color", ep.Color),
@@ -100,7 +101,7 @@ func ComplianceRun(ctx context.Context, ep *Params) error {
 		return err
 	}
 
-	log.Info("Compliance report generated successfully",
+	log.Info("Compliance report generated",
 		zap.String("path", ep.Path[0]),
 		zap.String("report_type", reportType),
 		zap.String("format", outFormat),

@@ -89,7 +89,15 @@ var policyCmd = &cobra.Command{
 		cfg.inputPath = args[0]
 
 		log := logger.FromContext(ctx)
-		log.Debug("Parsed policy command", zap.Any("path", cfg))
+		log.Debug("Parsed policy command",
+			zap.String("path", cfg.inputPath),
+			zap.String("output", cfg.outputFmt),
+			zap.String("policy_action", cfg.policyAction),
+			zap.String("policy_file", cfg.policyFile),
+			zap.String("policy_name", cfg.policyName),
+			zap.String("policy_type", cfg.policyType),
+			zap.Strings("policy_rules", cfg.policyRules),
+		)
 
 		// Load policies
 		var policies []policy.Policy
@@ -103,17 +111,22 @@ var policyCmd = &cobra.Command{
 				return fmt.Errorf("failed to load policy file %s: %w", cfg.policyFile, err)
 			}
 		} else {
-			log.Debug("loading policy from inline commands")
+			log.Debug("Loading policy from inline user input",
+				zap.String("policy_name", cfg.policyName),
+				zap.String("policy_type", cfg.policyType),
+				zap.String("policy_action", cfg.policyAction),
+				zap.Strings("policy_rules", cfg.policyRules),
+			)
 
 			p, err := policy.BuildPolicyFromCLI(cfg.policyName, cfg.policyType, cfg.policyAction, cfg.policyRules)
 			if err != nil {
-				return fmt.Errorf("failed to build policy from CLI: %w", err)
+				return fmt.Errorf("Failed to build policy from CLI: %w", err)
 			}
 			policies = []policy.Policy{p}
 		}
 
 		policyConfig := convertPolicyCmdToEngineParams(cfg)
-		log.Debug("policies", zap.Int("total", len(policies)))
+		log.Debug("Total policies", zap.Int("count", len(policies)))
 
 		// proceed with policy engine
 		if err := policy.Engine(ctx, policyConfig, policies); err != nil {

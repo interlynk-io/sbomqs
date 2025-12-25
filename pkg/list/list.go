@@ -61,7 +61,7 @@ func ComponentsListResult(ctx context.Context, ep *Params) (*Result, error) {
 	}
 
 	if len(results) > 0 {
-		log.Info("SBOM list operation completed successfully",
+		log.Info("SBOM list operation completed",
 			zap.Int("result_count", len(results)),
 		)
 		return results[0], nil
@@ -237,7 +237,7 @@ func parseSBOMDocument(ctx context.Context, filePath string) (sbom.Document, err
 		return nil, fmt.Errorf("failed to create SBOM document for %s: %w", filePath, err)
 	}
 
-	log.Debug("SBOM document parsed successfully",
+	log.Debug("SBOM document parsed",
 		zap.String("file", filePath),
 	)
 	return currentDoc, nil

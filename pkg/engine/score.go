@@ -90,7 +90,9 @@ func Run(ctx context.Context, ep *Params) error {
 	}
 
 	if ep.Legacy {
-		log.Info("Using legacy scoring engine")
+		log.Info("Using legacy scoring engine",
+			zap.Bool("legacy", ep.Legacy),
+		)
 		return handlePaths(ctx, ep)
 	}
 

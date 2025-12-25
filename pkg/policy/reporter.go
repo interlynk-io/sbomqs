@@ -45,7 +45,7 @@ func ReportJSON(ctx context.Context, results []PolicyResult) error {
 		return fmt.Errorf("encode results to json: %w", err)
 	}
 
-	log.Info("JSON policy report written successfully")
+	log.Info("JSON policy report written")
 	return nil
 }
 
@@ -79,7 +79,7 @@ func ReportBasic(ctx context.Context, results []PolicyResult) error {
 	}
 	summary.Render() // prints the table
 
-	log.Info("Basic policy report written successfully")
+	log.Info("Basic policy report written")
 	return nil
 }
 
@@ -199,7 +199,7 @@ func ReportTable(ctx context.Context, results []PolicyResult) error {
 	}
 	sum.Render()
 
-	log.Info("Table policy report written successfully")
+	log.Info("Table policy report written")
 	return nil
 }
 

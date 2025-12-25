@@ -28,8 +28,8 @@ import (
 func Engine(ctx context.Context, policyConfig *Params, policies []Policy) error {
 	log := logger.FromContext(ctx)
 	log.Info("Starting policy evaluation",
-		zap.String("sbom", policyConfig.SBOMFile),
-		zap.Int("policies", len(policies)),
+		zap.String("sbom_file", policyConfig.SBOMFile),
+		zap.Int("total_policies", len(policies)),
 		zap.String("output_format", policyConfig.OutputFmt),
 	)
 
@@ -43,9 +43,7 @@ func Engine(ctx context.Context, policyConfig *Params, policies []Policy) error 
 		return fmt.Errorf("failed to open input %s: %w", policyConfig.SBOMFile, err)
 	}
 
-	log.Debug("SBOM file opened successfully",
-		zap.String("sbom", policyConfig.SBOMFile),
-	)
+	log.Debug("Parsing SBOM document", zap.String("path", policyConfig.SBOMFile))
 
 	// Parse SBOM
 	doc, err := sbom.NewSBOMDocument(ctx, f, sbom.Signature{})
@@ -56,7 +54,6 @@ func Engine(ctx context.Context, policyConfig *Params, policies []Policy) error 
 		)
 		return fmt.Errorf("failed to load SBOM: %w", err)
 	}
-	log.Info("SBOM parsed successfully")
 
 	// Create extractor: for quick mapping
 	fieldExtractor := NewExtractor(doc)
@@ -70,7 +67,10 @@ func Engine(ctx context.Context, policyConfig *Params, policies []Policy) error 
 	// Evaluate policies
 	for _, policy := range policies {
 		log.Debug("Evaluating policy",
-			zap.String("policy", policy.Name),
+			zap.String("policy_name", policy.Name),
+			zap.String("policy_type", policy.Type),
+			zap.String("policy_action", policy.Action),
+			zap.Int("total_rules", len(policy.Rules)),
 		)
 		// evaluate each policy one by one against SBOM
 		result, err := EvaluatePolicyAgainstSBOMs(ctx, policy, doc, fieldExtractor)
@@ -116,7 +116,7 @@ func Engine(ctx context.Context, policyConfig *Params, policies []Policy) error 
 			return fmt.Errorf("failed to write table output: %w", err)
 		}
 	}
-	log.Info("Policy evaluation report generated successfully")
+	log.Info("Policy evaluation report generated")
 
 	return nil
 }

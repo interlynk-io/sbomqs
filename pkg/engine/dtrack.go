@@ -215,7 +215,7 @@ func DtrackScore(ctx context.Context, dtP *DtParams) error {
 					reporter.WithFormat(reportFormat))
 				nr.Report()
 
-				log.Debug("Report generated successfully",
+				log.Debug("Report generated",
 					zap.String("path", path),
 				)
 

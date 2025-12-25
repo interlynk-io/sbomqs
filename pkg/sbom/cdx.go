@@ -347,7 +347,7 @@ func (c *CdxDoc) parseSignature() {
 
 	if sig != nil {
 		c.SignatureDetail = sig
-		c.addToLogs("CyclonDX signature parsed successfully")
+		c.addToLogs("CyclonDX signature parsed")
 	}
 }
 

@@ -236,7 +236,7 @@ func NewSBOMDocument(ctx context.Context, f io.ReadSeeker, sig Signature) (Docum
 		return nil, err
 	}
 
-	log.Debug("SBOM document parsed successfully",
+	log.Debug("SBOM document parsed",
 		zap.String("spec", string(spec)),
 		zap.String("format", string(format)),
 		zap.String("version", string(version)),

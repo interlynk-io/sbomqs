@@ -63,6 +63,7 @@ func ScoreSBOM(ctx context.Context, cfg config.Config, paths []string) ([]api.Re
 
 	log.Debug("Validated SBOM paths",
 		zap.Int("valid", len(validPaths)),
+		zap.Strings("paths", validPaths),
 	)
 
 	// 2) Initialize the catalog (features, categories, profiles) once.
@@ -119,6 +120,7 @@ func scoreOnePath(ctx context.Context, catalog *catalog.Catalog, cfg config.Conf
 	if err != nil {
 		return api.Result{}, err
 	}
+
 	defer func() {
 		if err := file.Close(); err != nil {
 			log.Warn("Failed to close SBOM file",
@@ -223,7 +225,9 @@ func SBOMEvaluation(ctx context.Context, catal *catalog.Catalog, cfg config.Conf
 func evaluateProfiles(ctx context.Context, catal *catalog.Catalog, doc sbom.Document) (api.Result, error) {
 	log := logger.FromContext(ctx)
 
-	log.Debug("Evaluating profiles")
+	log.Debug("Evaluating profiles",
+		zap.Int("total_profiles", len(catal.Profiles)),
+	)
 	result := api.NewResult(doc)
 
 	// Evaluate all profiles and get the results
@@ -236,7 +240,9 @@ func evaluateProfiles(ctx context.Context, catal *catalog.Catalog, doc sbom.Docu
 func evaluateComprehensive(ctx context.Context, catal *catalog.Catalog, doc sbom.Document) (api.Result, error) {
 	// Comprehensive Scoring
 	log := logger.FromContext(ctx)
-	log.Debug("Evaluating comprehensive scoring")
+	log.Debug("Evaluating comprehensive scoring",
+		zap.Int("total_categories", len(catal.ComprCategories)),
+	)
 
 	result := api.NewResult(doc)
 
