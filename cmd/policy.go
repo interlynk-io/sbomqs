@@ -23,6 +23,7 @@ import (
 	"github.com/interlynk-io/sbomqs/v2/pkg/logger"
 	"github.com/interlynk-io/sbomqs/v2/pkg/policy"
 	"github.com/spf13/cobra"
+	"go.uber.org/zap"
 )
 
 // policyCmdConfig holds configuration parsed from CLI flags for the apply command
@@ -72,11 +73,11 @@ var policyCmd = &cobra.Command{
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		// Setup logger
-		if debug, _ := cmd.Flags().GetBool("debug"); debug {
-			logger.InitDebugLogger()
-		} else {
-			logger.InitProdLogger()
-		}
+		debug, _ := cmd.Flags().GetBool("debug")
+
+		// Initialize logger once
+		logger.Init(debug)
+		defer logger.Sync()
 
 		ctx := logger.WithLogger(context.Background())
 
@@ -88,31 +89,44 @@ var policyCmd = &cobra.Command{
 		cfg.inputPath = args[0]
 
 		log := logger.FromContext(ctx)
-		log.Debugf("Parsed Policy command: %+v", cfg)
+		log.Debug("Parsed policy command",
+			zap.String("path", cfg.inputPath),
+			zap.String("output", cfg.outputFmt),
+			zap.String("policy_action", cfg.policyAction),
+			zap.String("policy_file", cfg.policyFile),
+			zap.String("policy_name", cfg.policyName),
+			zap.String("policy_type", cfg.policyType),
+			zap.Strings("policy_rules", cfg.policyRules),
+		)
 
 		// Load policies
 		var policies []policy.Policy
 		var err error
 
 		if cfg.policyFile != "" {
-			log.Debugf("loading policy from file")
+			log.Debug("Loading policy from file")
 
 			policies, err = policy.LoadPoliciesFromFile(cfg.policyFile)
 			if err != nil {
 				return fmt.Errorf("failed to load policy file %s: %w", cfg.policyFile, err)
 			}
 		} else {
-			logger.FromContext(ctx).Debugf("loading policy from inline commands")
+			log.Debug("Loading policy from inline user input",
+				zap.String("policy_name", cfg.policyName),
+				zap.String("policy_type", cfg.policyType),
+				zap.String("policy_action", cfg.policyAction),
+				zap.Strings("policy_rules", cfg.policyRules),
+			)
 
 			p, err := policy.BuildPolicyFromCLI(cfg.policyName, cfg.policyType, cfg.policyAction, cfg.policyRules)
 			if err != nil {
-				return fmt.Errorf("failed to build policy from CLI: %w", err)
+				return fmt.Errorf("Failed to build policy from CLI: %w", err)
 			}
 			policies = []policy.Policy{p}
 		}
 
 		policyConfig := convertPolicyCmdToEngineParams(cfg)
-		log.Debugf("policies: %s", policies)
+		log.Debug("Total policies", zap.Int("count", len(policies)))
 
 		// proceed with policy engine
 		if err := policy.Engine(ctx, policyConfig, policies); err != nil {

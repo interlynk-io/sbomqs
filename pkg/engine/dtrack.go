@@ -29,6 +29,7 @@ import (
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer"
 	"github.com/samber/lo"
+	"go.uber.org/zap"
 )
 
 type DtParams struct {
@@ -50,54 +51,106 @@ type DtParams struct {
 
 func DtrackScore(ctx context.Context, dtP *DtParams) error {
 	log := logger.FromContext(ctx)
-	log.Debug("engine.DtrackScore()")
+	log.Info("Starting Dependency-Track scoring run",
+		zap.String("dtrack_url", dtP.URL),
+		zap.Int("project_count", len(dtP.ProjectIDs)),
+	)
 
-	log.Debugf("Config: %+v", dtP)
+	log.Debug("DTrack scoring configuration",
+		zap.Bool("legacy", dtP.Legacy),
+		zap.Bool("basic", dtP.Basic),
+		zap.Bool("json", dtP.JSON),
+		zap.Bool("detailed", dtP.Detailed),
+		zap.Bool("tag_score", dtP.TagProjectWithScore),
+		zap.Bool("tag_grade", dtP.TagProjectWithGrade),
+		zap.Int("timeout_seconds", dtP.Timeout),
+		zap.Strings("profiles", dtP.Profile),
+	)
 
 	timeout := time.Duration(dtP.Timeout) * time.Second
 
-	log.Debug("Timeout set to: ", timeout)
+	log.Info("Creating Dependency-Track client",
+		zap.String("url", dtP.URL),
+		zap.Duration("timeout", timeout),
+	)
 
 	dTrackClient, err := dtrack.NewClient(dtP.URL,
 		dtrack.WithAPIKey(dtP.APIKey), dtrack.WithTimeout(timeout), dtrack.WithDebug(false))
 	if err != nil {
-		log.Fatalf("Failed to create Dependency-Track client: %s", err)
+		log.Error("Failed to create Dependency-Track client",
+			zap.String("url", dtP.URL),
+			zap.Error(err),
+		)
+		return err
 	}
 
 	for _, pid := range dtP.ProjectIDs {
-		log.Debugf("Processing project %s", pid)
+		log.Info("Processing Dependency-Track project",
+			zap.String("project_id", pid.String()),
+		)
+
+		log.Debug("Fetching project metadata",
+			zap.String("project_id", pid.String()),
+		)
 
 		prj, err := dTrackClient.Project.Get(ctx, pid)
 		if err != nil {
-			log.Fatalf("Failed to get project: %s", err)
+			log.Error("Failed to fetch project",
+				zap.String("project_id", pid.String()),
+				zap.Error(err),
+			)
+			return err
 		}
+
+		log.Debug("Project resolved",
+			zap.String("project_id", prj.UUID.String()),
+			zap.String("name", prj.Name),
+			zap.String("version", prj.Version),
+		)
+
+		log.Info("Exporting project BOM",
+			zap.String("project_id", pid.String()),
+		)
 
 		bom, err := dTrackClient.BOM.ExportProject(ctx, pid, dtrack.BOMFormatJSON, dtrack.BOMVariantInventory)
 		if err != nil {
-			log.Fatalf("Failed to export project: %s", err)
+			log.Error("Failed to export project BOM",
+				zap.String("project_id", pid.String()),
+				zap.Error(err),
+			)
+			return err
 		}
 
 		{
+			log.Debug("Creating temporary BOM file",
+				zap.String("project_id", pid.String()),
+			)
+
 			fname := fmt.Sprintf("tmpfile-%s", pid)
 			f, err := os.CreateTemp("", fname)
 			if err != nil {
-				log.Fatal(err)
+				log.Error("failed to create file", zap.String("name", fname), zap.Error(err))
+				return err
 			}
 
 			defer func() {
 				if err := f.Close(); err != nil {
-					log.Warnf("failed to close file: %v", err)
+					log.Warn("failed to close file", zap.Error(err))
 				}
 			}()
 			defer func() {
 				if err := os.Remove(f.Name()); err != nil {
-					log.Warnf("failed to remove temporary file: %v", err)
+					log.Warn("Failed to clean up temporary file",
+						zap.String("file", f.Name()),
+						zap.Error(err),
+					)
 				}
 			}()
 
 			_, err = f.WriteString(bom)
 			if err != nil {
-				log.Fatalf("Failed to write string: %v", err)
+				log.Error("Failed to write SBOM", zap.String("file", fname), zap.Error(err))
+				return err
 			}
 
 			ep := &Params{
@@ -108,14 +161,37 @@ func DtrackScore(ctx context.Context, dtP *DtParams) error {
 			}
 
 			ep.Path = append(ep.Path, f.Name())
+			log.Debug("New configuration constructed",
+				zap.Bool("basic", ep.Basic),
+				zap.Bool("json", ep.JSON),
+				zap.Bool("detailed", ep.Detailed),
+				zap.Strings("profiles", ep.Profiles),
+				zap.Strings("paths", ep.Path),
+			)
+
+			log.Debug("Scoring mode selected",
+				zap.Bool("legacy", dtP.Legacy),
+			)
 
 			if dtP.Legacy {
+				log.Info("Running legacy scoring",
+					zap.String("project_id", pid.String()),
+				)
+
+				log.Debug("Processing scores and parsing SBOM document",
+					zap.String("path", ep.Path[0]),
+				)
+
 				doc, scores, err := processFile(ctx, ep, ep.Path[0], nil)
 				if err != nil {
 					return err
 				}
 
 				if dtP.TagProjectWithScore {
+					log.Info("Tagging project with average score",
+						zap.String("project_id", prj.UUID.String()),
+						zap.Float64("avg_score", scores.AvgScore()),
+					)
 					tagProjectWithScore(ctx, dTrackClient, prj, scores.AvgScore())
 				}
 
@@ -128,6 +204,10 @@ func DtrackScore(ctx context.Context, dtP *DtParams) error {
 					reportFormat = common.FormatJSON
 				}
 
+				log.Debug("Generating report for SBOM document",
+					zap.String("path", path),
+				)
+
 				nr := reporter.NewReport(ctx,
 					[]sbom.Document{doc},
 					[]scorer.Scores{scores},
@@ -135,7 +215,20 @@ func DtrackScore(ctx context.Context, dtP *DtParams) error {
 					reporter.WithFormat(reportFormat))
 				nr.Report()
 
+				log.Debug("Report generated",
+					zap.String("path", path),
+				)
+
 			} else {
+
+				log.Info("Running comprehenssive-based scoring",
+					zap.String("project_id", prj.UUID.String()),
+					zap.Strings("profiles", dtP.Profile),
+				)
+
+				log.Debug("Running SBOM scoring",
+					zap.Strings("paths", ep.Path),
+				)
 
 				results, err := scored(ctx, ep)
 				if err != nil {
@@ -143,7 +236,10 @@ func DtrackScore(ctx context.Context, dtP *DtParams) error {
 				}
 
 				if dtP.TagProjectWithScore || dtP.TagProjectWithGrade {
-					log.Debugf("Project: %+v", prj.Tags)
+
+					log.Info("Tagging project with average score or grade",
+						zap.String("project_id", prj.UUID.String()),
+					)
 
 					var prefixes []string
 					profileKeys := dtP.Profile
@@ -169,19 +265,30 @@ func DtrackScore(ctx context.Context, dtP *DtParams) error {
 					for _, r := range results {
 						// Case 1: comprehensive (Interlynk) is present
 						if r.Comprehensive != nil {
+
 							prefix := profileTagPrefix("interlynk")
 							score := r.Comprehensive.InterlynkScore
 							grade := r.Comprehensive.Grade
 
+							log.Debug("Comprehenssive scoring result",
+								zap.Float64("score", score),
+								zap.String("grade", grade),
+							)
+
 							if dtP.TagProjectWithScore {
 								scoreTag := fmt.Sprintf("%s=%0.1f", prefix, score)
 								prj.Tags = append(prj.Tags, dtrack.Tag{Name: scoreTag})
-								log.Debugf("Tagging project with %s", scoreTag)
+								log.Debug("Tagging D-Track project with Interlynk score",
+									zap.String("tag", scoreTag),
+								)
 							}
+
 							if dtP.TagProjectWithGrade {
 								gradeTag := fmt.Sprintf("%s-grade=%s", prefix, grade)
 								prj.Tags = append(prj.Tags, dtrack.Tag{Name: gradeTag})
-								log.Debugf("Tagging project with %s", gradeTag)
+								log.Debug("Tagging D-Track project with Interlynk rade",
+									zap.String("tag", gradeTag),
+								)
 							}
 						}
 
@@ -191,29 +298,54 @@ func DtrackScore(ctx context.Context, dtP *DtParams) error {
 								profileKey := strings.ToLower(proResult.Key)
 								prefix := profileTagPrefix(profileKey)
 
+								log.Debug("Profile-Based scoring result",
+									zap.Float64("score", proResult.Score),
+									zap.String("grade", proResult.Grade),
+								)
+
 								if dtP.TagProjectWithScore {
 									scoreTag := fmt.Sprintf("%s=%0.1f", prefix, proResult.Score)
 									prj.Tags = append(prj.Tags, dtrack.Tag{Name: scoreTag})
-									log.Debugf("Tagging project with %s", scoreTag)
+									log.Debug("Tagging D-Track project with Profile score",
+										zap.String("tag", scoreTag),
+									)
 								}
+
 								if dtP.TagProjectWithGrade {
 									gradeTag := fmt.Sprintf("%s-grade=%s", prefix, proResult.Grade)
 									prj.Tags = append(prj.Tags, dtrack.Tag{Name: gradeTag})
-									log.Debugf("Tagging project with %s", gradeTag)
+									log.Debug("Tagging D-Track project with Profile grade",
+										zap.String("tag", gradeTag),
+									)
 								}
 							}
 						}
 					}
 
-					log.Debugf("Project (after tagging): %+v", prj.Tags)
+					log.Info("Updating project tags in Dependency-Track",
+						zap.String("project_id", prj.UUID.String()),
+						zap.Int("tag_count", len(prj.Tags)),
+					)
 
 					_, err = dTrackClient.Project.Update(ctx, prj)
 					if err != nil {
-						log.Fatalf("Failed to tag project: %s", err)
+						log.Error("Failed to update project tags",
+							zap.String("project_id", prj.UUID.String()),
+							zap.Error(err),
+						)
+						return err
 					}
 				}
 
+				log.Info("Rendering scoring report",
+					zap.String("project_id", prj.UUID.String()),
+				)
 				renderReport(ctx, ep, results)
+				log.Info("Project scoring completed",
+					zap.String("project_id", prj.UUID.String()),
+					zap.String("name", prj.Name),
+				)
+				log.Info("Dependency-Track scoring run completed")
 				return nil
 			}
 		}
@@ -235,7 +367,7 @@ func profileTagPrefix(profile string) string {
 func tagProjectWithScore(ctx context.Context, dTrackClient *dtrack.Client, prj dtrack.Project, finalScore float64) {
 	log := logger.FromContext(ctx)
 
-	log.Debugf("Project: %+v", prj.Tags)
+	log.Debug("Tagging projects", zap.Any("tags", prj.Tags))
 	// remove old score
 	prj.Tags = lo.Filter(prj.Tags, func(t dtrack.Tag, _ int) bool {
 		return !strings.HasPrefix(t.Name, "sbomqs=")
@@ -244,11 +376,10 @@ func tagProjectWithScore(ctx context.Context, dTrackClient *dtrack.Client, prj d
 	tag := fmt.Sprintf("sbomqs=%0.1f", finalScore)
 	prj.Tags = append(prj.Tags, dtrack.Tag{Name: tag})
 
-	log.Debugf("Tagging project with %s", tag)
-	log.Debugf("Project: %+v", prj.Tags)
+	log.Debug("Updating project tags", zap.Any("tags", prj.Tags))
 
 	_, err := dTrackClient.Project.Update(ctx, prj)
 	if err != nil {
-		log.Fatalf("Failed to tag project: %s", err)
+		log.Error("Failed to update project tag", zap.Any("tags", prj.Tags), zap.Error(err))
 	}
 }

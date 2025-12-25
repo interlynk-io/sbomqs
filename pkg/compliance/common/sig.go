@@ -29,6 +29,7 @@ import (
 
 	"github.com/interlynk-io/sbomqs/v2/pkg/logger"
 	"github.com/tidwall/sjson"
+	"go.uber.org/zap"
 )
 
 type SBOM struct {
@@ -50,13 +51,13 @@ type PublicKey struct {
 
 func RetrieveSignatureFromSBOM(ctx context.Context, sbomFile string) (string, string, string, error) {
 	log := logger.FromContext(ctx)
-	log.Debugf("common.RetrieveSignatureFromSBOM()")
+	log.Debug("Retrieving signature from SBOM", zap.String("file", sbomFile))
 	var err error
 
 	// #nosec G304 -- User-provided paths are expected for CLI tool
 	data, err := os.ReadFile(sbomFile)
 	if err != nil {
-		log.Debug("error reading SBOM file: %w", err)
+		log.Error("Failed to read SBOM file", zap.String("path", sbomFile), zap.Error(err))
 		return "", "", "", fmt.Errorf("error reading SBOM file: %w", err)
 	}
 
@@ -69,26 +70,26 @@ func RetrieveSignatureFromSBOM(ctx context.Context, sbomFile string) (string, st
 	extracted_publick_key := "extracted_public_key.pem"
 
 	if err := json.Unmarshal(data, &sbom); err != nil {
-		log.Debug("Error parsing SBOM JSON: %w", err)
+		log.Error("Failed to parse SBOM json", zap.Error(err))
 		return "", "", "", fmt.Errorf("error unmarshalling SBOM JSON: %w", err)
 	}
 
 	if sbom.Signature == nil {
-		log.Debug("signature and public key are not embedded in the SBOM")
+		log.Debug("SBOM doesn't contains signature and public key")
 		return sbomFile, "", "", nil
 	}
-	log.Debug("signature and public key are present in the SBOM")
+	log.Debug("Signature and public key are extracted from SBOM")
 
 	signatureValue, err := base64.StdEncoding.DecodeString(sbom.Signature.Value)
 	if err != nil {
-		log.Debug("error decoding signature: %w", err)
+		log.Error("Failed to decode signature", zap.Error(err))
 		return "", "", "", fmt.Errorf("error decoding signature: %w", err)
 	}
 
 	if err := os.WriteFile(extracted_signature, signatureValue, 0o600); err != nil {
-		log.Debug("Error writing signature to file:", err)
+		log.Error("Failed to write signature to as file", zap.Error(err))
 	}
-	log.Debug("Signature written to file: extracted_signature.bin")
+	log.Debug("Signature extracted and wrtitten to a file", zap.String("path", "extracted_signature.bin"))
 
 	// extract the public key modulus and exponent
 	modulus, err := base64.StdEncoding.DecodeString(sbom.Signature.PublicKey.N)
@@ -97,7 +98,7 @@ func RetrieveSignatureFromSBOM(ctx context.Context, sbomFile string) (string, st
 	}
 	exponent := DecodeBase64URLEncodingToInt(sbom.Signature.PublicKey.E)
 	if exponent == 0 {
-		log.Debug("Invalid public key exponent.")
+		log.Debug("Invalid public key exponent")
 	}
 
 	// create the RSA public key
@@ -108,18 +109,18 @@ func RetrieveSignatureFromSBOM(ctx context.Context, sbomFile string) (string, st
 
 	pubKeyPEM := PublicKeyToPEM(pubKey)
 	if err := os.WriteFile(extracted_publick_key, pubKeyPEM, 0o600); err != nil {
-		log.Debug("error writing public key to file: %w", err)
+		log.Error("Failed to write public key to file", zap.String("path", "extracted_publick_key"), zap.Error(err))
 	}
 
 	// remove the "signature" section
 	modifiedSBOM, err := sjson.DeleteBytes(data, "signature")
 	if err != nil {
-		log.Debug("Error removing signature section: %w", err)
+		log.Error("Failed to remove signature section in SBOM", zap.Error(err))
 	}
 
 	var normalizedSBOM bytes.Buffer
 	if err := json.Indent(&normalizedSBOM, modifiedSBOM, "", "  "); err != nil {
-		log.Debug("Error normalizing SBOM JSON: %w", err)
+		log.Error("Failed to normalize SBOM JSON", zap.Error(err))
 	}
 
 	// save the modified SBOM to a new file without a trailing newline
@@ -128,7 +129,7 @@ func RetrieveSignatureFromSBOM(ctx context.Context, sbomFile string) (string, st
 		return "", "", "", fmt.Errorf("error writing standalone SBOM file: %w", err)
 	}
 
-	log.Debug("Standalone SBOM saved to:", standaloneSBOMFile)
+	log.Debug("New modified SBOM saved to", zap.String("path", standaloneSBOMFile))
 	return standaloneSBOMFile, extracted_signature, extracted_publick_key, nil
 }
 
@@ -168,12 +169,16 @@ func PublicKeyToPEM(pub *rsa.PublicKey) []byte {
 
 func GetSignatureBundle(ctx context.Context, sbomFile, signature, publicKey string) (string, string, string, error) {
 	log := logger.FromContext(ctx)
-	log.Debugf("common.GetSignatureBundle()")
+	log.Debug("Extracting signature bundle from SBOM",
+		zap.String("path", sbomFile),
+		zap.String("signature", signature),
+		zap.String("publickKey", publicKey),
+	)
 
 	// detect SBOM format for signature handling
 	format, err := detectSBOMFormatDirectlyFromSBOMFile(ctx, sbomFile)
 	if err != nil {
-		log.Debugf("failed to detect SBOM format: %w", err)
+		log.Debug("Failed to detect SBOM format", zap.String("file", sbomFile), zap.Error(err))
 		return "", "", "", fmt.Errorf("cannot determine SBOM format for %s: %w", sbomFile, err)
 	}
 
@@ -182,13 +187,13 @@ func GetSignatureBundle(ctx context.Context, sbomFile, signature, publicKey stri
 		log.Debug("CycloneDX SBOM detected, attempting to retrieve signature and public key from embedded SBOM")
 		standaloneSBOMFile, signatureRetrieved, publicKeyRetrieved, err := RetrieveSignatureFromSBOM(ctx, sbomFile)
 		if err != nil {
-			log.Debug("failed to retrieve signature and public key from embedded sbom: %w", err)
+			log.Debug("Failed to retrieve signature and public key from embedded sbom", zap.Error(err))
 		}
 		return standaloneSBOMFile, signatureRetrieved, publicKeyRetrieved, nil
 	} else if format == "spdx" {
 		return sbomFile, signature, publicKey, nil
 	}
-	log.Debugf("Unknown SBOM format: %s", format)
+	log.Debug("Unknown SBOM format", zap.String("format", format), zap.String("sbom", sbomFile))
 
 	return "", "", "", nil
 }
@@ -208,11 +213,11 @@ func detectSBOMFormatDirectlyFromSBOMFile(ctx context.Context, path string) (str
 	// check for key fields:
 	contentStr := strings.ToLower(string(content))
 	if strings.Contains(contentStr, `"bomformat": "cyclonedx"`) || strings.Contains(contentStr, `"specversion"`) {
-		log.Debugf("Detected CycloneDX SBOM")
+		log.Debug("Detected CycloneDX SBOM format")
 		return "cyclonedx", nil
 	}
 	if strings.Contains(contentStr, "spdxversion") || strings.Contains(contentStr, "spdxid") {
-		log.Debugf("Detected SPDX SBOM")
+		log.Debug("Detected SPDX SBOM format")
 		return "spdx", nil
 	}
 

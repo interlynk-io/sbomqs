@@ -80,22 +80,23 @@ var listCmd = &cobra.Command{
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		// Initialize logger based on debug flag
-		if debug, _ := cmd.Flags().GetBool("debug"); debug {
-			logger.InitDebugLogger()
-		} else {
-			logger.InitProdLogger()
-		}
+		debug, _ := cmd.Flags().GetBool("debug")
+
+		// Initialize logger once
+		logger.Init(debug)
+		defer logger.Sync()
 
 		ctx := logger.WithLogger(context.Background())
+
+		log := logger.FromContext(ctx)
+		log.Info("Listing started")
+
 		uCmd := parseListParams(cmd, args)
 		if err := validateparsedListCmd(uCmd); err != nil {
 			return err
 		}
 
 		engParams := fromListToEngineParams(uCmd)
-		logger.FromContext(ctx).Debugf("Parsed command: %s", cmd.CommandPath())
-		logger.FromContext(ctx).Debugf("Parsed user command: %+v", uCmd)
 		return engine.ListRun(ctx, engParams)
 	},
 }

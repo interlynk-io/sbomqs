@@ -25,12 +25,15 @@ import (
 
 	"github.com/interlynk-io/sbomqs/v2/pkg/logger"
 	"github.com/olekukonko/tablewriter"
+	"go.uber.org/zap"
 )
 
 // ReportJSON writes results as pretty-printed JSON to stdout.
 func ReportJSON(ctx context.Context, results []PolicyResult) error {
 	log := logger.FromContext(ctx)
-	log.Debugf("JSON Report...")
+	log.Info("Generating JSON policy report",
+		zap.Int("policies", len(results)),
+	)
 
 	sorted := make([]PolicyResult, len(results))
 	copy(sorted, results)
@@ -41,13 +44,17 @@ func ReportJSON(ctx context.Context, results []PolicyResult) error {
 	if err := enc.Encode(sorted); err != nil {
 		return fmt.Errorf("encode results to json: %w", err)
 	}
+
+	log.Info("JSON policy report written")
 	return nil
 }
 
 // ReportBasic writes results in a human-friendly basic format.
 func ReportBasic(ctx context.Context, results []PolicyResult) error {
 	log := logger.FromContext(ctx)
-	log.Debugf("Basic Report....")
+	log.Info("Generating basic policy report",
+		zap.Int("policies", len(results)),
+	)
 
 	// Sort results by policy name for deterministic output
 	sorted := make([]PolicyResult, len(results))
@@ -72,13 +79,16 @@ func ReportBasic(ctx context.Context, results []PolicyResult) error {
 	}
 	summary.Render() // prints the table
 
+	log.Info("Basic policy report written")
 	return nil
 }
 
 // ReportTable writes results in a per-policy, per-violation detail table format.
 func ReportTable(ctx context.Context, results []PolicyResult) error {
 	log := logger.FromContext(ctx)
-	log.Debugf("Table Report...")
+	log.Info("Generating Table policy report",
+		zap.Int("policies", len(results)),
+	)
 
 	// Defensive copy + deterministic ordering by policy name
 	sorted := make([]PolicyResult, len(results))
@@ -189,6 +199,7 @@ func ReportTable(ctx context.Context, results []PolicyResult) error {
 	}
 	sum.Render()
 
+	log.Info("Table policy report written")
 	return nil
 }
 

@@ -38,6 +38,7 @@ import (
 	"github.com/interlynk-io/sbomqs/v2/pkg/swhid"
 	"github.com/interlynk-io/sbomqs/v2/pkg/swid"
 	"github.com/samber/lo"
+	"go.uber.org/zap"
 )
 
 var (
@@ -268,53 +269,53 @@ func (c *CdxDoc) parseVulnerabilities() {
 // parseSignature extracts signature information from CyclonDX BOM
 func (c *CdxDoc) parseSignature() {
 	log := logger.FromContext(c.ctx)
-	log.Debug("parseSignature()")
-	
+	log.Debug("Parsing signature from raw SBOM")
+
 	// Since cyclonedx-go doesn't properly unmarshal signatures yet,
 	// we need to parse it manually from the raw JSON
 	if c.format != FileFormatJSON {
 		return // Only JSON format is supported for now
 	}
-	
+
 	var rawBOM map[string]interface{}
 	if err := json.Unmarshal(c.rawContent, &rawBOM); err != nil {
-		log.Debug("Error unmarshalling raw JSON:", err)
+		log.Error("Error unmarshalling raw JSON", zap.Error(err))
 		return
 	}
-	
+
 	sigData, ok := rawBOM["signature"]
 	if !ok || sigData == nil {
 		return // No signature present
 	}
-	
+
 	sigMap, ok := sigData.(map[string]interface{})
 	if !ok {
 		return
 	}
-	
+
 	// Parse the signature based on its structure
 	var sig *Signature
-	
+
 	// Check for single signer format (direct algorithm/value)
 	if algorithm, ok := sigMap["algorithm"].(string); ok {
 		// Single signer format
 		sig = &Signature{
 			Algorithm: algorithm,
 		}
-		
+
 		if keyID, ok := sigMap["keyId"].(string); ok {
 			sig.KeyID = keyID
 		}
-		
+
 		if value, ok := sigMap["value"].(string); ok {
 			sig.SigValue = value
 		}
-		
+
 		// Parse public key
 		if pubKeyData, ok := sigMap["publicKey"].(map[string]interface{}); ok {
 			sig.PublicKey = c.parsePublicKey(pubKeyData)
 		}
-		
+
 		// Parse certificate path
 		if certPath, ok := sigMap["certificatePath"].([]interface{}); ok {
 			for _, cert := range certPath {
@@ -323,7 +324,7 @@ func (c *CdxDoc) parseSignature() {
 				}
 			}
 		}
-		
+
 		// Parse excludes
 		if excludes, ok := sigMap["excludes"].([]interface{}); ok {
 			for _, exclude := range excludes {
@@ -343,34 +344,34 @@ func (c *CdxDoc) parseSignature() {
 			sig = c.parseSignerMap(firstSigner)
 		}
 	}
-	
+
 	if sig != nil {
 		c.SignatureDetail = sig
-		c.addToLogs("CyclonDX signature parsed successfully")
+		c.addToLogs("CyclonDX signature parsed")
 	}
 }
 
 // parseSignerMap parses a signer object from a map
 func (c *CdxDoc) parseSignerMap(signerMap map[string]interface{}) *Signature {
 	sig := &Signature{}
-	
+
 	if algorithm, ok := signerMap["algorithm"].(string); ok {
 		sig.Algorithm = algorithm
 	}
-	
+
 	if keyID, ok := signerMap["keyId"].(string); ok {
 		sig.KeyID = keyID
 	}
-	
+
 	if value, ok := signerMap["value"].(string); ok {
 		sig.SigValue = value
 	}
-	
+
 	// Parse public key
 	if pubKeyData, ok := signerMap["publicKey"].(map[string]interface{}); ok {
 		sig.PublicKey = c.parsePublicKey(pubKeyData)
 	}
-	
+
 	// Parse certificate path
 	if certPath, ok := signerMap["certificatePath"].([]interface{}); ok {
 		for _, cert := range certPath {
@@ -379,7 +380,7 @@ func (c *CdxDoc) parseSignerMap(signerMap map[string]interface{}) *Signature {
 			}
 		}
 	}
-	
+
 	// Parse excludes
 	if excludes, ok := signerMap["excludes"].([]interface{}); ok {
 		for _, exclude := range excludes {
@@ -388,14 +389,14 @@ func (c *CdxDoc) parseSignerMap(signerMap map[string]interface{}) *Signature {
 			}
 		}
 	}
-	
+
 	return sig
 }
 
 // parsePublicKey parses a public key from the signature data
 func (c *CdxDoc) parsePublicKey(pubKeyData map[string]interface{}) string {
 	kty, _ := pubKeyData["kty"].(string)
-	
+
 	if kty == "RSA" {
 		n, _ := pubKeyData["n"].(string)
 		e, _ := pubKeyData["e"].(string)
@@ -412,14 +413,14 @@ func (c *CdxDoc) parsePublicKey(pubKeyData map[string]interface{}) string {
 			return fmt.Sprintf("EC Key - Curve: %s", crv)
 		}
 	}
-	
+
 	return ""
 }
 
 // convertRSAPublicKeyToPEM converts RSA public key components to PEM format
 func (c *CdxDoc) convertRSAPublicKeyToPEM(modulusB64, exponentB64 string) string {
 	log := logger.FromContext(c.ctx)
-	
+
 	// Try URL-safe base64 decoding first, then standard
 	modulus, err := base64.URLEncoding.DecodeString(modulusB64)
 	if err != nil {
@@ -429,12 +430,12 @@ func (c *CdxDoc) convertRSAPublicKeyToPEM(modulusB64, exponentB64 string) string
 			// Try raw URL encoding (no padding)
 			modulus, err = base64.RawURLEncoding.DecodeString(modulusB64)
 			if err != nil {
-				log.Debug("Error decoding public key modulus:", err)
+				log.Error("Error decoding public key modulus", zap.Error(err))
 				return ""
 			}
 		}
 	}
-	
+
 	// Decode the base64-encoded exponent
 	exponentBytes, err := base64.URLEncoding.DecodeString(exponentB64)
 	if err != nil {
@@ -442,33 +443,32 @@ func (c *CdxDoc) convertRSAPublicKeyToPEM(modulusB64, exponentB64 string) string
 		if err != nil {
 			exponentBytes, err = base64.RawURLEncoding.DecodeString(exponentB64)
 			if err != nil {
-				log.Debug("Error decoding public key exponent:", err)
+				log.Error("Error decoding public key exponent", zap.Error(err))
 				return ""
 			}
 		}
 	}
-	
+
 	// Convert exponent bytes to integer
 	exponent := 0
 	for _, b := range exponentBytes {
 		exponent = exponent<<8 + int(b)
 	}
-	
+
 	if exponent == 0 {
 		c.addToLogs("Invalid public key exponent")
 		return ""
 	}
-	
+
 	// Create the RSA public key
 	pubKey := &rsa.PublicKey{
 		N: new(big.Int).SetBytes(modulus),
 		E: exponent,
 	}
-	
+
 	// Convert to PEM format
 	return string(publicKeyToPEM(pubKey))
 }
-
 
 func publicKeyToPEM(pub *rsa.PublicKey) []byte {
 	pubASN1, err := x509.MarshalPKIXPublicKey(pub)
@@ -640,7 +640,7 @@ func getComponentRelationship(c *CdxDoc, compID string) (bool, int, []string) {
 		c.addToLogs(fmt.Sprintf("cdx doc component %s has no dependencies", compID))
 		return false, count, nil
 	}
-	
+
 	deps := make([]string, 0, len(*c.doc.Dependencies))
 	for _, rel := range *c.doc.Dependencies {
 		if rel.Ref == compID {
@@ -787,7 +787,7 @@ func (c *CdxDoc) parseTool() {
 	components := lo.FromPtr(c.doc.Metadata.Tools.Components)
 	services := lo.FromPtr(c.doc.Metadata.Tools.Services)
 	totalCapacity := len(tools) + len(components) + len(services)
-	
+
 	c.CdxTools = make([]GetTool, 0, totalCapacity)
 
 	for _, tt := range tools {
@@ -819,7 +819,7 @@ func (c *CdxDoc) parseAuthors() {
 
 	authors := lo.FromPtr(c.doc.Metadata.Authors)
 	c.CdxAuthors = make([]GetAuthor, 0, len(authors))
-	
+
 	for _, auth := range authors {
 		a := Author{}
 		a.Name = auth.Name

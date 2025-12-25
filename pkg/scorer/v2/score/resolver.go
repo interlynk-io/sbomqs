@@ -25,6 +25,7 @@ import (
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/catalog"
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/config"
 	"github.com/interlynk-io/sbomqs/v2/pkg/utils"
+	"go.uber.org/zap"
 )
 
 // ProcessURLPath downloads an SBOM from a URL and returns a temporary file handle.
@@ -41,7 +42,7 @@ import (
 // the download or file creation fails.
 func ProcessURLPath(ctx context.Context, cfg config.Config, url string) (*os.File, error) {
 	log := logger.FromContext(ctx)
-	log.Debugf("Processing URL: %s", url)
+	log.Debug("Processing URL path", zap.String("url", url))
 
 	if utils.IsGit(url) {
 		_, rawURL, err := utils.HandleURL(url)
@@ -93,16 +94,19 @@ func ProcessURLPath(ctx context.Context, cfg config.Config, url string) (*os.Fil
 func GetFileHandle(ctx context.Context, filePath string) (*os.File, error) {
 	log := logger.FromContext(ctx)
 
-	log.Debugf("Opening file for reading: %q", filePath)
-
+	log.Debug("Opening file for reading",
+		zap.String("path", filePath),
+	)
 	// #nosec G304 -- User-provided paths are expected for CLI tool
 	file, err := os.Open(filePath)
 	if err != nil {
-		log.Debugf("Failed to open %q: %v", filePath, err)
+		log.Error("Failed to open file for reading",
+			zap.String("path", filePath),
+			zap.Error(err),
+		)
 		return nil, fmt.Errorf("open file for reading: %q: %w", filePath, err)
 	}
 
-	log.Debugf("Successfully opened %q", filePath)
 	return file, nil
 }
 
@@ -121,14 +125,25 @@ func GetFileHandle(ctx context.Context, filePath string) (*os.File, error) {
 func ExtractSignature(ctx context.Context, cfg config.Config, path string) (sbom.Signature, error) {
 	log := logger.FromContext(ctx)
 
-	sigValue, publicKey := cfg.SignatureBundle.SigValue, cfg.SignatureBundle.PublicKey
+	sigValue := cfg.SignatureBundle.SigValue
+	publicKey := cfg.SignatureBundle.PublicKey
+
 	if sigValue == "" || publicKey == "" {
+		log.Debug("Signature verification not configured",
+			zap.String("path", path),
+		)
 		return sbom.Signature{}, nil
 	}
 
+	log.Debug("Signature verification not configured",
+		zap.String("path", path),
+	)
+
 	_, signature, pubKey, err := common.GetSignatureBundle(ctx, path, sigValue, publicKey)
 	if err != nil {
-		log.Debugf("failed to get signature bundle for file: %s: %v", path, err)
+		log.Debug("Signature verification not configured",
+			zap.String("path", path),
+		)
 		return sbom.Signature{}, err
 	}
 

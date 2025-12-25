@@ -23,6 +23,7 @@ import (
 	"github.com/interlynk-io/sbomqs/v2/pkg/engine"
 	"github.com/interlynk-io/sbomqs/v2/pkg/logger"
 	"github.com/spf13/cobra"
+	"go.uber.org/zap"
 )
 
 // dtrackScoreCmd represents the dtrackScore command for scoring SBOM quality from Dependency-Track projects.
@@ -42,16 +43,19 @@ var dtrackScoreCmd = &cobra.Command{
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		debug, _ := cmd.Flags().GetBool("debug")
-		if debug {
-			logger.InitDebugLogger()
-		} else {
-			logger.InitProdLogger()
-		}
+
+		// Initialize logger once
+		logger.Init(debug)
+		defer logger.Sync()
+
 		ctx := logger.WithLogger(context.Background())
+
+		log := logger.FromContext(ctx)
+		log.Info("Dtrack Scoring started")
 
 		dtParams, err := extractArgs(cmd, args)
 		if err != nil {
-			log.Fatalf("failed to extract args: %v", err)
+			log.Fatal("failed to extract args", zap.Error(err))
 		}
 
 		return engine.DtrackScore(ctx, dtParams)

@@ -20,6 +20,7 @@ import (
 
 	"github.com/interlynk-io/sbomqs/v2/pkg/logger"
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
+	"go.uber.org/zap"
 )
 
 // Extractor provides a simple mapping from canonical field names to
@@ -42,12 +43,11 @@ func NewExtractor(doc sbom.Document) *Extractor {
 // quick mapping of fields with respective funtions
 func (extractor *Extractor) MapFieldWithFunction(ctx context.Context) {
 	log := logger.FromContext(ctx)
-	log.Debugf("Creating Extractor...")
+	log.Debug("Initializing SBOM field extractor")
 
 	// component-level mappings (canonical keys are lowercase)
 	extractor.compGetters["name"] = func(c sbom.GetComponent) []string {
 		if s := c.GetName(); s != "" {
-			log.Debugf("exracted name field: %s", s)
 			return []string{s}
 		}
 		return nil
@@ -55,7 +55,6 @@ func (extractor *Extractor) MapFieldWithFunction(ctx context.Context) {
 
 	extractor.compGetters["version"] = func(c sbom.GetComponent) []string {
 		if s := c.GetVersion(); s != "" {
-			log.Debugf("exracted version field: %s", s)
 			return []string{s}
 		}
 		return nil
@@ -73,8 +72,6 @@ func (extractor *Extractor) MapFieldWithFunction(ctx context.Context) {
 				licenses = append(licenses, ln)
 			}
 		}
-		log.Debugf("exracted license value: %s", licenses)
-
 		return nilOrSlice(licenses)
 	}
 
@@ -85,28 +82,21 @@ func (extractor *Extractor) MapFieldWithFunction(ctx context.Context) {
 				purls = append(purls, s)
 			}
 		}
-
-		log.Debugf("exracted PURL field: %s", purls)
 		return nilOrSlice(purls)
 	}
 
 	extractor.compGetters["cpe"] = func(c sbom.GetComponent) []string {
-		log.Debugf("exracted field: cpe")
-
 		cpes := []string{}
 		for _, cp := range c.GetCpes() {
 			if s := cp.String(); s != "" {
 				cpes = append(cpes, s)
 			}
 		}
-
-		log.Debugf("exracted CPE field: %s", cpes)
 		return nilOrSlice(cpes)
 	}
 
 	extractor.compGetters["copyright"] = func(c sbom.GetComponent) []string {
 		if s := c.GetCopyRight(); s != "" {
-			log.Debugf("exracted copyright field: %s", s)
 			return []string{s}
 		}
 		return nil
@@ -115,7 +105,6 @@ func (extractor *Extractor) MapFieldWithFunction(ctx context.Context) {
 	// keep canonical key lowercase: "downloadlocation" to avoid special chars in lookups
 	extractor.compGetters["downloadlocation"] = func(c sbom.GetComponent) []string {
 		if s := c.GetDownloadLocationURL(); s != "" {
-			log.Debugf("exracted downloadlocation field: %s", s)
 			return []string{s}
 		}
 		return nil
@@ -123,10 +112,7 @@ func (extractor *Extractor) MapFieldWithFunction(ctx context.Context) {
 
 	// canonical "type" (primary purpose)
 	extractor.compGetters["type"] = func(c sbom.GetComponent) []string {
-		log.Debugf("exracted field: type")
-
 		if s := c.PrimaryPurpose(); s != "" {
-			log.Debugf("exracted package type field: %s", s)
 			return []string{s}
 		}
 		return nil
@@ -134,8 +120,6 @@ func (extractor *Extractor) MapFieldWithFunction(ctx context.Context) {
 
 	// supplier: aggregate common supplier fields
 	extractor.compGetters["supplier"] = func(c sbom.GetComponent) []string {
-		log.Debugf("exracted field: supplier")
-
 		suppliers := []string{}
 		if sup := c.Suppliers(); sup != nil {
 			if name := sup.GetName(); name != "" {
@@ -148,14 +132,11 @@ func (extractor *Extractor) MapFieldWithFunction(ctx context.Context) {
 				suppliers = append(suppliers, u)
 			}
 		}
-		log.Debugf("exracted suppliers field: %s", suppliers)
 		return nilOrSlice(suppliers)
 	}
 
 	// author: aggregate common author fields
 	extractor.compGetters["author"] = func(c sbom.GetComponent) []string {
-		log.Debugf("exracted field: author")
-
 		authors := []string{}
 
 		if c != nil {
@@ -164,21 +145,15 @@ func (extractor *Extractor) MapFieldWithFunction(ctx context.Context) {
 				authors = append(authors, a.GetEmail())
 			}
 		}
-
-		log.Debugf("exracted authors field: %s", authors)
 		return nilOrSlice(authors)
 	}
 
 	// author: aggregate common author fields
 	extractor.compGetters["checksum"] = func(c sbom.GetComponent) []string {
-		log.Debugf("exracted field: checksum")
-
 		var cheksums []string
 		for _, chk := range c.GetChecksums() {
 			cheksums = append(cheksums, chk.GetContent())
 		}
-
-		log.Debugf("exracted cheksums field: %s", cheksums)
 		return nilOrSlice(cheksums)
 	}
 
@@ -256,6 +231,11 @@ func (extractor *Extractor) MapFieldWithFunction(ctx context.Context) {
 		primaryComp = append(primaryComp, d.PrimaryComp().GetID())
 		return nilOrSlice(primaryComp)
 	}
+
+	log.Debug("SBOM field extractor initialized",
+		zap.Int("component_fields", len(extractor.compGetters)),
+		zap.Int("document_fields", len(extractor.docGetters)),
+	)
 }
 
 // nilOrSlice returns nil if the provided slice is empty,

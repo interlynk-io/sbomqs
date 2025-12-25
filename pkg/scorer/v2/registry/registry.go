@@ -29,6 +29,7 @@ import (
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/config"
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/extractors"
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/profiles"
+	"go.uber.org/zap"
 )
 
 // ComprCatKey lists all comprehenssive catefories
@@ -286,60 +287,86 @@ var profileAliases = map[string]catalog.ProfileKey{
 // Returns an error on serious IO / decode failures only.
 func InitializeCatalog(ctx context.Context, conf config.Config) (*catalog.Catalog, error) {
 	log := logger.FromContext(ctx)
-	log.Debugf("InitializeCatalog: starting catalog initialization")
+	log.Info("Initializing scoring catalog")
 
 	catal := &catalog.Catalog{}
 	confFile := strings.TrimSpace(conf.ConfigFile)
 
 	// when config file is feeded
 	if confFile != "" {
-		log.Debugf("InitializeCatalog: config file provided: %q", confFile)
-
+		log.Info("Loading catalog from config file",
+			zap.String("config_file", confFile),
+		)
 		categories, profiles, err := mergeConfigFileIntoCatalogYAML(ctx, confFile)
 		if err != nil {
+			log.Error("Failed to load catalog config file",
+				zap.String("config_file", confFile),
+				zap.Error(err),
+			)
 			return nil, fmt.Errorf("failed to load config file %q: %w", confFile, err)
 		}
 
 		if categories != nil {
-			log.Debugf("InitializeCatalog: loaded %d comprehensive category(ies) from config file", len(categories))
+			log.Debug("Loaded comprehensive categories from config file",
+				zap.Int("categories", len(categories)),
+			)
 			catal.ComprCategories = categories
 		}
 
 		if profiles != nil {
-			log.Debugf("InitializeCatalog: loaded %d profile(s) from config file", len(profiles))
+			log.Debug("Loaded profiles from config file",
+				zap.Int("profiles", len(profiles)),
+			)
 			catal.Profiles = profiles
 		}
 
-		log.Debugf("InitializeCatalog: initialized from config file %q", confFile)
+		log.Info("Catalog initialized from config file",
+			zap.Int("categories", len(catal.ComprCategories)),
+			zap.Int("profiles", len(catal.Profiles)),
+		)
 		return catal, nil
 	}
 
 	// Profiles provided command inline
 	if len(conf.Profile) > 0 {
-		log.Debugf("InitializeCatalog: profiles provided inline (%d): %v", len(conf.Profile), conf.Profile)
+		log.Info("Initializing catalog using inline profiles",
+			zap.Int("requested", len(conf.Profile)),
+		)
 
 		profiles, err := filterProfiles(ctx, conf.Profile)
 		if err != nil {
+			log.Info("Initializing catalog using inline profiles",
+				zap.Int("requested", len(conf.Profile)),
+			)
 			return nil, err
 		}
+
 		catal.Profiles = profiles
-		log.Debugf("InitializeCatalog: selected %d profile(s) after filtering", len(catal.Profiles))
+		log.Info("Catalog initialized with selected profiles",
+			zap.Int("profiles", len(catal.Profiles)),
+		)
 
 		return catal, nil
 	}
 
 	// Features provided inline
 	if len(conf.Features) > 0 {
-		log.Debugf("InitializeCatalog: features provided inline (%d) - applying feature-based initialization", len(conf.Features))
+		log.Info("Catalog initialized with selected profiles",
+			zap.Int("profiles", len(catal.Profiles)),
+		)
 		return catal, nil
 	}
 
 	// Categories provided inline
 	if len(conf.Categories) > 0 {
-		log.Debugf("InitializeCatalog: categories provided inline (%d): %v", len(conf.Categories), conf.Categories)
+		log.Info("Initializing catalog using inline categories",
+			zap.Int("requested", len(conf.Categories)),
+		)
 		catal.ComprCategories = filterCategories(ctx, conf.Categories)
 
-		log.Debugf("InitializeCatalog: selected %d comprehensive category(ies) after filtering", len(catal.ComprCategories))
+		log.Info("Catalog initialized with selected categories",
+			zap.Int("categories", len(catal.ComprCategories)),
+		)
 		return catal, nil
 	}
 
@@ -347,11 +374,9 @@ func InitializeCatalog(ctx context.Context, conf config.Config) (*catalog.Catalo
 	catal.Profiles = defaultProfiles
 
 	// Default -> use full comprehensive categories
-	log.Debugf("InitializeCatalog: no config/profile/categories provided - defaulting to %d comprehensive categories", len(catal.ComprCategories))
-
-	// Final summary
-	log.Debugf("InitializeCatalog: finished initialization: profiles=%d, comprehensiveCategories=%d",
-		len(catal.Profiles), len(catal.ComprCategories))
+	log.Info("Catalog initialized with selected categories",
+		zap.Int("categories", len(catal.ComprCategories)),
+	)
 
 	return catal, nil
 }
@@ -360,7 +385,9 @@ func InitializeCatalog(ctx context.Context, conf config.Config) (*catalog.Catalo
 // It tries to detect which shape the file has by looking for top-level keys.
 func mergeConfigFileIntoCatalogYAML(ctx context.Context, path string) ([]catalog.ComprCatSpec, []catalog.ProfSpec, error) {
 	log := logger.FromContext(ctx)
-	log.Debugf("mergeConfigFileIntoCatalogYAML: processing file %q", path)
+	log.Debug("Processing catalog config file",
+		zap.String("path", path),
+	)
 
 	var cat []catalog.ComprCatSpec
 	var prof []catalog.ProfSpec
@@ -368,50 +395,66 @@ func mergeConfigFileIntoCatalogYAML(ctx context.Context, path string) ([]catalog
 	// #nosec G304 -- User-provided paths are expected for CLI tool
 	b, err := os.ReadFile(path)
 	if err != nil {
-		log.Errorf("mergeConfigFileIntoCatalogYAML: failed to read file %q: %v", path, err)
+		log.Error("Failed to read catalog config file",
+			zap.String("path", path),
+			zap.Error(err),
+		)
 		return nil, nil, err
 	}
-
-	log.Debugf("mergeConfigFileIntoCatalogYAML: read %d bytes from %q", len(b), path)
 
 	lower := strings.ToLower(string(b))
 
 	// Detect comprehensive categories file
 	if strings.Contains(lower, "categories:") {
-		log.Debugf("mergeConfigFileIntoCatalogYAML: detected comprehensive categories config in %q", path)
+		log.Debug("Detected comprehensive categories config")
 
 		cat, err = ReadComprConfigFile(path)
 		if err != nil {
-			log.Errorf("mergeConfigFileIntoCatalogYAML: failed to parse comprehensive config %q: %v", path, err)
+			log.Error("Failed to parse comprehensive categories config",
+				zap.String("path", path),
+				zap.Error(err),
+			)
 			return nil, nil, fmt.Errorf("read comprehensive config: %w", err)
 		}
 
-		log.Debugf("mergeConfigFileIntoCatalogYAML: parsed %d comprehensive categories from %q", len(cat), path)
+		log.Info("Loaded comprehensive categories from config file",
+			zap.Int("categories", len(cat)),
+		)
 		return cat, nil, nil
 	}
 
 	if strings.Contains(lower, "profiles:") {
-		log.Debugf("mergeConfigFileIntoCatalogYAML: detected profiles config in %q", path)
+		log.Debug("Detected profiles config")
 
 		prof, err = ReadProfileConfigFile(path)
 		if err != nil {
-			log.Errorf("mergeConfigFileIntoCatalogYAML: failed to parse profiles config %q: %v", path, err)
+			log.Error("Failed to parse profiles config",
+				zap.String("path", path),
+				zap.Error(err),
+			)
 			return nil, nil, fmt.Errorf("read profile config: %w", err)
 		}
 
-		log.Debugf("mergeConfigFileIntoCatalogYAML: parsed %d profiles from %q", len(prof), path)
+		log.Error("Failed to parse profiles config",
+			zap.String("path", path),
+			zap.Error(err),
+		)
 		return nil, prof, nil
 	}
 
-	log.Debugf("mergeConfigFileIntoCatalogYAML: no top-level 'categories:' or 'profiles:' key found in %q config file", path)
-
+	log.Error("Failed to parse profiles config",
+		zap.String("path", path),
+		zap.Error(err),
+	)
 	return nil, nil, fmt.Errorf("Unknown config file, neither categories not profiles based")
 }
 
 // filterCategories keeps only requested comprehensive categories.
 func filterCategories(ctx context.Context, categories []string) []catalog.ComprCatSpec {
 	log := logger.FromContext(ctx)
-	log.Debugf("filterCategories: received %d categories: %v", len(categories), categories)
+	log.Debug("Filtering requested categories",
+		zap.Int("requested", len(categories)),
+	)
 
 	alreadyExists := make(map[string]bool)
 	var finalCats []catalog.ComprCatSpec
@@ -424,62 +467,58 @@ func filterCategories(ctx context.Context, categories []string) []catalog.ComprC
 
 		category := strings.ToLower(strings.TrimSpace(cat))
 		if alreadyExists[category] {
-			log.Debugf("filterCategories: duplicate category: %q - skip", category)
 			continue
 		}
 		alreadyExists[category] = true
 
 		switch category {
 		case "identification":
-			log.Debugf("filterCategories: selecting category %q", category)
 			finalCats = append(finalCats, CatIdentificationSpec)
 
 		case "provenance":
-			log.Debugf("filterCategories: selecting category %q", category)
 			finalCats = append(finalCats, CatProvenanceSpec)
 
 		case "integrity":
-			log.Debugf("filterCategories: selecting category %q", category)
 			finalCats = append(finalCats, CatIntegritySpec)
 
 		case "completeness":
-			log.Debugf("filterCategories: selecting category %q", category)
 			finalCats = append(finalCats, CatCompletenessSpec)
 
 		case "licensing":
-			log.Debugf("filterCategories: selecting category %q", category)
 			finalCats = append(finalCats, CatLicensingAndComplianceSpec)
 
 		case "vulnerability":
-			log.Debugf("filterCategories: selecting category %q", category)
 			finalCats = append(finalCats, CatVulnerabilityAndTraceSpec)
 
 		case "structural":
-			log.Debugf("filterCategories: selecting category %q", category)
 			finalCats = append(finalCats, CatStructuralSpec)
 
 		case "compinfo":
-			log.Debugf("filterCategories: selecting category %q", category)
 			finalCats = append(finalCats, CatComponentQualityInfoSpec)
 
 		default:
 			unknown = append(unknown, category)
-			log.Debugf("filterCategories: unknown category %q - skipping", category)
 		}
 	}
 
-	log.Debugf("filterCategories: selected %d categories: %v", len(finalCats), finalCats)
 	if len(unknown) > 0 {
-		log.Debugf("filterCategories: ignored %d unknown categories: %v", len(unknown), unknown)
+		log.Debug("Filtering requested categories",
+			zap.Int("requested", len(categories)),
+		)
 	}
 
+	log.Debug("Filtering requested categories",
+		zap.Int("requested", len(categories)),
+	)
 	return finalCats
 }
 
 // filterProfiles keeps only requested profile keys (preserving order).
 func filterProfiles(ctx context.Context, profiles []string) ([]catalog.ProfSpec, error) {
 	log := logger.FromContext(ctx)
-	log.Debugf("filterProfiles: received %d requested profiles: %v", len(profiles), profiles)
+	log.Debug("Filtering requested profiles",
+		zap.Int("requested", len(profiles)),
+	)
 
 	alreadyExists := make(map[string]bool)
 	finalProfiles := make([]catalog.ProfSpec, 0, len(profiles))
@@ -492,7 +531,6 @@ func filterProfiles(ctx context.Context, profiles []string) ([]catalog.ProfSpec,
 
 		profile := strings.ToLower(strings.TrimSpace(pro))
 		if alreadyExists[profile] {
-			log.Debugf("filterProfiles: duplicate profile: %q, skipping", profile)
 			continue
 		}
 		alreadyExists[profile] = true
@@ -500,47 +538,43 @@ func filterProfiles(ctx context.Context, profiles []string) ([]catalog.ProfSpec,
 		switch profile {
 
 		case string(ProfileNTIA):
-			log.Debugf("filterProfiles: selecting profile %q", profile)
 			finalProfiles = append(finalProfiles, profileNTIASpec)
 
 		case string(ProfileNTIA2025):
-			log.Debugf("filterProfiles: selecting profile %q", profile)
 			finalProfiles = append(finalProfiles, profileNTIA2025Spec)
 
 		case string(ProfileFSCT):
-			log.Debugf("filterProfiles: selecting profile %q", profile)
 			finalProfiles = append(finalProfiles, profileFSCTSpec)
 
 		case "bsi":
-			log.Debugf("filterProfiles: selecting profile %q", profile)
 			finalProfiles = append(finalProfiles, profileBSI11Spec)
 
 		case string(ProfileBSI11):
-			log.Debugf("filterProfiles: selecting profile %q", profile)
 			finalProfiles = append(finalProfiles, profileBSI11Spec)
 
 		case string(ProfileBSI20):
-			log.Debugf("filterProfiles: selecting profile %q", profile)
 			finalProfiles = append(finalProfiles, profileBSI20Spec)
 
 		case string(ProfileOCTV11):
-			log.Debugf("filterProfiles: selecting profile %q", profile)
 			finalProfiles = append(finalProfiles, profileOCTV11Spec)
 
 		case string(ProfileInterlynk):
-			log.Debugf("filterProfiles: selecting profile %q", profile)
 			finalProfiles = append(finalProfiles, profileInterlynkSpec)
 
 		default:
 			unknown = append(unknown, profile)
-			log.Debugf("filterProfiles: unknown profile %q, skip", profile)
 		}
-
 	}
-	log.Debugf("filterProfiles: selected %d profile(s): %v", len(finalProfiles), finalProfiles)
+
 	if len(unknown) > 0 {
+		log.Error("Unknown profile(s) requested",
+			zap.Strings("profiles", unknown),
+		)
 		return nil, fmt.Errorf("unknown profile(s): %v", unknown)
 	}
+	log.Debug("Profile filtering completed",
+		zap.Int("selected", len(finalProfiles)),
+	)
 
 	return finalProfiles, nil
 }

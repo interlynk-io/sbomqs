@@ -18,71 +18,66 @@ package logger
 
 import (
 	"context"
-	"log"
 
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
-var logger *zap.SugaredLogger
+type contextKey struct{}
 
-type logKey struct{}
+var logger *zap.Logger
 
-// InitProdLogger initializes a production-ready logger with JSON formatting
-// and appropriate log levels for production environments.
-func InitProdLogger() {
-	l, err := zap.NewProduction()
-	if err != nil {
-		log.Fatalf("Failed to initialize logger: %v", err)
-	}
-
-	defer func() {
-		if err := logger.Sync(); err != nil {
-			return
-		}
-	}()
-
+func Init(debug bool) {
 	if logger != nil {
 		panic("logger already initialized")
 	}
-	logger = l.Sugar()
-}
 
-// InitDebugLogger initializes a development logger with console formatting
-// and debug-level logging for development and testing environments.
-func InitDebugLogger() {
-	l, err := zap.NewDevelopment()
+	level := zapcore.ErrorLevel
+	if debug {
+		level = zapcore.DebugLevel
+	}
+
+	cfg := zap.Config{
+		Level:       zap.NewAtomicLevelAt(level),
+		Development: debug,
+		Encoding:    "console",
+		EncoderConfig: zapcore.EncoderConfig{
+			TimeKey:      "time",
+			LevelKey:     "level",
+			MessageKey:   "msg",
+			CallerKey:    "caller",
+			EncodeTime:   zapcore.ISO8601TimeEncoder,
+			EncodeLevel:  zapcore.CapitalColorLevelEncoder,
+			EncodeCaller: zapcore.ShortCallerEncoder,
+		},
+		OutputPaths:      []string{"stdout"},
+		ErrorOutputPaths: []string{"stderr"},
+	}
+
+	l, err := cfg.Build(zap.AddCaller())
 	if err != nil {
-		log.Printf("Failed to zap new development: %v", err)
+		panic(err)
 	}
 
-	defer func() {
-		if err := logger.Sync(); err != nil {
-			return
-		}
-	}()
-
-	if logger != nil {
-		panic("logger already initialized")
-	}
-	logger = l.Sugar()
+	logger = l
 }
 
-// WithLogger returns a new context with the logger attached.
-// This enables context-aware logging throughout the application.
+// WithLogger attaches logger to context.
 func WithLogger(ctx context.Context) context.Context {
-	return context.WithValue(ctx, logKey{}, logger)
+	return context.WithValue(ctx, contextKey{}, logger)
 }
 
-func WithLoggerAndCancel(ctx context.Context) (context.Context, context.CancelFunc) {
-	return context.WithCancel(context.WithValue(ctx, logKey{}, logger))
-}
-
-// FromContext retrieves a logger from the provided context.
-// Returns a no-op logger if no logger is found in the context.
-func FromContext(ctx context.Context) *zap.SugaredLogger {
-	if logger, ok := ctx.Value(logKey{}).(*zap.SugaredLogger); ok {
-		return logger
+// FromContext retrieves logger from context.
+func FromContext(ctx context.Context) *zap.Logger {
+	if l, ok := ctx.Value(contextKey{}).(*zap.Logger); ok && l != nil {
+		return l
 	}
+	return zap.NewNop()
+}
 
-	return zap.NewNop().Sugar()
+// Sync flushes buffered logs.
+func Sync() {
+	if logger != nil {
+		_ = logger.Sync()
+	}
 }

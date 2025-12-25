@@ -25,6 +25,7 @@ import (
 	"strings"
 
 	"github.com/interlynk-io/sbomqs/v2/pkg/logger"
+	"go.uber.org/zap"
 )
 
 func IsDir(path string) bool {
@@ -112,7 +113,7 @@ func DownloadSBOMFromURL(url string) ([]byte, error) {
 	}
 	defer func() {
 		if err := resp.Body.Close(); err != nil {
-			log.Warnf("failed to close response body: %v", err)
+			log.Warn("failed to close response body", zap.Error(err))
 		}
 	}()
 

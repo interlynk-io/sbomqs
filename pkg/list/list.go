@@ -24,6 +24,7 @@ import (
 	"github.com/interlynk-io/sbomqs/v2/pkg/common"
 	"github.com/interlynk-io/sbomqs/v2/pkg/logger"
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
+	"go.uber.org/zap"
 )
 
 var (
@@ -34,46 +35,85 @@ var (
 // ComponentsListResult lists components or SBOM properties based on the specified features for multiple local SBOMs
 func ComponentsListResult(ctx context.Context, ep *Params) (*Result, error) {
 	log := logger.FromContext(ctx)
-	log.Debug("starting list operation")
+
+	log.Info("Starting SBOM list operation",
+		zap.Strings("paths", ep.Path),
+		zap.Strings("features", ep.Features),
+	)
 
 	results, err := collectResultsForInputPaths(ctx, ep)
 	if err != nil {
-		log.Debugf("failed to process paths: %v", err)
+		log.Error("Failed to collect results for input paths",
+			zap.Error(err),
+		)
 		return nil, err
 	}
 
+	log.Debug("Collected list results",
+		zap.Int("result_count", len(results)),
+	)
+
 	if err := generateReport(ctx, results, ep); err != nil {
-		log.Debugf("failed to generate report: %v", err)
+		log.Error("Failed to generate list report",
+			zap.Error(err),
+		)
 		return nil, err
 	}
 
 	if len(results) > 0 {
+		log.Info("SBOM list operation completed",
+			zap.Int("result_count", len(results)),
+		)
 		return results[0], nil
 	}
 
-	log.Debug("no results produced")
+	log.Warn("SBOM list operation completed with no results")
 	return nil, nil
 }
 
 // collectResultsForInputPaths
 func collectResultsForInputPaths(ctx context.Context, ep *Params) ([]*Result, error) {
+	log := logger.FromContext(ctx)
+
+	log.Debug("Resolving input paths",
+		zap.Strings("paths", ep.Path),
+	)
+
 	filePaths, err := expandPathsToFiles(ctx, ep.Path)
 	if err != nil {
+		log.Error("Failed to expand input paths",
+			zap.Error(err),
+		)
 		return nil, err
 	}
+
+	log.Debug("Expanded input paths to files",
+		zap.Int("file_count", len(filePaths)),
+	)
 
 	return collectResultsForSBOMs(ctx, ep, filePaths)
 }
 
 // expandPathsToFiles resolves a mix of files/directories into concrete SBOM file paths.
 func expandPathsToFiles(ctx context.Context, paths []string) ([]string, error) {
+	log := logger.FromContext(ctx)
+	log.Debug("Exapmading provided paths into files", zap.Strings("paths", paths))
+
 	var files []string
 	for _, p := range paths {
 		fps, err := filesFromPath(ctx, p)
 		if err != nil {
+			log.Warn("Skipping path due to error",
+				zap.String("path", p),
+				zap.Error(err),
+			)
 			continue
 		}
 		files = append(files, fps...)
+	}
+
+	if len(files) == 0 {
+		log.Warn("No SBOM files found after path expansion")
 	}
 	return files, nil
 }
@@ -83,7 +123,9 @@ func filesFromPath(ctx context.Context, path string) ([]string, error) {
 	log := logger.FromContext(ctx)
 	var paths []string
 
-	log.Debugf("Processing path: %s", path)
+	log.Debug("Processing input path",
+		zap.String("path", path),
+	)
 	pathInfo, err := os.Stat(path)
 	if err != nil {
 		return nil, fmt.Errorf("failed to stat path %s: %w", path, err)
@@ -94,13 +136,18 @@ func filesFromPath(ctx context.Context, path string) ([]string, error) {
 		if err != nil {
 			return nil, fmt.Errorf("failed to read directory %s: %w", path, err)
 		}
+
 		for _, file := range files {
 			if file.IsDir() {
 				continue
 			}
-			filePath := filepath.Join(path, file.Name())
-			paths = append(paths, filePath)
+			paths = append(paths, filepath.Join(path, file.Name()))
 		}
+
+		log.Debug("Directory expanded",
+			zap.String("path", path),
+			zap.Int("file_count", len(paths)),
+		)
 	} else {
 		paths = append(paths, path)
 	}
@@ -110,11 +157,17 @@ func filesFromPath(ctx context.Context, path string) ([]string, error) {
 
 // collectResultsForSBOMs parses each SBOM file and evaluates all requested features.
 func collectResultsForSBOMs(ctx context.Context, ep *Params, filePaths []string) ([]*Result, error) {
+	log := logger.FromContext(ctx)
+
 	var results []*Result
 
 	for _, filePath := range filePaths {
 		fileResults, err := collectResultsForSBOM(ctx, ep, filePath)
 		if err != nil {
+			log.Warn("Skipping SBOM file due to error",
+				zap.String("file", filePath),
+				zap.Error(err),
+			)
 			continue
 		}
 		results = append(results, fileResults...)
@@ -125,16 +178,32 @@ func collectResultsForSBOMs(ctx context.Context, ep *Params, filePaths []string)
 
 // collectResultsForFile parses a single SBOM file and evaluates all requested features.
 func collectResultsForSBOM(ctx context.Context, ep *Params, filePath string) ([]*Result, error) {
+	log := logger.FromContext(ctx)
+
 	doc, err := parseSBOMDocument(ctx, filePath)
 	if err != nil {
+		log.Error("Failed to parse SBOM document",
+			zap.String("file", filePath),
+			zap.Error(err),
+		)
 		return nil, err
 	}
 
 	var results []*Result
 	for _, rawFeature := range ep.Features {
 		feature := strings.TrimSpace(rawFeature)
+		log.Debug("Evaluating feature",
+			zap.String("feature", feature),
+			zap.String("file", filePath),
+		)
+
 		res, err := evaluateFeature(ctx, ep.Missing, doc, filePath, feature)
 		if err != nil {
+			log.Warn("Feature evaluation failed",
+				zap.String("feature", feature),
+				zap.String("file", filePath),
+				zap.Error(err),
+			)
 			continue
 		}
 		results = append(results, res)
@@ -146,6 +215,9 @@ func collectResultsForSBOM(ctx context.Context, ep *Params, filePath string) ([]
 // parseSBOMDocument parses an SBOM document from a local file path
 func parseSBOMDocument(ctx context.Context, filePath string) (sbom.Document, error) {
 	log := logger.FromContext(ctx)
+	log.Debug("Opening SBOM file",
+		zap.String("file", filePath),
+	)
 	// #nosec G304 -- User-provided paths are expected for CLI tool
 	f, err := os.Open(filePath)
 	if err != nil {
@@ -153,7 +225,10 @@ func parseSBOMDocument(ctx context.Context, filePath string) (sbom.Document, err
 	}
 	defer func() {
 		if err := f.Close(); err != nil {
-			log.Warnf("failed to close file: %v", err)
+			log.Warn("Failed to close SBOM file",
+				zap.String("file", filePath),
+				zap.Error(err),
+			)
 		}
 	}()
 
@@ -162,21 +237,26 @@ func parseSBOMDocument(ctx context.Context, filePath string) (sbom.Document, err
 		return nil, fmt.Errorf("failed to create SBOM document for %s: %w", filePath, err)
 	}
 
+	log.Debug("SBOM document parsed",
+		zap.String("file", filePath),
+	)
 	return currentDoc, nil
 }
 
 // evaluateFeature processes a single feature for an SBOM document and returns a ListResult
 func evaluateFeature(ctx context.Context, missing bool, doc sbom.Document, filePath, feature string) (*Result, error) {
 	log := logger.FromContext(ctx)
-	log.Debug("list.processFeatureForSBOM()")
-	log.Debug("processing feature: ", feature)
-
 	feature = strings.TrimSpace(feature)
 
 	if feature == "" {
 		log.Debug("feature cannot be empty")
 		return nil, fmt.Errorf("feature cannot be empty")
 	}
+
+	log.Debug("Evaluating feature for SBOM",
+		zap.String("feature", feature),
+		zap.String("file", filePath),
+	)
 
 	switch {
 
@@ -195,7 +275,6 @@ func evaluateFeature(ctx context.Context, missing bool, doc sbom.Document, fileP
 // evaluateFeatureForComponent evaluates a component-based feature across all components.
 func evaluateFeatureForComponent(ctx context.Context, doc sbom.Document, filePath, feature string, missing bool) (*Result, error) {
 	log := logger.FromContext(ctx)
-	log.Debug("processing component feature: ", feature)
 
 	result := &Result{
 		FilePath: filePath,
@@ -207,11 +286,15 @@ func evaluateFeatureForComponent(ctx context.Context, doc sbom.Document, filePat
 	var totalComponents int
 
 	for _, comp := range doc.Components() {
-		log.Debugf("evaluating feature %s for component %s", result.Feature, comp.GetName())
+		log.Debug("evaluating feature for component", zap.String("feature", result.Feature), zap.String("comp", comp.GetName()))
 
 		hasFeature, value, err := evaluateFeaturePerComponent(result.Feature, comp, doc)
 		if err != nil {
-			log.Debugf("failed to evaluate feature %s for component: %v", result.Feature, err)
+			log.Debug("Component feature evaluation failed",
+				zap.String("feature", feature),
+				zap.String("component", comp.GetName()),
+				zap.Error(err),
+			)
 			result.Errors = append(result.Errors, fmt.Sprintf("failed to evaluate feature %s for component: %v", result.Feature, err))
 			continue
 		}
@@ -234,7 +317,6 @@ func evaluateFeatureForComponent(ctx context.Context, doc sbom.Document, filePat
 // evaluateFeatureForDocument evaluates an SBOM-based feature for the SBOM document.
 func evaluateFeatureForDocument(ctx context.Context, doc sbom.Document, filePath, feature string, missing bool) (*Result, error) {
 	log := logger.FromContext(ctx)
-	log.Debugf("processing SBOM feature=%q", feature)
 
 	result := &Result{
 		FilePath: filePath,
@@ -245,7 +327,10 @@ func evaluateFeatureForDocument(ctx context.Context, doc sbom.Document, filePath
 	// SBOM-based feature
 	hasFeature, value, err := evaluateSBOMFeature(result.Feature, doc)
 	if err != nil {
-		log.Debugf("failed to evaluate feature %s for document: %v", result.Feature, err)
+		log.Debug("SBOM feature evaluation failed",
+			zap.String("feature", feature),
+			zap.Error(err),
+		)
 		result.Errors = append(result.Errors, fmt.Sprintf("failed to evaluate feature %s for document: %v", result.Feature, err))
 		return result, err
 	}
@@ -309,12 +394,10 @@ func generateReport(ctx context.Context, results []*Result, ep *Params) error {
 		reportFormat = common.FormatJSON
 	}
 
-	log.Debugf(
-		"list.generateReport(): format=%s color=%t show=%v results=%d",
-		strings.ToLower(reportFormat),
-		ep.Color,
-		ep.Show,
-		len(results),
+	log.Info("Generating list report",
+		zap.String("format", reportFormat),
+		zap.Bool("color", ep.Color),
+		zap.Int("results", len(results)),
 	)
 
 	lnr := NewListReport(ctx, results, WithFormat(strings.ToLower(reportFormat)), WithColor(ep.Color), WithValues(ep.Show))

@@ -27,6 +27,7 @@ import (
 	"github.com/interlynk-io/sbomqs/v2/pkg/reporter"
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer"
+	"go.uber.org/zap"
 )
 
 func Share(ctx context.Context, doc sbom.Document, scores scorer.Scores, sbomFileName string) (string, error) {
@@ -66,7 +67,7 @@ func sentToBenchmark(js string) (string, error) {
 
 	defer func() {
 		if err := resp.Body.Close(); err != nil {
-			log.Warnf("failed to close response body: %v", err)
+			log.Warn("failed to close response body", zap.Error(err))
 		}
 	}()
 

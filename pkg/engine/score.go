@@ -36,6 +36,7 @@ import (
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/api"
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/config"
 	score "github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/score"
+	"go.uber.org/zap"
 
 	"github.com/spf13/afero"
 )
@@ -77,24 +78,37 @@ type Params struct {
 
 func Run(ctx context.Context, ep *Params) error {
 	log := logger.FromContext(ctx)
-	log.Debug("engine.Run()")
-	log.Debug(ep)
+
+	log.Info("Starting scoring run",
+		zap.Bool("legacy", ep.Legacy),
+		zap.Int("path_count", len(ep.Path)),
+	)
 
 	if len(ep.Path) == 0 {
-		log.Fatal("path is required")
+		log.Error("Scoring run failed: no input paths provided")
+		return fmt.Errorf("path is required")
 	}
 
 	if ep.Legacy {
+		log.Info("Using legacy scoring engine",
+			zap.Bool("legacy", ep.Legacy),
+		)
 		return handlePaths(ctx, ep)
 	}
 
+	log.Info("Using v2 scoring engine")
 	return runV2Score(ctx, ep)
 }
 
 // scored runs the v2 scoring engine once and returns the results.
 func scored(ctx context.Context, ep *Params) ([]api.Result, error) {
 	log := logger.FromContext(ctx)
-	log.Debugf("Starting score engine to score v2")
+	log.Info("Executing v2 scoring engine",
+		zap.Strings("paths", ep.Path),
+		zap.Strings("categories", ep.Categories),
+		zap.Strings("features", ep.Features),
+		zap.Strings("profiles", ep.Profiles),
+	)
 
 	cfg := config.Config{
 		Categories: ep.Categories,
@@ -103,16 +117,36 @@ func scored(ctx context.Context, ep *Params) ([]api.Result, error) {
 		Profile:    ep.Profiles,
 	}
 
-	return score.ScoreSBOM(ctx, cfg, ep.Path)
+	results, err := score.ScoreSBOM(ctx, cfg, ep.Path)
+	if err != nil {
+		log.Error("v2 scoring engine failed",
+			zap.Error(err),
+		)
+		return nil, err
+	}
+
+	log.Info("v2 scoring engine completed",
+		zap.Int("result_count", len(results)),
+	)
+
+	return results, nil
 }
 
 func renderReport(ctx context.Context, ep *Params, results []api.Result) {
+	log := logger.FromContext(ctx)
+
 	reportFormat := pkgcommon.ReportDetailed
 	if ep.Basic {
 		reportFormat = pkgcommon.ReportBasic
 	} else if ep.JSON {
 		reportFormat = pkgcommon.FormatJSON
 	}
+
+	log.Info("Rendering score report",
+		zap.String("format", reportFormat),
+		zap.Int("results", len(results)),
+		zap.Bool("color", ep.Color),
+	)
 
 	nr := v2.NewReport(ctx, results, reportFormat)
 	nr.Report()
@@ -121,13 +155,16 @@ func renderReport(ctx context.Context, ep *Params, results []api.Result) {
 // runV2Score handle v2 scoring and v2 reporting
 func runV2Score(ctx context.Context, ep *Params) error {
 	log := logger.FromContext(ctx)
-	log.Debugf("Starting score engine to score v2")
+	log.Debug("Starting v2 scoring workflow")
 
 	results, err := scored(ctx, ep)
 	if err != nil {
 		return err
 	}
+
 	renderReport(ctx, ep, results)
+	log.Info("v2 scoring workflow completed")
+
 	return nil
 }
 
@@ -176,7 +213,9 @@ func ProcessURL(url string, file afero.File) (afero.File, error) {
 	}
 	defer func() {
 		if err := resp.Body.Close(); err != nil {
-			log.Warnf("failed to close response body: %v", err)
+			log.Warn("Failed to close HTTP response body",
+				zap.Error(err),
+			)
 		}
 	}()
 
@@ -203,23 +242,34 @@ func ProcessURL(url string, file afero.File) (afero.File, error) {
 
 func handlePaths(ctx context.Context, ep *Params) error {
 	log := logger.FromContext(ctx)
-	log.Debug("engine.handlePaths()")
+	log.Info("Starting legacy scoring workflow",
+		zap.Strings("paths", ep.Path),
+	)
 
 	var docs []sbom.Document
 	var paths []string
 	var scores []scorer.Scores
 
 	for _, path := range ep.Path {
-		if IsURL(path) {
-			log.Debugf("Processing Git URL path :%s\n", path)
+		log.Info("Processing input path",
+			zap.String("path", path),
+		)
 
+		if IsURL(path) {
+			log.Info("Processing SBOM from URL",
+				zap.String("url", path),
+			)
 			url, sbomFilePath := path, path
 			var err error
 
 			if IsGit(url) {
 				sbomFilePath, url, err = handleURL(path)
 				if err != nil {
-					log.Fatal("failed to get sbomFilePath, rawURL: %w", err)
+					log.Error("Failed to resolve GitHub URL",
+						zap.String("url", path),
+						zap.Error(err),
+					)
+					return err
 				}
 			}
 			fs := afero.NewMemMapFs()
@@ -236,8 +286,10 @@ func handlePaths(ctx context.Context, ep *Params) error {
 
 			_, signature, publicKey, err := common.GetSignatureBundle(ctx, path, "", "")
 			if err != nil {
-				log.Debugf("common.GetSignatureBundle failed for file :%s\n", path)
-				fmt.Printf("failed to get signature bundle for %s\n", path)
+				log.Error("Failed to fetch signature bundle",
+					zap.String("path", path),
+					zap.Error(err),
+				)
 				return err
 			}
 
@@ -248,7 +300,7 @@ func handlePaths(ctx context.Context, ep *Params) error {
 
 			doc, err := sbom.NewSBOMDocument(ctx, f, sig)
 			if err != nil {
-				log.Fatalf("failed to parse SBOM document: %w", err)
+				return err
 			}
 
 			sr := scorer.NewScorer(ctx, doc)
@@ -258,23 +310,25 @@ func handlePaths(ctx context.Context, ep *Params) error {
 			scores = append(scores, score)
 			paths = append(paths, sbomFilePath)
 		} else {
-			log.Debugf("Processing path :%s\n", path)
 			pathInfo, err := os.Stat(path)
 			if err != nil {
-				log.Debugf("os.Stat failed for path:%s\n", path)
-				log.Infof("%s\n", err)
+				log.Warn("Skipping invalid path",
+					zap.String("path", path),
+					zap.Error(err),
+				)
 				continue
 			}
 
 			if pathInfo.IsDir() {
 				files, err := os.ReadDir(path)
 				if err != nil {
-					log.Debugf("os.ReadDir failed for path:%s\n", path)
-					log.Debugf("%s\n", err)
+					log.Warn("Failed to read directory",
+						zap.String("path", path),
+						zap.Error(err),
+					)
 					continue
 				}
 				for _, file := range files {
-					log.Debugf("Processing file :%s\n", file.Name())
 					if file.IsDir() {
 						continue
 					}
@@ -308,6 +362,11 @@ func handlePaths(ctx context.Context, ep *Params) error {
 	}
 	coloredOutput := ep.Color
 
+	log.Info("Rendering legacy score report",
+		zap.String("format", reportFormat),
+		zap.Int("documents", len(docs)),
+	)
+
 	nr := reporter.NewReport(ctx,
 		docs,
 		scores,
@@ -316,18 +375,24 @@ func handlePaths(ctx context.Context, ep *Params) error {
 
 	nr.Report()
 
+	log.Info("Legacy scoring workflow completed")
 	return nil
 }
 
 func processFile(ctx context.Context, ep *Params, path string, fs billy.Filesystem) (sbom.Document, scorer.Scores, error) {
 	log := logger.FromContext(ctx)
-	log.Debugf("Processing file :%s\n", path)
+	log.Debug("Processing SBOM file",
+		zap.String("path", path),
+	)
+
 	var doc sbom.Document
 
 	_, signature, publicKey, err := common.GetSignatureBundle(ctx, path, "", "")
 	if err != nil {
-		log.Debugf("common.GetSignatureBundle failed for file :%s\n", path)
-		fmt.Printf("failed to get signature bundle for %s\n", path)
+		log.Error("Failed to fetch signature bundle",
+			zap.String("path", path),
+			zap.Error(err),
+		)
 		return nil, nil, err
 	}
 
@@ -339,48 +404,56 @@ func processFile(ctx context.Context, ep *Params, path string, fs billy.Filesyst
 	if fs != nil {
 		f, err := fs.Open(path)
 		if err != nil {
-			log.Debugf("os.Open failed for file :%s\n", path)
-			fmt.Printf("failed to open %s\n", path)
+			log.Error("Failed to fetch signature bundle",
+				zap.String("path", path),
+				zap.Error(err),
+			)
 			return nil, nil, err
 		}
 		defer func() {
 			if err := f.Close(); err != nil {
-				log.Warnf("failed to close file: %v", err)
+				log.Warn("Failed to close SBOM file",
+					zap.String("path", path),
+					zap.Error(err),
+				)
 			}
 		}()
 
 		doc, err = sbom.NewSBOMDocument(ctx, f, sig)
 		if err != nil {
-			log.Debugf("failed to create sbom document for  :%s\n", path)
-			log.Debugf("%s\n", err)
-			fmt.Printf("failed to parse %s : %s\n", path, err)
+			log.Error("Failed to parse SBOM document",
+				zap.String("path", path),
+				zap.Error(err),
+			)
 			return nil, nil, err
 		}
 	} else {
 		if _, err := os.Stat(path); err != nil {
-			log.Debugf("os.Stat failed for file :%s\n", path)
-			fmt.Printf("failed to stat %s\n", path)
+			log.Debug("failed to stat file", zap.String("path", path), zap.Error(err))
 			return nil, nil, err
 		}
 
 		// #nosec G304 -- User-provided paths are expected for CLI tool
 		f, err := os.Open(path)
 		if err != nil {
-			log.Debugf("os.Open failed for file :%s\n", path)
-			fmt.Printf("failed to open %s\n", path)
+			log.Debug("failed to open file", zap.String("path", path), zap.Error(err))
 			return nil, nil, err
 		}
 		defer func() {
 			if err := f.Close(); err != nil {
-				log.Warnf("failed to close file: %v", err)
+				log.Warn("Failed to close SBOM file",
+					zap.String("path", path),
+					zap.Error(err),
+				)
 			}
 		}()
 
 		doc, err = sbom.NewSBOMDocument(ctx, f, sig)
 		if err != nil {
-			log.Debugf("failed to create sbom document for  :%s\n", path)
-			log.Debugf("%s\n", err)
-			fmt.Printf("failed to parse %s : %s\n", path, err)
+			log.Error("Failed to parse SBOM document",
+				zap.String("path", path),
+				zap.Error(err),
+			)
 			return nil, nil, err
 		}
 	}
@@ -431,13 +504,13 @@ func processFile(ctx context.Context, ep *Params, path string, fs billy.Filesyst
 	}
 
 	if ep.ConfigPath != "" {
-		filters, er := scorer.ReadConfigFile(ep.ConfigPath)
-		if er != nil {
-			log.Fatalf("failed to read config file %s : %s", ep.ConfigPath, er)
-		}
-
-		if len(filters) == 0 {
-			log.Fatalf("no enabled filters found in config file %s", ep.ConfigPath)
+		filters, err := scorer.ReadConfigFile(ep.ConfigPath)
+		if err != nil {
+			log.Error("Failed to parse SBOM document",
+				zap.String("path", path),
+				zap.Error(err),
+			)
+			return nil, nil, err
 		}
 
 		for _, filter := range filters {

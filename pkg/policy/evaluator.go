@@ -20,25 +20,42 @@ import (
 
 	"github.com/interlynk-io/sbomqs/v2/pkg/logger"
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
+	"go.uber.org/zap"
 )
 
 // EvaluatePolicyAgainstSBOMs evaluates a single policy against a SBOMs.
 func EvaluatePolicyAgainstSBOMs(ctx context.Context, policy Policy, doc sbom.Document, fieldExtractor *Extractor) (PolicyResult, error) {
 	log := logger.FromContext(ctx)
-	log.Debugf("processing policy evaluation: %s", policy.Name, policy.Type)
+
+	log.Info("Starting policy evaluation",
+		zap.String("policy", policy.Name),
+		zap.String("type", policy.Type),
+	)
 
 	policyResult := NewPolicyResult(policy)
 
-	totalChecks := 0
 	components := doc.Components()
 	policyResult.TotalComponents = len(components)
+
+	log.Debug("Policy evaluation context prepared",
+		zap.Int("components", len(components)),
+	)
 
 	// compile regex present in pattern rules
 	compiledRules, err := compilePatternRules(policy)
 	if err != nil {
+		log.Error("Failed to compile policy rules",
+			zap.String("policy", policy.Name),
+			zap.Error(err),
+		)
 		return PolicyResult{}, err
 	}
 
+	log.Debug("Policy rules compiled",
+		zap.Int("rules", len(compiledRules)),
+	)
+
+	totalChecks := 0
 	policyResults := make([]RuleResult, 0, len(components)*len(compiledRules))
 
 	// evaluate components against list of all rules in a single policy
@@ -137,6 +154,13 @@ func EvaluatePolicyAgainstSBOMs(ctx context.Context, policy Policy, doc sbom.Doc
 			policyResult.OverallResult = "fail"
 		}
 	}
+
+	log.Info("Policy evaluation completed",
+		zap.String("policy", policy.Name),
+		zap.Int("checks", totalChecks),
+		zap.Int("violations", violationCount),
+		zap.String("result", policyResult.OverallResult),
+	)
 
 	return *policyResult, nil
 }
