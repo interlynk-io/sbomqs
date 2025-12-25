@@ -67,7 +67,7 @@ func newSPDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat, version
 	log := logger.FromContext(ctx)
 	var err error
 
-	log.Debugf("constructing new instance of spdx")
+	log.Debug("Constructing new instance of spdx")
 
 	// Read the content for manual parsing if needed
 	rawContent, err := io.ReadAll(f)
@@ -107,7 +107,7 @@ func newSPDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat, version
 
 	doc.parse()
 	for _, l := range doc.Logs() {
-		log.Debugf(l)
+		log.Debug(l)
 	}
 
 	return doc, err

@@ -74,7 +74,7 @@ type CdxDoc struct {
 func newCDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat, _ Signature) (Document, error) {
 	var err error
 	log := logger.FromContext(ctx)
-	log.Debugf("constructing new instance of cdx")
+	log.Debug("Constructing new instance of cdx")
 	// Read the content for manual parsing if needed
 	rawContent, err := io.ReadAll(f)
 	if err != nil {
@@ -111,7 +111,7 @@ func newCDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat, _ Signat
 	}
 	doc.parse()
 	for _, l := range doc.Logs() {
-		log.Debugf(l)
+		log.Debug(l)
 	}
 	return doc, err
 }
