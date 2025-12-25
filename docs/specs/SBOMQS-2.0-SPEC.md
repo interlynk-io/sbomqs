@@ -2,60 +2,63 @@
 
 ## Table of Contents
 
-- [Overview](#overview)
-- [Cmd Usage](#cmd-usage)
-  - [Basic Output](#basic-output)
-  - [Detailed Output](#detailed-output)
-  - [JSON Output](#json-output)
-- [SBOM Spec Support](#sbom-spec-support)
-- [Scoring Formula and Rules](#scoring-formula-and-rules)
-  - [Base Scoring Formulas](#base-scoring-formulas)
-  - [Component Quality (Informational)](#component-quality-informational)
-- [Scoring and Grades](#scoring-and-grades)
-- [Scoring Profiles](#scoring-profiles)
-  - [Available Profiles](#available-profiles)
-  - [Profile Usage](#profile-usage)
-  - [Profile vs Comprehensive Scoring](#profile-vs-comprehensive-scoring)
-- [Score Categories with Weights](#score-categories-with-weights)
-  - [1. Identification (Weight: 10)](#1-identification-weight-10)
-  - [2. Provenance (Weight: 12)](#2-provenance-weight-12)
-  - [3. Integrity (Weight: 15)](#3-integrity-weight-15)
-  - [4. Completeness (Weight: 12)](#4-completeness-weight-12)
-  - [5. Licensing & Compliance (Weight: 15)](#5-licensing--compliance-weight-15)
-  - [6. Vulnerability & Traceability (Weight: 10)](#6-vulnerability--traceability-weight-10)
-  - [7. Structural (Weight: 8)](#7-structural-weight-8)
-  - [8. Component Quality (Informational Only)](#8-component-quality-informational-only---api-key-required)
-- [Profile Definitions](#profile-definitions)
-  - [NTIA Minimum Elements](#ntia-minimum-elements)
-  - [BSI TR-03183-2 v1.1](#bsi-tr-03183-2-v11)
-  - [BSI TR-03183-2 v2.0](#bsi-tr-03183-2-v20)
-  - [OpenChain Telco (OCT)](#openchain-telco-oct)
-  - [AUTO-ISAC Automotive (Planned)](#auto-isac-automotive-planned)
-  - [Profile Implementation Notes](#profile-implementation-notes)
-- [Example Calculations](#example-calculations)
-  - [Example 1: High-Quality SBOM](#example-1-high-quality-sbom)
-  - [Example 2: Feature Score Calculation](#example-2-feature-score-calculation)
-  - [Example 3: N/A Handling](#example-3-na-handling)
-  - [Example 4: Component Quality Display](#example-4-component-quality-display-informational)
-  - [Example 5: Profile-Based Scoring](#example-5-profile-based-scoring)
-- [Appendix: License Lists](#appendix-license-lists)
-  - [Deprecated Licenses](#deprecated-licenses-examples)
-  - [Restrictive Licenses](#restrictive-licenses-examples)
-  - [Permissive Licenses](#permissive-licenses-examples)
-- [Appendix: Profile Requirements](#appendix-profile-requirements)
-  - [NTIA Minimum Elements](#ntia-minimum-elements-1)
-  - [BSI TR-03183-2 Evolution](#bsi-tr-03183-2-evolution)
-  - [AUTO-ISAC Automotive Requirements](#auto-isac-automotive-requirements)
-  - [OpenChain Telco SBOM Guide](#openchain-telco-sbom-guide)
-  - [Profile Compliance Thresholds](#profile-compliance-thresholds)
-- [Implementation Notes](#implementation-notes)
-  - [Component Quality API Integration](#component-quality-api-integration)
-  - [Profile Configuration](#profile-configuration)
-- [Version History](#version-history)
+- [Actionable \& Resilient Scoring SBOMQS 2.0](#actionable--resilient-scoring-sbomqs-20)
+  - [Table of Contents](#table-of-contents)
+  - [Overview](#overview)
+    - [Cmd Usage](#cmd-usage)
+  - [SBOM Spec Support](#sbom-spec-support)
+  - [Scoring Formula and Rules](#scoring-formula-and-rules)
+    - [Base Scoring Formulas](#base-scoring-formulas)
+  - [Scoring and Grades](#scoring-and-grades)
+  - [Scoring Profiles](#scoring-profiles)
+    - [Available Profiles](#available-profiles)
+    - [Planned Profiles (Not Yet Available)](#planned-profiles-not-yet-available)
+    - [Profile Usage](#profile-usage)
+    - [Profile vs Comprehensive Scoring](#profile-vs-comprehensive-scoring)
+  - [Score Categories with Weights](#score-categories-with-weights)
+    - [1. Identification (Weight: 10)](#1-identification-weight-10)
+    - [2. Provenance (Weight: 12)](#2-provenance-weight-12)
+    - [3. Integrity (Weight: 15)](#3-integrity-weight-15)
+    - [4. Completeness (Weight: 12)](#4-completeness-weight-12)
+    - [5. Licensing \& Compliance (Weight: 15)](#5-licensing--compliance-weight-15)
+    - [6. Vulnerability \& Traceability (Weight: 10)](#6-vulnerability--traceability-weight-10)
+    - [7. Structural (Weight: 8)](#7-structural-weight-8)
+    - [8. Component Quality (Informational Only - API Key Required)](#8-component-quality-informational-only---api-key-required)
+  - [Profile Definitions](#profile-definitions)
+    - [NTIA Minimum Elements](#ntia-minimum-elements)
+    - [BSI TR-03183-2 v1.1](#bsi-tr-03183-2-v11)
+    - [BSI TR-03183-2 v2.0](#bsi-tr-03183-2-v20)
+    - [OpenChain Telco (OCT)](#openchain-telco-oct)
+    - [AUTO-ISAC Automotive (Planned)](#auto-isac-automotive-planned)
+    - [Profile Implementation Notes](#profile-implementation-notes)
+      - [Mapping to v2.0 Categories](#mapping-to-v20-categories)
+      - [Features Not in v2.0 Scoring](#features-not-in-v20-scoring)
+      - [Important Differences](#important-differences)
+  - [Example Calculations](#example-calculations)
+    - [Example 1: High-Quality SBOM](#example-1-high-quality-sbom)
+    - [Example 2: Feature Score Calculation](#example-2-feature-score-calculation)
+    - [Example 3: N/A Handling](#example-3-na-handling)
+    - [Example 4: Component Quality Display (Informational)](#example-4-component-quality-display-informational)
+    - [Example 5: Profile-Based Scoring](#example-5-profile-based-scoring)
+  - [Appendix: License Lists](#appendix-license-lists)
+    - [Deprecated Licenses (Examples)](#deprecated-licenses-examples)
+    - [Restrictive Licenses (Examples)](#restrictive-licenses-examples)
+    - [Permissive Licenses (Examples)](#permissive-licenses-examples)
+  - [Appendix: Profile Requirements](#appendix-profile-requirements)
+    - [NTIA Minimum Elements](#ntia-minimum-elements-1)
+    - [BSI TR-03183-2 Evolution](#bsi-tr-03183-2-evolution)
+    - [AUTO-ISAC Automotive Requirements](#auto-isac-automotive-requirements)
+    - [OpenChain Telco SBOM Guide](#openchain-telco-sbom-guide)
+    - [Profile Compliance Thresholds](#profile-compliance-thresholds)
+  - [Implementation Notes](#implementation-notes)
+    - [Component Quality API Integration](#component-quality-api-integration)
+    - [Profile Configuration](#profile-configuration)
+  - [Version History](#version-history)
 
 ---
 
 ## Overview
+
 We are evolving the sbomqs SBOM scoring to be more meaningful, explainable, resilient to spec differences, and actionable. Based on our learnings from the last 3 years, we are introducing a new scoring mechanism to help better consumption of SBOMs. These new changes will help users easily classify and consume SBOMs. The scoring will be the default mechanism starting with sbomqs 2.0.
 
 ---
@@ -66,7 +69,7 @@ With the new scoring logic, the new formats will look like the following.
 
 **Basic**
 
-```
+```bash
 # Default comprehensive scoring
 $ sbomqs score --basic samples/example.cdx.json
 8.9	B cyclonedx	1.6	json	samples/example.cdx.json
@@ -143,7 +146,8 @@ Recommendations:
 ```
 
 **Profile-based scoring (NTIA)**
-```
+
+```bash
 $ sbomqs score --detailed --profile ntia samples/example.cdx.json
 
 NTIA Minimum Elements: PASS  Components: 247  samples/example.cdx.json
@@ -165,6 +169,7 @@ Score: 8.9/10.0 (Grade B)
 ```
 
 **Json**
+
 ```json
 {
   "run_id": "550e8400-e29b-41d4-a716-446655440000",
@@ -394,6 +399,7 @@ Score: 8.9/10.0 (Grade B)
 ---
 
 ## SBOM Spec Support
+
 - **CycloneDX**: 1.4, 1.5, 1.6+
 - **SPDX**: 2.2, 2.3+, 3.0 (WIP)
 
@@ -480,6 +486,7 @@ sbomqs supports both comprehensive quality scoring and profile-based compliance 
 | **oct** | OpenChain Telco | SPDX-specific telecommunications requirements | Scored | Implemented |
 
 ### Planned Profiles (Not Yet Available)
+
 - **bsi-v2.1**: Latest BSI guideline with enhanced requirements
 - **auto-isac**: Automotive industry SBOM requirements  
 - **fsct**: Financial Services requirements
@@ -487,6 +494,7 @@ sbomqs supports both comprehensive quality scoring and profile-based compliance 
 ### Profile Usage
 
 Profiles can be used individually or in combination:
+
 ```bash
 # Single profile
 $ sbomqs score --profile ntia samples/example.cdx.json
@@ -515,6 +523,7 @@ $ sbomqs score --profile ntia,bsi-v2.0 samples/example.cdx.json
 ## Score Categories with Weights
 
 ### 1. Identification (Weight: 10)
+
 *Identification of components is critical for understanding/locating and mapping supply chain metadata.*
 
 | Feature                              | SPDX 2.2/3              | CDX 1.4+          | Validation Rules                             | Weight |
@@ -524,6 +533,7 @@ $ sbomqs score --profile ntia,bsi-v2.0 samples/example.cdx.json
 | % components with local identifiers  | SPDXID                  | bom-ref           | Trim spaces, check uniqueness               | 0.25   |
 
 ### 2. Provenance (Weight: 12)
+
 *Enables trust and audit trails.*
 
 | Feature                         | SPDX 2.2/3                        | CDX 1.4+                                | Validation Rules                                      | Weight |
@@ -536,6 +546,7 @@ $ sbomqs score --profile ntia,bsi-v2.0 samples/example.cdx.json
 | Document Lifecycle              | N/A                               | lifecycles                              | Valid lifecycle present                             | 0.10   |
 
 ### 3. Integrity (Weight: 15)
+
 *Allows for verification if artifacts were altered.*
 
 | Feature                     | SPDX 2.2/3           | CDX 1.4+              | Validation Rules                                | Weight |
@@ -545,6 +556,7 @@ $ sbomqs score --profile ntia,bsi-v2.0 samples/example.cdx.json
 | Document signature          | (External signature) | signature             | Valid digital signature                        | 0.10   |
 
 ### 4. Completeness (Weight: 12)
+
 *Allows for vulnerability and impact analysis.*
 
 | Feature                           | SPDX 2.2/3                          | CDX 1.4+                          | Validation Rules                                    | Weight |
@@ -557,6 +569,7 @@ $ sbomqs score --profile ntia,bsi-v2.0 samples/example.cdx.json
 | % components with primary purpose | PrimaryPackagePurpose               | component.type                    | Valid purpose/type enum                           | 0.10   |
 
 ### 5. Licensing & Compliance (Weight: 15)
+
 *Determines redistribution rights and legal compliance.*
 
 | Feature                                   | SPDX 2.2/3       | CDX 1.4+                 | Validation Rules                                  | Weight |
@@ -569,6 +582,7 @@ $ sbomqs score --profile ntia,bsi-v2.0 samples/example.cdx.json
 | % components without restrictive licenses | ConcludedLicense | component.licenses       | Check against restrictive license list (GPL, etc) | 0.20   |
 
 ### 6. Vulnerability & Traceability (Weight: 10)
+
 *Ability to map components to vulnerability databases.*
 
 | Feature                      | SPDX 2.2/3                          | CDX 1.4+            | Validation Rules                              | Weight |
@@ -577,6 +591,7 @@ $ sbomqs score --profile ntia,bsi-v2.0 samples/example.cdx.json
 | % components with CPE        | ExternalRef.SECURITY/cpe22/3 Type  | component.cpe       | Valid CPE 2.3 format                         | 0.50   |
 
 ### 7. Structural (Weight: 8)
+
 *If a BOM can't be reliably parsed, all downstream automation fails.*
 
 | Feature                 | SPDX 2.2/3          | CDX 1.4+         | Validation Rules                          | Weight |
@@ -587,6 +602,7 @@ $ sbomqs score --profile ntia,bsi-v2.0 samples/example.cdx.json
 | Schema validation       | SPDX JSON Schema    | CDX JSON Schema  | Passes schema validation                  | 0.20   |
 
 ### 8. Component Quality (Informational Only - API Key Required)
+
 *Real-time component risk assessment based on external threat intelligence. These metrics are informational only and do NOT affect the overall quality score.*
 
 | Feature                           | Validation Rules                                                  | Weight |
@@ -605,6 +621,7 @@ $ sbomqs score --profile ntia,bsi-v2.0 samples/example.cdx.json
 Each profile evaluates specific features based on industry standards and regulatory requirements. Features marked as "Not in v2.0" require implementation beyond the current scoring categories.
 
 ### NTIA Minimum Elements
+
 | Feature | Implementation | Required | Description |
 | :------ | :------------- | :------- | :---------- |
 | Automation Support | sbom_machine_format | Yes | Valid spec (SPDX/CycloneDX) and format (JSON/XML) |
@@ -617,6 +634,7 @@ Each profile evaluates specific features based on industry standards and regulat
 | SBOM Timestamp | sbom_timestamp | Yes | ISO 8601 creation timestamp |
 
 ### BSI TR-03183-2 v1.1
+
 | Feature | Implementation | Required | Description |
 | :------ | :------------- | :------- | :---------- |
 | SBOM Formats | sbom_spec | Yes | SPDX or CycloneDX |
@@ -636,6 +654,7 @@ Each profile evaluates specific features based on industry standards and regulat
 | Component Dependencies | comp_depth | Yes | Dependency relationships |
 
 ### BSI TR-03183-2 v2.0
+
 | Feature | Implementation | Required | Description |
 | :------ | :------------- | :------- | :---------- |
 | All BSI v1.1 features | - | Yes | Inherits all v1.1 requirements |
@@ -646,6 +665,7 @@ Each profile evaluates specific features based on industry standards and regulat
 | License Validation | comp_associated_license | Yes | Valid SPDX license identifiers |
 
 ### OpenChain Telco (OCT)
+
 | Feature | Implementation | Required | SPDX Elements |
 | :------ | :------------- | :------- | :------------ |
 | SBOM Format | sbom_spec | Yes | Must be SPDX |
@@ -667,6 +687,7 @@ Each profile evaluates specific features based on industry standards and regulat
 | Package Copyright | pack_copyright | Yes | Copyright text |
 
 ### AUTO-ISAC Automotive (Planned)
+
 | Feature | Implementation | Required | Threshold | Automotive Focus |
 | :------ | :------------- | :------- | :-------- | :--------------- |
 | **Document Level** | | | | |
@@ -711,13 +732,17 @@ Each profile evaluates specific features based on industry standards and regulat
 ### Profile Implementation Notes
 
 #### Mapping to v2.0 Categories
+
 Profile features may map to v2.0 scoring categories as follows:
+
 - **NTIA features** → Primarily Identification, Completeness, and Provenance categories
 - **BSI features** → All categories, with emphasis on Integrity (signatures, checksums)
 - **OCT features** → Heavy focus on Licensing & Compliance, SPDX-specific metadata
 
 #### Features Not in v2.0 Scoring
+
 Some profile requirements exist outside the v2.0 scoring framework:
+
 - **BSI Build Information**: Build phase/environment details (profile-specific)
 - **BSI Source Code URL/Hash**: Source repository and verification (profile-specific)
 - **OCT SPDX-specific fields**: SPDXID, FilesAnalyzed (format-specific)
@@ -726,6 +751,7 @@ Some profile requirements exist outside the v2.0 scoring framework:
 - **External references by type**: Security, package manager categories (detailed tracking)
 
 #### Important Differences
+
 1. **Profiles use --profile flag** for profile-based evaluation
 2. **All profiles return scores** (0-10), not just pass/fail status
 3. **BSI v2.0 includes signature scoring** for CycloneDX files with embedded signatures
@@ -737,7 +763,8 @@ Some profile requirements exist outside the v2.0 scoring framework:
 ## Example Calculations
 
 ### Example 1: High-Quality SBOM
-```
+
+```text
 Category Scores:
 - Identification: 9.5 (weight: 10)
 - Provenance: 8.8 (weight: 12)
@@ -753,7 +780,8 @@ Total Score = 730.6 / 82 = 8.91 (Grade B)
 ```
 
 ### Example 2: Feature Score Calculation
-```
+
+```text
 Component Checksum Coverage:
 - Total components: 150
 - Components with SHA-256: 120
@@ -766,7 +794,8 @@ Combined integrity feature score = (9.33×0.6 + 8.00×0.3) / 0.9 = 8.87
 ```
 
 ### Example 3: N/A Handling
-```
+
+```text
 Licensing Category with N/A feature:
 - Feature 1: Concluded licenses (score: 8.5, weight: 0.20) 
 - Feature 2: Valid licenses (score: 9.0, weight: 0.20)
@@ -785,7 +814,8 @@ Adjusted category score = (8.5×0.20 + 9.0×0.20 + 8.0×0.15 + 10.0×0.15 + 7.0�
 ```
 
 ### Example 4: Component Quality Display (Informational)
-```
+
+```text
 Component Quality (API Key Required):
 Total components: 150
 - EOL/EOS: 8 (5.3%) - jquery@2.2.4, angular@1.8.3, moment@2.24.0
@@ -798,7 +828,8 @@ Note: Informational only, does not affect score (8.91/10.0, Grade B)
 ```
 
 ### Example 5: Profile-Based Scoring
-```
+
+```text
 BSI TR-03183-2 v2.0 Profile:
 Components: 150  Score: 8.58/10.0  Grade: B
 
@@ -823,16 +854,41 @@ Improvements needed:
 ## Appendix: License Lists
 
 ### Deprecated Licenses (Examples)
-- GPL-1.0
-- GPL-2.0
-- GPL-3.0
-- LGPL-2.0
-- LGPL-2.1
-- LGPL-3.0
+
 - AGPL-1.0
 - AGPL-3.0
+- BSD-2-Clause-FreeBSD
+- BSD-2-Clause-NetBSD
+- bzip2-1.0.5
+- eCos-2.0
+- GFDL-1.1
+- GFDL-1.2
+- GFDL-1.3
+- GPL-1.0
+- GPL-1.0+
+- GPL-2.0
+- GPL-2.0+
+- GPL-2.0-with-autoconf-exception
+- GPL-2.0-with-bison-exception
+- GPL-2.0-with-classpath-exception
+- GPL-2.0-with-font-exception
+- GPL-2.0-with-GCC-exception
+- GPL-3.0+
+- GPL-3.0-with-autoconf-exception
+- GPL-3.0-with-GCC-exception
+- LGPL-2.0
+- LGPL-2.0+
+- LGPL-2.1
+- LGPL-2.1+
+- LGPL-3.0
+- LGPL-3.0+
+- Net-SNMP
+- Nunit
+- StandardML-NJ
+- wxWindows
 
 ### Restrictive Licenses (Examples)
+
 - GPL family (copyleft)
 - AGPL family (network copyleft)
 - CC-BY-NC (non-commercial)
@@ -840,6 +896,7 @@ Improvements needed:
 - Proprietary licenses
 
 ### Permissive Licenses (Examples)
+
 - MIT
 - Apache-2.0
 - BSD-2-Clause
@@ -852,7 +909,9 @@ Improvements needed:
 ## Appendix: Profile Requirements
 
 ### NTIA Minimum Elements
+
 The US National Telecommunications and Information Administration defines minimum elements for SBOMs:
+
 - **Supplier Name**: Entity that creates, defines, and identifies components
 - **Component Name**: Designation assigned by the supplier
 - **Version String**: Identifier to specify a change from a previously identified version
@@ -862,12 +921,14 @@ The US National Telecommunications and Information Administration defines minimu
 - **Timestamp**: Record of when the SBOM was created
 
 ### BSI TR-03183-2 Evolution
+
 - **v1.0** (in German) and **v1.1** (English translation of v1.0 with minor corrections; both 2023): Initial requirements focusing on basic component identification
 - **v2.0.0** (2024): This version added several new sections and required data fields, updated license fields, refined component definitions, and altered the minimum required versions for CycloneDX to 1.5 and SPDX to 2.2.1
 - **v2.1.0** (2025): The data fields were restructured, minimum CycloneDX (1.6) and SPDX (3.0.1) versions were raised, the concepts of logical, external, identified and referenced components were introduced, and a new section for mapping of this Technical Guideline's requirements to an SPDX format's data fields was added
 
 ### AUTO-ISAC Automotive Requirements
 Specific to automotive industry safety and compliance:
+
 - **Safety-Critical Components**: Enhanced integrity verification (SHA-256 minimum)
 - **Supply Chain Tracking**: Mandatory supplier identification for all components
 - **Dependency Mapping**: Complete dependency graphs for safety analysis
@@ -876,7 +937,9 @@ Specific to automotive industry safety and compliance:
 - **Digital Signatures**: Authentication for safety-critical systems
 
 ### OpenChain Telco SBOM Guide
+
 Telecommunications industry focus on open source compliance:
+
 - **License Clarity**: All components must have identified licenses
 - **License Validation**: Licenses must be valid SPDX identifiers
 - **Original Licenses**: Declared/upstream licenses must be captured
@@ -885,6 +948,7 @@ Telecommunications industry focus on open source compliance:
 - **Vendor Management**: Clear identification of all suppliers
 
 ### Profile Compliance Thresholds
+
 - **Pass/Fail Profiles** (NTIA, OpenChain Telco): All required elements must be present
 - **Scored Profiles** (BSI, AUTO-ISAC): Weighted scoring with minimum thresholds
   - Grade A (9.0-10.0): Fully compliant, production-ready
