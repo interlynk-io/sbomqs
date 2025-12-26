@@ -889,6 +889,8 @@ Improvements needed:
 
 ### Restrictive Licenses (Examples)
 
+SPDX itself does not define any “restrictive” flag or field for licenses. We use AboutCode license categories to determine the resctriveness of a license. So, if a category `Copyleft" or "Copyleft Limited" category, then it is considered to be a "“restrictive” license.
+
 - GPL family (copyleft)
 - AGPL family (network copyleft)
 - CC-BY-NC (non-commercial)
