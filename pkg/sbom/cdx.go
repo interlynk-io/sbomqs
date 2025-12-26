@@ -37,6 +37,7 @@ import (
 	"github.com/interlynk-io/sbomqs/v2/pkg/purl"
 	"github.com/interlynk-io/sbomqs/v2/pkg/swhid"
 	"github.com/interlynk-io/sbomqs/v2/pkg/swid"
+	"github.com/interlynk-io/sbomqs/v2/pkg/validation"
 	"github.com/samber/lo"
 	"go.uber.org/zap"
 )
@@ -70,9 +71,10 @@ type CdxDoc struct {
 	rawContent       []byte // Store raw content for manual parsing
 }
 
-func newCDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat, sig Signature) (Document, error) {
+func newCDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat, _ Signature) (Document, error) {
 	var err error
-
+	log := logger.FromContext(ctx)
+	log.Debug("Constructing new instance of cdx")
 	// Read the content for manual parsing if needed
 	rawContent, err := io.ReadAll(f)
 	if err != nil {
@@ -102,14 +104,15 @@ func newCDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat, sig Sign
 	}
 
 	doc := &CdxDoc{
-		doc:            bom,
-		format:         format,
-		ctx:            ctx,
-		cdxValidSchema: true,
-		rawContent:     rawContent,
+		doc:        bom,
+		format:     format,
+		ctx:        ctx,
+		rawContent: rawContent,
 	}
 	doc.parse()
-
+	for _, l := range doc.Logs() {
+		log.Debug(l)
+	}
 	return doc, err
 }
 
@@ -176,6 +179,7 @@ func (c CdxDoc) SchemaValidation() bool {
 func (c *CdxDoc) parse() {
 	c.parseDoc()
 	c.parseSpec()
+	c.parseSchemaValidation()
 	c.parseAuthors()
 	c.parseSupplier()
 	c.parseManufacturer()
@@ -221,6 +225,25 @@ func (c *CdxDoc) parseDoc() {
 
 		return ""
 	})
+}
+
+func (c *CdxDoc) parseSchemaValidation() {
+	c.cdxValidSchema = false
+
+	if c.format != FileFormatJSON {
+		c.addToLogs("schema validation skipped: non-JSON SBOM")
+		return
+	}
+
+	c.addToLogs(fmt.Sprintf("spec: %s, version: %s", c.Spec().GetSpecType(), c.Spec().GetVersion()))
+	result := validation.Validate("cyclonedx", c.Spec().GetVersion(), c.rawContent)
+
+	c.addToLogs(fmt.Sprintf("schema valid: %v", result.Valid))
+	c.cdxValidSchema = result.Valid
+
+	for _, l := range result.Logs {
+		c.addToLogs(l)
+	}
 }
 
 func (c *CdxDoc) parseSpec() {
@@ -397,13 +420,14 @@ func (c *CdxDoc) parseSignerMap(signerMap map[string]interface{}) *Signature {
 func (c *CdxDoc) parsePublicKey(pubKeyData map[string]interface{}) string {
 	kty, _ := pubKeyData["kty"].(string)
 
-	if kty == "RSA" {
+	switch kty {
+	case "RSA":
 		n, _ := pubKeyData["n"].(string)
 		e, _ := pubKeyData["e"].(string)
 		if n != "" && e != "" {
 			return c.convertRSAPublicKeyToPEM(n, e)
 		}
-	} else if kty == "EC" {
+	case "EC":
 		crv, _ := pubKeyData["crv"].(string)
 		x, _ := pubKeyData["x"].(string)
 		y, _ := pubKeyData["y"].(string)

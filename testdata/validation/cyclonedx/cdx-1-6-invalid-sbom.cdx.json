@@ -1,0 +1,2640 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:75e19ea1-cb02-40f0-bc3a-390ab80a2b89",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2025-11-11T16:17:24Z",
+    "tools": [
+      {
+        "vendor": "OWASP",
+        "name": "Dependency-Track",
+        "version": "4.13.5"
+      },
+      {
+        "vendor": "OWASP",
+        "name": "Dependency-Track",
+        "version": "4.13.5"
+      }
+    ],
+    "component": {
+      "type": "application",
+      "bom-ref": "Final product@1.2.3",
+      "name": "Final product",
+      "version": "1.2.3"
+    }
+  },
+  "components": [
+    {
+      "type": "container",
+      "bom-ref": "foo@1.0.0:672de6c2-6e09-41e4-b77b-aa1f5718befe",
+      "name": "foo",
+      "version": "1.0.0",
+      "description": "Docker image for foo",
+      "components": [
+        {
+          "type": "library",
+          "bom-ref": "foo@1.0.0:bb21d5c8-4865-45f8-b899-c674e7a6fab7",
+          "name": "gnutls",
+          "version": "3.8.8-r0",
+          "hashes": [
+            {
+              "alg": "SHA-1",
+              "content": "730ae0e4abacd127c131d9b5aeccaeaa8178512a"
+            }
+          ],
+          "licenses": [
+            {
+              "license": {
+                "id": "LGPL-2.1-or-later"
+              }
+            }
+          ],
+          "purl": "pkg:apk/alpine/gnutls@3.8.8-r0?arch=x86_64\u0026distro=3.22.1",
+          "properties": [
+            {
+              "name": "aquasecurity:trivy:LayerDiffID",
+              "value": "sha256:c2d2b55d55c7e06865715b4e1e79699cc7b95a30e67ff07d46f4bffb89eb29f7"
+            },
+            {
+              "name": "aquasecurity:trivy:PkgID",
+              "value": "gnutls@3.8.8-r0"
+            },
+            {
+              "name": "aquasecurity:trivy:PkgType",
+              "value": "alpine"
+            },
+            {
+              "name": "aquasecurity:trivy:SrcName",
+              "value": "gnutls"
+            },
+            {
+              "name": "aquasecurity:trivy:SrcVersion",
+              "value": "3.8.8-r0"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "foo@1.0.0:542ec35b-d9ed-46e9-9d69-cec07e72249f",
+          "name": "libcrypto3",
+          "version": "3.5.1-r0",
+          "hashes": [
+            {
+              "alg": "SHA-1",
+              "content": "cdc005cdb0f91d9f652d17b337b5b9ad0ffa2012"
+            }
+          ],
+          "licenses": [
+            {
+              "license": {
+                "id": "Apache-2.0"
+              }
+            }
+          ],
+          "purl": "pkg:apk/alpine/libcrypto3@3.5.1-r0?arch=x86_64\u0026distro=3.22.1",
+          "properties": [
+            {
+              "name": "aquasecurity:trivy:LayerDiffID",
+              "value": "sha256:418dccb7d85a63a6aa574439840f7a6fa6fd2321b3e2394568a317735e867d35"
+            },
+            {
+              "name": "aquasecurity:trivy:PkgID",
+              "value": "libcrypto3@3.5.1-r0"
+            },
+            {
+              "name": "aquasecurity:trivy:PkgType",
+              "value": "alpine"
+            },
+            {
+              "name": "aquasecurity:trivy:SrcName",
+              "value": "openssl"
+            },
+            {
+              "name": "aquasecurity:trivy:SrcVersion",
+              "value": "3.5.1-r0"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "foo@1.0.0:defb0c67-196d-4274-976b-147faa88253f",
+          "name": "libexpat",
+          "version": "2.7.1-r0",
+          "hashes": [
+            {
+              "alg": "SHA-1",
+              "content": "249bf47cc6f2a67a4307f21daddb103a5108ded5"
+            }
+          ],
+          "licenses": [
+            {
+              "license": {
+                "id": "MIT"
+              }
+            }
+          ],
+          "purl": "pkg:apk/alpine/libexpat@2.7.1-r0?arch=x86_64\u0026distro=3.22.1",
+          "properties": [
+            {
+              "name": "aquasecurity:trivy:LayerDiffID",
+              "value": "sha256:c2d2b55d55c7e06865715b4e1e79699cc7b95a30e67ff07d46f4bffb89eb29f7"
+            },
+            {
+              "name": "aquasecurity:trivy:PkgID",
+              "value": "libexpat@2.7.1-r0"
+            },
+            {
+              "name": "aquasecurity:trivy:PkgType",
+              "value": "alpine"
+            },
+            {
+              "name": "aquasecurity:trivy:SrcName",
+              "value": "expat"
+            },
+            {
+              "name": "aquasecurity:trivy:SrcVersion",
+              "value": "2.7.1-r0"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "foo@1.0.0:2ff17a6e-4421-4205-883f-5fb0fe40b895",
+          "name": "libssl3",
+          "version": "3.5.1-r0",
+          "hashes": [
+            {
+              "alg": "SHA-1",
+              "content": "fc89917981adb0b33a5ccf84e4168e4256b5065b"
+            }
+          ],
+          "licenses": [
+            {
+              "license": {
+                "id": "Apache-2.0"
+              }
+            }
+          ],
+          "purl": "pkg:apk/alpine/libssl3@3.5.1-r0?arch=x86_64\u0026distro=3.22.1",
+          "properties": [
+            {
+              "name": "aquasecurity:trivy:LayerDiffID",
+              "value": "sha256:418dccb7d85a63a6aa574439840f7a6fa6fd2321b3e2394568a317735e867d35"
+            },
+            {
+              "name": "aquasecurity:trivy:PkgID",
+              "value": "libssl3@3.5.1-r0"
+            },
+            {
+              "name": "aquasecurity:trivy:PkgType",
+              "value": "alpine"
+            },
+            {
+              "name": "aquasecurity:trivy:SrcName",
+              "value": "openssl"
+            },
+            {
+              "name": "aquasecurity:trivy:SrcVersion",
+              "value": "3.5.1-r0"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "foo@1.0.0:ba8fccb8-4eea-4bd6-a37a-623fa9d60cda",
+          "name": "musl",
+          "version": "1.2.5-r10",
+          "hashes": [
+            {
+              "alg": "SHA-1",
+              "content": "59283b61db830a0a0309c98f4db906a2d8fa342b"
+            }
+          ],
+          "licenses": [
+            {
+              "license": {
+                "id": "MIT"
+              }
+            }
+          ],
+          "purl": "pkg:apk/alpine/musl@1.2.5-r10?arch=x86_64\u0026distro=3.22.1",
+          "properties": [
+            {
+              "name": "aquasecurity:trivy:LayerDiffID",
+              "value": "sha256:418dccb7d85a63a6aa574439840f7a6fa6fd2321b3e2394568a317735e867d35"
+            },
+            {
+              "name": "aquasecurity:trivy:PkgID",
+              "value": "musl@1.2.5-r10"
+            },
+            {
+              "name": "aquasecurity:trivy:PkgType",
+              "value": "alpine"
+            },
+            {
+              "name": "aquasecurity:trivy:SrcName",
+              "value": "musl"
+            },
+            {
+              "name": "aquasecurity:trivy:SrcVersion",
+              "value": "1.2.5-r10"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "foo@1.0.0:4383ed7b-7b5e-4db6-8371-857268734e0e",
+          "name": "openssl",
+          "version": "3.5.1-r0",
+          "hashes": [
+            {
+              "alg": "SHA-1",
+              "content": "c8fefe86518af422dcd1a640a52f89fbe9fa9636"
+            }
+          ],
+          "licenses": [
+            {
+              "license": {
+                "id": "Apache-2.0"
+              }
+            }
+          ],
+          "purl": "pkg:apk/alpine/openssl@3.5.1-r0?arch=x86_64\u0026distro=3.22.1",
+          "properties": [
+            {
+              "name": "aquasecurity:trivy:LayerDiffID",
+              "value": "sha256:c2d2b55d55c7e06865715b4e1e79699cc7b95a30e67ff07d46f4bffb89eb29f7"
+            },
+            {
+              "name": "aquasecurity:trivy:PkgID",
+              "value": "openssl@3.5.1-r0"
+            },
+            {
+              "name": "aquasecurity:trivy:PkgType",
+              "value": "alpine"
+            },
+            {
+              "name": "aquasecurity:trivy:SrcName",
+              "value": "openssl"
+            },
+            {
+              "name": "aquasecurity:trivy:SrcVersion",
+              "value": "3.5.1-r0"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "container",
+      "bom-ref": "activemq-artemis@2.42.0-stable-0014-b05effa:04472d1d-a7f4-4935-a38a-062ecc1b2269",
+      "name": "activemq-artemis",
+      "version": "2.42.0-stable-0014-b05effa",
+      "purl": "pkg:oci/activemq-artemis@sha256%3A0f5e80880dd9f979453cf6bb32fe0d11874180132a0a729cb97e74b75faa3c57?arch=amd64",
+      "components": [
+        {
+          "type": "library",
+          "bom-ref": "activemq-artemis@2.42.0-stable-0014-b05effa:c2e6b139-9ba3-4cea-be37-659ff9edbfaf",
+          "group": "org.apache.commons",
+          "name": "commons-lang3",
+          "version": "3.17.0",
+          "purl": "pkg:maven/org.apache.commons/commons-lang3@3.17.0",
+          "properties": [
+            {
+              "name": "aquasecurity:trivy:FilePath",
+              "value": "opt/activemq-artemis/lib/commons-lang3-3.17.0.jar"
+            },
+            {
+              "name": "aquasecurity:trivy:LayerDiffID",
+              "value": "sha256:8fc85fb5fb36527ea2e7f66d504f0028da21baa5a24355e8f00e8898cc6eefd8"
+            },
+            {
+              "name": "aquasecurity:trivy:LayerDigest",
+              "value": "sha256:a60e312d35a35cdaf333a9637cdf6e91556d81f70b4a99c36c2f244f2ad2adc9"
+            },
+            {
+              "name": "aquasecurity:trivy:PkgType",
+              "value": "jar"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "activemq-artemis@2.42.0-stable-0014-b05effa:1474ee14-2e39-4815-acd4-6c8383f9bf8d",
+          "name": "gnutls",
+          "version": "3.8.8-r0",
+          "hashes": [
+            {
+              "alg": "SHA-1",
+              "content": "730ae0e4abacd127c131d9b5aeccaeaa8178512a"
+            }
+          ],
+          "licenses": [
+            {
+              "license": {
+                "id": "LGPL-2.1-or-later"
+              }
+            }
+          ],
+          "purl": "pkg:apk/alpine/gnutls@3.8.8-r0?arch=x86_64\u0026distro=3.22.1",
+          "properties": [
+            {
+              "name": "aquasecurity:trivy:LayerDiffID",
+              "value": "sha256:217911b5f4febeb42e4f7a7ee82c68131447a54efaba3caf56d556a981e8d28b"
+            },
+            {
+              "name": "aquasecurity:trivy:LayerDigest",
+              "value": "sha256:2752d65a63e3b8c4fb7950d2928bf6d39b65f2e10205b7bd13ccf5294fda1fba"
+            },
+            {
+              "name": "aquasecurity:trivy:PkgID",
+              "value": "gnutls@3.8.8-r0"
+            },
+            {
+              "name": "aquasecurity:trivy:PkgType",
+              "value": "alpine"
+            },
+            {
+              "name": "aquasecurity:trivy:SrcName",
+              "value": "gnutls"
+            },
+            {
+              "name": "aquasecurity:trivy:SrcVersion",
+              "value": "3.8.8-r0"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "activemq-artemis@2.42.0-stable-0014-b05effa:9a639e6d-e936-4bb1-a5b5-8d6a9c34e2a0",
+          "group": "org.glassfish",
+          "name": "javax.json",
+          "version": "1.0.4",
+          "purl": "pkg:maven/org.glassfish/javax.json@1.0.4",
+          "properties": [
+            {
+              "name": "aquasecurity:trivy:FilePath",
+              "value": "opt/activemq-artemis/lib/javax.json-1.0.4.jar"
+            },
+            {
+              "name": "aquasecurity:trivy:LayerDiffID",
+              "value": "sha256:8fc85fb5fb36527ea2e7f66d504f0028da21baa5a24355e8f00e8898cc6eefd8"
+            },
+            {
+              "name": "aquasecurity:trivy:LayerDigest",
+              "value": "sha256:a60e312d35a35cdaf333a9637cdf6e91556d81f70b4a99c36c2f244f2ad2adc9"
+            },
+            {
+              "name": "aquasecurity:trivy:PkgType",
+              "value": "jar"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "activemq-artemis@2.42.0-stable-0014-b05effa:0e5bf745-92dc-4f54-a28a-09f1dd03fb20",
+          "group": "org.eclipse.jetty.http2",
+          "name": "jetty-http2-common",
+          "version": "12.0.23",
+          "purl": "pkg:maven/org.eclipse.jetty.http2/jetty-http2-common@12.0.23",
+          "properties": [
+            {
+              "name": "aquasecurity:trivy:FilePath",
+              "value": "opt/activemq-artemis/lib/jetty-http2-common-12.0.23.jar"
+            },
+            {
+              "name": "aquasecurity:trivy:LayerDiffID",
+              "value": "sha256:8fc85fb5fb36527ea2e7f66d504f0028da21baa5a24355e8f00e8898cc6eefd8"
+            },
+            {
+              "name": "aquasecurity:trivy:LayerDigest",
+              "value": "sha256:a60e312d35a35cdaf333a9637cdf6e91556d81f70b4a99c36c2f244f2ad2adc9"
+            },
+            {
+              "name": "aquasecurity:trivy:PkgType",
+              "value": "jar"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "activemq-artemis@2.42.0-stable-0014-b05effa:a92409ad-918a-47f8-8485-f5f98e236e4c",
+          "name": "libcrypto3",
+          "version": "3.5.1-r0",
+          "hashes": [
+            {
+              "alg": "SHA-1",
+              "content": "cdc005cdb0f91d9f652d17b337b5b9ad0ffa2012"
+            }
+          ],
+          "licenses": [
+            {
+              "license": {
+                "id": "Apache-2.0"
+              }
+            }
+          ],
+          "purl": "pkg:apk/alpine/libcrypto3@3.5.1-r0?arch=x86_64\u0026distro=3.22.1",
+          "properties": [
+            {
+              "name": "aquasecurity:trivy:LayerDiffID",
+              "value": "sha256:418dccb7d85a63a6aa574439840f7a6fa6fd2321b3e2394568a317735e867d35"
+            },
+            {
+              "name": "aquasecurity:trivy:LayerDigest",
+              "value": "sha256:9824c27679d3b27c5e1cb00a73adb6f4f8d556994111c12db3c5d61a0c843df8"
+            },
+            {
+              "name": "aquasecurity:trivy:PkgID",
+              "value": "libcrypto3@3.5.1-r0"
+            },
+            {
+              "name": "aquasecurity:trivy:PkgType",
+              "value": "alpine"
+            },
+            {
+              "name": "aquasecurity:trivy:SrcName",
+              "value": "openssl"
+            },
+            {
+              "name": "aquasecurity:trivy:SrcVersion",
+              "value": "3.5.1-r0"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "activemq-artemis@2.42.0-stable-0014-b05effa:c601052b-5ece-41bb-9a71-e4c15fe2ae1e",
+          "name": "libexpat",
+          "version": "2.7.1-r0",
+          "hashes": [
+            {
+              "alg": "SHA-1",
+              "content": "249bf47cc6f2a67a4307f21daddb103a5108ded5"
+            }
+          ],
+          "licenses": [
+            {
+              "license": {
+                "id": "MIT"
+              }
+            }
+          ],
+          "purl": "pkg:apk/alpine/libexpat@2.7.1-r0?arch=x86_64\u0026distro=3.22.1",
+          "properties": [
+            {
+              "name": "aquasecurity:trivy:LayerDiffID",
+              "value": "sha256:217911b5f4febeb42e4f7a7ee82c68131447a54efaba3caf56d556a981e8d28b"
+            },
+            {
+              "name": "aquasecurity:trivy:LayerDigest",
+              "value": "sha256:2752d65a63e3b8c4fb7950d2928bf6d39b65f2e10205b7bd13ccf5294fda1fba"
+            },
+            {
+              "name": "aquasecurity:trivy:PkgID",
+              "value": "libexpat@2.7.1-r0"
+            },
+            {
+              "name": "aquasecurity:trivy:PkgType",
+              "value": "alpine"
+            },
+            {
+              "name": "aquasecurity:trivy:SrcName",
+              "value": "expat"
+            },
+            {
+              "name": "aquasecurity:trivy:SrcVersion",
+              "value": "2.7.1-r0"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "activemq-artemis@2.42.0-stable-0014-b05effa:2b9700e0-e491-43ce-8cae-f172c495d8fc",
+          "name": "libssl3",
+          "version": "3.5.1-r0",
+          "hashes": [
+            {
+              "alg": "SHA-1",
+              "content": "fc89917981adb0b33a5ccf84e4168e4256b5065b"
+            }
+          ],
+          "licenses": [
+            {
+              "license": {
+                "id": "Apache-2.0"
+              }
+            }
+          ],
+          "purl": "pkg:apk/alpine/libssl3@3.5.1-r0?arch=x86_64\u0026distro=3.22.1",
+          "properties": [
+            {
+              "name": "aquasecurity:trivy:LayerDiffID",
+              "value": "sha256:418dccb7d85a63a6aa574439840f7a6fa6fd2321b3e2394568a317735e867d35"
+            },
+            {
+              "name": "aquasecurity:trivy:LayerDigest",
+              "value": "sha256:9824c27679d3b27c5e1cb00a73adb6f4f8d556994111c12db3c5d61a0c843df8"
+            },
+            {
+              "name": "aquasecurity:trivy:PkgID",
+              "value": "libssl3@3.5.1-r0"
+            },
+            {
+              "name": "aquasecurity:trivy:PkgType",
+              "value": "alpine"
+            },
+            {
+              "name": "aquasecurity:trivy:SrcName",
+              "value": "openssl"
+            },
+            {
+              "name": "aquasecurity:trivy:SrcVersion",
+              "value": "3.5.1-r0"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "activemq-artemis@2.42.0-stable-0014-b05effa:a38b631b-2151-4a4e-b56f-d8cefa447d0e",
+          "name": "libxml2",
+          "version": "2.13.8-r0",
+          "hashes": [
+            {
+              "alg": "SHA-1",
+              "content": "0b927e56e207430656606848bfc2b87d56e47144"
+            }
+          ],
+          "licenses": [
+            {
+              "license": {
+                "id": "MIT"
+              }
+            }
+          ],
+          "purl": "pkg:apk/alpine/libxml2@2.13.8-r0?arch=x86_64\u0026distro=3.22.1",
+          "properties": [
+            {
+              "name": "aquasecurity:trivy:LayerDiffID",
+              "value": "sha256:8fc85fb5fb36527ea2e7f66d504f0028da21baa5a24355e8f00e8898cc6eefd8"
+            },
+            {
+              "name": "aquasecurity:trivy:LayerDigest",
+              "value": "sha256:a60e312d35a35cdaf333a9637cdf6e91556d81f70b4a99c36c2f244f2ad2adc9"
+            },
+            {
+              "name": "aquasecurity:trivy:PkgID",
+              "value": "libxml2@2.13.8-r0"
+            },
+            {
+              "name": "aquasecurity:trivy:PkgType",
+              "value": "alpine"
+            },
+            {
+              "name": "aquasecurity:trivy:SrcName",
+              "value": "libxml2"
+            },
+            {
+              "name": "aquasecurity:trivy:SrcVersion",
+              "value": "2.13.8-r0"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "activemq-artemis@2.42.0-stable-0014-b05effa:25f013df-029c-45b5-a712-7b0925a1e56a",
+          "name": "musl",
+          "version": "1.2.5-r10",
+          "hashes": [
+            {
+              "alg": "SHA-1",
+              "content": "59283b61db830a0a0309c98f4db906a2d8fa342b"
+            }
+          ],
+          "licenses": [
+            {
+              "license": {
+                "id": "MIT"
+              }
+            }
+          ],
+          "purl": "pkg:apk/alpine/musl@1.2.5-r10?arch=x86_64\u0026distro=3.22.1",
+          "properties": [
+            {
+              "name": "aquasecurity:trivy:LayerDiffID",
+              "value": "sha256:418dccb7d85a63a6aa574439840f7a6fa6fd2321b3e2394568a317735e867d35"
+            },
+            {
+              "name": "aquasecurity:trivy:LayerDigest",
+              "value": "sha256:9824c27679d3b27c5e1cb00a73adb6f4f8d556994111c12db3c5d61a0c843df8"
+            },
+            {
+              "name": "aquasecurity:trivy:PkgID",
+              "value": "musl@1.2.5-r10"
+            },
+            {
+              "name": "aquasecurity:trivy:PkgType",
+              "value": "alpine"
+            },
+            {
+              "name": "aquasecurity:trivy:SrcName",
+              "value": "musl"
+            },
+            {
+              "name": "aquasecurity:trivy:SrcVersion",
+              "value": "1.2.5-r10"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "activemq-artemis@2.42.0-stable-0014-b05effa:f67dc2e8-a96a-4679-ab91-96271ae22ccd",
+          "group": "io.netty",
+          "name": "netty-codec",
+          "version": "4.1.121.Final",
+          "purl": "pkg:maven/io.netty/netty-codec@4.1.121.Final",
+          "properties": [
+            {
+              "name": "aquasecurity:trivy:FilePath",
+              "value": "opt/activemq-artemis/lib/netty-codec-4.1.121.Final.jar"
+            },
+            {
+              "name": "aquasecurity:trivy:LayerDiffID",
+              "value": "sha256:8fc85fb5fb36527ea2e7f66d504f0028da21baa5a24355e8f00e8898cc6eefd8"
+            },
+            {
+              "name": "aquasecurity:trivy:LayerDigest",
+              "value": "sha256:a60e312d35a35cdaf333a9637cdf6e91556d81f70b4a99c36c2f244f2ad2adc9"
+            },
+            {
+              "name": "aquasecurity:trivy:PkgType",
+              "value": "jar"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "activemq-artemis@2.42.0-stable-0014-b05effa:7b792c42-2215-4ced-acf0-78b847319333",
+          "group": "io.netty",
+          "name": "netty-codec-http",
+          "version": "4.1.121.Final",
+          "purl": "pkg:maven/io.netty/netty-codec-http@4.1.121.Final",
+          "properties": [
+            {
+              "name": "aquasecurity:trivy:FilePath",
+              "value": "opt/activemq-artemis/lib/netty-codec-http-4.1.121.Final.jar"
+            },
+            {
+              "name": "aquasecurity:trivy:LayerDiffID",
+              "value": "sha256:8fc85fb5fb36527ea2e7f66d504f0028da21baa5a24355e8f00e8898cc6eefd8"
+            },
+            {
+              "name": "aquasecurity:trivy:LayerDigest",
+              "value": "sha256:a60e312d35a35cdaf333a9637cdf6e91556d81f70b4a99c36c2f244f2ad2adc9"
+            },
+            {
+              "name": "aquasecurity:trivy:PkgType",
+              "value": "jar"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "activemq-artemis@2.42.0-stable-0014-b05effa:1c3b8072-b955-4511-b429-c19c4a5ea502",
+          "name": "openssl",
+          "version": "3.5.1-r0",
+          "hashes": [
+            {
+              "alg": "SHA-1",
+              "content": "c8fefe86518af422dcd1a640a52f89fbe9fa9636"
+            }
+          ],
+          "licenses": [
+            {
+              "license": {
+                "id": "Apache-2.0"
+              }
+            }
+          ],
+          "purl": "pkg:apk/alpine/openssl@3.5.1-r0?arch=x86_64\u0026distro=3.22.1",
+          "properties": [
+            {
+              "name": "aquasecurity:trivy:LayerDiffID",
+              "value": "sha256:217911b5f4febeb42e4f7a7ee82c68131447a54efaba3caf56d556a981e8d28b"
+            },
+            {
+              "name": "aquasecurity:trivy:LayerDigest",
+              "value": "sha256:2752d65a63e3b8c4fb7950d2928bf6d39b65f2e10205b7bd13ccf5294fda1fba"
+            },
+            {
+              "name": "aquasecurity:trivy:PkgID",
+              "value": "openssl@3.5.1-r0"
+            },
+            {
+              "name": "aquasecurity:trivy:PkgType",
+              "value": "alpine"
+            },
+            {
+              "name": "aquasecurity:trivy:SrcName",
+              "value": "openssl"
+            },
+            {
+              "name": "aquasecurity:trivy:SrcVersion",
+              "value": "3.5.1-r0"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "activemq-artemis@2.42.0-stable-0014-b05effa:465f969c-5784-4172-906e-edae0570178a",
+          "group": "org.apache.zookeeper",
+          "name": "zookeeper",
+          "version": "3.9.3",
+          "purl": "pkg:maven/org.apache.zookeeper/zookeeper@3.9.3",
+          "properties": [
+            {
+              "name": "aquasecurity:trivy:FilePath",
+              "value": "opt/activemq-artemis/lib/zookeeper-3.9.3.jar"
+            },
+            {
+              "name": "aquasecurity:trivy:LayerDiffID",
+              "value": "sha256:8fc85fb5fb36527ea2e7f66d504f0028da21baa5a24355e8f00e8898cc6eefd8"
+            },
+            {
+              "name": "aquasecurity:trivy:LayerDigest",
+              "value": "sha256:a60e312d35a35cdaf333a9637cdf6e91556d81f70b4a99c36c2f244f2ad2adc9"
+            },
+            {
+              "name": "aquasecurity:trivy:PkgType",
+              "value": "jar"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "foo@1.0.0:672de6c2-6e09-41e4-b77b-aa1f5718befe",
+      "dependsOn": []
+    },
+    {
+      "ref": "foo@1.0.0:bb21d5c8-4865-45f8-b899-c674e7a6fab7",
+      "dependsOn": [
+        "foo@1.0.0:ba8fccb8-4eea-4bd6-a37a-623fa9d60cda"
+      ]
+    },
+    {
+      "ref": "foo@1.0.0:542ec35b-d9ed-46e9-9d69-cec07e72249f",
+      "dependsOn": [
+        "foo@1.0.0:ba8fccb8-4eea-4bd6-a37a-623fa9d60cda"
+      ]
+    },
+    {
+      "ref": "foo@1.0.0:defb0c67-196d-4274-976b-147faa88253f",
+      "dependsOn": [
+        "foo@1.0.0:ba8fccb8-4eea-4bd6-a37a-623fa9d60cda"
+      ]
+    },
+    {
+      "ref": "foo@1.0.0:2ff17a6e-4421-4205-883f-5fb0fe40b895",
+      "dependsOn": [
+        "foo@1.0.0:542ec35b-d9ed-46e9-9d69-cec07e72249f",
+        "foo@1.0.0:ba8fccb8-4eea-4bd6-a37a-623fa9d60cda"
+      ]
+    },
+    {
+      "ref": "foo@1.0.0:ba8fccb8-4eea-4bd6-a37a-623fa9d60cda",
+      "dependsOn": []
+    },
+    {
+      "ref": "foo@1.0.0:4383ed7b-7b5e-4db6-8371-857268734e0e",
+      "dependsOn": [
+        "foo@1.0.0:2ff17a6e-4421-4205-883f-5fb0fe40b895",
+        "foo@1.0.0:542ec35b-d9ed-46e9-9d69-cec07e72249f",
+        "foo@1.0.0:ba8fccb8-4eea-4bd6-a37a-623fa9d60cda"
+      ]
+    },
+    {
+      "ref": "activemq-artemis@2.42.0-stable-0014-b05effa:04472d1d-a7f4-4935-a38a-062ecc1b2269",
+      "dependsOn": [
+        "activemq-artemis@2.42.0-stable-0014-b05effa:9a639e6d-e936-4bb1-a5b5-8d6a9c34e2a0",
+        "activemq-artemis@2.42.0-stable-0014-b05effa:f67dc2e8-a96a-4679-ab91-96271ae22ccd",
+        "activemq-artemis@2.42.0-stable-0014-b05effa:7b792c42-2215-4ced-acf0-78b847319333",
+        "activemq-artemis@2.42.0-stable-0014-b05effa:c2e6b139-9ba3-4cea-be37-659ff9edbfaf",
+        "activemq-artemis@2.42.0-stable-0014-b05effa:465f969c-5784-4172-906e-edae0570178a",
+        "activemq-artemis@2.42.0-stable-0014-b05effa:0e5bf745-92dc-4f54-a28a-09f1dd03fb20"
+      ]
+    },
+    {
+      "ref": "activemq-artemis@2.42.0-stable-0014-b05effa:c2e6b139-9ba3-4cea-be37-659ff9edbfaf",
+      "dependsOn": []
+    },
+    {
+      "ref": "activemq-artemis@2.42.0-stable-0014-b05effa:1474ee14-2e39-4815-acd4-6c8383f9bf8d",
+      "dependsOn": [
+        "activemq-artemis@2.42.0-stable-0014-b05effa:25f013df-029c-45b5-a712-7b0925a1e56a"
+      ]
+    },
+    {
+      "ref": "activemq-artemis@2.42.0-stable-0014-b05effa:9a639e6d-e936-4bb1-a5b5-8d6a9c34e2a0",
+      "dependsOn": []
+    },
+    {
+      "ref": "activemq-artemis@2.42.0-stable-0014-b05effa:0e5bf745-92dc-4f54-a28a-09f1dd03fb20",
+      "dependsOn": []
+    },
+    {
+      "ref": "activemq-artemis@2.42.0-stable-0014-b05effa:a92409ad-918a-47f8-8485-f5f98e236e4c",
+      "dependsOn": [
+        "activemq-artemis@2.42.0-stable-0014-b05effa:25f013df-029c-45b5-a712-7b0925a1e56a"
+      ]
+    },
+    {
+      "ref": "activemq-artemis@2.42.0-stable-0014-b05effa:c601052b-5ece-41bb-9a71-e4c15fe2ae1e",
+      "dependsOn": [
+        "activemq-artemis@2.42.0-stable-0014-b05effa:25f013df-029c-45b5-a712-7b0925a1e56a"
+      ]
+    },
+    {
+      "ref": "activemq-artemis@2.42.0-stable-0014-b05effa:2b9700e0-e491-43ce-8cae-f172c495d8fc",
+      "dependsOn": [
+        "activemq-artemis@2.42.0-stable-0014-b05effa:a92409ad-918a-47f8-8485-f5f98e236e4c",
+        "activemq-artemis@2.42.0-stable-0014-b05effa:25f013df-029c-45b5-a712-7b0925a1e56a"
+      ]
+    },
+    {
+      "ref": "activemq-artemis@2.42.0-stable-0014-b05effa:a38b631b-2151-4a4e-b56f-d8cefa447d0e",
+      "dependsOn": [
+        "activemq-artemis@2.42.0-stable-0014-b05effa:25f013df-029c-45b5-a712-7b0925a1e56a"
+      ]
+    },
+    {
+      "ref": "activemq-artemis@2.42.0-stable-0014-b05effa:25f013df-029c-45b5-a712-7b0925a1e56a",
+      "dependsOn": []
+    },
+    {
+      "ref": "activemq-artemis@2.42.0-stable-0014-b05effa:f67dc2e8-a96a-4679-ab91-96271ae22ccd",
+      "dependsOn": []
+    },
+    {
+      "ref": "activemq-artemis@2.42.0-stable-0014-b05effa:7b792c42-2215-4ced-acf0-78b847319333",
+      "dependsOn": []
+    },
+    {
+      "ref": "activemq-artemis@2.42.0-stable-0014-b05effa:1c3b8072-b955-4511-b429-c19c4a5ea502",
+      "dependsOn": [
+        "activemq-artemis@2.42.0-stable-0014-b05effa:2b9700e0-e491-43ce-8cae-f172c495d8fc",
+        "activemq-artemis@2.42.0-stable-0014-b05effa:a92409ad-918a-47f8-8485-f5f98e236e4c",
+        "activemq-artemis@2.42.0-stable-0014-b05effa:25f013df-029c-45b5-a712-7b0925a1e56a"
+      ]
+    },
+    {
+      "ref": "activemq-artemis@2.42.0-stable-0014-b05effa:465f969c-5784-4172-906e-edae0570178a",
+      "dependsOn": []
+    },
+    {
+      "ref": "Final product@1.2.3",
+      "dependsOn": [
+        "foo@1.0.0:672de6c2-6e09-41e4-b77b-aa1f5718befe",
+        "activemq-artemis@2.42.0-stable-0014-b05effa:04472d1d-a7f4-4935-a38a-062ecc1b2269"
+      ]
+    }
+  ],
+  "vulnerabilities": [
+    {
+      "bom-ref": "Final product@1.2.3:224a2061-d9d1-4df0-9529-e56af7dda1d2",
+      "id": "CVE-2025-26519",
+      "source": {
+        "name": "NVD",
+        "url": "https://nvd.nist.gov/"
+      },
+      "ratings": [
+        {
+          "source": {
+            "name": "NVD",
+            "url": "https://nvd.nist.gov/"
+          },
+          "score": 8.1,
+          "severity": "high",
+          "method": "CVSSv3",
+          "vector": "CVSS:3.0/AV:L/AC:H/PR:N/UI:N/S:C/C:H/I:H/A:L"
+        }
+      ],
+      "cwes": [
+        787
+      ],
+      "description": "musl libc 0.9.13 through 1.2.5 before 1.2.6 has an out-of-bounds write vulnerability when an attacker can trigger iconv conversion of untrusted EUC-KR text to UTF-8.",
+      "published": "2025-02-14T04:15:09Z",
+      "updated": "2025-02-14T17:15:23Z",
+      "analysis": {
+        "state": "false_positive",
+        "justification": "null"
+      },
+      "affects": [
+        {
+          "ref": "Final product@1.2.3"
+        }
+      ]
+    },
+    {
+      "bom-ref": "Final product@1.2.3:07f8d2bd-9f7c-402f-a9f6-b48fc512b73d",
+      "id": "CVE-2017-7507",
+      "source": {
+        "name": "NVD",
+        "url": "https://nvd.nist.gov/"
+      },
+      "ratings": [
+        {
+          "source": {
+            "name": "NVD",
+            "url": "https://nvd.nist.gov/"
+          },
+          "score": 5,
+          "severity": "medium",
+          "method": "CVSSv2",
+          "vector": "(AV:N/AC:L/Au:N/C:N/I:N/A:P)"
+        },
+        {
+          "source": {
+            "name": "NVD",
+            "url": "https://nvd.nist.gov/"
+          },
+          "score": 7.5,
+          "severity": "high",
+          "method": "CVSSv3",
+          "vector": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+        }
+      ],
+      "cwes": [
+        476
+      ],
+      "description": "GnuTLS version 3.5.12 and earlier is vulnerable to a NULL pointer dereference while decoding a status response TLS extension with valid contents. This could lead to a crash of the GnuTLS server application.",
+      "published": "2017-06-16T19:29:00Z",
+      "updated": "2025-04-20T01:37:25Z",
+      "analysis": {
+        "state": "false_positive",
+        "justification": "null"
+      },
+      "affects": [
+        {
+          "ref": "Final product@1.2.3"
+        }
+      ]
+    },
+    {
+      "bom-ref": "Final product@1.2.3:d593faba-23c4-47e8-b2dc-0210919478b7",
+      "id": "CVE-2025-59375",
+      "source": {
+        "name": "NVD",
+        "url": "https://nvd.nist.gov/"
+      },
+      "ratings": [
+        {
+          "source": {
+            "name": "NVD",
+            "url": "https://nvd.nist.gov/"
+          },
+          "score": 7.5,
+          "severity": "high",
+          "method": "CVSSv3",
+          "vector": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+        }
+      ],
+      "cwes": [
+        770
+      ],
+      "description": "libexpat in Expat before 2.7.2 allows attackers to trigger large dynamic memory allocations via a small document that is submitted for parsing.",
+      "published": "2025-09-15T03:15:40Z",
+      "updated": "2025-11-04T22:16:34Z",
+      "affects": [
+        {
+          "ref": "Final product@1.2.3"
+        }
+      ]
+    },
+    {
+      "bom-ref": "Final product@1.2.3:93bdad6f-3c59-45e6-aabf-b2b8c000da73",
+      "id": "ALPINE-CVE-2025-26519",
+      "source": {
+        "name": "OSV"
+      },
+      "ratings": [
+        {
+          "source": {
+            "name": "OSV"
+          },
+          "severity": "high",
+          "method": "other"
+        }
+      ],
+      "description": "musl libc 0.9.13 through 1.2.5 before 1.2.6 has an out-of-bounds write vulnerability when an attacker can trigger iconv conversion of untrusted EUC-KR text to UTF-8.",
+      "published": "2025-02-14T04:15:09Z",
+      "updated": "2025-10-14T04:20:58Z",
+      "analysis": {
+        "state": "false_positive",
+        "justification": "null"
+      },
+      "affects": [
+        {
+          "ref": "Final product@1.2.3"
+        }
+      ]
+    },
+    {
+      "bom-ref": "Final product@1.2.3:d4da49c6-8a9a-4215-9d30-e98f9ecb275c",
+      "id": "ALPINE-CVE-2017-7507",
+      "source": {
+        "name": "OSV"
+      },
+      "ratings": [
+        {
+          "source": {
+            "name": "OSV"
+          },
+          "severity": "high",
+          "method": "other"
+        }
+      ],
+      "description": "GnuTLS version 3.5.12 and earlier is vulnerable to a NULL pointer dereference while decoding a status response TLS extension with valid contents. This could lead to a crash of the GnuTLS server application.",
+      "published": "2017-06-16T19:29:00Z",
+      "updated": "2025-09-30T05:08:19Z",
+      "analysis": {
+        "state": "false_positive",
+        "justification": "null"
+      },
+      "affects": [
+        {
+          "ref": "Final product@1.2.3"
+        }
+      ]
+    },
+    {
+      "bom-ref": "Final product@1.2.3:05af3832-b680-46be-bb23-12955ee75a07",
+      "id": "ALPINE-CVE-2025-9230",
+      "source": {
+        "name": "OSV"
+      },
+      "ratings": [
+        {
+          "source": {
+            "name": "OSV"
+          },
+          "severity": "high",
+          "method": "other"
+        }
+      ],
+      "description": "Issue summary: An application trying to decrypt CMS messages encrypted using password based encryption can trigger an out-of-bounds read and write. Impact summary: This out-of-bounds read may trigger a crash which leads to Denial of Service for an application. The out-of-bounds write can cause a memory corruption which can have various consequences including a Denial of Service or Execution of attacker-supplied code. Although the consequences of a successful exploit of this vulnerability could be severe, the probability that the attacker would be able to perform it is low. Besides, password based (PWRI) encryption support in CMS messages is very rarely used. For that reason the issue was assessed as Moderate severity according to our Security Policy. The FIPS modules in 3.5, 3.4, 3.3, 3.2, 3.1 and 3.0 are not affected by this issue, as the CMS implementation is outside the OpenSSL FIPS module boundary.",
+      "published": "2025-09-30T14:15:41Z",
+      "updated": "2025-10-14T04:20:48Z",
+      "affects": [
+        {
+          "ref": "Final product@1.2.3"
+        }
+      ]
+    },
+    {
+      "bom-ref": "Final product@1.2.3:10c54826-3605-43da-8ca6-ef912c5b0448",
+      "id": "ALPINE-CVE-2025-9231",
+      "source": {
+        "name": "OSV"
+      },
+      "ratings": [
+        {
+          "source": {
+            "name": "OSV"
+          },
+          "severity": "medium",
+          "method": "other"
+        }
+      ],
+      "description": "Issue summary: A timing side-channel which could potentially allow remote recovery of the private key exists in the SM2 algorithm implementation on 64 bit ARM platforms. Impact summary: A timing side-channel in SM2 signature computations on 64 bit ARM platforms could allow recovering the private key by an attacker.. While remote key recovery over a network was not attempted by the reporter, timing measurements revealed a timing signal which may allow such an attack. OpenSSL does not directly support certificates with SM2 keys in TLS, and so this CVE is not relevant in most TLS contexts. However, given that it is possible to add support for such certificates via a custom provider, coupled with the fact that in such a custom provider context the private key may be recoverable via remote timing measurements, we consider this to be a Moderate severity issue. The FIPS modules in 3.5, 3.4, 3.3, 3.2, 3.1 and 3.0 are not affected by this issue, as SM2 is not an approved algorithm.",
+      "published": "2025-09-30T14:15:41Z",
+      "updated": "2025-10-14T04:20:47Z",
+      "affects": [
+        {
+          "ref": "Final product@1.2.3"
+        }
+      ]
+    },
+    {
+      "bom-ref": "Final product@1.2.3:613ae260-8339-459a-995e-c71f7d802400",
+      "id": "ALPINE-CVE-2025-9232",
+      "source": {
+        "name": "OSV"
+      },
+      "ratings": [
+        {
+          "source": {
+            "name": "OSV"
+          },
+          "severity": "medium",
+          "method": "other"
+        }
+      ],
+      "description": "Issue summary: An application using the OpenSSL HTTP client API functions may trigger an out-of-bounds read if the \u0027no_proxy\u0027 environment variable is set and the host portion of the authority component of the HTTP URL is an IPv6 address. Impact summary: An out-of-bounds read can trigger a crash which leads to Denial of Service for an application. The OpenSSL HTTP client API functions can be used directly by applications but they are also used by the OCSP client functions and CMP (Certificate Management Protocol) client implementation in OpenSSL. However the URLs used by these implementations are unlikely to be controlled by an attacker. In this vulnerable code the out of bounds read can only trigger a crash. Furthermore the vulnerability requires an attacker-controlled URL to be passed from an application to the OpenSSL function and the user has to have a \u0027no_proxy\u0027 environment variable set. For the aforementioned reasons the issue was assessed as Low severity. The vulnerable code was introduced in the following patch releases: 3.0.16, 3.1.8, 3.2.4, 3.3.3, 3.4.0 and 3.5.0. The FIPS modules in 3.5, 3.4, 3.3, 3.2, 3.1 and 3.0 are not affected by this issue, as the HTTP client implementation is outside the OpenSSL FIPS module boundary.",
+      "published": "2025-09-30T14:15:41Z",
+      "updated": "2025-10-14T04:21:21Z",
+      "affects": [
+        {
+          "ref": "Final product@1.2.3"
+        }
+      ]
+    },
+    {
+      "bom-ref": "Final product@1.2.3:e9299846-a52f-4adc-a1ad-d779ea32ce8d",
+      "id": "CVE-2025-9232",
+      "source": {
+        "name": "NVD",
+        "url": "https://nvd.nist.gov/"
+      },
+      "ratings": [
+        {
+          "source": {
+            "name": "NVD",
+            "url": "https://nvd.nist.gov/"
+          },
+          "score": 5.9,
+          "severity": "medium",
+          "method": "CVSSv3",
+          "vector": "CVSS:3.0/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:H"
+        }
+      ],
+      "cwes": [
+        125
+      ],
+      "description": "Issue summary: An application using the OpenSSL HTTP client API functions may trigger an out-of-bounds read if the \u0027no_proxy\u0027 environment variable is set and the host portion of the authority component of the HTTP URL is an IPv6 address. Impact summary: An out-of-bounds read can trigger a crash which leads to Denial of Service for an application. The OpenSSL HTTP client API functions can be used directly by applications but they are also used by the OCSP client functions and CMP (Certificate Management Protocol) client implementation in OpenSSL. However the URLs used by these implementations are unlikely to be controlled by an attacker. In this vulnerable code the out of bounds read can only trigger a crash. Furthermore the vulnerability requires an attacker-controlled URL to be passed from an application to the OpenSSL function and the user has to have a \u0027no_proxy\u0027 environment variable set. For the aforementioned reasons the issue was assessed as Low severity. The vulnerable code was introduced in the following patch releases: 3.0.16, 3.1.8, 3.2.4, 3.3.3, 3.4.0 and 3.5.0. The FIPS modules in 3.5, 3.4, 3.3, 3.2, 3.1 and 3.0 are not affected by this issue, as the HTTP client implementation is outside the OpenSSL FIPS module boundary.",
+      "published": "2025-09-30T14:15:41Z",
+      "updated": "2025-11-04T22:16:45Z",
+      "affects": [
+        {
+          "ref": "Final product@1.2.3"
+        }
+      ]
+    },
+    {
+      "bom-ref": "Final product@1.2.3:299fdde1-21db-49f9-905c-d9fc653e56bc",
+      "id": "CVE-2025-9230",
+      "source": {
+        "name": "NVD",
+        "url": "https://nvd.nist.gov/"
+      },
+      "ratings": [
+        {
+          "source": {
+            "name": "NVD",
+            "url": "https://nvd.nist.gov/"
+          },
+          "score": 7.5,
+          "severity": "high",
+          "method": "CVSSv3",
+          "vector": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+        }
+      ],
+      "cwes": [
+        125,
+        787
+      ],
+      "description": "Issue summary: An application trying to decrypt CMS messages encrypted using password based encryption can trigger an out-of-bounds read and write. Impact summary: This out-of-bounds read may trigger a crash which leads to Denial of Service for an application. The out-of-bounds write can cause a memory corruption which can have various consequences including a Denial of Service or Execution of attacker-supplied code. Although the consequences of a successful exploit of this vulnerability could be severe, the probability that the attacker would be able to perform it is low. Besides, password based (PWRI) encryption support in CMS messages is very rarely used. For that reason the issue was assessed as Moderate severity according to our Security Policy. The FIPS modules in 3.5, 3.4, 3.3, 3.2, 3.1 and 3.0 are not affected by this issue, as the CMS implementation is outside the OpenSSL FIPS module boundary.",
+      "published": "2025-09-30T14:15:41Z",
+      "updated": "2025-11-04T22:16:45Z",
+      "affects": [
+        {
+          "ref": "Final product@1.2.3"
+        }
+      ]
+    },
+    {
+      "bom-ref": "Final product@1.2.3:5fe091fa-d65d-43b4-a5b5-34ed2cfe0edb",
+      "id": "CVE-2025-9231",
+      "source": {
+        "name": "NVD",
+        "url": "https://nvd.nist.gov/"
+      },
+      "ratings": [
+        {
+          "source": {
+            "name": "NVD",
+            "url": "https://nvd.nist.gov/"
+          },
+          "score": 6.5,
+          "severity": "medium",
+          "method": "CVSSv3",
+          "vector": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:L"
+        }
+      ],
+      "cwes": [
+        385
+      ],
+      "description": "Issue summary: A timing side-channel which could potentially allow remote recovery of the private key exists in the SM2 algorithm implementation on 64 bit ARM platforms. Impact summary: A timing side-channel in SM2 signature computations on 64 bit ARM platforms could allow recovering the private key by an attacker.. While remote key recovery over a network was not attempted by the reporter, timing measurements revealed a timing signal which may allow such an attack. OpenSSL does not directly support certificates with SM2 keys in TLS, and so this CVE is not relevant in most TLS contexts. However, given that it is possible to add support for such certificates via a custom provider, coupled with the fact that in such a custom provider context the private key may be recoverable via remote timing measurements, we consider this to be a Moderate severity issue. The FIPS modules in 3.5, 3.4, 3.3, 3.2, 3.1 and 3.0 are not affected by this issue, as SM2 is not an approved algorithm.",
+      "published": "2025-09-30T14:15:41Z",
+      "updated": "2025-11-04T22:16:45Z",
+      "analysis": {
+        "state": "not_affected",
+        "justification": "requires_environment",
+        "detail": "We don\u0027t provide ARM64 images."
+      },
+      "affects": [
+        {
+          "ref": "Final product@1.2.3"
+        }
+      ]
+    },
+    {
+      "bom-ref": "Final product@1.2.3:5fe091fa-d65d-43b4-a5b5-34ed2cfe0edb",
+      "id": "CVE-2025-9231",
+      "source": {
+        "name": "NVD",
+        "url": "https://nvd.nist.gov/"
+      },
+      "ratings": [
+        {
+          "source": {
+            "name": "NVD",
+            "url": "https://nvd.nist.gov/"
+          },
+          "score": 6.5,
+          "severity": "medium",
+          "method": "CVSSv3",
+          "vector": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:L"
+        }
+      ],
+      "cwes": [
+        385
+      ],
+      "description": "Issue summary: A timing side-channel which could potentially allow remote recovery of the private key exists in the SM2 algorithm implementation on 64 bit ARM platforms. Impact summary: A timing side-channel in SM2 signature computations on 64 bit ARM platforms could allow recovering the private key by an attacker.. While remote key recovery over a network was not attempted by the reporter, timing measurements revealed a timing signal which may allow such an attack. OpenSSL does not directly support certificates with SM2 keys in TLS, and so this CVE is not relevant in most TLS contexts. However, given that it is possible to add support for such certificates via a custom provider, coupled with the fact that in such a custom provider context the private key may be recoverable via remote timing measurements, we consider this to be a Moderate severity issue. The FIPS modules in 3.5, 3.4, 3.3, 3.2, 3.1 and 3.0 are not affected by this issue, as SM2 is not an approved algorithm.",
+      "published": "2025-09-30T14:15:41Z",
+      "updated": "2025-11-04T22:16:45Z",
+      "analysis": {
+        "state": "not_affected",
+        "justification": "requires_environment",
+        "detail": "We don\u0027t provide ARM64 images."
+      },
+      "affects": [
+        {
+          "ref": "Final product@1.2.3"
+        }
+      ]
+    },
+    {
+      "bom-ref": "Final product@1.2.3:299fdde1-21db-49f9-905c-d9fc653e56bc",
+      "id": "CVE-2025-9230",
+      "source": {
+        "name": "NVD",
+        "url": "https://nvd.nist.gov/"
+      },
+      "ratings": [
+        {
+          "source": {
+            "name": "NVD",
+            "url": "https://nvd.nist.gov/"
+          },
+          "score": 7.5,
+          "severity": "high",
+          "method": "CVSSv3",
+          "vector": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+        }
+      ],
+      "cwes": [
+        125,
+        787
+      ],
+      "description": "Issue summary: An application trying to decrypt CMS messages encrypted using password based encryption can trigger an out-of-bounds read and write. Impact summary: This out-of-bounds read may trigger a crash which leads to Denial of Service for an application. The out-of-bounds write can cause a memory corruption which can have various consequences including a Denial of Service or Execution of attacker-supplied code. Although the consequences of a successful exploit of this vulnerability could be severe, the probability that the attacker would be able to perform it is low. Besides, password based (PWRI) encryption support in CMS messages is very rarely used. For that reason the issue was assessed as Moderate severity according to our Security Policy. The FIPS modules in 3.5, 3.4, 3.3, 3.2, 3.1 and 3.0 are not affected by this issue, as the CMS implementation is outside the OpenSSL FIPS module boundary.",
+      "published": "2025-09-30T14:15:41Z",
+      "updated": "2025-11-04T22:16:45Z",
+      "affects": [
+        {
+          "ref": "Final product@1.2.3"
+        }
+      ]
+    },
+    {
+      "bom-ref": "Final product@1.2.3:e9299846-a52f-4adc-a1ad-d779ea32ce8d",
+      "id": "CVE-2025-9232",
+      "source": {
+        "name": "NVD",
+        "url": "https://nvd.nist.gov/"
+      },
+      "ratings": [
+        {
+          "source": {
+            "name": "NVD",
+            "url": "https://nvd.nist.gov/"
+          },
+          "score": 5.9,
+          "severity": "medium",
+          "method": "CVSSv3",
+          "vector": "CVSS:3.0/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:H"
+        }
+      ],
+      "cwes": [
+        125
+      ],
+      "description": "Issue summary: An application using the OpenSSL HTTP client API functions may trigger an out-of-bounds read if the \u0027no_proxy\u0027 environment variable is set and the host portion of the authority component of the HTTP URL is an IPv6 address. Impact summary: An out-of-bounds read can trigger a crash which leads to Denial of Service for an application. The OpenSSL HTTP client API functions can be used directly by applications but they are also used by the OCSP client functions and CMP (Certificate Management Protocol) client implementation in OpenSSL. However the URLs used by these implementations are unlikely to be controlled by an attacker. In this vulnerable code the out of bounds read can only trigger a crash. Furthermore the vulnerability requires an attacker-controlled URL to be passed from an application to the OpenSSL function and the user has to have a \u0027no_proxy\u0027 environment variable set. For the aforementioned reasons the issue was assessed as Low severity. The vulnerable code was introduced in the following patch releases: 3.0.16, 3.1.8, 3.2.4, 3.3.3, 3.4.0 and 3.5.0. The FIPS modules in 3.5, 3.4, 3.3, 3.2, 3.1 and 3.0 are not affected by this issue, as the HTTP client implementation is outside the OpenSSL FIPS module boundary.",
+      "published": "2025-09-30T14:15:41Z",
+      "updated": "2025-11-04T22:16:45Z",
+      "affects": [
+        {
+          "ref": "Final product@1.2.3"
+        }
+      ]
+    },
+    {
+      "bom-ref": "Final product@1.2.3:e9299846-a52f-4adc-a1ad-d779ea32ce8d",
+      "id": "CVE-2025-9232",
+      "source": {
+        "name": "NVD",
+        "url": "https://nvd.nist.gov/"
+      },
+      "ratings": [
+        {
+          "source": {
+            "name": "NVD",
+            "url": "https://nvd.nist.gov/"
+          },
+          "score": 5.9,
+          "severity": "medium",
+          "method": "CVSSv3",
+          "vector": "CVSS:3.0/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:H"
+        }
+      ],
+      "cwes": [
+        125
+      ],
+      "description": "Issue summary: An application using the OpenSSL HTTP client API functions may trigger an out-of-bounds read if the \u0027no_proxy\u0027 environment variable is set and the host portion of the authority component of the HTTP URL is an IPv6 address. Impact summary: An out-of-bounds read can trigger a crash which leads to Denial of Service for an application. The OpenSSL HTTP client API functions can be used directly by applications but they are also used by the OCSP client functions and CMP (Certificate Management Protocol) client implementation in OpenSSL. However the URLs used by these implementations are unlikely to be controlled by an attacker. In this vulnerable code the out of bounds read can only trigger a crash. Furthermore the vulnerability requires an attacker-controlled URL to be passed from an application to the OpenSSL function and the user has to have a \u0027no_proxy\u0027 environment variable set. For the aforementioned reasons the issue was assessed as Low severity. The vulnerable code was introduced in the following patch releases: 3.0.16, 3.1.8, 3.2.4, 3.3.3, 3.4.0 and 3.5.0. The FIPS modules in 3.5, 3.4, 3.3, 3.2, 3.1 and 3.0 are not affected by this issue, as the HTTP client implementation is outside the OpenSSL FIPS module boundary.",
+      "published": "2025-09-30T14:15:41Z",
+      "updated": "2025-11-04T22:16:45Z",
+      "affects": [
+        {
+          "ref": "Final product@1.2.3"
+        }
+      ]
+    },
+    {
+      "bom-ref": "Final product@1.2.3:5fe091fa-d65d-43b4-a5b5-34ed2cfe0edb",
+      "id": "CVE-2025-9231",
+      "source": {
+        "name": "NVD",
+        "url": "https://nvd.nist.gov/"
+      },
+      "ratings": [
+        {
+          "source": {
+            "name": "NVD",
+            "url": "https://nvd.nist.gov/"
+          },
+          "score": 6.5,
+          "severity": "medium",
+          "method": "CVSSv3",
+          "vector": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:L"
+        }
+      ],
+      "cwes": [
+        385
+      ],
+      "description": "Issue summary: A timing side-channel which could potentially allow remote recovery of the private key exists in the SM2 algorithm implementation on 64 bit ARM platforms. Impact summary: A timing side-channel in SM2 signature computations on 64 bit ARM platforms could allow recovering the private key by an attacker.. While remote key recovery over a network was not attempted by the reporter, timing measurements revealed a timing signal which may allow such an attack. OpenSSL does not directly support certificates with SM2 keys in TLS, and so this CVE is not relevant in most TLS contexts. However, given that it is possible to add support for such certificates via a custom provider, coupled with the fact that in such a custom provider context the private key may be recoverable via remote timing measurements, we consider this to be a Moderate severity issue. The FIPS modules in 3.5, 3.4, 3.3, 3.2, 3.1 and 3.0 are not affected by this issue, as SM2 is not an approved algorithm.",
+      "published": "2025-09-30T14:15:41Z",
+      "updated": "2025-11-04T22:16:45Z",
+      "analysis": {
+        "state": "not_affected",
+        "justification": "requires_environment",
+        "detail": "We don\u0027t provide ARM64 images."
+      },
+      "affects": [
+        {
+          "ref": "Final product@1.2.3"
+        }
+      ]
+    },
+    {
+      "bom-ref": "Final product@1.2.3:299fdde1-21db-49f9-905c-d9fc653e56bc",
+      "id": "CVE-2025-9230",
+      "source": {
+        "name": "NVD",
+        "url": "https://nvd.nist.gov/"
+      },
+      "ratings": [
+        {
+          "source": {
+            "name": "NVD",
+            "url": "https://nvd.nist.gov/"
+          },
+          "score": 7.5,
+          "severity": "high",
+          "method": "CVSSv3",
+          "vector": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+        }
+      ],
+      "cwes": [
+        125,
+        787
+      ],
+      "description": "Issue summary: An application trying to decrypt CMS messages encrypted using password based encryption can trigger an out-of-bounds read and write. Impact summary: This out-of-bounds read may trigger a crash which leads to Denial of Service for an application. The out-of-bounds write can cause a memory corruption which can have various consequences including a Denial of Service or Execution of attacker-supplied code. Although the consequences of a successful exploit of this vulnerability could be severe, the probability that the attacker would be able to perform it is low. Besides, password based (PWRI) encryption support in CMS messages is very rarely used. For that reason the issue was assessed as Moderate severity according to our Security Policy. The FIPS modules in 3.5, 3.4, 3.3, 3.2, 3.1 and 3.0 are not affected by this issue, as the CMS implementation is outside the OpenSSL FIPS module boundary.",
+      "published": "2025-09-30T14:15:41Z",
+      "updated": "2025-11-04T22:16:45Z",
+      "affects": [
+        {
+          "ref": "Final product@1.2.3"
+        }
+      ]
+    },
+    {
+      "bom-ref": "Final product@1.2.3:b4c9c53b-2721-4928-af1c-2151c3e15c94",
+      "id": "CVE-2025-58056",
+      "source": {
+        "name": "NVD",
+        "url": "https://nvd.nist.gov/"
+      },
+      "ratings": [
+        {
+          "source": {
+            "name": "NVD",
+            "url": "https://nvd.nist.gov/"
+          },
+          "score": 7.5,
+          "severity": "high",
+          "method": "CVSSv3",
+          "vector": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:H/A:N"
+        }
+      ],
+      "cwes": [
+        444
+      ],
+      "description": "Netty is an asynchronous event-driven network application framework for development of maintainable high performance protocol servers and clients. In versions 4.1.124.Final, and 4.2.0.Alpha3 through 4.2.4.Final, Netty incorrectly accepts standalone newline characters (LF) as a chunk-size line terminator, regardless of a preceding carriage return (CR), instead of requiring CRLF per HTTP/1.1 standards. When combined with reverse proxies that parse LF differently (treating it as part of the chunk extension), attackers can craft requests that the proxy sees as one request but Netty processes as two, enabling request smuggling attacks. This is fixed in versions 4.1.125.Final and 4.2.5.Final.",
+      "published": "2025-09-03T21:15:33Z",
+      "updated": "2025-09-08T16:46:36Z",
+      "affects": [
+        {
+          "ref": "Final product@1.2.3"
+        }
+      ]
+    },
+    {
+      "bom-ref": "Final product@1.2.3:49e50869-65b8-49bc-bde9-68251ef8ea11",
+      "id": "CVE-2025-58057",
+      "source": {
+        "name": "NVD",
+        "url": "https://nvd.nist.gov/"
+      },
+      "ratings": [
+        {
+          "source": {
+            "name": "NVD",
+            "url": "https://nvd.nist.gov/"
+          },
+          "score": 7.5,
+          "severity": "high",
+          "method": "CVSSv3",
+          "vector": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+        }
+      ],
+      "cwes": [
+        409
+      ],
+      "description": "Netty is an asynchronous event-driven network application framework for rapid development of maintainable high performance protocol servers \u0026 clients. In netty-codec-compression versions 4.1.124.Final and below, and netty-codec versions 4.2.4.Final and below, when supplied with specially crafted input, BrotliDecoder and certain other decompression decoders will allocate a large number of reachable byte buffers, which can lead to denial of service. BrotliDecoder.decompress has no limit in how often it calls pull, decompressing data 64K bytes at a time. The buffers are saved in the output list, and remain reachable until OOM is hit. This is fixed in versions 4.1.125.Final of netty-codec and 4.2.5.Final of netty-codec-compression.",
+      "published": "2025-09-04T10:42:32Z",
+      "updated": "2025-09-08T16:45:55Z",
+      "affects": [
+        {
+          "ref": "Final product@1.2.3"
+        }
+      ]
+    },
+    {
+      "bom-ref": "Final product@1.2.3:dde0267d-e8e2-4a93-b2dc-d9aff425ca21",
+      "id": "CVE-2025-48924",
+      "source": {
+        "name": "NVD",
+        "url": "https://nvd.nist.gov/"
+      },
+      "ratings": [
+        {
+          "source": {
+            "name": "NVD",
+            "url": "https://nvd.nist.gov/"
+          },
+          "score": 5.3,
+          "severity": "medium",
+          "method": "CVSSv3",
+          "vector": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L"
+        }
+      ],
+      "cwes": [
+        674
+      ],
+      "description": "Uncontrolled Recursion vulnerability in Apache Commons Lang. This issue affects Apache Commons Lang: Starting with\u00A0commons-lang:commons-lang\u00A02.0 to 2.6, and, from org.apache.commons:commons-lang3 3.0 before\u00A03.18.0. The methods ClassUtils.getClass(...) can throw\u00A0StackOverflowError on very long inputs. Because an Error is usually not handled by applications and libraries, a StackOverflowError could\u00A0cause an application to stop. Users are recommended to upgrade to version 3.18.0, which fixes the issue.",
+      "published": "2025-07-11T15:15:24Z",
+      "updated": "2025-11-04T22:16:17Z",
+      "affects": [
+        {
+          "ref": "Final product@1.2.3"
+        }
+      ]
+    },
+    {
+      "bom-ref": "Final product@1.2.3:790e861d-80e5-4d7e-8991-4e2ffa5fab08",
+      "id": "CVE-2025-58457",
+      "source": {
+        "name": "NVD",
+        "url": "https://nvd.nist.gov/"
+      },
+      "ratings": [
+        {
+          "source": {
+            "name": "NVD",
+            "url": "https://nvd.nist.gov/"
+          },
+          "score": 4.3,
+          "severity": "medium",
+          "method": "CVSSv3",
+          "vector": "CVSS:3.0/AV:N/AC:L/PR:L/UI:N/S:U/C:L/I:N/A:N"
+        }
+      ],
+      "cwes": [
+        280
+      ],
+      "description": "Improper permission check in ZooKeeper AdminServer lets authorized clients to run snapshot and restore command with insufficient permissions. This issue affects Apache ZooKeeper: from 3.9.0 before 3.9.4. Users are recommended to upgrade to version 3.9.4, which fixes the issue. The issue can be mitigated by disabling both commands (via admin.snapshot.enabled and admin.restore.enabled), disabling the whole AdminServer interface (via admin.enableServer), or ensuring that the root ACL does not provide open permissions. (Note that ZooKeeper ACLs are not recursive, so this does not impact operations on child nodes besides notifications from recursive watches.)",
+      "published": "2025-09-24T10:15:28Z",
+      "updated": "2025-11-04T22:16:34Z",
+      "affects": [
+        {
+          "ref": "Final product@1.2.3"
+        }
+      ]
+    },
+    {
+      "bom-ref": "Final product@1.2.3:1c234200-5f90-4734-9997-12bbfc8fc346",
+      "id": "CVE-2025-5115",
+      "source": {
+        "name": "NVD",
+        "url": "https://nvd.nist.gov/"
+      },
+      "ratings": [
+        {
+          "source": {
+            "name": "NVD",
+            "url": "https://nvd.nist.gov/"
+          },
+          "severity": "unknown",
+          "method": "other"
+        }
+      ],
+      "cwes": [
+        400
+      ],
+      "description": "In Eclipse Jetty, versions \u003C=9.4.57, \u003C=10.0.25, \u003C=11.0.25, \u003C=12.0.21, \u003C=12.1.0.alpha2, an HTTP/2 client may trigger the server to send RST_STREAM frames, for example by sending frames that are malformed or that should not be sent in a particular stream state, therefore forcing the server to consume resources such as CPU and memory. For example, a client can open a stream and then send WINDOW_UPDATE frames with window size increment of 0, which is illegal. Per specification https://www.rfc-editor.org/rfc/rfc9113.html#name-window_update , the server should send a RST_STREAM frame. The client can now open another stream and send another bad WINDOW_UPDATE, therefore causing the server to consume more resources than necessary, as this case does not exceed the max number of concurrent streams, yet the client is able to create an enormous amount of streams in a short period of time. The attack can be performed with other conditions (for example, a DATA frame for a closed stream) that cause the server to send a RST_STREAM frame. Links: * https://github.com/jetty/jetty.project/security/advisories/GHSA-mmxm-8w33-wc4h",
+      "published": "2025-08-20T20:15:33Z",
+      "updated": "2025-11-04T22:16:35Z",
+      "affects": [
+        {
+          "ref": "Final product@1.2.3"
+        }
+      ]
+    },
+    {
+      "bom-ref": "Final product@1.2.3:3b2f8f0e-37a2-4db4-be9e-18f2416eddf8",
+      "id": "CVE-2023-7272",
+      "source": {
+        "name": "NVD",
+        "url": "https://nvd.nist.gov/"
+      },
+      "ratings": [
+        {
+          "source": {
+            "name": "NVD",
+            "url": "https://nvd.nist.gov/"
+          },
+          "score": 7.5,
+          "severity": "high",
+          "method": "CVSSv3",
+          "vector": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+        }
+      ],
+      "cwes": [
+        787
+      ],
+      "description": "In Eclipse Parsson before 1.0.4 and 1.1.3, a document with a large depth of nested objects can allow an attacker to cause a Java stack overflow exception and denial of service. Eclipse Parsson allows processing (e.g. parse, generate, transform and query) JSON documents.",
+      "published": "2024-07-17T15:15:10Z",
+      "updated": "2025-02-06T18:07:45Z",
+      "analysis": {
+        "state": "false_positive",
+        "justification": "null"
+      },
+      "affects": [
+        {
+          "ref": "Final product@1.2.3"
+        }
+      ]
+    },
+    {
+      "bom-ref": "Final product@1.2.3:224a2061-d9d1-4df0-9529-e56af7dda1d2",
+      "id": "CVE-2025-26519",
+      "source": {
+        "name": "NVD",
+        "url": "https://nvd.nist.gov/"
+      },
+      "ratings": [
+        {
+          "source": {
+            "name": "NVD",
+            "url": "https://nvd.nist.gov/"
+          },
+          "score": 8.1,
+          "severity": "high",
+          "method": "CVSSv3",
+          "vector": "CVSS:3.0/AV:L/AC:H/PR:N/UI:N/S:C/C:H/I:H/A:L"
+        }
+      ],
+      "cwes": [
+        787
+      ],
+      "description": "musl libc 0.9.13 through 1.2.5 before 1.2.6 has an out-of-bounds write vulnerability when an attacker can trigger iconv conversion of untrusted EUC-KR text to UTF-8.",
+      "published": "2025-02-14T04:15:09Z",
+      "updated": "2025-02-14T17:15:23Z",
+      "analysis": {
+        "state": "false_positive",
+        "justification": "null"
+      },
+      "affects": [
+        {
+          "ref": "Final product@1.2.3"
+        }
+      ]
+    },
+    {
+      "bom-ref": "Final product@1.2.3:36b4377f-13b4-4994-a71d-39da3faf5922",
+      "id": "GHSA-fghv-69vj-qj49",
+      "source": {
+        "name": "GITHUB",
+        "url": "https://github.com/advisories"
+      },
+      "ratings": [
+        {
+          "source": {
+            "name": "GITHUB",
+            "url": "https://github.com/advisories"
+          },
+          "severity": "low",
+          "method": "other"
+        }
+      ],
+      "cwes": [
+        444
+      ],
+      "description": "## Summary A flaw in netty\u0027s parsing of chunk extensions in HTTP/1.1 messages with chunked encoding can lead to request smuggling issues with some reverse proxies. ## Details When encountering a newline character (LF) while parsing a chunk extension, netty interprets the newline as the end of the chunk-size line regardless of whether a preceding carriage return (CR) was found. This is in violation of the HTTP 1.1 standard which specifies that the chunk extension is terminated by a CRLF sequence (see the [RFC](https://datatracker.ietf.org/doc/html/rfc9112#name-chunked-transfer-coding)). This is by itself harmless, but consider an intermediary with a similar parsing flaw: while parsing a chunk extension, the intermediary interprets an LF without a preceding CR as simply part of the chunk extension (this is also in violation of the RFC, because whitespace characters are not allowed in chunk extensions). We can use this discrepancy to construct an HTTP request that the intermediary will interpret as one request but netty will interpret as two (all lines ending with CRLF, notice the LFs in the chunk extension): \u0060\u0060\u0060 POST /one HTTP/1.1 Host: localhost:8080 Transfer-Encoding: chunked 48;\\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\\n0 POST /two HTTP/1.1 Host: localhost:8080 Transfer-Encoding: chunked 0 \u0060\u0060\u0060 The intermediary will interpret this as a single request. Once forwarded to netty, netty will interpret it as two separate requests. This is a problem, because attackers can then the intermediary, as well as perform standard request smuggling attacks against other live users (see [this Portswigger article](https://portswigger.net/web-security/request-smuggling/exploiting)). ## Impact This is a request smuggling issue which can be exploited for bypassing front-end access control rules as well as corrupting the responses served to other live clients. The impact is high, but it only affects setups that use a front-end which: 1. Interprets LF characters (without preceding CR) in chunk extensions as part of the chunk extension. 2. Forwards chunk extensions without normalization. ## Disclosure - This vulnerability was disclosed on June 18th, 2025 here: https://w4ke.info/2025/06/18/funky-chunks.html ## Discussion Discussion for this vulnerability can be found here: - https://github.com/netty/netty/issues/15522 - https://github.com/JLLeitschuh/unCVEed/issues/1 ## Credit - Credit to @JeppW for uncovering this vulnerability. - Credit to @JLLeitschuh at [Socket](https://socket.dev/) for coordinating the vulnerability disclosure.",
+      "published": "2025-09-04T17:35:20Z",
+      "updated": "2025-09-10T20:48:05Z",
+      "affects": [
+        {
+          "ref": "Final product@1.2.3"
+        }
+      ]
+    },
+    {
+      "bom-ref": "Final product@1.2.3:aade1dfe-ef60-4833-bac9-96947eeec497",
+      "id": "GHSA-3p8m-j85q-pgmj",
+      "source": {
+        "name": "GITHUB",
+        "url": "https://github.com/advisories"
+      },
+      "ratings": [
+        {
+          "source": {
+            "name": "GITHUB",
+            "url": "https://github.com/advisories"
+          },
+          "severity": "medium",
+          "method": "other"
+        }
+      ],
+      "cwes": [
+        409
+      ],
+      "description": "### Summary With specially crafted input, \u0060BrotliDecoder\u0060 and some other decompressing decoders will allocate a large number of reachable byte buffers, which can lead to denial of service. ### Details \u0060BrotliDecoder.decompress\u0060 has no limit in how often it calls \u0060pull\u0060, decompressing data 64K bytes at a time. The buffers are saved in the output list, and remain reachable until OOM is hit. This is basically a zip bomb. Tested on 4.1.118, but there were no changes to the decoder since. ### PoC Run this test case with \u0060-Xmx1G\u0060: \u0060\u0060\u0060java import io.netty.buffer.Unpooled; import io.netty.channel.embedded.EmbeddedChannel; import java.util.Base64; public class T { public static void main(String[] args) { EmbeddedChannel channel = new EmbeddedChannel(new BrotliDecoder()); channel.writeInbound(Unpooled.wrappedBuffer(Base64.getDecoder().decode(\u0022aPpxD1tETigSAGj6cQ8vRE4oEgBo\u002BnEPW0ROKBIAaPpxD1tETigSAGj6cQ9bRE4oEgBo\u002BnEPW0ROKBIAaPpxD1tETigSAGj6cQ9bRE4oEgBo\u002BnEPW0ROKBIAaPpxD1tETigSAGj6cQ9bRE4oEgBo\u002BnEPW0ROKBIAaPpxD1tETigSAGj6cQ9bRE4oEgBo\u002BnEPW0ROKBIAaPpxD1tETigSAGj6cQ9bRE4oEgBo\u002BnEPW0ROKBIAaPpxD1tETigSAGj6cQ9bRE4oEgBo\u002BnEPW0ROKBIAaPpxD1tETigSAGj6cQ9bRE4oEgBo\u002BnEPW0ROKBIAaPpxD1tETigSAGj6cQ9bRE4oEgBo\u002BnEPW0ROKBIAaPpxD1tETigSAGj6cQ9bRE4oEgBo\u002BnEPW0ROKBIAaPpxD1tETigSAGj6cQ9bRE4oEgBo\u002BnEPW0ROKBIAaPpxD1tETigSAGj6cQ9bRE4oEgBo\u002BnEPW0ROKBIAaPpxD1tETigSAGj6cQ9bRE4oEgBo\u002BnEPW0ROKBIAaPpxD1tETigSAGj6cQ9bRE4oEgBo\u002BnEPW0ROKBIAaPpxD1tETigSAGj6cQ9bRE4oEgBo\u002BnEPW0ROKBIAaPpxD1tETigSAGj6cQ9bRE4oEgBo\u002BnEPW0ROKBIAaPpxD1tETigSAGj6cQ9bRE4oEgBo\u002BnEPW0ROKBIAaPpxD1tETigSAGj6cQ9bRE4oEgBo\u002BnEPW0ROKBIAaPpxD1tETigSAGj6cQ9bRE4oEgBo\u002BnEPW0ROKBIAaPpxD1tETigSAGj6cQ9bRE4oEgBo\u002BnEPW0ROKBIAaPpxD1tETigSAGj6cQ9bRE4oEgBo\u002BnEPW0ROKBIAaPpxD1tETigSAGj6cQ9bRE4oEgBo\u002BnEPW0ROKBIAaPpxD1tETigSAGj6cQ9bRE4oEgBo\u002BnEPW0ROKBIAaPpxD1tETigSAGj6cQ9bRE4oEgBo\u002BnEPW0ROKBIAaPpxD1tETigSAGj6cQ9bRE4oEgBo\u002BnEPW0ROKBIAaPpxD1tETigSAGj6cQ9bRE4oEgBo\u002BnEPW0ROKBIAaPpxD1tETigSAGj6cQ9bRE4oEgBo\u002BnEPW0ROKBIAaPpxD1tETigSAGj6cQ9bRE4oEgBo\u002BnEPW0ROKBIAaPpxD1tETigSAGj6cQ9bRE4oEgBo\u002BnEPW0ROKBIAaPpxD1tETigSAGj6cQ9bRE4oEgBo\u002BnEPW0ROKBIAaPpxD1tETigSAGj6cQ9bRE4oEgBo\u002BnEPW0ROKBIAaPpxD1tETigSAGj6cQ9bRE4oEgBo\u002BnEPW0ROKBIAaPpxD1tETigSAGj6cQ9bRE4oEgBo\u002BnEPW0ROKBIAaPpxD1tETigSAGj6cQ9bRE4oEgBo\u002BnEPW0ROKBIAaPpxD1tETigSAGj6cQ9bRE4oEgBo\u002BnEPW0ROKBIAaPpxD1tETigSAGj6cQ9bRE4oEgBo\u002BnEPW0ROKBIAaPpxD1tETigSAGj6cQ9bRE4oEgBo\u002BnEPW0ROKBIAaPpxD1tETigSAGj6cQ9bRE4oEgBo\u002BnEPW0ROKBIAaPpxD1tETigSAGj6cQ9bRE4oEgBo\u002BnEPW0ROKBIAaPpxD1tETigSAGj6cQ9bRE4oEgBo\u002BnEPW0ROKBIAaPpxD1tETigSAGj6cQ9bRE4oEgBo\u002BnEPW0ROKBIAaPpxD1tETigSAGj6cQ9bRE4oEgBo\u002BnEPW0ROKBIAaPpxD1tETigSAGj6cQ9bRE4oEgBo\u002BnEPW0ROKBIAaPpxD1tETigSAGj6cQ9bRE4oEgBo\u002BnEPW0ROKBIAaPpxD1tETigSAGj6cQ9bRE4oEgBo\u002BnEPW0ROKBIAaPpxD1tETigSAGj6cQ9bRE4oEgBo\u002BnEPW0ROKBIAaPpxD1tETigSAGj6cQ9bRE4oEgBo\u002BnEPW0ROKBIAaPpxD1tETigSAGj6cQ9bRE4oEgBo\u002BnEPW0ROKBIAaPpxD1tETigSAGj6cQ9bRE4oEgBo\u002BnEPW0ROKBIAaPpxD1tETigSAGj6cQ9bRE4oEgBo\u002BnEPW0ROMBIAEgIaHwBETlQQVFcXlgA=\u0022))); } } \u0060\u0060\u0060 Error: \u0060\u0060\u0060 Exception in thread \u0022main\u0022 java.lang.OutOfMemoryError: Cannot reserve 4194304 bytes of direct buffer memory (allocated: 1069580289, limit: 1073741824) at java.base/java.nio.Bits.reserveMemory(Bits.java:178) at java.base/java.nio.DirectByteBuffer.\u003Cinit\u003E(DirectByteBuffer.java:121) at java.base/java.nio.ByteBuffer.allocateDirect(ByteBuffer.java:332) at io.netty.buffer.PoolArena$DirectArena.allocateDirect(PoolArena.java:718) at io.netty.buffer.PoolArena$DirectArena.newChunk(PoolArena.java:693) at io.netty.buffer.PoolArena.allocateNormal(PoolArena.java:213) at io.netty.buffer.PoolArena.tcacheAllocateNormal(PoolArena.java:195) at io.netty.buffer.PoolArena.allocate(PoolArena.java:137) at io.netty.buffer.PoolArena.allocate(PoolArena.java:127) at io.netty.buffer.PooledByteBufAllocator.newDirectBuffer(PooledByteBufAllocator.java:403) at io.netty.buffer.AbstractByteBufAllocator.directBuffer(AbstractByteBufAllocator.java:188) at io.netty.buffer.AbstractByteBufAllocator.directBuffer(AbstractByteBufAllocator.java:179) at io.netty.buffer.AbstractByteBufAllocator.buffer(AbstractByteBufAllocator.java:116) at io.netty.handler.codec.compression.BrotliDecoder.pull(BrotliDecoder.java:70) at io.netty.handler.codec.compression.BrotliDecoder.decompress(BrotliDecoder.java:101) at io.netty.handler.codec.compression.BrotliDecoder.decode(BrotliDecoder.java:137) at io.netty.handler.codec.ByteToMessageDecoder.decodeRemovalReentryProtection(ByteToMessageDecoder.java:530) at io.netty.handler.codec.ByteToMessageDecoder.callDecode(ByteToMessageDecoder.java:469) at io.netty.handler.codec.ByteToMessageDecoder.channelRead(ByteToMessageDecoder.java:290) at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:444) at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:420) at io.netty.channel.AbstractChannelHandlerContext.fireChannelRead(AbstractChannelHandlerContext.java:412) at io.netty.channel.DefaultChannelPipeline$HeadContext.channelRead(DefaultChannelPipeline.java:1357) at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:440) at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:420) at io.netty.channel.DefaultChannelPipeline.fireChannelRead(DefaultChannelPipeline.java:868) at io.netty.channel.embedded.EmbeddedChannel.writeInbound(EmbeddedChannel.java:348) at io.netty.handler.codec.compression.T.main(T.java:11) \u0060\u0060\u0060 ### Impact DoS for anyone using \u0060BrotliDecoder\u0060 on untrusted input.",
+      "published": "2025-09-03T18:00:55Z",
+      "updated": "2025-09-04T13:51:46Z",
+      "affects": [
+        {
+          "ref": "Final product@1.2.3"
+        }
+      ]
+    },
+    {
+      "bom-ref": "Final product@1.2.3:89e14394-3e27-479a-9ad8-7cfd3cf8430d",
+      "id": "GHSA-j288-q9x7-2f5v",
+      "source": {
+        "name": "GITHUB",
+        "url": "https://github.com/advisories"
+      },
+      "ratings": [
+        {
+          "source": {
+            "name": "GITHUB",
+            "url": "https://github.com/advisories"
+          },
+          "score": 6.5,
+          "severity": "medium",
+          "method": "CVSSv31",
+          "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N"
+        }
+      ],
+      "cwes": [
+        674
+      ],
+      "description": "Uncontrolled Recursion vulnerability in Apache Commons Lang. This issue affects Apache Commons Lang: Starting with\u00A0commons-lang:commons-lang\u00A02.0 to 2.6, and, from org.apache.commons:commons-lang3 3.0 before\u00A03.18.0. The methods ClassUtils.getClass(...) can throw\u00A0StackOverflowError on very long inputs. Because an Error is usually not handled by applications and libraries, a StackOverflowError could\u00A0cause an application to stop. Users are recommended to upgrade to version 3.18.0, which fixes the issue.",
+      "published": "2025-07-11T15:31:37Z",
+      "updated": "2025-11-05T20:30:33Z",
+      "affects": [
+        {
+          "ref": "Final product@1.2.3"
+        }
+      ]
+    },
+    {
+      "bom-ref": "Final product@1.2.3:df4503f3-fd9f-4db5-ab6f-527f2593d8c4",
+      "id": "GHSA-2hmj-97jw-28jh",
+      "source": {
+        "name": "GITHUB",
+        "url": "https://github.com/advisories"
+      },
+      "ratings": [
+        {
+          "source": {
+            "name": "GITHUB",
+            "url": "https://github.com/advisories"
+          },
+          "score": 4.3,
+          "severity": "medium",
+          "method": "CVSSv31",
+          "vector": "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:L/I:N/A:N"
+        }
+      ],
+      "cwes": [
+        280
+      ],
+      "description": "Improper permission checks in the AdminServer allow an authenticated client with insufficient privileges to invoke the \u0060snapshot\u0060 and \u0060restore\u0060 commands. The intended requirement is authentication and authorization on the root path (\u0060/\u0060) with **ALL** permission for these operations; however, affected versions permit invocation without that level of authorization. The primary risk is disclosure of cluster state via snapshots to a lesser-privileged client. * **Affected:** \u0060org.apache.zookeeper:zookeeper\u0060 3.9.0 through 3.9.3. * **Fixed:** 3.9.4 (ZOOKEEPER-4964 \u201Ccheck permissions individually during admin server auth\u201D). * **Mitigations:** * Disable both commands (\u0060admin.snapshot.enabled\u0060, \u0060admin.restore.enabled\u0060). * Disable AdminServer (\u0060admin.enableServer\u0060). * Ensure the root ACL is not open; note that ZooKeeper ACLs are not recursive. * Upgrade to 3.9.4.",
+      "published": "2025-09-24T12:30:20Z",
+      "updated": "2025-11-05T20:46:29Z",
+      "affects": [
+        {
+          "ref": "Final product@1.2.3"
+        }
+      ]
+    },
+    {
+      "bom-ref": "Final product@1.2.3:b1db4bdf-b677-426f-9d7c-b64370944622",
+      "id": "GHSA-mmxm-8w33-wc4h",
+      "source": {
+        "name": "GITHUB",
+        "url": "https://github.com/advisories"
+      },
+      "ratings": [
+        {
+          "source": {
+            "name": "GITHUB",
+            "url": "https://github.com/advisories"
+          },
+          "score": 7.5,
+          "severity": "high",
+          "method": "CVSSv31",
+          "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+        }
+      ],
+      "cwes": [
+        400,
+        770
+      ],
+      "description": "## Technical Details Below is a technical explanation of a newly discovered vulnerability in HTTP/2, which we refer to as \u201CMadeYouReset.\u201D ### MadeYouReset Vulnerability Summary The MadeYouReset DDoS vulnerability is a logical vulnerability in the HTTP/2 protocol, that uses malformed HTTP/2 control frames in order to break the max concurrent streams limit - which results in resource exhaustion and distributed denial of service. ### Mechanism The vulnerability uses malformed HTTP/2 control frames, or malformed flow, in order to make the server reset streams created by the client (using the RST_STREAM frame). The vulnerability could be triggered by several primitives, defined by the RFC of HTTP/2 (RFC 9113). The Primitives are: 1. WINDOW_UPDATE frame with an increment of 0 or an increment that makes the window exceed 2^31 - 1. (section 6.9 \u002B 6.9.1) 2. HEADERS or DATA frames sent on a half-closed (remote) stream (which was closed using the END_STREAM flag). (note that for some implementations it\u0027s possible a CONTINUATION frame to trigger that as well - but it\u0027s very rare). (Section 5.1) 3. PRIORITY frame with a length other than 5. (section 6.3) From our experience, the primitives are likely to exist in the decreasing order listed above. Note that based on the implementation of the library, other primitives (which are not defined by the RFC) might exist - meaning scenarios in which RST_STREAM is not supposed to be sent, but in the implementation it does. On the other hand - some RFC-defined primitives might not work, even though they are defined by the RFC (as some implementations are not fully complying with RFC). For example, some implementations we\u2019ve seen discard the PRIORITY frame - and thus does not return RST_STREAM, and some implementations send GO_AWAY when receiving a WINDOW_UPDATE frame with increment of 0. The vulnerability takes advantage of a design flaw in the HTTP/2 protocol - While HTTP/2 has a limit on the number of concurrently active streams per connection (which is usually 100, and is set by the parameter SETTINGS_MAX_CONCURRENT_STREAMS), the number of active streams is not counted correctly - when a stream is reset, it is immediately considered not active, and thus unaccounted for in the active streams counter. While the protocol does not count those streams as active, the server\u2019s backend logic still processes and handles the requests that were canceled. Thus, the attacker can exploit this vulnerability to cause the server to handle an unbounded number of concurrent streams from a client on the same connection. The exploitation is very simple: the client issues a request in a stream, and then sends the control frame that causes the server to send a RST_STREAM. ### Attack Flow For example, a possible attack scenario can be: 1. Attacker opens an HTTP/2 connection to the server. 2. Attacker sends HEADERS frame with END_STREAM flag on a new stream X. 3. Attacker sends WINDOW_UPDATE for stream X with flow-control window of 0. 4. The server receives the WINDOW_UPDATE and immediately sends RST_STREAM for stream X to the client (\u002B decreases the active streams counter by 1). The attacker can repeat steps 2\u002B3 as rapidly as it is capable, since the active streams counter never exceeds 1 and the attacker does not need to wait for the response from the server. This leads to resource exhaustion and distributed denial of service vulnerabilities with an impact of: CPU overload and/or memory exhaustion (implementation dependant) ### Comparison to Rapid Reset The vulnerability takes advantage of a design flow in the HTTP/2 protocol that was also used in the Rapid Reset vulnerability (CVE-2023-44487) which was exploited as a zero-day in the wild in August 2023 to October 2023, against multiple services and vendors. The Rapid Reset vulnerability uses RST_STREAM frames sent from the client, in order to create an unbounded amount of concurrent streams - it was given a CVSS score of 7.5. Rapid Reset was mostly mitigated by limiting the number/rate of RST_STREAM sent from the client, which does not mitigate the MadeYouReset attack - since it triggers the server to send a RST_STREAM. ### Suggested Mitigations for MadeYouReset A quick and easy mitigation will be to limit the number/rate of RST_STREAMs sent from the server. It is also possible to limit the number/rate of control frames sent by the client (e.g. WINDOW_UPDATE and PRIORITY), and treat protocol flow errors as a connection error. As mentioned in our previous message, this is a protocol-level vulnerability that affects multiple vendors and implementations. Given its broad impact, it is the shared responsibility of all parties involved to handle the disclosure process carefully and coordinate mitigations effectively. If you have any questions, we will be happy to clarify or schedule a Zoom call. Gal, Anat and Yaniv. ## Jetty\u0027s Team Notes ### Impact A denial of service vulnerability similar to [Rapid Reset](https://github.com/jetty/jetty.project/security/advisories/GHSA-c745-7wm4-7738), but where the client triggers a reset from the server by sending a malformed or invalid frame. In particular, this may be triggered by WINDOW_UPDATE frames that are invalid (e.g. with \u0060delta==0\u0060 or when the delta makes the window exceed \u00602^31-1\u0060). ### Patches Patch has been merged into 12.0.x mainline via https://github.com/jetty/jetty.project/pull/13449. ### Workarounds No workarounds apart disabling HTTP/2.",
+      "published": "2025-08-20T20:52:17Z",
+      "updated": "2025-11-05T20:40:35Z",
+      "affects": [
+        {
+          "ref": "Final product@1.2.3"
+        }
+      ]
+    },
+    {
+      "bom-ref": "Final product@1.2.3:07f8d2bd-9f7c-402f-a9f6-b48fc512b73d",
+      "id": "CVE-2017-7507",
+      "source": {
+        "name": "NVD",
+        "url": "https://nvd.nist.gov/"
+      },
+      "ratings": [
+        {
+          "source": {
+            "name": "NVD",
+            "url": "https://nvd.nist.gov/"
+          },
+          "score": 5,
+          "severity": "medium",
+          "method": "CVSSv2",
+          "vector": "(AV:N/AC:L/Au:N/C:N/I:N/A:P)"
+        },
+        {
+          "source": {
+            "name": "NVD",
+            "url": "https://nvd.nist.gov/"
+          },
+          "score": 7.5,
+          "severity": "high",
+          "method": "CVSSv3",
+          "vector": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+        }
+      ],
+      "cwes": [
+        476
+      ],
+      "description": "GnuTLS version 3.5.12 and earlier is vulnerable to a NULL pointer dereference while decoding a status response TLS extension with valid contents. This could lead to a crash of the GnuTLS server application.",
+      "published": "2017-06-16T19:29:00Z",
+      "updated": "2025-04-20T01:37:25Z",
+      "analysis": {
+        "state": "false_positive",
+        "justification": "null"
+      },
+      "affects": [
+        {
+          "ref": "Final product@1.2.3"
+        }
+      ]
+    },
+    {
+      "bom-ref": "Final product@1.2.3:d593faba-23c4-47e8-b2dc-0210919478b7",
+      "id": "CVE-2025-59375",
+      "source": {
+        "name": "NVD",
+        "url": "https://nvd.nist.gov/"
+      },
+      "ratings": [
+        {
+          "source": {
+            "name": "NVD",
+            "url": "https://nvd.nist.gov/"
+          },
+          "score": 7.5,
+          "severity": "high",
+          "method": "CVSSv3",
+          "vector": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+        }
+      ],
+      "cwes": [
+        770
+      ],
+      "description": "libexpat in Expat before 2.7.2 allows attackers to trigger large dynamic memory allocations via a small document that is submitted for parsing.",
+      "published": "2025-09-15T03:15:40Z",
+      "updated": "2025-11-04T22:16:34Z",
+      "affects": [
+        {
+          "ref": "Final product@1.2.3"
+        }
+      ]
+    },
+    {
+      "bom-ref": "Final product@1.2.3:93bdad6f-3c59-45e6-aabf-b2b8c000da73",
+      "id": "ALPINE-CVE-2025-26519",
+      "source": {
+        "name": "OSV"
+      },
+      "ratings": [
+        {
+          "source": {
+            "name": "OSV"
+          },
+          "severity": "high",
+          "method": "other"
+        }
+      ],
+      "description": "musl libc 0.9.13 through 1.2.5 before 1.2.6 has an out-of-bounds write vulnerability when an attacker can trigger iconv conversion of untrusted EUC-KR text to UTF-8.",
+      "published": "2025-02-14T04:15:09Z",
+      "updated": "2025-10-14T04:20:58Z",
+      "analysis": {
+        "state": "false_positive",
+        "justification": "null"
+      },
+      "affects": [
+        {
+          "ref": "Final product@1.2.3"
+        }
+      ]
+    },
+    {
+      "bom-ref": "Final product@1.2.3:d4da49c6-8a9a-4215-9d30-e98f9ecb275c",
+      "id": "ALPINE-CVE-2017-7507",
+      "source": {
+        "name": "OSV"
+      },
+      "ratings": [
+        {
+          "source": {
+            "name": "OSV"
+          },
+          "severity": "high",
+          "method": "other"
+        }
+      ],
+      "description": "GnuTLS version 3.5.12 and earlier is vulnerable to a NULL pointer dereference while decoding a status response TLS extension with valid contents. This could lead to a crash of the GnuTLS server application.",
+      "published": "2017-06-16T19:29:00Z",
+      "updated": "2025-09-30T05:08:19Z",
+      "analysis": {
+        "state": "false_positive",
+        "justification": "null"
+      },
+      "affects": [
+        {
+          "ref": "Final product@1.2.3"
+        }
+      ]
+    },
+    {
+      "bom-ref": "Final product@1.2.3:05af3832-b680-46be-bb23-12955ee75a07",
+      "id": "ALPINE-CVE-2025-9230",
+      "source": {
+        "name": "OSV"
+      },
+      "ratings": [
+        {
+          "source": {
+            "name": "OSV"
+          },
+          "severity": "high",
+          "method": "other"
+        }
+      ],
+      "description": "Issue summary: An application trying to decrypt CMS messages encrypted using password based encryption can trigger an out-of-bounds read and write. Impact summary: This out-of-bounds read may trigger a crash which leads to Denial of Service for an application. The out-of-bounds write can cause a memory corruption which can have various consequences including a Denial of Service or Execution of attacker-supplied code. Although the consequences of a successful exploit of this vulnerability could be severe, the probability that the attacker would be able to perform it is low. Besides, password based (PWRI) encryption support in CMS messages is very rarely used. For that reason the issue was assessed as Moderate severity according to our Security Policy. The FIPS modules in 3.5, 3.4, 3.3, 3.2, 3.1 and 3.0 are not affected by this issue, as the CMS implementation is outside the OpenSSL FIPS module boundary.",
+      "published": "2025-09-30T14:15:41Z",
+      "updated": "2025-10-14T04:20:48Z",
+      "affects": [
+        {
+          "ref": "Final product@1.2.3"
+        }
+      ]
+    },
+    {
+      "bom-ref": "Final product@1.2.3:10c54826-3605-43da-8ca6-ef912c5b0448",
+      "id": "ALPINE-CVE-2025-9231",
+      "source": {
+        "name": "OSV"
+      },
+      "ratings": [
+        {
+          "source": {
+            "name": "OSV"
+          },
+          "severity": "medium",
+          "method": "other"
+        }
+      ],
+      "description": "Issue summary: A timing side-channel which could potentially allow remote recovery of the private key exists in the SM2 algorithm implementation on 64 bit ARM platforms. Impact summary: A timing side-channel in SM2 signature computations on 64 bit ARM platforms could allow recovering the private key by an attacker.. While remote key recovery over a network was not attempted by the reporter, timing measurements revealed a timing signal which may allow such an attack. OpenSSL does not directly support certificates with SM2 keys in TLS, and so this CVE is not relevant in most TLS contexts. However, given that it is possible to add support for such certificates via a custom provider, coupled with the fact that in such a custom provider context the private key may be recoverable via remote timing measurements, we consider this to be a Moderate severity issue. The FIPS modules in 3.5, 3.4, 3.3, 3.2, 3.1 and 3.0 are not affected by this issue, as SM2 is not an approved algorithm.",
+      "published": "2025-09-30T14:15:41Z",
+      "updated": "2025-10-14T04:20:47Z",
+      "affects": [
+        {
+          "ref": "Final product@1.2.3"
+        }
+      ]
+    },
+    {
+      "bom-ref": "Final product@1.2.3:613ae260-8339-459a-995e-c71f7d802400",
+      "id": "ALPINE-CVE-2025-9232",
+      "source": {
+        "name": "OSV"
+      },
+      "ratings": [
+        {
+          "source": {
+            "name": "OSV"
+          },
+          "severity": "medium",
+          "method": "other"
+        }
+      ],
+      "description": "Issue summary: An application using the OpenSSL HTTP client API functions may trigger an out-of-bounds read if the \u0027no_proxy\u0027 environment variable is set and the host portion of the authority component of the HTTP URL is an IPv6 address. Impact summary: An out-of-bounds read can trigger a crash which leads to Denial of Service for an application. The OpenSSL HTTP client API functions can be used directly by applications but they are also used by the OCSP client functions and CMP (Certificate Management Protocol) client implementation in OpenSSL. However the URLs used by these implementations are unlikely to be controlled by an attacker. In this vulnerable code the out of bounds read can only trigger a crash. Furthermore the vulnerability requires an attacker-controlled URL to be passed from an application to the OpenSSL function and the user has to have a \u0027no_proxy\u0027 environment variable set. For the aforementioned reasons the issue was assessed as Low severity. The vulnerable code was introduced in the following patch releases: 3.0.16, 3.1.8, 3.2.4, 3.3.3, 3.4.0 and 3.5.0. The FIPS modules in 3.5, 3.4, 3.3, 3.2, 3.1 and 3.0 are not affected by this issue, as the HTTP client implementation is outside the OpenSSL FIPS module boundary.",
+      "published": "2025-09-30T14:15:41Z",
+      "updated": "2025-10-14T04:21:21Z",
+      "affects": [
+        {
+          "ref": "Final product@1.2.3"
+        }
+      ]
+    },
+    {
+      "bom-ref": "Final product@1.2.3:299fdde1-21db-49f9-905c-d9fc653e56bc",
+      "id": "CVE-2025-9230",
+      "source": {
+        "name": "NVD",
+        "url": "https://nvd.nist.gov/"
+      },
+      "ratings": [
+        {
+          "source": {
+            "name": "NVD",
+            "url": "https://nvd.nist.gov/"
+          },
+          "score": 7.5,
+          "severity": "high",
+          "method": "CVSSv3",
+          "vector": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+        }
+      ],
+      "cwes": [
+        125,
+        787
+      ],
+      "description": "Issue summary: An application trying to decrypt CMS messages encrypted using password based encryption can trigger an out-of-bounds read and write. Impact summary: This out-of-bounds read may trigger a crash which leads to Denial of Service for an application. The out-of-bounds write can cause a memory corruption which can have various consequences including a Denial of Service or Execution of attacker-supplied code. Although the consequences of a successful exploit of this vulnerability could be severe, the probability that the attacker would be able to perform it is low. Besides, password based (PWRI) encryption support in CMS messages is very rarely used. For that reason the issue was assessed as Moderate severity according to our Security Policy. The FIPS modules in 3.5, 3.4, 3.3, 3.2, 3.1 and 3.0 are not affected by this issue, as the CMS implementation is outside the OpenSSL FIPS module boundary.",
+      "published": "2025-09-30T14:15:41Z",
+      "updated": "2025-11-04T22:16:45Z",
+      "affects": [
+        {
+          "ref": "Final product@1.2.3"
+        }
+      ]
+    },
+    {
+      "bom-ref": "Final product@1.2.3:e9299846-a52f-4adc-a1ad-d779ea32ce8d",
+      "id": "CVE-2025-9232",
+      "source": {
+        "name": "NVD",
+        "url": "https://nvd.nist.gov/"
+      },
+      "ratings": [
+        {
+          "source": {
+            "name": "NVD",
+            "url": "https://nvd.nist.gov/"
+          },
+          "score": 5.9,
+          "severity": "medium",
+          "method": "CVSSv3",
+          "vector": "CVSS:3.0/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:H"
+        }
+      ],
+      "cwes": [
+        125
+      ],
+      "description": "Issue summary: An application using the OpenSSL HTTP client API functions may trigger an out-of-bounds read if the \u0027no_proxy\u0027 environment variable is set and the host portion of the authority component of the HTTP URL is an IPv6 address. Impact summary: An out-of-bounds read can trigger a crash which leads to Denial of Service for an application. The OpenSSL HTTP client API functions can be used directly by applications but they are also used by the OCSP client functions and CMP (Certificate Management Protocol) client implementation in OpenSSL. However the URLs used by these implementations are unlikely to be controlled by an attacker. In this vulnerable code the out of bounds read can only trigger a crash. Furthermore the vulnerability requires an attacker-controlled URL to be passed from an application to the OpenSSL function and the user has to have a \u0027no_proxy\u0027 environment variable set. For the aforementioned reasons the issue was assessed as Low severity. The vulnerable code was introduced in the following patch releases: 3.0.16, 3.1.8, 3.2.4, 3.3.3, 3.4.0 and 3.5.0. The FIPS modules in 3.5, 3.4, 3.3, 3.2, 3.1 and 3.0 are not affected by this issue, as the HTTP client implementation is outside the OpenSSL FIPS module boundary.",
+      "published": "2025-09-30T14:15:41Z",
+      "updated": "2025-11-04T22:16:45Z",
+      "affects": [
+        {
+          "ref": "Final product@1.2.3"
+        }
+      ]
+    },
+    {
+      "bom-ref": "Final product@1.2.3:5fe091fa-d65d-43b4-a5b5-34ed2cfe0edb",
+      "id": "CVE-2025-9231",
+      "source": {
+        "name": "NVD",
+        "url": "https://nvd.nist.gov/"
+      },
+      "ratings": [
+        {
+          "source": {
+            "name": "NVD",
+            "url": "https://nvd.nist.gov/"
+          },
+          "score": 6.5,
+          "severity": "medium",
+          "method": "CVSSv3",
+          "vector": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:L"
+        }
+      ],
+      "cwes": [
+        385
+      ],
+      "description": "Issue summary: A timing side-channel which could potentially allow remote recovery of the private key exists in the SM2 algorithm implementation on 64 bit ARM platforms. Impact summary: A timing side-channel in SM2 signature computations on 64 bit ARM platforms could allow recovering the private key by an attacker.. While remote key recovery over a network was not attempted by the reporter, timing measurements revealed a timing signal which may allow such an attack. OpenSSL does not directly support certificates with SM2 keys in TLS, and so this CVE is not relevant in most TLS contexts. However, given that it is possible to add support for such certificates via a custom provider, coupled with the fact that in such a custom provider context the private key may be recoverable via remote timing measurements, we consider this to be a Moderate severity issue. The FIPS modules in 3.5, 3.4, 3.3, 3.2, 3.1 and 3.0 are not affected by this issue, as SM2 is not an approved algorithm.",
+      "published": "2025-09-30T14:15:41Z",
+      "updated": "2025-11-04T22:16:45Z",
+      "analysis": {
+        "state": "not_affected",
+        "justification": "requires_environment",
+        "detail": "We don\u0027t provide ARM64 images."
+      },
+      "affects": [
+        {
+          "ref": "Final product@1.2.3"
+        }
+      ]
+    },
+    {
+      "bom-ref": "Final product@1.2.3:299fdde1-21db-49f9-905c-d9fc653e56bc",
+      "id": "CVE-2025-9230",
+      "source": {
+        "name": "NVD",
+        "url": "https://nvd.nist.gov/"
+      },
+      "ratings": [
+        {
+          "source": {
+            "name": "NVD",
+            "url": "https://nvd.nist.gov/"
+          },
+          "score": 7.5,
+          "severity": "high",
+          "method": "CVSSv3",
+          "vector": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+        }
+      ],
+      "cwes": [
+        125,
+        787
+      ],
+      "description": "Issue summary: An application trying to decrypt CMS messages encrypted using password based encryption can trigger an out-of-bounds read and write. Impact summary: This out-of-bounds read may trigger a crash which leads to Denial of Service for an application. The out-of-bounds write can cause a memory corruption which can have various consequences including a Denial of Service or Execution of attacker-supplied code. Although the consequences of a successful exploit of this vulnerability could be severe, the probability that the attacker would be able to perform it is low. Besides, password based (PWRI) encryption support in CMS messages is very rarely used. For that reason the issue was assessed as Moderate severity according to our Security Policy. The FIPS modules in 3.5, 3.4, 3.3, 3.2, 3.1 and 3.0 are not affected by this issue, as the CMS implementation is outside the OpenSSL FIPS module boundary.",
+      "published": "2025-09-30T14:15:41Z",
+      "updated": "2025-11-04T22:16:45Z",
+      "affects": [
+        {
+          "ref": "Final product@1.2.3"
+        }
+      ]
+    },
+    {
+      "bom-ref": "Final product@1.2.3:e9299846-a52f-4adc-a1ad-d779ea32ce8d",
+      "id": "CVE-2025-9232",
+      "source": {
+        "name": "NVD",
+        "url": "https://nvd.nist.gov/"
+      },
+      "ratings": [
+        {
+          "source": {
+            "name": "NVD",
+            "url": "https://nvd.nist.gov/"
+          },
+          "score": 5.9,
+          "severity": "medium",
+          "method": "CVSSv3",
+          "vector": "CVSS:3.0/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:H"
+        }
+      ],
+      "cwes": [
+        125
+      ],
+      "description": "Issue summary: An application using the OpenSSL HTTP client API functions may trigger an out-of-bounds read if the \u0027no_proxy\u0027 environment variable is set and the host portion of the authority component of the HTTP URL is an IPv6 address. Impact summary: An out-of-bounds read can trigger a crash which leads to Denial of Service for an application. The OpenSSL HTTP client API functions can be used directly by applications but they are also used by the OCSP client functions and CMP (Certificate Management Protocol) client implementation in OpenSSL. However the URLs used by these implementations are unlikely to be controlled by an attacker. In this vulnerable code the out of bounds read can only trigger a crash. Furthermore the vulnerability requires an attacker-controlled URL to be passed from an application to the OpenSSL function and the user has to have a \u0027no_proxy\u0027 environment variable set. For the aforementioned reasons the issue was assessed as Low severity. The vulnerable code was introduced in the following patch releases: 3.0.16, 3.1.8, 3.2.4, 3.3.3, 3.4.0 and 3.5.0. The FIPS modules in 3.5, 3.4, 3.3, 3.2, 3.1 and 3.0 are not affected by this issue, as the HTTP client implementation is outside the OpenSSL FIPS module boundary.",
+      "published": "2025-09-30T14:15:41Z",
+      "updated": "2025-11-04T22:16:45Z",
+      "affects": [
+        {
+          "ref": "Final product@1.2.3"
+        }
+      ]
+    },
+    {
+      "bom-ref": "Final product@1.2.3:5fe091fa-d65d-43b4-a5b5-34ed2cfe0edb",
+      "id": "CVE-2025-9231",
+      "source": {
+        "name": "NVD",
+        "url": "https://nvd.nist.gov/"
+      },
+      "ratings": [
+        {
+          "source": {
+            "name": "NVD",
+            "url": "https://nvd.nist.gov/"
+          },
+          "score": 6.5,
+          "severity": "medium",
+          "method": "CVSSv3",
+          "vector": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:L"
+        }
+      ],
+      "cwes": [
+        385
+      ],
+      "description": "Issue summary: A timing side-channel which could potentially allow remote recovery of the private key exists in the SM2 algorithm implementation on 64 bit ARM platforms. Impact summary: A timing side-channel in SM2 signature computations on 64 bit ARM platforms could allow recovering the private key by an attacker.. While remote key recovery over a network was not attempted by the reporter, timing measurements revealed a timing signal which may allow such an attack. OpenSSL does not directly support certificates with SM2 keys in TLS, and so this CVE is not relevant in most TLS contexts. However, given that it is possible to add support for such certificates via a custom provider, coupled with the fact that in such a custom provider context the private key may be recoverable via remote timing measurements, we consider this to be a Moderate severity issue. The FIPS modules in 3.5, 3.4, 3.3, 3.2, 3.1 and 3.0 are not affected by this issue, as SM2 is not an approved algorithm.",
+      "published": "2025-09-30T14:15:41Z",
+      "updated": "2025-11-04T22:16:45Z",
+      "analysis": {
+        "state": "not_affected",
+        "justification": "requires_environment",
+        "detail": "We don\u0027t provide ARM64 images."
+      },
+      "affects": [
+        {
+          "ref": "Final product@1.2.3"
+        }
+      ]
+    },
+    {
+      "bom-ref": "Final product@1.2.3:5fe091fa-d65d-43b4-a5b5-34ed2cfe0edb",
+      "id": "CVE-2025-9231",
+      "source": {
+        "name": "NVD",
+        "url": "https://nvd.nist.gov/"
+      },
+      "ratings": [
+        {
+          "source": {
+            "name": "NVD",
+            "url": "https://nvd.nist.gov/"
+          },
+          "score": 6.5,
+          "severity": "medium",
+          "method": "CVSSv3",
+          "vector": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:L"
+        }
+      ],
+      "cwes": [
+        385
+      ],
+      "description": "Issue summary: A timing side-channel which could potentially allow remote recovery of the private key exists in the SM2 algorithm implementation on 64 bit ARM platforms. Impact summary: A timing side-channel in SM2 signature computations on 64 bit ARM platforms could allow recovering the private key by an attacker.. While remote key recovery over a network was not attempted by the reporter, timing measurements revealed a timing signal which may allow such an attack. OpenSSL does not directly support certificates with SM2 keys in TLS, and so this CVE is not relevant in most TLS contexts. However, given that it is possible to add support for such certificates via a custom provider, coupled with the fact that in such a custom provider context the private key may be recoverable via remote timing measurements, we consider this to be a Moderate severity issue. The FIPS modules in 3.5, 3.4, 3.3, 3.2, 3.1 and 3.0 are not affected by this issue, as SM2 is not an approved algorithm.",
+      "published": "2025-09-30T14:15:41Z",
+      "updated": "2025-11-04T22:16:45Z",
+      "analysis": {
+        "state": "not_affected",
+        "justification": "requires_environment",
+        "detail": "We don\u0027t provide ARM64 images."
+      },
+      "affects": [
+        {
+          "ref": "Final product@1.2.3"
+        }
+      ]
+    },
+    {
+      "bom-ref": "Final product@1.2.3:299fdde1-21db-49f9-905c-d9fc653e56bc",
+      "id": "CVE-2025-9230",
+      "source": {
+        "name": "NVD",
+        "url": "https://nvd.nist.gov/"
+      },
+      "ratings": [
+        {
+          "source": {
+            "name": "NVD",
+            "url": "https://nvd.nist.gov/"
+          },
+          "score": 7.5,
+          "severity": "high",
+          "method": "CVSSv3",
+          "vector": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+        }
+      ],
+      "cwes": [
+        125,
+        787
+      ],
+      "description": "Issue summary: An application trying to decrypt CMS messages encrypted using password based encryption can trigger an out-of-bounds read and write. Impact summary: This out-of-bounds read may trigger a crash which leads to Denial of Service for an application. The out-of-bounds write can cause a memory corruption which can have various consequences including a Denial of Service or Execution of attacker-supplied code. Although the consequences of a successful exploit of this vulnerability could be severe, the probability that the attacker would be able to perform it is low. Besides, password based (PWRI) encryption support in CMS messages is very rarely used. For that reason the issue was assessed as Moderate severity according to our Security Policy. The FIPS modules in 3.5, 3.4, 3.3, 3.2, 3.1 and 3.0 are not affected by this issue, as the CMS implementation is outside the OpenSSL FIPS module boundary.",
+      "published": "2025-09-30T14:15:41Z",
+      "updated": "2025-11-04T22:16:45Z",
+      "affects": [
+        {
+          "ref": "Final product@1.2.3"
+        }
+      ]
+    },
+    {
+      "bom-ref": "Final product@1.2.3:e9299846-a52f-4adc-a1ad-d779ea32ce8d",
+      "id": "CVE-2025-9232",
+      "source": {
+        "name": "NVD",
+        "url": "https://nvd.nist.gov/"
+      },
+      "ratings": [
+        {
+          "source": {
+            "name": "NVD",
+            "url": "https://nvd.nist.gov/"
+          },
+          "score": 5.9,
+          "severity": "medium",
+          "method": "CVSSv3",
+          "vector": "CVSS:3.0/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:H"
+        }
+      ],
+      "cwes": [
+        125
+      ],
+      "description": "Issue summary: An application using the OpenSSL HTTP client API functions may trigger an out-of-bounds read if the \u0027no_proxy\u0027 environment variable is set and the host portion of the authority component of the HTTP URL is an IPv6 address. Impact summary: An out-of-bounds read can trigger a crash which leads to Denial of Service for an application. The OpenSSL HTTP client API functions can be used directly by applications but they are also used by the OCSP client functions and CMP (Certificate Management Protocol) client implementation in OpenSSL. However the URLs used by these implementations are unlikely to be controlled by an attacker. In this vulnerable code the out of bounds read can only trigger a crash. Furthermore the vulnerability requires an attacker-controlled URL to be passed from an application to the OpenSSL function and the user has to have a \u0027no_proxy\u0027 environment variable set. For the aforementioned reasons the issue was assessed as Low severity. The vulnerable code was introduced in the following patch releases: 3.0.16, 3.1.8, 3.2.4, 3.3.3, 3.4.0 and 3.5.0. The FIPS modules in 3.5, 3.4, 3.3, 3.2, 3.1 and 3.0 are not affected by this issue, as the HTTP client implementation is outside the OpenSSL FIPS module boundary.",
+      "published": "2025-09-30T14:15:41Z",
+      "updated": "2025-11-04T22:16:45Z",
+      "affects": [
+        {
+          "ref": "Final product@1.2.3"
+        }
+      ]
+    },
+    {
+      "bom-ref": "Final product@1.2.3:49e50869-65b8-49bc-bde9-68251ef8ea11",
+      "id": "CVE-2025-58057",
+      "source": {
+        "name": "NVD",
+        "url": "https://nvd.nist.gov/"
+      },
+      "ratings": [
+        {
+          "source": {
+            "name": "NVD",
+            "url": "https://nvd.nist.gov/"
+          },
+          "score": 7.5,
+          "severity": "high",
+          "method": "CVSSv3",
+          "vector": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+        }
+      ],
+      "cwes": [
+        409
+      ],
+      "description": "Netty is an asynchronous event-driven network application framework for rapid development of maintainable high performance protocol servers \u0026 clients. In netty-codec-compression versions 4.1.124.Final and below, and netty-codec versions 4.2.4.Final and below, when supplied with specially crafted input, BrotliDecoder and certain other decompression decoders will allocate a large number of reachable byte buffers, which can lead to denial of service. BrotliDecoder.decompress has no limit in how often it calls pull, decompressing data 64K bytes at a time. The buffers are saved in the output list, and remain reachable until OOM is hit. This is fixed in versions 4.1.125.Final of netty-codec and 4.2.5.Final of netty-codec-compression.",
+      "published": "2025-09-04T10:42:32Z",
+      "updated": "2025-09-08T16:45:55Z",
+      "affects": [
+        {
+          "ref": "Final product@1.2.3"
+        }
+      ]
+    },
+    {
+      "bom-ref": "Final product@1.2.3:ba124a19-b27b-4579-80fa-e6d3296e15a0",
+      "id": "ALPINE-CVE-2025-49794",
+      "source": {
+        "name": "OSV"
+      },
+      "ratings": [
+        {
+          "source": {
+            "name": "OSV"
+          },
+          "severity": "critical",
+          "method": "other"
+        }
+      ],
+      "description": "A use-after-free vulnerability was found in libxml2. This issue occurs when parsing XPath elements under certain circumstances when the XML schematron has the \u003Csch:name path=\u0022...\u0022/\u003E schema elements. This flaw allows a malicious actor to craft a malicious XML document used as input for libxml, resulting in the program\u0027s crash using libxml or other possible undefined behaviors.",
+      "published": "2025-06-16T16:15:18Z",
+      "updated": "2025-10-14T04:21:29Z",
+      "affects": [
+        {
+          "ref": "Final product@1.2.3"
+        }
+      ]
+    },
+    {
+      "bom-ref": "Final product@1.2.3:3e767f32-de3d-4796-a139-6611d4b1f90c",
+      "id": "ALPINE-CVE-2025-49795",
+      "source": {
+        "name": "OSV"
+      },
+      "ratings": [
+        {
+          "source": {
+            "name": "OSV"
+          },
+          "severity": "high",
+          "method": "other"
+        }
+      ],
+      "description": "A NULL pointer dereference vulnerability was found in libxml2 when processing XPath XML expressions. This flaw allows an attacker to craft a malicious XML input to libxml2, leading to a denial of service.",
+      "published": "2025-06-16T16:15:19Z",
+      "updated": "2025-10-14T04:21:31Z",
+      "affects": [
+        {
+          "ref": "Final product@1.2.3"
+        }
+      ]
+    },
+    {
+      "bom-ref": "Final product@1.2.3:1efbbcd7-698a-4837-8e61-33c533aa5b8a",
+      "id": "ALPINE-CVE-2025-49796",
+      "source": {
+        "name": "OSV"
+      },
+      "ratings": [
+        {
+          "source": {
+            "name": "OSV"
+          },
+          "severity": "critical",
+          "method": "other"
+        }
+      ],
+      "description": "A vulnerability was found in libxml2. Processing certain sch:name elements from the input XML file can trigger a memory corruption issue. This flaw allows an attacker to craft a malicious XML input file that can lead libxml to crash, resulting in a denial of service or other possible undefined behavior due to sensitive data being corrupted in memory.",
+      "published": "2025-06-16T16:15:19Z",
+      "updated": "2025-10-14T04:21:30Z",
+      "affects": [
+        {
+          "ref": "Final product@1.2.3"
+        }
+      ]
+    },
+    {
+      "bom-ref": "Final product@1.2.3:be158204-5407-4200-8ce2-5d1aaf00ca1b",
+      "id": "ALPINE-CVE-2025-6021",
+      "source": {
+        "name": "OSV"
+      },
+      "ratings": [
+        {
+          "source": {
+            "name": "OSV"
+          },
+          "severity": "high",
+          "method": "other"
+        }
+      ],
+      "description": "A flaw was found in libxml2\u0027s xmlBuildQName function, where integer overflows in buffer size calculations can lead to a stack-based buffer overflow. This issue can result in memory corruption or a denial of service when processing crafted input.",
+      "published": "2025-06-12T13:15:25Z",
+      "updated": "2025-10-14T04:24:51Z",
+      "affects": [
+        {
+          "ref": "Final product@1.2.3"
+        }
+      ]
+    },
+    {
+      "bom-ref": "Final product@1.2.3:85fdfb6f-8fce-42d1-b66a-a57baff00a4f",
+      "id": "ALPINE-CVE-2025-6170",
+      "source": {
+        "name": "OSV"
+      },
+      "ratings": [
+        {
+          "source": {
+            "name": "OSV"
+          },
+          "severity": "low",
+          "method": "other"
+        }
+      ],
+      "description": "A flaw was found in the interactive shell of the xmllint command-line tool, used for parsing XML files. When a user inputs an overly long command, the program does not check the input size properly, which can cause it to crash. This issue might allow attackers to run harmful code in rare configurations without modern protections.",
+      "published": "2025-06-16T16:15:20Z",
+      "updated": "2025-10-09T10:16:23Z",
+      "affects": [
+        {
+          "ref": "Final product@1.2.3"
+        }
+      ]
+    },
+    {
+      "bom-ref": "Final product@1.2.3:52db5595-51af-4694-ae0c-c0714e4bbce0",
+      "id": "CVE-2025-49794",
+      "source": {
+        "name": "NVD",
+        "url": "https://nvd.nist.gov/"
+      },
+      "ratings": [
+        {
+          "source": {
+            "name": "NVD",
+            "url": "https://nvd.nist.gov/"
+          },
+          "score": 9.1,
+          "severity": "critical",
+          "method": "CVSSv3",
+          "vector": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:H/A:H"
+        }
+      ],
+      "cwes": [
+        825
+      ],
+      "description": "A use-after-free vulnerability was found in libxml2. This issue occurs when parsing XPath elements under certain circumstances when the XML schematron has the \u003Csch:name path=\u0022...\u0022/\u003E schema elements. This flaw allows a malicious actor to craft a malicious XML document used as input for libxml, resulting in the program\u0027s crash using libxml or other possible undefined behaviors.",
+      "published": "2025-06-16T16:15:18Z",
+      "updated": "2025-11-03T20:19:09Z",
+      "affects": [
+        {
+          "ref": "Final product@1.2.3"
+        }
+      ]
+    },
+    {
+      "bom-ref": "Final product@1.2.3:7f38ac75-8a53-46a0-99c9-2e13c794bb88",
+      "id": "CVE-2025-6170",
+      "source": {
+        "name": "NVD",
+        "url": "https://nvd.nist.gov/"
+      },
+      "ratings": [
+        {
+          "source": {
+            "name": "NVD",
+            "url": "https://nvd.nist.gov/"
+          },
+          "score": 2.5,
+          "severity": "low",
+          "method": "CVSSv3",
+          "vector": "CVSS:3.0/AV:L/AC:H/PR:N/UI:R/S:U/C:N/I:N/A:L"
+        }
+      ],
+      "cwes": [
+        121
+      ],
+      "description": "A flaw was found in the interactive shell of the xmllint command-line tool, used for parsing XML files. When a user inputs an overly long command, the program does not check the input size properly, which can cause it to crash. This issue might allow attackers to run harmful code in rare configurations without modern protections.",
+      "published": "2025-06-16T16:15:20Z",
+      "updated": "2025-11-03T20:19:18Z",
+      "affects": [
+        {
+          "ref": "Final product@1.2.3"
+        }
+      ]
+    },
+    {
+      "bom-ref": "Final product@1.2.3:32f926d2-0d9c-4c9d-8191-b75fcb4c6295",
+      "id": "CVE-2025-49796",
+      "source": {
+        "name": "NVD",
+        "url": "https://nvd.nist.gov/"
+      },
+      "ratings": [
+        {
+          "source": {
+            "name": "NVD",
+            "url": "https://nvd.nist.gov/"
+          },
+          "score": 9.1,
+          "severity": "critical",
+          "method": "CVSSv3",
+          "vector": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:H/A:H"
+        }
+      ],
+      "cwes": [
+        125
+      ],
+      "description": "A vulnerability was found in libxml2. Processing certain sch:name elements from the input XML file can trigger a memory corruption issue. This flaw allows an attacker to craft a malicious XML input file that can lead libxml to crash, resulting in a denial of service or other possible undefined behavior due to sensitive data being corrupted in memory.",
+      "published": "2025-06-16T16:15:19Z",
+      "updated": "2025-11-03T20:19:09Z",
+      "affects": [
+        {
+          "ref": "Final product@1.2.3"
+        }
+      ]
+    },
+    {
+      "bom-ref": "Final product@1.2.3:50083c03-35e8-449e-9e91-1d16ab1f9c09",
+      "id": "CVE-2025-6021",
+      "source": {
+        "name": "NVD",
+        "url": "https://nvd.nist.gov/"
+      },
+      "ratings": [
+        {
+          "source": {
+            "name": "NVD",
+            "url": "https://nvd.nist.gov/"
+          },
+          "score": 7.5,
+          "severity": "high",
+          "method": "CVSSv3",
+          "vector": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+        }
+      ],
+      "cwes": [
+        121,
+        787
+      ],
+      "description": "A flaw was found in libxml2\u0027s xmlBuildQName function, where integer overflows in buffer size calculations can lead to a stack-based buffer overflow. This issue can result in memory corruption or a denial of service when processing crafted input.",
+      "published": "2025-06-12T13:15:25Z",
+      "updated": "2025-11-03T20:19:17Z",
+      "affects": [
+        {
+          "ref": "Final product@1.2.3"
+        }
+      ]
+    },
+    {
+      "bom-ref": "Final product@1.2.3:e1a49105-aa37-463b-8353-5a37fde19ff5",
+      "id": "CVE-2025-49795",
+      "source": {
+        "name": "NVD",
+        "url": "https://nvd.nist.gov/"
+      },
+      "ratings": [
+        {
+          "source": {
+            "name": "NVD",
+            "url": "https://nvd.nist.gov/"
+          },
+          "score": 7.5,
+          "severity": "high",
+          "method": "CVSSv3",
+          "vector": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+        }
+      ],
+      "cwes": [
+        825
+      ],
+      "description": "A NULL pointer dereference vulnerability was found in libxml2 when processing XPath XML expressions. This flaw allows an attacker to craft a malicious XML input to libxml2, leading to a denial of service.",
+      "published": "2025-06-16T16:15:19Z",
+      "updated": "2025-10-27T18:15:41Z",
+      "affects": [
+        {
+          "ref": "Final product@1.2.3"
+        }
+      ]
+    }
+  ],
+  "declarations": {
+    "assessors": [],
+    "attestations": [],
+    "claims": [],
+    "evidence": [],
+    "targets": {
+      "organizations": [],
+      "components": [],
+      "services": []
+    }
+  },
+  "definitions": {
+    "standards": []
+  }
+}
