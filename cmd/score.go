@@ -53,7 +53,7 @@ type userCmd struct {
 	color    bool
 
 	// directory control
-	recurse bool
+	recursive bool
 
 	// debug control
 	debug bool
@@ -96,6 +96,9 @@ var scoreCmd = &cobra.Command{
 
   # Get a score for multiple comprehensive categories
   sbomqs score --category identification,integrity samples/sbomqs-spdx-syft.json
+
+  # Recursively score all SBOMs under a directory
+  sbomqs score --recursive testdata
 `,
 
 	Args: func(cmd *cobra.Command, args []string) error {
@@ -279,6 +282,9 @@ func toUserCmd(cmd *cobra.Command, args []string) *userCmd {
 	// debug control
 	uCmd.debug, _ = cmd.Flags().GetBool("debug")
 
+	// recurssive
+	uCmd.recursive, _ = cmd.Flags().GetBool("recursive")
+
 	return uCmd
 }
 
@@ -291,7 +297,7 @@ func toEngineParams(uCmd *userCmd) *engine.Params {
 		Basic:      uCmd.basic,
 		Detailed:   uCmd.detailed,
 		Color:      uCmd.color,
-		Recurse:    uCmd.recurse,
+		Recursive:  uCmd.recursive,
 		Debug:      uCmd.debug,
 		ConfigPath: uCmd.configPath,
 		Legacy:     uCmd.legacy,
@@ -372,11 +378,7 @@ func init() {
 	}
 
 	// Directory Control
-	scoreCmd.Flags().BoolP("recurse", "r", false, "recurse into subdirectories")
-	err = scoreCmd.Flags().MarkHidden("recurse")
-	if err != nil {
-		log.Fatalf("Failed to mark flag as deprecated: %v", err)
-	}
+	scoreCmd.Flags().BoolP("recursive", "r", false, "recursively search sub-directories for SBOM files (default: false)")
 
 	// Output Control
 	scoreCmd.Flags().BoolP("json", "j", false, "results in json")

@@ -51,4 +51,9 @@ type Config struct {
 	// SignatureBundle contains cryptographic signature information for SBOM verification.
 	// This includes the signature value, public key, and blob data for validation.
 	SignatureBundle sbom.Signature
+
+	// Recursive controls how directory paths are expanded when locating SBOM files.
+	// When false (default), only files directly inside the specified directory are considered.
+	// When true, sub-directories are walked recursively and all nested files are considered.
+	Recursive bool
 }
