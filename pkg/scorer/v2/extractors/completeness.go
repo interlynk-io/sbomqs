@@ -65,22 +65,22 @@ func CompWithDeclaredCompleteness(doc sbom.Document) catalog.ComprFeatScore {
 		have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
 			id := c.GetID()
 
-			for _, cmp := range doc.Composition() {
+			for _, cst := range doc.Composition() {
 				// global completeness applies to all components
-				if cmp.IsSBOMComplete() {
+				if cst.IsSBOMComplete() {
 					return true
 				}
 
 				// scoped completeness
-				if cmp.Aggregate() != sbom.AggregateComplete {
+				if cst.Aggregate() != sbom.AggregateComplete {
 					continue
 				}
 
-				switch cmp.Scope() {
+				switch cst.Scope() {
 				case sbom.ScopeDependencies:
-					return slices.Contains(cmp.Dependecies(), id)
+					return slices.Contains(cst.Dependencies(), id)
 				case sbom.ScopeAssemblies:
-					return slices.Contains(cmp.Assemblies(), id)
+					return slices.Contains(cst.Assemblies(), id)
 				}
 			}
 			return false

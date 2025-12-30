@@ -61,7 +61,7 @@ type CdxDoc struct {
 	Lifecycle        []string
 	CdxSupplier      GetSupplier
 	CdxManufacturer  GetManufacturer
-	compositions     []GetComposition
+	Compositions     []GetComposition
 	PrimaryComponent PrimaryComp
 	Dependencies     map[string][]string
 	Vuln             []GetVulnerabilities
@@ -157,7 +157,7 @@ func (c CdxDoc) GetRelationships(componentID string) []string {
 }
 
 func (c CdxDoc) Composition() []GetComposition {
-	return c.compositions
+	return c.Compositions
 }
 
 func (c CdxDoc) Vulnerabilities() []GetVulnerabilities {
@@ -1042,7 +1042,7 @@ func (c *CdxDoc) parseCompositions() {
 			}
 		}
 
-		c.compositions = append(c.compositions, comp)
+		c.Compositions = append(c.Compositions, comp)
 	}
 }
 
