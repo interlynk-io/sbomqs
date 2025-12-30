@@ -62,10 +62,9 @@ type CdxDoc struct {
 	Lifecycle        []string
 	CdxSupplier      GetSupplier
 	CdxManufacturer  GetManufacturer
-	compositions     map[string]string
+	compositions     []GetComposition
 	PrimaryComponent PrimaryComp
 	Dependencies     map[string][]string
-	composition      map[string]string
 	Vuln             []GetVulnerabilities
 	SignatureDetail  GetSignature
 	rawContent       []byte // Store raw content for manual parsing
@@ -160,8 +159,8 @@ func (c CdxDoc) GetRelationships(componentID string) []string {
 	return c.Dependencies[componentID]
 }
 
-func (c CdxDoc) GetComposition(componentID string) string {
-	return c.composition[componentID]
+func (c CdxDoc) Composition() []GetComposition {
+	return c.compositions
 }
 
 func (c CdxDoc) Vulnerabilities() []GetVulnerabilities {
@@ -1026,23 +1025,108 @@ func (c *CdxDoc) assignSupplier(comp *cydx.Component) *Supplier {
 }
 
 func (c *CdxDoc) parseCompositions() {
-	c.compositions = make(map[string]string)
-
-	if c.doc.Compositions == nil {
+	if c.doc == nil || c.doc.Compositions == nil {
 		return
 	}
 
-	for _, composition := range lo.FromPtr(c.doc.Compositions) {
-		assemblies := lo.FromPtr(composition.Assemblies)
-		if len(assemblies) == 0 {
-			continue
+	for _, cdxc := range *c.doc.Compositions {
+		agg := CompositionAggregate(cdxc.Aggregate)
+
+		scope := ScopeGlobal
+		switch {
+		case cdxc.Dependencies != nil && len(*cdxc.Dependencies) > 0:
+			scope = ScopeDependencies
+		case cdxc.Assemblies != nil && len(*cdxc.Assemblies) > 0:
+			scope = ScopeAssemblies
+		case cdxc.Vulnerabilities != nil && len(*cdxc.Vulnerabilities) > 0:
+			scope = ScopeVulnerabilities
 		}
 
-		for _, assembly := range assemblies {
-			c.compositions[string(assembly)] = string(composition.Aggregate)
+		comp := Composition{
+			id:        cdxc.BOMRef,
+			scope:     scope,
+			aggregate: agg,
 		}
+
+		if cdxc.Dependencies != nil {
+			for _, dep := range *cdxc.Dependencies {
+				comp.dependencies = append(comp.dependencies, string(dep))
+			}
+		}
+
+		if cdxc.Assemblies != nil {
+			for _, asm := range *cdxc.Assemblies {
+				comp.assemblies = append(comp.assemblies, string(asm))
+			}
+		}
+
+		if cdxc.Vulnerabilities != nil {
+			for _, v := range *cdxc.Vulnerabilities {
+				comp.vulnerabilities = append(comp.vulnerabilities, string(v))
+			}
+		}
+
+		c.compositions = append(c.compositions, comp)
 	}
 }
+
+// cmps := make([]GetComposition, 0, len(*c.doc.Compositions))
+// if c.doc.Compositions == nil {
+// 	return
+// }
+
+// for _, composition := range lo.FromPtr(c.doc.Compositions) {
+// 	agg := string(composition.Aggregate)
+
+// 	cons := map[string]Cmpsition{}
+// 	// assemblies completeness
+// 	for _, asm := range lo.FromPtr(composition.Assemblies) {
+// 		cons[string(asm)] = Cmpsition{
+// 			aggregate: agg,
+// 			scope:     ScopeAssemblies,
+// 		}
+// 		// c.Compositions[string(asm)] = append(c.Compositions[string(asm)], cons)
+// 		// c.Compositions[string(asm)] = append(
+// 		// 	c.Compositions[string(asm)],
+// 		// 	Composition{
+// 		// 		scope:     ScopeAssemblies,
+// 		// 		aggregate: agg,
+// 		// 	},
+// 		// )
+// 	}
+
+// 	// dependencies completeness
+// 	for _, asm := range lo.FromPtr(composition.Dependencies) {
+// 		cons[string(asm)] = Cmpsition{
+// 			aggregate: agg,
+// 			scope:     ScopeDependencies,
+// 		}
+// 		// c.Compositions[string(dep)] = append(
+// 		// 	c.Compositions[string(dep)],
+// 		// 	Composition{
+// 		// 		scope:     ScopeDependencies,
+// 		// 		aggregate: agg,
+// 		// 	},
+// 		// )
+// 	}
+
+// 	// vulnerabilities completeness
+// 	for _, asm := range lo.FromPtr(composition.Vulnerabilities) {
+// 		cons[string(asm)] = Cmpsition{
+// 			aggregate: agg,
+// 			scope:     ScopeVulnerabilities,
+// 		}
+// 		// c.Compositions[string(vul)] = append(
+// 		// 	c.Compositions[string(vul)],
+// 		// 	Composition{
+// 		// 		scope:     ScopeVulnerabilities,
+// 		// 		aggregate: agg,
+// 		// 	},
+// 		// )
+// 	}
+// }
+// c.compositions = cmps
+// }
 
 // isCdxSpecVersionAtLeast returns true if the given specVersion is at least the minVersion.
 // Both versions are expected in the format "X.Y" (e.g., "1.6").

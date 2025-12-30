@@ -21,6 +21,8 @@
 package extractors
 
 import (
+	"slices"
+
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/catalog"
 	commonV2 "github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/common"
@@ -43,16 +45,15 @@ func CompWithDependencies(doc sbom.Document) catalog.ComprFeatScore {
 	return formulae.ScoreCompFull(have, len(comps), "dependencies", false)
 }
 
-// comp_with_declared_completeness: Completeness declaration present
-func CompWithCompleteness(doc sbom.Document) catalog.ComprFeatScore {
+// comp_with_declared_completeness (component-level)
+func CompWithDeclaredCompleteness(doc sbom.Document) catalog.ComprFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
 		return formulae.ScoreCompNA()
 	}
 
-	spec := doc.Spec().GetSpecType()
+	switch doc.Spec().GetSpecType() {
 
-	switch spec {
 	case string(sbom.SBOMSpecSPDX):
 		return catalog.ComprFeatScore{
 			Score:  formulae.BooleanScore(false),
@@ -61,23 +62,34 @@ func CompWithCompleteness(doc sbom.Document) catalog.ComprFeatScore {
 		}
 
 	case string(sbom.SBOMSpecCDX):
-		// TODO: to add this method in our sbom module, then only we can fetch it here
-		// Compositions/Aggregate
-		// have := lo.CountBy(doc.Components(), func(c sbom.GetComponent) bool {
-		// 	return c.GetComposition() != ""
-		// })
-		return catalog.ComprFeatScore{
-			Score:  formulae.BooleanScore(false),
-			Desc:   formulae.MissingField("completeness"),
-			Ignore: true,
-		}
+		have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
+			id := c.GetID()
+
+			for _, cmp := range doc.Composition() {
+				// global completeness applies to all components
+				if cmp.IsSBOMComplete() {
+					return true
+				}
+
+				// scoped completeness
+				if cmp.Aggregate() != sbom.AggregateComplete {
+					continue
+				}
+
+				switch cmp.Scope() {
+				case sbom.ScopeDependencies:
+					return slices.Contains(cmp.Dependecies(), id)
+				case sbom.ScopeAssemblies:
+					return slices.Contains(cmp.Assemblies(), id)
+				}
+			}
+			return false
+		})
+
+		return formulae.ScoreCompFull(have, len(comps), "declared completeness", false)
 	}
 
-	return catalog.ComprFeatScore{
-		Score:  formulae.BooleanScore(false),
-		Desc:   formulae.UnknownSpec(),
-		Ignore: true,
-	}
+	return formulae.ScoreCompNA()
 }
 
 // sbom_with_primary_comp: Single primary component defined
@@ -139,4 +151,37 @@ func CompWithPackagePurpose(doc sbom.Document) catalog.ComprFeatScore {
 	})
 
 	return formulae.ScoreCompFull(have, len(comps), "type", false)
+}
+
+// sbom_with_declared_completeness
+func SBOMWithDeclaredCompleteness(doc sbom.Document) catalog.ComprFeatScore {
+	switch doc.Spec().GetSpecType() {
+
+	case string(sbom.SBOMSpecSPDX):
+		return catalog.ComprFeatScore{
+			Score:  formulae.BooleanScore(false),
+			Desc:   formulae.NonSupportedSPDXField(),
+			Ignore: true,
+		}
+
+	case string(sbom.SBOMSpecCDX):
+		return catalog.ComprFeatScore{
+			Score:  formulae.BooleanScore(DeclaresSBOMComplete(doc)),
+			Desc:   "sbom completeness declared",
+			Ignore: false,
+		}
+	}
+
+	return formulae.ScoreCompNA()
+}
+
+// DeclaresSBOMComplete returns true if the SBOM
+// explicitly declares global completeness.
+func DeclaresSBOMComplete(doc sbom.Document) bool {
+	for _, c := range doc.Composition() {
+		if c.IsSBOMComplete() {
+			return true
+		}
+	}
+	return false
 }
