@@ -18,7 +18,6 @@ package licenses
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 
 	"github.com/github/go-spdx/v2/spdxexp"
@@ -175,7 +174,6 @@ func LookupExpression(expression string, customLicenses []License) []License {
 
 		// Preserve deprecated '+' license exactly as authored
 		extLicenses = []string{lickk.ShortID()}
-		fmt.Println("extLicenses: ", extLicenses)
 
 	} else {
 		// Normal path: semantic parsing

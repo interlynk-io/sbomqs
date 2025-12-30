@@ -45,7 +45,7 @@ type GetComposition interface {
 	// declares the entire SBOM as complete.
 	IsSBOMComplete() bool
 
-	Dependecies() []string
+	Dependencies() []string
 
 	Assemblies() []string
 
@@ -80,7 +80,7 @@ func (c Composition) IsSBOMComplete() bool {
 		c.aggregate == AggregateComplete
 }
 
-func (c Composition) Dependecies() []string {
+func (c Composition) Dependencies() []string {
 	return c.dependencies
 }
 
@@ -90,4 +90,22 @@ func (c Composition) Assemblies() []string {
 
 func (c Composition) Vulnerabilities() []string {
 	return c.vulnerabilities
+}
+
+func NewComposition(
+	id string,
+	scope CompositionScope,
+	aggregate CompositionAggregate,
+	deps []string,
+	assemblies []string,
+	vulns []string,
+) Composition {
+	return Composition{
+		id:              id,
+		scope:           scope,
+		aggregate:       aggregate,
+		dependencies:    deps,
+		assemblies:      assemblies,
+		vulnerabilities: vulns,
+	}
 }
