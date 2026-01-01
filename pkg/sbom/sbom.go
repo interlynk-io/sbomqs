@@ -18,6 +18,7 @@ package sbom
 
 import (
 	"bufio"
+	"bytes"
 	"context"
 	"encoding/json"
 	"encoding/xml"
@@ -218,6 +219,78 @@ func NewSBOMDocument(ctx context.Context, f io.ReadSeeker, sig Signature) (Docum
 			zap.String("format", string(format)),
 		)
 		doc, err = newCDXDoc(ctx, f, format, sig)
+
+	default:
+		log.Error("Unsupported SBOM specification",
+			zap.String("spec", string(spec)),
+		)
+		return nil, errors.New("unsupported sbom format")
+	}
+
+	if err != nil {
+		log.Error("Failed to parse SBOM document",
+			zap.String("spec", string(spec)),
+			zap.String("format", string(format)),
+			zap.String("version", string(version)),
+			zap.Error(err),
+		)
+		return nil, err
+	}
+
+	log.Debug("SBOM document parsed",
+		zap.String("spec", string(spec)),
+		zap.String("format", string(format)),
+		zap.String("version", string(version)),
+	)
+
+	return doc, nil
+}
+
+func NewSBOMDocumentFromBytes(ctx context.Context, b []byte, sig Signature) (Document, error) {
+	log := logger.FromContext(ctx)
+
+	if len(bytes.TrimSpace(b)) == 0 {
+		return nil, errors.New("empty SBOM input")
+	}
+
+	// Wrap bytes so we can reuse existing logic
+	r := bytes.NewReader(b)
+
+	log.Debug("Detecting SBOM format from bytes")
+	spec, format, version, err := detectSbomFormat(r)
+	if err != nil {
+		log.Error("Failed to detect SBOM format from bytes",
+			zap.Error(err),
+		)
+		return nil, err
+	}
+
+	log.Info("Detected SBOM",
+		zap.String("spec", string(spec)),
+		zap.String("format", string(format)),
+		zap.String("version", string(version)),
+	)
+
+	// Reset reader before parsing
+	if _, err := r.Seek(0, io.SeekStart); err != nil {
+		return nil, err
+	}
+
+	var doc Document
+
+	switch spec {
+	case SBOMSpecSPDX:
+		log.Debug("Initializing SPDX document parser",
+			zap.String("format", string(format)),
+			zap.String("version", string(version)),
+		)
+		doc, err = newSPDXDoc(ctx, r, format, version, sig)
+
+	case SBOMSpecCDX:
+		log.Debug("Initializing CycloneDX document parser",
+			zap.String("format", string(format)),
+		)
+		doc, err = newCDXDoc(ctx, r, format, sig)
 
 	default:
 		log.Error("Unsupported SBOM specification",
