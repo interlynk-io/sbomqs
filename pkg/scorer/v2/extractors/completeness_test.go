@@ -118,7 +118,7 @@ func TestCompWithDependencies(t *testing.T) {
 		got := CompWithDependencies(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add to 2 components", got.Desc)
+		assert.Equal(t, "2 min 1 dependency (completeness unknown)", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -133,7 +133,7 @@ func TestCompWithDependencies(t *testing.T) {
 		got := CompWithDependencies(doc)
 
 		assert.InDelta(t, 5.0, got.Score, 1e-9)
-		assert.Equal(t, "add to 1 component", got.Desc)
+		assert.Equal(t, "1 min 1 dependency (completeness unknown)", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -148,7 +148,7 @@ func TestCompWithDependencies(t *testing.T) {
 		got := CompWithDependencies(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "complete", got.Desc)
+		assert.Equal(t, "0 min 1 dependency (completeness unknown)", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 }
