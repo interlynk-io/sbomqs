@@ -53,6 +53,15 @@ func ScoreCompFull(have, comps int, field string, ignore bool) catalog.ComprFeat
 	}
 }
 
+// ScoreCompFull score for comprehenssive features related to components
+func ScoreCompFullCustom(have, comps int, desc string, ignore bool) catalog.ComprFeatScore {
+	return catalog.ComprFeatScore{
+		Score:  PerComponentScore(have, comps),
+		Desc:   desc,
+		Ignore: ignore,
+	}
+}
+
 // ScoreProfNA score NA for profile features related to components
 func ScoreProfNA(ignore bool) catalog.ProfFeatScore {
 	return catalog.ProfFeatScore{
