@@ -21,6 +21,7 @@
 package extractors
 
 import (
+	"fmt"
 	"slices"
 
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
@@ -38,11 +39,50 @@ func CompWithDependencies(doc sbom.Document) catalog.ComprFeatScore {
 		return formulae.ScoreCompNA()
 	}
 
-	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
-		return commonV2.HasComponentDependencies(c)
-	})
+	switch doc.Spec().GetSpecType() {
 
-	return formulae.ScoreCompFull(have, len(comps), "dependencies", false)
+	case string(sbom.SBOMSpecSPDX):
+		// SPDX: can detect dependency presence, but not completeness
+		have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
+			return commonV2.HasComponentDependencies(c)
+		})
+
+		return formulae.ScoreCompFullCustom(
+			have,
+			len(comps),
+			fmt.Sprintf("%d min 1 dependency (completeness unknown)", len(comps)-have),
+			false,
+		)
+
+	case string(sbom.SBOMSpecCDX):
+		// CycloneDX: dependency completeness must be explicitly declared
+		have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
+			id := c.GetID()
+
+			for _, cst := range doc.Composition() {
+				// ONLY dependency-scoped compositions apply here
+				if cst.Scope() != sbom.ScopeDependencies {
+					continue
+				}
+
+				if cst.Aggregate() != sbom.AggregateComplete {
+					continue
+				}
+
+				return slices.Contains(cst.Dependencies(), id)
+			}
+			return false
+		})
+
+		return formulae.ScoreCompFullCustom(
+			have,
+			len(comps),
+			fmt.Sprintf("dependency completeness declared for %d component(s)", have),
+			false,
+		)
+	}
+
+	return formulae.ScoreCompNA()
 }
 
 // comp_with_declared_completeness (component-level)
@@ -161,13 +201,21 @@ func SBOMWithDeclaredCompleteness(doc sbom.Document) catalog.ComprFeatScore {
 		return catalog.ComprFeatScore{
 			Score:  formulae.BooleanScore(false),
 			Desc:   formulae.NonSupportedSPDXField(),
-			Ignore: true,
+			Ignore: false,
 		}
 
 	case string(sbom.SBOMSpecCDX):
+		if DeclaresSBOMComplete(doc) {
+			return catalog.ComprFeatScore{
+				Score:  formulae.BooleanScore(true),
+				Desc:   "SBOM completeness declared",
+				Ignore: false,
+			}
+		}
+
 		return catalog.ComprFeatScore{
-			Score:  formulae.BooleanScore(DeclaresSBOMComplete(doc)),
-			Desc:   "sbom completeness declared",
+			Score:  formulae.BooleanScore(false),
+			Desc:   "SBOM completeness not declared",
 			Ignore: false,
 		}
 	}

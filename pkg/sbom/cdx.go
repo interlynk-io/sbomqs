@@ -1070,64 +1070,6 @@ func (c *CdxDoc) parseCompositions() {
 	}
 }
 
-// cmps := make([]GetComposition, 0, len(*c.doc.Compositions))
-// if c.doc.Compositions == nil {
-// 	return
-// }
-
-// for _, composition := range lo.FromPtr(c.doc.Compositions) {
-// 	agg := string(composition.Aggregate)
-
-// 	cons := map[string]Cmpsition{}
-// 	// assemblies completeness
-// 	for _, asm := range lo.FromPtr(composition.Assemblies) {
-// 		cons[string(asm)] = Cmpsition{
-// 			aggregate: agg,
-// 			scope:     ScopeAssemblies,
-// 		}
-// 		// c.Compositions[string(asm)] = append(c.Compositions[string(asm)], cons)
-// 		// c.Compositions[string(asm)] = append(
-// 		// 	c.Compositions[string(asm)],
-// 		// 	Composition{
-// 		// 		scope:     ScopeAssemblies,
-// 		// 		aggregate: agg,
-// 		// 	},
-// 		// )
-// 	}
-
-// 	// dependencies completeness
-// 	for _, asm := range lo.FromPtr(composition.Dependencies) {
-// 		cons[string(asm)] = Cmpsition{
-// 			aggregate: agg,
-// 			scope:     ScopeDependencies,
-// 		}
-// 		// c.Compositions[string(dep)] = append(
-// 		// 	c.Compositions[string(dep)],
-// 		// 	Composition{
-// 		// 		scope:     ScopeDependencies,
-// 		// 		aggregate: agg,
-// 		// 	},
-// 		// )
-// 	}
-
-// 	// vulnerabilities completeness
-// 	for _, asm := range lo.FromPtr(composition.Vulnerabilities) {
-// 		cons[string(asm)] = Cmpsition{
-// 			aggregate: agg,
-// 			scope:     ScopeVulnerabilities,
-// 		}
-// 		// c.Compositions[string(vul)] = append(
-// 		// 	c.Compositions[string(vul)],
-// 		// 	Composition{
-// 		// 		scope:     ScopeVulnerabilities,
-// 		// 		aggregate: agg,
-// 		// 	},
-// 		// )
-// 	}
-// }
-// c.compositions = cmps
-// }
-
 // isCdxSpecVersionAtLeast returns true if the given specVersion is at least the minVersion.
 // Both versions are expected in the format "X.Y" (e.g., "1.6").
 func isCdxSpecVersionAtLeast(specVersion, minVersion string) bool {

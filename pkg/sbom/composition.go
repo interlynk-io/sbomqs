@@ -14,41 +14,56 @@
 
 package sbom
 
+// CompositionScope defines *what aspect* of completeness is being declared.
+// It indicates which dimension of the SBOM the composition applies to.
 type CompositionScope string
 
 const (
-	ScopeAssemblies      CompositionScope = "assemblies"
-	ScopeDependencies    CompositionScope = "dependencies"
+	// ScopeAssemblies applies to bundled / shaded components inside another component.
+	ScopeAssemblies CompositionScope = "assemblies"
+
+	// ScopeDependencies applies to the dependency graph of a component.
+	ScopeDependencies CompositionScope = "dependencies"
+
+	// ScopeVulnerabilities applies to vulnerability coverage completeness.
 	ScopeVulnerabilities CompositionScope = "vulnerabilities"
 
-	// Internal / derived scope
+	// ScopeGlobal applies to the entire SBOM.
+	// This is a derived scope when no specific dimension is declared.
 	ScopeGlobal CompositionScope = "global"
 )
 
+// CompositionAggregate defines the *declared level of completeness*
+// for a given composition scope.
 type CompositionAggregate string
 
 const (
-	AggregateComplete                 CompositionAggregate = "complete"
-	AggregateIncomplete               CompositionAggregate = "incomplete"
-	AggregateUnknown                  CompositionAggregate = "unknown"
+	// AggregateComplete indicates the producer asserts that
+	// nothing relevant is missing for the given scope.
+	AggregateComplete CompositionAggregate = "complete"
+
+	// AggregateIncomplete indicates the producer knows that
+	// some information is missing for the given scope.
+	AggregateIncomplete CompositionAggregate = "incomplete"
+
+	// AggregateUnknown indicates the producer cannot assert
+	// whether the information is complete or not.
+	AggregateUnknown CompositionAggregate = "unknown"
+
+	// AggregateIncompleteFirstPartyOnly indicates completeness
+	// is asserted only for first-party components, not third-party
 	AggregateIncompleteFirstPartyOnly CompositionAggregate = "incomplete_first_party_only"
 )
 
+// GetComposition represents a producer-declared completeness assertion
+// for a specific dimension of an SBOM.
 type GetComposition interface {
-	// Identity
 	ID() string
-
 	Aggregate() CompositionAggregate
 	Scope() CompositionScope
-
-	// IsSBOMComplete returns true if this composition
-	// declares the entire SBOM as complete.
 	IsSBOMComplete() bool
-
 	Dependencies() []string
-
 	Assemblies() []string
-
 	Vulnerabilities() []string
 }
 
@@ -63,42 +78,51 @@ type Composition struct {
 	vulnerabilities []string
 }
 
+// ID returns the unique identifier of the composition itself.
+// Ex. bom-ref
 func (c Composition) ID() string {
 	return c.id
 }
 
-func (c Composition) Scope() CompositionScope {
-	return c.scope
-}
-
+// Aggregate returns the declared level of completeness.
 func (c Composition) Aggregate() CompositionAggregate {
 	return c.aggregate
 }
 
+// Scope returns the dimension this composition applies to
+// (e.g. dependencies, assemblies, vulnerabilities, or global).
+func (c Composition) Scope() CompositionScope {
+	return c.scope
+}
+
+// IsSBOMComplete returns true if this composition explicitly
+// declares the entire SBOM as complete.
 func (c Composition) IsSBOMComplete() bool {
 	return c.scope == ScopeGlobal &&
 		c.aggregate == AggregateComplete
 }
 
+// Dependencies returns the component IDs whose dependency graphs
+// are covered by this composition.
 func (c Composition) Dependencies() []string {
 	return c.dependencies
 }
 
+// Assemblies returns the component IDs whose internal assemblies
+// (bundled or shaded components) are covered by this composition.
 func (c Composition) Assemblies() []string {
 	return c.assemblies
 }
 
+// Vulnerabilities returns the vulnerability IDs covered by
+// this composition.
 func (c Composition) Vulnerabilities() []string {
 	return c.vulnerabilities
 }
 
-func NewComposition(
-	id string,
-	scope CompositionScope,
-	aggregate CompositionAggregate,
-	deps []string,
-	assemblies []string,
-	vulns []string,
+// NewComposition constructs a Composition instance.
+func NewComposition(id string, scope CompositionScope, aggregate CompositionAggregate,
+	deps []string, assemblies []string, vulns []string,
 ) Composition {
 	return Composition{
 		id:              id,
