@@ -102,12 +102,28 @@ var invalidCDX_MissingSpecVersion = []byte(`
 }
 `)
 
+var invalidCDX_VersionWrongType = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": "one"
+}
+`)
+
 var invalidCDX_ComponentsNotArray = []byte(`
 {
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
   "version": 1,
   "components": {}
+}
+`)
+
+var invalidCDX_BomFormatWrongType = []byte(`
+{
+  "bomFormat": "wrongSBOMFormat",
+  "specVersion": "1.5",
+  "version": 1
 }
 `)
 
@@ -170,6 +186,22 @@ func TestNewSBOMDocumentFromBytes(t *testing.T) {
 			wantSpec: SBOMSpecUnknown,
 
 			// "error": "json: cannot unmarshal object into Go struct field BOM.components of type []cyclonedx.Component"
+			wantErr: true,
+		},
+		{
+			name:     "bomFormat wrong type",
+			input:    invalidCDX_BomFormatWrongType,
+			wantSpec: SBOMSpecUnknown,
+
+			// "error": "unsupported sbom format"
+			wantErr: true,
+		},
+		{
+			name:     "specVersion wrong type",
+			input:    invalidCDX_VersionWrongType,
+			wantSpec: SBOMSpecUnknown,
+
+			// "error": "unsupported sbom format"
 			wantErr: true,
 		},
 	}

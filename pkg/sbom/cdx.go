@@ -43,9 +43,10 @@ import (
 )
 
 var (
-	cdxSpecVersions   = []string{"1.0", "1.1", "1.2", "1.3", "1.4", "1.5", "1.6"}
-	cdxFileFormats    = []string{"json", "xml"}
-	cdxPrimaryPurpose = []string{"application", "framework", "library", "container", "operating-system", "device", "firmware", "file"}
+	cdxSpecVersions       = []string{"1.0", "1.1", "1.2", "1.3", "1.4", "1.5", "1.6"}
+	cdxFileFormats        = []string{"json", "xml"}
+	cdxPrimaryPurpose     = []string{"application", "framework", "library", "container", "operating-system", "device", "firmware", "file"}
+	CdxSupportedLifecycle = []string{"design", "pre-build", "build", "post-build", "operations", "discovery", "decommission"}
 )
 
 type CdxDoc struct {
