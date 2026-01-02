@@ -16,8 +16,9 @@ package sbom
 
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
 
-//counterfeiter:generate . Document
 // Document defines the interface for accessing SBOM document information, components, and metadata
+//
+//counterfeiter:generate . Document
 type Document interface {
 	// Spec returns the SBOM specification information
 	Spec() Spec
@@ -50,4 +51,8 @@ type Document interface {
 	Vulnerabilities() []GetVulnerabilities
 	// Signature returns the cryptographic signature information for the SBOM
 	Signature() GetSignature
+
+	Composition() []GetComposition
 }
+
+// kam->krodh->moh->lobh->ahnkar

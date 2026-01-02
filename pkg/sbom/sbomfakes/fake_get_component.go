@@ -84,17 +84,6 @@ type FakeGetComponent struct {
 	getChecksumsReturnsOnCall map[int]struct {
 		result1 []sbom.GetChecksum
 	}
-	GetCompositionStub        func(string) string
-	getCompositionMutex       sync.RWMutex
-	getCompositionArgsForCall []struct {
-		arg1 string
-	}
-	getCompositionReturns struct {
-		result1 string
-	}
-	getCompositionReturnsOnCall map[int]struct {
-		result1 string
-	}
 	GetCopyRightStub        func() string
 	getCopyRightMutex       sync.RWMutex
 	getCopyRightArgsForCall []struct {
@@ -717,67 +706,6 @@ func (fake *FakeGetComponent) GetChecksumsReturnsOnCall(i int, result1 []sbom.Ge
 	}
 	fake.getChecksumsReturnsOnCall[i] = struct {
 		result1 []sbom.GetChecksum
-	}{result1}
-}
-
-func (fake *FakeGetComponent) GetComposition(arg1 string) string {
-	fake.getCompositionMutex.Lock()
-	ret, specificReturn := fake.getCompositionReturnsOnCall[len(fake.getCompositionArgsForCall)]
-	fake.getCompositionArgsForCall = append(fake.getCompositionArgsForCall, struct {
-		arg1 string
-	}{arg1})
-	stub := fake.GetCompositionStub
-	fakeReturns := fake.getCompositionReturns
-	fake.recordInvocation("GetComposition", []interface{}{arg1})
-	fake.getCompositionMutex.Unlock()
-	if stub != nil {
-		return stub(arg1)
-	}
-	if specificReturn {
-		return ret.result1
-	}
-	return fakeReturns.result1
-}
-
-func (fake *FakeGetComponent) GetCompositionCallCount() int {
-	fake.getCompositionMutex.RLock()
-	defer fake.getCompositionMutex.RUnlock()
-	return len(fake.getCompositionArgsForCall)
-}
-
-func (fake *FakeGetComponent) GetCompositionCalls(stub func(string) string) {
-	fake.getCompositionMutex.Lock()
-	defer fake.getCompositionMutex.Unlock()
-	fake.GetCompositionStub = stub
-}
-
-func (fake *FakeGetComponent) GetCompositionArgsForCall(i int) string {
-	fake.getCompositionMutex.RLock()
-	defer fake.getCompositionMutex.RUnlock()
-	argsForCall := fake.getCompositionArgsForCall[i]
-	return argsForCall.arg1
-}
-
-func (fake *FakeGetComponent) GetCompositionReturns(result1 string) {
-	fake.getCompositionMutex.Lock()
-	defer fake.getCompositionMutex.Unlock()
-	fake.GetCompositionStub = nil
-	fake.getCompositionReturns = struct {
-		result1 string
-	}{result1}
-}
-
-func (fake *FakeGetComponent) GetCompositionReturnsOnCall(i int, result1 string) {
-	fake.getCompositionMutex.Lock()
-	defer fake.getCompositionMutex.Unlock()
-	fake.GetCompositionStub = nil
-	if fake.getCompositionReturnsOnCall == nil {
-		fake.getCompositionReturnsOnCall = make(map[int]struct {
-			result1 string
-		})
-	}
-	fake.getCompositionReturnsOnCall[i] = struct {
-		result1 string
 	}{result1}
 }
 

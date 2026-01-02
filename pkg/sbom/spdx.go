@@ -58,7 +58,7 @@ type SpdxDoc struct {
 	PrimaryComponent PrimaryComp
 	Lifecycle        string
 	Dependencies     map[string][]string
-	composition      map[string]string
+	compositions     []GetComposition
 	Vuln             []GetVulnerabilities
 	rawContent       []byte // Store raw content for manual parsing
 }
@@ -162,8 +162,8 @@ func CleanKey(key string) string {
 	return strings.Trim(key, `"`)
 }
 
-func (s SpdxDoc) GetComposition(componentID string) string {
-	return s.composition[componentID]
+func (s SpdxDoc) Composition() []GetComposition {
+	return s.compositions
 }
 
 func (s SpdxDoc) Vulnerabilities() []GetVulnerabilities {

@@ -22,10 +22,10 @@ import (
 
 func TestCdxDocSignatureParsing(t *testing.T) {
 	tests := []struct {
-		name            string
-		json            string
-		wantAlgorithm   string
-		wantKeyID       string
+		name             string
+		json             string
+		wantAlgorithm    string
+		wantKeyID        string
 		wantHasSignature bool
 		wantHasPublicKey bool
 	}{
@@ -142,49 +142,49 @@ func TestCdxDocSignatureParsing(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
 			reader := strings.NewReader(tt.json)
-			
+
 			doc, err := newCDXDoc(ctx, reader, FileFormatJSON, Signature{})
 			if err != nil {
 				t.Fatalf("Failed to parse CDX document: %v", err)
 			}
-			
+
 			cdxDoc, ok := doc.(*CdxDoc)
 			if !ok {
 				t.Fatalf("Document is not a CdxDoc")
 			}
-			
+
 			sig := cdxDoc.Signature()
-			
+
 			if tt.wantHasSignature && sig == nil {
 				t.Error("Expected signature but got nil")
 				return
 			}
-			
+
 			if !tt.wantHasSignature && sig != nil {
 				t.Error("Expected no signature but got one")
 				return
 			}
-			
+
 			if !tt.wantHasSignature {
 				return // No more checks needed
 			}
-			
+
 			if got := sig.GetAlgorithm(); got != tt.wantAlgorithm {
 				t.Errorf("Algorithm = %v, want %v", got, tt.wantAlgorithm)
 			}
-			
+
 			if tt.wantKeyID != "" {
 				if got := sig.GetKeyID(); got != tt.wantKeyID {
 					t.Errorf("KeyID = %v, want %v", got, tt.wantKeyID)
 				}
 			}
-			
+
 			if tt.wantHasPublicKey {
 				if got := sig.GetPublicKey(); got == "" {
 					t.Error("Expected public key but got empty string")
 				}
 			}
-			
+
 			// Check that signature value is present
 			if got := sig.GetSigValue(); got == "" && tt.wantHasSignature {
 				t.Error("Expected signature value but got empty string")
@@ -204,25 +204,25 @@ func TestCdxDocSignatureWithCertificatePath(t *testing.T) {
 		},
 		"components": []
 	}`
-	
+
 	ctx := context.Background()
 	reader := strings.NewReader(json)
-	
+
 	doc, err := newCDXDoc(ctx, reader, FileFormatJSON, Signature{})
 	if err != nil {
 		t.Fatalf("Failed to parse CDX document: %v", err)
 	}
-	
+
 	sig := doc.Signature()
 	if sig == nil {
 		t.Fatal("Expected signature but got nil")
 	}
-	
+
 	certPath := sig.GetCertificatePath()
 	if len(certPath) != 3 {
 		t.Errorf("Expected 3 certificates, got %d", len(certPath))
 	}
-	
+
 	expectedCerts := []string{"root.pem", "intermediate.pem", "leaf.pem"}
 	for i, cert := range certPath {
 		if cert != expectedCerts[i] {
@@ -242,25 +242,25 @@ func TestCdxDocSignatureWithExcludes(t *testing.T) {
 		},
 		"components": []
 	}`
-	
+
 	ctx := context.Background()
 	reader := strings.NewReader(json)
-	
+
 	doc, err := newCDXDoc(ctx, reader, FileFormatJSON, Signature{})
 	if err != nil {
 		t.Fatalf("Failed to parse CDX document: %v", err)
 	}
-	
+
 	sig := doc.Signature()
 	if sig == nil {
 		t.Fatal("Expected signature but got nil")
 	}
-	
+
 	excludes := sig.GetExcludes()
 	if len(excludes) != 3 {
 		t.Errorf("Expected 3 excludes, got %d", len(excludes))
 	}
-	
+
 	expectedExcludes := []string{"timestamp", "serialNumber", "metadata.timestamp"}
 	for i, exclude := range excludes {
 		if exclude != expectedExcludes[i] {

@@ -15,9 +15,11 @@
 package extractors
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
+	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/formulae"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -93,6 +95,20 @@ func makeSPDXDocForCompleteness(opts spdxDocOpts2) sbom.Document {
 	}
 }
 
+func TestSBOMWithDeclaredCompleteness_ForSPDX(t *testing.T) {
+	doc := makeSPDXDocForCompleteness(spdxDocOpts2{
+		withPrimary: true,
+		comps: []miniComp2{
+			{id: "SPDXRef-A", name: "a", version: "1.0.0", hasRelationships: false, depsCount: 0},
+		},
+	})
+
+	got := SBOMWithDeclaredCompleteness(doc)
+
+	assert.InDelta(t, 0.0, got.Score, 1e-9)
+	assert.Equal(t, "N/A (SPDX)", got.Desc)
+}
+
 func TestCompWithDependencies(t *testing.T) {
 	t.Run("NoComponents", func(t *testing.T) {
 		doc := makeSPDXDocForCompleteness(spdxDocOpts2{})
@@ -116,7 +132,7 @@ func TestCompWithDependencies(t *testing.T) {
 		got := CompWithDependencies(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add to 2 components", got.Desc)
+		assert.Equal(t, "2 min 1 dependency (completeness unknown)", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -131,7 +147,7 @@ func TestCompWithDependencies(t *testing.T) {
 		got := CompWithDependencies(doc)
 
 		assert.InDelta(t, 5.0, got.Score, 1e-9)
-		assert.Equal(t, "add to 1 component", got.Desc)
+		assert.Equal(t, "1 min 1 dependency (completeness unknown)", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -146,7 +162,7 @@ func TestCompWithDependencies(t *testing.T) {
 		got := CompWithDependencies(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "complete", got.Desc)
+		assert.Equal(t, "0 min 1 dependency (completeness unknown)", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 }
@@ -349,4 +365,198 @@ func TestCompWithPackageType(t *testing.T) {
 		assert.Equal(t, "complete", got.Desc)
 		assert.False(t, got.Ignore)
 	})
+}
+
+type miniComposition struct {
+	scope           sbom.CompositionScope
+	aggregate       sbom.CompositionAggregate
+	dependencies    []string
+	assemblies      []string
+	vulnerabilities []string
+}
+
+func makeCDXDocForCompleteness(comps []miniComp2, compositions []miniComposition) sbom.Document {
+	var components []sbom.GetComponent
+	for _, c := range comps {
+		p := sbom.NewComponent()
+		p.ID = c.id
+		p.Name = c.name
+		p.Version = c.version
+		components = append(components, p)
+	}
+
+	var csts []sbom.GetComposition
+	for i, mc := range compositions {
+
+		cst := sbom.NewComposition(
+			fmt.Sprintf("cmp-%d", i),
+			mc.scope,
+			mc.aggregate,
+			mc.dependencies,
+			mc.assemblies,
+			mc.vulnerabilities,
+		)
+
+		csts = append(csts, cst)
+	}
+
+	spec := sbom.NewSpec()
+	spec.SpecType = string(sbom.SBOMSpecCDX)
+	spec.Version = "1.6"
+
+	return sbom.CdxDoc{
+		CdxSpec:      spec,
+		Comps:        components,
+		Compositions: csts,
+	}
+}
+
+func TestCompWithDeclaredCompleteness_NoComponents(t *testing.T) {
+	doc := makeCDXDocForCompleteness(nil, nil)
+
+	got := CompWithDeclaredCompleteness(doc)
+
+	assert.True(t, got.Ignore)
+	assert.Equal(t, "N/A (no components)", got.Desc)
+}
+
+func TestCompWithDeclaredCompleteness_SPDX(t *testing.T) {
+	doc := makeSPDXDocForCompleteness(spdxDocOpts2{
+		withPrimary: true,
+		comps: []miniComp2{
+			{id: "SPDXRef-A", name: "a", version: "1.0"},
+		},
+	})
+
+	got := CompWithDeclaredCompleteness(doc)
+
+	assert.True(t, got.Ignore)
+	assert.Equal(t, formulae.NonSupportedSPDXField(), got.Desc)
+}
+
+func TestCompWithDeclaredCompleteness_NoCompositions(t *testing.T) {
+	doc := makeCDXDocForCompleteness(
+		[]miniComp2{
+			{id: "bom-refA"}, {id: "B"},
+		},
+		nil,
+	)
+
+	got := CompWithDeclaredCompleteness(doc)
+
+	assert.InDelta(t, 0.0, got.Score, 1e-9)
+	assert.Equal(t, "add to 2 components", got.Desc)
+}
+
+func TestCompWithDeclaredCompleteness_GlobalComplete(t *testing.T) {
+	doc := makeCDXDocForCompleteness(
+		[]miniComp2{
+			{id: "bom-refA"}, {id: "B"},
+		},
+		[]miniComposition{
+			{
+				scope:     sbom.ScopeGlobal,
+				aggregate: sbom.AggregateComplete,
+			},
+		},
+	)
+
+	got := CompWithDeclaredCompleteness(doc)
+
+	assert.InDelta(t, 10.0, got.Score, 1e-9)
+	assert.Equal(t, "complete", got.Desc)
+}
+
+func TestCompWithDeclaredCompleteness_ComponentScoped(t *testing.T) {
+	doc := makeCDXDocForCompleteness(
+		[]miniComp2{
+			{id: "bom-refA"}, {id: "bom-refB"},
+		},
+		[]miniComposition{
+			{
+				scope:        sbom.ScopeDependencies,
+				aggregate:    sbom.AggregateComplete,
+				dependencies: []string{"bom-refA"},
+			},
+		},
+	)
+
+	got := CompWithDeclaredCompleteness(doc)
+
+	assert.InDelta(t, 5.0, got.Score, 1e-9)
+	assert.Equal(t, "add to 1 component", got.Desc)
+}
+
+func TestCompWithDeclaredCompleteness_Mixed(t *testing.T) {
+	doc := makeCDXDocForCompleteness(
+		[]miniComp2{
+			{id: "bom-refA"}, {id: "bom-refB"},
+		},
+		[]miniComposition{
+			{
+				scope:     sbom.ScopeGlobal,
+				aggregate: sbom.AggregateUnknown,
+			},
+			{
+				scope:      sbom.ScopeAssemblies,
+				aggregate:  sbom.AggregateComplete,
+				assemblies: []string{"bom-refB"},
+			},
+		},
+	)
+
+	got := CompWithDeclaredCompleteness(doc)
+
+	assert.InDelta(t, 5.0, got.Score, 1e-9)
+	assert.Equal(t, "add to 1 component", got.Desc)
+}
+
+func TestSBOMWithDeclaredCompleteness_GlobalComplete(t *testing.T) {
+	doc := makeCDXDocForCompleteness(
+		[]miniComp2{
+			{id: "bom-refA"}, {id: "B"},
+		},
+		[]miniComposition{
+			{
+				scope:     sbom.ScopeGlobal,
+				aggregate: sbom.AggregateComplete,
+			},
+		},
+	)
+
+	got := SBOMWithDeclaredCompleteness(doc)
+
+	assert.InDelta(t, 10.0, got.Score, 1e-9)
+	assert.Equal(t, "SBOM completeness declared", got.Desc)
+}
+
+func TestSBOMWithDeclaredCompleteness_GlobalInComplete(t *testing.T) {
+	doc := makeCDXDocForCompleteness(
+		[]miniComp2{
+			{id: "bom-refA"}, {id: "B"},
+		},
+		[]miniComposition{
+			{
+				scope:     sbom.ScopeGlobal,
+				aggregate: sbom.CompositionAggregate("incomplete"),
+			},
+		},
+	)
+
+	got := SBOMWithDeclaredCompleteness(doc)
+
+	assert.InDelta(t, 0.0, got.Score, 1e-9)
+	assert.Equal(t, "SBOM completeness not declared", got.Desc)
+}
+
+func TestSBOMWithDeclaredCompleteness_NotDefined(t *testing.T) {
+	doc := makeCDXDocForCompleteness(
+		[]miniComp2{
+			{id: "bom-refA"}, {id: "B"},
+		}, nil)
+
+	got := SBOMWithDeclaredCompleteness(doc)
+
+	assert.InDelta(t, 0.0, got.Score, 1e-9)
+	assert.Equal(t, "SBOM completeness not declared", got.Desc)
 }

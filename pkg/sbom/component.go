@@ -89,7 +89,7 @@ type GetComponent interface {
 	// ExternalReferences returns external references associated with the component
 	ExternalReferences() []GetExternalReference
 	// GetComposition returns the composition information for the specified component ID
-	GetComposition(string) string
+	// GetCompositions() []GetComposition
 	// GetPrimaryCompInfo returns information about the primary component
 	GetPrimaryCompInfo() GetPrimaryComp
 }
@@ -128,7 +128,7 @@ type Component struct {
 	PackageLicenseConcluded string
 	PackageLicenseDeclared  string
 	ExternalRefs            []GetExternalReference
-	composition             map[string]string
+	// composition             map[string]string
 }
 
 // NewComponent creates a new instance of Component with default values
@@ -296,7 +296,7 @@ func (c Component) ExternalReferences() []GetExternalReference {
 	return c.ExternalRefs
 }
 
-// GetComposition returns the composition information for the specified component ID
-func (c Component) GetComposition(componentID string) string {
-	return c.composition[componentID]
-}
+// // GetComposition returns the composition information for the specified component ID
+// func (c Component) GetComposition(componentID string) string {
+// 	return c.composition[componentID]
+// }

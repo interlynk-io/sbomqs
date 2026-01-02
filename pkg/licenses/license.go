@@ -109,11 +109,8 @@ func LookupSpdxLicense(licenseKey string) (License, error) {
 		return nil, errors.New("license not found")
 	}
 
-	tLicKey := strings.TrimRight(licenseKey, "+")
-
 	// Lookup spdx & exception list
-	license, ok := licenseList[tLicKey]
-
+	license, ok := licenseList[licenseKey]
 	if !ok {
 		return nil, errors.New("license not found")
 	}
@@ -180,6 +177,7 @@ func LookupExpression(expression string, customLicenses []License) []License {
 
 	} else {
 		// Normal path: semantic parsing
+		// spdxexp replaces "+" operator
 		extLicenses, err = spdxexp.ExtractLicenses(expression)
 		if err != nil {
 			return []License{CreateCustomLicense(expression, expression)}
@@ -189,29 +187,29 @@ func LookupExpression(expression string, customLicenses []License) []License {
 	licenses := []License{}
 
 	for _, l := range extLicenses {
-		trimLicenseKey := strings.TrimRight(l, "+")
 
-		license, err := LookupSpdxLicense(trimLicenseKey)
+		license, err := LookupSpdxLicense(l)
+
 		if err == nil {
 			licenses = append(licenses, license)
 			continue
 		}
 
-		license, err = LookupAboutCodeLicense(trimLicenseKey)
+		license, err = LookupAboutCodeLicense(l)
 		if err == nil {
 			licenses = append(licenses, license)
 			continue
 		}
 
 		// if custom license list is provided use that.
-		license, err = customLookup(trimLicenseKey)
+		license, err = customLookup(l)
 		if err == nil {
 			licenses = append(licenses, license)
 			continue
 		}
 
 		// if nothing else this license is custom
-		licenses = append(licenses, CreateCustomLicense(trimLicenseKey, trimLicenseKey))
+		licenses = append(licenses, CreateCustomLicense(l, l))
 	}
 
 	return licenses
@@ -237,6 +235,12 @@ func overlayRestrictiveFromAboutCode(spdx meta) meta {
 	if spdx.restrictive {
 		return spdx
 	}
+
+	// --NOTE--
+	// SPDX itself does not define any “restrictive” flag or field for licenses.
+	// We use AboutCode license categories to determine the resctriveness of a license.
+	// So, if a category `Copyleft` or `Copyleft Limited` category, then it is
+	// considered to be a “restrictive” license.
 	if ac, ok := licenseListAboutCode[spdx.short]; ok && ac.restrictive {
 		spdx.restrictive = true
 	}

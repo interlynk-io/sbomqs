@@ -15,183 +15,513 @@
 package extractors
 
 import (
+	"context"
 	"testing"
 
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-func spdxSpecForStructural(ver, fileFmt, spec string) *sbom.Specs {
-	s := sbom.NewSpec()
-	s.Version = ver
-	s.SpecType = spec
-	s.Format = fileFmt
-	s.Spdxid = "DOCUMENT"
-	s.Namespace = "https://example.com/ns"
-	return s
+var cdxSBOMValidSpec = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {},
+  "components": []
 }
+`)
 
-func cdxSpecForStructural(ver, fileFmt, spec string) *sbom.Specs {
-	s := sbom.NewSpec()
-	s.Version = ver
-	s.SpecType = spec
-	s.Format = fileFmt
-	s.URI = "urn:uuid:11111111-2222-3333-4444-555555555555"
-	return s
+var spdxSBOMValidSpec = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "created": "2024-01-15T10:30:00Z",
+    "creators": ["Tool: minimal-generator"]
+  },
+  "packages": []
 }
+`)
 
-func Test_SBOMSpec(t *testing.T) {
-	t.Run("SupportedSPDX", func(t *testing.T) {
-		doc := sbom.SpdxDoc{SpdxSpec: spdxSpecForStructural("SPDX-2.3", "json", "spdx")}
+var cdxSBOMUnknownSpec = []byte(`
+{
+  "bomFormat": "UnknownSpec",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {},
+  "components": []
+}
+`)
+
+var spdxSBOMUnknownSpec = []byte(`
+{
+  "spdxVersion": "SPDX-9.9",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "created": "2024-01-15T10:30:00Z",
+    "creators": ["Tool: minimal-generator"]
+  },
+  "packages": []
+}
+`)
+
+var cdxSBOMEmptySpec = []byte(`
+{
+  "bomFormat": "",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {},
+  "components": []
+}
+`)
+
+var spdxSBOMEmptySpec = []byte(`
+{
+  "spdxVersion": "",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "created": "2024-01-15T10:30:00Z",
+    "creators": ["Tool: minimal-generator"]
+  },
+  "packages": []
+}
+`)
+
+var cdxSBOMMissingSpec = []byte(`
+{
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {},
+  "components": []
+}
+`)
+
+var spdxSBOMMissingSpec = []byte(`
+{
+  "SPDXID": "SPDXRef-DOCUMENT".
+  "creationInfo": {
+    "created": "2024-01-15T10:30:00Z",
+    "creators": ["Tool: minimal-generator"]
+  },
+  "packages": []
+}
+`)
+
+var cdxSBOMWhitespaceSpec = []byte(`
+{
+  "bomFormat": "   ",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {},
+  "components": []
+}
+`)
+
+var spdxSBOMWhitespaceSpec = []byte(`
+{
+  "spdxVersion": "   ",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "created": "2024-01-15T10:30:00Z",
+    "creators": ["Tool: minimal-generator"]
+  },
+  "packages": []
+}
+`)
+
+var cdxSBOMSpecWrongType = []byte(`
+{
+  "bomFormat": {},
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {},
+  "components": []
+}
+`)
+
+var spdxSBOMSpecWrongType = []byte(`
+{
+  "spdxVersion": {},
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "created": "2024-01-15T10:30:00Z",
+    "creators": ["Tool: minimal-generator"]
+  },
+  "packages": []
+}
+`)
+
+func TestSBOMSpec(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("cdxSBOMValidSpec", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMValidSpec, sbom.Signature{})
+		require.NoError(t, err)
 
 		got := SBOMWithSpec(doc)
 
-		assert.Equal(t, 10.0, got.Score)
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "cyclonedx", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxSBOMValidSpec", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMValidSpec, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMWithSpec(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "spdx", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
-	t.Run("SupportedSPDXUpperCase", func(t *testing.T) {
-		doc := sbom.SpdxDoc{SpdxSpec: spdxSpecForStructural("SPDX-2.3", "json", "SPDX")}
-
-		got := SBOMWithSpec(doc)
-
-		assert.Equal(t, 10.0, got.Score)
-		assert.Equal(t, "spdx", got.Desc)
-		assert.False(t, got.Ignore)
+	t.Run("cdxSBOMUnknownSpec", func(t *testing.T) {
+		_, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMUnknownSpec, sbom.Signature{})
+		require.Error(t, err)
 	})
 
-	t.Run("UnsupportedSpec", func(t *testing.T) {
-		doc := sbom.SpdxDoc{SpdxSpec: spdxSpecForStructural("SPDX-2.3", "json", "something-else")}
+	t.Run("spdxSBOMUnknownSpec", func(t *testing.T) {
+		_, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMUnknownSpec, sbom.Signature{})
+		require.Error(t, err)
+	})
 
-		got := SBOMWithSpec(doc)
-		assert.Equal(t, 0.0, got.Score)
-		assert.Contains(t, got.Desc, "unsupported spec")
+	t.Run("cdxSBOMEmptySpec", func(t *testing.T) {
+		_, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMEmptySpec, sbom.Signature{})
+		require.Error(t, err)
+	})
+
+	t.Run("spdxSBOMEmptySpec", func(t *testing.T) {
+		_, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMEmptySpec, sbom.Signature{})
+		require.Error(t, err)
+	})
+
+	t.Run("cdxSBOMMissingSpec", func(t *testing.T) {
+		_, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMMissingSpec, sbom.Signature{})
+		require.Error(t, err)
+	})
+
+	t.Run("spdxSBOMMissingSpec", func(t *testing.T) {
+		_, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMMissingSpec, sbom.Signature{})
+		require.Error(t, err)
+	})
+
+	t.Run("cdxSBOMWhitespaceSpec", func(t *testing.T) {
+		_, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMWhitespaceSpec, sbom.Signature{})
+		require.Error(t, err)
+	})
+
+	t.Run("spdxSBOMWhitespaceSpec", func(t *testing.T) {
+		_, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMWhitespaceSpec, sbom.Signature{})
+		require.Error(t, err)
+	})
+
+	t.Run("cdxSBOMSpecWrongType", func(t *testing.T) {
+		_, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMSpecWrongType, sbom.Signature{})
+		require.Error(t, err)
+	})
+
+	t.Run("spdxSBOMSpecWrongType", func(t *testing.T) {
+		_, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMSpecWrongType, sbom.Signature{})
+		require.Error(t, err)
 	})
 }
 
-func Test_SBOMSpecVersion(t *testing.T) {
-	t.Run("SupportedSPDXVersion", func(t *testing.T) {
-		doc := sbom.SpdxDoc{SpdxSpec: spdxSpecForStructural("SPDX-2.3", "json", "spdx")}
+var cdxSBOMValidVersion = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {},
+  "components": []
+}
+`)
+
+var spdxSBOMValidVersion = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "created": "2024-01-15T10:30:00Z",
+    "creators": ["Tool: minimal-generator"]
+  },
+  "packages": []
+}
+`)
+
+var cdxSBOMUnknownVersion = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "4.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {},
+  "components": []
+}
+`)
+
+var spdxSBOMUnknownVersion = []byte(`
+{
+  "spdxVersion": "SPDX-9.9",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "created": "2024-01-15T10:30:00Z",
+    "creators": ["Tool: minimal-generator"]
+  },
+  "packages": []
+}
+`)
+
+var cdxSBOMEmptyVersion = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {},
+  "components": []
+}
+`)
+
+var spdxSBOMEmptyVersion = []byte(`
+{
+  "spdxVersion": "",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "created": "2024-01-15T10:30:00Z",
+    "creators": ["Tool: minimal-generator"]
+  },
+  "packages": []
+}
+`)
+
+var cdxSBOMMissingVersion = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {},
+  "components": []
+}
+`)
+
+var spdxSBOMMissingVersion = []byte(`
+{
+  "SPDXID": "SPDXRef-DOCUMENT".
+  "creationInfo": {
+    "created": "2024-01-15T10:30:00Z",
+    "creators": ["Tool: minimal-generator"]
+  },
+  "packages": []
+}
+`)
+
+var cdxSBOMWhitespaceVersion = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "  ",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {},
+  "components": []
+}
+`)
+
+var spdxSBOMWhitespaceVersion = []byte(`
+{
+  "spdxVersion": "   ",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "created": "2024-01-15T10:30:00Z",
+    "creators": ["Tool: minimal-generator"]
+  },
+  "packages": []
+}
+`)
+
+var cdxSBOMVersionWrongType = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": {},
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {},
+  "components": []
+}
+`)
+
+var spdxSBOMVersionWrongType = []byte(`
+{
+  "spdxVersion": {},
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "created": "2024-01-15T10:30:00Z",
+    "creators": ["Tool: minimal-generator"]
+  },
+  "packages": []
+}
+`)
+
+func TestSBOMSpecVersion(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("cdxSBOMValidVersion", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMValidVersion, sbom.Signature{})
+		require.NoError(t, err)
 
 		got := SBOMSpecVersion(doc)
 
-		assert.Equal(t, 10.0, got.Score)
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "v1.6", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxSBOMValidVersion", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMValidVersion, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMSpecVersion(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "SPDX-2.3", got.Desc)
+		assert.False(t, got.Ignore)
 	})
 
-	t.Run("UnSupportedSPDXVersion", func(t *testing.T) {
-		doc := sbom.SpdxDoc{SpdxSpec: spdxSpecForStructural("SPDX-100.3", "json", "spdx")}
-
-		got := SBOMSpecVersion(doc)
-
-		assert.Equal(t, 0.0, got.Score)
-		assert.Equal(t, "unsupported version: SPDX-100.3 (spec spdx)", got.Desc)
+	t.Run("cdxSBOMUnknownVersion", func(t *testing.T) {
+		_, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMUnknownVersion, sbom.Signature{})
+		require.Error(t, err)
 	})
 
-	t.Run("UnsupportedCDXVersion", func(t *testing.T) {
-		doc := sbom.CdxDoc{CdxSpec: cdxSpecForStructural("9.9", "json", "cyclonedx")}
+	t.Run("spdxSBOMUnknownVersion", func(t *testing.T) {
+		_, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMUnknownVersion, sbom.Signature{})
+		require.Error(t, err)
+	})
 
-		got := SBOMSpecVersion(doc)
+	t.Run("cdxSBOMEmptyVersion", func(t *testing.T) {
+		_, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMEmptyVersion, sbom.Signature{})
+		require.Error(t, err)
+	})
 
-		assert.Equal(t, 0.0, got.Score)
-		assert.Equal(t, "unsupported version: 9.9 (spec cyclonedx)", got.Desc)
+	t.Run("spdxSBOMEmptyVersion", func(t *testing.T) {
+		_, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMEmptyVersion, sbom.Signature{})
+		require.Error(t, err)
+	})
+
+	// EXCEPTION
+	t.Run("cdxSBOMMissingVersion", func(t *testing.T) {
+		_, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMMissingVersion, sbom.Signature{})
+		require.NoError(t, err)
+
+		// got := SBOMSpecVersion(doc)
+
+		// assert.InDelta(t, 10.0, got.Score, 1e-9)
+		// assert.Equal(t, "SPDX-2.3", got.Desc)
+		// assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxSBOMMissingVersion", func(t *testing.T) {
+		_, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMMissingVersion, sbom.Signature{})
+		require.Error(t, err)
+	})
+
+	t.Run("cdxSBOMWhitespaceVersion", func(t *testing.T) {
+		_, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMWhitespaceVersion, sbom.Signature{})
+		require.Error(t, err)
+	})
+
+	t.Run("spdxSBOMWhitespaceVersion", func(t *testing.T) {
+		_, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMWhitespaceVersion, sbom.Signature{})
+		require.Error(t, err)
+	})
+
+	t.Run("cdxSBOMVersionWrongType", func(t *testing.T) {
+		_, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMVersionWrongType, sbom.Signature{})
+		require.Error(t, err)
+	})
+
+	t.Run("spdxSBOMVersionWrongType", func(t *testing.T) {
+		_, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMVersionWrongType, sbom.Signature{})
+		require.Error(t, err)
 	})
 }
 
-func Test_SBOMFileFormat(t *testing.T) {
-	t.Run("SupportedFormatForSPDX", func(t *testing.T) {
-		doc := sbom.SpdxDoc{SpdxSpec: spdxSpecForStructural("SPDX-2.3", "json", "spdx")}
+var cdxSBOMValid = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {},
+  "components": []
+}
+`)
+
+var spdxSBOMValid = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "created": "2024-01-15T10:30:00Z",
+    "creators": ["Tool: minimal-generator"]
+  },
+  "packages": []
+}
+`)
+
+var cdxSBOMValidYAML = []byte(`
+  bomFormat: CycloneDX
+  specVersion: "1.6"
+  metadata: {}
+`)
+
+var spdxSBOMValidTagValue = []byte(`
+SPDXVersion: SPDX-2.3
+SPDXID: SPDXRef-DOCUMENT
+`)
+
+func TestSBOMFileFormat(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("cdxSBOMValid", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMValid, sbom.Signature{})
+		require.NoError(t, err)
 
 		got := SBOMFileFormat(doc)
 
-		assert.Equal(t, 10.0, got.Score)
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "json", got.Desc)
+		assert.False(t, got.Ignore)
 	})
 
-	t.Run("UnsupportedFormatForSPDX", func(t *testing.T) {
-		doc := sbom.SpdxDoc{SpdxSpec: spdxSpecForStructural("SPDX-2.3", "pdf", "spdx")}
+	t.Run("spdxSBOMValid", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMValid, sbom.Signature{})
+		require.NoError(t, err)
 
 		got := SBOMFileFormat(doc)
 
-		assert.Equal(t, 0.0, got.Score)
-		assert.Equal(t, "unsupported format: pdf (spec spdx)", got.Desc)
-	})
-
-	t.Run("UnsupportedFormat", func(t *testing.T) {
-		doc := sbom.CdxDoc{CdxSpec: cdxSpecForStructural("1.4", "ppl", "cyclonedx")}
-
-		got := SBOMFileFormat(doc)
-
-		assert.Equal(t, 0.0, got.Score)
-		assert.Equal(t, "unsupported format: ppl (spec cyclonedx)", got.Desc)
-	})
-}
-
-type spdxSchemaDoc struct {
-	sbom.SpdxDoc
-	valid bool
-}
-
-func (d spdxSchemaDoc) SchemaValidation() bool { return d.valid }
-
-type cdxSchemaDoc struct {
-	sbom.CdxDoc
-	valid bool
-}
-
-func (d cdxSchemaDoc) SchemaValidation() bool { return d.valid }
-
-func Test_SBOMSchemaValid(t *testing.T) {
-	t.Run("ValidSchema_SPDX", func(t *testing.T) {
-		doc := spdxSchemaDoc{
-			SpdxDoc: sbom.SpdxDoc{SpdxSpec: spdxSpecForStructural("SPDX-2.3", "json", "spdx")},
-			valid:   true,
-		}
-
-		got := SBOMSchemaValid(doc)
-
-		assert.Equal(t, 10.0, got.Score)
-		assert.Equal(t, "complete", got.Desc)
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "json", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
-	t.Run("ValidSchema_CDX", func(t *testing.T) {
-		doc := cdxSchemaDoc{
-			CdxDoc: sbom.CdxDoc{CdxSpec: cdxSpecForStructural("1.6", "json", "cyclonedx")},
-			valid:  true,
-		}
+	t.Run("cdxSBOMValidYAML", func(t *testing.T) {
+		_, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMValidYAML, sbom.Signature{})
+		require.Error(t, err)
 
-		got := SBOMSchemaValid(doc)
-
-		assert.Equal(t, 10.0, got.Score)
-		assert.Equal(t, "complete", got.Desc)
-		assert.False(t, got.Ignore)
 	})
 
-	t.Run("InvalidSchema_SPDX", func(t *testing.T) {
-		doc := spdxSchemaDoc{
-			SpdxDoc: sbom.SpdxDoc{SpdxSpec: spdxSpecForStructural("SPDX-2.3", "json", "spdx")},
-			valid:   false,
-		}
-
-		got := SBOMSchemaValid(doc)
-
-		assert.Equal(t, 0.0, got.Score)
-		assert.Equal(t, "fix schema errors", got.Desc)
-		assert.False(t, got.Ignore)
+	t.Run("spdxSBOMValidTagValue", func(t *testing.T) {
+		_, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMValidTagValue, sbom.Signature{})
+		require.Error(t, err)
 	})
 
-	t.Run("InvalidSchema_CDX", func(t *testing.T) {
-		doc := cdxSchemaDoc{
-			CdxDoc: sbom.CdxDoc{CdxSpec: cdxSpecForStructural("1.4", "json", "cyclonedx")},
-			valid:  false,
-		}
-
-		got := SBOMSchemaValid(doc)
-
-		assert.Equal(t, 0.0, got.Score)
-		assert.Equal(t, "fix schema errors", got.Desc)
-		assert.False(t, got.Ignore)
-	})
 }

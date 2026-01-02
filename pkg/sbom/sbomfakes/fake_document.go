@@ -28,6 +28,16 @@ type FakeDocument struct {
 	componentsReturnsOnCall map[int]struct {
 		result1 []sbom.GetComponent
 	}
+	CompositionStub        func() []sbom.GetComposition
+	compositionMutex       sync.RWMutex
+	compositionArgsForCall []struct {
+	}
+	compositionReturns struct {
+		result1 []sbom.GetComposition
+	}
+	compositionReturnsOnCall map[int]struct {
+		result1 []sbom.GetComposition
+	}
 	GetRelationshipsStub        func(string) []string
 	getRelationshipsMutex       sync.RWMutex
 	getRelationshipsArgsForCall []struct {
@@ -256,6 +266,59 @@ func (fake *FakeDocument) ComponentsReturnsOnCall(i int, result1 []sbom.GetCompo
 	}
 	fake.componentsReturnsOnCall[i] = struct {
 		result1 []sbom.GetComponent
+	}{result1}
+}
+
+func (fake *FakeDocument) Composition() []sbom.GetComposition {
+	fake.compositionMutex.Lock()
+	ret, specificReturn := fake.compositionReturnsOnCall[len(fake.compositionArgsForCall)]
+	fake.compositionArgsForCall = append(fake.compositionArgsForCall, struct {
+	}{})
+	stub := fake.CompositionStub
+	fakeReturns := fake.compositionReturns
+	fake.recordInvocation("Composition", []interface{}{})
+	fake.compositionMutex.Unlock()
+	if stub != nil {
+		return stub()
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeDocument) CompositionCallCount() int {
+	fake.compositionMutex.RLock()
+	defer fake.compositionMutex.RUnlock()
+	return len(fake.compositionArgsForCall)
+}
+
+func (fake *FakeDocument) CompositionCalls(stub func() []sbom.GetComposition) {
+	fake.compositionMutex.Lock()
+	defer fake.compositionMutex.Unlock()
+	fake.CompositionStub = stub
+}
+
+func (fake *FakeDocument) CompositionReturns(result1 []sbom.GetComposition) {
+	fake.compositionMutex.Lock()
+	defer fake.compositionMutex.Unlock()
+	fake.CompositionStub = nil
+	fake.compositionReturns = struct {
+		result1 []sbom.GetComposition
+	}{result1}
+}
+
+func (fake *FakeDocument) CompositionReturnsOnCall(i int, result1 []sbom.GetComposition) {
+	fake.compositionMutex.Lock()
+	defer fake.compositionMutex.Unlock()
+	fake.CompositionStub = nil
+	if fake.compositionReturnsOnCall == nil {
+		fake.compositionReturnsOnCall = make(map[int]struct {
+			result1 []sbom.GetComposition
+		})
+	}
+	fake.compositionReturnsOnCall[i] = struct {
+		result1 []sbom.GetComposition
 	}{result1}
 }
 
