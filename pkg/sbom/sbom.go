@@ -108,9 +108,9 @@ func SupportedSBOMFileFormats(f string) []string {
 // SupportedPrimaryPurpose returns a list of supported primary purpose values for the given SBOM specification
 func SupportedPrimaryPurpose(f string) []string {
 	switch strings.ToLower(f) {
-	case "cyclonedx":
+	case string(SBOMSpecCDX):
 		return cdxPrimaryPurpose
-	case "spdx":
+	case string(SBOMSpecSPDX):
 		return spdxPrimaryPurpose
 	default:
 		return []string{}

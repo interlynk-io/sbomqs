@@ -23,6 +23,7 @@ package extractors
 import (
 	"fmt"
 	"slices"
+	"strings"
 
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/catalog"
@@ -186,11 +187,54 @@ func CompWithPackagePurpose(doc sbom.Document) catalog.ComprFeatScore {
 		return formulae.ScoreCompNA()
 	}
 
-	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
-		return commonV2.HasComponentPrimaryPackageType(c.PrimaryPurpose())
-	})
+	supported := sbom.SupportedPrimaryPurpose((doc.Spec().GetSpecType()))
 
-	return formulae.ScoreCompFull(have, len(comps), "type", false)
+	var validCount, invalidCount, missCount int
+
+	for _, c := range comps {
+		purpose := strings.TrimSpace(c.PrimaryPurpose())
+
+		switch {
+		case purpose == "":
+			missCount++
+
+		case lo.Contains(supported, strings.ToLower(purpose)):
+			validCount++
+
+		default:
+			invalidCount++
+		}
+	}
+
+	desc := "complete"
+
+	switch {
+	case invalidCount > 0:
+		desc = fmt.Sprintf(
+			"correct for %d %s",
+			invalidCount,
+			componentWord(invalidCount),
+		)
+		if missCount > 0 {
+			desc += " (others missing)"
+		}
+
+	case missCount > 0:
+		desc = fmt.Sprintf(
+			"add to %d %s",
+			missCount,
+			componentWord(missCount),
+		)
+	}
+
+	return formulae.ScoreCompFullCustom(validCount, len(comps), desc, false)
+}
+
+func componentWord(n int) string {
+	if n == 1 {
+		return "component"
+	}
+	return "components"
 }
 
 // sbom_with_declared_completeness

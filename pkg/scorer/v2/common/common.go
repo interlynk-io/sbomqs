@@ -50,14 +50,6 @@ func IsSBOMAuthorEntity(doc sbom.Document) bool {
 	return false
 }
 
-// Checks if component has primary purpose or type
-func HasComponentPrimaryPackageType(compType string) bool {
-	if strings.TrimSpace(compType) != "" {
-		return true
-	}
-	return false
-}
-
 func HasComponentSourceCodeURL(sourceCodeURL string) bool {
 	if strings.TrimSpace(sourceCodeURL) != "" {
 		return true
