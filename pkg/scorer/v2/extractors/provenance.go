@@ -206,16 +206,13 @@ func SBOMNamespace(doc sbom.Document) catalog.ComprFeatScore {
 
 	case string(sbom.SBOMSpecCDX):
 		uri := strings.TrimSpace(doc.Spec().GetURI())
-		fmt.Println("uri: ", uri)
 		if uri != "" {
-			fmt.Println("URI Present: ", uri)
 			return catalog.ComprFeatScore{
 				Score:  formulae.BooleanScore(true),
 				Desc:   formulae.PresentField("namespace"),
 				Ignore: false,
 			}
 		}
-		fmt.Println("URI absent: ", uri)
 
 		return catalog.ComprFeatScore{
 			Score:  formulae.BooleanScore(false),
