@@ -16,11 +16,9 @@ package extractors
 
 import (
 	"context"
-	"fmt"
 	"testing"
 
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
-	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/formulae"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -714,540 +712,885 @@ func TestCompWithPackagePurpose(t *testing.T) {
 	})
 }
 
-type miniComp2 struct {
-	id               string
-	name             string
-	version          string
-	srcURL           string
-	supplierName     string
-	supplierEmail    string
-	supplierURL      string
-	RelElementA      string
-	RelElementB      string
-	RelType          string
-	primaryPurpose   string
-	hasRelationships bool
-	depsCount        int
+// "https://github.com/demo/foo"
+var cdxCompValidSourceCode = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "application",
+      "name": "application-a",
+      "version": "1.0",
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/acme/application-a"
+        }
+      ]
+    }
+  ]
 }
+`)
 
-type spdxDocOpts2 struct {
-	namespace   string
-	withPrimary bool
-	comps       []miniComp2
+var spdxCompHaveNoDeterminsticFieldForSourceCode = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": ["Tool: syft v0.95.0"]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-App",
+      "name": "application-a",
+      "versionInfo": "1.0",
+      "downloadLocation": "https://github.com/acme/application-a"
+    }
+  ]
 }
+`)
 
-type cdxDocOpts2 struct {
-	uri         string
-	withPrimary bool
-	comps       []miniComp2
+var cdxCompSourceCodeAbsent = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "application",
+      "name": "application-a",
+      "version": "1.0"
+    }
+  ]
 }
+`)
 
-func makeSPDXDocForCompleteness(opts spdxDocOpts2) sbom.Document {
-	s := sbom.NewSpec()
-	s.Version = "SPDX-2.3"
-	s.SpecType = "spdx"
-	s.Format = "json"
-	s.Spdxid = "DOCUMENT"
-	s.Namespace = opts.namespace
-	s.CreationTimestamp = "2025-01-01T00:00:00Z"
-
-	var comps []sbom.GetComponent
-	var deps []sbom.GetRelation
-
-	for _, c := range opts.comps {
-		p := sbom.NewComponent()
-		p.ID = c.id
-		p.Name = c.name
-		p.Version = c.version
-		p.SourceCodeURL = c.srcURL
-		if c.supplierName != "" || c.supplierEmail != "" || c.supplierURL != "" {
-			p.Supplier = sbom.Supplier{Name: c.supplierName, Email: c.supplierEmail, URL: c.supplierURL}
-		}
-		p.Purpose = c.primaryPurpose
-		p.HasRelationships = c.hasRelationships
-		p.Count = c.depsCount
-
-		var dep sbom.Relation
-		dep.From = c.RelElementA
-		dep.To = c.RelElementB
-
-		deps = append(deps, dep)
-		comps = append(comps, p)
-	}
-
-	pc := sbom.PrimaryComp{}
-	pc.Present = opts.withPrimary
-
-	return sbom.SpdxDoc{
-		SpdxSpec:         s,
-		Comps:            comps,
-		Rels:             deps,
-		PrimaryComponent: pc,
-	}
+var cdxCompSourceCodeMissing = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "application",
+      "name": "application-a",
+      "version": "1.0",
+      "externalReferences": [
+        {
+	  	}
+      ]
+    }
+  ]
 }
+`)
 
-func TestSBOMWithDeclaredCompleteness_ForSPDX(t *testing.T) {
-	doc := makeSPDXDocForCompleteness(spdxDocOpts2{
-		withPrimary: true,
-		comps: []miniComp2{
-			{id: "SPDXRef-A", name: "a", version: "1.0.0", hasRelationships: false, depsCount: 0},
-		},
-	})
-
-	got := SBOMWithDeclaredCompleteness(doc)
-
-	assert.InDelta(t, 0.0, got.Score, 1e-9)
-	assert.Equal(t, "N/A (SPDX)", got.Desc)
+var cdxCompSourceCodeEmptyURLString = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "application",
+      "name": "application-a",
+      "version": "1.0",
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": ""
+        }
+      ]
+    }
+  ]
 }
+`)
 
-func TestCompWithDependencies(t *testing.T) {
-	t.Run("NoComponents", func(t *testing.T) {
-		doc := makeSPDXDocForCompleteness(spdxDocOpts2{})
+var cdxCompSourceCodeURLMissing = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "application",
+      "name": "application-a",
+      "version": "1.0",
+      "externalReferences": [
+        {
+          "type": "vcs"
+        }
+      ]
+    }
+  ]
+}
+`)
 
-		got := CompWithDependencies(doc)
+var cdxCompSourceCodeTypeMissing = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "application",
+      "name": "application-a",
+      "version": "1.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/acme/application-a"
+        }
+      ]
+    }
+  ]
+}
+`)
 
-		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "N/A (no components)", got.Desc)
-		assert.True(t, got.Ignore)
-	})
+var cdxCompSourceCodeValidWebsiteType = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "application",
+      "name": "application-a",
+      "version": "1.0",
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://github.com/acme/application-a"
+        }
+      ]
+    }
+  ]
+}
+`)
 
-	t.Run("ComponentsWithNoDependencies", func(t *testing.T) {
-		doc := makeSPDXDocForCompleteness(spdxDocOpts2{
-			withPrimary: true,
-			comps: []miniComp2{
-				{id: "SPDXRef-A", name: "a", version: "1.0.0", hasRelationships: false, depsCount: 0},
-				{id: "SPDXRef-B", name: "b", version: "2.0.0", hasRelationships: false, depsCount: 0},
-			},
-		})
+var cdxCompSourceCodeInValidType = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "application",
+      "name": "application-a",
+      "version": "1.0",
+      "externalReferences": [
+        {
+          "type": "foo-bar",
+          "url": "https://github.com/acme/application-a"
+        }
+      ]
+    }
+  ]
+}
+`)
 
-		got := CompWithDependencies(doc)
+var cdxCompSourceCodeEmptyArray = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "version": 1,
+  "components": [
+    {
+      "type": "application",
+      "name": "application-a",
+      "version": "1.0",
+      "externalReferences": []
+    }
+  ]
+}
+`)
 
-		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "2 min 1 dependency (completeness unknown)", got.Desc)
-		assert.False(t, got.Ignore)
-	})
+var cdxCompSourceCodeMixedRefs = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "version": 1,
+  "components": [
+    {
+      "type": "application",
+      "name": "application-a",
+      "version": "1.0",
+      "externalReferences": [
+        { "type": "website", "url": "https://example.com" },
+        { "type": "vcs", "url": "https://github.com/acme/application-a" }
+      ]
+    }
+  ]
+}
+`)
 
-	t.Run("OneComponentWithDependency", func(t *testing.T) {
-		doc := makeSPDXDocForCompleteness(spdxDocOpts2{
-			withPrimary: true,
-			comps: []miniComp2{
-				{id: "SPDXRef-A", name: "a", version: "1.0.0", hasRelationships: true, depsCount: 2},
-				{id: "SPDXRef-B", name: "b", version: "2.0.0", hasRelationships: false, depsCount: 0},
-			},
-		})
-		got := CompWithDependencies(doc)
+var cdxCompSourceCodeWrongType = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "version": 1,
+  "components": [
+    {
+      "type": "application",
+      "name": "application-a",
+      "version": "1.0",
+      "externalReferences": {}
+    }
+  ]
+}
+`)
 
-		assert.InDelta(t, 5.0, got.Score, 1e-9)
-		assert.Equal(t, "1 min 1 dependency (completeness unknown)", got.Desc)
-		assert.False(t, got.Ignore)
-	})
+func TestCompWithSourceCode(t *testing.T) {
+	ctx := context.Background()
 
-	t.Run("ALLComponentWithDependency", func(t *testing.T) {
-		doc := makeSPDXDocForCompleteness(spdxDocOpts2{
-			withPrimary: true,
-			comps: []miniComp2{
-				{id: "SPDXRef-A", name: "a", version: "1.0.0", hasRelationships: true, depsCount: 2},
-				{id: "SPDXRef-B", name: "b", version: "2.0.0", hasRelationships: true, depsCount: 3},
-			},
-		})
-		got := CompWithDependencies(doc)
+	t.Run("cdxCompValidSourceCode", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompValidSourceCode, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := CompWithSourceCode(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "0 min 1 dependency (completeness unknown)", got.Desc)
+		assert.Equal(t, "complete", got.Desc)
 		assert.False(t, got.Ignore)
 	})
+
+	t.Run("spdxCompHaveNoDeterminsticFieldForSourceCode", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompHaveNoDeterminsticFieldForSourceCode, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := CompWithSourceCode(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "add to 1 component", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxCompSourceCodeAbsent", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompSourceCodeAbsent, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := CompWithSourceCode(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "add to 1 component", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxCompSourceCodeMissing", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompSourceCodeMissing, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := CompWithSourceCode(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "add to 1 component", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxCompSourceCodeEmptyURLString", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompSourceCodeEmptyURLString, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := CompWithSourceCode(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "add to 1 component", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxCompSourceCodeURLMissing", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompSourceCodeURLMissing, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := CompWithSourceCode(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "add to 1 component", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxCompSourceCodeTypeMissing", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompSourceCodeTypeMissing, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := CompWithSourceCode(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "add to 1 component", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxCompSourceCodeValidWebsiteType", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompSourceCodeValidWebsiteType, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := CompWithSourceCode(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "add to 1 component", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxCompSourceCodeInValidType", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompSourceCodeInValidType, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := CompWithSourceCode(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "add to 1 component", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxCompSourceCodeEmptyArray", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompSourceCodeEmptyArray, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := CompWithSourceCode(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "add to 1 component", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxCompSourceCodeMixedRefs", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompSourceCodeMixedRefs, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := CompWithSourceCode(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "complete", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxCompSourceCodeWrongType", func(t *testing.T) {
+		_, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompSourceCodeWrongType, sbom.Signature{})
+		require.Error(t, err)
+	})
+
 }
 
-func TestCompWithPrimaryComponent(t *testing.T) {
-	t.Run("NoComponents", func(t *testing.T) {
-		doc := makeSPDXDocForCompleteness(spdxDocOpts2{
-			withPrimary: false,
-		})
+var cdxSBOMPrimaryComponentValid = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "version": 1,
+  "metadata": {
+    "component": {
+      "bom-ref": "app-1.0",
+      "type": "application",
+      "name": "my-app",
+      "version": "1.0"
+    }
+  },
+  "components": []
+}
+`)
+
+var spdxSBOMPrimaryComponentValid = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": ["Tool: syft v0.95.0"]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-App",
+      "name": "my-app",
+      "versionInfo": "1.0"
+    }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relatedSpdxElement": "SPDXRef-App",
+      "relationshipType": "DESCRIBES"
+    }
+  ]
+}
+`)
+
+var cdxSBOMPrimaryComponentAbsent = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "version": 1,
+  "components": [
+    {
+      "type": "application",
+      "name": "my-app",
+      "version": "1.0"
+    }
+  ]
+}
+`)
+
+var spdxSBOMPrimaryComponentAbsent = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": ["Tool: syft v0.95.0"]
+  },
+  "packages": []
+}
+`)
+
+var cdxSBOMPrimaryComponentMissing = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "version": 1,
+  "metadata": {},
+  "components": []
+}
+`)
+
+var cdxSBOMPrimaryComponentEmptyObject = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "metadata": {
+    "component": {}
+  },
+  "components": []
+}
+`)
+
+var cdxSBOMPrimaryComponentMissingName = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "metadata": {
+    "component": {
+      "type": "application",
+      "version": "1.0"
+    }
+  },
+  "components": []
+}
+`)
+
+var cdxSBOMPrimaryComponentEmptyName = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "metadata": {
+    "component": {
+      "type": "application",
+      "name": "",
+      "version": "1.0"
+    }
+  },
+  "components": []
+}
+`)
+
+var cdxSBOMPrimaryComponentWrongType = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "metadata": {
+    "component": []
+  },
+  "components": []
+}
+`)
+
+func TestSBOMWithPrimaryComponent(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("cdxSBOMPrimaryComponentValid", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMPrimaryComponentValid, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMWithPrimaryComponent(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "complete", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxSBOMPrimaryComponentValid", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMPrimaryComponentValid, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMWithPrimaryComponent(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "complete", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxSBOMPrimaryComponentAbsent", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMPrimaryComponentAbsent, sbom.Signature{})
+		require.NoError(t, err)
 
 		got := SBOMWithPrimaryComponent(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add primary component", got.Desc)
-		assert.True(t, got.Ignore)
+		assert.False(t, got.Ignore)
 	})
 
-	t.Run("ComponentsWithPrimaryComponent", func(t *testing.T) {
-		doc := makeSPDXDocForCompleteness(spdxDocOpts2{
-			withPrimary: true,
-		})
+	t.Run("spdxSBOMPrimaryComponentAbsent", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMPrimaryComponentAbsent, sbom.Signature{})
+		require.NoError(t, err)
 
 		got := SBOMWithPrimaryComponent(doc)
 
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "add primary component", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxSBOMPrimaryComponentMissing", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMPrimaryComponentMissing, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMWithPrimaryComponent(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "add primary component", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// ERROR/BUG: FIX IT
+	t.Run("cdxSBOMPrimaryComponentEmptyObject", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMPrimaryComponentEmptyObject, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMWithPrimaryComponent(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "add primary component", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxSBOMPrimaryComponentMissingName", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMPrimaryComponentMissingName, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMWithPrimaryComponent(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "add primary component", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxSBOMPrimaryComponentEmptyName", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMPrimaryComponentEmptyName, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMWithPrimaryComponent(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "add primary component", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxSBOMPrimaryComponentWrongType", func(t *testing.T) {
+		_, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMPrimaryComponentWrongType, sbom.Signature{})
+		require.Error(t, err)
+	})
+}
+
+// CompWithDependencies
+var cdxDependencyDeclaredComplete = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "metadata": {
+    "component": {
+      "bom-ref": "app",
+      "type": "application",
+      "name": "app",
+      "version": "1.0"
+    }
+  },
+  "components": [
+    {
+      "bom-ref": "lib-a",
+      "type": "library",
+      "name": "lib-a",
+      "version": "1.0"
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "app",
+      "dependsOn": ["lib-a"]
+    }
+  ],
+  "compositions": [
+    {
+      "aggregate": "complete",
+      "dependencies": ["app"]
+    }
+  ]
+}
+`)
+
+var cdxDependencyDeclaredUnknown = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "components": [
+    {
+      "bom-ref": "lib-a",
+      "type": "library",
+      "name": "lib-a",
+      "version": "1.0"
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "root",
+      "dependsOn": ["lib-a"]
+    }
+  ],
+  "compositions": [
+    {
+      "aggregate": "unknown",
+      "dependencies": ["root"]
+    }
+  ]
+}
+`)
+
+var cdxDepsDeclaredIncomplete = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "components": [
+    {
+      "bom-ref": "lib-a",
+      "type": "library",
+      "name": "lib-a",
+      "version": "1.0"
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "root",
+      "dependsOn": ["lib-a"]
+    }
+  ],
+  "compositions": [
+    {
+      "aggregate": "incomplete",
+      "dependencies": ["root"]
+    }
+  ]
+}
+`)
+
+var cdxDependencyDeclarationAbsent = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "components": [
+    {
+      "bom-ref": "lib-a",
+      "type": "library",
+      "name": "lib-a",
+      "version": "1.0"
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "root",
+      "dependsOn": ["lib-a"]
+    }
+  ],
+  "compositions": [
+    {
+      "aggregate": "incomplete",
+      "dependencies": ["root"]
+    }
+  ]
+}
+`)
+
+var spdxComponentValidDependency = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": ["Tool: syft v0.95.0"]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-App",
+      "name": "my-app",
+      "versionInfo": "1.0"
+    }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relatedSpdxElement": "SPDXRef-App",
+      "relationshipType": "DESCRIBES"
+    }
+  ]
+}
+`)
+
+var cdxTwoComponentsWithDependenciesDeclaredComplete = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "metadata": {
+    "component": {
+      "bom-ref": "app",
+      "type": "application",
+      "name": "my-app",
+      "version": "1.0.0"
+    }
+  },
+  "components": [
+    {
+      "bom-ref": "lib-a",
+      "type": "library",
+      "name": "lib-a",
+      "version": "1.0.0"
+    },
+    {
+      "bom-ref": "lib-b",
+      "type": "library",
+      "name": "lib-b",
+      "version": "2.0.0"
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "app",
+      "dependsOn": ["lib-a", "lib-b"]
+    },
+    {
+      "ref": "lib-a",
+      "dependsOn": ["lib-b"]
+    }
+  ],
+  "compositions": [
+    {
+      "aggregate": "complete",
+      "dependencies": ["app"]
+    },
+    {
+      "aggregate": "complete",
+      "dependencies": ["lib-a"]
+    }
+  ]
+}
+`)
+
+var cdxDependencyAbsent = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "components": [
+    {
+      "bom-ref": "lib-a",
+      "type": "library",
+      "name": "lib-a",
+      "version": "1.0"
+    }
+  ]
+}
+`)
+
+func TestCompWithDependencies(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("cdxDependencyAbsent", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxDependencyAbsent, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := CompWithDependencies(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "no components declare dependencies", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxDependencyDeclaredComplete", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxDependencyDeclaredComplete, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := CompWithDependencies(doc)
+
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "complete", got.Desc)
+		assert.Equal(t, "dependency completeness declared for all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
-}
 
-func TestCompWithSourceCode(t *testing.T) {
-	t.Run("NoComponents", func(t *testing.T) {
-		doc := makeSPDXDocForCompleteness(spdxDocOpts2{})
+	t.Run("spdxComponentValidDependency", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxComponentValidDependency, sbom.Signature{})
+		require.NoError(t, err)
 
-		got := CompWithSourceCode(doc)
+		got := CompWithDependencies(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "N/A (no components)", got.Desc)
-		assert.True(t, got.Ignore)
+		assert.Equal(t, "dependency completeness declared N/A (SPDX)", got.Desc)
+		assert.False(t, got.Ignore)
 	})
 
-	t.Run("ComponentsWithNoSourceCodeURL", func(t *testing.T) {
-		doc := makeSPDXDocForCompleteness(spdxDocOpts2{
-			withPrimary: true,
-			comps: []miniComp2{
-				{id: "SPDXRef-A", name: "a", version: "1.0.0"},
-				{id: "SPDXRef-B", name: "b", version: "2.0.0"},
-			},
-		})
+	t.Run("cdxDependencyDeclaredUnknown", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxDependencyDeclaredUnknown, sbom.Signature{})
+		require.NoError(t, err)
 
-		got := CompWithSourceCode(doc)
+		got := CompWithDependencies(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add to 2 components", got.Desc)
+		assert.Equal(t, "no components declare dependencies", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
-	t.Run("OneComponentWithSourceCodeURL", func(t *testing.T) {
-		doc := makeSPDXDocForCompleteness(spdxDocOpts2{
-			withPrimary: true,
-			comps: []miniComp2{
-				{id: "SPDXRef-A", name: "a", version: "1.0.0", srcURL: "https://github.com/demo/foo"},
-				{id: "SPDXRef-B", name: "b", version: "2.0.0"},
-			},
-		})
-		got := CompWithSourceCode(doc)
+	t.Run("cdxDepsDeclaredIncomplete", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxDepsDeclaredIncomplete, sbom.Signature{})
+		require.NoError(t, err)
 
-		assert.InDelta(t, 5.0, got.Score, 1e-9)
-		assert.Equal(t, "add to 1 component", got.Desc)
+		got := CompWithDependencies(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "no components declare dependencies", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
-	t.Run("ALLComponentWithSourceCodeURL", func(t *testing.T) {
-		doc := makeSPDXDocForCompleteness(spdxDocOpts2{
-			withPrimary: true,
-			comps: []miniComp2{
-				{id: "SPDXRef-A", name: "a", version: "1.0.0", srcURL: "https://github.com/demo/foo"},
-				{id: "SPDXRef-B", name: "b", version: "2.0.0", srcURL: "https://github.com/demo/bar"},
-			},
-		})
-		got := CompWithSourceCode(doc)
+	t.Run("cdxDependencyDeclarationAbsent", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxDependencyDeclarationAbsent, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := CompWithDependencies(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "no components declare dependencies", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxTwoComponentsWithDependenciesDeclaredComplete", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxTwoComponentsWithDependenciesDeclaredComplete, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := CompWithDependencies(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "complete", got.Desc)
+		assert.Equal(t, "dependency completeness declared for all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
-}
-
-func TestCompWithSupplier(t *testing.T) {
-	t.Run("NoComponents", func(t *testing.T) {
-		doc := makeSPDXDocForCompleteness(spdxDocOpts2{})
-
-		got := CompWithSupplier(doc)
-
-		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "N/A (no components)", got.Desc)
-		assert.True(t, got.Ignore)
-	})
-
-	t.Run("ComponentsWithNoSupplier", func(t *testing.T) {
-		doc := makeSPDXDocForCompleteness(spdxDocOpts2{
-			withPrimary: true,
-			comps: []miniComp2{
-				{id: "SPDXRef-A", name: "a", version: "1.0.0"},
-				{id: "SPDXRef-B", name: "b", version: "2.0.0"},
-			},
-		})
-
-		got := CompWithSupplier(doc)
-
-		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add to 2 components", got.Desc)
-		assert.False(t, got.Ignore)
-	})
-
-	t.Run("OneComponentWithSupplier", func(t *testing.T) {
-		doc := makeSPDXDocForCompleteness(spdxDocOpts2{
-			withPrimary: true,
-			comps: []miniComp2{
-				{id: "SPDXRef-A", name: "a", version: "1.0.0", supplierName: "redhat", supplierEmail: "hello@redhat.com"},
-				{id: "SPDXRef-B", name: "b", version: "2.0.0"},
-			},
-		})
-		got := CompWithSupplier(doc)
-
-		assert.InDelta(t, 5.0, got.Score, 1e-9)
-		assert.Equal(t, "add to 1 component", got.Desc)
-		assert.False(t, got.Ignore)
-	})
-
-	t.Run("ALLComponentWithSupplier", func(t *testing.T) {
-		doc := makeSPDXDocForCompleteness(spdxDocOpts2{
-			withPrimary: true,
-			comps: []miniComp2{
-				{id: "SPDXRef-A", name: "a", version: "1.0.0", supplierName: "redhat", supplierEmail: "hello@redhat.com"},
-				{id: "SPDXRef-B", name: "b", version: "2.0.0", supplierName: "ubuntu", supplierEmail: "hello@ubuntu.com"},
-			},
-		})
-		got := CompWithSupplier(doc)
-
-		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "complete", got.Desc)
-		assert.False(t, got.Ignore)
-	})
-}
-
-func TestCompWithPackageType(t *testing.T) {
-	t.Run("NoComponents", func(t *testing.T) {
-		doc := makeSPDXDocForCompleteness(spdxDocOpts2{})
-
-		got := CompWithPackagePurpose(doc)
-
-		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "N/A (no components)", got.Desc)
-		assert.True(t, got.Ignore)
-	})
-
-	t.Run("ComponentsWithNoPackageType", func(t *testing.T) {
-		doc := makeSPDXDocForCompleteness(spdxDocOpts2{
-			withPrimary: true,
-			comps: []miniComp2{
-				{id: "SPDXRef-A", name: "a", version: "1.0.0"},
-				{id: "SPDXRef-B", name: "b", version: "2.0.0"},
-			},
-		})
-
-		got := CompWithPackagePurpose(doc)
-
-		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add to 2 components", got.Desc)
-		assert.False(t, got.Ignore)
-	})
-
-	t.Run("OneComponentWithPackageType", func(t *testing.T) {
-		doc := makeSPDXDocForCompleteness(spdxDocOpts2{
-			withPrimary: true,
-			comps: []miniComp2{
-				{id: "SPDXRef-A", name: "a", version: "1.0.0", primaryPurpose: "container"},
-				{id: "SPDXRef-B", name: "b", version: "2.0.0"},
-			},
-		})
-		got := CompWithPackagePurpose(doc)
-
-		assert.InDelta(t, 5.0, got.Score, 1e-9)
-		assert.Equal(t, "add to 1 component", got.Desc)
-		assert.False(t, got.Ignore)
-	})
-
-	t.Run("ALLComponentWithPackageType", func(t *testing.T) {
-		doc := makeSPDXDocForCompleteness(spdxDocOpts2{
-			withPrimary: true,
-			comps: []miniComp2{
-				{id: "SPDXRef-A", name: "a", version: "1.0.0", primaryPurpose: "library"},
-				{id: "SPDXRef-B", name: "b", version: "2.0.0", primaryPurpose: "application"},
-			},
-		})
-		got := CompWithPackagePurpose(doc)
-
-		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "complete", got.Desc)
-		assert.False(t, got.Ignore)
-	})
-}
-
-type miniComposition struct {
-	scope           sbom.CompositionScope
-	aggregate       sbom.CompositionAggregate
-	dependencies    []string
-	assemblies      []string
-	vulnerabilities []string
-}
-
-func makeCDXDocForCompleteness(comps []miniComp2, compositions []miniComposition) sbom.Document {
-	var components []sbom.GetComponent
-	for _, c := range comps {
-		p := sbom.NewComponent()
-		p.ID = c.id
-		p.Name = c.name
-		p.Version = c.version
-		components = append(components, p)
-	}
-
-	var csts []sbom.GetComposition
-	for i, mc := range compositions {
-
-		cst := sbom.NewComposition(
-			fmt.Sprintf("cmp-%d", i),
-			mc.scope,
-			mc.aggregate,
-			mc.dependencies,
-			mc.assemblies,
-			mc.vulnerabilities,
-		)
-
-		csts = append(csts, cst)
-	}
-
-	spec := sbom.NewSpec()
-	spec.SpecType = string(sbom.SBOMSpecCDX)
-	spec.Version = "1.6"
-
-	return sbom.CdxDoc{
-		CdxSpec:      spec,
-		Comps:        components,
-		Compositions: csts,
-	}
-}
-
-func TestCompWithDeclaredCompleteness_NoComponents(t *testing.T) {
-	doc := makeCDXDocForCompleteness(nil, nil)
-
-	got := CompWithDeclaredCompleteness(doc)
-
-	assert.True(t, got.Ignore)
-	assert.Equal(t, "N/A (no components)", got.Desc)
-}
-
-func TestCompWithDeclaredCompleteness_SPDX(t *testing.T) {
-	doc := makeSPDXDocForCompleteness(spdxDocOpts2{
-		withPrimary: true,
-		comps: []miniComp2{
-			{id: "SPDXRef-A", name: "a", version: "1.0"},
-		},
-	})
-
-	got := CompWithDeclaredCompleteness(doc)
-
-	assert.True(t, got.Ignore)
-	assert.Equal(t, formulae.NonSupportedSPDXField(), got.Desc)
-}
-
-func TestCompWithDeclaredCompleteness_NoCompositions(t *testing.T) {
-	doc := makeCDXDocForCompleteness(
-		[]miniComp2{
-			{id: "bom-refA"}, {id: "B"},
-		},
-		nil,
-	)
-
-	got := CompWithDeclaredCompleteness(doc)
-
-	assert.InDelta(t, 0.0, got.Score, 1e-9)
-	assert.Equal(t, "add to 2 components", got.Desc)
-}
-
-func TestCompWithDeclaredCompleteness_GlobalComplete(t *testing.T) {
-	doc := makeCDXDocForCompleteness(
-		[]miniComp2{
-			{id: "bom-refA"}, {id: "B"},
-		},
-		[]miniComposition{
-			{
-				scope:     sbom.ScopeGlobal,
-				aggregate: sbom.AggregateComplete,
-			},
-		},
-	)
-
-	got := CompWithDeclaredCompleteness(doc)
-
-	assert.InDelta(t, 10.0, got.Score, 1e-9)
-	assert.Equal(t, "complete", got.Desc)
-}
-
-func TestCompWithDeclaredCompleteness_ComponentScoped(t *testing.T) {
-	doc := makeCDXDocForCompleteness(
-		[]miniComp2{
-			{id: "bom-refA"}, {id: "bom-refB"},
-		},
-		[]miniComposition{
-			{
-				scope:        sbom.ScopeDependencies,
-				aggregate:    sbom.AggregateComplete,
-				dependencies: []string{"bom-refA"},
-			},
-		},
-	)
-
-	got := CompWithDeclaredCompleteness(doc)
-
-	assert.InDelta(t, 5.0, got.Score, 1e-9)
-	assert.Equal(t, "add to 1 component", got.Desc)
-}
-
-func TestCompWithDeclaredCompleteness_Mixed(t *testing.T) {
-	doc := makeCDXDocForCompleteness(
-		[]miniComp2{
-			{id: "bom-refA"}, {id: "bom-refB"},
-		},
-		[]miniComposition{
-			{
-				scope:     sbom.ScopeGlobal,
-				aggregate: sbom.AggregateUnknown,
-			},
-			{
-				scope:      sbom.ScopeAssemblies,
-				aggregate:  sbom.AggregateComplete,
-				assemblies: []string{"bom-refB"},
-			},
-		},
-	)
-
-	got := CompWithDeclaredCompleteness(doc)
-
-	assert.InDelta(t, 5.0, got.Score, 1e-9)
-	assert.Equal(t, "add to 1 component", got.Desc)
-}
-
-func TestSBOMWithDeclaredCompleteness_GlobalComplete(t *testing.T) {
-	doc := makeCDXDocForCompleteness(
-		[]miniComp2{
-			{id: "bom-refA"}, {id: "B"},
-		},
-		[]miniComposition{
-			{
-				scope:     sbom.ScopeGlobal,
-				aggregate: sbom.AggregateComplete,
-			},
-		},
-	)
-
-	got := SBOMWithDeclaredCompleteness(doc)
-
-	assert.InDelta(t, 10.0, got.Score, 1e-9)
-	assert.Equal(t, "SBOM completeness declared", got.Desc)
-}
-
-func TestSBOMWithDeclaredCompleteness_GlobalInComplete(t *testing.T) {
-	doc := makeCDXDocForCompleteness(
-		[]miniComp2{
-			{id: "bom-refA"}, {id: "B"},
-		},
-		[]miniComposition{
-			{
-				scope:     sbom.ScopeGlobal,
-				aggregate: sbom.CompositionAggregate("incomplete"),
-			},
-		},
-	)
-
-	got := SBOMWithDeclaredCompleteness(doc)
-
-	assert.InDelta(t, 0.0, got.Score, 1e-9)
-	assert.Equal(t, "SBOM completeness not declared", got.Desc)
-}
-
-func TestSBOMWithDeclaredCompleteness_NotDefined(t *testing.T) {
-	doc := makeCDXDocForCompleteness(
-		[]miniComp2{
-			{id: "bom-refA"}, {id: "B"},
-		}, nil)
-
-	got := SBOMWithDeclaredCompleteness(doc)
-
-	assert.InDelta(t, 0.0, got.Score, 1e-9)
-	assert.Equal(t, "SBOM completeness not declared", got.Desc)
 }

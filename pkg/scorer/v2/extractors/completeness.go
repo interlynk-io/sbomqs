@@ -51,36 +51,54 @@ func CompWithDependencies(doc sbom.Document) catalog.ComprFeatScore {
 		return formulae.ScoreCompFullCustom(
 			have,
 			len(comps),
-			fmt.Sprintf("%d min 1 dependency (completeness unknown)", len(comps)-have),
+			"dependency completeness declared N/A (SPDX)",
 			false,
 		)
 
 	case string(sbom.SBOMSpecCDX):
-		// CycloneDX: dependency completeness must be explicitly declared
-		have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
+
+		// Only components that actually have dependencies matter
+		depComps := lo.Filter(comps, func(c sbom.GetComponent, _ int) bool {
+			return commonV2.HasComponentDependencies(c)
+		})
+
+		// If no components have dependencies, completeness is N/A
+		if len(depComps) == 0 {
+			return catalog.ComprFeatScore{
+				Score:  0,
+				Desc:   "no components declare dependencies",
+				Ignore: false,
+			}
+		}
+
+		have := lo.CountBy(depComps, func(c sbom.GetComponent) bool {
 			id := c.GetID()
 
 			for _, cst := range doc.Composition() {
-				// ONLY dependency-scoped compositions apply here
 				if cst.Scope() != sbom.ScopeDependencies {
 					continue
 				}
-
 				if cst.Aggregate() != sbom.AggregateComplete {
 					continue
 				}
-
-				return slices.Contains(cst.Dependencies(), id)
+				if slices.Contains(cst.Dependencies(), id) {
+					return true
+				}
 			}
 			return false
 		})
 
-		return formulae.ScoreCompFullCustom(
-			have,
-			len(comps),
-			fmt.Sprintf("dependency completeness declared for %d component(s)", have),
-			false,
-		)
+		desc := ""
+		if have == len(depComps) {
+			desc = "dependency completeness declared for all components"
+		} else {
+			desc = fmt.Sprintf(
+				"dependency completeness declared for %d component(s)",
+				have,
+			)
+		}
+
+		return formulae.ScoreCompFullCustom(have, len(depComps), desc, false)
 	}
 
 	return formulae.ScoreCompNA()
@@ -141,7 +159,7 @@ func SBOMWithPrimaryComponent(doc sbom.Document) catalog.ComprFeatScore {
 		return catalog.ComprFeatScore{
 			Score:  formulae.PerComponentScore(0, len(comps)),
 			Desc:   "add primary component",
-			Ignore: true,
+			Ignore: false,
 		}
 	}
 
@@ -152,7 +170,7 @@ func SBOMWithPrimaryComponent(doc sbom.Document) catalog.ComprFeatScore {
 	}
 }
 
-// comps_with_source_code: Valid VCS URL
+// comps_with_source_code: Valid VCS URL for CDX and no-determinsitic field in SPDX
 func CompWithSourceCode(doc sbom.Document) catalog.ComprFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {

@@ -916,36 +916,41 @@ func (c *CdxDoc) parseManufacturer() {
 }
 
 func (c *CdxDoc) parsePrimaryCompAndRelationships() {
-	if c.doc.Metadata == nil {
+	if c.doc.Metadata == nil || c.doc.Metadata.Component == nil {
 		return
 	}
-	if c.doc.Metadata.Component == nil {
+
+	comp := c.doc.Metadata.Component
+
+	// Semantic validation: primary component must be identifiable
+	if strings.TrimSpace(comp.Name) == "" || strings.TrimSpace(string(comp.Type)) == "" {
 		return
 	}
 
 	c.Dependencies = make(map[string][]string)
 
 	c.PrimaryComponent.Present = true
-	c.PrimaryComponent.ID = c.doc.Metadata.Component.BOMRef
-	c.PrimaryComponent.Name = c.doc.Metadata.Component.Name
-	var totalDependencies int
+	c.PrimaryComponent.ID = comp.BOMRef
+	c.PrimaryComponent.Name = comp.Name
+	c.PrimaryComponent.Type = string(comp.Type)
 
+	var totalDependencies int
 	c.rels = []GetRelation{}
 
 	for _, r := range lo.FromPtr(c.doc.Dependencies) {
 		for _, d := range lo.FromPtr(r.Dependencies) {
-			nr := Relation{}
-			nr.From = r.Ref
-			nr.To = d
+			nr := Relation{
+				From: r.Ref,
+				To:   d,
+			}
+
+			c.rels = append(c.rels, nr)
+			c.Dependencies[r.Ref] = append(c.Dependencies[r.Ref], d)
+
 			if r.Ref == c.PrimaryComponent.ID {
 				c.PrimaryComponent.HasDependency = true
 				c.PrimaryComponent.AllDependencies = append(c.PrimaryComponent.AllDependencies, d)
 				totalDependencies++
-				c.rels = append(c.rels, nr)
-				c.Dependencies[c.PrimaryComponent.ID] = append(c.Dependencies[c.PrimaryComponent.ID], d)
-			} else {
-				c.rels = append(c.rels, nr)
-				c.Dependencies[r.Ref] = append(c.Dependencies[r.Ref], d)
 			}
 		}
 	}

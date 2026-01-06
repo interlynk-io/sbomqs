@@ -24,6 +24,8 @@ type GetPrimaryComp interface {
 	GetID() string
 	// GetName returns the name of the primary component
 	GetName() string
+	// GetType returns the type of the primary component
+	GetType() string
 	// GetVersion returns the version of the primary component
 	GetVersion() string
 	// GetTotalNoOfDependencies returns the total number of dependencies for the primary component
@@ -38,6 +40,7 @@ type GetPrimaryComp interface {
 type PrimaryComp struct {
 	Present         bool
 	ID              string
+	Type            string
 	Dependecies     int
 	HasDependency   bool
 	Name            string
@@ -58,6 +61,11 @@ func (pc PrimaryComp) GetID() string {
 // GetName returns the name of the primary component
 func (pc PrimaryComp) GetName() string {
 	return pc.Name
+}
+
+// GetType returns the name of the primary component
+func (pc PrimaryComp) GetType() string {
+	return pc.Type
 }
 
 // GetVersion returns the version of the primary component
