@@ -44,16 +44,11 @@ func CompWithDependencies(doc sbom.Document) catalog.ComprFeatScore {
 
 	case string(sbom.SBOMSpecSPDX):
 		// SPDX: can detect dependency presence, but not completeness
-		have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
-			return commonV2.HasComponentDependencies(c)
-		})
+		// have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
+		// 	return commonV2.HasComponentDependencies(c)
+		// })
 
-		return formulae.ScoreCompFullCustom(
-			have,
-			len(comps),
-			"dependency completeness declared N/A (SPDX)",
-			false,
-		)
+		return formulae.ScoreCompNACustom("dependency completeness declared N/A (SPDX)")
 
 	case string(sbom.SBOMSpecCDX):
 
