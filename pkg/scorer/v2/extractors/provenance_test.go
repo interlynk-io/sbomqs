@@ -274,7 +274,7 @@ var cdxSBOMAuthorsAbsent = []byte(`
 }
 `)
 
-var spdxSBOMAuthorsAbsent = []byte(`
+var spdxSBOMCreationInfoMissing = []byte(`
 {
   "spdxVersion": "SPDX-2.3",
   "SPDXID": "SPDXRef-DOCUMENT",
@@ -322,12 +322,45 @@ var cdxSBOMAuthorsEmptyArray = []byte(`
 }
 `)
 
+var cdxSBOMAuthorsEmptyArrayObject = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "metadata": {
+    "authors": [{}]
+  },
+  "components": []
+}
+`)
+
 var spdxSBOMAuthorsEmptyArray = []byte(`
 {
   "spdxVersion": "SPDX-2.3",
   "SPDXID": "SPDXRef-DOCUMENT",
   "creationInfo": {
     "creators": []
+  },
+  "packages": []
+}
+`)
+
+var spdxSBOMCreatorsWrongTypeSomeValue = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "creators": ["foobar"]
+  },
+  "packages": []
+}
+`)
+
+var spdxSBOMCreatorsWhitespace = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "creators": ["    "]
   },
   "packages": []
 }
@@ -355,7 +388,7 @@ var spdxSBOMAuthorsWrongType = []byte(`
 }
 `)
 
-var cdxSBOMAuthorsWithNameOnly = []byte(`
+var cdxSBOMAuthorsWithMinimalNameOnly = []byte(`
 {
   "bomFormat": "CycloneDX",
   "specVersion": "1.6",
@@ -369,7 +402,7 @@ var cdxSBOMAuthorsWithNameOnly = []byte(`
 }
 `)
 
-var spdxSBOMAuthorsWithNameOnly = []byte(`
+var spdxSBOMAuthorsWithMinimalNameOnly = []byte(`
 {
   "spdxVersion": "SPDX-2.3",
   "SPDXID": "SPDXRef-DOCUMENT",
@@ -382,7 +415,7 @@ var spdxSBOMAuthorsWithNameOnly = []byte(`
 }
 `)
 
-var cdxSBOMAuthorsWithEmailOnly = []byte(`
+var cdxSBOMAuthorsWithMinimalEmailOnly = []byte(`
 {
   "bomFormat": "CycloneDX",
   "specVersion": "1.6",
@@ -397,7 +430,23 @@ var cdxSBOMAuthorsWithEmailOnly = []byte(`
 }
 `)
 
-var spdxSBOMAuthorsWithEmailOnly = []byte(`
+var cdxSBOMAuthorsWithMinimalPhoneOnly = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "metadata": {
+    "authors": [
+      {
+        "bom-ref": "author-1",
+        "phone": "800-555-1212"
+      }
+    ]
+  },
+  "components": []
+}
+`)
+
+var spdxSBOMAuthorsWithMinimalEmailOnly = []byte(`
 {
   "spdxVersion": "SPDX-2.3",
   "SPDXID": "SPDXRef-DOCUMENT",
@@ -426,6 +475,116 @@ var cdxSBOMAuthorsMixed = []byte(`
       }
     ]
   }
+}
+`)
+
+var cdxSBOMAuthorsWithALL = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "metadata": {
+    "authors": [
+      {
+        "name": "Samantha Wright",
+        "email": "samantha.wright@example.com",
+        "phone": "999-888-7777"
+      }
+    ]
+  }
+}
+`)
+
+var cdxSBOMAuthorsWithALLMissing = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "metadata": {
+    "authors": [
+      {
+        "name": "",
+        "email": "",
+        "phone": ""
+      }
+    ]
+  }
+}
+`)
+
+var cdxSBOMAuthorsWithWhitespace = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "metadata": {
+    "authors": [
+      {
+        "name": "   "
+      }
+    ]
+  }
+}
+`)
+
+var spdxSBOMAuthorsWithWhitespace = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "creators": [
+      "Person:    "
+    ]
+  },
+  "packages": []
+}
+`)
+
+var spdxSBOMAuthorsWithEmailWhitespace = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "creators": [
+      "Person: (    )"
+    ]
+  },
+  "packages": []
+}
+`)
+
+var spdxSBOMAuthorsWithToolOnly = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "creators": ["Tool: syft"]
+
+  },
+  "packages": []
+}
+`)
+
+var spdxSBOMAuthorsWithOrganizationOnly = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "creators": [
+      "Organization: Acme Inc"
+    ]
+  },
+  "packages": []
+}
+`)
+
+var spdxSBOMAuthorsWithOrganizationEmailOnly = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "creators": [
+      "Organization: (acme.organization@gmail.com)"
+    ]
+  },
+  "packages": []
 }
 `)
 
@@ -465,8 +624,19 @@ func TestSBOMAuthor(t *testing.T) {
 		assert.False(t, got.Ignore)
 	})
 
-	t.Run("spdxSBOMAuthorsAbsent", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorsAbsent, sbom.Signature{})
+	t.Run("spdxSBOMCreationInfoMissing", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMCreationInfoMissing, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMAuthors(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "add author", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxSBOMCreationInfoMissing", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMCreationInfoMissing, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := SBOMAuthors(doc)
@@ -520,6 +690,17 @@ func TestSBOMAuthor(t *testing.T) {
 		assert.False(t, got.Ignore)
 	})
 
+	t.Run("cdxSBOMAuthorsEmptyArrayObject", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthorsEmptyArrayObject, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMAuthors(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "add author", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
 	t.Run("cdxSBOMAuthorsWrongType", func(t *testing.T) {
 		_, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthorsWrongType, sbom.Signature{})
 		require.Error(t, err)
@@ -554,8 +735,8 @@ func TestSBOMAuthor(t *testing.T) {
 	})
 
 	// cdxSBOMAuthorsPartial
-	t.Run("cdxSBOMAuthorsWithNameOnly", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthorsWithNameOnly, sbom.Signature{})
+	t.Run("cdxSBOMAuthorsWithMinimalNameOnly", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthorsWithMinimalNameOnly, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := SBOMAuthors(doc)
@@ -565,8 +746,8 @@ func TestSBOMAuthor(t *testing.T) {
 		assert.False(t, got.Ignore)
 	})
 
-	t.Run("spdxSBOMAuthorsWithNameOnly", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorsWithNameOnly, sbom.Signature{})
+	t.Run("spdxSBOMAuthorsWithMinimalNameOnly", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorsWithMinimalNameOnly, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := SBOMAuthors(doc)
@@ -576,8 +757,8 @@ func TestSBOMAuthor(t *testing.T) {
 		assert.False(t, got.Ignore)
 	})
 
-	t.Run("cdxSBOMAuthorsWithEmailOnly", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthorsWithEmailOnly, sbom.Signature{})
+	t.Run("cdxSBOMAuthorsWithMinimalEmailOnly", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthorsWithMinimalEmailOnly, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := SBOMAuthors(doc)
@@ -587,8 +768,117 @@ func TestSBOMAuthor(t *testing.T) {
 		assert.False(t, got.Ignore)
 	})
 
-	t.Run("spdxSBOMAuthorsWithEmailOnly", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorsWithEmailOnly, sbom.Signature{})
+	t.Run("spdxSBOMAuthorsWithMinimalEmailOnly", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorsWithMinimalEmailOnly, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMAuthors(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "complete", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxSBOMAuthorsWithMinimalPhoneOnly", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthorsWithMinimalPhoneOnly, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMAuthors(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "complete", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxSBOMAuthorsWithALL", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthorsWithALL, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMAuthors(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "complete", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxSBOMAuthorsWithALLMissing", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthorsWithALLMissing, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMAuthors(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "add author", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxSBOMAuthorsWithWhitespace", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthorsWithWhitespace, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMAuthors(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "add author", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxSBOMAuthorsWithWhitespace", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorsWithWhitespace, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMAuthors(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "add author", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxSBOMAuthorsWithEmailWhitespace", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorsWithEmailWhitespace, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMAuthors(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "add author", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxSBOMCreatorsWhitespace", func(t *testing.T) {
+		_, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMCreatorsWhitespace, sbom.Signature{})
+		require.Error(t, err)
+	})
+
+	t.Run("spdxSBOMCreatorsWrongTypeSomeValue", func(t *testing.T) {
+		_, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMCreatorsWrongTypeSomeValue, sbom.Signature{})
+		require.Error(t, err)
+	})
+
+	t.Run("spdxSBOMAuthorsWithToolOnly", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorsWithToolOnly, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMAuthors(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "add author", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxSBOMAuthorsWithOrganizationOnly", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorsWithOrganizationOnly, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMAuthors(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "complete", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxSBOMAuthorsWithOrganizationEmailOnly", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorsWithOrganizationEmailOnly, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := SBOMAuthors(doc)
