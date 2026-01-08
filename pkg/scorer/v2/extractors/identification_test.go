@@ -486,12 +486,13 @@ func TestCompWithUniqLocalIDs(t *testing.T) {
 	})
 
 	t.Run("spdxSBOMWithComponentNameVersionAndEmptyStringID", func(t *testing.T) {
-		_, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMWithComponentNameVersionAndEmptyStringID, sbom.Signature{})
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMWithComponentNameVersionAndEmptyStringID, sbom.Signature{})
+		require.NoError(t, err)
 
-		// Since, SPDXID is missing,
-		// therefore, it will return an "error":
-		// "failed to parse SPDX identifier ''"}
-		require.Error(t, err)
+		got := CompWithUniqLocalIDs(doc)
+		assert.InDelta(t, 0.0, got.Score, 0.0001)
+		assert.Equal(t, "add to 1 component", got.Desc)
+		assert.False(t, got.Ignore)
 	})
 
 	t.Run("cdxSBOMComponentWithNameVersionAndMissingID", func(t *testing.T) {
