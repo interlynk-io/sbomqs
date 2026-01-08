@@ -35,6 +35,15 @@ func ScoreCompNA() catalog.ComprFeatScore {
 	}
 }
 
+// ScoreCompNACustom score NA for any custom field with custom description
+func ScoreCompNACustom(desc string) catalog.ComprFeatScore {
+	return catalog.ComprFeatScore{
+		Score:  PerComponentScore(0, 0),
+		Desc:   desc,
+		Ignore: true,
+	}
+}
+
 // ScoreNA score NA for comprehenssive features related to components
 func ScoreCompNAA() catalog.ComprFeatScore {
 	return catalog.ComprFeatScore{
@@ -49,6 +58,15 @@ func ScoreCompFull(have, comps int, field string, ignore bool) catalog.ComprFeat
 	return catalog.ComprFeatScore{
 		Score:  PerComponentScore(have, comps),
 		Desc:   CompDescription(have, comps),
+		Ignore: ignore,
+	}
+}
+
+// ScoreCompFull score for comprehenssive features related to components
+func ScoreCompFullCustom(have, comps int, desc string, ignore bool) catalog.ComprFeatScore {
+	return catalog.ComprFeatScore{
+		Score:  PerComponentScore(have, comps),
+		Desc:   desc,
 		Ignore: ignore,
 	}
 }

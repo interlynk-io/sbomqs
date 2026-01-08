@@ -478,7 +478,7 @@ func CompPurpose(doc sbom.Document) catalog.ProfFeatScore {
 	}
 
 	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
-		return commonV2.HasComponentPrimaryPackageType(c.PrimaryPurpose())
+		return strings.TrimSpace(c.PrimaryPurpose()) != "" && lo.Contains(sbom.SupportedPrimaryPurpose(doc.Spec().GetSpecType()), strings.ToLower(c.PrimaryPurpose()))
 	})
 
 	return formulae.ScoreProfFull(have, len(comps), false)

@@ -15,126 +15,298 @@
 package extractors
 
 import (
+	"context"
 	"testing"
 
-	"github.com/interlynk-io/sbomqs/v2/pkg/licenses"
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-func newSPDXSpec() *sbom.Specs {
-	s := sbom.NewSpec()
-	s.Version = "SPDX-2.3"
-	s.Spdxid = "DOCUMENT"
-	s.SpecType = "spdx"
-	s.Format = "json"
-	s.Organization = "interlynk"
-	s.CreationTimestamp = "2025-01-01T00:00:00Z"
-	s.Namespace = "https://example.com/test-namespace"
-	return s
+var cdxSBOMWithNoComponents = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": []
+}
+`)
+
+var spdxSBOMWithNoComponents = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "test-doc",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": ["Tool: syft v0.95.0"]
+  }
+}
+`)
+
+var cdxSBOMComponentNameEmptyString = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2025-01-01T00:00:00Z",
+    "tools": [{ "name": "syft", "version": "0.95.0" }]
+  },
+  "components": [
+    {
+      "type": "library",
+      "name": "",
+      "version": "0.1.0"
+    }
+  ]
+}
+`)
+
+var spdxSBOMWithComponentNameEmptyString = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "test-doc",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": ["Tool: syft v0.95.0"]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-EmptyName",
+      "name": "",
+      "versionInfo": "1.4.0"
+    }
+  ]
+}
+`)
+
+var cdxSBOMComponentWithMissingName = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2025-01-01T00:00:00Z",
+    "tools": [{ "name": "syft", "version": "0.95.0" }]
+  },
+  "components": [
+    {
+      "type": "library",
+      "version": "0.1.0"
+    }
+  ]
+}
+`)
+
+var spdxSBOMWithComponentNameMissing = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "test-doc",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": ["Tool: syft v0.95.0"]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-EmptyName",
+      "versionInfo": "1.4.0"
+    }
+  ]
+}
+`)
+
+func TestCompWithName(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("cdxSBOMComponentNameEmptyString", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMComponentNameEmptyString, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := CompWithName(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "add to 1 component", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxSBOMWithComponentNameEmptyString", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMWithComponentNameEmptyString, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := CompWithName(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "add to 1 component", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxSBOMWithNoComponents", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMWithNoComponents, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := CompWithName(doc)
+
+		assert.Equal(t, 0.0, got.Score)
+		assert.True(t, got.Ignore)
+		assert.Equal(t, "N/A (no components)", got.Desc)
+	})
+
+	t.Run("cdxSBOMComponentWithMissingName", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMComponentWithMissingName, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := CompWithName(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "add to 1 component", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxSBOMWithNoComponents", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMWithNoComponents, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := CompWithName(doc)
+
+		assert.Equal(t, 0.0, got.Score)
+		assert.True(t, got.Ignore, "no components → N/A")
+		assert.Equal(t, got.Desc, "N/A (no components)")
+	})
+
+	t.Run("spdxSBOMWithComponentNameMissing", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMWithComponentNameMissing, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := CompWithName(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "add to 1 component", got.Desc)
+		assert.False(t, got.Ignore)
+	})
 }
 
-func comp(name, version, id string) sbom.GetComponent {
-	c := sbom.NewComponent()
-	c.Name = name
-	c.Version = version
-	c.ID = id
-	return c
+var cdxSBOMComponentWithNameVersion = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2025-01-01T00:00:00Z",
+    "tools": [{ "name": "syft", "version": "0.95.0" }]
+  },
+  "components": [
+    {
+      "type": "library",
+      "name": "A",
+      "version": "1.0.0"
+    }
+  ]
 }
+`)
 
-func spdxDocWithComponents(comps ...sbom.GetComponent) sbom.Document {
-	return sbom.SpdxDoc{
-		SpdxSpec: newSPDXSpec(),
-		Comps:    comps,
-	}
+var spdxSBOMWithComponentNameVersion = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "test-doc",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": ["Tool: syft v0.95.0"]
+  },
+  "packages": [
+    {
+      "name": "A",
+	  "SPDXID": "SPDXRef-A",
+      "versionInfo": "1.0.0"
+    }
+  ]
 }
+`)
 
-func TestCompWithName_SomeMissing(t *testing.T) {
-	doc := spdxDocWithComponents(
-		comp("MainPkg", "1.0.0", "SPDXRef-MainPkg"),
-		comp("", "1.4.0", "SPDXRef-EmptyName"),
-		comp("  ", "0.1.0", "SPDXRef-Whitespace"),
-		comp("Another", "2.0.0", "SPDXRef-Another"),
-	)
-
-	got := CompWithName(doc)
-
-	// 2 named out of 4 → 10 * (2/4) = 5.0
-	assert.InDelta(t, 5.0, got.Score, 1e-9)
-	assert.Equal(t, got.Desc, "add to 2 components")
-	assert.False(t, got.Ignore)
+var cdxSBOMComponentWithNameAndEmptyStringVersion = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2025-01-01T00:00:00Z",
+    "tools": [{ "name": "syft", "version": "0.95.0" }]
+  },
+  "components": [
+    {
+      "type": "library",
+      "name": "A",
+      "version": ""
+    }
+  ]
 }
+`)
 
-func TestCompWithName_NoComponents_NA(t *testing.T) {
-	doc := spdxDocWithComponents() // no components
-
-	got := CompWithName(doc)
-
-	assert.Equal(t, 0.0, got.Score)
-	assert.True(t, got.Ignore, "no components → N/A (ignored so category renormalizes)")
-	assert.Equal(t, got.Desc, "N/A (no components)")
+var spdxSBOMWithComponentsNameAndEmptyStringVersion = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "test-doc",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": ["Tool: syft v0.95.0"]
+  },
+  "packages": [
+    {
+  	  "SPDXID": "SPDXRef-A",
+      "name": "A",
+      "versionInfo": ""
+    }
+  ]
 }
+`)
 
-type miniComp struct {
-	id, name, version string
+var cdxSBOMComponentWithNameAndMissingVersion = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2025-01-01T00:00:00Z",
+    "tools": [{ "name": "syft", "version": "0.95.0" }]
+  },
+  "components": [
+    {
+      "type": "library",
+      "name": "A"
+    }
+  ]
 }
+`)
 
-func makeSPDXDoc(components []miniComp) sbom.Document {
-	var tools []sbom.GetTool
-	tools = append(tools, sbom.Tool{Name: "syft", Version: "v0.95.0"})
-
-	var comps []sbom.GetComponent
-	for _, c := range components {
-		p := sbom.NewComponent()
-		p.ID = c.id
-		p.Name = c.name
-		p.Version = c.version
-		comps = append(comps, p)
-	}
-
-	return sbom.SpdxDoc{
-		SpdxSpec:  newSPDXSpec(),
-		Comps:     comps,
-		SpdxTools: tools,
-	}
+var spdxSBOMWithComponentsNameAndVersionMissing = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "test-doc",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": ["Tool: syft v0.95.0"]
+  },
+  "packages": [
+    {
+  	  "SPDXID": "SPDXRef-A",
+      "name": "A"
+    }
+  ]
 }
+`)
 
-func makeCDXDoc(components []miniComp) sbom.Document {
-	s := sbom.NewSpec()
-	s.Version = "1.6"
-	s.SpecType = "cyclonedx"
-	s.Format = "json"
-	s.Organization = "interlynk"
-	s.CreationTimestamp = "2025-01-01T00:00:00Z"
-	s.Namespace = "urn:uuid:abcd-1234"
-	s.Licenses = append(s.Licenses, licenses.CreateCustomLicense("", "CC0-1.0"))
+func TestCompWithVersion(t *testing.T) {
+	ctx := context.Background()
 
-	var tools []sbom.GetTool
-	tools = append(tools, sbom.Tool{Name: "syft", Version: "v0.95.0"})
-
-	var comps []sbom.GetComponent
-	for _, c := range components {
-		p := sbom.NewComponent()
-		// For CDX, ID maps to bom-ref in your wrapper
-		p.ID = c.id
-		p.Name = c.name
-		p.Version = c.version
-		comps = append(comps, p)
-	}
-
-	return sbom.CdxDoc{
-		CdxSpec:  s,
-		Comps:    comps,
-		CdxTools: tools,
-	}
-}
-
-func TestCompWithVersion_SPdx(t *testing.T) {
-	t.Run("all have versions → 10.0", func(t *testing.T) {
-		doc := makeSPDXDoc([]miniComp{
-			{id: "SPDXRef-A", name: "a", version: "1.0.0"},
-			{id: "SPDXRef-B", name: "b", version: "2.0.0"},
-		})
+	t.Run("cdxSBOMComponentWithNameVersion", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMComponentWithNameVersion, sbom.Signature{})
+		require.NoError(t, err)
 
 		got := CompWithVersion(doc)
 		assert.InDelta(t, 10.0, got.Score, 0.0001)
@@ -142,33 +314,70 @@ func TestCompWithVersion_SPdx(t *testing.T) {
 		assert.False(t, got.Ignore)
 	})
 
-	t.Run("partial versions → 5.0", func(t *testing.T) {
-		doc := makeSPDXDoc([]miniComp{
-			{id: "SPDXRef-A", name: "a", version: "1.0.0"},
-			{id: "SPDXRef-B", name: "b", version: ""},
-		})
+	t.Run("spdxSBOMWithComponentNameVersion", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMWithComponentNameVersion, sbom.Signature{})
+		require.NoError(t, err)
 
 		got := CompWithVersion(doc)
-		assert.InDelta(t, 5.0, got.Score, 0.0001) // 10 * (1/2)
+		assert.InDelta(t, 10.0, got.Score, 0.0001)
+		assert.Equal(t, "complete", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxSBOMComponentWithNameAndEmptyStringVersion", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMComponentWithNameAndEmptyStringVersion, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := CompWithVersion(doc)
+		assert.InDelta(t, 0.0, got.Score, 0.0001)
 		assert.Equal(t, "add to 1 component", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
-	t.Run("none have versions → 0.0", func(t *testing.T) {
-		doc := makeSPDXDoc([]miniComp{
-			{id: "SPDXRef-A", name: "a", version: ""},
-			{id: "SPDXRef-B", name: "b", version: ""},
-		})
+	t.Run("spdxSBOMWithComponentsNameAndEmptyStringVersion", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMWithComponentsNameAndEmptyStringVersion, sbom.Signature{})
+		require.NoError(t, err)
 
 		got := CompWithVersion(doc)
-
 		assert.InDelta(t, 0.0, got.Score, 0.0001)
-		assert.Equal(t, "add to 2 components", got.Desc)
+		assert.Equal(t, "add to 1 component", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
-	t.Run("no components → N/A", func(t *testing.T) {
-		doc := makeSPDXDoc(nil)
+	t.Run("cdxSBOMComponentWithNameAndMissingVersion", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMComponentWithNameAndMissingVersion, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := CompWithVersion(doc)
+		assert.InDelta(t, 0.0, got.Score, 0.0001)
+		assert.Equal(t, "add to 1 component", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxSBOMWithComponentsNameAndVersionMissing", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMWithComponentsNameAndVersionMissing, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := CompWithVersion(doc)
+		assert.InDelta(t, 0.0, got.Score, 0.0001)
+		assert.Equal(t, "add to 1 component", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxSBOMWithNoComponents", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMWithNoComponents, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := CompWithVersion(doc)
+		assert.InDelta(t, 0.0, got.Score, 0.0001)
+		assert.Equal(t, "N/A (no components)", got.Desc)
+		assert.True(t, got.Ignore)
+	})
+
+	t.Run("spdxSBOMWithNoComponents", func(t *testing.T) {
+		ctx := context.Background()
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMWithNoComponents, sbom.Signature{})
+		require.NoError(t, err)
 
 		got := CompWithVersion(doc)
 		assert.InDelta(t, 0.0, got.Score, 0.0001)
@@ -177,66 +386,151 @@ func TestCompWithVersion_SPdx(t *testing.T) {
 	})
 }
 
-func TestCompWithVersion_CycloneDX(t *testing.T) {
-	doc := makeCDXDoc([]miniComp{
-		{id: "bom-ref-a", name: "a", version: "3.1.4"},
-		{id: "bom-ref-b", name: "b", version: "2.0.0"},
-		{id: "bom-ref-c", name: "c", version: ""},
-	})
-
-	got := CompWithVersion(doc)
-
-	// 2/3 → 6.666..., rounded/float compared with delta
-	assert.InDelta(t, (10.0*2.0)/3.0, got.Score, 0.0001)
-	assert.Equal(t, "add to 1 component", got.Desc)
-	assert.False(t, got.Ignore)
+var cdxSBOMComponentWithNameVersionAndMissingID = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2025-01-01T00:00:00Z",
+    "tools": [{ "name": "syft", "version": "0.95.0" }]
+  },
+  "components": [
+    {
+      "type": "library",
+      "name": "A",
+      "version": "1.0.0"
+    }
+  ]
 }
+`)
 
-func TestCompWithUniqLocalIDs_SPDX(t *testing.T) {
-	t.Run("all have local IDs → 10.0", func(t *testing.T) {
-		doc := makeSPDXDoc([]miniComp{
-			{id: "SPDXRef-A", name: "a", version: "1.0.0"},
-			{id: "SPDXRef-B", name: "b", version: "2.0.0"},
-		})
+var spdxSBOMWithComponentNameVersionAndMissingID = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "test-doc",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": ["Tool: syft v0.95.0"]
+  },
+  "packages": [
+    {
+      "name": "A",
+      "versionInfo": "1.0.0"
+    }
+  ]
+}
+`)
+
+var cdxSBOMComponentWithNameVersionEmptyStringID = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2025-01-01T00:00:00Z",
+    "tools": [{ "name": "syft", "version": "0.95.0" }]
+  },
+  "components": [
+    {
+      "type": "library",
+	  "bom-ref": "",
+      "name": "A",
+      "version": "1.0.0"
+    }
+  ]
+}
+`)
+
+var spdxSBOMWithComponentNameVersionAndEmptyStringID = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "test-doc",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": ["Tool: syft v0.95.0"]
+  },
+  "packages": [
+    {
+      "SPDXID": "",
+      "name": "A",
+      "versionInfo": "1.0.0"
+    }
+  ]
+}
+`)
+
+func TestCompWithUniqLocalIDs(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("spdxSBOMWithComponentNameVersionAndID", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMWithComponentNameVersion, sbom.Signature{})
+		require.NoError(t, err)
 
 		got := CompWithUniqLocalIDs(doc)
 		assert.InDelta(t, 10.0, got.Score, 0.0001)
-		assert.Equal(t, "complete", got.Desc) // “unique” per current impl = “present”
+		assert.Equal(t, "complete", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
-	t.Run("some missing IDs → partial", func(t *testing.T) {
-		doc := makeSPDXDoc([]miniComp{
-			{id: "SPDXRef-A", name: "a", version: "1.0.0"},
-			{id: "", name: "b", version: "2.0.0"},
-		})
+	t.Run("cdxSBOMComponentWithNameVersionEmptyStringID", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMComponentWithNameVersionEmptyStringID, sbom.Signature{})
+		require.NoError(t, err)
 
-		out := CompWithUniqLocalIDs(doc)
-		assert.InDelta(t, 5.0, out.Score, 0.0001) // 10 * (1/2)
-		assert.Equal(t, "add to 1 component", out.Desc)
-		assert.False(t, out.Ignore)
+		got := CompWithUniqLocalIDs(doc)
+		assert.InDelta(t, 0.0, got.Score, 0.0001)
+		assert.Equal(t, "add to 1 component", got.Desc)
+		assert.False(t, got.Ignore)
 	})
 
-	t.Run("no components → N/A", func(t *testing.T) {
-		doc := makeSPDXDoc(nil)
+	t.Run("spdxSBOMWithComponentNameVersionAndEmptyStringID", func(t *testing.T) {
+		_, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMWithComponentNameVersionAndEmptyStringID, sbom.Signature{})
+
+		// Since, SPDXID is missing,
+		// therefore, it will return an "error":
+		// "failed to parse SPDX identifier ''"}
+		require.Error(t, err)
+	})
+
+	t.Run("cdxSBOMComponentWithNameVersionAndMissingID", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMComponentWithNameVersionAndMissingID, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := CompWithUniqLocalIDs(doc)
+		assert.InDelta(t, 0.0, got.Score, 0.0001)
+		assert.Equal(t, "add to 1 component", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxSBOMWithComponentNameVersionAndMissingID", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMWithComponentNameVersionAndMissingID, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := CompWithUniqLocalIDs(doc)
+		assert.InDelta(t, 0.0, got.Score, 0.0001)
+		assert.Equal(t, "add to 1 component", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxSBOMWithNoComponents", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMWithNoComponents, sbom.Signature{})
+		require.NoError(t, err)
 
 		out := CompWithUniqLocalIDs(doc)
 		assert.InDelta(t, 0.0, out.Score, 0.0001)
 		assert.Equal(t, "N/A (no components)", out.Desc)
 		assert.True(t, out.Ignore)
 	})
-}
 
-func TestCompWithUniqLocalIDs_CycloneDX(t *testing.T) {
-	doc := makeCDXDoc([]miniComp{
-		{id: "bom-ref-a", name: "a", version: "1.0.0"},
-		{id: "", name: "b", version: "2.0.0"},
-		{id: "bom-ref-c", name: "c", version: "2.0.1"},
+	t.Run("spdxSBOMWithNoComponents", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMWithNoComponents, sbom.Signature{})
+		require.NoError(t, err)
+
+		out := CompWithUniqLocalIDs(doc)
+		assert.InDelta(t, 0.0, out.Score, 0.0001)
+		assert.Equal(t, "N/A (no components)", out.Desc)
+		assert.True(t, out.Ignore)
 	})
-
-	got := CompWithUniqLocalIDs(doc)
-	// 2/3 → 6.666...
-	assert.InDelta(t, (10.0*2.0)/3.0, got.Score, 0.0001)
-	assert.Equal(t, "add to 1 component", got.Desc)
-	assert.False(t, got.Ignore)
 }

@@ -211,7 +211,7 @@ var CompKeyToEvaluatingFunction = map[string]catalog.ComprFeatEval{
 	"sbom_signature":             extractors.SBOMSignature,
 
 	"comp_with_dependencies":     extractors.CompWithDependencies,
-	"sbom_completeness_declared": extractors.CompWithCompleteness,
+	"sbom_completeness_declared": extractors.SBOMWithDeclaredCompleteness,
 	"sbom_primary_component":     extractors.SBOMWithPrimaryComponent,
 	"comp_with_source_code":      extractors.CompWithSourceCode,
 	"comp_with_supplier":         extractors.CompWithSupplier,
@@ -625,7 +625,7 @@ var CatCompletenessSpec = catalog.ComprCatSpec{
 	Weight:      12,
 	Features: []catalog.ComprFeatSpec{
 		{Key: "comp_with_dependencies", Name: "Component With Dependencies", Weight: 0.25, Ignore: false, Evaluate: extractors.CompWithDependencies},
-		{Key: "sbom_completeness_declared", Name: "Component With Declared Completeness", Weight: 0.15, Ignore: false, Evaluate: extractors.CompWithCompleteness},
+		{Key: "sbom_completeness_declared", Name: "Component With Declared Completeness", Weight: 0.15, Ignore: false, Evaluate: extractors.SBOMWithDeclaredCompleteness},
 		{Key: "sbom_primary_component", Name: "Primary Component", Weight: 0.20, Ignore: false, Evaluate: extractors.SBOMWithPrimaryComponent},
 		{Key: "comp_with_source_code", Name: "Component With Source Code", Weight: 0.15, Ignore: false, Evaluate: extractors.CompWithSourceCode},
 		{Key: "comp_with_supplier", Name: "Component With Supplier", Weight: 0.15, Ignore: false, Evaluate: extractors.CompWithSupplier},

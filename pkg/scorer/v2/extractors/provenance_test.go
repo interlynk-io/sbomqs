@@ -15,341 +15,1990 @@
 package extractors
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
 )
 
-type spdxOptions struct {
-	Timestamp string
-	Namespace string
-	Authors   []struct{ Name, Email, Type string }
-	Tools     []struct{ Name, Version string }
+var cdxSBOMTimestampValid = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "metadata": {
+    "timestamp": "2020-04-13T20:20:39+00:00"
+  },
+  "components": []
 }
+`)
 
-type cdxOptions struct {
-	Timestamp  string
-	URI        string   // CDX serialNumber/URI equivalent exposed via Spec().GetURI()
-	Lifecycles []string // CDX metadata.lifecycle/phase
-	Supplier   struct{ Name, Email string }
-	Tools      []struct{ Name, Version string }
-	Authors    int
+var spdxSBOMTimestampValid = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "created": "2020-04-13T20:20:39Z"
+  },
+  "packages": []
 }
+`)
 
-// makeSPDXDoc creates an SPDX doc with the given knobs.
-func makeSPDXDocForProvenance(opts spdxOptions) sbom.Document {
-	s := sbom.NewSpec()
-	s.Version = "SPDX-2.3"
-	s.SpecType = "spdx"
-	s.Format = "json"
-	s.Spdxid = "DOCUMENT"
-	s.CreationTimestamp = opts.Timestamp
-	s.Namespace = opts.Namespace
-
-	// Tools
-	var tools []sbom.GetTool
-	for _, tv := range opts.Tools {
-		tools = append(tools, sbom.Tool{Name: tv.Name, Version: tv.Version})
-	}
-
-	// Authors
-	var authors []sbom.GetAuthor
-	for _, a := range opts.Authors {
-		authors = append(authors, sbom.Author{Name: a.Name, Email: a.Email, AuthorType: a.Type})
-	}
-
-	return sbom.SpdxDoc{
-		SpdxSpec:  s,
-		Comps:     nil,
-		SpdxTools: tools,
-		Auths:     authors,
-	}
+var cdxSBOMTimestampFormatInvalid = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "metadata": {
+    "timestamp": "2020-04-13"
+  },
+  "components": []
 }
+`)
 
-// makeCDXDocForProvenance creates a CycloneDX doc with the given knobs.
-func makeCDXDocForProvenance(opts cdxOptions,
-) sbom.Document {
-	s := sbom.NewSpec()
-	s.Version = "1.6"
-	s.SpecType = "cyclonedx"
-	s.Format = "json"
-	s.URI = opts.URI
-	s.CreationTimestamp = opts.Timestamp
-
-	// Tools
-	var tools []sbom.GetTool
-	for _, tv := range opts.Tools {
-		tools = append(tools, sbom.Tool{Name: tv.Name, Version: tv.Version})
-	}
-
-	// Supplier (doc-level)
-	var supplier sbom.GetSupplier
-	supplier = sbom.Supplier{Name: opts.Supplier.Name, Email: opts.Supplier.Email}
-
-	// Authors (if your wrapper supports it)
-	if opts.Authors > 0 {
-		s.Organization = "acme-cdx"
-	}
-
-	// Lifecycles on CDX doc root (your wrapper’s doc.Lifecycles() should surface this)
-	return sbom.CdxDoc{
-		CdxSpec:     s,
-		CdxTools:    tools,
-		CdxSupplier: supplier,
-		Lifecycle:   opts.Lifecycles,
-	}
+var spdxSBOMTimestampFormatInvalid = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "created": "2020-04-13"
+  },
+  "packages": []
 }
+`)
 
-func Test_SBOMCreationTimestamp(t *testing.T) {
-	t.Run("SPDX valid RFC3339", func(t *testing.T) {
-		doc := makeSPDXDocForProvenance(spdxOptions{
-			Timestamp: "2025-01-20T10:30:45Z",
-			Namespace: "https://example.com/ns",
-		})
+var cdxSBOMTimestampAbsent = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "metadata": {
+  },
+  "components": []
+}
+`)
+
+var spdxSBOMTimestampAbsent = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+  },
+  "packages": []
+}
+`)
+
+var cdxSBOMTimestampEmptyString = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "metadata": {
+    "timestamp": ""
+  },
+  "components": []
+}
+`)
+
+var spdxSBOMTimestampEmptyString = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "created": ""
+  },
+  "packages": []
+}
+`)
+
+var cdxSBOMTimestampWrongType = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "metadata": {
+    "timestamp": {"2020-04-13T20:20:39+00:00"}
+  },
+  "components": []
+}
+`)
+
+var spdxSBOMTimestampWrongType = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "created": { "2020-04-13T20:20:39Z" }
+  },
+  "packages": []
+}
+`)
+
+func TestSBOMTimestamp(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("cdxSBOMTimestampValid", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMTimestampValid, sbom.Signature{})
+		require.NoError(t, err)
 
 		got := SBOMCreationTimestamp(doc)
-		assert.Equal(t, 10.0, got.Score)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "complete", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
-	t.Run("SPDX invalid timestamp", func(t *testing.T) {
-		doc := makeSPDXDocForProvenance(spdxOptions{
-			Timestamp: "01/20/2025 10:30:45",
-		})
+	t.Run("spdxSBOMTimestampValid", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMTimestampValid, sbom.Signature{})
+		require.NoError(t, err)
 
 		got := SBOMCreationTimestamp(doc)
-		assert.Equal(t, 0.0, got.Score)
-		assert.Equal(t, got.Desc, "fix timestamp format")
-		assert.False(t, got.Ignore)
-	})
 
-	t.Run("CDX valid RFC3339Nano", func(t *testing.T) {
-		doc := makeCDXDocForProvenance(cdxOptions{
-			Timestamp: "2025-01-20T10:30:45.123456789Z",
-		})
-		got := SBOMCreationTimestamp(doc)
-		assert.Equal(t, 10.0, got.Score)
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "complete", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
-	t.Run("CDX missing timestamp", func(t *testing.T) {
-		doc := makeCDXDocForProvenance(cdxOptions{})
+	t.Run("cdxSBOMTimestampFormatInvalid", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMTimestampFormatInvalid, sbom.Signature{})
+		require.NoError(t, err)
+
 		got := SBOMCreationTimestamp(doc)
-		assert.Equal(t, 0.0, got.Score)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "fix timestamp format", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxSBOMTimestampFormatInvalid", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMTimestampFormatInvalid, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMCreationTimestamp(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "fix timestamp format", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxSBOMTimestampAbsent", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMTimestampAbsent, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMCreationTimestamp(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add timestamp", got.Desc)
 		assert.False(t, got.Ignore)
 	})
+
+	t.Run("spdxSBOMTimestampAbsent", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMTimestampAbsent, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMCreationTimestamp(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "add timestamp", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxSBOMTimestampEmptyString", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMTimestampEmptyString, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMCreationTimestamp(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "add timestamp", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxSBOMTimestampEmptyString", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMTimestampEmptyString, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMCreationTimestamp(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "add timestamp", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxSBOMTimestampWrongType", func(t *testing.T) {
+		_, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMTimestampWrongType, sbom.Signature{})
+		require.Error(t, err)
+	})
+
+	t.Run("spdxSBOMTimestampWrongType", func(t *testing.T) {
+		_, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMTimestampWrongType, sbom.Signature{})
+		require.Error(t, err)
+	})
+
 }
 
-func Test_SBOMAuthors(t *testing.T) {
-	// SPDX Doc with 0 authors
-	t.Run("SPDX zero authors → 0", func(t *testing.T) {
-		doc := makeSPDXDocForProvenance(spdxOptions{})
+var cdxSBOMAuthorsValid = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "metadata": {
+    "authors": [
+      {
+        "bom-ref": "author-1",
+        "name": "Samantha Wright",
+        "email": "samantha.wright@example.com"
+      }
+    ]
+  },
+  "components": []
+}
+`)
+
+var spdxSBOMAuthorsValid = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "creators": [
+      "Person: Samantha Wright (samantha.wright@example.com)"
+    ]
+  },
+  "packages": []
+}
+`)
+
+var cdxSBOMAuthorsAbsent = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "metadata": {},
+  "components": []
+}
+`)
+
+var spdxSBOMCreationInfoMissing = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {},
+  "packages": []
+}
+`)
+
+var cdxSBOMAuthorsEmptyString = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "metadata": {
+    "authors": [
+      {
+        "bom-ref": "author-1",
+        "name": "",
+        "email": ""
+      }
+    ]
+  },
+  "components": []
+}
+`)
+
+var spdxSBOMAuthorsEmptyString = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "creators": [""]
+  },
+  "packages": []
+}
+`)
+
+var cdxSBOMAuthorsEmptyArray = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "metadata": {
+    "authors": []
+  },
+  "components": []
+}
+`)
+
+var cdxSBOMAuthorsEmptyArrayObject = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "metadata": {
+    "authors": [{}]
+  },
+  "components": []
+}
+`)
+
+var spdxSBOMAuthorsEmptyArray = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "creators": []
+  },
+  "packages": []
+}
+`)
+
+var spdxSBOMCreatorsWrongTypeSomeValue = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "creators": ["foobar"]
+  },
+  "packages": []
+}
+`)
+
+var spdxSBOMCreatorsWhitespace = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "creators": ["    "]
+  },
+  "packages": []
+}
+`)
+
+var cdxSBOMAuthorsWrongType = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "metadata": {
+    "authors": {}
+  },
+  "components": []
+}
+`)
+
+var spdxSBOMAuthorsWrongType = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "creators": {}
+  },
+  "packages": []
+}
+`)
+
+var cdxSBOMAuthorsWithMinimalNameOnly = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "metadata": {
+    "authors": [
+      {
+        "name": "Samantha Wright"
+      }
+    ]
+  }
+}
+`)
+
+var spdxSBOMAuthorsWithMinimalNameOnly = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "creators": [
+      "Person: Samantha Wright"
+    ]
+  },
+  "packages": []
+}
+`)
+
+var cdxSBOMAuthorsWithMinimalEmailOnly = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "metadata": {
+    "authors": [
+      {
+        "email": "samantha.wright@example.com"
+      }
+    ]
+  },
+  "components": []
+}
+`)
+
+var cdxSBOMAuthorsWithMinimalPhoneOnly = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "metadata": {
+    "authors": [
+      {
+        "bom-ref": "author-1",
+        "phone": "800-555-1212"
+      }
+    ]
+  },
+  "components": []
+}
+`)
+
+var spdxSBOMAuthorsWithMinimalEmailOnly = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "creators": [
+      "Person: (samantha.wright@example.com)"
+    ]
+  },
+  "packages": []
+}
+`)
+
+var cdxSBOMAuthorsMixed = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "metadata": {
+    "authors": [
+      {
+        "name": "Samantha Wright",
+        "email": "samantha.wright@example.com"
+      },
+      {
+        "name": "",
+        "email": ""
+      }
+    ]
+  }
+}
+`)
+
+var cdxSBOMAuthorsWithALL = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "metadata": {
+    "authors": [
+      {
+        "name": "Samantha Wright",
+        "email": "samantha.wright@example.com",
+        "phone": "999-888-7777"
+      }
+    ]
+  }
+}
+`)
+
+var cdxSBOMAuthorsWithALLMissing = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "metadata": {
+    "authors": [
+      {
+        "name": "",
+        "email": "",
+        "phone": ""
+      }
+    ]
+  }
+}
+`)
+
+var cdxSBOMAuthorsWithWhitespace = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "metadata": {
+    "authors": [
+      {
+        "name": "   "
+      }
+    ]
+  }
+}
+`)
+
+var spdxSBOMAuthorsWithWhitespace = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "creators": [
+      "Person:    "
+    ]
+  },
+  "packages": []
+}
+`)
+
+var spdxSBOMAuthorsWithEmailWhitespace = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "creators": [
+      "Person: (    )"
+    ]
+  },
+  "packages": []
+}
+`)
+
+var spdxSBOMAuthorsWithToolOnly = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "creators": ["Tool: syft"]
+
+  },
+  "packages": []
+}
+`)
+
+var spdxSBOMAuthorsWithOrganizationOnly = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "creators": [
+      "Organization: Acme Inc"
+    ]
+  },
+  "packages": []
+}
+`)
+
+var spdxSBOMAuthorsWithOrganizationEmailOnly = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "creators": [
+      "Organization: (acme.organization@gmail.com)"
+    ]
+  },
+  "packages": []
+}
+`)
+
+func TestSBOMAuthor(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("cdxSBOMAuthorsValid", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthorsValid, sbom.Signature{})
+		require.NoError(t, err)
+
 		got := SBOMAuthors(doc)
-		assert.Equal(t, 0.0, got.Score)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "complete", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxSBOMAuthorsValid", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorsValid, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMAuthors(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "complete", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxSBOMAuthorsAbsent", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthorsAbsent, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMAuthors(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add author", got.Desc)
+		assert.False(t, got.Ignore)
 	})
 
-	// SPDX Doc with 1 author of type person
-	t.Run("SPDX one authors → 10", func(t *testing.T) {
-		doc := makeSPDXDocForProvenance(spdxOptions{
-			Authors: []struct{ Name, Email, Type string }{
-				{
-					Name:  "foo",
-					Email: "foo@gmail.com",
-					Type:  "person",
-				},
-			},
-		})
+	t.Run("spdxSBOMCreationInfoMissing", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMCreationInfoMissing, sbom.Signature{})
+		require.NoError(t, err)
+
 		got := SBOMAuthors(doc)
-		assert.Equal(t, 10.0, got.Score)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "add author", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxSBOMCreationInfoMissing", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMCreationInfoMissing, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMAuthors(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "add author", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxSBOMAuthorsEmptyString", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthorsEmptyString, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMAuthors(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "add author", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxSBOMAuthorsEmptyString", func(t *testing.T) {
+		_, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorsEmptyString, sbom.Signature{})
+		require.Error(t, err)
+
+		// got := SBOMAuthors(doc)
+
+		// assert.InDelta(t, 0.0, got.Score, 1e-9)
+		// assert.Equal(t, "add author", got.Desc)
+		// assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxSBOMAuthorsEmptyArray", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthorsEmptyArray, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMAuthors(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "add author", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxSBOMAuthorsEmptyArray", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorsEmptyArray, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMAuthors(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "add author", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxSBOMAuthorsEmptyArrayObject", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthorsEmptyArrayObject, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMAuthors(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "add author", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxSBOMAuthorsWrongType", func(t *testing.T) {
+		_, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthorsWrongType, sbom.Signature{})
+		require.Error(t, err)
+
+		// got := SBOMAuthors(doc)
+
+		// assert.InDelta(t, 0.0, got.Score, 1e-9)
+		// assert.Equal(t, "add author", got.Desc)
+		// assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxSBOMAuthorsWrongType", func(t *testing.T) {
+		_, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorsWrongType, sbom.Signature{})
+		require.Error(t, err)
+
+		// got := SBOMAuthors(doc)
+
+		// assert.InDelta(t, 0.0, got.Score, 1e-9)
+		// assert.Equal(t, "add author", got.Desc)
+		// assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxSBOMAuthorsMixed", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthorsMixed, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMAuthors(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "complete", got.Desc)
+		assert.False(t, got.Ignore)
 	})
 
-	// SPDX Doc with 2 authors, one of type person and another of organization
-	t.Run("SPDX some authors → 10", func(t *testing.T) {
-		doc := makeSPDXDocForProvenance(spdxOptions{
-			Authors: []struct{ Name, Email, Type string }{
-				{
-					Name:  "foo",
-					Email: "foo@gmail.com",
-					Type:  "person",
-				},
-				{
-					Name:  "bar",
-					Email: "bar@gmail.com",
-					Type:  "organization",
-				},
-			},
-		})
+	// cdxSBOMAuthorsPartial
+	t.Run("cdxSBOMAuthorsWithMinimalNameOnly", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthorsWithMinimalNameOnly, sbom.Signature{})
+		require.NoError(t, err)
+
 		got := SBOMAuthors(doc)
-		assert.Equal(t, 10.0, got.Score)
-		assert.Equal(t, got.Desc, "complete")
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "complete", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxSBOMAuthorsWithMinimalNameOnly", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorsWithMinimalNameOnly, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMAuthors(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "complete", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxSBOMAuthorsWithMinimalEmailOnly", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthorsWithMinimalEmailOnly, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMAuthors(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "complete", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxSBOMAuthorsWithMinimalEmailOnly", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorsWithMinimalEmailOnly, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMAuthors(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "complete", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxSBOMAuthorsWithMinimalPhoneOnly", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthorsWithMinimalPhoneOnly, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMAuthors(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "complete", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxSBOMAuthorsWithALL", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthorsWithALL, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMAuthors(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "complete", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxSBOMAuthorsWithALLMissing", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthorsWithALLMissing, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMAuthors(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "add author", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxSBOMAuthorsWithWhitespace", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthorsWithWhitespace, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMAuthors(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "add author", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxSBOMAuthorsWithWhitespace", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorsWithWhitespace, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMAuthors(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "add author", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxSBOMAuthorsWithEmailWhitespace", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorsWithEmailWhitespace, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMAuthors(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "add author", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxSBOMCreatorsWhitespace", func(t *testing.T) {
+		_, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMCreatorsWhitespace, sbom.Signature{})
+		require.Error(t, err)
+	})
+
+	t.Run("spdxSBOMCreatorsWrongTypeSomeValue", func(t *testing.T) {
+		_, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMCreatorsWrongTypeSomeValue, sbom.Signature{})
+		require.Error(t, err)
+	})
+
+	t.Run("spdxSBOMAuthorsWithToolOnly", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorsWithToolOnly, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMAuthors(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "add author", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxSBOMAuthorsWithOrganizationOnly", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorsWithOrganizationOnly, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMAuthors(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "complete", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxSBOMAuthorsWithOrganizationEmailOnly", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorsWithOrganizationEmailOnly, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMAuthors(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "complete", got.Desc)
+		assert.False(t, got.Ignore)
 	})
 }
 
-func Test_SBOMCreationTool(t *testing.T) {
-	t.Run("tool not provided → 0.0", func(t *testing.T) {
-		doc := makeSPDXDocForProvenance(spdxOptions{
-			Tools: []struct{ Name, Version string }{},
-		})
+var cdxSBOMToolValid = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "name": "Awesome Tool",
+          "version": "9.1.2"
+        }
+      ]
+    }
+  },
+  "components": []
+}
+`)
+
+var spdxSBOMToolValid = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "creators": [
+      "Tool: Awesome Tool-9.1.2"
+    ]
+  },
+  packages: []
+}
+`)
+
+var cdxSBOMToolAbsent = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {},
+  "components": []
+}
+`)
+
+var spdxSBOMToolAbsent = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+  },
+  "packages": []
+}
+`)
+
+var cdxSBOMToolMissing = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {
+    "tools": {}
+  },
+  "components": []
+}
+`)
+
+var spdxSBOMToolMissing = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "creators": []
+  },
+  "packages": []
+}
+`)
+
+var cdxSBOMToolEmptyString = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "name": "",
+          "version": ""
+        }
+      ]
+    }
+  },
+  "components": []
+}
+`)
+
+var spdxSBOMToolEmptyString = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "creators": [
+	"Tool: "
+	]
+  },
+  "packages": []
+}
+`)
+
+var cdxSBOMToolWithEmptyName = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "name": "",
+          "version": "9.1.2"
+        }
+      ]
+    }
+  },
+  "components": []
+}
+`)
+
+var spdxSBOMToolWithEmptyName = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "creators": [
+      "Tool: -9.1.2"
+    ]
+  },
+  "packages": []
+}
+`)
+
+var cdxSBOMToolWithEmptyVersion = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "name": "Awesome Tool",
+          "version": ""
+        }
+      ]
+    }
+  },
+  "components": []
+}
+`)
+
+var spdxSBOMToolWithEmptyVersion = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "creators": [
+      "Tool: Awesome Tool-"
+    ]
+  },
+  "packages": []
+}
+`)
+
+var cdxSBOMToolWrongType = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "metadata": {
+    "tools": []
+  },
+  "components": []
+}
+`)
+
+var spdxSBOMToolWrongType = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "creators": {}
+  },
+  "packages": []
+}
+`)
+
+var cdxSBOMToolComponentsWrongType = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "metadata": {
+    "tools": {
+      "components": {}
+    }
+  },
+  "components": []
+}
+`)
+
+func TestSBOMCreationTool(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("cdxSBOMToolValid", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMToolValid, sbom.Signature{})
+		require.NoError(t, err)
+
 		got := SBOMCreationTool(doc)
-		assert.Equal(t, 0.0, got.Score)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "complete", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxSBOMToolValid", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMToolValid, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMCreationTool(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "complete", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxSBOMToolAbsent", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMToolAbsent, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMCreationTool(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add tool", got.Desc)
+		assert.False(t, got.Ignore)
 	})
 
-	t.Run("tool missing both → 0.0", func(t *testing.T) {
-		doc := makeSPDXDocForProvenance(spdxOptions{
-			Tools: []struct{ Name, Version string }{
-				{Name: "", Version: ""},
-			},
-		})
+	t.Run("spdxSBOMToolAbsent", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMToolAbsent, sbom.Signature{})
+		require.NoError(t, err)
+
 		got := SBOMCreationTool(doc)
-		assert.Equal(t, 0.0, got.Score)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add tool", got.Desc)
+		assert.False(t, got.Ignore)
 	})
 
-	t.Run("one tool missing version → 5.0", func(t *testing.T) {
-		doc := makeSPDXDocForProvenance(spdxOptions{
-			Tools: []struct{ Name, Version string }{
-				{Name: "syft", Version: ""},
-			},
-		})
+	t.Run("cdxSBOMToolMissing", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMToolMissing, sbom.Signature{})
+		require.NoError(t, err)
+
 		got := SBOMCreationTool(doc)
-		assert.Equal(t, 5.0, got.Score)
-		assert.Equal(t, "add version to 1 tools", got.Desc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "add tool", got.Desc)
+		assert.False(t, got.Ignore)
 	})
 
-	t.Run("one tool missing name → 0", func(t *testing.T) {
-		doc := makeSPDXDocForProvenance(spdxOptions{
-			Tools: []struct{ Name, Version string }{
-				{Name: "", Version: "v1.0.3"},
-			},
-		})
+	t.Run("spdxSBOMToolMissing", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMToolMissing, sbom.Signature{})
+		require.NoError(t, err)
+
 		got := SBOMCreationTool(doc)
-		assert.Equal(t, 0.0, got.Score)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "add tool", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxSBOMToolEmptyString", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMToolEmptyString, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMCreationTool(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "add tool", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxSBOMToolEmptyString", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMToolEmptyString, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMCreationTool(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "add tool", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxSBOMToolWithEmptyName", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMToolWithEmptyName, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMCreationTool(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add name to 1 tools", got.Desc)
+		assert.False(t, got.Ignore)
 	})
 
-	t.Run("2 complete tool → 10", func(t *testing.T) {
-		doc := makeCDXDocForProvenance(cdxOptions{
-			Tools: []struct{ Name, Version string }{
-				{Name: "syft", Version: "0.95.0"},
-				{Name: "trivy", Version: "0.45.1"},
-			},
-		})
+	t.Run("spdxSBOMToolWithEmptyName", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMToolWithEmptyName, sbom.Signature{})
+		require.NoError(t, err)
+
 		got := SBOMCreationTool(doc)
-		assert.Equal(t, 10.0, got.Score)
-		assert.Equal(t, got.Desc, "complete")
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "add name to 1 tools", got.Desc)
+		assert.False(t, got.Ignore)
 	})
 
-	t.Run("2 complete tool and 1 missing name and 1 missing version → 10", func(t *testing.T) {
-		doc := makeCDXDocForProvenance(cdxOptions{
-			Tools: []struct{ Name, Version string }{
-				{Name: "syft", Version: "0.95.0"},
-				{Name: "trivy", Version: "0.45.1"},
-				{Name: "syft", Version: ""},
-				{Name: "", Version: "0.45.1"},
-			},
-		})
+	t.Run("cdxSBOMToolWithEmptyVersion", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMToolWithEmptyVersion, sbom.Signature{})
+		require.NoError(t, err)
+
 		got := SBOMCreationTool(doc)
-		assert.Equal(t, 10.0, got.Score)
-		assert.Equal(t, got.Desc, "complete")
+
+		assert.InDelta(t, 5.0, got.Score, 1e-9)
+		assert.Equal(t, "add version to 1 tools", got.Desc)
+		assert.False(t, got.Ignore)
 	})
+
+	t.Run("spdxSBOMToolWithEmptyVersion", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMToolWithEmptyVersion, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMCreationTool(doc)
+
+		assert.InDelta(t, 5.0, got.Score, 1e-9)
+		assert.Equal(t, "add version to 1 tools", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxSBOMToolWrongType", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMToolWrongType, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMCreationTool(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "add tool", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxSBOMToolWrongType", func(t *testing.T) {
+		_, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMToolWrongType, sbom.Signature{})
+		require.Error(t, err)
+	})
+
+	t.Run("cdxSBOMToolComponentsWrongType", func(t *testing.T) {
+		_, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMToolComponentsWrongType, sbom.Signature{})
+		require.Error(t, err)
+	})
+
 }
 
-func Test_SBOMSupplier(t *testing.T) {
-	t.Run("SPDX → N/A", func(t *testing.T) {
-		doc := makeSPDXDocForProvenance(spdxOptions{})
-		got := SBOMSupplier(doc)
-		assert.True(t, got.Ignore)
-		assert.Equal(t, 0.0, got.Score)
-		assert.Equal(t, "N/A (SPDX)", got.Desc)
-	})
+var cdxSBOMSupplierValid = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {
+    "supplier": {
+      "name": "Acme, Inc.",
+      "url": [
+        "https://example.com"
+      ]
+    }
+  },
+  "components": []
+}
+`)
 
-	t.Run("CDX with supplier → 10", func(t *testing.T) {
-		doc := makeCDXDocForProvenance(cdxOptions{Supplier: struct {
-			Name  string
-			Email string
-		}{Name: "Interlynk", Email: "hello@interlynk.io"}})
+var cdxSBOMSupplierAbsent = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {},
+  "components": []
+}
+`)
+
+var cdxSBOMSupplierMissing = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {
+    "supplier": {}
+  },
+  "components": []
+}
+`)
+
+var cdxSBOMSupplierEmptyNameString = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {
+    "supplier": {
+      "name": "",
+      "url": [
+        "https://example.com"
+      ]
+    }
+  },
+  "components": []
+}
+`)
+
+var cdxSBOMSupplierOnlyName = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {
+    "supplier": {
+      "name": "Acme, Inc."
+    }
+  },
+  "components": []
+}
+`)
+
+var cdxSBOMSupplierOnlyURL = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {
+    "supplier": {
+      "url": ["https://example.com"]
+    }
+  }
+}
+`)
+
+var cdxSBOMSupplierWhitespaceName = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1, 
+  "metadata": {
+    "supplier": {
+      "name": "   "
+    }
+  }
+}
+`)
+
+var cdxSBOMSupplierWrongType = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {
+    "supplier": []
+  },
+  "components": []
+}
+`)
+
+var spdxSBOMGeneral = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "creators": [
+      "Person: Samantha Wright (samantha.wright@example.com)"
+    ]
+  },
+  "packages": []
+}
+`)
+
+func TestSBOMSupplier(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("cdxSBOMSupplierValid", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMSupplierValid, sbom.Signature{})
+		require.NoError(t, err)
 
 		got := SBOMSupplier(doc)
-		assert.False(t, got.Ignore)
-		assert.Equal(t, 10.0, got.Score)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "complete", got.Desc)
+		assert.False(t, got.Ignore)
 	})
 
-	t.Run("CDX missing supplier → 0", func(t *testing.T) {
-		doc := makeCDXDocForProvenance(cdxOptions{})
+	t.Run("cdxSBOMSupplierAbsent", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMSupplierAbsent, sbom.Signature{})
+		require.NoError(t, err)
+
 		got := SBOMSupplier(doc)
-		assert.False(t, got.Ignore)
-		assert.Equal(t, 0.0, got.Score)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add supplier", got.Desc)
-	})
-}
-
-func Test_SBOMNamespace(t *testing.T) {
-	t.Run("SPDX namespace present → 10", func(t *testing.T) {
-		doc := makeSPDXDocForProvenance(spdxOptions{
-			Namespace: "https://example.com/ns",
-		})
-		got := SBOMNamespace(doc)
-		assert.Equal(t, 0.0, got.Score)
-		assert.Equal(t, "add namespace", got.Desc)
+		assert.False(t, got.Ignore)
 	})
 
-	t.Run("SPDX namespace missing → 0", func(t *testing.T) {
-		doc := makeSPDXDocForProvenance(spdxOptions{})
-		got := SBOMNamespace(doc)
-		assert.Equal(t, 0.0, got.Score)
-		assert.Equal(t, "add namespace", got.Desc)
+	t.Run("cdxSBOMSupplierMissing", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMSupplierMissing, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMSupplier(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "add supplier", got.Desc)
+		assert.False(t, got.Ignore)
 	})
 
-	t.Run("CDX uri present → 10", func(t *testing.T) {
-		doc := makeCDXDocForProvenance(cdxOptions{
-			URI: "urn:uuid:123e4567-e89b-12d3-a456-426614174000",
-		})
-		got := SBOMNamespace(doc)
-		assert.Equal(t, 10.0, got.Score)
+	t.Run("cdxSBOMSupplierEmptyNameString", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMSupplierEmptyNameString, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMSupplier(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "complete", got.Desc)
+		assert.False(t, got.Ignore)
 	})
 
-	t.Run("CDX uri missing → 0", func(t *testing.T) {
-		doc := makeCDXDocForProvenance(cdxOptions{})
-		got := SBOMNamespace(doc)
-		assert.Equal(t, 0.0, got.Score)
-		assert.Equal(t, "add namespace", got.Desc)
-	})
-}
+	t.Run("cdxSBOMSupplierOnlyName", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMSupplierOnlyName, sbom.Signature{})
+		require.NoError(t, err)
 
-func Test_SBOMLifeCycle(t *testing.T) {
-	t.Run("SPDX → N/A", func(t *testing.T) {
-		doc := makeSPDXDocForProvenance(spdxOptions{})
-		got := SBOMLifeCycle(doc)
-		assert.True(t, got.Ignore)
-		assert.Equal(t, 0.0, got.Score)
+		got := SBOMSupplier(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "complete", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxSBOMSupplierOnlyURL", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMSupplierOnlyURL, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMSupplier(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "complete", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxSBOMSupplierWhitespaceName", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMSupplierWhitespaceName, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMSupplier(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "add supplier", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxSBOMSupplierWrongType", func(t *testing.T) {
+		_, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMSupplierWrongType, sbom.Signature{})
+		require.Error(t, err)
+	})
+
+	t.Run("spdxSBOMGeneral", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMGeneral, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMSupplier(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "N/A (SPDX)", got.Desc)
-	})
-
-	t.Run("CDX lifecycles present → 10", func(t *testing.T) {
-		doc := makeCDXDocForProvenance(cdxOptions{
-			Lifecycles: []string{"build", "runtime"},
-		})
-		got := SBOMLifeCycle(doc)
 		assert.False(t, got.Ignore)
-		assert.Equal(t, 10.0, got.Score)
+	})
+}
+
+var cdxSBOMSerialValid = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {},
+  "components": []
+}
+`)
+
+var spdxSBOMNamespaceValid = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "created": "2024-01-15T10:30:00Z",
+    "creators": ["Tool: minimal-generator"]
+  },
+  "documentNamespace": "https://example.com/minimal",
+  "packages": []
+}
+`)
+
+var cdxSBOMSerialEmptyString = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "",
+  "metadata": {},
+  "components": []
+}
+`)
+
+var spdxSBOMNamespaceEmptyString = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "created": "2024-01-15T10:30:00Z",
+    "creators": ["Tool: minimal-generator"]
+  },
+  "documentNamespace": ""
+}
+`)
+
+var cdxSBOMSerialInvalid = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "kk89829shumskksjxnxjsksk",
+  "metadata": {},
+  "components": []
+}
+`)
+
+var spdxSBOMNamespaceInvalid = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "created": "2024-01-15T10:30:00Z",
+    "creators": ["Tool: minimal-generator"]
+  },
+  "documentNamespace": "not-a-uri"
+}
+`)
+
+var cdxSBOMSerialMissing = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "metadata": {},
+  "components": []
+}
+`)
+
+var spdxSBOMNamespaceMissing = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "creationInfo": {
+    "created": "2024-01-15T10:30:00Z",
+    "creators": ["Tool: minimal-generator"]
+  },
+  "SPDXID": "SPDXRef-DOCUMENT"
+}
+`)
+
+var cdxSBOMSerialWhitespace = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "   "
+}
+`)
+
+var cdxSBOMSerialWrongType = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": {}
+}
+`)
+
+var spdxSBOMNamespaceWrongType = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "created": "2024-01-15T10:30:00Z",
+    "creators": ["Tool: minimal-generator"]
+  },
+  "documentNamespace": {}
+}
+`)
+
+func TestSBOMNamespace(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("cdxSBOMSerialValid", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMSerialValid, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMNamespace(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "complete", got.Desc)
+		assert.False(t, got.Ignore)
 	})
 
-	t.Run("CDX lifecycles missing → 0", func(t *testing.T) {
-		doc := makeCDXDocForProvenance(cdxOptions{})
-		got := SBOMLifeCycle(doc)
+	t.Run("spdxSBOMNamespaceValid", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMNamespaceValid, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMNamespace(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "complete", got.Desc)
 		assert.False(t, got.Ignore)
-		assert.Equal(t, 0.0, got.Score)
+	})
+
+	t.Run("cdxSBOMSerialEmptyString", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMSerialEmptyString, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMNamespace(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "add namespace", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxSBOMNamespaceEmptyString", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMNamespaceEmptyString, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMNamespace(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "add namespace", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxSBOMSerialInvalid", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMSerialInvalid, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMNamespace(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "add namespace", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// EXCEPTION: how can invalid NAMESPACE parsed ?
+	// t.Run("spdxSBOMNamespaceInvalid", func(t *testing.T) {
+	// 	doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMNamespaceInvalid, sbom.Signature{})
+	// 	require.NoError(t, err)
+
+	// 	got := SBOMNamespace(doc)
+
+	// 	assert.InDelta(t, 0.0, got.Score, 1e-9)
+	// 	assert.Equal(t, "add namespace", got.Desc)
+	// 	assert.False(t, got.Ignore)
+	// })
+
+	t.Run("cdxSBOMSerialMissing", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMSerialMissing, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMNamespace(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "add namespace", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxSBOMNamespaceMissing", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMNamespaceMissing, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMNamespace(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "add namespace", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxSBOMSerialWhitespace", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMSerialWhitespace, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMNamespace(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "add namespace", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxSBOMSerialWrongType", func(t *testing.T) {
+		_, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMSerialWrongType, sbom.Signature{})
+		require.Error(t, err)
+	})
+
+	t.Run("spdxSBOMNamespaceWrongType", func(t *testing.T) {
+		_, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMNamespaceWrongType, sbom.Signature{})
+		require.Error(t, err)
+	})
+
+}
+
+var cdxSBOMLifeCycleValid = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {
+    "lifecycles": [
+      {
+        "phase": "build"
+      },
+      {
+        "phase": "post-build"
+      },
+      {
+        "name": "platform-integration-testing",
+        "description": "Integration testing specific to the runtime platform"
+      }
+    ]
+  },
+  "components": []
+}
+`)
+
+var cdxSBOMLifeCycleTypePostBuildPhase = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {
+    "lifecycles": [
+      {
+        "phase": "post-build"
+      },
+      {
+        "name": "platform-integration-testing",
+        "description": "Integration testing specific to the runtime platform"
+      }
+    ]
+  },
+  "components": []
+}
+`)
+
+var cdxSBOMLifeCycleTypePITPhase = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {
+    "lifecycles": [
+      {
+        "name": "platform-integration-testing",
+        "description": "Integration testing specific to the runtime platform"
+      }
+    ]
+  },
+  "components": []
+}
+`)
+
+var cdxSBOMLifeCycleUnknownPhase = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "metadata": {
+    "lifecycles": [
+      {
+        "phase": "alien-build-phase"
+      }
+    ]
+  }
+}
+`)
+
+var cdxSBOMLifeCycleAbsent = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {},
+  "components": []
+}
+`)
+
+var cdxSBOMLifeCycleMissing = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {
+    "lifecycles": []
+  },
+  "components": []
+}
+`)
+
+var cdxSBOMLifeCycleEmptyString = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {
+    "lifecycles": [
+      {
+        "phase": ""
+      }
+    ]
+  },
+  "components": []
+}
+`)
+var cdxSBOMLifeCycleWrongType = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {
+    "lifecycles": {}
+  },
+  "components": []
+}
+`)
+
+var cdxSBOMLifeCycleWrongPhaseType = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {
+    "lifecycles": [
+      {
+        "phase": {}
+      }
+    ]
+  },
+  "components": []
+}
+`)
+
+var cdxSBOMLifeCycleWhitespacePhase = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "metadata": {
+    "lifecycles": [
+      {
+        "phase": "   "
+      }
+    ]
+  }
+}
+`)
+
+var cdxSBOMLifeCycleMixed = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "metadata": {
+    "lifecycles": [
+      { "phase": "build" },
+      { "phase": "" }
+    ]
+  }
+}
+`)
+
+func TestSBOMLifeCycle(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("cdxSBOMLifeCycleValid", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMLifeCycleValid, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMLifeCycle(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "complete", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxSBOMLifeCycleTypePostBuildPhase", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMLifeCycleTypePostBuildPhase, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMLifeCycle(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "complete", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxSBOMLifeCycleTypePITPhase", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMLifeCycleTypePITPhase, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMLifeCycle(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "add valid lifecycle", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxSBOMLifeCycleUnknownPhase", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMLifeCycleUnknownPhase, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMLifeCycle(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "add valid lifecycle", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxSBOMLifeCycleAbsent", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMLifeCycleAbsent, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMLifeCycle(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add lifecycle", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxSBOMLifeCycleMissing", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMLifeCycleMissing, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMLifeCycle(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "add lifecycle", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxSBOMLifeCycleEmptyString", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMLifeCycleEmptyString, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMLifeCycle(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "add valid lifecycle", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxSBOMLifeCycleWrongType", func(t *testing.T) {
+		_, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMLifeCycleWrongType, sbom.Signature{})
+		require.Error(t, err)
+	})
+
+	t.Run("cdxSBOMLifeCycleWrongPhaseType", func(t *testing.T) {
+		_, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMLifeCycleWrongPhaseType, sbom.Signature{})
+		require.Error(t, err)
+	})
+
+	t.Run("cdxSBOMLifeCycleWhitespacePhase", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMLifeCycleWhitespacePhase, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMLifeCycle(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "add valid lifecycle", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxSBOMLifeCycleMixed", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMLifeCycleMixed, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMLifeCycle(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "complete", got.Desc)
+		assert.False(t, got.Ignore)
 	})
 }

@@ -27,6 +27,7 @@ import (
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/catalog"
 	commonV2 "github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/common"
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/formulae"
+	"github.com/samber/lo"
 )
 
 // SBOMCreationTime: document has a valid ISO-8601 timestamp (RFC3339/RFC3339Nano).
@@ -150,7 +151,7 @@ func SBOMSupplier(doc sbom.Document) catalog.ComprFeatScore {
 		return catalog.ComprFeatScore{
 			Score:  formulae.BooleanScore(false),
 			Desc:   formulae.NonSupportedSPDXField(),
-			Ignore: true,
+			Ignore: false,
 		}
 
 	case string(sbom.SBOMSpecCDX):
@@ -212,6 +213,7 @@ func SBOMNamespace(doc sbom.Document) catalog.ComprFeatScore {
 				Ignore: false,
 			}
 		}
+
 		return catalog.ComprFeatScore{
 			Score:  formulae.BooleanScore(false),
 			Desc:   formulae.MissingField("namespace"),
@@ -236,21 +238,44 @@ func SBOMLifeCycle(doc sbom.Document) catalog.ComprFeatScore {
 		return catalog.ComprFeatScore{
 			Score:  formulae.BooleanScore(false),
 			Desc:   formulae.NonSupportedSPDXField(),
-			Ignore: true,
+			Ignore: false,
 		}
 
 	case string(sbom.SBOMSpecCDX):
 		phases := doc.Lifecycles()
-		if len(phases) > 0 {
+		if len(phases) == 0 {
+			return catalog.ComprFeatScore{
+				Score:  formulae.BooleanScore(false),
+				Desc:   formulae.MissingField("lifecycle"),
+				Ignore: false,
+			}
+		}
+
+		hasValidPhase := false
+
+		for _, p := range phases {
+			phase := strings.ToLower(strings.TrimSpace(p))
+			if phase == "" {
+				continue
+			}
+
+			if lo.Contains(sbom.CdxSupportedLifecycle, phase) {
+				hasValidPhase = true
+				break
+			}
+		}
+
+		if hasValidPhase {
 			return catalog.ComprFeatScore{
 				Score:  formulae.BooleanScore(true),
 				Desc:   "complete",
 				Ignore: false,
 			}
 		}
+
 		return catalog.ComprFeatScore{
 			Score:  formulae.BooleanScore(false),
-			Desc:   formulae.MissingField("lifecycle"),
+			Desc:   "add valid lifecycle",
 			Ignore: false,
 		}
 	}

@@ -1,0 +1,193 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b85",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2024-01-15T10:30:00Z",
+    "tools": [
+      {
+        "vendor": "Test",
+        "name": "badlicense-tool",
+        "version": "1.0"
+      }
+    ]
+  },
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "comp-1",
+      "name": "package-restricted-license-GPL-1.0",
+      "version": "1.0.0",
+      "licenses": [{ "license": { "id": "GPL-1.0" } }]
+    },
+    {
+      "type": "library",
+      "bom-ref": "comp-2",
+      "name": "package-restricted-license-GPL-2.0",
+      "version": "2.0.0",
+      "licenses": [{ "license": { "id": "GPL-2.0" } }]
+    },
+    {
+      "type": "library",
+      "bom-ref": "comp-3",
+      "name": "package-restricted-license-GPL-3.0",
+      "version": "2.0.0",
+      "licenses": [{ "license": { "id": "GPL-3.0" } }]
+    },
+    {
+      "type": "library",
+      "bom-ref": "comp-4",
+      "name": "package-restricted-license-LGPL-2.0",
+      "version": "2.0.0",
+      "licenses": [{ "license": { "id": "LGPL-2.0" } }]
+    },
+    {
+      "type": "library",
+      "bom-ref": "comp-5",
+      "name": "package-restricted-license-LGPL-2.1",
+      "version": "2.0.0",
+      "licenses": [{ "license": { "id": "LGPL-2.1" } }]
+    },
+    {
+      "type": "library",
+      "bom-ref": "comp-6",
+      "name": "package-restricted-license-LGPL-3.0",
+      "version": "2.0.0",
+      "licenses": [{ "license": { "id": "LGPL-3.0" } }]
+    },
+    {
+      "type": "library",
+      "bom-ref": "comp-7",
+      "name": "package-restricted-license-AGPL-1.0",
+      "version": "2.0.0",
+      "licenses": [{ "license": { "id": "AGPL-1.0" } }]
+    },
+    {
+      "type": "library",
+      "bom-ref": "comp-8",
+      "name": "package-restricted-license-AGPL-3.0",
+      "version": "2.0.0",
+      "licenses": [{ "license": { "id": "AGPL-3.0" } }]
+    },
+    {
+      "type": "library",
+      "bom-ref": "comp-9",
+      "name": "package-restricted-license-eCos-2.0",
+      "version": "2.0.0",
+      "licenses": [{ "license": { "id": "eCos-2.0" } }]
+    },
+    {
+      "type": "library",
+      "bom-ref": "comp-10",
+      "name": "package-restricted-license-GFDL-1.1",
+      "version": "1.1.0",
+      "licenses": [{ "license": { "id": "GFDL-1.1" } }]
+    },
+    {
+      "type": "library",
+      "bom-ref": "comp-11",
+      "name": "package-restricted-license-GFDL-1.2",
+      "version": "1.2.0",
+      "licenses": [{ "license": { "id": "GFDL-1.2" } }]
+    },
+    {
+      "type": "library",
+      "bom-ref": "comp-12",
+      "name": "package-restricted-license-GFDL-1.3",
+      "version": "1.3.0",
+      "licenses": [{ "license": { "id": "GFDL-1.3" } }]
+    },
+    {
+      "type": "library",
+      "bom-ref": "comp-13",
+      "name": "package-restricted-license-GPL-1.0+",
+      "version": "1.0.0",
+      "licenses": [{ "license": { "id": "GPL-1.0+" } }]
+    },
+    {
+      "type": "library",
+      "bom-ref": "comp-14",
+      "name": "package-restricted-license-GPL-2.0+",
+      "version": "2.0.0",
+      "licenses": [{ "license": { "id": "GPL-2.0+" } }]
+    },
+    {
+      "type": "library",
+      "bom-ref": "comp-15",
+      "name": "package-restricted-license-GPL-2.0-with-autoconf-exception",
+      "version": "2.0.0",
+      "licenses": [{ "license": { "id": "GPL-2.0-with-autoconf-exception" } }]
+    },
+    {
+      "type": "library",
+      "bom-ref": "comp-16",
+      "name": "package-restricted-license-GPL-2.0-with-classpath-exception",
+      "version": "2.0.0",
+      "licenses": [{ "license": { "id": "GPL-2.0-with-classpath-exception" } }]
+    },
+    {
+      "type": "library",
+      "bom-ref": "comp-17",
+      "name": "package-restricted-license-GPL-2.0-with-font-exception",
+      "version": "2.0.0",
+      "licenses": [{ "license": { "id": "GPL-2.0-with-font-exception" } }]
+    },
+    {
+      "type": "library",
+      "bom-ref": "comp-18",
+      "name": "package-restricted-license-GPL-2.0-with-GCC-exception",
+      "version": "2.0.0",
+      "licenses": [{ "license": { "id": "GPL-2.0-with-GCC-exception" } }]
+    },
+    {
+      "type": "library",
+      "bom-ref": "comp-19",
+      "name": "package-restricted-license-GPL-3.0+",
+      "version": "3.0.0",
+      "licenses": [{ "license": { "id": "GPL-3.0+" } }]
+    },
+    {
+      "type": "library",
+      "bom-ref": "comp-20",
+      "name": "package-restricted-license-GPL-3.0-with-autoconf-exception",
+      "version": "3.0.0",
+      "licenses": [{ "license": { "id": "GPL-3.0-with-autoconf-exception" } }]
+    },
+    {
+      "type": "library",
+      "bom-ref": "comp-21",
+      "name": "package-restricted-license-GPL-3.0-with-GCC-exception",
+      "version": "3.0.0",
+      "licenses": [{ "license": { "id": "GPL-3.0-with-GCC-exception" } }]
+    },
+    {
+      "type": "library",
+      "bom-ref": "comp-22",
+      "name": "package-restricted-license-LGPL-2.0+",
+      "version": "2.0.0",
+      "licenses": [{ "license": { "id": "LGPL-2.0+" } }]
+    },
+    {
+      "type": "library",
+      "bom-ref": "comp-23",
+      "name": "package-restricted-license-LGPL-2.1+",
+      "version": "2.1.0",
+      "licenses": [{ "license": { "id": "LGPL-2.1+" } }]
+    },
+    {
+      "type": "library",
+      "bom-ref": "comp-24",
+      "name": "package-restricted-license-LGPL-3.0+",
+      "version": "3.0.0",
+      "licenses": [{ "license": { "id": "LGPL-3.0+" } }]
+    },
+    {
+      "type": "library",
+      "bom-ref": "comp-25",
+      "name": "package-restricted-license-wxWindows",
+      "version": "1.0.0",
+      "licenses": [{ "license": { "id": "wxWindows" } }]
+    }
+  ]
+}

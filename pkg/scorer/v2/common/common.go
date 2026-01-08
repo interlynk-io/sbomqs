@@ -43,17 +43,9 @@ func IsSupplierEntity(supplier sbom.GetSupplier) bool {
 // author should have name + email/phone info.
 func IsSBOMAuthorEntity(doc sbom.Document) bool {
 	for _, author := range doc.Authors() {
-		if author.GetName() != "" || author.GetEmail() != "" {
+		if strings.TrimSpace(author.GetName()) != "" || strings.TrimSpace(author.GetEmail()) != "" || strings.TrimSpace(author.GetPhone()) != "" {
 			return true
 		}
-	}
-	return false
-}
-
-// Checks if component has primary purpose or type
-func HasComponentPrimaryPackageType(compType string) bool {
-	if strings.TrimSpace(compType) != "" {
-		return true
 	}
 	return false
 }

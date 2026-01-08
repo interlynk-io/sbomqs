@@ -15,801 +15,899 @@
 package extractors
 
 import (
-	"strings"
+	"context"
 	"testing"
 
-	"github.com/interlynk-io/sbomqs/v2/pkg/licenses"
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-type licSpdxMiniComp struct {
-	id        string
-	name      string
-	version   string
-	concluded string
-	declared  string
-}
-
-type licCdx14MiniComp struct {
-	id, name, version string
-	licenseIDs        []string // e.g., "MIT", "Apache-2.0"
-	expressions       []string // e.g., "MIT OR Apache-2.0"
-}
-
-// CDX 1.6: every license entry is either {license:{id}} or {expression}, plus acknowledgement.
-type cdx16LicItem struct {
-	licenseID       string // { "license": { "id": "MIT" } }
-	expression      string // { "expression": "MIT OR Apache-2.0" }
-	acknowledgement string // must be "declared" or "concluded"
-}
-
-type licCdx16MiniComp struct {
-	id, name, version string
-	items             []cdx16LicItem
-}
-
-func makeCDX16DocForLicensing(comps []licCdx16MiniComp, bomDataLicense string) sbom.Document {
-	s := sbom.NewSpec()
-	s.Version = "1.6"
-	s.SpecType = "cyclonedx"
-	s.Format = "json"
-	s.URI = "urn:uuid:aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"
-
-	if bomDataLicense != "" {
-		if dl := licenses.LookupExpression(bomDataLicense, nil); len(dl) > 0 {
-			s.Licenses = append(s.Licenses, dl...)
-		}
-	}
-
-	var cs []sbom.GetComponent
-	for _, m := range comps {
-		c := sbom.NewComponent()
-		c.ID, c.Name, c.Version = m.id, m.name, m.version
-
-		var concluded, declared []licenses.License
-		for _, it := range m.items {
-			// resolve token from either shape
-			var tok string
-			if it.licenseID != "" {
-				tok = it.licenseID
-			} else if it.expression != "" {
-				tok = it.expression
-			} else {
-				continue
+var cdxCompValidLicenseID = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "name": "acme",
+      "version": "0.1.0",
+	  "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0",
+			"acknowledgement": "concluded"
 			}
-			// normalize/expand via your license DB
-			ls := licenses.LookupExpression(tok, nil)
-			if len(ls) == 0 {
-				continue
-			}
-
-			switch strings.ToLower(strings.TrimSpace(it.acknowledgement)) {
-			case "declared":
-				declared = append(declared, ls...)
-			case "concluded":
-				concluded = append(concluded, ls...)
-			default:
-				// If an invalid value sneaks in, treat as concluded for presence checks,
-				// or you can skip it—your call. Concluded keeps behavior predictable.
-				concluded = append(concluded, ls...)
-			}
-		}
-
-		// Map onto your wrapper fields used by extractors
-		c.ConcludedLicense = concluded // CDX 1.6 items with ack=concluded
-		c.Licenses = concluded         // unified “effective” licenses list
-		c.DeclaredLicense = declared   // CDX 1.6 items with ack=declared
-
-		cs = append(cs, c)
-	}
-
-	return sbom.CdxDoc{CdxSpec: s, Comps: cs}
+        }
+      ]
+    }
+  ]
 }
+`)
 
-// CDX 1.4: licenses[] without acknowledgement
-func makeCDX14DocForLicensing(comps []licCdx14MiniComp, bomLicense string) sbom.Document {
-	s := sbom.NewSpec()
-	s.Version = "1.4"
-	s.SpecType = "cyclonedx"
-	s.Format = "json"
-	s.URI = "urn:uuid:11111111-2222-3333-4444-555555555555"
-
-	if bomLicense != "" {
-		if dl := licenses.LookupExpression(bomLicense, nil); len(dl) > 0 {
-			s.Licenses = append(s.Licenses, dl...)
-		}
-	}
-
-	var cs []sbom.GetComponent
-	for _, m := range comps {
-		c := sbom.NewComponent()
-		c.ID = m.id
-		c.Name = m.name
-		c.Version = m.version
-
-		var lics []licenses.License
-		for _, id := range m.licenseIDs {
-			if ls := licenses.LookupExpression(id, nil); len(ls) > 0 {
-				lics = append(lics, ls...)
-			}
-		}
-
-		for _, ex := range m.expressions {
-			if ls := licenses.LookupExpression(ex, nil); len(ls) > 0 {
-				lics = append(lics, ls...)
-			}
-		}
-
-		c.ConcludedLicense = lics
-		c.Licenses = lics
-
-		cs = append(cs, c)
-	}
-
-	return sbom.CdxDoc{CdxSpec: s, Comps: cs}
+var spdxCompValidLicense = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "test-doc",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": ["Tool: syft v0.95.0"]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Pkg",
+      "name": "acme",
+      "versionInfo": "0.1.0",
+      "licenseConcluded": "Apache-2.0"
+    }
+  ]
 }
+`)
 
-// Build an SPDX doc with components and the given spec-level data licenses.
-func makeSPDXDocForLicensing(comps []licSpdxMiniComp, dataLicenses string) sbom.Document {
-	s := sbom.NewSpec()
-	s.Version = "SPDX-2.3"
-	s.SpecType = "spdx"
-	s.Format = "json"
-	s.Spdxid = "DOCUMENT"
-	s.Namespace = "https://example.com/ns"
-
-	if dataLicenses != "" {
-		lics := licenses.LookupExpression(dataLicenses, nil)
-		if len(lics) > 0 {
-			s.Licenses = append(s.Licenses, lics...)
-		}
-	}
-
-	var cs []sbom.GetComponent
-	for _, m := range comps {
-		c := sbom.NewComponent()
-		c.ID = m.id
-		c.Name = m.name
-		c.Version = m.version
-
-		var conLics []licenses.License
-
-		if m.concluded != "" {
-			lics := licenses.LookupExpression(m.concluded, nil)
-			if len(lics) > 0 {
-				conLics = append(conLics, lics...)
+var cdxCompValidDeclaredLicenseID = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "name": "acme",
+      "version": "0.1.0",
+	  "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
 			}
-		}
-		c.ConcludedLicense = conLics
-		c.Licenses = conLics
-
-		var decLics []licenses.License
-		// inject licenses
-		if m.declared != "" {
-			lics := licenses.LookupExpression(m.declared, nil)
-			if len(lics) > 0 {
-				decLics = append(decLics, lics...)
-			}
-		}
-		c.DeclaredLicense = decLics
-
-		cs = append(cs, c)
-	}
-
-	return sbom.SpdxDoc{
-		SpdxSpec: s,
-		Comps:    cs,
-	}
+        }
+      ]
+    }
+  ]
 }
+`)
 
-func Test_CompWithLicenses(t *testing.T) {
-	t.Run("SpdxWithNoComponents", func(t *testing.T) {
-		doc := makeSPDXDocForLicensing(nil, "CC0-1.0")
+var spdxCompValidDeclaredLicense = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "test-doc",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": ["Tool: syft v0.95.0"]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Pkg",
+      "name": "acme",
+      "versionInfo": "0.1.0",
+      "licenseDeclared": "Apache-2.0"
+    }
+  ]
+}
+`)
+
+var cdxCompDeprecatedLicenseID = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "name": "acme",
+      "version": "0.1.0",
+	  "licenses": [
+        {
+          "license": {
+            "id": "AGPL-1.0",
+			"acknowledgement": "concluded"
+			}
+        }
+      ]
+    }
+  ]
+}
+`)
+
+var spdxCompDeprecatedLicense = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "test-doc",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": ["Tool: syft v0.95.0"]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Pkg",
+      "name": "acme",
+      "versionInfo": "0.1.0",
+      "licenseConcluded": "AGPL-1.0"
+    }
+  ]
+}
+`)
+
+var cdxCompRestrictiveLicenseID = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "name": "acme",
+      "version": "0.1.0",
+	  "licenses": [
+        {
+          "license": {
+            "id": "GPL-2.0-only",
+			"acknowledgement": "concluded"
+			}
+        }
+      ]
+    }
+  ]
+}
+`)
+
+var spdxCompRestrictiveLicense = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "test-doc",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": ["Tool: syft v0.95.0"]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Pkg",
+      "name": "acme",
+      "versionInfo": "0.1.0",
+      "licenseConcluded": "GPL-2.0-only"
+    }
+  ]
+}
+`)
+
+var cdxCompLicenseAbsent = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "name": "acme",
+      "version": "0.1.0"
+    }
+  ]
+}
+`)
+
+var spdxCompLicenseAbsent = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "test-doc",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": ["Tool: syft v0.95.0"]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Pkg",
+      "name": "acme",
+      "versionInfo": "0.1.0"
+    }
+  ]
+}
+`)
+
+var cdxCompLicenseEmptyArray = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "name": "acme",
+      "version": "0.1.0",
+      "licenses": []
+    }
+  ]
+}
+`)
+
+var cdxCompLicenseEmptyObject = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,,
+  "components": [
+    {
+      "type": "library",
+      "name": "acme",
+      "version": "0.1.0",
+      "licenses": [
+        {}
+      ]
+    }
+  ]
+}
+`)
+
+var cdxCompLicenseIDEmptyString = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "name": "acme",
+      "version": "0.1.0",
+      "licenses": [
+        {
+          "license": {
+            "id": ""
+          }
+        }
+      ]
+    }
+  ]
+}
+`)
+
+var spdxCompEmptyString = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "test-doc",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": ["Tool: syft v0.95.0"]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Pkg",
+      "name": "acme",
+      "versionInfo": "0.1.0",
+      "licenseConcluded": ""
+    }
+  ]
+}
+`)
+
+var cdxCompLicenseNameEmpty = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "name": "acme",
+      "version": "0.1.0",
+      "licenses": [
+        {
+          "license": {
+            "name": ""
+          }
+        }
+      ]
+    }
+  ]
+}
+`)
+
+var cdxCompLicenseInvalidID = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "name": "acme",
+      "version": "0.1.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "FooBarLicense"
+          }
+        }
+      ]
+    }
+  ]
+}
+`)
+
+var cdxCompValidLicenseName = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "name": "acme",
+      "version": "0.1.0",
+      "licenses": [
+        {
+          "license": {
+            "name": "Apache License 2.0",
+            "acknowledgement": "concluded"
+          }
+        }
+      ]
+    }
+  ]
+}
+`)
+
+var cdxCompValidLicenseExpression = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "name": "tomcat-catalina",
+      "version": "9.0.14",
+      "licenses": [
+        {
+          "expression": "(Apache-2.0 AND MIT) OR BSD-3-Clause"
+		}
+      ]
+    }
+  ]
+}
+`)
+
+var cdxCompDeclaredExpression = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "name": "acme",
+      "version": "1.0.0",
+      "licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ]
+    }
+  ]
+}
+`)
+
+var spdxCompValidLicenseExpression = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "test-doc",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": ["Tool: syft v0.95.0"]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Pkg",
+      "name": "acme",
+      "versionInfo": "0.1.0",
+      "licenseConcluded": "MIT OR Apache-2.0"
+    }
+  ]
+}
+`)
+
+var cdxCompLicenseWrongType = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "name": "acme",
+      "version": "0.1.0",
+      "licenses": {}
+    }
+  ]
+}
+`)
+
+var spdxCompLicenseWrongType = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "test-doc",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": ["Tool: syft v0.95.0"]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Pkg",
+      "name": "acme",
+      "versionInfo": "0.1.0",
+      "licenseConcluded": {}
+    }
+  ]
+}
+`)
+
+var spdxCompWhiteSpaceString = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "test-doc",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": ["Tool: syft v0.95.0"]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Pkg",
+      "name": "acme",
+      "versionInfo": "0.1.0",
+      "licenseConcluded": "  "
+    }
+  ]
+}
+`)
+
+var spdxCompLicenseNoassertion = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "test-doc",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": ["Tool: syft v0.95.0"]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Pkg",
+      "name": "acme",
+      "versionInfo": "0.1.0",
+      "licenseConcluded": "NOASSERTION"
+    }
+  ]
+}
+`)
+
+var spdxCompLicenseNone = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "test-doc",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": ["Tool: syft v0.95.0"]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Pkg",
+      "name": "acme",
+      "versionInfo": "0.1.0",
+      "licenseConcluded": "NOASSERTION"
+    }
+  ]
+}
+`)
+
+var spdxCompCustomLicense = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "test-doc",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": ["Tool: syft v0.95.0"]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Pkg",
+      "name": "acme",
+      "versionInfo": "0.1.0",
+      "licenseConcluded": "LicenseRef-Proprietary"
+    }
+  ]
+}
+`)
+
+// CompWithLicenses
+func TestCompWithLicenses(t *testing.T) {
+	t.Run("cdxCompValidLicenseID", func(t *testing.T) {
+		ctx := context.Background()
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompValidLicenseID, sbom.Signature{})
+		require.NoError(t, err)
 
 		got := CompWithLicenses(doc)
-
-		assert.Equal(t, 0.0, got.Score)
-		assert.True(t, got.Ignore)
-		assert.Equal(t, "N/A (no components)", got.Desc)
-	})
-
-	t.Run("SpdxAllHaveConcludedLicenses", func(t *testing.T) {
-		doc := makeSPDXDocForLicensing([]licSpdxMiniComp{
-			{id: "SPDXRef-A", name: "a", version: "1", concluded: "mit"},
-			{id: "SPDXRef-B", name: "b", version: "2", concluded: "Apache-2.0"},
-		}, "CC0-1.0")
-
-		got := CompWithLicenses(doc)
-
-		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.InDelta(t, 10.0, got.Score, 0.0001)
 		assert.Equal(t, "complete", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
-	t.Run("SpdxComponentsWithOneNoassertion", func(t *testing.T) {
-		doc := makeSPDXDocForLicensing([]licSpdxMiniComp{
-			{id: "SPDXRef-A", name: "a", version: "1", concluded: "LicenseRef-MyCustom"},
-			{id: "SPDXRef-B", name: "b", version: "2", concluded: "NOASSERTION"},
-		}, "CC0-1.0")
+	t.Run("spdxCompValidLicense", func(t *testing.T) {
+		ctx := context.Background()
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompValidLicense, sbom.Signature{})
+		require.NoError(t, err)
 
 		got := CompWithLicenses(doc)
+		assert.InDelta(t, 10.0, got.Score, 0.0001)
+		assert.Equal(t, "complete", got.Desc)
+		assert.False(t, got.Ignore)
+	})
 
-		assert.InDelta(t, 5.0, got.Score, 1e-9)
+	t.Run("cdxCompLicenseAbsent", func(t *testing.T) {
+		ctx := context.Background()
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompLicenseAbsent, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := CompWithLicenses(doc)
+		assert.InDelta(t, 0.0, got.Score, 0.0001)
 		assert.Equal(t, "add to 1 component", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
-	t.Run("SpdxComponentsBothInvalidLicense", func(t *testing.T) {
-		doc := makeSPDXDocForLicensing([]licSpdxMiniComp{
-			{id: "SPDXRef-A", name: "a", version: "1", concluded: "NONE"},
-			{id: "SPDXRef-B", name: "b", version: "2", concluded: "NOASSERTION"},
-		}, "CC0-1.0")
+	t.Run("spdxCompLicenseAbsent", func(t *testing.T) {
+		ctx := context.Background()
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompLicenseAbsent, sbom.Signature{})
+		require.NoError(t, err)
 
 		got := CompWithLicenses(doc)
-
-		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add to 2 components", got.Desc)
-		assert.False(t, got.Ignore)
-	})
-
-	// CDX Testing:1.4
-	t.Run("Cdx14NoComponents", func(t *testing.T) {
-		doc := makeCDX14DocForLicensing(nil, "CC0-1.0")
-
-		got := CompWithLicenses(doc)
-
-		assert.Equal(t, 0.0, got.Score)
-		assert.True(t, got.Ignore)
-		assert.Equal(t, "N/A (no components)", got.Desc)
-	})
-
-	t.Run("Cdx14LicenseWithIdAndExpression", func(t *testing.T) {
-		doc := makeCDX14DocForLicensing([]licCdx14MiniComp{
-			{id: "a", name: "a", version: "1", licenseIDs: []string{"MIT"}},
-			{id: "b", name: "b", version: "2", expressions: []string{"Apache-2.0 OR BSD-3-Clause"}},
-		}, "CC0-1.0")
-
-		got := CompWithLicenses(doc)
-
-		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "complete", got.Desc)
-	})
-
-	t.Run("Cdx14ValidIdAndInvalidExpression", func(t *testing.T) {
-		doc := makeCDX14DocForLicensing([]licCdx14MiniComp{
-			{id: "a", name: "a", version: "1", licenseIDs: []string{"MIT"}},
-			{id: "b", name: "b", version: "2", expressions: []string{"NOASSERTION"}},
-		}, "CC0-1.0")
-
-		got := CompWithLicenses(doc)
-		assert.InDelta(t, 5.0, got.Score, 1e-9)
-		assert.Equal(t, "add to 1 component", got.Desc)
-	})
-
-	t.Run("Cdx14WithBothInvalidExpression", func(t *testing.T) {
-		doc := makeCDX14DocForLicensing([]licCdx14MiniComp{
-			{id: "a", name: "a", version: "1", licenseIDs: []string{"NONE"}},
-			{id: "b", name: "b", version: "2", expressions: []string{"NOASSERTION"}},
-		}, "CC0-1.0")
-
-		got := CompWithLicenses(doc)
-		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add to 2 components", got.Desc)
-	})
-
-	// CDX testing: 1.6
-	t.Run("Cdx16ValidIdAndInvalidExpressionWithAck", func(t *testing.T) {
-		doc := makeCDX16DocForLicensing([]licCdx16MiniComp{
-			{
-				id: "a", name: "a", version: "1",
-				items: []cdx16LicItem{
-					{licenseID: "MIT", acknowledgement: "concluded"},
-				},
-			},
-			{
-				id: "b", name: "b", version: "2",
-				items: []cdx16LicItem{
-					{expression: "NOASSERTION", acknowledgement: "declared"},
-				},
-			},
-		}, "CC0-1.0")
-
-		got := CompWithLicenses(doc)
-		assert.InDelta(t, 5.0, got.Score, 1e-9)
+		assert.InDelta(t, 0.0, got.Score, 0.0001)
 		assert.Equal(t, "add to 1 component", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
-	t.Run("Cdx16WithBothDeclaredLicense", func(t *testing.T) {
-		doc := makeCDX16DocForLicensing([]licCdx16MiniComp{
-			{
-				id: "a", name: "a", version: "1",
-				items: []cdx16LicItem{
-					{licenseID: "mit", acknowledgement: "declared"},
-				},
-			},
-			{
-				id: "b", name: "b", version: "2",
-				items: []cdx16LicItem{
-					{expression: "apache-2.0", acknowledgement: "declared"},
-				},
-			},
-		}, "CC0-1.0")
+	t.Run("cdxCompLicenseEmptyArray", func(t *testing.T) {
+		ctx := context.Background()
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompLicenseEmptyArray, sbom.Signature{})
+		require.NoError(t, err)
 
 		got := CompWithLicenses(doc)
-		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add to 2 components", got.Desc)
-		assert.False(t, got.Ignore)
-	})
-
-	t.Run("Cdx16DeclaredAndConcludedOnSameComponent", func(t *testing.T) {
-		doc := makeCDX16DocForLicensing([]licCdx16MiniComp{
-			{
-				id: "a", name: "a", version: "1",
-				items: []cdx16LicItem{
-					{licenseID: "MIT", acknowledgement: "concluded"},
-					{licenseID: "BSD-3-Clause", acknowledgement: "declared"},
-				},
-			},
-		}, "CC0-1.0")
-
-		gotConc := CompWithLicenses(doc)
-
-		assert.InDelta(t, 10.0, gotConc.Score, 1e-9)
-		assert.Equal(t, "complete", gotConc.Desc)
-
-		gotDecl := CompWithDeclaredLicenses(doc)
-		assert.InDelta(t, 10.0, gotDecl.Score, 1e-9)
-		assert.Equal(t, "complete", gotDecl.Desc)
-	})
-}
-
-func Test_CompWithValidLicenses(t *testing.T) {
-	t.Run("NoComponents", func(t *testing.T) {
-		doc := makeSPDXDocForLicensing(nil, "CC0-1.0")
-
-		got := CompWithValidLicenses(doc)
-
-		assert.Equal(t, 0.0, got.Score)
-		assert.True(t, got.Ignore)
-		assert.Equal(t, "N/A (no components)", got.Desc)
-	})
-
-	t.Run("ValidLicensesMixedOfSpdxAndCustom", func(t *testing.T) {
-		doc := makeSPDXDocForLicensing([]licSpdxMiniComp{
-			{id: "SPDXRef-A", name: "a", version: "1", concluded: "MIT"},
-			{id: "SPDXRef-B", name: "b", version: "2", concluded: "LicenseRef-MyCustom"},
-		}, "CC0-1.0")
-
-		got := CompWithValidLicenses(doc)
-
-		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "complete", got.Desc)
-		assert.False(t, got.Ignore)
-	})
-
-	t.Run("SpdxWithALLInvalidLicenses", func(t *testing.T) {
-		doc := makeSPDXDocForLicensing([]licSpdxMiniComp{
-			{id: "SPDXRef-A", name: "a", version: "1", concluded: "Custom-foo"},
-			{id: "SPDXRef-B", name: "b", version: "2", concluded: "Custom-bar"},
-		}, "CC0-1.0")
-
-		got := CompWithValidLicenses(doc)
-
-		// 2/3 → 6.666...
-		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add to 2 components", got.Desc)
-		assert.False(t, got.Ignore)
-	})
-
-	t.Run("SpdxWithALLCustomValidLicenses", func(t *testing.T) {
-		doc := makeSPDXDocForLicensing([]licSpdxMiniComp{
-			{id: "SPDXRef-A", name: "a", version: "1", concluded: "LicenseRef-foo"},
-			{id: "SPDXRef-B", name: "b", version: "2", concluded: "LicenseRef-bar"},
-		}, "CC0-1.0")
-
-		got := CompWithValidLicenses(doc)
-
-		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "complete", got.Desc)
-		assert.False(t, got.Ignore)
-	})
-
-	t.Run("SpdxWithALLBadLicenses", func(t *testing.T) {
-		doc := makeSPDXDocForLicensing([]licSpdxMiniComp{
-			{id: "SPDXRef-A", name: "a", version: "1", concluded: "NOASSERTION"},
-			{id: "SPDXRef-B", name: "b", version: "2", concluded: "NONE"},
-		}, "CC0-1.0")
-
-		got := CompWithValidLicenses(doc)
-
-		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add to 2 components", got.Desc)
-		assert.False(t, got.Ignore)
-	})
-
-	// CDX:1.4
-	t.Run("LicenseWithValidIDAndExpression", func(t *testing.T) {
-		doc := makeCDX14DocForLicensing([]licCdx14MiniComp{
-			{id: "a", name: "a", version: "1", expressions: []string{"MIT OR LicenseRef-Custom"}},
-			{id: "b", name: "b", version: "2", licenseIDs: []string{"BSD-3-Clause"}},
-		}, "CC0-1.0")
-
-		got := CompWithValidLicenses(doc)
-
-		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "complete", got.Desc)
-	})
-
-	// CDX:1.6
-	t.Run("WithMixOfInvalidAndValidLicenses", func(t *testing.T) {
-		doc := makeCDX16DocForLicensing([]licCdx16MiniComp{
-			{
-				id: "a", name: "a", version: "1",
-				items: []cdx16LicItem{
-					{expression: "MIT OR LicenseRef-Custom", acknowledgement: "concluded"}, // valid (SPDX + LicenseRef-*)
-				},
-			},
-			{
-				id: "b", name: "b", version: "2",
-				items: []cdx16LicItem{
-					{licenseID: "Custom-NotRef", acknowledgement: "concluded"}, // invalid (fails areLicensesValid)
-				},
-			},
-		}, "CC0-1.0")
-
-		got := CompWithValidLicenses(doc)
-
-		assert.InDelta(t, 5.0, got.Score, 1e-9)
-		assert.Equal(t, "add to 1 component", got.Desc)
-		assert.False(t, got.Ignore)
-	})
-}
-
-func Test_CompWithDeclaredLicenses(t *testing.T) {
-	t.Run("SpdxWithNoComponents", func(t *testing.T) {
-		doc := makeSPDXDocForLicensing(nil, "CC0-1.0")
-
-		got := CompWithDeclaredLicenses(doc)
-
-		assert.Equal(t, 0.0, got.Score)
-		assert.True(t, got.Ignore)
-		assert.Equal(t, "N/A (no components)", got.Desc)
-	})
-
-	t.Run("SpdxWithValidAndEmptyLicense", func(t *testing.T) {
-		doc := makeSPDXDocForLicensing([]licSpdxMiniComp{
-			{id: "SPDXRef-A", name: "a", version: "1", declared: "Apache-2.0"},
-			{id: "SPDXRef-B", name: "b", version: "2", declared: ""},
-		}, "CC0-1.0")
-
-		got := CompWithDeclaredLicenses(doc)
-
-		assert.InDelta(t, 5.0, got.Score, 1e-9)
+		assert.InDelta(t, 0.0, got.Score, 0.0001)
 		assert.Equal(t, "add to 1 component", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
-	t.Run("SpdxWithNOASSERTIONAndEmptyLicense", func(t *testing.T) {
-		doc := makeSPDXDocForLicensing([]licSpdxMiniComp{
-			{id: "SPDXRef-A", name: "a", version: "1", declared: "NOASSERTION"},
-			{id: "SPDXRef-B", name: "b", version: "2", declared: ""},
-		}, "CC0-1.0")
-
-		got := CompWithDeclaredLicenses(doc)
-
-		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add to 2 components", got.Desc)
+	t.Run("cdxCompLicenseEmptyObject", func(t *testing.T) {
+		ctx := context.Background()
+		_, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompLicenseEmptyObject, sbom.Signature{})
+		require.Error(t, err)
 	})
 
-	// CDX:1.4
-	t.Run("CDX14WithALLConcludedLicenses", func(t *testing.T) {
-		doc := makeCDX14DocForLicensing([]licCdx14MiniComp{
-			{id: "a", name: "a", version: "1", expressions: []string{"MIT OR LicenseRef-Custom"}},
-			{id: "b", name: "b", version: "2", licenseIDs: []string{"BSD-3-Clause"}},
-		}, "CC0-1.0")
+	t.Run("cdxCompLicenseIDEmptyString", func(t *testing.T) {
+		ctx := context.Background()
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompLicenseIDEmptyString, sbom.Signature{})
+		require.NoError(t, err)
 
-		got := CompWithDeclaredLicenses(doc)
-
-		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add to 2 components", got.Desc)
+		got := CompWithLicenses(doc)
+		assert.InDelta(t, 0.0, got.Score, 0.0001)
+		assert.Equal(t, "add to 1 component", got.Desc)
+		assert.False(t, got.Ignore)
 	})
 
-	// CDX:1.6
-	t.Run("CDX16WithALLDeclaredLicenses", func(t *testing.T) {
-		doc := makeCDX16DocForLicensing([]licCdx16MiniComp{
-			{
-				id: "a", name: "a", version: "1",
-				items: []cdx16LicItem{
-					{licenseID: "Apache-2.0", acknowledgement: "declared"},
-				},
-			},
-			{
-				id: "b", name: "b", version: "2",
-				items: []cdx16LicItem{
-					{expression: "MIT OR BSD-3-Clause", acknowledgement: "declared"},
-				},
-			},
-		}, "CC-BY-4.0")
+	t.Run("spdxCompEmptyString", func(t *testing.T) {
+		ctx := context.Background()
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompEmptyString, sbom.Signature{})
+		require.NoError(t, err)
 
-		got := CompWithDeclaredLicenses(doc)
-		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		got := CompWithLicenses(doc)
+		assert.InDelta(t, 0.0, got.Score, 0.0001)
+		assert.Equal(t, "add to 1 component", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxCompLicenseNameEmpty", func(t *testing.T) {
+		ctx := context.Background()
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompLicenseNameEmpty, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := CompWithLicenses(doc)
+		assert.InDelta(t, 0.0, got.Score, 0.0001)
+		assert.Equal(t, "add to 1 component", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxCompLicenseInvalidID", func(t *testing.T) {
+		ctx := context.Background()
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompLicenseInvalidID, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := CompWithLicenses(doc)
+		assert.InDelta(t, 0.0, got.Score, 0.0001)
+		assert.Equal(t, "add to 1 component", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxCompValidLicenseName", func(t *testing.T) {
+		ctx := context.Background()
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompValidLicenseName, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := CompWithLicenses(doc)
+		assert.InDelta(t, 10.0, got.Score, 0.0001)
 		assert.Equal(t, "complete", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
-	t.Run("CDX16WithALLConcludedLicenses", func(t *testing.T) {
-		doc := makeCDX16DocForLicensing([]licCdx16MiniComp{
-			{
-				id: "a", name: "a", version: "1",
-				items: []cdx16LicItem{
-					{licenseID: "Apache-2.0", acknowledgement: "concluded"},
-				},
-			},
-			{
-				id: "b", name: "b", version: "2",
-				items: []cdx16LicItem{
-					{expression: "MIT OR BSD-3-Clause", acknowledgement: "concluded"},
-				},
-			},
-		}, "CC-BY-4.0")
+	t.Run("spdxCompValidLicenseExpression", func(t *testing.T) {
+		ctx := context.Background()
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompValidLicenseExpression, sbom.Signature{})
+		require.NoError(t, err)
 
-		got := CompWithDeclaredLicenses(doc)
-		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add to 2 components", got.Desc)
-		assert.False(t, got.Ignore)
-	})
-}
-
-func Test_SBOMDataLicense(t *testing.T) {
-	t.Run("NoComponents", func(t *testing.T) {
-		doc := makeSPDXDocForLicensing(nil, "")
-
-		got := SBOMDataLicense(doc)
-
-		assert.Equal(t, 0.0, got.Score)
-		assert.False(t, got.Ignore)
-		assert.Equal(t, "add data license", got.Desc)
-	})
-
-	t.Run("valid SPDX data license -> 10", func(t *testing.T) {
-		dl := "CC-BY-4.0"
-		doc := makeSPDXDocForLicensing(nil, dl)
-
-		got := SBOMDataLicense(doc)
-
-		assert.Equal(t, 10.0, got.Score)
+		got := CompWithLicenses(doc)
+		assert.InDelta(t, 10.0, got.Score, 0.0001)
 		assert.Equal(t, "complete", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
-	t.Run("invalid custom (not LicenseRef-) -> 0", func(t *testing.T) {
-		dl := "invalid-license"
-		doc := makeSPDXDocForLicensing(nil, dl)
-
-		got := SBOMDataLicense(doc)
-
-		assert.Equal(t, 0.0, got.Score)
-		assert.Equal(t, "fix data license", got.Desc)
+	t.Run("cdxCompLicenseWrongType", func(t *testing.T) {
+		ctx := context.Background()
+		_, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompLicenseWrongType, sbom.Signature{})
+		require.Error(t, err)
 	})
 
-	t.Run("non-recommended doc SPDX data license -> 10", func(t *testing.T) {
-		dl := "Apache-2.0"
-		doc := makeSPDXDocForLicensing(nil, dl)
+	t.Run("spdxCompLicenseWrongType", func(t *testing.T) {
+		ctx := context.Background()
+		_, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompLicenseWrongType, sbom.Signature{})
+		require.Error(t, err)
+	})
 
-		got := SBOMDataLicense(doc)
+	t.Run("spdxCompWhiteSpaceString", func(t *testing.T) {
+		ctx := context.Background()
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWhiteSpaceString, sbom.Signature{})
+		require.NoError(t, err)
 
-		assert.Equal(t, 10.0, got.Score)
+		got := CompWithLicenses(doc)
+		assert.InDelta(t, 0.0, got.Score, 0.0001)
+		assert.Equal(t, "add to 1 component", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxCompLicenseNoassertion", func(t *testing.T) {
+		ctx := context.Background()
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompLicenseNoassertion, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := CompWithLicenses(doc)
+		assert.InDelta(t, 0.0, got.Score, 0.0001)
+		assert.Equal(t, "add to 1 component", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxCompLicenseNone", func(t *testing.T) {
+		ctx := context.Background()
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompLicenseNone, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := CompWithLicenses(doc)
+		assert.InDelta(t, 0.0, got.Score, 0.0001)
+		assert.Equal(t, "add to 1 component", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxCompCustomLicense", func(t *testing.T) {
+		ctx := context.Background()
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompCustomLicense, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := CompWithLicenses(doc)
+		assert.InDelta(t, 10.0, got.Score, 0.0001)
 		assert.Equal(t, "complete", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 }
 
-func Test_CompWithDeprecatedLicenses(t *testing.T) {
-	t.Run("SpdxWithNoComponents", func(t *testing.T) {
-		doc := makeSPDXDocForLicensing(nil, "CC0-1.0")
+// CompWithValidLicenses
+func TestCompWithValidLicenses(t *testing.T) {
+	t.Run("cdxCompValidLicenseID", func(t *testing.T) {
+		ctx := context.Background()
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompValidLicenseID, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := CompWithValidLicenses(doc)
+		assert.InDelta(t, 10.0, got.Score, 0.0001)
+		assert.Equal(t, "complete", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxCompValidLicense", func(t *testing.T) {
+		ctx := context.Background()
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompValidLicense, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := CompWithValidLicenses(doc)
+		assert.InDelta(t, 10.0, got.Score, 0.0001)
+		assert.Equal(t, "complete", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxCompLicenseInvalidID", func(t *testing.T) {
+		ctx := context.Background()
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompLicenseInvalidID, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := CompWithValidLicenses(doc)
+		assert.InDelta(t, 0.0, got.Score, 0.0001)
+		assert.Equal(t, "add to 1 component", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxCompValidLicenseExpression", func(t *testing.T) {
+		ctx := context.Background()
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompValidLicenseExpression, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := CompWithValidLicenses(doc)
+		assert.InDelta(t, 10.0, got.Score, 0.0001)
+		assert.Equal(t, "complete", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxCompLicenseNoassertion", func(t *testing.T) {
+		ctx := context.Background()
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompLicenseNoassertion, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := CompWithValidLicenses(doc)
+		assert.InDelta(t, 0.0, got.Score, 0.0001)
+		assert.Equal(t, "add to 1 component", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxCompLicenseNone", func(t *testing.T) {
+		ctx := context.Background()
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompLicenseNone, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := CompWithValidLicenses(doc)
+		assert.InDelta(t, 0.0, got.Score, 0.0001)
+		assert.Equal(t, "add to 1 component", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxCompCustomLicense", func(t *testing.T) {
+		ctx := context.Background()
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompCustomLicense, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := CompWithValidLicenses(doc)
+		assert.InDelta(t, 10.0, got.Score, 0.0001)
+		assert.Equal(t, "complete", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+}
+
+// CompWithDeclaredLicenses
+func TestCompWithDeclaredLicenses(t *testing.T) {
+	t.Run("cdxCompValidDeclaredLicenseID", func(t *testing.T) {
+		ctx := context.Background()
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompValidDeclaredLicenseID, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := CompWithDeclaredLicenses(doc)
+		assert.InDelta(t, 10.0, got.Score, 0.0001)
+		assert.Equal(t, "complete", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxCompDeclaredExpression", func(t *testing.T) {
+		ctx := context.Background()
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompDeclaredExpression, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := CompWithDeclaredLicenses(doc)
+		assert.InDelta(t, 10.0, got.Score, 0.0001)
+		assert.Equal(t, "complete", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxCompValidDeclaredLicense", func(t *testing.T) {
+		ctx := context.Background()
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompValidDeclaredLicense, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := CompWithDeclaredLicenses(doc)
+		assert.InDelta(t, 10.0, got.Score, 0.0001)
+		assert.Equal(t, "complete", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+}
+
+// CompWithDeprecatedLicenses
+func TestCompWithDeprecatedLicenses(t *testing.T) {
+	t.Run("cdxCompDeprecatedLicenseID", func(t *testing.T) {
+		ctx := context.Background()
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompDeprecatedLicenseID, sbom.Signature{})
+		require.NoError(t, err)
 
 		got := CompWithDeprecatedLicenses(doc)
-
-		assert.Equal(t, 0.0, got.Score)
-		assert.True(t, got.Ignore)
-		assert.Equal(t, "N/A (no components)", got.Desc)
-	})
-
-	t.Run("SpdxWithOneDeprecatedLicense", func(t *testing.T) {
-		doc := makeSPDXDocForLicensing([]licSpdxMiniComp{
-			{id: "SPDXRef-A", name: "a", version: "1", concluded: "AGPL-1.0"},
-			{id: "SPDXRef-B", name: "b", version: "2", concluded: "MIT"},
-		}, "CC0-1.0")
-
-		got := CompWithDeprecatedLicenses(doc)
-
-		assert.InDelta(t, 5.0, got.Score, 1e-9)
+		assert.InDelta(t, 0.0, got.Score, 0.0001)
 		assert.Equal(t, "fix 1 component", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
-	t.Run("SpdxWithTwoDeprecatedLicense", func(t *testing.T) {
-		doc := makeSPDXDocForLicensing([]licSpdxMiniComp{
-			{id: "SPDXRef-A", name: "a", version: "1", concluded: "GPL-1.0-only"},
-			{id: "SPDXRef-B", name: "b", version: "2", concluded: "AGPL-1.0"},
-			{id: "SPDXRef-B", name: "b", version: "2", concluded: "BSD-2-Clause-FreeBSD"},
-		}, "CC0-1.0")
+	t.Run("spdxCompDeprecatedLicense", func(t *testing.T) {
+		ctx := context.Background()
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompDeprecatedLicense, sbom.Signature{})
+		require.NoError(t, err)
 
 		got := CompWithDeprecatedLicenses(doc)
-
-		// 2 deprecated out of 3, so 1 WITHOUT deprecated → 1/3 = 3.33
-		assert.InDelta(t, 10.0*(1.0/3.0), got.Score, 1e-9)
-		assert.Equal(t, "fix 2 components", got.Desc)
-		assert.False(t, got.Ignore)
-	})
-
-	t.Run("SpdxWithBothValidLicenses", func(t *testing.T) {
-		doc := makeSPDXDocForLicensing([]licSpdxMiniComp{
-			{id: "SPDXRef-A", name: "a", version: "1", concluded: "Apache-2.0"},
-			{id: "SPDXRef-B", name: "b", version: "2", concluded: "LicenseRef-MyCustom"},
-		}, "CC0-1.0")
-
-		got := CompWithDeprecatedLicenses(doc)
-
-		// 0 deprecated, so 2 WITHOUT deprecated → 2/2 = 10.0
-		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "complete", got.Desc)
-		assert.False(t, got.Ignore)
-	})
-
-	t.Run("SpdxWithCustomAndNOASSERTIONLicense", func(t *testing.T) {
-		doc := makeSPDXDocForLicensing([]licSpdxMiniComp{
-			{id: "SPDXRef-A", name: "a", version: "1", concluded: "Custom-license"},
-			{id: "SPDXRef-B", name: "b", version: "2", concluded: "NOASSERTION"},
-		}, "CC0-1.0")
-
-		got := CompWithDeprecatedLicenses(doc)
-
-		// 0 deprecated, so 2 WITHOUT deprecated → 2/2 = 10.0
-		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "complete", got.Desc)
-		assert.False(t, got.Ignore)
-	})
-
-	// CDX:1.6
-	t.Run("LicenseWithValidIDAndInvalidExpression", func(t *testing.T) {
-		doc := makeCDX16DocForLicensing([]licCdx16MiniComp{
-			{
-				id: "a", name: "a", version: "1",
-				items: []cdx16LicItem{
-					{licenseID: "AGPL-1.0", acknowledgement: "concluded"}, // deprecated
-				},
-			},
-			{
-				id: "b", name: "b", version: "2",
-				items: []cdx16LicItem{
-					{licenseID: "BSD-3-Clause", acknowledgement: "declared"},
-				},
-			},
-		}, "CC0-1.0")
-
-		got := CompWithDeprecatedLicenses(doc)
-
-		assert.InDelta(t, 5.0, got.Score, 1e-9)
+		assert.InDelta(t, 0.0, got.Score, 0.0001)
 		assert.Equal(t, "fix 1 component", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 }
 
-func Test_CompWithRestrictiveLicenses(t *testing.T) {
-	t.Run("NoComponentsNA", func(t *testing.T) {
-		doc := makeSPDXDocForLicensing(nil, "CC0-1.0")
+// CompWithRestrictiveLicenses
+func TestCompWithRestrictiveLicenses(t *testing.T) {
+	t.Run("cdxCompRestrictiveLicenseID", func(t *testing.T) {
+		ctx := context.Background()
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompRestrictiveLicenseID, sbom.Signature{})
+		require.NoError(t, err)
 
 		got := CompWithRestrictiveLicenses(doc)
-
-		assert.Equal(t, 0.0, got.Score)
-		assert.True(t, got.Ignore)
-		assert.Equal(t, "N/A (no components)", got.Desc)
-	})
-
-	t.Run("SpdxAllRestrictive", func(t *testing.T) {
-		doc := makeSPDXDocForLicensing([]licSpdxMiniComp{
-			{id: "SPDXRef-A", name: "a", version: "1", concluded: "GPL-2.0-only"},
-			{id: "SPDXRef-B", name: "b", version: "2", concluded: "GPL-3.0-only"},
-		}, "CC0-1.0")
-
-		got := CompWithRestrictiveLicenses(doc)
-
-		// 2 restrictive out of 2, so 0 WITHOUT restrictive → 0/2 = 0.0
-		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "review 2 components", got.Desc)
-		assert.False(t, got.Ignore)
-	})
-
-	t.Run("SpdxNoneRestrictive", func(t *testing.T) {
-		doc := makeSPDXDocForLicensing([]licSpdxMiniComp{
-			{id: "SPDXRef-A", name: "a", version: "1", concluded: "Apache-2.0"},
-			{id: "SPDXRef-B", name: "b", version: "2", concluded: "LicenseRef-custom"},
-			{id: "SPDXRef-C", name: "c", version: "3", concluded: "custom-license"},
-		}, "CC0-1.0")
-
-		got := CompWithRestrictiveLicenses(doc)
-
-		// 0 restrictive, so 3 WITHOUT restrictive → 3/3 = 10.0
-		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "complete", got.Desc)
-		assert.False(t, got.Ignore)
-	})
-
-	t.Run("SpdxPartialRestrictive", func(t *testing.T) {
-		doc := makeSPDXDocForLicensing([]licSpdxMiniComp{
-			{id: "SPDXRef-A", name: "a", version: "1", concluded: "GPL-2.0-only"},   // restrictive
-			{id: "SPDXRef-B", name: "b", version: "2", concluded: "MIT"},            // not
-			{id: "SPDXRef-C", name: "c", version: "3", concluded: "LicenseRef-foo"}, // not
-		}, "CC0-1.0")
-
-		got := CompWithRestrictiveLicenses(doc)
-
-		// 1 restrictive out of 3, so 2 WITHOUT restrictive → 2/3 = 6.67
-		assert.InDelta(t, 10.0*(2.0/3.0), got.Score, 1e-9)
+		assert.InDelta(t, 0.0, got.Score, 0.0001)
 		assert.Equal(t, "review 1 component", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
-	// CDX 1.6 — only concluded counts; declared should not
-	t.Run("Cdx16ConcludedRestrictiveDeclaredNonRestrictive", func(t *testing.T) {
-		doc := makeCDX16DocForLicensing([]licCdx16MiniComp{
-			{
-				id: "a", name: "a", version: "1",
-				items: []cdx16LicItem{
-					{licenseID: "GPL-3.0-only", acknowledgement: "concluded"}, // restrictive
-				},
-			},
-			{
-				id: "b", name: "b", version: "2",
-				items: []cdx16LicItem{
-					{licenseID: "GPL-2.0-only", acknowledgement: "declared"}, // declared → should NOT count
-				},
-			},
-		}, "CC0-1.0")
+	t.Run("spdxCompRestrictiveLicense", func(t *testing.T) {
+		ctx := context.Background()
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompRestrictiveLicense, sbom.Signature{})
+		require.NoError(t, err)
+
 		got := CompWithRestrictiveLicenses(doc)
-		// 1 restrictive out of 2, so 1 WITHOUT restrictive → 1/2 = 5.0
-		assert.InDelta(t, 5.0, got.Score, 1e-9)
+		assert.InDelta(t, 0.0, got.Score, 0.0001)
 		assert.Equal(t, "review 1 component", got.Desc)
-		assert.False(t, got.Ignore)
-	})
-
-	// NOASSERTION/NONE not restrictive
-	t.Run("Cdx16NoAssertionNotRestrictive", func(t *testing.T) {
-		doc := makeCDX16DocForLicensing([]licCdx16MiniComp{
-			{
-				id: "a", name: "a", version: "1",
-				items: []cdx16LicItem{
-					{expression: "NOASSERTION", acknowledgement: "concluded"},
-				},
-			},
-			{
-				id: "b", name: "b", version: "2",
-				items: []cdx16LicItem{
-					{licenseID: "NONE", acknowledgement: "concluded"},
-				},
-			},
-		}, "CC0-1.0")
-		got := CompWithRestrictiveLicenses(doc)
-		// NOASSERTION and NONE are not considered valid concluded licenses
-		// so this returns 0 with "add concluded licenses first"
-		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add concluded licenses first", got.Desc)
-		assert.False(t, got.Ignore)
-	})
-
-	// Custom LicenseRef-* should not be restrictive
-	t.Run("CustomLicenseRefNotRestrictive", func(t *testing.T) {
-		doc := makeSPDXDocForLicensing([]licSpdxMiniComp{
-			{id: "SPDXRef-A", name: "a", version: "1", concluded: "LicenseRef-MyCustom"},
-			{id: "SPDXRef-B", name: "b", version: "2", concluded: "MIT"},
-		}, "CC0-1.0")
-		got := CompWithRestrictiveLicenses(doc)
-		// 0 restrictive, so 2 WITHOUT restrictive → 2/2 = 10.0
-		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "complete", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 }

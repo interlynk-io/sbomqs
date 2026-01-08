@@ -43,9 +43,10 @@ import (
 )
 
 var (
-	cdxSpecVersions   = []string{"1.0", "1.1", "1.2", "1.3", "1.4", "1.5", "1.6"}
-	cdxFileFormats    = []string{"json", "xml"}
-	cdxPrimaryPurpose = []string{"application", "framework", "library", "container", "operating-system", "device", "firmware", "file"}
+	cdxSpecVersions       = []string{"1.0", "1.1", "1.2", "1.3", "1.4", "1.5", "1.6"}
+	cdxFileFormats        = []string{"json", "xml"}
+	cdxPrimaryPurpose     = []string{"application", "framework", "library", "container", "operating-system", "device", "firmware", "file"}
+	CdxSupportedLifecycle = []string{"design", "pre-build", "build", "post-build", "operations", "discovery", "decommission"}
 )
 
 type CdxDoc struct {
@@ -62,10 +63,9 @@ type CdxDoc struct {
 	Lifecycle        []string
 	CdxSupplier      GetSupplier
 	CdxManufacturer  GetManufacturer
-	compositions     map[string]string
+	Compositions     []GetComposition
 	PrimaryComponent PrimaryComp
 	Dependencies     map[string][]string
-	composition      map[string]string
 	Vuln             []GetVulnerabilities
 	SignatureDetail  GetSignature
 	rawContent       []byte // Store raw content for manual parsing
@@ -160,8 +160,8 @@ func (c CdxDoc) GetRelationships(componentID string) []string {
 	return c.Dependencies[componentID]
 }
 
-func (c CdxDoc) GetComposition(componentID string) string {
-	return c.composition[componentID]
+func (c CdxDoc) Composition() []GetComposition {
+	return c.Compositions
 }
 
 func (c CdxDoc) Vulnerabilities() []GetVulnerabilities {
@@ -916,36 +916,41 @@ func (c *CdxDoc) parseManufacturer() {
 }
 
 func (c *CdxDoc) parsePrimaryCompAndRelationships() {
-	if c.doc.Metadata == nil {
+	if c.doc.Metadata == nil || c.doc.Metadata.Component == nil {
 		return
 	}
-	if c.doc.Metadata.Component == nil {
+
+	comp := c.doc.Metadata.Component
+
+	// Semantic validation: primary component must be identifiable
+	if strings.TrimSpace(comp.Name) == "" || strings.TrimSpace(string(comp.Type)) == "" {
 		return
 	}
 
 	c.Dependencies = make(map[string][]string)
 
 	c.PrimaryComponent.Present = true
-	c.PrimaryComponent.ID = c.doc.Metadata.Component.BOMRef
-	c.PrimaryComponent.Name = c.doc.Metadata.Component.Name
-	var totalDependencies int
+	c.PrimaryComponent.ID = comp.BOMRef
+	c.PrimaryComponent.Name = comp.Name
+	c.PrimaryComponent.Type = string(comp.Type)
 
+	var totalDependencies int
 	c.rels = []GetRelation{}
 
 	for _, r := range lo.FromPtr(c.doc.Dependencies) {
 		for _, d := range lo.FromPtr(r.Dependencies) {
-			nr := Relation{}
-			nr.From = r.Ref
-			nr.To = d
+			nr := Relation{
+				From: r.Ref,
+				To:   d,
+			}
+
+			c.rels = append(c.rels, nr)
+			c.Dependencies[r.Ref] = append(c.Dependencies[r.Ref], d)
+
 			if r.Ref == c.PrimaryComponent.ID {
 				c.PrimaryComponent.HasDependency = true
 				c.PrimaryComponent.AllDependencies = append(c.PrimaryComponent.AllDependencies, d)
 				totalDependencies++
-				c.rels = append(c.rels, nr)
-				c.Dependencies[c.PrimaryComponent.ID] = append(c.Dependencies[c.PrimaryComponent.ID], d)
-			} else {
-				c.rels = append(c.rels, nr)
-				c.Dependencies[r.Ref] = append(c.Dependencies[r.Ref], d)
 			}
 		}
 	}
@@ -1026,21 +1031,48 @@ func (c *CdxDoc) assignSupplier(comp *cydx.Component) *Supplier {
 }
 
 func (c *CdxDoc) parseCompositions() {
-	c.compositions = make(map[string]string)
-
-	if c.doc.Compositions == nil {
+	if c.doc == nil || c.doc.Compositions == nil {
 		return
 	}
 
-	for _, composition := range lo.FromPtr(c.doc.Compositions) {
-		assemblies := lo.FromPtr(composition.Assemblies)
-		if len(assemblies) == 0 {
-			continue
+	for _, cdxc := range *c.doc.Compositions {
+		agg := CompositionAggregate(cdxc.Aggregate)
+
+		scope := ScopeGlobal
+		switch {
+		case cdxc.Dependencies != nil && len(*cdxc.Dependencies) > 0:
+			scope = ScopeDependencies
+		case cdxc.Assemblies != nil && len(*cdxc.Assemblies) > 0:
+			scope = ScopeAssemblies
+		case cdxc.Vulnerabilities != nil && len(*cdxc.Vulnerabilities) > 0:
+			scope = ScopeVulnerabilities
 		}
 
-		for _, assembly := range assemblies {
-			c.compositions[string(assembly)] = string(composition.Aggregate)
+		comp := Composition{
+			id:        cdxc.BOMRef,
+			scope:     scope,
+			aggregate: agg,
 		}
+
+		if cdxc.Dependencies != nil {
+			for _, dep := range *cdxc.Dependencies {
+				comp.dependencies = append(comp.dependencies, string(dep))
+			}
+		}
+
+		if cdxc.Assemblies != nil {
+			for _, asm := range *cdxc.Assemblies {
+				comp.assemblies = append(comp.assemblies, string(asm))
+			}
+		}
+
+		if cdxc.Vulnerabilities != nil {
+			for _, v := range *cdxc.Vulnerabilities {
+				comp.vulnerabilities = append(comp.vulnerabilities, string(v))
+			}
+		}
+
+		c.Compositions = append(c.Compositions, comp)
 	}
 }
 

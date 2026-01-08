@@ -84,7 +84,7 @@ func compWithPrimaryPackageCheck(d sbom.Document, c *check) score {
 		return *s
 	}
 	withPurpose := lo.CountBy(d.Components(), func(c sbom.GetComponent) bool {
-		return c.PrimaryPurpose() != "" && lo.Contains(sbom.SupportedPrimaryPurpose(d.Spec().GetSpecType()), strings.ToLower(c.PrimaryPurpose()))
+		return strings.TrimSpace(c.PrimaryPurpose()) != "" && lo.Contains(sbom.SupportedPrimaryPurpose(d.Spec().GetSpecType()), strings.ToLower(c.PrimaryPurpose()))
 	})
 
 	finalScore := (float64(withPurpose) / float64(totalComponents)) * 10.0

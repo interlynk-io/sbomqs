@@ -48,6 +48,16 @@ type FakeGetPrimaryComp struct {
 	getTotalNoOfDependenciesReturnsOnCall map[int]struct {
 		result1 int
 	}
+	GetTypeStub        func() string
+	getTypeMutex       sync.RWMutex
+	getTypeArgsForCall []struct {
+	}
+	getTypeReturns struct {
+		result1 string
+	}
+	getTypeReturnsOnCall map[int]struct {
+		result1 string
+	}
 	GetVersionStub        func() string
 	getVersionMutex       sync.RWMutex
 	getVersionArgsForCall []struct {
@@ -291,6 +301,59 @@ func (fake *FakeGetPrimaryComp) GetTotalNoOfDependenciesReturnsOnCall(i int, res
 	}
 	fake.getTotalNoOfDependenciesReturnsOnCall[i] = struct {
 		result1 int
+	}{result1}
+}
+
+func (fake *FakeGetPrimaryComp) GetType() string {
+	fake.getTypeMutex.Lock()
+	ret, specificReturn := fake.getTypeReturnsOnCall[len(fake.getTypeArgsForCall)]
+	fake.getTypeArgsForCall = append(fake.getTypeArgsForCall, struct {
+	}{})
+	stub := fake.GetTypeStub
+	fakeReturns := fake.getTypeReturns
+	fake.recordInvocation("GetType", []interface{}{})
+	fake.getTypeMutex.Unlock()
+	if stub != nil {
+		return stub()
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeGetPrimaryComp) GetTypeCallCount() int {
+	fake.getTypeMutex.RLock()
+	defer fake.getTypeMutex.RUnlock()
+	return len(fake.getTypeArgsForCall)
+}
+
+func (fake *FakeGetPrimaryComp) GetTypeCalls(stub func() string) {
+	fake.getTypeMutex.Lock()
+	defer fake.getTypeMutex.Unlock()
+	fake.GetTypeStub = stub
+}
+
+func (fake *FakeGetPrimaryComp) GetTypeReturns(result1 string) {
+	fake.getTypeMutex.Lock()
+	defer fake.getTypeMutex.Unlock()
+	fake.GetTypeStub = nil
+	fake.getTypeReturns = struct {
+		result1 string
+	}{result1}
+}
+
+func (fake *FakeGetPrimaryComp) GetTypeReturnsOnCall(i int, result1 string) {
+	fake.getTypeMutex.Lock()
+	defer fake.getTypeMutex.Unlock()
+	fake.GetTypeStub = nil
+	if fake.getTypeReturnsOnCall == nil {
+		fake.getTypeReturnsOnCall = make(map[int]struct {
+			result1 string
+		})
+	}
+	fake.getTypeReturnsOnCall[i] = struct {
+		result1 string
 	}{result1}
 }
 
