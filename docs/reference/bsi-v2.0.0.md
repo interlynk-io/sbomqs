@@ -43,3 +43,146 @@
 | - | ---------------------------- | --------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- | -------------------------------------- |
 | 1 | **Declared licences**        | Licences declared by the component creator or licensor                      | `PackageLicenseDeclared`                                                                                                                             | `component.licenses[]` with `licenseAcknowledgement = declared`   | `hasDeclaredLicense`                   |
 | 2 | **Hash of the source code**  | Cryptographic hash of the component’s source code (algorithm not specified) | No single dedicated field. Commonly represented using `PackageChecksum` when the package represents source code, or `FileChecksum` for source files. | `component.externalReferences[type=source-distribution].hashes[]` | `verifiedUsing` (for source artifacts) |
+
+## Confusion / Clarification Needed (BSI v2.0.0)
+
+The following points were identified while mapping BSI v2.0.0 requirements to **SPDX 2.3 / 3.0** and **CycloneDX 1.6**.
+
+### 1. Source Code URI in SPDX
+
+**Question**
+
+- What is the corresponding field for it in the SPDX ?
+- Can `PackageDownloadLocation` be considered a valid **“Source Code URI”** in SPDX?
+
+**Context**
+
+- SPDX 2.3 does not define a dedicated “source code URI” field.
+- `PackageDownloadLocation` is often reused for multiple purposes (source, binary, homepage).
+
+### 2. Source Code URI in CycloneDX: `vcs` vs `source-distribution`
+
+**Question**
+
+- Can `externalReferences.type = "vcs"` be accepted as a valid **“Source Code URI”** in CycloneDX?
+
+**Context**
+
+- BSI v2.0.1 examples explicitly show acceptance of `externalReferences.type = "source-distribution"`.
+- CycloneDX also defines `vcs` for version control system URLs.
+- It is unclear whether both are equivalent for BSI compliance.
+
+**Clarification requested**
+
+- Is `vcs` equivalent to `source-distribution` for the “Source Code URI” requirement?
+- If both are present, is one preferred?
+
+### 3. Source Code URI vs Deployable Component URI
+
+**Question**
+
+- What is the **intended semantic difference** between:
+ - “Source Code URI”
+ - “Deployable Component URI”
+
+**Context**
+
+- In CycloneDX, the distinction is clear:
+  - `source-distribution` / `vcs` → source
+  - `distribution` → deployable artifact
+- In SPDX, both concepts are often represented using `PackageDownloadLocation` or `ExternalRef`.
+
+**Clarification requested**
+
+- What are the recommended SPDX fields for each of these concepts?
+- How should tooling distinguish between source and deployable URIs in SPDX documents?
+
+### 4. Associated License vs Declared / Concluded License
+
+**Question**
+
+- In SPDX 2.3 or CycloneDX 1.6, if **either** a declared license **or** a concluded license is present, can it be considered an **“associated license”** for BSI compliance?
+
+**Context**
+
+- BSI uses the term “associated license(s)”.
+- SPDX and CycloneDX distinguish between declared and concluded licenses.
+- Neither SPDX nor CycloneDX defines a field explicity named "associated license".
+
+**Clarification requested**
+
+- Is the presence of either declared or concluded license sufficient?
+- Is one preferred over the other for compliance purposes?
+
+### 5. Executable, Structured, and Archive Files in SPDX
+
+**Question**
+
+- Can the community provide **concrete SPDX examples** for representing:
+  - Executable files
+  - Archive files
+  - Structured files
+
+- Does SBOM generating tools for CycloneDX, create component properties in the following form:
+  - bsi:component:executable for executable files
+  - bsi:component:archive for archive files
+  - bsi:component:structured for structured files.
+
+**Context**
+
+- SPDX has no direct, first-class fields for these classifications.
+- Current mappings rely on indirect fields such as `PackagePurpose` or file semantics.
+- BSI requirements reference these concepts explicitly.
+
+**Clarification requested**
+
+- Are there recommended SPDX patterns for these classifications?
+- Should these be treated as optional or not applicable for SPDX?
+
+### 6. Difference Between "Hash of the deployable component" and “Hash of the source code of the component”
+
+**Question**
+
+- What is the intended difference between:
+  - “Hash of the deployable component”
+  - “Hash of the source code of the component”
+
+**Context**
+
+- BSI treats these as two separate fields.
+- SPDX provides generic checksum mechanisms (PackageChecksum, FileChecksum) but does not distinguish intent.
+- It is unclear how tooling should reliably differentiate between hashes of deployable artifacts and hashes of source code.
+
+**Clarification requested**
+
+- What SPDX fields should be used for:
+  - Hash of a deployable artifact
+  - Hash of the corresponding source code
+
+- Is PackageChecksum acceptable for both cases when context differs?
+
+### 7. SBOM Author and Component Creator in CycloneDX
+
+**Question**
+
+- In BSI v2.0.1 examples, SBOM author/creator information appears to be derived from `metadata.manufacturer`.
+Can `metadata.supplier` or `metadata.authors` also be used to satisfy the SBOM Author requirement?
+- Similarly, for component creator / component supplier, which CycloneDX fields are considered acceptable?
+
+**Context**
+
+- CycloneDX defines SBOM authors explicitly via `metadata.authors`.
+- BSI examples appear to rely on `metadata.manufacturer`.
+- It is unclear whether these fields are:
+  - equivalent
+  - ordered by preference
+  - or intended as fallbacks
+
+**Clarification requested**
+
+- For SBOM author:
+  - Can `metadata.authors`, `metadata.supplier`, and `metadata.manufacturer` all be accepted?
+  - Is there a preferred or primary field?
+
+- For component creator:
+  - Should `component.supplier`, `component.manufacturer`, or `component.authors` be used?
