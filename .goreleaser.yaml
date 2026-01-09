@@ -38,18 +38,18 @@ builds:
 
 signs:
   - cmd: cosign
+    env:
+      - COSIGN_EXPERIMENTAL=1
     certificate: '${artifact}.pem'
-    signature: "${artifact}.sig"
     args:
       - sign-blob
       - --output-certificate=${certificate}
       - --output-signature=${signature}
-      - --bundle=${artifact}.bundle
       - ${artifact}
       - --yes
-    artifacts: all
+    artifacts: archive
     output: true
-   
+
 archives:
   - id: sbomqs
     name_template: >-
