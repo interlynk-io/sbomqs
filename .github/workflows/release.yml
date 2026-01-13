@@ -71,7 +71,7 @@ jobs:
           goreleaser -v
 
       - name: Install cosign
-        uses: sigstore/cosign-installer@fb28c2b6339dcd94da6e4cbcbc5e888961f6f8c3 # v3.9.0
+        uses: sigstore/cosign-installer@faadad0cce49287aee09b3a48701e75088a2c6ad # v4.0.0
 
       - name: Download and verify sbom-tool
         run: |
