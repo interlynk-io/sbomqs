@@ -43,9 +43,20 @@ type Document interface {
 	Supplier() GetSupplier
 
 	// PrimaryComp returns information about the primary component in the SBOM
-	PrimaryComp() GetPrimaryComp
-	// GetRelationships returns relationships for the specified component ID
-	GetRelationships(string) []string
+	PrimaryComp() GetPrimaryComponentInfo
+
+	// // GetRelationships returns relationships for the specified component ID
+	// GetRelationships(string) []string
+
+	// Raw relationship graph
+	GetRelationships() []GetRelationship
+
+	// Graph navigation
+	GetOutgoingRelations(compID string) []GetRelationship
+
+	// Dependency helpers (semantic, but generic)
+	GetDirectDependencies(compID string, relTypes ...string) []GetComponent
+	// GetTransitiveDependencies(compID string, relTypes ...string) []Component
 
 	// Vulnerabilities returns all vulnerabilities defined in the SBOM
 	Vulnerabilities() []GetVulnerabilities

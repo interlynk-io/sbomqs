@@ -44,18 +44,20 @@ var (
 )
 
 type SpdxDoc struct {
-	doc              *spdx.Document
-	format           FileFormat
-	version          FormatVersion
-	ctx              context.Context
-	SpdxSpec         *Specs
-	spdxValidSchema  bool
-	Comps            []GetComponent
-	Auths            []GetAuthor
-	SpdxTools        []GetTool
-	Rels             []GetRelation
-	logs             []string
-	PrimaryComponent PrimaryComp
+	doc             *spdx.Document
+	format          FileFormat
+	version         FormatVersion
+	ctx             context.Context
+	SpdxSpec        *Specs
+	spdxValidSchema bool
+	Comps           []GetComponent
+	Auths           []GetAuthor
+	SpdxTools       []GetTool
+	Rels            []GetRelation
+	Relationships   []GetRelationship
+	logs            []string
+	// PrimaryComponent PrimaryComp
+	PrimaryComponent PrimaryComponentInfo
 	Lifecycle        string
 	Dependencies     map[string][]string
 	compositions     []GetComposition
@@ -113,7 +115,7 @@ func newSPDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat, version
 	return doc, err
 }
 
-func (s SpdxDoc) PrimaryComp() GetPrimaryComp {
+func (s SpdxDoc) PrimaryComp() GetPrimaryComponentInfo {
 	return &s.PrimaryComponent
 }
 
@@ -137,6 +139,63 @@ func (s SpdxDoc) Relations() []GetRelation {
 	return s.Rels
 }
 
+func (s SpdxDoc) GetRelationships() []GetRelationship {
+	return s.Relationships
+}
+
+func (s SpdxDoc) GetOutgoingRelations(compID string) []GetRelationship {
+	out := make([]GetRelationship, 0)
+
+	for _, r := range s.Relationships {
+		if r.GetFrom() == compID {
+			out = append(out, r)
+		}
+	}
+	return out
+}
+
+func (s SpdxDoc) GetDirectDependencies(compID string, relTypes ...string) []GetComponent {
+	deps := make([]GetComponent, 0)
+
+	// 1. Get outgoing edges
+	allKindOfRelationships := s.GetOutgoingRelations(compID)
+	if len(allKindOfRelationships) == 0 {
+		return deps
+	}
+
+	// 2. Build component lookup
+	mapCompID := make(map[string]GetComponent)
+	for _, c := range s.Components() {
+		mapCompID[c.GetID()] = c
+	}
+
+	// 3. Resolve dependencies
+	for _, r := range allKindOfRelationships {
+		if !relTypeAllowed(r.GetType(), relTypes) {
+			continue
+		}
+
+		if dep, ok := mapCompID[r.GetTo()]; ok {
+			deps = append(deps, dep)
+		}
+	}
+
+	return deps
+}
+
+func relTypeAllowed(relType string, allowedType []string) bool {
+	if len(allowedType) == 0 {
+		return true
+	}
+
+	for _, t := range allowedType {
+		if strings.EqualFold(relType, t) {
+			return true
+		}
+	}
+	return false
+}
+
 func (s SpdxDoc) Logs() []string {
 	return s.logs
 }
@@ -153,9 +212,9 @@ func (s SpdxDoc) Supplier() GetSupplier {
 	return nil
 }
 
-func (s SpdxDoc) GetRelationships(componentID string) []string {
-	return s.Dependencies[componentID]
-}
+// func (s SpdxDoc) GetRelationships(componentID string) []string {
+// 	return s.Dependencies[componentID]
+// }
 
 // Helper function to clean up keys
 func CleanKey(key string) string {
@@ -185,7 +244,9 @@ func (s *SpdxDoc) parse() {
 	s.parseSchemaValidation()
 	s.parseAuthors()
 	s.parseTool()
-	s.parsePrimaryCompAndRelationships()
+	// s.parsePrimaryCompAndRelationships()
+	s.parsePrimaryComponent()
+	s.parseRelationships()
 	s.parseComps()
 }
 
@@ -303,9 +364,9 @@ func (s *SpdxDoc) parseComps() {
 		nc.ConcludedLicense = s.concludedLicenses(index)
 		nc.ID = nc.Spdxid
 		nc.PackageLicenseConcluded = sc.PackageLicenseConcluded
-		if strings.Contains(s.PrimaryComponent.ID, string(sc.PackageSPDXIdentifier)) {
-			nc.PrimaryCompt = s.PrimaryComponent
-		}
+		// if strings.Contains(s.PrimaryComponent.ID, string(sc.PackageSPDXIdentifier)) {
+		// 	nc.PrimaryCompt = s.PrimaryComponent
+		// }
 
 		manu := s.getManufacturer(index)
 		if manu != nil {
@@ -408,57 +469,112 @@ func getComponentDependencies(s *SpdxDoc, componentID string) (bool, int, []stri
 	return count > 0, count, deps
 }
 
-func (s *SpdxDoc) parsePrimaryCompAndRelationships() {
-	s.Dependencies = make(map[string][]string)
-	var err error
-	var aBytes, bBytes []byte
-	var primaryComponent string
-	var totalDependencies int
-
+// parsePrimaryComponent
+func (s *SpdxDoc) parsePrimaryComponent() {
 	for _, r := range s.doc.Relationships {
-		// spdx_common.TypeRelationshipDescribe
-		if strings.ToUpper(r.Relationship) == "DESCRIBES" {
-			bBytes, err = r.RefB.MarshalJSON()
-			if err != nil {
-				continue
-			}
-			primaryComponent = CleanKey(string(bBytes))
-			s.PrimaryComponent.ID = primaryComponent
-			s.PrimaryComponent.Present = true
-			modified := strings.TrimPrefix(primaryComponent, "SPDXRef-")
+		if strings.ToUpper(r.Relationship) != spdx_common.TypeRelationshipDescribe {
+			continue
+		}
 
-			for _, pack := range s.doc.Packages {
-				if string(pack.PackageSPDXIdentifier) == modified {
-					s.PrimaryComponent.Name = pack.PackageName
-					s.PrimaryComponent.Version = pack.PackageVersion
-				}
+		// DOCUMENT -> component
+		bBytes, err := r.RefB.MarshalJSON()
+		if err != nil {
+			continue
+		}
+
+		id := CleanKey(string(bBytes))
+		s.PrimaryComponent.ID = id
+		s.PrimaryComponent.Present = true
+
+		// Resolve name/version from packages
+		pkgID := strings.TrimPrefix(id, "SPDXRef-")
+		for _, p := range s.doc.Packages {
+			if string(p.PackageSPDXIdentifier) == pkgID {
+				s.PrimaryComponent.Name = p.PackageName
+				s.PrimaryComponent.Version = p.PackageVersion
+				break
 			}
 		}
+		break // assume single primary component
 	}
-
-	for _, r := range s.doc.Relationships {
-		if strings.ToUpper(r.Relationship) == spdx_common.TypeRelationshipContains {
-			aBytes, err = r.RefA.MarshalJSON()
-			if err != nil {
-				continue
-			}
-			bBytes, err = r.RefB.MarshalJSON()
-			if err != nil {
-				continue
-			}
-			if CleanKey(string(aBytes)) == s.PrimaryComponent.ID {
-				totalDependencies++
-				s.PrimaryComponent.HasDependency = true
-				s.PrimaryComponent.AllDependencies = append(s.PrimaryComponent.AllDependencies, CleanKey(string(bBytes)))
-				s.Dependencies[CleanKey(string(aBytes))] = append(s.Dependencies[CleanKey(string(aBytes))], CleanKey(string(bBytes)))
-
-			} else {
-				s.Dependencies[CleanKey(string(aBytes))] = append(s.Dependencies[CleanKey(string(aBytes))], CleanKey(string(bBytes)))
-			}
-		}
-	}
-	s.PrimaryComponent.Dependecies = totalDependencies
 }
+
+// parseRelationships()
+func (s *SpdxDoc) parseRelationships() {
+	s.Relationships = make([]GetRelationship, 0, len(s.doc.Relationships))
+
+	for _, r := range s.doc.Relationships {
+		aBytes, err := r.RefA.MarshalJSON()
+		if err != nil {
+			continue
+		}
+
+		bBytes, err := r.RefB.MarshalJSON()
+		if err != nil {
+			continue
+		}
+
+		rel := Relationship{
+			From: CleanKey(string(aBytes)),
+			To:   CleanKey(string(bBytes)),
+			Type: strings.ToUpper(r.Relationship),
+		}
+
+		s.Relationships = append(s.Relationships, rel)
+	}
+}
+
+// func (s *SpdxDoc) parsePrimaryCompAndRelationships() {
+// 	s.Dependencies = make(map[string][]string)
+// 	var err error
+// 	var aBytes, bBytes []byte
+// 	var primaryComponent string
+// 	var totalDependencies int
+
+// 	for _, r := range s.doc.Relationships {
+// 		// spdx_common.TypeRelationshipDescribe
+// 		if strings.ToUpper(r.Relationship) == "DESCRIBES" {
+// 			bBytes, err = r.RefB.MarshalJSON()
+// 			if err != nil {
+// 				continue
+// 			}
+// 			primaryComponent = CleanKey(string(bBytes))
+// 			s.PrimaryComponent.ID = primaryComponent
+// 			s.PrimaryComponent.Present = true
+// 			modified := strings.TrimPrefix(primaryComponent, "SPDXRef-")
+
+// 			for _, pack := range s.doc.Packages {
+// 				if string(pack.PackageSPDXIdentifier) == modified {
+// 					s.PrimaryComponent.Name = pack.PackageName
+// 					s.PrimaryComponent.Version = pack.PackageVersion
+// 				}
+// 			}
+// 		}
+// 	}
+
+// 	for _, r := range s.doc.Relationships {
+// 		if strings.ToUpper(r.Relationship) == spdx_common.TypeRelationshipContains {
+// 			aBytes, err = r.RefA.MarshalJSON()
+// 			if err != nil {
+// 				continue
+// 			}
+// 			bBytes, err = r.RefB.MarshalJSON()
+// 			if err != nil {
+// 				continue
+// 			}
+// 			if CleanKey(string(aBytes)) == s.PrimaryComponent.ID {
+// 				totalDependencies++
+// 				s.PrimaryComponent.HasDependency = true
+// 				s.PrimaryComponent.AllDependencies = append(s.PrimaryComponent.AllDependencies, CleanKey(string(bBytes)))
+// 				s.Dependencies[CleanKey(string(aBytes))] = append(s.Dependencies[CleanKey(string(aBytes))], CleanKey(string(bBytes)))
+
+// 			} else {
+// 				s.Dependencies[CleanKey(string(aBytes))] = append(s.Dependencies[CleanKey(string(aBytes))], CleanKey(string(bBytes)))
+// 			}
+// 		}
+// 	}
+// 	s.PrimaryComponent.Dependecies = totalDependencies
+// }
 
 // creationInfo.Creators.Tool
 // Also create for org: , creationInfo.Creators.Organization
