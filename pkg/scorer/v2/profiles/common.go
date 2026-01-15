@@ -215,8 +215,11 @@ func SBOMCreationTimestamp(doc sbom.Document) catalog.ProfFeatScore {
 // SPDX: relationships (DEPENDS_ON); CDX: component.dependencies / bom.dependencies
 func SBOMDepedencies(doc sbom.Document) catalog.ProfFeatScore {
 	var have int
-	if doc.PrimaryComp() != nil {
-		have = doc.PrimaryComp().GetTotalNoOfDependencies()
+
+	primary := doc.PrimaryComp()
+
+	if primary.IsPresent() {
+		have = len(doc.GetDirectDependencies(primary.GetID()))
 	}
 
 	if have == 0 {

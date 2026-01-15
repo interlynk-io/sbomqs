@@ -22,44 +22,46 @@ package sbom
 type Document interface {
 	// Spec returns the SBOM specification information
 	Spec() Spec
+
 	// SchemaValidation returns whether the SBOM passes schema validation
 	SchemaValidation() bool
+
 	// Components returns all components defined in the SBOM
 	Components() []GetComponent
-	// Relations returns all relationships defined in the SBOM
-	Relations() []GetRelation
+
 	// Authors returns the authors of the SBOM
 	Authors() []GetAuthor
+
 	// Tools returns the tools used to create the SBOM
 	Tools() []GetTool
+
 	// Logs returns any log messages associated with the SBOM processing
 	Logs() []string
 
 	// Lifecycles returns the lifecycle phases represented in the SBOM
 	Lifecycles() []string
+
 	// Manufacturer returns the manufacturer information for the SBOM
 	Manufacturer() GetManufacturer
+
 	// Supplier returns the supplier information for the SBOM
 	Supplier() GetSupplier
 
 	// PrimaryComp returns information about the primary component in the SBOM
 	PrimaryComp() GetPrimaryComponentInfo
 
-	// // GetRelationships returns relationships for the specified component ID
-	// GetRelationships(string) []string
-
 	// Raw relationship graph
 	GetRelationships() []GetRelationship
 
-	// Graph navigation
+	// Represents all outgoing relationships for a given component
 	GetOutgoingRelations(compID string) []GetRelationship
 
 	// Dependency helpers (semantic, but generic)
 	GetDirectDependencies(compID string, relTypes ...string) []GetComponent
-	// GetTransitiveDependencies(compID string, relTypes ...string) []Component
 
 	// Vulnerabilities returns all vulnerabilities defined in the SBOM
 	Vulnerabilities() []GetVulnerabilities
+
 	// Signature returns the cryptographic signature information for the SBOM
 	Signature() GetSignature
 

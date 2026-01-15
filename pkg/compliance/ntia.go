@@ -91,7 +91,7 @@ func ntiaSBOMDependency(doc sbom.Document) *db.Record {
 		return db.NewRecordStmt(SBOM_DEPENDENCY, "SBOM Data Fields", "primary component not declared", SCORE_ZERO, "")
 	}
 
-	totalDeps := doc.GetDirectDependencies(pc.GetID())
+	totalDeps := doc.GetDirectDependencies(pc.GetID(), "DEPENDS_ON")
 
 	if len(totalDeps) > 0 {
 		score = SCORE_FULL
@@ -230,15 +230,6 @@ func ntiaSbomCreatedTimestamp(doc sbom.Document) *db.Record {
 	return db.NewRecordStmt(SBOM_TIMESTAMP, "SBOM Data Fields", result, score, "")
 }
 
-var (
-	compIDWithName      = make(map[string]string)
-	componentList       = make(map[string]bool)
-	primaryDependencies = make(map[string]bool)
-	// GetAllPrimaryDepenciesByName holds the names of all primary component dependencies
-	// found in the SBOM document, used for NTIA compliance reporting.
-	GetAllPrimaryDepenciesByName = []string{}
-)
-
 // Required component stuffs
 func ntiaComponents(doc sbom.Document) []*db.Record {
 	records := []*db.Record{}
@@ -246,16 +237,6 @@ func ntiaComponents(doc sbom.Document) []*db.Record {
 	if len(doc.Components()) == 0 {
 		records = append(records, db.NewRecordStmt(SBOM_COMPONENTS, "SBOM Data Fields", "absent", SCORE_ZERO, ""))
 		return records
-	}
-
-	compIDWithName = common.ComponentsNamesMapToIDs(doc)
-	componentList = common.ComponentsLists(doc)
-	primaryDependencies = common.MapPrimaryDependencies(doc)
-	dependencies := common.GetAllPrimaryComponentDependencies(doc)
-	areAllDepesPresentInCompList := common.CheckPrimaryDependenciesInComponentList(dependencies, componentList)
-
-	if areAllDepesPresentInCompList {
-		GetAllPrimaryDepenciesByName = common.GetDependenciesByName(dependencies, compIDWithName)
 	}
 
 	for _, component := range doc.Components() {
@@ -327,12 +308,14 @@ func ntiaComponentDependencies(doc sbom.Document, component sbom.GetComponent) *
 	// 1. if component is a primary component
 	if primary.IsPresent() && primary.GetID() == compID {
 		deps := doc.GetDirectDependencies(compID, "DEPENDS_ON")
-		names := make([]string, len(deps))
+		names := make([]string, 0, len(deps))
 
 		for _, dep := range deps {
-			names = append(names, dep.GetName())
+			name := strings.TrimSpace(dep.GetName())
+			if name != "" {
+				names = append(names, name)
+			}
 		}
-
 		result = strings.Join(names, ", ")
 		return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), result, SCORE_FULL, "")
 	}
@@ -342,7 +325,10 @@ func ntiaComponentDependencies(doc sbom.Document, component sbom.GetComponent) *
 	if len(deps) > 0 {
 		names := make([]string, 0, len(deps))
 		for _, dep := range deps {
-			names = append(names, dep.GetName())
+			name := strings.TrimSpace(dep.GetName())
+			if name != "" {
+				names = append(names, name)
+			}
 		}
 
 		result := strings.Join(names, ", ")
@@ -362,68 +348,6 @@ func ntiaComponentDependencies(doc sbom.Document, component sbom.GetComponent) *
 	// 4. component with no further dependencies, i.e leaf component
 	return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), result, SCORE_ZERO, "")
 }
-
-// func ntiaComponentDependencies(doc sbom.Document, component sbom.GetComponent) *db.Record {
-// 	result, score := "", SCORE_ZERO
-// 	var dependencies []string
-// 	var allDepByName []string
-
-// 	spec := doc.Spec().GetSpecType()
-// 	switch spec {
-
-// 	case string(sbom.SBOMSpecSPDX):
-// 		if component.GetPrimaryCompInfo().IsPresent() {
-// 			result = strings.Join(GetAllPrimaryDepenciesByName, ", ")
-// 			score = 10.0
-// 			return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), result, score, "")
-// 		}
-
-// 		dependencies = doc.GetRelationships(common.GetID(component.GetSpdxID()))
-// 		if dependencies == nil {
-
-// 			if primaryDependencies[common.GetID(component.GetSpdxID())] {
-// 				return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), "included-in", 10.0, "")
-// 			}
-// 			return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), "no-relationship", 0.0, "")
-
-// 		}
-// 		allDepByName = common.GetDependenciesByName(dependencies, compIDWithName)
-
-// 		if primaryDependencies[common.GetID(component.GetSpdxID())] {
-// 			allDepByName = append([]string{"included-in"}, allDepByName...)
-// 			result = strings.Join(allDepByName, ", ")
-// 			return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), result, 10.0, "")
-// 		}
-
-// 		result = strings.Join(allDepByName, ", ")
-// 		return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), result, 10.0, "")
-
-// 	case string(sbom.SBOMSpecCDX):
-// 		if component.GetPrimaryCompInfo().IsPresent() {
-// 			result = strings.Join(GetAllPrimaryDepenciesByName, ", ")
-// 			score = 10.0
-// 			return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), result, score, "")
-// 		}
-// 		id := component.GetID()
-// 		dependencies = doc.GetRelationships(id)
-// 		if len(dependencies) == 0 {
-// 			if primaryDependencies[id] {
-// 				return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), "included-in", 10.0, "")
-// 			}
-// 			return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), "no-relationship", 0.0, "")
-// 		}
-// 		allDepByName = common.GetDependenciesByName(dependencies, compIDWithName)
-// 		if primaryDependencies[id] {
-// 			allDepByName = append([]string{"included-in"}, allDepByName...)
-// 			result = strings.Join(allDepByName, ", ")
-// 			return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), result, 10.0, "")
-// 		}
-// 		result = strings.Join(allDepByName, ", ")
-// 		return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), result, 10.0, "")
-// 	}
-
-// 	return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), result, score, "")
-// }
 
 func ntiaComponentOtherUniqIDs(doc sbom.Document, component sbom.GetComponent) *db.Record {
 	spec := doc.Spec().GetSpecType()

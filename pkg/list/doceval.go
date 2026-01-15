@@ -142,9 +142,17 @@ func evaluateSBOMDependencies(doc sbom.Document) (bool, string, error) {
 	var have int
 	var all []string
 
-	if doc.PrimaryComp() != nil {
-		have = doc.PrimaryComp().GetTotalNoOfDependencies()
-		all = append(all, doc.PrimaryComp().GetDependencies()...)
+	pc := doc.PrimaryComp()
+
+	if pc.IsPresent() {
+
+		totalDeps := doc.GetDirectDependencies(pc.GetID())
+		have = len(totalDeps)
+
+		for _, dep := range totalDeps {
+			all = append(all, fmt.Sprintf("%s v%s", dep.GetName(), dep.GetVersion()))
+		}
+
 	}
 
 	if have > 0 {

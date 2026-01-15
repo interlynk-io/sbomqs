@@ -16,6 +16,7 @@ package fsct
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	pkgcommon "github.com/interlynk-io/sbomqs/v2/pkg/common"
@@ -141,41 +142,11 @@ var (
 	GetAllPrimaryDependenciesByName         = []string{}
 )
 
-func getDepByName(dependencies []string) []string {
-	allDepByName := make([]string, 0, len(dependencies))
-	for _, dep := range dependencies {
-		allDepByName = append(allDepByName, CompIDWithName[dep])
-	}
-	return allDepByName
-}
-
 func Components(doc sbom.Document) []*db.Record {
 	records := []*db.Record{}
 
 	if len(doc.Components()) == 0 {
 		return records
-	}
-	CompIDWithName = common.ComponentsNamesMapToIDs(doc)
-	ComponentList = common.ComponentsLists(doc)
-
-	GetAllPrimaryCompDependencies := common.GetAllPrimaryComponentDependencies(doc)
-
-	var areAllPrimaryDepesPresentInCompList bool
-
-	if len(GetAllPrimaryCompDependencies) == 0 {
-		RelationshipProvidedForPrimaryComp = false
-	} else {
-		RelationshipProvidedForPrimaryComp = true
-	}
-
-	if RelationshipProvidedForPrimaryComp {
-		areAllPrimaryDepesPresentInCompList = common.CheckPrimaryDependenciesInComponentList(GetAllPrimaryCompDependencies, ComponentList)
-	}
-
-	if areAllPrimaryDepesPresentInCompList {
-		// this signifies to validation of all dependencies of primary comp present in the SBOM
-		ValidRelationshipProvidedForPrimaryComp = true
-		GetAllPrimaryDependenciesByName = common.GetDependenciesByName(GetAllPrimaryCompDependencies, CompIDWithName)
 	}
 
 	for _, component := range doc.Components() {
@@ -318,75 +289,67 @@ func fsctPackageHash(doc sbom.Document, component sbom.GetComponent) *db.Record 
 }
 
 func fsctPackageDependencies(doc sbom.Document, component sbom.GetComponent) *db.Record {
-	result, score, maturity := "", 0.0, ""
-	var getDependenciesOfComponent []string
-	var compIsPartOfPrimaryDependency bool
-	var compWithDirectDependency bool
-	var getCompDepsByName []string
+	compID := component.GetID()
+	result := ""
+	maturity := "None"
 
-	if doc.Spec().GetSpecType() == "spdx" {
-		// Is this comp part of primary comp dependencies
-		if common.IsComponentPartOfPrimaryDependency(doc.PrimaryComp().GetDependencies(), common.GetID(component.GetSpdxID())) {
-			// maturity level: minimum
-			compIsPartOfPrimaryDependency = true
-			getDependenciesOfComponent = doc.GetRelationships(common.GetID(component.GetSpdxID()))
+	primary := doc.PrimaryComp()
+	if !primary.IsPresent() {
+		return db.NewRecordStmt(COMP_RELATIONSHIP, common.UniqueElementID(component), result, 0.0, maturity)
+	}
 
-			if len(getDependenciesOfComponent) > 0 {
-				getCompDepsByName = getDepByName(getDependenciesOfComponent)
-				compWithDirectDependency = true
+	primaryDeps := doc.GetDirectDependencies(primary.GetID(), "DEPENDS_ON")
+
+	if primary.GetID() == compID {
+		if len(primaryDeps) > 0 {
+			names := make([]string, 0, len(primaryDeps))
+
+			for _, dep := range primaryDeps {
+				name := strings.TrimSpace(dep.GetName())
+				if name != "" {
+					names = append(names, name)
+				}
 			}
-		} else {
-			// maturity level: none
-			compIsPartOfPrimaryDependency = false
+
+			result = strings.Join(names, ", ")
+			return db.NewRecordStmt(COMP_RELATIONSHIP, common.UniqueElementID(component), result, 10.0, "Minimum")
 		}
-	} else if doc.Spec().GetSpecType() == "cyclonedx" {
-		// Is this comp part of primary comp depndencies ?
-		if common.IsComponentPartOfPrimaryDependency(doc.PrimaryComp().GetDependencies(), component.GetID()) {
+		return db.NewRecordStmt(COMP_RELATIONSHIP, common.UniqueElementID(component), result, 0.0, "None")
+	}
 
-			compIsPartOfPrimaryDependency = true
+	// chck if component is a direct dependency of primary
+	isComponentDirectDepOfPrimary := false
 
-			// Does this comp has direct dependencies ?
-			getDependenciesOfComponent = doc.GetRelationships(component.GetID())
-			if len(getDependenciesOfComponent) > 0 {
-
-				getCompDepsByName = getDepByName(getDependenciesOfComponent)
-
-				compWithDirectDependency = true
-			}
-		} else {
-			compIsPartOfPrimaryDependency = false
+	for _, dep := range primaryDeps {
+		if dep.GetID() == compID {
+			isComponentDirectDepOfPrimary = true
+			break
 		}
 	}
-	switch {
 
-	// when comp is a dependency of priamary with having direct dependencies of it as well
-	case ValidRelationshipProvidedForPrimaryComp && compIsPartOfPrimaryDependency && compWithDirectDependency:
-
-		score = 12.0
-		maturity = "Recommended"
-		result = strings.Join(getCompDepsByName, ", ")
-
-		// when comp is a dependency of primary with no direct dependencies
-	case ValidRelationshipProvidedForPrimaryComp && compIsPartOfPrimaryDependency:
-
-		score = 10.0
-		maturity = "Minimum"
-		result = strings.Join(getCompDepsByName, ", ")
-
-		// when component itself is a primary component
-	case ValidRelationshipProvidedForPrimaryComp && component.GetPrimaryCompInfo().IsPresent():
-
-		score = 10.0
-		maturity = "Minimum"
-		result = strings.Join(GetAllPrimaryDependenciesByName, ", ")
-
-	// when a comp is not a part primary dependnecies or primary comp with no dependencies
-	default:
-
-		score = 0.0
-		maturity = "None"
+	if !isComponentDirectDepOfPrimary {
+		return db.NewRecordStmt(COMP_RELATIONSHIP, common.UniqueElementID(component), result, 0.0, "None")
 	}
-	return db.NewRecordStmt(COMP_RELATIONSHIP, common.UniqueElementID(component), result, score, maturity)
+
+	componentDeps := doc.GetDirectDependencies(compID, "DEPENDS_ON")
+
+	// Case 2: Dependency of primary with own dependencies → Recommended
+	if len(componentDeps) > 0 {
+		names := make([]string, 0, len(componentDeps))
+
+		for _, dep := range componentDeps {
+			name := strings.TrimSpace(dep.GetName())
+			if name != "" {
+				names = append(names, name)
+			}
+		}
+		fmt.Println("TRUE")
+		result = strings.Join(names, ", ")
+		return db.NewRecordStmt(COMP_RELATIONSHIP, common.UniqueElementID(component), result, 12.0, "Recommended")
+	}
+
+	// case:3 Dependency of primary with no own dependencies → Minimum
+	return db.NewRecordStmt(COMP_RELATIONSHIP, common.UniqueElementID(component), result, 10.0, "Minimum")
 }
 
 func fsctPackageLicense(component sbom.GetComponent) *db.Record {
