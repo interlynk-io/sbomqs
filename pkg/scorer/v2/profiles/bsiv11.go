@@ -17,6 +17,8 @@ package profiles
 import (
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/catalog"
+	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/formulae"
+	"github.com/samber/lo"
 )
 
 // BSISBOMSpec checks SBOM Formats
@@ -90,6 +92,25 @@ func BSICompWithSourceCodeHash(doc sbom.Document) catalog.ProfFeatScore {
 }
 
 // BSICompWithDependency checks Component Dependencies
+// - Relationships declared for the Primary Component
+// - Relationships declared for its direct Dependencies
+// - Leaf dependencies valid and transitive components mdeps doesn't matter
 func BSICompWithDependency(doc sbom.Document) catalog.ProfFeatScore {
-	return CompDependencies(doc)
+	primary := doc.PrimaryComp()
+	if !primary.IsPresent() {
+		return formulae.ScoreProfileCustomNA(false, "no primary component defined")
+	}
+
+	// 1. primary must have direct dependencies
+	primaryDeps := doc.GetDirectDependencies(primary.GetID(), "DEPENDS_ON")
+	if len(primaryDeps) == 0 {
+		return formulae.ScoreProfNA(false)
+	}
+
+	// 2. among direct dependencies, count those that declare further deps
+	have := lo.CountBy(primaryDeps, func(c sbom.GetComponent) bool {
+		return len(doc.GetDirectDependencies(c.GetID(), "DEPENDS_ON")) > 0
+	})
+
+	return formulae.ScoreProfFull(have, len(primaryDeps), false)
 }

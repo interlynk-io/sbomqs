@@ -429,7 +429,8 @@ func CompDependencies(doc sbom.Document) catalog.ProfFeatScore {
 	}
 
 	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
-		return commonV2.HasComponentDependencies(c)
+		compDeps := doc.GetDirectDependencies(c.GetID(), "DEPENDS_ON")
+		return len(compDeps) > 0
 	})
 
 	return formulae.ScoreProfFull(have, len(comps), false)

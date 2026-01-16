@@ -143,7 +143,7 @@ func Test_FSCTProfileForStaticSBOMFiles(t *testing.T) {
 		filepath.Join(base, "spdx-perfect-score.json"):    {Score: 9.7, Grade: "A", Required: 10, Optional: 0},
 		filepath.Join(base, "spdx-minimal.json"):          {Score: 1.8, Grade: "F", Required: 2, Optional: 0},
 		filepath.Join(base, "spdx-no-version.json"):       {Score: 3.6, Grade: "F", Required: 4, Optional: 0},
-		filepath.Join(base, "spdx-no-checksums.json"):     {Score: 6.8, Grade: "D", Required: 7, Optional: 0},
+		filepath.Join(base, "spdx-no-checksums.json"):     {Score: 6.4, Grade: "D", Required: 7, Optional: 0},
 		filepath.Join(base, "spdx-weak-checksums.json"):   {Score: 5.5, Grade: "D", Required: 6, Optional: 0},
 		filepath.Join(base, "spdx-no-dependencies.json"):  {Score: 8.2, Grade: "B", Required: 9, Optional: 0},
 		filepath.Join(base, "spdx-invalid-licenses.json"): {Score: 4.5, Grade: "F", Required: 5, Optional: 0},
