@@ -37,6 +37,7 @@ var (
 // These constants represent different elements and attributes that are evaluated
 // for BSI (German Federal Office for Information Security) SBOM compliance.
 // Each constant corresponds to a specific requirement in the BSI guidelines.
+//
 //nolint:revive,stylecheck
 const (
 	// SBOM document specification identifiers
@@ -56,7 +57,7 @@ const (
 	SBOM_COMPONENTS
 	SBOM_PACKAGES
 	SBOM_URI
-	
+
 	// Component-level compliance identifiers
 	COMP_CREATOR
 	COMP_NAME
@@ -68,7 +69,7 @@ const (
 	COMP_SOURCE_HASH
 	COMP_LICENSE
 	COMP_DEPTH
-	
+
 	// Package-level compliance identifiers (SPDX specific)
 	PACK_SUPPLIER
 	PACK_HASH
@@ -82,7 +83,7 @@ const (
 	PACK_COPYRIGHT
 	PACK_INFO
 	PACK_EXT_REF
-	
+
 	// Format and metadata identifiers
 	SBOM_MACHINE_FORMAT
 	SBOM_DEPENDENCY
@@ -94,12 +95,12 @@ const (
 	SBOM_TYPE
 	SBOM_VULNERABILITIES
 	SBOM_BOM_LINKS
-	
+
 	// License-related identifiers
 	COMP_ASSOCIATED_LICENSE
 	COMP_CONCLUDED_LICENSE
 	COMP_DECLARED_LICENSE
-	
+
 	// Security identifiers
 	SBOM_SIGNATURE
 )
@@ -196,34 +197,18 @@ func bsiBuildPhase(doc sbom.Document) *db.Record {
 }
 
 func bsiSbomDepth(doc sbom.Document) *db.Record {
-	result, score := "", 0.0
-	// for doc.Components()
-	totalDependencies := doc.PrimaryComp().GetTotalNoOfDependencies()
+	result, score := "no dependencies declared", SCORE_ZERO
 
-	if totalDependencies > 0 {
-		score = 10.0
+	pc := doc.PrimaryComp()
+	if !pc.IsPresent() {
+		return db.NewRecordStmt(SBOM_DEPTH, "doc", "no primary component", SCORE_ZERO, "")
 	}
-	result = fmt.Sprintf("doc has %d dependencies", totalDependencies)
 
-	// if len(doc.Relations()) == 0 {
-	// 	return db.NewRecordStmt(SBOM_DEPTH, "doc", "no-relationships", 0.0, "")
-	// }
-
-	// primary, _ := lo.Find(doc.Components(), func(c sbom.GetComponent) bool {
-	// 	return c.IsPrimaryComponent()
-	// })
-
-	// if !primary.HasRelationShips() {
-	// 	return db.NewRecordStmt(SBOM_DEPTH, "doc", "no-primary-relationships", 0.0, "")
-	// }
-
-	// if primary.RelationShipState() == "complete" {
-	// 	return db.NewRecordStmt(SBOM_DEPTH, "doc", "complete", 10.0, "")
-	// }
-
-	// if primary.HasRelationShips() {
-	// 	return db.NewRecordStmt(SBOM_DEPTH, "doc", "unattested-has-relationships", 5.0, "")
-	// }
+	totalDependencies := doc.GetDirectDependencies(pc.GetID())
+	if len(totalDependencies) > 0 {
+		score = 10.0
+		result = fmt.Sprintf("primary component has %d direct dependencies", len(totalDependencies))
+	}
 
 	return db.NewRecordStmt(SBOM_DEPTH, "doc", result, score, "")
 }
@@ -341,29 +326,12 @@ func bsiSbomURI(doc sbom.Document) *db.Record {
 	return db.NewRecordStmt(SBOM_URI, "doc", "", 0.0, "")
 }
 
-var (
-	bsiCompIDWithName               = make(map[string]string)
-	bsiComponentList                = make(map[string]bool)
-	bsiPrimaryDependencies          = make(map[string]bool)
-	bsiGetAllPrimaryDepenciesByName = []string{}
-)
-
 func bsiComponents(doc sbom.Document) []*db.Record {
 	records := []*db.Record{}
 
 	if len(doc.Components()) == 0 {
 		records := append(records, db.NewRecordStmt(SBOM_COMPONENTS, "doc", "", 0.0, ""))
 		return records
-	}
-
-	bsiCompIDWithName = common.ComponentsNamesMapToIDs(doc)
-	bsiComponentList = common.ComponentsLists(doc)
-	bsiPrimaryDependencies = common.MapPrimaryDependencies(doc)
-	dependencies := common.GetAllPrimaryComponentDependencies(doc)
-	isBsiAllDepesPresentInCompList := common.CheckPrimaryDependenciesInComponentList(dependencies, bsiComponentList)
-
-	if isBsiAllDepesPresentInCompList {
-		bsiGetAllPrimaryDepenciesByName = common.GetDependenciesByName(dependencies, bsiCompIDWithName)
 	}
 
 	for _, component := range doc.Components() {
@@ -385,58 +353,58 @@ func bsiComponents(doc sbom.Document) []*db.Record {
 }
 
 func bsiComponentDepth(doc sbom.Document, component sbom.GetComponent) *db.Record {
-	result, score := "", 0.0
-	var dependencies []string
-	var allDepByName []string
 
-	if doc.Spec().GetSpecType() == string(sbom.SBOMSpecSPDX) {
-		if component.GetPrimaryCompInfo().IsPresent() {
-			result = strings.Join(bsiGetAllPrimaryDepenciesByName, ", ")
-			score = 10.0
-			return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), result, score, "")
+	compID := component.GetID()
+	result := "no-relationship"
+
+	primary := doc.PrimaryComp()
+
+	// 1. When component is a primary component
+	if primary.IsPresent() && compID == primary.GetID() {
+		deps := doc.GetDirectDependencies(compID, "DEPENDS_ON")
+
+		if len(deps) == 0 {
+			return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), "primary component has no dependencies", SCORE_ZERO, "")
 		}
 
-		dependencies = doc.GetRelationships(common.GetID(component.GetSpdxID()))
-		if dependencies == nil {
-			if bsiPrimaryDependencies[common.GetID(component.GetSpdxID())] {
-				return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), "included-in", 10.0, "")
+		names := make([]string, 0, len(deps))
+		for _, dep := range deps {
+			name := strings.TrimSpace(dep.GetName())
+			if name != "" {
+				names = append(names, name)
 			}
-			return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), "no-relationship", 0.0, "")
 		}
-		allDepByName = common.GetDependenciesByName(dependencies, bsiCompIDWithName)
-		if bsiPrimaryDependencies[common.GetID(component.GetSpdxID())] {
-			allDepByName = append([]string{"included-in"}, allDepByName...)
-			result = strings.Join(allDepByName, ", ")
-			return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), result, 10.0, "")
-		}
-		result = strings.Join(allDepByName, ", ")
-		return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), result, 10.0, "")
 
-	} else if doc.Spec().GetSpecType() == string(sbom.SBOMSpecCDX) {
-		if component.GetPrimaryCompInfo().IsPresent() {
-			result = strings.Join(bsiGetAllPrimaryDepenciesByName, ", ")
-			score = 10.0
-			return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), result, score, "")
-		}
-		id := component.GetID()
-		dependencies = doc.GetRelationships(id)
-		if len(dependencies) == 0 {
-			if bsiPrimaryDependencies[id] {
-				return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), "included-in", 10.0, "")
-			}
-			return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), "no-relationship", 0.0, "")
-		}
-		allDepByName = common.GetDependenciesByName(dependencies, bsiCompIDWithName)
-		if bsiPrimaryDependencies[id] {
-			allDepByName = append([]string{"included-in"}, allDepByName...)
-			result = strings.Join(allDepByName, ", ")
-			return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), result, 10.0, "")
-		}
-		result = strings.Join(allDepByName, ", ")
-		return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), result, 10.0, "")
+		result = strings.Join(names, ", ")
+		return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), result, SCORE_FULL, "")
 	}
 
-	return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), "no-relationships", 0.0, "")
+	// 2. when componet is not primary component, i.e normal component
+	deps := doc.GetDirectDependencies(compID, "DEPENDS_ON")
+	if len(deps) > 0 {
+		names := make([]string, 0, len(deps))
+		for _, dep := range deps {
+			name := strings.TrimSpace(dep.GetName())
+			if name != "" {
+				names = append(names, name)
+			}
+		}
+
+		result = strings.Join(names, ", ")
+		return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), result, SCORE_FULL, "")
+	}
+
+	// 3. check if component is direct dependency of primary component, then "included-in"
+	if primary.IsPresent() {
+		primaryDeps := doc.GetDirectDependencies(primary.GetID(), "DEPENDS_ON")
+		for _, dep := range primaryDeps {
+			if dep.GetID() == compID {
+				return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), "included-in", SCORE_FULL, "")
+			}
+		}
+	}
+
+	return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), result, SCORE_ZERO, "")
 }
 
 func bsiComponentLicense(component sbom.GetComponent) *db.Record {

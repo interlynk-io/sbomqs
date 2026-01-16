@@ -90,8 +90,6 @@ type GetComponent interface {
 	ExternalReferences() []GetExternalReference
 	// GetComposition returns the composition information for the specified component ID
 	// GetCompositions() []GetComposition
-	// GetPrimaryCompInfo returns information about the primary component
-	GetPrimaryCompInfo() GetPrimaryComp
 }
 
 // Component represents a concrete implementation of SBOM component information and metadata
@@ -119,7 +117,6 @@ type Component struct {
 	DownloadLocation        string
 	sourceCodeHash          string
 	isPrimary               bool
-	PrimaryCompt            PrimaryComp
 	HasRelationships        bool
 	RelationshipState       string
 	Spdxid                  string
@@ -134,11 +131,6 @@ type Component struct {
 // NewComponent creates a new instance of Component with default values
 func NewComponent() *Component {
 	return &Component{}
-}
-
-// GetPrimaryCompInfo returns information about the primary component
-func (c Component) GetPrimaryCompInfo() GetPrimaryComp {
-	return c.PrimaryCompt
 }
 
 // GetName returns the name of the component

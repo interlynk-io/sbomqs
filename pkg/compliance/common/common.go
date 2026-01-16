@@ -309,35 +309,35 @@ func ComponentsNamesMapToIDs(doc sbom.Document) map[string]string {
 	return compIDWithName
 }
 
-// GetAllPrimaryComponentDependencies return all list of primary component dependencies by it's ID.
-func GetAllPrimaryComponentDependencies(doc sbom.Document) []string {
-	return doc.PrimaryComp().GetDependencies()
-}
+// // GetAllPrimaryComponentDependencies return all list of primary component dependencies by it's ID.
+// func GetAllPrimaryComponentDependencies(doc sbom.Document) []string {
+// 	return doc.PrimaryComp().GetDependencies()
+// }
 
-// MapPrimaryDependencies returns a map of all primary dependencies with bool.
-// Primary dependencies marked as true else false.
-func MapPrimaryDependencies(doc sbom.Document) map[string]bool {
-	primaryDependencies := make(map[string]bool)
-	for _, component := range doc.Components() {
-		if doc.Spec().GetSpecType() == "spdx" {
-			id := "SPDXRef-" + component.GetSpdxID()
-			if component.GetPrimaryCompInfo().IsPresent() {
-				dependencies := doc.GetRelationships(id)
-				for _, d := range dependencies {
-					primaryDependencies[d] = true
-				}
-			}
-		} else if doc.Spec().GetSpecType() == "cyclonedx" {
-			if component.GetPrimaryCompInfo().IsPresent() {
-				dependencies := doc.GetRelationships(component.GetID())
-				for _, d := range dependencies {
-					primaryDependencies[d] = true
-				}
-			}
-		}
-	}
-	return primaryDependencies
-}
+// // MapPrimaryDependencies returns a map of all primary dependencies with bool.
+// // Primary dependencies marked as true else false.
+// func MapPrimaryDependencies(doc sbom.Document) map[string]bool {
+// 	primaryDependencies := make(map[string]bool)
+// 	for _, component := range doc.Components() {
+// 		if doc.Spec().GetSpecType() == "spdx" {
+// 			id := "SPDXRef-" + component.GetSpdxID()
+// 			if component.GetPrimaryCompInfo().IsPresent() {
+// 				dependencies := doc.GetRelationships(id)
+// 				for _, d := range dependencies {
+// 					primaryDependencies[d] = true
+// 				}
+// 			}
+// 		} else if doc.Spec().GetSpecType() == "cyclonedx" {
+// 			if component.GetPrimaryCompInfo().IsPresent() {
+// 				dependencies := doc.GetRelationships(component.GetID())
+// 				for _, d := range dependencies {
+// 					primaryDependencies[d] = true
+// 				}
+// 			}
+// 		}
+// 	}
+// 	return primaryDependencies
+// }
 
 // CheckPrimaryDependenciesInComponentList checks if all primary dependencies are part of the component list.
 func CheckPrimaryDependenciesInComponentList(dependencies []string, componentList map[string]bool) bool {

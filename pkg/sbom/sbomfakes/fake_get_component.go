@@ -174,16 +174,6 @@ type FakeGetComponent struct {
 	getPackageLicenseDeclaredReturnsOnCall map[int]struct {
 		result1 string
 	}
-	GetPrimaryCompInfoStub        func() sbom.GetPrimaryComp
-	getPrimaryCompInfoMutex       sync.RWMutex
-	getPrimaryCompInfoArgsForCall []struct {
-	}
-	getPrimaryCompInfoReturns struct {
-		result1 sbom.GetPrimaryComp
-	}
-	getPrimaryCompInfoReturnsOnCall map[int]struct {
-		result1 sbom.GetPrimaryComp
-	}
 	GetPurlsStub        func() []purl.PURL
 	getPurlsMutex       sync.RWMutex
 	getPurlsArgsForCall []struct {
@@ -1183,59 +1173,6 @@ func (fake *FakeGetComponent) GetPackageLicenseDeclaredReturnsOnCall(i int, resu
 	}
 	fake.getPackageLicenseDeclaredReturnsOnCall[i] = struct {
 		result1 string
-	}{result1}
-}
-
-func (fake *FakeGetComponent) GetPrimaryCompInfo() sbom.GetPrimaryComp {
-	fake.getPrimaryCompInfoMutex.Lock()
-	ret, specificReturn := fake.getPrimaryCompInfoReturnsOnCall[len(fake.getPrimaryCompInfoArgsForCall)]
-	fake.getPrimaryCompInfoArgsForCall = append(fake.getPrimaryCompInfoArgsForCall, struct {
-	}{})
-	stub := fake.GetPrimaryCompInfoStub
-	fakeReturns := fake.getPrimaryCompInfoReturns
-	fake.recordInvocation("GetPrimaryCompInfo", []interface{}{})
-	fake.getPrimaryCompInfoMutex.Unlock()
-	if stub != nil {
-		return stub()
-	}
-	if specificReturn {
-		return ret.result1
-	}
-	return fakeReturns.result1
-}
-
-func (fake *FakeGetComponent) GetPrimaryCompInfoCallCount() int {
-	fake.getPrimaryCompInfoMutex.RLock()
-	defer fake.getPrimaryCompInfoMutex.RUnlock()
-	return len(fake.getPrimaryCompInfoArgsForCall)
-}
-
-func (fake *FakeGetComponent) GetPrimaryCompInfoCalls(stub func() sbom.GetPrimaryComp) {
-	fake.getPrimaryCompInfoMutex.Lock()
-	defer fake.getPrimaryCompInfoMutex.Unlock()
-	fake.GetPrimaryCompInfoStub = stub
-}
-
-func (fake *FakeGetComponent) GetPrimaryCompInfoReturns(result1 sbom.GetPrimaryComp) {
-	fake.getPrimaryCompInfoMutex.Lock()
-	defer fake.getPrimaryCompInfoMutex.Unlock()
-	fake.GetPrimaryCompInfoStub = nil
-	fake.getPrimaryCompInfoReturns = struct {
-		result1 sbom.GetPrimaryComp
-	}{result1}
-}
-
-func (fake *FakeGetComponent) GetPrimaryCompInfoReturnsOnCall(i int, result1 sbom.GetPrimaryComp) {
-	fake.getPrimaryCompInfoMutex.Lock()
-	defer fake.getPrimaryCompInfoMutex.Unlock()
-	fake.GetPrimaryCompInfoStub = nil
-	if fake.getPrimaryCompInfoReturnsOnCall == nil {
-		fake.getPrimaryCompInfoReturnsOnCall = make(map[int]struct {
-			result1 sbom.GetPrimaryComp
-		})
-	}
-	fake.getPrimaryCompInfoReturnsOnCall[i] = struct {
-		result1 sbom.GetPrimaryComp
 	}{result1}
 }
 

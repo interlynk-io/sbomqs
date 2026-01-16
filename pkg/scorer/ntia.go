@@ -118,12 +118,17 @@ func compWithUniqIDCheck(d sbom.Document, c *check) score {
 func sbomWithDepedenciesCheck(d sbom.Document, c *check) score {
 	s := newScoreFromCheck(c)
 	var totalDependencies int
-	if d.PrimaryComp() != nil {
-		totalDependencies = d.PrimaryComp().GetTotalNoOfDependencies()
+	primary := d.PrimaryComp()
+
+	if primary.IsPresent() {
+		totalDependencies = len(d.GetDirectDependencies(primary.GetID()))
+
 	}
+
 	if totalDependencies > 0 {
 		s.setScore(10.0)
 	}
+
 	s.setDesc(fmt.Sprintf("primary comp has %d dependencies ", totalDependencies))
 	return *s
 }
