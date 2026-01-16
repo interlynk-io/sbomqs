@@ -67,5 +67,3 @@ type Document interface {
 
 	Composition() []GetComposition
 }
-
-// kam->krodh->moh->lobh->ahnkar
