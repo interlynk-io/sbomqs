@@ -114,7 +114,7 @@ func FSCTCompDependencies(doc sbom.Document) catalog.ProfFeatScore {
 	if hasUnknown {
 		return catalog.ProfFeatScore{
 			Score:  10.0,
-			Desc:   "relationships declared for primary and direct dependencies",
+			Desc:   "relationships declared; completeness partially unknown",
 			Ignore: false,
 		}
 	}
