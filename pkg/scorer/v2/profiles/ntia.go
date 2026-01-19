@@ -15,10 +15,11 @@
 package profiles
 
 import (
+	"slices"
+
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/catalog"
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/formulae"
-	"github.com/samber/lo"
 )
 
 // Automation Support
@@ -26,9 +27,75 @@ func SBOMWithAutomationSpec(doc sbom.Document) catalog.ProfFeatScore {
 	return SBOMAutomationSpec(doc)
 }
 
-// Dependency Relationships
-func SbomWithDepedencies(doc sbom.Document) catalog.ProfFeatScore {
-	return SBOMDepedencies(doc)
+// NTIASBOMRelationships evaluates SBOM-level dependency requirements
+// as defined by NTIA Minimum Elements
+//
+// NTIA requires:
+//   - Identification of upstream (DEPENDS_ON) relationships
+//     for the primary component
+//
+// NTIA does NOT require:
+//   - Complete transitive dependency graphs
+//   - Dependency declarations for every component
+func NTIASBOMRelationships(doc sbom.Document) catalog.ProfFeatScore {
+	primary := doc.PrimaryComp()
+	if !primary.IsPresent() {
+		return formulae.ScoreProfileCustomNA(false, "define primary component")
+	}
+
+	// 1. Get direct dependencies of the primary component
+	directDeps := doc.GetDirectDependencies(primary.GetID(), "DEPENDS_ON")
+	if len(directDeps) > 0 {
+		return catalog.ProfFeatScore{
+			Score:  10.0,
+			Desc:   "direct dependencies declared for primary component",
+			Ignore: false,
+		}
+	}
+
+	// 2. no direct dependencies --> check declared completeness
+	for _, c := range doc.Composition() {
+		if c.Scope() != sbom.ScopeDependencies {
+			continue
+		}
+
+		// Composition applies to primary component
+		if !slices.Contains(c.Dependencies(), primary.GetID()) {
+			continue
+		}
+
+		switch c.Aggregate() {
+		case sbom.AggregateComplete:
+			return catalog.ProfFeatScore{
+				Score:  10.0,
+				Desc:   "primary component declares no dependencies (complete)",
+				Ignore: false,
+			}
+
+		case sbom.AggregateUnknown:
+			return catalog.ProfFeatScore{
+				Score:  10.0,
+				Desc:   "dependency completeness declared unknown",
+				Ignore: false,
+			}
+
+		case sbom.AggregateIncomplete:
+			return catalog.ProfFeatScore{
+				Score:  0.0,
+				Desc:   "dependency data declared incomplete",
+				Ignore: false,
+			}
+		}
+	}
+
+	// 3. No dependencies and no completeness declaration
+	// Default interpretation per NTIA: incomplete
+	return catalog.ProfFeatScore{
+		Score:  0.0,
+		Desc:   "no dependency relationships declared",
+		Ignore: false,
+	}
+
 }
 
 // SBOM Author
@@ -82,58 +149,6 @@ func NTIASBOMLifecycle(doc sbom.Document) catalog.ProfFeatScore {
 		Desc:  "add lifecycle phase",
 	}
 }
-
-// NTIA intent:
-// - Relationships declared for the Primary Component
-// - Relationships declared for its direct Dependencies
-// - Leaf dependencies valid and transitive components mdeps doesn't matter
-func NTIACompRelationships(doc sbom.Document) catalog.ProfFeatScore {
-	primary := doc.PrimaryComp()
-	if !primary.IsPresent() {
-		return formulae.ScoreProfileCustomNA(false, "define primary component")
-
-	}
-
-	// 1. Get direct dependencies of the primary component
-	primaryDeps := doc.GetDirectDependencies(primary.GetID(), "DEPENDS_ON")
-	if len(primaryDeps) == 0 {
-		return formulae.ScoreProfNA(false)
-	}
-
-	// 2. Count how many of those dependencies declare relationships themselves
-	have := lo.CountBy(primaryDeps, func(c sbom.GetComponent) bool {
-		return len(doc.GetDirectDependencies(c.GetID(), "DEPENDS_ON")) > 0
-	})
-
-	return formulae.ScoreProfFull(have, len(primaryDeps), false)
-}
-
-// // Component Relationships (SHOULD)
-// func NTIACompRelationships(doc sbom.Document) catalog.ProfFeatScore {
-// 	comps := doc.Components()
-// 	if len(comps) == 0 {
-// 		return catalog.ProfFeatScore{
-// 			Score: 0.0,
-// 			Desc:  formulae.NoComponentsNA(),
-// 		}
-// 	}
-
-// 	have := 0
-// 	for _, comp := range comps {
-// 		// Check for pedigree info in CycloneDX or additional relationships in SPDX
-// 		if comp.HasRelationShips() {
-// 			have++
-// 		}
-// 	}
-
-// 	total := len(comps)
-// 	score := (float64(have) / float64(total)) * 10.0
-
-// 	return catalog.ProfFeatScore{
-// 		Score: score,
-// 		Desc:  formulae.CompDescription(have, total),
-// 	}
-// }
 
 // Component License (SHOULD)
 func NTIACompLicense(doc sbom.Document) catalog.ProfFeatScore {

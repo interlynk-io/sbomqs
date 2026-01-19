@@ -135,10 +135,10 @@ func TestNtiaSpdxSbomPass(t *testing.T) {
 		},
 		{
 			name:   "SbomDependency",
-			actual: ntiaSBOMDependency(doc),
+			actual: ntiaSBOMRelationships(doc),
 			expected: desiredNtia{
 				score:  10.0,
-				result: "primary component has 1 direct dependencies",
+				result: "primary component declares 1 direct dependencies",
 				key:    SBOM_DEPENDENCY,
 				id:     "SBOM Data Fields",
 			},
@@ -180,16 +180,6 @@ func TestNtiaSpdxSbomPass(t *testing.T) {
 				score:  10.0,
 				result: "purl:(1/1)",
 				key:    COMP_OTHER_UNIQ_IDS,
-				id:     common.UniqueElementID(doc.Components()[0]),
-			},
-		},
-		{
-			name:   "ComponentDependencies",
-			actual: ntiaComponentDependencies(doc, doc.Components()[0]),
-			expected: desiredNtia{
-				score:  10.0,
-				result: "spdx-gordf",
-				key:    COMP_DEPTH,
 				id:     common.UniqueElementID(doc.Components()[0]),
 			},
 		},
@@ -310,10 +300,10 @@ func TestNtiaCdxSbomPass(t *testing.T) {
 		},
 		{
 			name:   "SbomDependency",
-			actual: ntiaSBOMDependency(doc),
+			actual: ntiaSBOMRelationships(doc),
 			expected: desiredNtia{
 				score:  10.0,
-				result: "primary component has 1 direct dependencies",
+				result: "primary component declares 1 direct dependencies",
 				key:    SBOM_DEPENDENCY,
 				id:     "SBOM Data Fields",
 			},
@@ -355,16 +345,6 @@ func TestNtiaCdxSbomPass(t *testing.T) {
 				score:  10.0,
 				result: "vivek",
 				key:    COMP_OTHER_UNIQ_IDS,
-				id:     common.UniqueElementID(doc.Components()[0]),
-			},
-		},
-		{
-			name:   "ComponentDependencies",
-			actual: ntiaComponentDependencies(doc, doc.Components()[0]),
-			expected: desiredNtia{
-				score:  10.0,
-				result: "spdx-gordf",
-				key:    COMP_DEPTH,
 				id:     common.UniqueElementID(doc.Components()[0]),
 			},
 		},

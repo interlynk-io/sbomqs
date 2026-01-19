@@ -85,16 +85,6 @@ func TestNTIAOptionalFields(t *testing.T) {
 		}
 	})
 
-	t.Run("Component Relationships (optional)", func(t *testing.T) {
-		result := NTIACompRelationships(doc)
-		if result.Score < 0.0 || result.Score > 10.0 {
-			t.Errorf("Optional field score should be between 0-10, got %f", result.Score)
-		}
-		if result.Desc == "" {
-			t.Errorf("Optional field desc should not be empty")
-		}
-	})
-
 	t.Run("Component License (optional)", func(t *testing.T) {
 		result := NTIACompLicense(doc)
 		if result.Score < 0.0 || result.Score > 10.0 {
