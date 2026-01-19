@@ -79,22 +79,26 @@ func FSCTCompDependencies(doc sbom.Document) catalog.ProfFeatScore {
 		return formulae.ScoreProfileCustomNA(false, "define primary component")
 	}
 
-	hasUnknown := false
-
 	// 1. primary must have direct dependencies
 	primaryDeps := doc.GetDirectDependencies(primary.GetID(), "DEPENDS_ON")
-	primaryAgg := DependencyCompleteness(doc, primary.GetID())
 
+	// CASE 1: No relationships declared at all
 	if len(primaryDeps) == 0 {
-		switch primaryAgg {
-		case sbom.AggregateIncomplete:
-			return formulae.ScoreProfileCustomNA(false, "primary dependency completeness declared incomplete")
-
-		case sbom.AggregateUnknown:
-			hasUnknown = true
-		}
+		return formulae.ScoreProfileCustomNA(false, "no relationships declared for primary component")
 	}
 
+	hasUnknown := false
+	// CASE 2: Primary has dependencies
+	primaryAgg := DependencyCompleteness(doc, primary.GetID())
+	if primaryAgg == sbom.AggregateIncomplete {
+		return formulae.ScoreProfileCustomNA(false, "primary dependency completeness declared incomplete")
+	}
+
+	if primaryAgg == sbom.AggregateUnknown {
+		hasUnknown = true
+	}
+
+	// CASE 3: Check direct dependencies of primary
 	for _, dep := range primaryDeps {
 		depID := dep.GetID()
 		deps := doc.GetDirectDependencies(depID, "DEPENDS_ON")
@@ -114,7 +118,7 @@ func FSCTCompDependencies(doc sbom.Document) catalog.ProfFeatScore {
 	if hasUnknown {
 		return catalog.ProfFeatScore{
 			Score:  10.0,
-			Desc:   "relationships declared; completeness partially unknown",
+			Desc:   "relationships declared; completeness unknown",
 			Ignore: false,
 		}
 	}

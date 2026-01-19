@@ -180,7 +180,7 @@ func bsiV2Components(doc sbom.Document) []*db.Record {
 		records = append(records, bsiComponentCreator(component))
 		records = append(records, bsiComponentName(component))
 		records = append(records, bsiComponentVersion(component))
-		records = append(records, bsiComponentDepth(doc, component))
+		records = append(records, bsiComponentDependencies(doc, component))
 		records = append(records, bsiV2ComponentAssociatedLicense(doc, component))
 		records = append(records, bsiComponentHash(component))
 		records = append(records, bsiComponentSourceCodeURL(component))
