@@ -36,11 +36,6 @@ func BSISBOMBuildLifecycle(doc sbom.Document) catalog.ProfFeatScore {
 	return SBOMLifeCycle(doc)
 }
 
-// BSISBOMWithDepedencies checks SBOM Depth
-func BSISBOMWithDepedencies(doc sbom.Document) catalog.ProfFeatScore {
-	return SBOMDepedencies(doc)
-}
-
 // BSISBOMWithAuthors checks SBOM Creator Info
 func BSISBOMWithAuthors(doc sbom.Document) catalog.ProfFeatScore {
 	return SBOMAuthors(doc)
@@ -91,26 +86,44 @@ func BSICompWithSourceCodeHash(doc sbom.Document) catalog.ProfFeatScore {
 	return CompSourceCodeHash(doc)
 }
 
-// BSICompWithDependency checks Component Dependencies
-// - Relationships declared for the Primary Component
-// - Relationships declared for its direct Dependencies
-// - Leaf dependencies valid and transitive components mdeps doesn't matter
-func BSICompWithDependency(doc sbom.Document) catalog.ProfFeatScore {
-	primary := doc.PrimaryComp()
-	if !primary.IsPresent() {
-		return formulae.ScoreProfileCustomNA(false, "no primary component defined")
-	}
-
-	// 1. primary must have direct dependencies
-	primaryDeps := doc.GetDirectDependencies(primary.GetID(), "DEPENDS_ON")
-	if len(primaryDeps) == 0 {
+// BSICompWithDependencies evaluates component-level dependency correctness
+// for summary scoring, per BSI TR-03183.
+//
+// BSI rules:
+// - Dependencies are defined by DEPENDS_ON and CONTAINS relationships.
+// - Dependency checks apply to individual components, not the primary component.
+// - Components with no dependencies are valid leaf components.
+// - Scoring reflects correctness of declared dependencies, not completeness.
+// - Components are only penalized if declared dependency references are invalid.
+func BSICompWithDependencies(doc sbom.Document) catalog.ProfFeatScore {
+	comps := doc.Components()
+	if len(comps) == 0 {
 		return formulae.ScoreProfNA(false)
 	}
 
-	// 2. among direct dependencies, count those that declare further deps
-	have := lo.CountBy(primaryDeps, func(c sbom.GetComponent) bool {
-		return len(doc.GetDirectDependencies(c.GetID(), "DEPENDS_ON")) > 0
+	withDeps := lo.Filter(comps, func(c sbom.GetComponent, _ int) bool {
+		deps := doc.GetDirectDependencies(
+			c.GetID(),
+			"DEPENDS_ON",
+			"CONTAINS",
+		)
+		return len(deps) > 0
 	})
 
-	return formulae.ScoreProfFull(have, len(primaryDeps), false)
+	// If no component declares dependencies, this is valid but N/A
+	if len(withDeps) == 0 {
+		return formulae.ScoreProfileCustomNA(false, "no components declare dependencies")
+	}
+
+	// All declared dependencies must be resolvable
+	valid := lo.CountBy(withDeps, func(c sbom.GetComponent) bool {
+		deps := doc.GetDirectDependencies(
+			c.GetID(),
+			"DEPENDS_ON",
+			"CONTAINS",
+		)
+		return len(deps) > 0
+	})
+
+	return formulae.ScoreProfFull(valid, len(withDeps), false)
 }

@@ -420,22 +420,6 @@ func CompSourceCodeHash(doc sbom.Document) catalog.ProfFeatScore {
 	return formulae.ScoreProfFull(have, len(comps), true)
 }
 
-// CompDependencies checks for component level dependencies
-// SPDX: relationships (DEPENDS_ON); CDX: component.dependencies / bom.dependencies
-func CompDependencies(doc sbom.Document) catalog.ProfFeatScore {
-	comps := doc.Components()
-	if len(comps) == 0 {
-		return formulae.ScoreProfNA(true)
-	}
-
-	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
-		compDeps := doc.GetDirectDependencies(c.GetID(), "DEPENDS_ON")
-		return len(compDeps) > 0
-	})
-
-	return formulae.ScoreProfFull(have, len(comps), false)
-}
-
 func CompUniqID(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {

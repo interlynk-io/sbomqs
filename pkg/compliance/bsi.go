@@ -16,7 +16,6 @@ package compliance
 
 import (
 	"context"
-	"fmt"
 	"strings"
 
 	pkgcommon "github.com/interlynk-io/sbomqs/v2/pkg/common"
@@ -114,7 +113,6 @@ func bsiResult(ctx context.Context, doc sbom.Document, fileName string, outForma
 	dtb.AddRecord(bsiSpec(doc))
 	dtb.AddRecord(bsiSpecVersion(doc))
 	dtb.AddRecord(bsiBuildPhase(doc))
-	dtb.AddRecord(bsiSbomDepth(doc))
 	dtb.AddRecord(bsiCreator(doc))
 	dtb.AddRecord(bsiTimestamp(doc))
 	dtb.AddRecord(bsiSbomURI(doc))
@@ -194,23 +192,6 @@ func bsiBuildPhase(doc sbom.Document) *db.Record {
 	}
 
 	return db.NewRecordStmt(SBOM_BUILD, "doc", result, score, "")
-}
-
-func bsiSbomDepth(doc sbom.Document) *db.Record {
-	result, score := "no dependencies declared", SCORE_ZERO
-
-	pc := doc.PrimaryComp()
-	if !pc.IsPresent() {
-		return db.NewRecordStmt(SBOM_DEPTH, "doc", "no primary component", SCORE_ZERO, "")
-	}
-
-	totalDependencies := doc.GetDirectDependencies(pc.GetID())
-	if len(totalDependencies) > 0 {
-		score = 10.0
-		result = fmt.Sprintf("primary component has %d direct dependencies", len(totalDependencies))
-	}
-
-	return db.NewRecordStmt(SBOM_DEPTH, "doc", result, score, "")
 }
 
 func bsiCreator(doc sbom.Document) *db.Record {
@@ -339,7 +320,7 @@ func bsiComponents(doc sbom.Document) []*db.Record {
 		records = append(records, bsiComponentName(component))
 		records = append(records, bsiComponentVersion(component))
 		records = append(records, bsiComponentLicense(component))
-		records = append(records, bsiComponentDepth(doc, component))
+		records = append(records, bsiComponentDependencies(doc, component))
 		records = append(records, bsiComponentHash(component))
 		records = append(records, bsiComponentSourceCodeURL(component))
 		records = append(records, bsiComponentDownloadURL(component))
@@ -352,59 +333,36 @@ func bsiComponents(doc sbom.Document) []*db.Record {
 	return records
 }
 
-func bsiComponentDepth(doc sbom.Document, component sbom.GetComponent) *db.Record {
+// bsiComponentDependencies reports dependency enumeration for a single component
+// according to BSI TR-03183.
+//
+// BSI semantics:
+//   - Dependency evaluation is strictly component-scoped (not SBOM- or primary-scoped).
+//   - A component MAY declare zero dependencies (valid leaf component).
+//   - If a component declares dependencies (DEPENDS_ON or CONTAINS),
+//     those references MUST be valid and resolvable.
+//   - Missing dependencies do NOT cause failure.
+//   - Only incorrect or broken dependency declarations result in a failing score.
+func bsiComponentDependencies(doc sbom.Document, component sbom.GetComponent) *db.Record {
 
 	compID := component.GetID()
-	result := "no-relationship"
+	deps := doc.GetDirectDependencies(compID, "DEPENDS_ON", "CONTAINS")
 
-	primary := doc.PrimaryComp()
-
-	// 1. When component is a primary component
-	if primary.IsPresent() && compID == primary.GetID() {
-		deps := doc.GetDirectDependencies(compID, "DEPENDS_ON")
-
-		if len(deps) == 0 {
-			return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), "primary component has no dependencies", SCORE_ZERO, "")
-		}
-
-		names := make([]string, 0, len(deps))
-		for _, dep := range deps {
-			name := strings.TrimSpace(dep.GetName())
-			if name != "" {
-				names = append(names, name)
-			}
-		}
-
-		result = strings.Join(names, ", ")
-		return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), result, SCORE_FULL, "")
+	// Leaf Component
+	if len(deps) == 0 {
+		return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), "no-dependencies", SCORE_FULL, "")
 	}
 
-	// 2. when componet is not primary component, i.e normal component
-	deps := doc.GetDirectDependencies(compID, "DEPENDS_ON")
-	if len(deps) > 0 {
-		names := make([]string, 0, len(deps))
-		for _, dep := range deps {
-			name := strings.TrimSpace(dep.GetName())
-			if name != "" {
-				names = append(names, name)
-			}
-		}
-
-		result = strings.Join(names, ", ")
-		return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), result, SCORE_FULL, "")
-	}
-
-	// 3. check if component is direct dependency of primary component, then "included-in"
-	if primary.IsPresent() {
-		primaryDeps := doc.GetDirectDependencies(primary.GetID(), "DEPENDS_ON")
-		for _, dep := range primaryDeps {
-			if dep.GetID() == compID {
-				return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), "included-in", SCORE_FULL, "")
-			}
+	names := make([]string, 0, len(deps))
+	for _, dep := range deps {
+		name := strings.TrimSpace(dep.GetName())
+		if name != "" {
+			names = append(names, name)
 		}
 	}
 
-	return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), result, SCORE_ZERO, "")
+	result := strings.Join(names, ", ")
+	return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), result, SCORE_FULL, "")
 }
 
 func bsiComponentLicense(component sbom.GetComponent) *db.Record {

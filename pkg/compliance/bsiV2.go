@@ -42,7 +42,6 @@ func bsiV2Result(ctx context.Context, doc sbom.Document, fileName string, outFor
 	dtb.AddRecord(bsiSpec(doc))
 	dtb.AddRecord(bsiV2SpecVersion(doc))
 	dtb.AddRecord(bsiBuildPhase(doc))
-	dtb.AddRecord(bsiSbomDepth(doc))
 	dtb.AddRecord(bsiCreator(doc))
 	dtb.AddRecord(bsiTimestamp(doc))
 	dtb.AddRecord(bsiSbomURI(doc))
@@ -176,16 +175,6 @@ func bsiV2Components(doc sbom.Document) []*db.Record {
 		records := append(records, db.NewRecordStmt(SBOM_COMPONENTS, "doc", "", 0.0, ""))
 		return records
 	}
-
-	// bsiCompIDWithName = common.ComponentsNamesMapToIDs(doc)
-	// bsiComponentList = common.ComponentsLists(doc)
-	// bsiPrimaryDependencies = common.MapPrimaryDependencies(doc)
-	// dependencies := common.GetAllPrimaryComponentDependencies(doc)
-	// isBsiAllDepesPresentInCompList := common.CheckPrimaryDependenciesInComponentList(dependencies, bsiComponentList)
-
-	// if isBsiAllDepesPresentInCompList {
-	// 	bsiGetAllPrimaryDepenciesByName = common.GetDependenciesByName(dependencies, bsiCompIDWithName)
-	// }
 
 	for _, component := range doc.Components() {
 		records = append(records, bsiComponentCreator(component))

@@ -90,10 +90,10 @@ var BSIV11KeyToEvaluatingFunction = map[string]catalog.ProfFeatEval{
 	"sbom_spec":         profiles.SBOMAutomationSpec,
 	"sbom_spec_version": profiles.BSISBOMSpecVersion,
 	"sbom_build":        profiles.BSISBOMBuildLifecycle,
-	"sbom_depth":        profiles.SBOMDepedencies,
-	"sbom_creator":      profiles.SBOMAuthors,
-	"sbom_timestamp":    profiles.SBOMCreationTimestamp,
-	"sbom_uri":          profiles.BSISBOMNamespace,
+	// "sbom_depth":        profiles.SBOMDepedencies,
+	"sbom_creator":   profiles.SBOMAuthors,
+	"sbom_timestamp": profiles.SBOMCreationTimestamp,
+	"sbom_uri":       profiles.BSISBOMNamespace,
 
 	"comp_name":    profiles.CompName,
 	"comp_version": profiles.CompVersion,
@@ -103,17 +103,17 @@ var BSIV11KeyToEvaluatingFunction = map[string]catalog.ProfFeatEval{
 	"comp_source_code_url": profiles.BSICompWithSourceCodeURI,
 	"comp_download_url":    profiles.BSICompWithDownloadURI,
 	"comp_source_hash":     profiles.BSICompWithSourceCodeHash,
-	"comp_depth":           profiles.BSICompWithDependency,
+	"comp_depth":           profiles.BSICompWithDependencies,
 }
 
 var BSIV20KeyToEvaluatingFunction = map[string]catalog.ProfFeatEval{
 	"sbom_spec":         profiles.SBOMAutomationSpec,
 	"sbom_spec_version": profiles.BSISBOMSpecVersion,
 	"sbom_build":        profiles.BSISBOMBuildLifecycle,
-	"sbom_depth":        profiles.SBOMDepedencies,
-	"sbom_creator":      profiles.SBOMAuthors,
-	"sbom_timestamp":    profiles.SBOMCreationTimestamp,
-	"sbom_uri":          profiles.BSISBOMNamespace,
+	// "sbom_depth":        profiles.SBOMDepedencies,
+	"sbom_creator":   profiles.SBOMAuthors,
+	"sbom_timestamp": profiles.SBOMCreationTimestamp,
+	"sbom_uri":       profiles.BSISBOMNamespace,
 
 	"comp_name":    profiles.CompName,
 	"comp_version": profiles.CompVersion,
@@ -123,7 +123,7 @@ var BSIV20KeyToEvaluatingFunction = map[string]catalog.ProfFeatEval{
 	"comp_source_code_url": profiles.BSICompWithSourceCodeURI,
 	"comp_download_url":    profiles.BSICompWithDownloadURI,
 	"comp_source_hash":     profiles.BSICompWithSourceCodeHash,
-	"comp_depth":           profiles.BSICompWithDependency,
+	"comp_depth":           profiles.BSICompWithDependencies,
 
 	"sbom_signature":          profiles.BSISBOMWithSignature,
 	"sbom_bomlinks":           profiles.BSISBOMWithBomLinks,
@@ -837,7 +837,7 @@ var profileBSI11Spec = catalog.ProfSpec{
 		{Key: "comp_source_code_url", Name: "Component Source URL", Required: false, Description: "Source code repository", Evaluate: profiles.BSICompWithSourceCodeURI},
 		{Key: "comp_download_url", Name: "Component Download URL", Required: true, Description: "Where to obtain component", Evaluate: profiles.BSICompWithDownloadURI},
 		{Key: "comp_source_hash", Name: "Component Source Hash", Required: false, Description: "Hash of source code", Evaluate: profiles.BSICompWithSourceCodeHash},
-		{Key: "comp_depth", Name: "Component Dependencies", Required: true, Description: "Dependency relationships", Evaluate: profiles.BSICompWithDependency},
+		{Key: "comp_depth", Name: "Component Dependencies", Required: true, Description: "Dependency relationships", Evaluate: profiles.BSICompWithDependencies},
 	},
 }
 
@@ -862,7 +862,7 @@ var profileBSI20Spec = catalog.ProfSpec{
 		{Key: "comp_source_code_url", Name: "Component Source URL", Required: false, Description: "Source code repository", Evaluate: profiles.BSICompWithSourceCodeURI},
 		{Key: "comp_download_url", Name: "Component Download URL", Required: true, Description: "Where to obtain component", Evaluate: profiles.BSICompWithDownloadURI},
 		{Key: "comp_source_hash", Name: "Component Source Hash", Required: false, Description: "Hash of source code", Evaluate: profiles.BSICompWithSourceCodeHash},
-		{Key: "comp_depth", Name: "Component Dependencies", Required: true, Description: "Dependency relationships", Evaluate: profiles.BSICompWithDependency},
+		{Key: "comp_depth", Name: "Component Dependencies", Required: true, Description: "Dependency relationships", Evaluate: profiles.BSICompWithDependencies},
 
 		{Key: "sbom_signature", Name: "Digital Signature", Required: true, Description: "Cryptographic signature verification", Evaluate: profiles.BSISBOMWithSignature},
 		{Key: "sbom_bomlinks", Name: "External References", Required: false, Description: "Links to other SBOMs", Evaluate: profiles.BSISBOMWithBomLinks},
