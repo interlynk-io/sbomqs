@@ -149,49 +149,26 @@ func CompWithDependencies(doc sbom.Document) catalog.ComprFeatScore {
 		)
 	}
 
-	// 	// If no components have dependencies, completeness is N/A
-	// 	if len(depComps) == 0 {
-	// 		return catalog.ComprFeatScore{
-	// 			Score:  0,
-	// 			Desc:   "no components declare dependencies",
-	// 			Ignore: false,
-	// 		}
-	// 	}
-
-	// 	have := lo.CountBy(depComps, func(c sbom.GetComponent) bool {
-	// 		id := c.GetID()
-
-	// 		for _, cst := range doc.Composition() {
-	// 			if cst.Scope() != sbom.ScopeDependencies {
-	// 				continue
-	// 			}
-	// 			if cst.Aggregate() != sbom.AggregateComplete {
-	// 				continue
-	// 			}
-	// 			if slices.Contains(cst.Dependencies(), id) {
-	// 				return true
-	// 			}
-	// 		}
-	// 		return false
-	// 	})
-
-	// 	desc := ""
-	// 	if have == len(depComps) {
-	// 		desc = "dependency completeness declared for all components"
-	// 	} else {
-	// 		desc = fmt.Sprintf(
-	// 			"dependency completeness declared for %d component(s)",
-	// 			have,
-	// 		)
-	// 	}
-
-	// 	return formulae.ScoreCompFullCustom(have, len(depComps), desc, false)
-	// }
-
 	return formulae.ScoreCompNA()
 }
 
-// comp_with_declared_completeness (component-level)
+// CompWithDeclaredCompleteness evaluates whether dependency completeness
+// is explicitly declared for components that participate in the dependency graph.
+//
+// Evaluation rules:
+// - Only components that actually declare dependencies are considered relevant.
+// - Leaf components (no dependencies) are valid and ignored.
+// - Transitive-only components are ignored unless they declare dependencies themselves.
+//
+// Format-specific behavior:
+//   - SPDX: dependency completeness cannot be declared → N/A.
+//   - CycloneDX: completeness is derived from `compositions` with
+//     `scope = dependencies` and `aggregate = complete`.
+//
+// Scoring:
+// - Full score if all relevant components declare dependency completeness.
+// - Partial score if some components declare completeness.
+// - N/A if no components declare dependencies.
 func CompWithDeclaredCompleteness(doc sbom.Document) catalog.ComprFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
