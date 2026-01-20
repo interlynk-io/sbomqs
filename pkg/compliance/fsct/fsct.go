@@ -16,6 +16,7 @@ package fsct
 
 import (
 	"context"
+	"slices"
 	"strings"
 
 	pkgcommon "github.com/interlynk-io/sbomqs/v2/pkg/common"
@@ -132,50 +133,11 @@ func SbomAuthor(doc sbom.Document) *db.Record {
 	return db.NewRecordStmt(SBOM_AUTHOR, "doc", result, score, maturity)
 }
 
-var (
-	CompIDWithName                          = make(map[string]string)
-	ComponentList                           = make(map[string]bool)
-	GetAllPrimaryCompDependencies           []string
-	RelationshipProvidedForPrimaryComp      bool
-	ValidRelationshipProvidedForPrimaryComp bool
-	GetAllPrimaryDependenciesByName         = []string{}
-)
-
-func getDepByName(dependencies []string) []string {
-	allDepByName := make([]string, 0, len(dependencies))
-	for _, dep := range dependencies {
-		allDepByName = append(allDepByName, CompIDWithName[dep])
-	}
-	return allDepByName
-}
-
 func Components(doc sbom.Document) []*db.Record {
 	records := []*db.Record{}
 
 	if len(doc.Components()) == 0 {
 		return records
-	}
-	CompIDWithName = common.ComponentsNamesMapToIDs(doc)
-	ComponentList = common.ComponentsLists(doc)
-
-	GetAllPrimaryCompDependencies := common.GetAllPrimaryComponentDependencies(doc)
-
-	var areAllPrimaryDepesPresentInCompList bool
-
-	if len(GetAllPrimaryCompDependencies) == 0 {
-		RelationshipProvidedForPrimaryComp = false
-	} else {
-		RelationshipProvidedForPrimaryComp = true
-	}
-
-	if RelationshipProvidedForPrimaryComp {
-		areAllPrimaryDepesPresentInCompList = common.CheckPrimaryDependenciesInComponentList(GetAllPrimaryCompDependencies, ComponentList)
-	}
-
-	if areAllPrimaryDepesPresentInCompList {
-		// this signifies to validation of all dependencies of primary comp present in the SBOM
-		ValidRelationshipProvidedForPrimaryComp = true
-		GetAllPrimaryDependenciesByName = common.GetDependenciesByName(GetAllPrimaryCompDependencies, CompIDWithName)
 	}
 
 	for _, component := range doc.Components() {
@@ -184,7 +146,7 @@ func Components(doc sbom.Document) []*db.Record {
 		records = append(records, fsctPackageSupplier(component))
 		records = append(records, fsctPackageUniqIDs(component))
 		records = append(records, fsctPackageHash(doc, component))
-		records = append(records, fsctPackageDependencies(doc, component))
+		records = append(records, fsctPackageRelationships(doc, component))
 		records = append(records, fsctPackageLicense(component))
 		records = append(records, fsctPackageCopyright(component))
 	}
@@ -317,76 +279,138 @@ func fsctPackageHash(doc sbom.Document, component sbom.GetComponent) *db.Record 
 	return db.NewRecordStmt(COMP_CHECKSUM, common.UniqueElementID(component), result, score, maturity)
 }
 
-func fsctPackageDependencies(doc sbom.Document, component sbom.GetComponent) *db.Record {
-	result, score, maturity := "", 0.0, ""
-	var getDependenciesOfComponent []string
-	var compIsPartOfPrimaryDependency bool
-	var compWithDirectDependency bool
-	var getCompDepsByName []string
+// FSCT Relationship requirements (§2.2.2.6):
+//
+// None:
+// - Component is unrelated to the primary component
+// - OR required relationships are missing
+//
+// Minimum Expected:
+// - Relationships declared for:
+//   - Primary component
+//   - Direct dependencies of the primary component
+//
+// - Leaf dependencies are valid
+// - Dependency completeness may be Unknown or Complete
+//
+// Recommended Practice:
+// - Relationships declared for all included components
+// - For a direct dependency of primary:
+//   - It declares its own direct dependencies
+//   - AND dependency completeness is explicitly Complete
+//
+// Notes:
+// - Transitive leaf components are valid
+// - Unrelated components are out of scope
+// - Completeness is scoped to immediate upstream dependencies only
+func fsctPackageRelationships(doc sbom.Document, component sbom.GetComponent) *db.Record {
+	compID := component.GetID()
+	result := ""
+	maturity := "None"
 
-	if doc.Spec().GetSpecType() == "spdx" {
-		// Is this comp part of primary comp dependencies
-		if common.IsComponentPartOfPrimaryDependency(doc.PrimaryComp().GetDependencies(), common.GetID(component.GetSpdxID())) {
-			// maturity level: minimum
-			compIsPartOfPrimaryDependency = true
-			getDependenciesOfComponent = doc.GetRelationships(common.GetID(component.GetSpdxID()))
+	primary := doc.PrimaryComp()
+	if !primary.IsPresent() {
+		return db.NewRecordStmt(COMP_RELATIONSHIP, common.UniqueElementID(component), "no primary component", 0.0, maturity)
+	}
 
-			if len(getDependenciesOfComponent) > 0 {
-				getCompDepsByName = getDepByName(getDependenciesOfComponent)
-				compWithDirectDependency = true
+	// Helper function: to fetch dependency completeness for a component
+	getAgg := func(id string) sbom.CompositionAggregate {
+		for _, c := range doc.Composition() {
+
+			// 1. SBOM-level completeness applies to all components
+			if c.Scope() == sbom.ScopeGlobal {
+				return c.Aggregate()
 			}
-		} else {
-			// maturity level: none
-			compIsPartOfPrimaryDependency = false
+
+			// 2. Dependency-scoped completeness
+			if c.Scope() == sbom.ScopeDependencies &&
+				slices.Contains(c.Dependencies(), id) {
+				return c.Aggregate()
+			}
 		}
-	} else if doc.Spec().GetSpecType() == "cyclonedx" {
-		// Is this comp part of primary comp depndencies ?
-		if common.IsComponentPartOfPrimaryDependency(doc.PrimaryComp().GetDependencies(), component.GetID()) {
+		return sbom.AggregateUnknown
+	}
 
-			compIsPartOfPrimaryDependency = true
+	primaryID := primary.GetID()
+	primaryDeps := doc.GetDirectDependencies(primaryID, "DEPENDS_ON")
+	primaryAgg := getAgg(compID)
 
-			// Does this comp has direct dependencies ?
-			getDependenciesOfComponent = doc.GetRelationships(component.GetID())
-			if len(getDependenciesOfComponent) > 0 {
+	// Case 1: Primary Component
+	if compID == primaryID {
 
-				getCompDepsByName = getDepByName(getDependenciesOfComponent)
+		// relationship declared
+		if len(primaryDeps) > 0 {
+			names := make([]string, 0, len(primaryDeps))
 
-				compWithDirectDependency = true
+			for _, dep := range primaryDeps {
+				name := strings.TrimSpace(dep.GetName())
+				if name != "" {
+					names = append(names, name)
+				}
 			}
-		} else {
-			compIsPartOfPrimaryDependency = false
+
+			result = strings.Join(names, ", ")
+			return db.NewRecordStmt(COMP_RELATIONSHIP, common.UniqueElementID(component), result, 10.0, "Minimum")
+		}
+
+		// no dependencies --> check completeness declaration
+		if primaryAgg == sbom.AggregateComplete {
+			return db.NewRecordStmt(COMP_RELATIONSHIP, common.UniqueElementID(component), result, 10.0, "Minimum")
+		}
+
+		// nothing declared,set to none
+		return db.NewRecordStmt(COMP_RELATIONSHIP, common.UniqueElementID(component), "no relationships declared; completeness unknown", 0.0, "None")
+	}
+
+	// Case 2: Non-Primary COmponent
+	// chck if it is a direct dependency of primary
+	isDirectDepOfPrimary := false
+	for _, dep := range primaryDeps {
+		if dep.GetID() == compID {
+			isDirectDepOfPrimary = true
+			break
 		}
 	}
-	switch {
 
-	// when comp is a dependency of priamary with having direct dependencies of it as well
-	case ValidRelationshipProvidedForPrimaryComp && compIsPartOfPrimaryDependency && compWithDirectDependency:
+	if !isDirectDepOfPrimary {
+		return db.NewRecordStmt(COMP_RELATIONSHIP, common.UniqueElementID(component), "not part of primary dependency graph", 0.0, "None")
+	}
 
-		score = 12.0
-		maturity = "Recommended"
-		result = strings.Join(getCompDepsByName, ", ")
+	componentDeps := doc.GetDirectDependencies(compID, "DEPENDS_ON")
+	componentAgg := getAgg(compID)
 
-		// when comp is a dependency of primary with no direct dependencies
-	case ValidRelationshipProvidedForPrimaryComp && compIsPartOfPrimaryDependency:
+	// Case 3: direct dependency with own dependencies
+	// declared dependencies
+	if len(componentDeps) > 0 {
+		names := make([]string, 0, len(componentDeps))
 
-		score = 10.0
-		maturity = "Minimum"
-		result = strings.Join(getCompDepsByName, ", ")
+		for _, dep := range componentDeps {
+			name := strings.TrimSpace(dep.GetName())
+			if name != "" {
+				names = append(names, name)
+			}
+		}
 
-		// when component itself is a primary component
-	case ValidRelationshipProvidedForPrimaryComp && component.GetPrimaryCompInfo().IsPresent():
+		result = strings.Join(names, ", ")
 
-		score = 10.0
-		maturity = "Minimum"
-		result = strings.Join(GetAllPrimaryDependenciesByName, ", ")
+		// Recommended only if completeness is explicity "complete"
+		// declared completeness
+		if componentAgg == sbom.AggregateComplete {
+			return db.NewRecordStmt(COMP_RELATIONSHIP, common.UniqueElementID(component), result, 12.0, "Recommended")
+		}
 
-	// when a comp is not a part primary dependnecies or primary comp with no dependencies
+		// otherwise, still Minimum
+		return db.NewRecordStmt(COMP_RELATIONSHIP, common.UniqueElementID(component), result, 10.0, "Minimum")
+	}
+
+	// Case 4: leaf depdency of primary with completeness declared "complete"
+	switch componentAgg {
+	case sbom.AggregateComplete:
+		return db.NewRecordStmt(COMP_RELATIONSHIP, common.UniqueElementID(component), result, 10.0, "Minimum")
+
 	default:
-
-		score = 0.0
-		maturity = "None"
+		return db.NewRecordStmt(COMP_RELATIONSHIP, common.UniqueElementID(component), result, 0.0, "None")
 	}
-	return db.NewRecordStmt(COMP_RELATIONSHIP, common.UniqueElementID(component), result, score, maturity)
 }
 
 func fsctPackageLicense(component sbom.GetComponent) *db.Record {

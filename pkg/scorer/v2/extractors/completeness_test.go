@@ -1524,7 +1524,7 @@ func TestCompWithDependencies(t *testing.T) {
 		got := CompWithDependencies(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "no components declare dependencies", got.Desc)
+		assert.Equal(t, "primary component not defined", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1535,7 +1535,7 @@ func TestCompWithDependencies(t *testing.T) {
 		got := CompWithDependencies(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "dependency completeness declared for all components", got.Desc)
+		assert.Equal(t, "dependency completeness declared for all relevant components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1557,7 +1557,7 @@ func TestCompWithDependencies(t *testing.T) {
 		got := CompWithDependencies(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "no components declare dependencies", got.Desc)
+		assert.Equal(t, "primary component not defined", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1568,7 +1568,7 @@ func TestCompWithDependencies(t *testing.T) {
 		got := CompWithDependencies(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "no components declare dependencies", got.Desc)
+		assert.Equal(t, "primary component not defined", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1579,7 +1579,7 @@ func TestCompWithDependencies(t *testing.T) {
 		got := CompWithDependencies(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "no components declare dependencies", got.Desc)
+		assert.Equal(t, "primary component not defined", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1590,7 +1590,7 @@ func TestCompWithDependencies(t *testing.T) {
 		got := CompWithDependencies(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "dependency completeness declared for all components", got.Desc)
+		assert.Equal(t, "dependency completeness declared for all relevant components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 }

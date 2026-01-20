@@ -38,16 +38,38 @@ type FakeDocument struct {
 	compositionReturnsOnCall map[int]struct {
 		result1 []sbom.GetComposition
 	}
-	GetRelationshipsStub        func(string) []string
-	getRelationshipsMutex       sync.RWMutex
-	getRelationshipsArgsForCall []struct {
+	GetDirectDependenciesStub        func(string, ...string) []sbom.GetComponent
+	getDirectDependenciesMutex       sync.RWMutex
+	getDirectDependenciesArgsForCall []struct {
+		arg1 string
+		arg2 []string
+	}
+	getDirectDependenciesReturns struct {
+		result1 []sbom.GetComponent
+	}
+	getDirectDependenciesReturnsOnCall map[int]struct {
+		result1 []sbom.GetComponent
+	}
+	GetOutgoingRelationsStub        func(string) []sbom.GetRelationship
+	getOutgoingRelationsMutex       sync.RWMutex
+	getOutgoingRelationsArgsForCall []struct {
 		arg1 string
 	}
+	getOutgoingRelationsReturns struct {
+		result1 []sbom.GetRelationship
+	}
+	getOutgoingRelationsReturnsOnCall map[int]struct {
+		result1 []sbom.GetRelationship
+	}
+	GetRelationshipsStub        func() []sbom.GetRelationship
+	getRelationshipsMutex       sync.RWMutex
+	getRelationshipsArgsForCall []struct {
+	}
 	getRelationshipsReturns struct {
-		result1 []string
+		result1 []sbom.GetRelationship
 	}
 	getRelationshipsReturnsOnCall map[int]struct {
-		result1 []string
+		result1 []sbom.GetRelationship
 	}
 	LifecyclesStub        func() []string
 	lifecyclesMutex       sync.RWMutex
@@ -79,25 +101,15 @@ type FakeDocument struct {
 	manufacturerReturnsOnCall map[int]struct {
 		result1 sbom.GetManufacturer
 	}
-	PrimaryCompStub        func() sbom.GetPrimaryComp
+	PrimaryCompStub        func() sbom.GetPrimaryComponentInfo
 	primaryCompMutex       sync.RWMutex
 	primaryCompArgsForCall []struct {
 	}
 	primaryCompReturns struct {
-		result1 sbom.GetPrimaryComp
+		result1 sbom.GetPrimaryComponentInfo
 	}
 	primaryCompReturnsOnCall map[int]struct {
-		result1 sbom.GetPrimaryComp
-	}
-	RelationsStub        func() []sbom.GetRelation
-	relationsMutex       sync.RWMutex
-	relationsArgsForCall []struct {
-	}
-	relationsReturns struct {
-		result1 []sbom.GetRelation
-	}
-	relationsReturnsOnCall map[int]struct {
-		result1 []sbom.GetRelation
+		result1 sbom.GetPrimaryComponentInfo
 	}
 	SchemaValidationStub        func() bool
 	schemaValidationMutex       sync.RWMutex
@@ -322,18 +334,140 @@ func (fake *FakeDocument) CompositionReturnsOnCall(i int, result1 []sbom.GetComp
 	}{result1}
 }
 
-func (fake *FakeDocument) GetRelationships(arg1 string) []string {
+func (fake *FakeDocument) GetDirectDependencies(arg1 string, arg2 ...string) []sbom.GetComponent {
+	fake.getDirectDependenciesMutex.Lock()
+	ret, specificReturn := fake.getDirectDependenciesReturnsOnCall[len(fake.getDirectDependenciesArgsForCall)]
+	fake.getDirectDependenciesArgsForCall = append(fake.getDirectDependenciesArgsForCall, struct {
+		arg1 string
+		arg2 []string
+	}{arg1, arg2})
+	stub := fake.GetDirectDependenciesStub
+	fakeReturns := fake.getDirectDependenciesReturns
+	fake.recordInvocation("GetDirectDependencies", []interface{}{arg1, arg2})
+	fake.getDirectDependenciesMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2...)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeDocument) GetDirectDependenciesCallCount() int {
+	fake.getDirectDependenciesMutex.RLock()
+	defer fake.getDirectDependenciesMutex.RUnlock()
+	return len(fake.getDirectDependenciesArgsForCall)
+}
+
+func (fake *FakeDocument) GetDirectDependenciesCalls(stub func(string, ...string) []sbom.GetComponent) {
+	fake.getDirectDependenciesMutex.Lock()
+	defer fake.getDirectDependenciesMutex.Unlock()
+	fake.GetDirectDependenciesStub = stub
+}
+
+func (fake *FakeDocument) GetDirectDependenciesArgsForCall(i int) (string, []string) {
+	fake.getDirectDependenciesMutex.RLock()
+	defer fake.getDirectDependenciesMutex.RUnlock()
+	argsForCall := fake.getDirectDependenciesArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeDocument) GetDirectDependenciesReturns(result1 []sbom.GetComponent) {
+	fake.getDirectDependenciesMutex.Lock()
+	defer fake.getDirectDependenciesMutex.Unlock()
+	fake.GetDirectDependenciesStub = nil
+	fake.getDirectDependenciesReturns = struct {
+		result1 []sbom.GetComponent
+	}{result1}
+}
+
+func (fake *FakeDocument) GetDirectDependenciesReturnsOnCall(i int, result1 []sbom.GetComponent) {
+	fake.getDirectDependenciesMutex.Lock()
+	defer fake.getDirectDependenciesMutex.Unlock()
+	fake.GetDirectDependenciesStub = nil
+	if fake.getDirectDependenciesReturnsOnCall == nil {
+		fake.getDirectDependenciesReturnsOnCall = make(map[int]struct {
+			result1 []sbom.GetComponent
+		})
+	}
+	fake.getDirectDependenciesReturnsOnCall[i] = struct {
+		result1 []sbom.GetComponent
+	}{result1}
+}
+
+func (fake *FakeDocument) GetOutgoingRelations(arg1 string) []sbom.GetRelationship {
+	fake.getOutgoingRelationsMutex.Lock()
+	ret, specificReturn := fake.getOutgoingRelationsReturnsOnCall[len(fake.getOutgoingRelationsArgsForCall)]
+	fake.getOutgoingRelationsArgsForCall = append(fake.getOutgoingRelationsArgsForCall, struct {
+		arg1 string
+	}{arg1})
+	stub := fake.GetOutgoingRelationsStub
+	fakeReturns := fake.getOutgoingRelationsReturns
+	fake.recordInvocation("GetOutgoingRelations", []interface{}{arg1})
+	fake.getOutgoingRelationsMutex.Unlock()
+	if stub != nil {
+		return stub(arg1)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeDocument) GetOutgoingRelationsCallCount() int {
+	fake.getOutgoingRelationsMutex.RLock()
+	defer fake.getOutgoingRelationsMutex.RUnlock()
+	return len(fake.getOutgoingRelationsArgsForCall)
+}
+
+func (fake *FakeDocument) GetOutgoingRelationsCalls(stub func(string) []sbom.GetRelationship) {
+	fake.getOutgoingRelationsMutex.Lock()
+	defer fake.getOutgoingRelationsMutex.Unlock()
+	fake.GetOutgoingRelationsStub = stub
+}
+
+func (fake *FakeDocument) GetOutgoingRelationsArgsForCall(i int) string {
+	fake.getOutgoingRelationsMutex.RLock()
+	defer fake.getOutgoingRelationsMutex.RUnlock()
+	argsForCall := fake.getOutgoingRelationsArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeDocument) GetOutgoingRelationsReturns(result1 []sbom.GetRelationship) {
+	fake.getOutgoingRelationsMutex.Lock()
+	defer fake.getOutgoingRelationsMutex.Unlock()
+	fake.GetOutgoingRelationsStub = nil
+	fake.getOutgoingRelationsReturns = struct {
+		result1 []sbom.GetRelationship
+	}{result1}
+}
+
+func (fake *FakeDocument) GetOutgoingRelationsReturnsOnCall(i int, result1 []sbom.GetRelationship) {
+	fake.getOutgoingRelationsMutex.Lock()
+	defer fake.getOutgoingRelationsMutex.Unlock()
+	fake.GetOutgoingRelationsStub = nil
+	if fake.getOutgoingRelationsReturnsOnCall == nil {
+		fake.getOutgoingRelationsReturnsOnCall = make(map[int]struct {
+			result1 []sbom.GetRelationship
+		})
+	}
+	fake.getOutgoingRelationsReturnsOnCall[i] = struct {
+		result1 []sbom.GetRelationship
+	}{result1}
+}
+
+func (fake *FakeDocument) GetRelationships() []sbom.GetRelationship {
 	fake.getRelationshipsMutex.Lock()
 	ret, specificReturn := fake.getRelationshipsReturnsOnCall[len(fake.getRelationshipsArgsForCall)]
 	fake.getRelationshipsArgsForCall = append(fake.getRelationshipsArgsForCall, struct {
-		arg1 string
-	}{arg1})
+	}{})
 	stub := fake.GetRelationshipsStub
 	fakeReturns := fake.getRelationshipsReturns
-	fake.recordInvocation("GetRelationships", []interface{}{arg1})
+	fake.recordInvocation("GetRelationships", []interface{}{})
 	fake.getRelationshipsMutex.Unlock()
 	if stub != nil {
-		return stub(arg1)
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1
@@ -347,39 +481,32 @@ func (fake *FakeDocument) GetRelationshipsCallCount() int {
 	return len(fake.getRelationshipsArgsForCall)
 }
 
-func (fake *FakeDocument) GetRelationshipsCalls(stub func(string) []string) {
+func (fake *FakeDocument) GetRelationshipsCalls(stub func() []sbom.GetRelationship) {
 	fake.getRelationshipsMutex.Lock()
 	defer fake.getRelationshipsMutex.Unlock()
 	fake.GetRelationshipsStub = stub
 }
 
-func (fake *FakeDocument) GetRelationshipsArgsForCall(i int) string {
-	fake.getRelationshipsMutex.RLock()
-	defer fake.getRelationshipsMutex.RUnlock()
-	argsForCall := fake.getRelationshipsArgsForCall[i]
-	return argsForCall.arg1
-}
-
-func (fake *FakeDocument) GetRelationshipsReturns(result1 []string) {
+func (fake *FakeDocument) GetRelationshipsReturns(result1 []sbom.GetRelationship) {
 	fake.getRelationshipsMutex.Lock()
 	defer fake.getRelationshipsMutex.Unlock()
 	fake.GetRelationshipsStub = nil
 	fake.getRelationshipsReturns = struct {
-		result1 []string
+		result1 []sbom.GetRelationship
 	}{result1}
 }
 
-func (fake *FakeDocument) GetRelationshipsReturnsOnCall(i int, result1 []string) {
+func (fake *FakeDocument) GetRelationshipsReturnsOnCall(i int, result1 []sbom.GetRelationship) {
 	fake.getRelationshipsMutex.Lock()
 	defer fake.getRelationshipsMutex.Unlock()
 	fake.GetRelationshipsStub = nil
 	if fake.getRelationshipsReturnsOnCall == nil {
 		fake.getRelationshipsReturnsOnCall = make(map[int]struct {
-			result1 []string
+			result1 []sbom.GetRelationship
 		})
 	}
 	fake.getRelationshipsReturnsOnCall[i] = struct {
-		result1 []string
+		result1 []sbom.GetRelationship
 	}{result1}
 }
 
@@ -542,7 +669,7 @@ func (fake *FakeDocument) ManufacturerReturnsOnCall(i int, result1 sbom.GetManuf
 	}{result1}
 }
 
-func (fake *FakeDocument) PrimaryComp() sbom.GetPrimaryComp {
+func (fake *FakeDocument) PrimaryComp() sbom.GetPrimaryComponentInfo {
 	fake.primaryCompMutex.Lock()
 	ret, specificReturn := fake.primaryCompReturnsOnCall[len(fake.primaryCompArgsForCall)]
 	fake.primaryCompArgsForCall = append(fake.primaryCompArgsForCall, struct {
@@ -566,85 +693,32 @@ func (fake *FakeDocument) PrimaryCompCallCount() int {
 	return len(fake.primaryCompArgsForCall)
 }
 
-func (fake *FakeDocument) PrimaryCompCalls(stub func() sbom.GetPrimaryComp) {
+func (fake *FakeDocument) PrimaryCompCalls(stub func() sbom.GetPrimaryComponentInfo) {
 	fake.primaryCompMutex.Lock()
 	defer fake.primaryCompMutex.Unlock()
 	fake.PrimaryCompStub = stub
 }
 
-func (fake *FakeDocument) PrimaryCompReturns(result1 sbom.GetPrimaryComp) {
+func (fake *FakeDocument) PrimaryCompReturns(result1 sbom.GetPrimaryComponentInfo) {
 	fake.primaryCompMutex.Lock()
 	defer fake.primaryCompMutex.Unlock()
 	fake.PrimaryCompStub = nil
 	fake.primaryCompReturns = struct {
-		result1 sbom.GetPrimaryComp
+		result1 sbom.GetPrimaryComponentInfo
 	}{result1}
 }
 
-func (fake *FakeDocument) PrimaryCompReturnsOnCall(i int, result1 sbom.GetPrimaryComp) {
+func (fake *FakeDocument) PrimaryCompReturnsOnCall(i int, result1 sbom.GetPrimaryComponentInfo) {
 	fake.primaryCompMutex.Lock()
 	defer fake.primaryCompMutex.Unlock()
 	fake.PrimaryCompStub = nil
 	if fake.primaryCompReturnsOnCall == nil {
 		fake.primaryCompReturnsOnCall = make(map[int]struct {
-			result1 sbom.GetPrimaryComp
+			result1 sbom.GetPrimaryComponentInfo
 		})
 	}
 	fake.primaryCompReturnsOnCall[i] = struct {
-		result1 sbom.GetPrimaryComp
-	}{result1}
-}
-
-func (fake *FakeDocument) Relations() []sbom.GetRelation {
-	fake.relationsMutex.Lock()
-	ret, specificReturn := fake.relationsReturnsOnCall[len(fake.relationsArgsForCall)]
-	fake.relationsArgsForCall = append(fake.relationsArgsForCall, struct {
-	}{})
-	stub := fake.RelationsStub
-	fakeReturns := fake.relationsReturns
-	fake.recordInvocation("Relations", []interface{}{})
-	fake.relationsMutex.Unlock()
-	if stub != nil {
-		return stub()
-	}
-	if specificReturn {
-		return ret.result1
-	}
-	return fakeReturns.result1
-}
-
-func (fake *FakeDocument) RelationsCallCount() int {
-	fake.relationsMutex.RLock()
-	defer fake.relationsMutex.RUnlock()
-	return len(fake.relationsArgsForCall)
-}
-
-func (fake *FakeDocument) RelationsCalls(stub func() []sbom.GetRelation) {
-	fake.relationsMutex.Lock()
-	defer fake.relationsMutex.Unlock()
-	fake.RelationsStub = stub
-}
-
-func (fake *FakeDocument) RelationsReturns(result1 []sbom.GetRelation) {
-	fake.relationsMutex.Lock()
-	defer fake.relationsMutex.Unlock()
-	fake.RelationsStub = nil
-	fake.relationsReturns = struct {
-		result1 []sbom.GetRelation
-	}{result1}
-}
-
-func (fake *FakeDocument) RelationsReturnsOnCall(i int, result1 []sbom.GetRelation) {
-	fake.relationsMutex.Lock()
-	defer fake.relationsMutex.Unlock()
-	fake.RelationsStub = nil
-	if fake.relationsReturnsOnCall == nil {
-		fake.relationsReturnsOnCall = make(map[int]struct {
-			result1 []sbom.GetRelation
-		})
-	}
-	fake.relationsReturnsOnCall[i] = struct {
-		result1 []sbom.GetRelation
+		result1 sbom.GetPrimaryComponentInfo
 	}{result1}
 }
 

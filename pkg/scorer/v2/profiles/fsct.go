@@ -15,8 +15,12 @@
 package profiles
 
 import (
+	"fmt"
+	"slices"
+
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/catalog"
+	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/formulae"
 )
 
 // FSCTSBOMAuthors: SBOM Author(must)
@@ -66,8 +70,76 @@ func FSCTCompHash(doc sbom.Document) catalog.ProfFeatScore {
 }
 
 // Component Dependencies(Must)
+// - Relationships declared for the Primary Component
+// - Relationships declared for its direct Dependencies
+// - Leaf dependencies valid and transitive components mdeps doesn't matter
 func FSCTCompDependencies(doc sbom.Document) catalog.ProfFeatScore {
-	return CompDependencies(doc)
+	primary := doc.PrimaryComp()
+	if !primary.IsPresent() {
+		return formulae.ScoreProfileCustomNA(false, "define primary component")
+	}
+
+	// 1. primary must have direct dependencies
+	primaryDeps := doc.GetDirectDependencies(primary.GetID(), "DEPENDS_ON")
+
+	// CASE 1: No relationships declared at all
+	if len(primaryDeps) == 0 {
+		return formulae.ScoreProfileCustomNA(false, "no relationships declared for primary component")
+	}
+
+	hasUnknown := false
+	// CASE 2: Primary has dependencies
+	primaryAgg := DependencyCompleteness(doc, primary.GetID())
+	if primaryAgg == sbom.AggregateIncomplete {
+		return formulae.ScoreProfileCustomNA(false, "primary dependency completeness declared incomplete")
+	}
+
+	if primaryAgg == sbom.AggregateUnknown {
+		hasUnknown = true
+	}
+
+	// CASE 3: Check direct dependencies of primary
+	for _, dep := range primaryDeps {
+		depID := dep.GetID()
+		deps := doc.GetDirectDependencies(depID, "DEPENDS_ON")
+		agg := DependencyCompleteness(doc, depID)
+
+		if len(deps) == 0 {
+			switch agg {
+			case sbom.AggregateIncomplete:
+				return formulae.ScoreProfileCustomNA(false, fmt.Sprintf("dependency %s declared incomplete", dep.GetName()))
+
+			case sbom.AggregateUnknown:
+				hasUnknown = true
+			}
+		}
+	}
+
+	if hasUnknown {
+		return catalog.ProfFeatScore{
+			Score:  10.0,
+			Desc:   "relationships declared; completeness unknown",
+			Ignore: false,
+		}
+	}
+
+	return catalog.ProfFeatScore{
+		Score:  10.0,
+		Desc:   "complete relationships for primary and direct dependencies",
+		Ignore: false,
+	}
+}
+
+func DependencyCompleteness(doc sbom.Document, compID string) sbom.CompositionAggregate {
+	for _, c := range doc.Composition() {
+		if c.Scope() != sbom.ScopeDependencies {
+			continue
+		}
+		if slices.Contains(c.Dependencies(), compID) {
+			return c.Aggregate()
+		}
+	}
+	return sbom.AggregateUnknown
 }
 
 // Component License(Must)

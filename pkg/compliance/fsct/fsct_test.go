@@ -239,9 +239,12 @@ func TestFsctCDXSbomAuthorFields(t *testing.T) {
 }
 
 func cdxDocWithPrimaryComponent() sbom.Document {
-	primary := sbom.PrimaryComp{}
+	primary := sbom.PrimaryComponentInfo{}
+	primary.ID = "pkg:git@github.com:interlynk/sbomqs.git"
+	primary.Name = "interlynk-io/sbomqs"
+	primary.Version = "v0.0.3"
+	primary.Type = "application"
 	primary.Present = true
-	primary.Name = "git@github.com:interlynk/sbomqs.git"
 
 	doc := sbom.CdxDoc{
 		PrimaryComponent: primary,
@@ -320,7 +323,7 @@ func TestFsctCDXOtherSbomLevelFields(t *testing.T) {
 			actual: SbomPrimaryComponent(cdxDocWithPrimaryComponent()),
 			expected: desired{
 				score:    10.0,
-				result:   "git@github.com:interlynk/sbomqs.git",
+				result:   "interlynk-io/sbomqs",
 				key:      SBOM_PRIMARY_COMPONENT,
 				id:       "doc",
 				maturity: "Minimum",
@@ -398,9 +401,13 @@ func spdxDocWithLifecycles() sbom.Document {
 }
 
 func spdxDocWithPrimaryComponent() sbom.Document {
-	primary := sbom.PrimaryComp{}
+	primary := sbom.PrimaryComponentInfo{}
+
+	primary.ID = "SPDXRef-DocumentRoot-File-sbomqs-linux-amd64"
+	primary.Name = "sbomqs-linux-amd64"
+	primary.Version = "v0.0.3"
+	primary.Type = "application"
 	primary.Present = true
-	primary.Name = "SPDXRef-DocumentRoot-File-sbomqs-linux-amd64"
 
 	doc := sbom.CdxDoc{
 		PrimaryComponent: primary,
@@ -430,7 +437,7 @@ func TestFsctSPDXSbomLevelFields(t *testing.T) {
 			actual: SbomPrimaryComponent(spdxDocWithPrimaryComponent()),
 			expected: desired{
 				score:    10.0,
-				result:   "SPDXRef-DocumentRoot-File-sbomqs-linux-amd64",
+				result:   "sbomqs-linux-amd64",
 				key:      SBOM_PRIMARY_COMPONENT,
 				id:       "doc",
 				maturity: "Minimum",
@@ -802,7 +809,13 @@ func TestFsctComponentLevelOnSpdxAndCdx(t *testing.T) {
 }
 
 func primaryCompWithHigherChecksum() (sbom.Document, sbom.GetComponent) {
-	primary := sbom.PrimaryComp{}
+	primary := sbom.PrimaryComponentInfo{}
+
+	primary.ID = "SPDXRef-DocumentRoot-File-sbomqs-linux-amd64"
+	primary.Name = "sbomqs-linux-amd64"
+	primary.Version = "v0.0.3"
+	primary.Type = "application"
+	primary.Present = true
 
 	chks := []sbom.GetChecksum{}
 
@@ -822,19 +835,14 @@ func primaryCompWithHigherChecksum() (sbom.Document, sbom.GetComponent) {
 		Checksums: chks,
 	}
 
-	primary.Present = true
-	primary.ID = "SPDXRef-DocumentRoot-File-sbomqs-linux-amd64"
-
 	doc := sbom.SpdxDoc{
 		PrimaryComponent: primary,
-		// Comps:            []sbom.GetComponent{comp},
 	}
 
 	return doc, comp
 }
 
 func primaryCompWithLowerChecksum() (sbom.Document, sbom.GetComponent) {
-	primary := sbom.PrimaryComp{}
 
 	chks := []sbom.GetChecksum{}
 
@@ -854,8 +862,13 @@ func primaryCompWithLowerChecksum() (sbom.Document, sbom.GetComponent) {
 		Checksums: chks,
 	}
 
-	primary.Present = true
+	primary := sbom.PrimaryComponentInfo{}
+
 	primary.ID = "SPDXRef-DocumentRoot-File-sbomqs-linux-amd64"
+	primary.Name = "sbomqs-linux-amd64"
+	primary.Version = "v0.0.3"
+	primary.Type = "application"
+	primary.Present = true
 
 	doc := sbom.SpdxDoc{
 		PrimaryComponent: primary,
@@ -865,7 +878,6 @@ func primaryCompWithLowerChecksum() (sbom.Document, sbom.GetComponent) {
 }
 
 func compWithHigherChecksum() (sbom.Document, sbom.GetComponent) {
-	primary := sbom.PrimaryComp{}
 	chks := []sbom.GetChecksum{}
 
 	ck1 := sbom.Checksum{}
@@ -884,8 +896,13 @@ func compWithHigherChecksum() (sbom.Document, sbom.GetComponent) {
 		Checksums: chks,
 	}
 
-	primary.Present = true
+	primary := sbom.PrimaryComponentInfo{}
+
 	primary.ID = "SPDXRef-DocumentRoot-File-sbomqs-linux-amd64"
+	primary.Name = "sbomqs-linux-amd64"
+	primary.Version = "v0.0.3"
+	primary.Type = "application"
+	primary.Present = true
 
 	doc := sbom.SpdxDoc{
 		PrimaryComponent: primary,
@@ -894,7 +911,6 @@ func compWithHigherChecksum() (sbom.Document, sbom.GetComponent) {
 }
 
 func compWithLowerChecksum() (sbom.Document, sbom.GetComponent) {
-	primary := sbom.PrimaryComp{}
 	chks := []sbom.GetChecksum{}
 
 	ck1 := sbom.Checksum{}
@@ -913,8 +929,13 @@ func compWithLowerChecksum() (sbom.Document, sbom.GetComponent) {
 		Checksums: chks,
 	}
 
-	primary.Present = true
+	primary := sbom.PrimaryComponentInfo{}
+
 	primary.ID = "SPDXRef-DocumentRoot-File-sbomqs-linux-amd64"
+	primary.Name = "sbomqs-linux-amd64"
+	primary.Version = "v0.0.3"
+	primary.Type = "application"
+	primary.Present = true
 
 	doc := sbom.SpdxDoc{
 		PrimaryComponent: primary,
@@ -995,241 +1016,271 @@ type Relationship struct {
 	RefB         ElementRefID
 }
 
-func cdxCompIsPartOfPrimaryCompDependency() (sbom.Document, sbom.GetComponent) {
-	rel1 := Relationship{
-		RefA: ElementRefID{ID: "custom+46261/git@github.com:viveksahu26/sbomqs.git$14e7376fa2b00c102a9ba89fd5ccc7cf26f2f255"},
-		RefB: ElementRefID{ID: "pkg:github/google/go-github@0a6474043f9f14c77ba6fa77d1b377a7538a4c8c"},
-	}
+func cdxCompIsPartOfPrimaryCompDependency() sbom.Document {
 
-	comp := sbom.Component{}
+	comp1 := sbom.Component{}
+	comp1.ID = "custom+46261/git@github.com:viveksahu26/sbomqs.git$14e7376fa2b00c102a9ba89fd5ccc7cf26f2f255"
+	comp1.Name = "sbomqs-linux-amd64"
+	comp1.Version = "v1.0.0"
 
-	pc := sbom.PrimaryComp{}
-	pc.ID = "custom+46261/git@github.com:viveksahu26/sbomqs.git$14e7376fa2b00c102a9ba89fd5ccc7cf26f2f255"
-	pc.Present = true
-	pc.AllDependencies = append(pc.AllDependencies, rel1.RefB.ID)
+	comp2 := sbom.Component{}
+	comp2.ID = "pkg:github/google/go-github@0a6474043f9f14c77ba6fa77d1b377a7538a4c8c"
+	comp2.Name = "go-github"
+	comp2.Version = "v2.0.0"
 
-	comp.PrimaryCompt = pc
-	comp.ID = "pkg:github/google/go-github@0a6474043f9f14c77ba6fa77d1b377a7538a4c8c"
-	comp.Name = "go-github"
+	primary := sbom.PrimaryComponentInfo{}
 
-	spec := sbom.NewSpec()
-	spec.SpecType = "cyclonedx"
-	doc := sbom.CdxDoc{
-		CdxSpec: spec,
-	}
+	primary.ID = comp1.ID
+	primary.Name = comp1.Name
+	primary.Version = comp1.Version
+	primary.Type = "application"
+	primary.Present = true
 
-	CompIDWithName[rel1.RefB.ID] = "go-github"
+	var rel sbom.Relationship
+	rel.From = comp1.ID
+	rel.To = comp2.ID
+	rel.Type = "DEPENDS_ON"
 
-	ComponentList[rel1.RefB.ID] = true
+	var relations []sbom.GetRelationship
+	relations = append(relations, rel)
 
-	GetAllPrimaryCompDependencies = common.GetAllPrimaryComponentDependencies(doc)
-	RelationshipProvidedForPrimaryComp = true
-	GetAllPrimaryDependenciesByName = common.GetDependenciesByName(GetAllPrimaryCompDependencies, CompIDWithName)
-	ValidRelationshipProvidedForPrimaryComp = true
-
-	return doc, comp
-}
-
-func cdxCompWithOneDirectDepAndPartOfPrimaryCompDependency() (sbom.Document, sbom.GetComponent) {
-	rel1 := Relationship{
-		RefA: ElementRefID{ID: "custom+46261/git@github.com:viveksahu26/sbomqs.git$14e7376fa2b00c102a9ba89fd5ccc7cf26f2f255"},
-		RefB: ElementRefID{ID: "pkg:github/google/go-github@0a6474043f9f14c77ba6fa77d1b377a7538a4c8c"},
-	}
-
-	rel2 := Relationship{
-		RefA: ElementRefID{ID: "pkg:github/google/go-github@0a6474043f9f14c77ba6fa77d1b377a7538a4c8c"},
-		RefB: ElementRefID{ID: "pkg:github/ProtonMail/go-crypto@afb1ddc0824ce0052d72ac0d6917f144a1207424"},
-	}
-
-	comp := sbom.Component{}
-
-	pc := sbom.PrimaryComp{}
-	pc.ID = "custom+46261/git@github.com:viveksahu26/sbomqs.git$14e7376fa2b00c102a9ba89fd5ccc7cf26f2f255"
-	pc.Present = true
-	pc.AllDependencies = append(pc.AllDependencies, rel1.RefB.ID)
-
-	comp.PrimaryCompt = pc
-	comp.ID = "pkg:github/google/go-github@0a6474043f9f14c77ba6fa77d1b377a7538a4c8c"
-	comp.Name = "go-github"
-
-	dependencies := make(map[string][]string)
-	dependencies[rel1.RefA.ID] = append(dependencies[rel1.RefA.ID], rel1.RefB.ID)
-	dependencies[rel2.RefA.ID] = append(dependencies[rel2.RefA.ID], rel2.RefB.ID)
+	var cmps []sbom.GetComponent
+	cmps = append(cmps, comp1, comp2)
 
 	spec := sbom.NewSpec()
 	spec.SpecType = "cyclonedx"
 	doc := sbom.CdxDoc{
 		CdxSpec:          spec,
-		Dependencies:     dependencies,
-		PrimaryComponent: pc,
+		PrimaryComponent: primary,
+		Comps:            cmps,
+		Relationships:    relations,
 	}
 
-	CompIDWithName[rel1.RefB.ID] = "go-github"
-	CompIDWithName[rel2.RefB.ID] = "go-crypto"
-
-	ComponentList[rel1.RefB.ID] = true
-
-	GetAllPrimaryCompDependencies = common.GetAllPrimaryComponentDependencies(doc)
-	RelationshipProvidedForPrimaryComp = true
-	GetAllPrimaryDependenciesByName = common.GetDependenciesByName(GetAllPrimaryCompDependencies, CompIDWithName)
-	ValidRelationshipProvidedForPrimaryComp = true
-
-	return doc, comp
+	return doc
 }
 
-func cdxCompWithTwoDirectDepAndPartOfPrimaryCompDependency() (sbom.Document, sbom.GetComponent) {
-	rel1 := Relationship{
-		RefA: ElementRefID{ID: "custom+46261/git@github.com:viveksahu26/sbomqs.git$14e7376fa2b00c102a9ba89fd5ccc7cf26f2f255"},
-		RefB: ElementRefID{ID: "pkg:github/google/go-github@0a6474043f9f14c77ba6fa77d1b377a7538a4c8c"},
+func cdxCompWithOneDirectDepAndPartOfPrimaryCompDependency() sbom.Document {
+
+	comp1 := sbom.Component{}
+	comp1.ID = "custom+46261/git@github.com:viveksahu26/sbomqs.git$14e7376fa2b00c102a9ba89fd5ccc7cf26f2f255"
+	comp1.Name = "sbomqs-linux-amd64"
+	comp1.Version = "v1.0.0"
+
+	comp2 := sbom.Component{}
+	comp2.ID = "pkg:github/google/go-github@0a6474043f9f14c77ba6fa77d1b377a7538a4c8c"
+	comp2.Name = "go-github"
+	comp2.Version = "v2.0.0"
+
+	comp3 := sbom.Component{}
+	comp3.ID = "pkg:github/ProtonMail/go-crypto@afb1ddc0824ce0052d72ac0d6917f144a1207424"
+	comp3.Name = "go-crypto"
+	comp3.Version = "v3.0.0"
+
+	rel1 := sbom.Relationship{}
+	rel1.From = comp1.ID
+	rel1.To = comp2.ID
+	rel1.Type = "DEPENDS_ON"
+
+	rel2 := sbom.Relationship{}
+	rel2.From = comp2.ID
+	rel2.To = comp3.ID
+	rel2.Type = "DEPENDS_ON"
+
+	primary := sbom.PrimaryComponentInfo{}
+	primary.ID = comp1.ID
+	primary.Name = comp1.Name
+	primary.Version = comp1.Version
+	primary.Type = "application"
+	primary.Present = true
+
+	var relations []sbom.GetRelationship
+	relations = append(relations, rel1, rel2)
+
+	var cmps []sbom.GetComponent
+	cmps = append(cmps, comp1, comp2, comp3)
+
+	spec := sbom.NewSpec()
+	spec.SpecType = "cyclonedx"
+
+	doc := sbom.CdxDoc{
+		CdxSpec:          spec,
+		Relationships:    relations,
+		PrimaryComponent: primary,
+		Comps:            cmps,
 	}
+	return doc
+}
 
-	rel2 := Relationship{
-		RefA: ElementRefID{ID: "pkg:github/google/go-github@0a6474043f9f14c77ba6fa77d1b377a7538a4c8c"},
-		RefB: ElementRefID{ID: "pkg:github/ProtonMail/go-crypto@afb1ddc0824ce0052d72ac0d6917f144a1207424"},
-	}
+func cdxCompWithTwoDirectDepAndPartOfPrimaryCompDependency() sbom.Document {
+	comp1 := sbom.Component{}
+	comp1.ID = "custom+46261/git@github.com:viveksahu26/sbomqs.git$14e7376fa2b00c102a9ba89fd5ccc7cf26f2f255"
+	comp1.Name = "sbomqs-linux-amd64"
+	comp1.Version = "v1.0.0"
 
-	rel3 := Relationship{
-		RefA: ElementRefID{ID: "pkg:github/google/go-github@0a6474043f9f14c77ba6fa77d1b377a7538a4c8c"},
-		RefB: ElementRefID{ID: "pkg:golang/github.com/google/go-querystring@v1.1.0"},
-	}
+	comp2 := sbom.Component{}
+	comp2.ID = "pkg:github/google/go-github@0a6474043f9f14c77ba6fa77d1b377a7538a4c8c"
+	comp2.Name = "go-github"
+	comp2.Version = "v2.0.0"
 
-	comp := sbom.Component{}
+	comp3 := sbom.Component{}
+	comp3.ID = "pkg:github/ProtonMail/go-crypto@afb1ddc0824ce0052d72ac0d6917f144a1207424"
+	comp3.Name = "go-crypto"
+	comp3.Version = "v3.0.0"
 
-	pc := sbom.PrimaryComp{}
-	pc.ID = "custom+46261/git@github.com:viveksahu26/sbomqs.git$14e7376fa2b00c102a9ba89fd5ccc7cf26f2f255"
-	pc.Present = true
-	pc.AllDependencies = append(pc.AllDependencies, rel1.RefB.ID)
+	comp4 := sbom.Component{}
+	comp4.ID = "pkg:golang/github.com/google/go-querystring@v1.1.0"
+	comp4.Name = "go-querystring"
+	comp4.Version = "v4.0.0"
 
-	comp.PrimaryCompt = pc
-	comp.ID = "pkg:github/google/go-github@0a6474043f9f14c77ba6fa77d1b377a7538a4c8c"
-	comp.Name = "go-github"
+	rel1 := sbom.Relationship{}
+	rel1.From = comp1.ID
+	rel1.To = comp2.ID
+	rel1.Type = "DEPENDS_ON"
 
-	dependencies := make(map[string][]string)
-	dependencies[rel1.RefA.ID] = append(dependencies[rel1.RefA.ID], rel1.RefB.ID)
-	dependencies[rel2.RefA.ID] = append(dependencies[rel2.RefA.ID], rel2.RefB.ID)
-	dependencies[rel3.RefA.ID] = append(dependencies[rel3.RefA.ID], rel3.RefB.ID)
+	rel2 := sbom.Relationship{}
+	rel2.From = comp2.ID
+	rel2.To = comp3.ID
+	rel2.Type = "DEPENDS_ON"
+
+	rel3 := sbom.Relationship{}
+	rel3.From = comp2.ID
+	rel3.To = comp4.ID
+	rel3.Type = "DEPENDS_ON"
+
+	primary := sbom.PrimaryComponentInfo{}
+	primary.ID = comp1.ID
+	primary.Name = comp1.Name
+	primary.Version = comp1.Version
+	primary.Type = "application"
+	primary.Present = true
+
+	var relations []sbom.GetRelationship
+	relations = append(relations, rel1, rel2, rel3)
+
+	var cmps []sbom.GetComponent
+	cmps = append(cmps, comp1, comp2, comp3, comp4)
 
 	spec := sbom.NewSpec()
 	spec.SpecType = "cyclonedx"
 	doc := sbom.CdxDoc{
 		CdxSpec:          spec,
-		Dependencies:     dependencies,
-		PrimaryComponent: pc,
+		Relationships:    relations,
+		PrimaryComponent: primary,
+		Comps:            cmps,
 	}
 
-	CompIDWithName[rel1.RefB.ID] = "go-github"
-	CompIDWithName[rel2.RefB.ID] = "go-crypto"
-	CompIDWithName[rel3.RefB.ID] = "go-querystring"
-
-	ComponentList[rel1.RefB.ID] = true
-
-	GetAllPrimaryCompDependencies = common.GetAllPrimaryComponentDependencies(doc)
-	RelationshipProvidedForPrimaryComp = true
-	GetAllPrimaryDependenciesByName = common.GetDependenciesByName(GetAllPrimaryCompDependencies, CompIDWithName)
-	ValidRelationshipProvidedForPrimaryComp = true
-
-	return doc, comp
+	return doc
 }
 
-func spdxCompWithOneDirectDepAndPartOfPrimaryCompDependency() (sbom.Document, sbom.GetComponent) {
-	rel1 := Relationship{
-		RefA: ElementRefID{ID: "SPDXRef-custom-46261-git-github.com-viveksahu26-sbomqs.git-14e7376fa2b00c102a9ba89fd5ccc7cf26f2f255"},
-		RefB: ElementRefID{ID: "SPDXRef-git-github.com-package-url-packageurl-go-7cb81af9593b9512bb946c55c85609948c48aab9"},
-	}
+func spdxCompWithOneDirectDepAndPartOfPrimaryCompDependency() sbom.Document {
 
-	comp := sbom.Component{}
+	pack1 := sbom.Component{}
+	pack1.ID = "SPDXRef-custom-46261-git-github.com-viveksahu26-sbomqs.git-14e7376fa2b00c102a9ba89fd5ccc7cf26f2f255"
+	pack1.Name = "sbomqs-linux-amd64"
+	pack1.Version = "v0.0.3"
 
-	pc := sbom.PrimaryComp{}
-	pc.ID = "SPDXRef-custom-46261-git-github.com-viveksahu26-sbomqs.git-14e7376fa2b00c102a9ba89fd5ccc7cf26f2f255"
-	pc.Present = true
-	pc.AllDependencies = append(pc.AllDependencies, sbom.CleanKey(rel1.RefB.ID))
+	pack2 := sbom.Component{}
+	pack2.ID = "git-github.com-package-url-packageurl-go-7cb81af9593b9512bb946c55c85609948c48aab9"
+	pack2.Name = "packageurl-go"
+	pack2.Version = "v1.0.1"
 
-	comp.PrimaryCompt = pc
-	comp.Spdxid = "git-github.com-package-url-packageurl-go-7cb81af9593b9512bb946c55c85609948c48aab9"
-	comp.Name = "packageurl-go"
+	rel1 := sbom.Relationship{}
+	rel1.From = pack1.ID
+	rel1.To = pack2.ID
+	rel1.Type = "DEPENDS_ON"
 
-	dependencies := make(map[string][]string)
-	dependencies[sbom.CleanKey(rel1.RefA.ID)] = append(dependencies[sbom.CleanKey(rel1.RefA.ID)], sbom.CleanKey(rel1.RefB.ID))
+	primary := sbom.PrimaryComponentInfo{}
+	primary.ID = pack1.ID
+	primary.Name = pack1.Name
+	primary.Version = pack1.Version
+	primary.Type = "application"
+	primary.Present = true
+
+	var relations []sbom.GetRelationship
+	relations = append(relations, rel1)
+
+	var pks []sbom.GetComponent
+	pks = append(pks, pack1, pack2)
 
 	spec := sbom.NewSpec()
 	spec.SpecType = "spdx"
 	doc := sbom.SpdxDoc{
-		Dependencies:     dependencies,
+		Relationships:    relations,
 		SpdxSpec:         spec,
-		PrimaryComponent: pc,
+		PrimaryComponent: primary,
+		Comps:            pks,
 	}
-
-	CompIDWithName[rel1.RefB.ID] = "packageurl-go"
-
-	ComponentList[rel1.RefB.ID] = true
-
-	GetAllPrimaryCompDependencies = common.GetAllPrimaryComponentDependencies(doc)
-	RelationshipProvidedForPrimaryComp = true
-	GetAllPrimaryDependenciesByName = common.GetDependenciesByName(GetAllPrimaryCompDependencies, CompIDWithName)
-	ValidRelationshipProvidedForPrimaryComp = true
-
-	return doc, comp
+	return doc
 }
 
-func spdxCompWithTwoDirectDepAndPartOfPrimaryCompDependency() (sbom.Document, sbom.GetComponent) {
-	rel1 := Relationship{
-		RefA: ElementRefID{ID: "SPDXRef-custom-46261-git-github.com-viveksahu26-sbomqs.git-14e7376fa2b00c102a9ba89fd5ccc7cf26f2f255"},
-		RefB: ElementRefID{ID: "SPDXRef-git-github.com-package-url-packageurl-go-7cb81af9593b9512bb946c55c85609948c48aab9"},
-	}
+func spdxCompWithTwoDirectDepAndPartOfPrimaryCompDependency() sbom.Document {
+	pack1 := sbom.Component{}
+	pack1.ID = "SPDXRef-custom-46261-git-github.com-viveksahu26-sbomqs.git-14e7376fa2b00c102a9ba89fd5ccc7cf26f2f255"
+	pack1.Name = "sbomqs-linux-amd64"
+	pack1.Version = "v1.0.0"
 
-	rel2 := Relationship{
-		RefA: ElementRefID{ID: "SPDXRef-git-github.com-package-url-packageurl-go-7cb81af9593b9512bb946c55c85609948c48aab9"},
-		RefB: ElementRefID{ID: "SPDXRef-git-github.com-samber-lo-151a075ecca084ddbb519fafd513002df0632716"},
-	}
+	pack2 := sbom.Component{}
+	pack2.ID = "git-github.com-package-url-packageurl-go-7cb81af9593b9512bb946c55c85609948c48aab9"
+	pack2.Name = "packageurl-go"
+	pack2.Version = "v2.0.0"
 
-	rel3 := Relationship{
-		RefA: ElementRefID{ID: "SPDXRef-git-github.com-package-url-packageurl-go-7cb81af9593b9512bb946c55c85609948c48aab9"},
-		RefB: ElementRefID{ID: "SPDXRef-git-github.com-github-go-spdx-eacf4f37582f0c1b8f0086816ad1afea74d1ac3f"},
-	}
+	pack3 := sbom.Component{}
+	pack3.ID = "SPDXRef-git-github.com-samber-lo-151a075ecca084ddbb519fafd513002df0632716"
+	pack3.Name = "samber-lo"
+	pack3.Version = "v3.0.0"
 
-	comp := sbom.Component{}
+	pack4 := sbom.Component{}
+	pack4.ID = "SPDXRef-git-github.com-github-go-spdx-eacf4f37582f0c1b8f0086816ad1afea74d1ac3f"
+	pack4.Name = "go-spdx"
+	pack4.Version = "v4.0.0"
 
-	pc := sbom.PrimaryComp{}
-	pc.ID = "SPDXRef-custom-46261-git-github.com-viveksahu26-sbomqs.git-14e7376fa2b00c102a9ba89fd5ccc7cf26f2f255"
-	pc.Present = true
-	pc.AllDependencies = append(pc.AllDependencies, sbom.CleanKey(rel1.RefB.ID))
+	rel1 := sbom.Relationship{}
+	rel1.From = pack1.ID
+	rel1.To = pack2.ID
+	rel1.Type = "DEPENDS_ON"
 
-	comp.PrimaryCompt = pc
-	comp.Spdxid = "git-github.com-package-url-packageurl-go-7cb81af9593b9512bb946c55c85609948c48aab9"
-	comp.Name = "packageurl-go"
+	rel2 := sbom.Relationship{}
+	rel2.From = pack2.ID
+	rel2.To = pack3.ID
+	rel2.Type = "DEPENDS_ON"
 
-	dependencies := make(map[string][]string)
-	dependencies[sbom.CleanKey(rel1.RefA.ID)] = append(dependencies[sbom.CleanKey(rel1.RefA.ID)], sbom.CleanKey(rel1.RefB.ID))
-	dependencies[sbom.CleanKey(rel2.RefA.ID)] = append(dependencies[sbom.CleanKey(rel2.RefA.ID)], sbom.CleanKey(rel2.RefB.ID))
-	dependencies[sbom.CleanKey(rel3.RefA.ID)] = append(dependencies[sbom.CleanKey(rel3.RefA.ID)], sbom.CleanKey(rel3.RefB.ID))
+	rel3 := sbom.Relationship{}
+	rel3.From = pack2.ID
+	rel3.To = pack4.ID
+	rel3.Type = "DEPENDS_ON"
+
+	primary := sbom.PrimaryComponentInfo{}
+	primary.ID = pack1.ID
+	primary.Name = pack1.Name
+	primary.Version = pack1.Version
+	primary.Type = "application"
+	primary.Present = true
+
+	var relations []sbom.GetRelationship
+	relations = append(relations, rel1, rel2, rel3)
+
+	var pks []sbom.GetComponent
+	pks = append(pks, pack1, pack2, pack3, pack4)
 
 	spec := sbom.NewSpec()
 	spec.SpecType = "spdx"
 	doc := sbom.SpdxDoc{
-		Dependencies:     dependencies,
+		Relationships:    relations,
 		SpdxSpec:         spec,
-		PrimaryComponent: pc,
+		PrimaryComponent: primary,
+		Comps:            pks,
 	}
 
-	CompIDWithName[rel1.RefB.ID] = "packageurl-go"
-	CompIDWithName[rel2.RefB.ID] = "lo"
-	CompIDWithName[rel3.RefB.ID] = "go-spdx"
-
-	ComponentList[rel1.RefB.ID] = true
-
-	GetAllPrimaryCompDependencies = common.GetAllPrimaryComponentDependencies(doc)
-	RelationshipProvidedForPrimaryComp = true
-	GetAllPrimaryDependenciesByName = common.GetDependenciesByName(GetAllPrimaryCompDependencies, CompIDWithName)
-	ValidRelationshipProvidedForPrimaryComp = true
-	return doc, comp
+	return doc
 }
 
 func TestFsctDependencies(t *testing.T) {
-	_, a := spdxCompWithOneDirectDepAndPartOfPrimaryCompDependency()
-	_, b := spdxCompWithTwoDirectDepAndPartOfPrimaryCompDependency()
-	_, c := cdxCompIsPartOfPrimaryCompDependency()
-	_, d := cdxCompWithOneDirectDepAndPartOfPrimaryCompDependency()
-	_, e := cdxCompWithTwoDirectDepAndPartOfPrimaryCompDependency()
+	a := spdxCompWithOneDirectDepAndPartOfPrimaryCompDependency()
+	b := spdxCompWithTwoDirectDepAndPartOfPrimaryCompDependency()
+	c := cdxCompIsPartOfPrimaryCompDependency()
+	d := cdxCompWithOneDirectDepAndPartOfPrimaryCompDependency()
+	e := cdxCompWithTwoDirectDepAndPartOfPrimaryCompDependency()
+
 	testCases := []struct {
 		name     string
 		actual   *db.Record
@@ -1237,57 +1288,57 @@ func TestFsctDependencies(t *testing.T) {
 	}{
 		{
 			name:   "spdxCompWithZeroDirectDependenciesAsWellAsPartOfPrimaryCompDependencies",
-			actual: fsctPackageDependencies(spdxCompWithOneDirectDepAndPartOfPrimaryCompDependency()),
+			actual: fsctPackageRelationships(a, a.Components()[1]),
 			expected: desired{
-				score:    10.0,
+				score:    0.0,
 				result:   "",
 				key:      COMP_RELATIONSHIP,
-				id:       common.UniqueElementID(a),
-				maturity: "Minimum",
+				id:       common.UniqueElementID(a.Components()[1]),
+				maturity: "None",
 			},
 		},
 		{
 			name:   "spdxCompWithTwoDirectDependenciesAsWellAsPartOfPrimaryCompDependencies",
-			actual: fsctPackageDependencies(spdxCompWithTwoDirectDepAndPartOfPrimaryCompDependency()),
-			expected: desired{
-				score:    12.0,
-				result:   "lo, go-spdx",
-				key:      COMP_RELATIONSHIP,
-				id:       common.UniqueElementID(b),
-				maturity: "Recommended",
-			},
-		},
-		{
-			name:   "cdxCompWithZeroDirectDependenciesAsWellAsPartOfPrimaryCompDependencies",
-			actual: fsctPackageDependencies(cdxCompIsPartOfPrimaryCompDependency()),
+			actual: fsctPackageRelationships(b, b.Components()[1]),
 			expected: desired{
 				score:    10.0,
-				result:   "",
+				result:   "samber-lo, go-spdx",
 				key:      COMP_RELATIONSHIP,
-				id:       common.UniqueElementID(c),
+				id:       common.UniqueElementID(b.Components()[1]),
 				maturity: "Minimum",
 			},
 		},
 		{
-			name:   "cdxCompWithOneDirectDependenciesAsWellAsPartOfPrimaryCompDependencies",
-			actual: fsctPackageDependencies(cdxCompWithOneDirectDepAndPartOfPrimaryCompDependency()),
+			name:   "cdxCompWithZeroDirectDependenciesAsWellAsPartOfPrimaryCompDependencies",
+			actual: fsctPackageRelationships(c, c.Components()[1]),
 			expected: desired{
-				score:    12.0,
+				score:    0.0,
+				result:   "",
+				key:      COMP_RELATIONSHIP,
+				id:       common.UniqueElementID(c.Components()[1]),
+				maturity: "None",
+			},
+		},
+		{
+			name:   "cdxCompWithOneDirectDependenciesAsWellAsPartOfPrimaryCompDependencies",
+			actual: fsctPackageRelationships(d, d.Components()[1]),
+			expected: desired{
+				score:    10.0,
 				result:   "go-crypto",
 				key:      COMP_RELATIONSHIP,
-				id:       common.UniqueElementID(d),
-				maturity: "Recommended",
+				id:       common.UniqueElementID(d.Components()[1]),
+				maturity: "Minimum",
 			},
 		},
 		{
 			name:   "cdxCompWithTwoDirectDependenciesAsWellAsPartOfPrimaryCompDependencies",
-			actual: fsctPackageDependencies(cdxCompWithTwoDirectDepAndPartOfPrimaryCompDependency()),
+			actual: fsctPackageRelationships(e, e.Components()[1]),
 			expected: desired{
-				score:    12.0,
+				score:    10.0,
 				result:   "go-crypto, go-querystring",
 				key:      COMP_RELATIONSHIP,
-				id:       common.UniqueElementID(e),
-				maturity: "Recommended",
+				id:       common.UniqueElementID(e.Components()[1]),
+				maturity: "Minimum",
 			},
 		},
 	}
@@ -1355,8 +1406,6 @@ func cdxCompWithPurl() sbom.GetComponent {
 
 	return comp
 }
-
-// type SWHID string
 
 func cdxCompWithSwhid() sbom.GetComponent {
 	comp := sbom.NewComponent()

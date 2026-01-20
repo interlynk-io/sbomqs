@@ -90,10 +90,10 @@ var BSIV11KeyToEvaluatingFunction = map[string]catalog.ProfFeatEval{
 	"sbom_spec":         profiles.SBOMAutomationSpec,
 	"sbom_spec_version": profiles.BSISBOMSpecVersion,
 	"sbom_build":        profiles.BSISBOMBuildLifecycle,
-	"sbom_depth":        profiles.SBOMDepedencies,
-	"sbom_creator":      profiles.SBOMAuthors,
-	"sbom_timestamp":    profiles.SBOMCreationTimestamp,
-	"sbom_uri":          profiles.BSISBOMNamespace,
+	// "sbom_depth":        profiles.SBOMDepedencies,
+	"sbom_creator":   profiles.SBOMAuthors,
+	"sbom_timestamp": profiles.SBOMCreationTimestamp,
+	"sbom_uri":       profiles.BSISBOMNamespace,
 
 	"comp_name":    profiles.CompName,
 	"comp_version": profiles.CompVersion,
@@ -103,17 +103,17 @@ var BSIV11KeyToEvaluatingFunction = map[string]catalog.ProfFeatEval{
 	"comp_source_code_url": profiles.BSICompWithSourceCodeURI,
 	"comp_download_url":    profiles.BSICompWithDownloadURI,
 	"comp_source_hash":     profiles.BSICompWithSourceCodeHash,
-	"comp_depth":           profiles.BSICompWithDependency,
+	"comp_depth":           profiles.BSICompWithDependencies,
 }
 
 var BSIV20KeyToEvaluatingFunction = map[string]catalog.ProfFeatEval{
 	"sbom_spec":         profiles.SBOMAutomationSpec,
 	"sbom_spec_version": profiles.BSISBOMSpecVersion,
 	"sbom_build":        profiles.BSISBOMBuildLifecycle,
-	"sbom_depth":        profiles.SBOMDepedencies,
-	"sbom_creator":      profiles.SBOMAuthors,
-	"sbom_timestamp":    profiles.SBOMCreationTimestamp,
-	"sbom_uri":          profiles.BSISBOMNamespace,
+	// "sbom_depth":        profiles.SBOMDepedencies,
+	"sbom_creator":   profiles.SBOMAuthors,
+	"sbom_timestamp": profiles.SBOMCreationTimestamp,
+	"sbom_uri":       profiles.BSISBOMNamespace,
 
 	"comp_name":    profiles.CompName,
 	"comp_version": profiles.CompVersion,
@@ -123,7 +123,7 @@ var BSIV20KeyToEvaluatingFunction = map[string]catalog.ProfFeatEval{
 	"comp_source_code_url": profiles.BSICompWithSourceCodeURI,
 	"comp_download_url":    profiles.BSICompWithDownloadURI,
 	"comp_source_hash":     profiles.BSICompWithSourceCodeHash,
-	"comp_depth":           profiles.BSICompWithDependency,
+	"comp_depth":           profiles.BSICompWithDependencies,
 
 	"sbom_signature":          profiles.BSISBOMWithSignature,
 	"sbom_bomlinks":           profiles.BSISBOMWithBomLinks,
@@ -762,13 +762,12 @@ var profileNTIASpec = catalog.ProfSpec{
 		{Key: "comp_name", Name: "Component Name", Required: true, Description: "All components must have names", Evaluate: profiles.CompName},
 		{Key: "comp_version", Name: "Component Version", Required: true, Description: "Version strings for all components", Evaluate: profiles.CompVersion},
 		{Key: "comp_uniq_id", Name: "Component Other Identifiers", Required: true, Description: "PURL, CPE, or other unique IDs", Evaluate: profiles.CompWithUniqID},
-		{Key: "sbom_dependencies", Name: "Dependency Relationships", Required: true, Description: "Component dependency mapping", Evaluate: profiles.SBOMDepedencies},
+		{Key: "sbom_dependencies", Name: "SBOM Relationships", Required: true, Description: "SBOM direct relationship for primary element", Evaluate: profiles.NTIASBOMRelationships},
 		{Key: "sbom_creator", Name: "SBOM Author", Required: true, Description: "Tool or person who created SBOM", Evaluate: profiles.SBOMAuthors},
 		{Key: "sbom_timestamp", Name: "SBOM Timestamp", Required: true, Description: "ISO 8601 creation timestamp", Evaluate: profiles.SBOMCreationTimestamp},
 		// Optional (SHOULD) fields - don't impact score
 		{Key: "comp_hash", Name: "Component Hash", Required: false, Description: "Component checksums (optional)", Evaluate: profiles.NTIACompHash},
 		{Key: "sbom_lifecycle", Name: "Lifecycle Phase", Required: false, Description: "SBOM lifecycle phase (optional)", Evaluate: profiles.NTIASBOMLifecycle},
-		{Key: "comp_relationships", Name: "Other Component Relationships", Required: false, Description: "Additional relationships (optional)", Evaluate: profiles.NTIACompRelationships},
 		{Key: "comp_license", Name: "License Information", Required: false, Description: "Component licenses (optional)", Evaluate: profiles.NTIACompLicense},
 	},
 }
@@ -825,7 +824,7 @@ var profileBSI11Spec = catalog.ProfSpec{
 		{Key: "sbom_spec", Name: "SBOM Formats", Required: true, Description: "SPDX or CycloneDX", Evaluate: profiles.SBOMSpec},
 		{Key: "sbom_spec_version", Name: "SBOM Spec Version", Required: true, Description: "Valid supported version", Evaluate: profiles.BSISBOMSpecVersion},
 		{Key: "sbom_build", Name: "Build Information", Required: false, Description: "Build phase indication", Evaluate: profiles.BSISBOMBuildLifecycle},
-		{Key: "sbom_depth", Name: "SBOM Depth", Required: true, Description: "Complete dependency tree", Evaluate: profiles.SBOMDepedencies},
+		// {Key: "sbom_depth", Name: "SBOM Depth", Required: true, Description: "Complete dependency tree", Evaluate: profiles.SBOMDepedencies},
 		{Key: "sbom_creator", Name: "Creator Info", Required: true, Description: "Contact email/URL", Evaluate: profiles.SBOMAuthors},
 		{Key: "sbom_timestamp", Name: "Creation Time", Required: true, Description: "Valid timestamp (ISO-8601)", Evaluate: profiles.SBOMCreationTimestamp},
 		{Key: "sbom_uri", Name: "URI/Namespace", Required: true, Description: "Unique SBOM identifier", Evaluate: profiles.BSISBOMNamespace},
@@ -838,7 +837,7 @@ var profileBSI11Spec = catalog.ProfSpec{
 		{Key: "comp_source_code_url", Name: "Component Source URL", Required: false, Description: "Source code repository", Evaluate: profiles.BSICompWithSourceCodeURI},
 		{Key: "comp_download_url", Name: "Component Download URL", Required: true, Description: "Where to obtain component", Evaluate: profiles.BSICompWithDownloadURI},
 		{Key: "comp_source_hash", Name: "Component Source Hash", Required: false, Description: "Hash of source code", Evaluate: profiles.BSICompWithSourceCodeHash},
-		{Key: "comp_depth", Name: "Component Dependencies", Required: true, Description: "Dependency relationships", Evaluate: profiles.BSICompWithDependency},
+		{Key: "comp_depth", Name: "Component Dependencies", Required: true, Description: "Dependency relationships", Evaluate: profiles.BSICompWithDependencies},
 	},
 }
 
@@ -850,7 +849,7 @@ var profileBSI20Spec = catalog.ProfSpec{
 		{Key: "sbom_spec", Name: "SBOM Formats", Required: true, Description: "SPDX or CycloneDX", Evaluate: profiles.SBOMSpec},
 		{Key: "sbom_spec_version", Name: "SBOM Spec Version", Required: true, Description: "Valid supported version", Evaluate: profiles.BSISBOMSpecVersion},
 		{Key: "sbom_build", Name: "Build Information", Required: false, Description: "Build phase indication", Evaluate: profiles.BSISBOMBuildLifecycle},
-		{Key: "sbom_depth", Name: "SBOM Depth", Required: true, Description: "Complete dependency tree", Evaluate: profiles.SBOMDepedencies},
+		// {Key: "sbom_depth", Name: "SBOM Depth", Required: true, Description: "Complete dependency tree", Evaluate: profiles.SBOMDepedencies},
 		{Key: "sbom_creator", Name: "Creator Info", Required: true, Description: "Contact email/URL", Evaluate: profiles.SBOMAuthors},
 		{Key: "sbom_timestamp", Name: "Creation Time", Required: true, Description: "Valid timestamp (ISO-8601)", Evaluate: profiles.SBOMCreationTimestamp},
 		{Key: "sbom_uri", Name: "URI/Namespace", Required: true, Description: "Unique SBOM identifier", Evaluate: profiles.BSISBOMNamespace},
@@ -863,7 +862,7 @@ var profileBSI20Spec = catalog.ProfSpec{
 		{Key: "comp_source_code_url", Name: "Component Source URL", Required: false, Description: "Source code repository", Evaluate: profiles.BSICompWithSourceCodeURI},
 		{Key: "comp_download_url", Name: "Component Download URL", Required: true, Description: "Where to obtain component", Evaluate: profiles.BSICompWithDownloadURI},
 		{Key: "comp_source_hash", Name: "Component Source Hash", Required: false, Description: "Hash of source code", Evaluate: profiles.BSICompWithSourceCodeHash},
-		{Key: "comp_depth", Name: "Component Dependencies", Required: true, Description: "Dependency relationships", Evaluate: profiles.BSICompWithDependency},
+		{Key: "comp_depth", Name: "Component Dependencies", Required: true, Description: "Dependency relationships", Evaluate: profiles.BSICompWithDependencies},
 
 		{Key: "sbom_signature", Name: "Digital Signature", Required: true, Description: "Cryptographic signature verification", Evaluate: profiles.BSISBOMWithSignature},
 		{Key: "sbom_bomlinks", Name: "External References", Required: false, Description: "Links to other SBOMs", Evaluate: profiles.BSISBOMWithBomLinks},

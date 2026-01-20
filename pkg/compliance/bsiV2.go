@@ -42,7 +42,6 @@ func bsiV2Result(ctx context.Context, doc sbom.Document, fileName string, outFor
 	dtb.AddRecord(bsiSpec(doc))
 	dtb.AddRecord(bsiV2SpecVersion(doc))
 	dtb.AddRecord(bsiBuildPhase(doc))
-	dtb.AddRecord(bsiSbomDepth(doc))
 	dtb.AddRecord(bsiCreator(doc))
 	dtb.AddRecord(bsiTimestamp(doc))
 	dtb.AddRecord(bsiSbomURI(doc))
@@ -108,16 +107,16 @@ func bsiV2SbomSignature(doc sbom.Document) *db.Record {
 		sigValue := doc.Signature().GetSigValue()
 		pubKey := doc.Signature().GetPublicKey()
 		certPath := doc.Signature().GetCertificatePath()
-		
+
 		// Check for completeness
 		if algorithm == "" || sigValue == "" {
 			return db.NewRecordStmt(SBOM_SIGNATURE, "doc", "Incomplete signature!", 0.0, "")
 		}
-		
+
 		if pubKey == "" && len(certPath) == 0 {
 			return db.NewRecordStmt(SBOM_SIGNATURE, "doc", "Signature present but no verification material!", 5.0, "")
 		}
-		
+
 		// For now, we'll give full score if signature is complete
 		// Future enhancement: actually verify the signature
 		valid := true
@@ -177,21 +176,11 @@ func bsiV2Components(doc sbom.Document) []*db.Record {
 		return records
 	}
 
-	bsiCompIDWithName = common.ComponentsNamesMapToIDs(doc)
-	bsiComponentList = common.ComponentsLists(doc)
-	bsiPrimaryDependencies = common.MapPrimaryDependencies(doc)
-	dependencies := common.GetAllPrimaryComponentDependencies(doc)
-	isBsiAllDepesPresentInCompList := common.CheckPrimaryDependenciesInComponentList(dependencies, bsiComponentList)
-
-	if isBsiAllDepesPresentInCompList {
-		bsiGetAllPrimaryDepenciesByName = common.GetDependenciesByName(dependencies, bsiCompIDWithName)
-	}
-
 	for _, component := range doc.Components() {
 		records = append(records, bsiComponentCreator(component))
 		records = append(records, bsiComponentName(component))
 		records = append(records, bsiComponentVersion(component))
-		records = append(records, bsiComponentDepth(doc, component))
+		records = append(records, bsiComponentDependencies(doc, component))
 		records = append(records, bsiV2ComponentAssociatedLicense(doc, component))
 		records = append(records, bsiComponentHash(component))
 		records = append(records, bsiComponentSourceCodeURL(component))

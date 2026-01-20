@@ -215,8 +215,11 @@ func SBOMCreationTimestamp(doc sbom.Document) catalog.ProfFeatScore {
 // SPDX: relationships (DEPENDS_ON); CDX: component.dependencies / bom.dependencies
 func SBOMDepedencies(doc sbom.Document) catalog.ProfFeatScore {
 	var have int
-	if doc.PrimaryComp() != nil {
-		have = doc.PrimaryComp().GetTotalNoOfDependencies()
+
+	primary := doc.PrimaryComp()
+
+	if primary.IsPresent() {
+		have = len(doc.GetDirectDependencies(primary.GetID()))
 	}
 
 	if have == 0 {
@@ -415,21 +418,6 @@ func CompSourceCodeHash(doc sbom.Document) catalog.ProfFeatScore {
 	})
 
 	return formulae.ScoreProfFull(have, len(comps), true)
-}
-
-// CompDependencies checks for component level dependencies
-// SPDX: relationships (DEPENDS_ON); CDX: component.dependencies / bom.dependencies
-func CompDependencies(doc sbom.Document) catalog.ProfFeatScore {
-	comps := doc.Components()
-	if len(comps) == 0 {
-		return formulae.ScoreProfNA(true)
-	}
-
-	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
-		return commonV2.HasComponentDependencies(c)
-	})
-
-	return formulae.ScoreProfFull(have, len(comps), false)
 }
 
 func CompUniqID(doc sbom.Document) catalog.ProfFeatScore {

@@ -37,43 +37,53 @@ func createSpdxDummyDocumentNtia() sbom.Document {
 	}
 	creators = append(creators, creator)
 
-	pack := sbom.NewComponent()
-	pack.Version = "v0.7.1"
-	pack.Name = "tool-golang"
-	pack.ID = "github/spdx/tools-golang@9db247b854b9634d0109153d515fd1a9efd5a1b1"
+	pack1 := sbom.NewComponent()
+	pack1.Version = "v0.7.1"
+	pack1.Name = "tool-golang"
+	pack1.ID = "github/spdx/tools-golang@9db247b854b9634d0109153d515fd1a9efd5a1b1"
+
+	pack2 := sbom.NewComponent()
+	pack2.Version = "v1.0.1"
+	pack2.Name = "spdx-gordf"
+	pack2.ID = "github/spdx/gordf@b735bd5aac89fe25cad4ef488a95bc00ea549edd"
 
 	supplier := sbom.Supplier{
 		Email: "hello@interlynk.io",
 	}
-	pack.Supplier = supplier
+	pack1.Supplier = supplier
 
 	extRef := sbom.ExternalReference{
 		RefType: "purl",
 	}
 
-	var primary sbom.PrimaryComp
-	primary.ID = pack.ID
-	primary.Dependecies = 1
+	var primary sbom.PrimaryComponentInfo
+	primary.ID = pack1.ID
+	primary.Name = pack1.Name
+	primary.Version = pack1.Version
+	primary.Type = "application"
 	primary.Present = true
-	pack.PrimaryCompt = primary
+
+	var rel sbom.Relationship
+
+	rel.From = pack1.ID
+	rel.To = pack2.ID
+	rel.Type = "DEPENDS_ON"
+
+	var relations []sbom.GetRelationship
+	relations = append(relations, rel)
 
 	var externalReferences []sbom.GetExternalReference
 	externalReferences = append(externalReferences, extRef)
-	pack.ExternalRefs = externalReferences
+	pack1.ExternalRefs = externalReferences
 
 	var packages []sbom.GetComponent
-	packages = append(packages, pack)
+	packages = append(packages, pack1, pack2)
 
-	relationships := make(map[string][]string)
-	relationships[sbom.CleanKey("github/spdx/tools-golang@9db247b854b9634d0109153d515fd1a9efd5a1b1")] = append(relationships[sbom.CleanKey("github/spdx/tools-golang@9db247b854b9634d0109153d515fd1a9efd5a1b1")], sbom.CleanKey("github/spdx/gordf@b735bd5aac89fe25cad4ef488a95bc00ea549edd"))
-	GetAllPrimaryDepenciesByName = []string{"gordf"}
-
-	compIDWithName["github/spdx/gordf@b735bd5aac89fe25cad4ef488a95bc00ea549edd"] = "gordf"
 	doc := sbom.SpdxDoc{
 		SpdxSpec:         s,
 		Comps:            packages,
 		SpdxTools:        creators,
-		Dependencies:     relationships,
+		Relationships:    relations,
 		PrimaryComponent: primary,
 	}
 	return doc
@@ -125,15 +135,14 @@ func TestNtiaSpdxSbomPass(t *testing.T) {
 		},
 		{
 			name:   "SbomDependency",
-			actual: ntiaSBOMDependency(doc),
+			actual: ntiaSBOMRelationships(doc),
 			expected: desiredNtia{
 				score:  10.0,
-				result: "doc has 1 dependencies",
+				result: "primary component declares 1 direct dependencies",
 				key:    SBOM_DEPENDENCY,
 				id:     "SBOM Data Fields",
 			},
 		},
-
 		{
 			name:   "ComponentCreator",
 			actual: ntiaComponentCreator(doc, doc.Components()[0]),
@@ -144,7 +153,6 @@ func TestNtiaSpdxSbomPass(t *testing.T) {
 				id:     common.UniqueElementID(doc.Components()[0]),
 			},
 		},
-
 		{
 			name:   "ComponentName",
 			actual: ntiaComponentName(doc.Components()[0]),
@@ -175,16 +183,6 @@ func TestNtiaSpdxSbomPass(t *testing.T) {
 				id:     common.UniqueElementID(doc.Components()[0]),
 			},
 		},
-		{
-			name:   "ComponentDependencies",
-			actual: ntiaComponentDependencies(doc, doc.Components()[0]),
-			expected: desiredNtia{
-				score:  10.0,
-				result: "gordf",
-				key:    COMP_DEPTH,
-				id:     common.UniqueElementID(doc.Components()[0]),
-			},
-		},
 	}
 
 	for _, test := range testCases {
@@ -208,19 +206,24 @@ func createCdxDummyDocumentNtia() sbom.Document {
 	}
 	authors = append(authors, author)
 
-	comp := sbom.NewComponent()
-	comp.Version = "v0.7.1"
-	comp.Name = "tool-golang"
-	comp.ID = "github/spdx/tools-golang@9db247b854b9634d0109153d515fd1a9efd5a1b1"
+	comp1 := sbom.NewComponent()
+	comp1.Version = "v0.7.1"
+	comp1.Name = "tool-golang"
+	comp1.ID = "github/spdx/tools-golang@9db247b854b9634d0109153d515fd1a9efd5a1b1"
+
+	comp2 := sbom.NewComponent()
+	comp2.Version = "v1.0.1"
+	comp2.Name = "spdx-gordf"
+	comp2.ID = "github/spdx/gordf@b735bd5aac89fe25cad4ef488a95bc00ea549edd"
 
 	supplier := sbom.Supplier{
 		Email: "hello@interlynk.io",
 	}
-	comp.Supplier = supplier
+	comp1.Supplier = supplier
 
 	npurl := purl.NewPURL("vivek")
 
-	comp.Purls = []purl.PURL{npurl}
+	comp1.Purls = []purl.PURL{npurl}
 
 	extRef := sbom.ExternalReference{
 		RefType: "purl",
@@ -228,24 +231,31 @@ func createCdxDummyDocumentNtia() sbom.Document {
 
 	var externalReferences []sbom.GetExternalReference
 	externalReferences = append(externalReferences, extRef)
-	comp.ExternalRefs = externalReferences
+	comp1.ExternalRefs = externalReferences
 
 	var components []sbom.GetComponent
-	components = append(components, comp)
+	components = append(components, comp1, comp2)
 
-	relationships := make(map[string][]string)
-	relationships["github/spdx/tools-golang@9db247b854b9634d0109153d515fd1a9efd5a1b1"] = append(relationships["github/spdx/tools-golang@9db247b854b9634d0109153d515fd1a9efd5a1b1"], "github/spdx/gordf@b735bd5aac89fe25cad4ef488a95bc00ea549edd")
+	var primary sbom.PrimaryComponentInfo
+	primary.ID = comp1.ID
+	primary.Name = comp1.Name
+	primary.Version = comp1.Version
+	primary.Type = "application"
+	primary.Present = true
 
-	var primary sbom.PrimaryComp
-	primary.Dependecies = 1
+	var dep sbom.Relationship
+	dep.From = comp1.ID
+	dep.To = comp2.ID
+	dep.Type = "DEPENDS_ON"
 
-	compIDWithName["github/spdx/gordf@b735bd5aac89fe25cad4ef488a95bc00ea549edd"] = "gordf"
+	var relationships []sbom.GetRelationship
+	relationships = append(relationships, dep)
 
 	doc := sbom.CdxDoc{
 		CdxSpec:          cdxSpec,
 		Comps:            components,
 		CdxAuthors:       authors,
-		Dependencies:     relationships,
+		Relationships:    relationships,
 		PrimaryComponent: primary,
 	}
 	return doc
@@ -290,10 +300,10 @@ func TestNtiaCdxSbomPass(t *testing.T) {
 		},
 		{
 			name:   "SbomDependency",
-			actual: ntiaSBOMDependency(doc),
+			actual: ntiaSBOMRelationships(doc),
 			expected: desiredNtia{
 				score:  10.0,
-				result: "doc has 1 dependencies",
+				result: "primary component declares 1 direct dependencies",
 				key:    SBOM_DEPENDENCY,
 				id:     "SBOM Data Fields",
 			},
@@ -335,16 +345,6 @@ func TestNtiaCdxSbomPass(t *testing.T) {
 				score:  10.0,
 				result: "vivek",
 				key:    COMP_OTHER_UNIQ_IDS,
-				id:     common.UniqueElementID(doc.Components()[0]),
-			},
-		},
-		{
-			name:   "ComponentDependencies",
-			actual: ntiaComponentDependencies(doc, doc.Components()[0]),
-			expected: desiredNtia{
-				score:  10.0,
-				result: "gordf",
-				key:    COMP_DEPTH,
 				id:     common.UniqueElementID(doc.Components()[0]),
 			},
 		},
@@ -390,18 +390,20 @@ func createSpdxDummyDocumentFailNtia() sbom.Document {
 	var packages []sbom.GetComponent
 	packages = append(packages, pack)
 
-	depend := sbom.Relation{
+	depend := sbom.Relationship{
 		From: "",
 		To:   "",
+		Type: "",
 	}
-	var dependencies []sbom.GetRelation
+
+	var dependencies []sbom.GetRelationship
 	dependencies = append(dependencies, depend)
 
 	doc := sbom.SpdxDoc{
-		SpdxSpec:  s,
-		Comps:     packages,
-		SpdxTools: creators,
-		Rels:      dependencies,
+		SpdxSpec:      s,
+		Comps:         packages,
+		SpdxTools:     creators,
+		Relationships: dependencies,
 	}
 	return doc
 }

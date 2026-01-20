@@ -32,6 +32,15 @@ import (
 	"github.com/samber/lo"
 )
 
+func findComponentByID(doc sbom.Document, id string) (sbom.GetComponent, bool) {
+	for _, c := range doc.Components() {
+		if c.GetID() == id {
+			return c, true
+		}
+	}
+	return nil, false
+}
+
 // comp_with_dependencies (component-level coverage)
 // SPDX: relationships (DEPENDS_ON); CDX: component.dependencies / bom.dependencies
 func CompWithDependencies(doc sbom.Document) catalog.ComprFeatScore {
@@ -40,28 +49,66 @@ func CompWithDependencies(doc sbom.Document) catalog.ComprFeatScore {
 		return formulae.ScoreCompNA()
 	}
 
-	switch doc.Spec().GetSpecType() {
+	spec := doc.Spec().GetSpecType()
+
+	switch spec {
 
 	case string(sbom.SBOMSpecSPDX):
 		// SPDX: can detect dependency presence, but not completeness
-		// have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
-		// 	return commonV2.HasComponentDependencies(c)
-		// })
-
-		return formulae.ScoreCompNACustom("dependency completeness declared N/A (SPDX)")
+		return formulae.ScoreCompNACustom("dependency completeness declared N/A (SPDX)", true)
 
 	case string(sbom.SBOMSpecCDX):
 
-		// Only components that actually have dependencies matter
-		depComps := lo.Filter(comps, func(c sbom.GetComponent, _ int) bool {
-			return commonV2.HasComponentDependencies(c)
+		// // Only components that actually have dependencies matter
+		// depComps := lo.Filter(comps, func(c sbom.GetComponent, _ int) bool {
+		// 	return commonV2.HasComponentDependencies(c)
+		// })
+
+		primary := doc.PrimaryComp()
+		if !primary.IsPresent() {
+			return formulae.ScoreCompNACustom(
+				"primary component not defined", false,
+			)
+		}
+
+		primaryID := primary.GetID()
+
+		primaryComp, ok := findComponentByID(doc, primaryID)
+		if !ok {
+			return formulae.ScoreCompNACustom(
+				"primary component not found in components list", false,
+			)
+		}
+
+		// Components relevant for dependency completeness:
+		// 1. primary (if it has deps)
+		// 2. direct dependencies of primary
+		relevant := make([]sbom.GetComponent, 0)
+
+		primaryDeps := doc.GetDirectDependencies(primary.GetID(), "DEPENDS_ON")
+		if len(primaryDeps) > 0 {
+			relevant = append(relevant, primaryComp)
+			relevant = append(relevant, primaryDeps...)
+		}
+
+		// If no dependency graph exists at all → N/A
+		if len(relevant) == 0 {
+			return catalog.ComprFeatScore{
+				Score:  0,
+				Desc:   "no dependency graph present",
+				Ignore: false,
+			}
+		}
+
+		// Only components that actually declare dependencies need completeness
+		depComps := lo.Filter(relevant, func(c sbom.GetComponent, _ int) bool {
+			return len(doc.GetDirectDependencies(c.GetID(), "DEPENDS_ON")) > 0
 		})
 
-		// If no components have dependencies, completeness is N/A
 		if len(depComps) == 0 {
 			return catalog.ComprFeatScore{
 				Score:  0,
-				Desc:   "no components declare dependencies",
+				Desc:   "all components are dependency leaf nodes",
 				Ignore: false,
 			}
 		}
@@ -69,14 +116,14 @@ func CompWithDependencies(doc sbom.Document) catalog.ComprFeatScore {
 		have := lo.CountBy(depComps, func(c sbom.GetComponent) bool {
 			id := c.GetID()
 
-			for _, cst := range doc.Composition() {
-				if cst.Scope() != sbom.ScopeDependencies {
+			for _, comp := range doc.Composition() {
+				if comp.Scope() != sbom.ScopeDependencies {
 					continue
 				}
-				if cst.Aggregate() != sbom.AggregateComplete {
+				if comp.Aggregate() != sbom.AggregateComplete {
 					continue
 				}
-				if slices.Contains(cst.Dependencies(), id) {
+				if slices.Contains(comp.Dependencies(), id) {
 					return true
 				}
 			}
@@ -85,21 +132,43 @@ func CompWithDependencies(doc sbom.Document) catalog.ComprFeatScore {
 
 		desc := ""
 		if have == len(depComps) {
-			desc = "dependency completeness declared for all components"
+			desc = "dependency completeness declared for all relevant components"
 		} else {
 			desc = fmt.Sprintf(
-				"dependency completeness declared for %d component(s)",
+				"dependency completeness declared for %d of %d components",
 				have,
+				len(depComps),
 			)
 		}
 
-		return formulae.ScoreCompFullCustom(have, len(depComps), desc, false)
+		return formulae.ScoreCompFullCustom(
+			have,
+			len(depComps),
+			desc,
+			false,
+		)
 	}
 
 	return formulae.ScoreCompNA()
 }
 
-// comp_with_declared_completeness (component-level)
+// CompWithDeclaredCompleteness evaluates whether dependency completeness
+// is explicitly declared for components that participate in the dependency graph.
+//
+// Evaluation rules:
+// - Only components that actually declare dependencies are considered relevant.
+// - Leaf components (no dependencies) are valid and ignored.
+// - Transitive-only components are ignored unless they declare dependencies themselves.
+//
+// Format-specific behavior:
+//   - SPDX: dependency completeness cannot be declared → N/A.
+//   - CycloneDX: completeness is derived from `compositions` with
+//     `scope = dependencies` and `aggregate = complete`.
+//
+// Scoring:
+// - Full score if all relevant components declare dependency completeness.
+// - Partial score if some components declare completeness.
+// - N/A if no components declare dependencies.
 func CompWithDeclaredCompleteness(doc sbom.Document) catalog.ComprFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {

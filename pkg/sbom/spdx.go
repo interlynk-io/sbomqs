@@ -53,11 +53,10 @@ type SpdxDoc struct {
 	Comps            []GetComponent
 	Auths            []GetAuthor
 	SpdxTools        []GetTool
-	Rels             []GetRelation
+	Relationships    []GetRelationship
 	logs             []string
-	PrimaryComponent PrimaryComp
+	PrimaryComponent PrimaryComponentInfo
 	Lifecycle        string
-	Dependencies     map[string][]string
 	compositions     []GetComposition
 	Vuln             []GetVulnerabilities
 	rawContent       []byte // Store raw content for manual parsing
@@ -113,7 +112,7 @@ func newSPDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat, version
 	return doc, err
 }
 
-func (s SpdxDoc) PrimaryComp() GetPrimaryComp {
+func (s SpdxDoc) PrimaryComp() GetPrimaryComponentInfo {
 	return &s.PrimaryComponent
 }
 
@@ -133,8 +132,60 @@ func (s SpdxDoc) Tools() []GetTool {
 	return s.SpdxTools
 }
 
-func (s SpdxDoc) Relations() []GetRelation {
-	return s.Rels
+func (s SpdxDoc) GetRelationships() []GetRelationship {
+	return s.Relationships
+}
+
+func (s SpdxDoc) GetOutgoingRelations(compID string) []GetRelationship {
+	out := make([]GetRelationship, 0)
+	for _, r := range s.Relationships {
+		if r.GetFrom() == compID {
+			out = append(out, r)
+		}
+	}
+	return out
+}
+
+func (s SpdxDoc) GetDirectDependencies(compID string, relTypes ...string) []GetComponent {
+	deps := make([]GetComponent, 0)
+
+	// 1. Get outgoing edges
+	allKindOfRelationships := s.GetOutgoingRelations(compID)
+	if len(allKindOfRelationships) == 0 {
+		return deps
+	}
+
+	// 2. Build component lookup
+	mapCompID := make(map[string]GetComponent)
+	for _, c := range s.Components() {
+		mapCompID[c.GetID()] = c
+	}
+
+	// 3. Resolve dependencies
+	for _, r := range allKindOfRelationships {
+		if !relTypeAllowed(r.GetType(), relTypes) {
+			continue
+		}
+
+		if dep, ok := mapCompID[r.GetTo()]; ok {
+			deps = append(deps, dep)
+		}
+	}
+
+	return deps
+}
+
+func relTypeAllowed(relType string, allowedType []string) bool {
+	if len(allowedType) == 0 {
+		return true
+	}
+
+	for _, t := range allowedType {
+		if strings.EqualFold(relType, t) {
+			return true
+		}
+	}
+	return false
 }
 
 func (s SpdxDoc) Logs() []string {
@@ -151,10 +202,6 @@ func (s SpdxDoc) Manufacturer() GetManufacturer {
 
 func (s SpdxDoc) Supplier() GetSupplier {
 	return nil
-}
-
-func (s SpdxDoc) GetRelationships(componentID string) []string {
-	return s.Dependencies[componentID]
 }
 
 // Helper function to clean up keys
@@ -185,7 +232,8 @@ func (s *SpdxDoc) parse() {
 	s.parseSchemaValidation()
 	s.parseAuthors()
 	s.parseTool()
-	s.parsePrimaryCompAndRelationships()
+	s.parsePrimaryComponent()
+	s.parseRelationships()
 	s.parseComps()
 }
 
@@ -301,11 +349,8 @@ func (s *SpdxDoc) parseComps() {
 		nc.Licenses = s.licenses(index)
 		nc.DeclaredLicense = s.declaredLicenses(index)
 		nc.ConcludedLicense = s.concludedLicenses(index)
-		nc.ID = nc.Spdxid
+		nc.ID = string(sc.PackageSPDXIdentifier)
 		nc.PackageLicenseConcluded = sc.PackageLicenseConcluded
-		if strings.Contains(s.PrimaryComponent.ID, string(sc.PackageSPDXIdentifier)) {
-			nc.PrimaryCompt = s.PrimaryComponent
-		}
 
 		manu := s.getManufacturer(index)
 		if manu != nil {
@@ -334,23 +379,7 @@ func (s *SpdxDoc) parseComps() {
 		}
 
 		nc.SourceCodeURL = sc.PackageSourceInfo
-
 		nc.DownloadLocation = sc.PackageDownloadLocation
-
-		nc.isPrimary = s.PrimaryComponent.ID == string(sc.PackageSPDXIdentifier)
-
-		// fromRelsPresent := func(rels []GetRelation, id string) bool {
-		// 	for _, r := range rels {
-		// 		if strings.Contains(r.GetFrom(), id) {
-		// 			return true
-		// 		}
-		// 	}
-		// 	return false
-		// }
-
-		// nc.hasRelationships = fromRelsPresent(s.Rels, string(sc.PackageSPDXIdentifier))
-		// nc.RelationshipState = "not-specified"
-		nc.HasRelationships, nc.Count, nc.Dep = getComponentDependencies(s, nc.Spdxid)
 
 		s.Comps = append(s.Comps, nc)
 	}
@@ -380,84 +409,59 @@ func (s *SpdxDoc) parseAuthors() {
 	}
 }
 
-// return true if a component has DEPENDS_ON relationship
-func getComponentDependencies(s *SpdxDoc, componentID string) (bool, int, []string) {
-	newID := "SPDXRef-" + componentID
-	count := 0
-	deps := make([]string, 0, len(s.doc.Relationships))
+// parsePrimaryComponent
+func (s *SpdxDoc) parsePrimaryComponent() {
 	for _, r := range s.doc.Relationships {
-		// some sbom generating tools specify relationship type as contain and some as depends-on
-		if strings.ToUpper(r.Relationship) == spdx.RelationshipDependsOn || strings.ToUpper(r.Relationship) == spdx.RelationshipContains {
-			aBytes, err := r.RefA.MarshalJSON()
-			if err != nil {
-				continue
-			}
+		if strings.ToUpper(r.Relationship) != spdx_common.TypeRelationshipDescribe {
+			continue
+		}
 
-			bBytes, err := r.RefB.MarshalJSON()
-			if err != nil {
-				continue
-			}
+		// DOCUMENT -> component
+		bBytes, err := r.RefB.MarshalJSON()
+		if err != nil {
+			continue
+		}
 
-			if CleanKey(string(aBytes)) == newID {
-				deps = append(deps, string(bBytes))
-				count++
+		id := CleanKey(string(bBytes))
+		s.PrimaryComponent.Present = true
+
+		// Resolve name/version from packages
+		pkgID := strings.TrimPrefix(id, "SPDXRef-")
+		s.PrimaryComponent.ID = pkgID
+		for _, p := range s.doc.Packages {
+			if string(p.PackageSPDXIdentifier) == pkgID {
+				s.PrimaryComponent.Name = p.PackageName
+				s.PrimaryComponent.Version = p.PackageVersion
+				break
 			}
 		}
+		break // assume single primary component
 	}
-
-	return count > 0, count, deps
 }
 
-func (s *SpdxDoc) parsePrimaryCompAndRelationships() {
-	s.Dependencies = make(map[string][]string)
-	var err error
-	var aBytes, bBytes []byte
-	var primaryComponent string
-	var totalDependencies int
+// parseRelationships()
+func (s *SpdxDoc) parseRelationships() {
+	s.Relationships = make([]GetRelationship, 0, len(s.doc.Relationships))
 
 	for _, r := range s.doc.Relationships {
-		// spdx_common.TypeRelationshipDescribe
-		if strings.ToUpper(r.Relationship) == "DESCRIBES" {
-			bBytes, err = r.RefB.MarshalJSON()
-			if err != nil {
-				continue
-			}
-			primaryComponent = CleanKey(string(bBytes))
-			s.PrimaryComponent.ID = primaryComponent
-			s.PrimaryComponent.Present = true
-			modified := strings.TrimPrefix(primaryComponent, "SPDXRef-")
-
-			for _, pack := range s.doc.Packages {
-				if string(pack.PackageSPDXIdentifier) == modified {
-					s.PrimaryComponent.Name = pack.PackageName
-					s.PrimaryComponent.Version = pack.PackageVersion
-				}
-			}
+		aBytes, err := r.RefA.MarshalJSON()
+		if err != nil {
+			continue
 		}
-	}
 
-	for _, r := range s.doc.Relationships {
-		if strings.ToUpper(r.Relationship) == spdx_common.TypeRelationshipContains {
-			aBytes, err = r.RefA.MarshalJSON()
-			if err != nil {
-				continue
-			}
-			bBytes, err = r.RefB.MarshalJSON()
-			if err != nil {
-				continue
-			}
-			if CleanKey(string(aBytes)) == s.PrimaryComponent.ID {
-				totalDependencies++
-				s.PrimaryComponent.HasDependency = true
-				s.PrimaryComponent.AllDependencies = append(s.PrimaryComponent.AllDependencies, CleanKey(string(bBytes)))
-				s.Dependencies[CleanKey(string(aBytes))] = append(s.Dependencies[CleanKey(string(aBytes))], CleanKey(string(bBytes)))
-
-			} else {
-				s.Dependencies[CleanKey(string(aBytes))] = append(s.Dependencies[CleanKey(string(aBytes))], CleanKey(string(bBytes)))
-			}
+		bBytes, err := r.RefB.MarshalJSON()
+		if err != nil {
+			continue
 		}
+
+		rel := Relationship{
+			From: strings.TrimPrefix(CleanKey(string(aBytes)), "SPDXRef-"),
+			To:   strings.TrimPrefix(CleanKey(string(bBytes)), "SPDXRef-"),
+			Type: strings.ToUpper(r.Relationship),
+		}
+
+		s.Relationships = append(s.Relationships, rel)
 	}
-	s.PrimaryComponent.Dependecies = totalDependencies
 }
 
 // creationInfo.Creators.Tool

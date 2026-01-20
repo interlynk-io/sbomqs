@@ -245,26 +245,7 @@ func OCTV11CompCopyright(doc sbom.Document) catalog.ProfFeatScore {
 
 // OCTV11SBOMRelationships: Relationships (DESCRIBES and CONTAINS)
 func OCTV11SBOMRelationships(doc sbom.Document) catalog.ProfFeatScore {
-	spec := doc.Spec().GetSpecType()
-
-	if spec == "spdx" {
-		// For SPDX: check for relations
-		relations := doc.Relations()
-		if len(relations) > 0 {
-			return formulae.ScoreSBOMProfFull("relationships", false)
-		}
-		return formulae.ScoreSBOMProfMissingNA("relationships", false)
-	}
-
-	// For CycloneDX: check for component relationships
-	comps := doc.Components()
-	for _, comp := range comps {
-		if comp.HasRelationShips() || comp.CountOfDependencies() > 0 {
-			return formulae.ScoreSBOMProfFull("dependencies", false)
-		}
-	}
-
-	return formulae.ScoreSBOMProfMissingNA("dependencies", false)
+	return SBOMDepedencies(doc)
 }
 
 // OCTV11CompChecksum: Package Checksum (SHOULD)

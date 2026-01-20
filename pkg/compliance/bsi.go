@@ -16,7 +16,6 @@ package compliance
 
 import (
 	"context"
-	"fmt"
 	"strings"
 
 	pkgcommon "github.com/interlynk-io/sbomqs/v2/pkg/common"
@@ -37,6 +36,7 @@ var (
 // These constants represent different elements and attributes that are evaluated
 // for BSI (German Federal Office for Information Security) SBOM compliance.
 // Each constant corresponds to a specific requirement in the BSI guidelines.
+//
 //nolint:revive,stylecheck
 const (
 	// SBOM document specification identifiers
@@ -56,7 +56,7 @@ const (
 	SBOM_COMPONENTS
 	SBOM_PACKAGES
 	SBOM_URI
-	
+
 	// Component-level compliance identifiers
 	COMP_CREATOR
 	COMP_NAME
@@ -68,7 +68,7 @@ const (
 	COMP_SOURCE_HASH
 	COMP_LICENSE
 	COMP_DEPTH
-	
+
 	// Package-level compliance identifiers (SPDX specific)
 	PACK_SUPPLIER
 	PACK_HASH
@@ -82,7 +82,7 @@ const (
 	PACK_COPYRIGHT
 	PACK_INFO
 	PACK_EXT_REF
-	
+
 	// Format and metadata identifiers
 	SBOM_MACHINE_FORMAT
 	SBOM_DEPENDENCY
@@ -94,12 +94,12 @@ const (
 	SBOM_TYPE
 	SBOM_VULNERABILITIES
 	SBOM_BOM_LINKS
-	
+
 	// License-related identifiers
 	COMP_ASSOCIATED_LICENSE
 	COMP_CONCLUDED_LICENSE
 	COMP_DECLARED_LICENSE
-	
+
 	// Security identifiers
 	SBOM_SIGNATURE
 )
@@ -113,7 +113,6 @@ func bsiResult(ctx context.Context, doc sbom.Document, fileName string, outForma
 	dtb.AddRecord(bsiSpec(doc))
 	dtb.AddRecord(bsiSpecVersion(doc))
 	dtb.AddRecord(bsiBuildPhase(doc))
-	dtb.AddRecord(bsiSbomDepth(doc))
 	dtb.AddRecord(bsiCreator(doc))
 	dtb.AddRecord(bsiTimestamp(doc))
 	dtb.AddRecord(bsiSbomURI(doc))
@@ -193,39 +192,6 @@ func bsiBuildPhase(doc sbom.Document) *db.Record {
 	}
 
 	return db.NewRecordStmt(SBOM_BUILD, "doc", result, score, "")
-}
-
-func bsiSbomDepth(doc sbom.Document) *db.Record {
-	result, score := "", 0.0
-	// for doc.Components()
-	totalDependencies := doc.PrimaryComp().GetTotalNoOfDependencies()
-
-	if totalDependencies > 0 {
-		score = 10.0
-	}
-	result = fmt.Sprintf("doc has %d dependencies", totalDependencies)
-
-	// if len(doc.Relations()) == 0 {
-	// 	return db.NewRecordStmt(SBOM_DEPTH, "doc", "no-relationships", 0.0, "")
-	// }
-
-	// primary, _ := lo.Find(doc.Components(), func(c sbom.GetComponent) bool {
-	// 	return c.IsPrimaryComponent()
-	// })
-
-	// if !primary.HasRelationShips() {
-	// 	return db.NewRecordStmt(SBOM_DEPTH, "doc", "no-primary-relationships", 0.0, "")
-	// }
-
-	// if primary.RelationShipState() == "complete" {
-	// 	return db.NewRecordStmt(SBOM_DEPTH, "doc", "complete", 10.0, "")
-	// }
-
-	// if primary.HasRelationShips() {
-	// 	return db.NewRecordStmt(SBOM_DEPTH, "doc", "unattested-has-relationships", 5.0, "")
-	// }
-
-	return db.NewRecordStmt(SBOM_DEPTH, "doc", result, score, "")
 }
 
 func bsiCreator(doc sbom.Document) *db.Record {
@@ -341,13 +307,6 @@ func bsiSbomURI(doc sbom.Document) *db.Record {
 	return db.NewRecordStmt(SBOM_URI, "doc", "", 0.0, "")
 }
 
-var (
-	bsiCompIDWithName               = make(map[string]string)
-	bsiComponentList                = make(map[string]bool)
-	bsiPrimaryDependencies          = make(map[string]bool)
-	bsiGetAllPrimaryDepenciesByName = []string{}
-)
-
 func bsiComponents(doc sbom.Document) []*db.Record {
 	records := []*db.Record{}
 
@@ -356,22 +315,12 @@ func bsiComponents(doc sbom.Document) []*db.Record {
 		return records
 	}
 
-	bsiCompIDWithName = common.ComponentsNamesMapToIDs(doc)
-	bsiComponentList = common.ComponentsLists(doc)
-	bsiPrimaryDependencies = common.MapPrimaryDependencies(doc)
-	dependencies := common.GetAllPrimaryComponentDependencies(doc)
-	isBsiAllDepesPresentInCompList := common.CheckPrimaryDependenciesInComponentList(dependencies, bsiComponentList)
-
-	if isBsiAllDepesPresentInCompList {
-		bsiGetAllPrimaryDepenciesByName = common.GetDependenciesByName(dependencies, bsiCompIDWithName)
-	}
-
 	for _, component := range doc.Components() {
 		records = append(records, bsiComponentCreator(component))
 		records = append(records, bsiComponentName(component))
 		records = append(records, bsiComponentVersion(component))
 		records = append(records, bsiComponentLicense(component))
-		records = append(records, bsiComponentDepth(doc, component))
+		records = append(records, bsiComponentDependencies(doc, component))
 		records = append(records, bsiComponentHash(component))
 		records = append(records, bsiComponentSourceCodeURL(component))
 		records = append(records, bsiComponentDownloadURL(component))
@@ -384,59 +333,36 @@ func bsiComponents(doc sbom.Document) []*db.Record {
 	return records
 }
 
-func bsiComponentDepth(doc sbom.Document, component sbom.GetComponent) *db.Record {
-	result, score := "", 0.0
-	var dependencies []string
-	var allDepByName []string
+// bsiComponentDependencies reports dependency enumeration for a single component
+// according to BSI TR-03183.
+//
+// BSI semantics:
+//   - Dependency evaluation is strictly component-scoped (not SBOM- or primary-scoped).
+//   - A component MAY declare zero dependencies (valid leaf component).
+//   - If a component declares dependencies (DEPENDS_ON or CONTAINS),
+//     those references MUST be valid and resolvable.
+//   - Missing dependencies do NOT cause failure.
+//   - Only incorrect or broken dependency declarations result in a failing score.
+func bsiComponentDependencies(doc sbom.Document, component sbom.GetComponent) *db.Record {
 
-	if doc.Spec().GetSpecType() == string(sbom.SBOMSpecSPDX) {
-		if component.GetPrimaryCompInfo().IsPresent() {
-			result = strings.Join(bsiGetAllPrimaryDepenciesByName, ", ")
-			score = 10.0
-			return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), result, score, "")
-		}
+	compID := component.GetID()
+	deps := doc.GetDirectDependencies(compID, "DEPENDS_ON", "CONTAINS")
 
-		dependencies = doc.GetRelationships(common.GetID(component.GetSpdxID()))
-		if dependencies == nil {
-			if bsiPrimaryDependencies[common.GetID(component.GetSpdxID())] {
-				return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), "included-in", 10.0, "")
-			}
-			return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), "no-relationship", 0.0, "")
-		}
-		allDepByName = common.GetDependenciesByName(dependencies, bsiCompIDWithName)
-		if bsiPrimaryDependencies[common.GetID(component.GetSpdxID())] {
-			allDepByName = append([]string{"included-in"}, allDepByName...)
-			result = strings.Join(allDepByName, ", ")
-			return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), result, 10.0, "")
-		}
-		result = strings.Join(allDepByName, ", ")
-		return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), result, 10.0, "")
-
-	} else if doc.Spec().GetSpecType() == string(sbom.SBOMSpecCDX) {
-		if component.GetPrimaryCompInfo().IsPresent() {
-			result = strings.Join(bsiGetAllPrimaryDepenciesByName, ", ")
-			score = 10.0
-			return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), result, score, "")
-		}
-		id := component.GetID()
-		dependencies = doc.GetRelationships(id)
-		if len(dependencies) == 0 {
-			if bsiPrimaryDependencies[id] {
-				return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), "included-in", 10.0, "")
-			}
-			return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), "no-relationship", 0.0, "")
-		}
-		allDepByName = common.GetDependenciesByName(dependencies, bsiCompIDWithName)
-		if bsiPrimaryDependencies[id] {
-			allDepByName = append([]string{"included-in"}, allDepByName...)
-			result = strings.Join(allDepByName, ", ")
-			return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), result, 10.0, "")
-		}
-		result = strings.Join(allDepByName, ", ")
-		return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), result, 10.0, "")
+	// Leaf Component
+	if len(deps) == 0 {
+		return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), "no-dependencies", SCORE_FULL, "")
 	}
 
-	return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), "no-relationships", 0.0, "")
+	names := make([]string, 0, len(deps))
+	for _, dep := range deps {
+		name := strings.TrimSpace(dep.GetName())
+		if name != "" {
+			names = append(names, name)
+		}
+	}
+
+	result := strings.Join(names, ", ")
+	return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), result, SCORE_FULL, "")
 }
 
 func bsiComponentLicense(component sbom.GetComponent) *db.Record {

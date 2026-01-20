@@ -58,14 +58,13 @@ type CdxDoc struct {
 	Comps            []GetComponent
 	CdxAuthors       []GetAuthor
 	CdxTools         []GetTool
-	rels             []GetRelation
+	Relationships    []GetRelationship
 	logs             []string
 	Lifecycle        []string
 	CdxSupplier      GetSupplier
 	CdxManufacturer  GetManufacturer
 	Compositions     []GetComposition
-	PrimaryComponent PrimaryComp
-	Dependencies     map[string][]string
+	PrimaryComponent PrimaryComponentInfo
 	Vuln             []GetVulnerabilities
 	SignatureDetail  GetSignature
 	rawContent       []byte // Store raw content for manual parsing
@@ -116,7 +115,7 @@ func newCDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat, _ Signat
 	return doc, err
 }
 
-func (c CdxDoc) PrimaryComp() GetPrimaryComp {
+func (c CdxDoc) PrimaryComp() GetPrimaryComponentInfo {
 	return &c.PrimaryComponent
 }
 
@@ -136,8 +135,45 @@ func (c CdxDoc) Tools() []GetTool {
 	return c.CdxTools
 }
 
-func (c CdxDoc) Relations() []GetRelation {
-	return c.rels
+func (c CdxDoc) GetRelationships() []GetRelationship {
+	return c.Relationships
+}
+
+func (c CdxDoc) GetOutgoingRelations(compID string) []GetRelationship {
+	out := make([]GetRelationship, 0)
+
+	for _, r := range c.Relationships {
+		if r.GetFrom() == compID {
+			out = append(out, r)
+		}
+	}
+	return out
+}
+
+func (c CdxDoc) GetDirectDependencies(compID string, relTypes ...string) []GetComponent {
+	deps := make([]GetComponent, 0)
+
+	allKindOfRelationships := c.GetOutgoingRelations(compID)
+	if len(allKindOfRelationships) == 0 {
+		return deps
+	}
+
+	mapCompWithID := make(map[string]GetComponent)
+	for _, comp := range c.Components() {
+		mapCompWithID[comp.GetID()] = comp
+	}
+
+	for _, r := range allKindOfRelationships {
+		if !relTypeAllowed(r.GetType(), relTypes) {
+			continue
+		}
+
+		if dep, ok := mapCompWithID[r.GetTo()]; ok {
+			deps = append(deps, dep)
+		}
+	}
+
+	return deps
 }
 
 func (c CdxDoc) Logs() []string {
@@ -154,10 +190,6 @@ func (c CdxDoc) Supplier() GetSupplier {
 
 func (c CdxDoc) Manufacturer() GetManufacturer {
 	return c.CdxManufacturer
-}
-
-func (c CdxDoc) GetRelationships(componentID string) []string {
-	return c.Dependencies[componentID]
 }
 
 func (c CdxDoc) Composition() []GetComposition {
@@ -185,7 +217,8 @@ func (c *CdxDoc) parse() {
 	c.parseManufacturer()
 	c.parseTool()
 	c.parseCompositions()
-	c.parsePrimaryCompAndRelationships()
+	c.parsePrimaryComponent()
+	c.parseDependencies()
 	c.parseVulnerabilities()
 	// Parse signature if not already present
 	if c.SignatureDetail == nil {
@@ -637,9 +670,6 @@ func copyC(cdxc *cydx.Component, c *CdxDoc) *Component {
 		}
 	}
 
-	if cdxc.Name == c.PrimaryComponent.Name {
-		nc.PrimaryCompt = c.PrimaryComponent
-	}
 	nc.ID = cdxc.BOMRef
 
 	// For CycloneDX 1.6+, licenses have an acknowledgement field to distinguish
@@ -652,29 +682,8 @@ func copyC(cdxc *cydx.Component, c *CdxDoc) *Component {
 			nc.ConcludedLicense = nc.Licenses
 		}
 	}
-	nc.HasRelationships, nc.Count, nc.Dep = getComponentRelationship(c, nc.ID)
 
 	return nc
-}
-
-// return true if a component has relationship
-func getComponentRelationship(c *CdxDoc, compID string) (bool, int, []string) {
-	count := 0
-	if c.doc.Dependencies == nil {
-		c.addToLogs(fmt.Sprintf("cdx doc component %s has no dependencies", compID))
-		return false, count, nil
-	}
-
-	deps := make([]string, 0, len(*c.doc.Dependencies))
-	for _, rel := range *c.doc.Dependencies {
-		if rel.Ref == compID {
-			if len(lo.FromPtr(rel.Dependencies)) > 0 {
-				count++
-				deps = append(deps, compID)
-			}
-		}
-	}
-	return count > 0, count, deps
 }
 
 func (c *CdxDoc) parseComps() {
@@ -915,46 +924,40 @@ func (c *CdxDoc) parseManufacturer() {
 	c.CdxManufacturer = manufacturer
 }
 
-func (c *CdxDoc) parsePrimaryCompAndRelationships() {
+func (c *CdxDoc) parsePrimaryComponent() {
 	if c.doc.Metadata == nil || c.doc.Metadata.Component == nil {
 		return
 	}
 
 	comp := c.doc.Metadata.Component
 
-	// Semantic validation: primary component must be identifiable
-	if strings.TrimSpace(comp.Name) == "" || strings.TrimSpace(string(comp.Type)) == "" {
+	if strings.TrimSpace(comp.BOMRef) == "" {
 		return
 	}
 
-	c.Dependencies = make(map[string][]string)
+	c.PrimaryComponent = PrimaryComponentInfo{
+		ID:      comp.BOMRef,
+		Name:    comp.Name,
+		Version: comp.Version,
+		Type:    string(comp.Type),
+		Present: true,
+	}
+}
 
-	c.PrimaryComponent.Present = true
-	c.PrimaryComponent.ID = comp.BOMRef
-	c.PrimaryComponent.Name = comp.Name
-	c.PrimaryComponent.Type = string(comp.Type)
+func (c *CdxDoc) parseDependencies() {
+	c.Relationships = []GetRelationship{}
 
-	var totalDependencies int
-	c.rels = []GetRelation{}
-
-	for _, r := range lo.FromPtr(c.doc.Dependencies) {
-		for _, d := range lo.FromPtr(r.Dependencies) {
-			nr := Relation{
-				From: r.Ref,
-				To:   d,
+	for _, d := range lo.FromPtr(c.doc.Dependencies) {
+		from := d.Ref
+		for _, to := range lo.FromPtr(d.Dependencies) {
+			rel := Relationship{
+				From: from,
+				To:   to,
+				Type: "DEPENDS_ON",
 			}
-
-			c.rels = append(c.rels, nr)
-			c.Dependencies[r.Ref] = append(c.Dependencies[r.Ref], d)
-
-			if r.Ref == c.PrimaryComponent.ID {
-				c.PrimaryComponent.HasDependency = true
-				c.PrimaryComponent.AllDependencies = append(c.PrimaryComponent.AllDependencies, d)
-				totalDependencies++
-			}
+			c.Relationships = append(c.Relationships, rel)
 		}
 	}
-	c.PrimaryComponent.Dependecies = totalDependencies
 }
 
 func (c *CdxDoc) assignAuthor(comp *cydx.Component) []GetAuthor {
