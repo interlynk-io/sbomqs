@@ -279,21 +279,6 @@ func CheckCopyright(cp string) (string, bool) {
 	return cp, true
 }
 
-// ComponentsLists return component lists as a map
-func ComponentsLists(doc sbom.Document) map[string]bool {
-	componentList := make(map[string]bool)
-	for _, component := range doc.Components() {
-		if doc.Spec().GetSpecType() == "spdx" {
-			id := "SPDXRef-" + component.GetSpdxID()
-			componentList[id] = true
-
-		} else if doc.Spec().GetSpecType() == "cyclonedx" {
-			componentList[component.GetID()] = true
-		}
-	}
-	return componentList
-}
-
 // ComponentsNamesMapToIDs returns map of component ID as key and component Name as value
 func ComponentsNamesMapToIDs(doc sbom.Document) map[string]string {
 	compIDWithName := make(map[string]string)
@@ -307,52 +292,6 @@ func ComponentsNamesMapToIDs(doc sbom.Document) map[string]string {
 		}
 	}
 	return compIDWithName
-}
-
-// // GetAllPrimaryComponentDependencies return all list of primary component dependencies by it's ID.
-// func GetAllPrimaryComponentDependencies(doc sbom.Document) []string {
-// 	return doc.PrimaryComp().GetDependencies()
-// }
-
-// // MapPrimaryDependencies returns a map of all primary dependencies with bool.
-// // Primary dependencies marked as true else false.
-// func MapPrimaryDependencies(doc sbom.Document) map[string]bool {
-// 	primaryDependencies := make(map[string]bool)
-// 	for _, component := range doc.Components() {
-// 		if doc.Spec().GetSpecType() == "spdx" {
-// 			id := "SPDXRef-" + component.GetSpdxID()
-// 			if component.GetPrimaryCompInfo().IsPresent() {
-// 				dependencies := doc.GetRelationships(id)
-// 				for _, d := range dependencies {
-// 					primaryDependencies[d] = true
-// 				}
-// 			}
-// 		} else if doc.Spec().GetSpecType() == "cyclonedx" {
-// 			if component.GetPrimaryCompInfo().IsPresent() {
-// 				dependencies := doc.GetRelationships(component.GetID())
-// 				for _, d := range dependencies {
-// 					primaryDependencies[d] = true
-// 				}
-// 			}
-// 		}
-// 	}
-// 	return primaryDependencies
-// }
-
-// CheckPrimaryDependenciesInComponentList checks if all primary dependencies are part of the component list.
-func CheckPrimaryDependenciesInComponentList(dependencies []string, componentList map[string]bool) bool {
-	return lo.EveryBy(dependencies, func(id string) bool {
-		return componentList[id]
-	})
-}
-
-// GetDependenciesByName returns the names of all dependencies based on their IDs.
-func GetDependenciesByName(dependencies []string, compIDWithName map[string]string) []string {
-	allDepByName := make([]string, 0, len(dependencies))
-	for _, dep := range dependencies {
-		allDepByName = append(allDepByName, compIDWithName[dep])
-	}
-	return allDepByName
 }
 
 func GetID(componentID string) string {
@@ -374,15 +313,6 @@ func UniqueElementID(component sbom.GetComponent) string {
 	}
 
 	return componentName + "-" + version
-}
-
-func IsComponentPartOfPrimaryDependency(primaryCompDeps []string, comp string) bool {
-	for _, item := range primaryCompDeps {
-		if item == comp {
-			return true
-		}
-	}
-	return false
 }
 
 func SetHeaderColor(table *tablewriter.Table, header int) {

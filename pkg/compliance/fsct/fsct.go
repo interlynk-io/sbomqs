@@ -133,15 +133,6 @@ func SbomAuthor(doc sbom.Document) *db.Record {
 	return db.NewRecordStmt(SBOM_AUTHOR, "doc", result, score, maturity)
 }
 
-// var (
-// 	CompIDWithName                          = make(map[string]string)
-// 	ComponentList                           = make(map[string]bool)
-// 	GetAllPrimaryCompDependencies           []string
-// 	RelationshipProvidedForPrimaryComp      bool
-// 	ValidRelationshipProvidedForPrimaryComp bool
-// 	GetAllPrimaryDependenciesByName         = []string{}
-// )
-
 func Components(doc sbom.Document) []*db.Record {
 	records := []*db.Record{}
 
@@ -319,30 +310,35 @@ func fsctPackageRelationships(doc sbom.Document, component sbom.GetComponent) *d
 
 	primary := doc.PrimaryComp()
 	if !primary.IsPresent() {
-		return db.NewRecordStmt(COMP_RELATIONSHIP, common.UniqueElementID(component), result, 0.0, maturity)
+		return db.NewRecordStmt(COMP_RELATIONSHIP, common.UniqueElementID(component), "no primary component", 0.0, maturity)
 	}
-
-	primaryID := primary.GetID()
-	primaryDeps := doc.GetDirectDependencies(primaryID, "DEPENDS_ON")
 
 	// Helper function: to fetch dependency completeness for a component
 	getAgg := func(id string) sbom.CompositionAggregate {
 		for _, c := range doc.Composition() {
-			if c.Scope() != sbom.ScopeDependencies {
-				continue
+
+			// 1. SBOM-level completeness applies to all components
+			if c.Scope() == sbom.ScopeGlobal {
+				return c.Aggregate()
 			}
-			if slices.Contains(c.Dependencies(), id) {
+
+			// 2. Dependency-scoped completeness
+			if c.Scope() == sbom.ScopeDependencies &&
+				slices.Contains(c.Dependencies(), id) {
 				return c.Aggregate()
 			}
 		}
 		return sbom.AggregateUnknown
 	}
 
+	primaryID := primary.GetID()
+	primaryDeps := doc.GetDirectDependencies(primaryID, "DEPENDS_ON")
+	primaryAgg := getAgg(compID)
+
 	// Case 1: Primary Component
 	if compID == primaryID {
 
-		agg := getAgg(compID)
-
+		// relationship declared
 		if len(primaryDeps) > 0 {
 			names := make([]string, 0, len(primaryDeps))
 
@@ -357,12 +353,13 @@ func fsctPackageRelationships(doc sbom.Document, component sbom.GetComponent) *d
 			return db.NewRecordStmt(COMP_RELATIONSHIP, common.UniqueElementID(component), result, 10.0, "Minimum")
 		}
 
-		// no dependencies declared --> check completeness declaration
-		if agg == sbom.AggregateComplete {
+		// no dependencies --> check completeness declaration
+		if primaryAgg == sbom.AggregateComplete {
 			return db.NewRecordStmt(COMP_RELATIONSHIP, common.UniqueElementID(component), result, 10.0, "Minimum")
 		}
 
-		return db.NewRecordStmt(COMP_RELATIONSHIP, common.UniqueElementID(component), result, 0.0, "None")
+		// nothing declared,set to none
+		return db.NewRecordStmt(COMP_RELATIONSHIP, common.UniqueElementID(component), "no relationships declared; completeness unknown", 0.0, "None")
 	}
 
 	// Case 2: Non-Primary COmponent
@@ -376,13 +373,14 @@ func fsctPackageRelationships(doc sbom.Document, component sbom.GetComponent) *d
 	}
 
 	if !isDirectDepOfPrimary {
-		return db.NewRecordStmt(COMP_RELATIONSHIP, common.UniqueElementID(component), result, 0.0, "None")
+		return db.NewRecordStmt(COMP_RELATIONSHIP, common.UniqueElementID(component), "not part of primary dependency graph", 0.0, "None")
 	}
 
 	componentDeps := doc.GetDirectDependencies(compID, "DEPENDS_ON")
-	agg := getAgg(compID)
+	componentAgg := getAgg(compID)
 
 	// Case 3: direct dependency with own dependencies
+	// declared dependencies
 	if len(componentDeps) > 0 {
 		names := make([]string, 0, len(componentDeps))
 
@@ -396,7 +394,8 @@ func fsctPackageRelationships(doc sbom.Document, component sbom.GetComponent) *d
 		result = strings.Join(names, ", ")
 
 		// Recommended only if completeness is explicity "complete"
-		if agg == sbom.AggregateComplete {
+		// declared completeness
+		if componentAgg == sbom.AggregateComplete {
 			return db.NewRecordStmt(COMP_RELATIONSHIP, common.UniqueElementID(component), result, 12.0, "Recommended")
 		}
 
@@ -405,7 +404,7 @@ func fsctPackageRelationships(doc sbom.Document, component sbom.GetComponent) *d
 	}
 
 	// Case 4: leaf depdency of primary with completeness declared "complete"
-	switch agg {
+	switch componentAgg {
 	case sbom.AggregateComplete:
 		return db.NewRecordStmt(COMP_RELATIONSHIP, common.UniqueElementID(component), result, 10.0, "Minimum")
 
