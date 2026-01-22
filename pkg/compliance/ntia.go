@@ -153,6 +153,7 @@ func ntiaSbomCreator(doc sbom.Document) *db.Record {
 				break
 			}
 		}
+
 	case string(sbom.SBOMSpecCDX):
 		if authors := doc.Authors(); authors != nil {
 			if authorResult, found := getAuthorInfo(authors); found {
@@ -161,9 +162,11 @@ func ntiaSbomCreator(doc sbom.Document) *db.Record {
 				break
 			}
 		}
+
 		if result != "" {
 			return db.NewRecordStmt(SBOM_CREATOR, "SBOM Data Fields", result, score, "")
 		}
+
 		if tools := doc.Tools(); tools != nil {
 			if toolResult, found := getToolInfo(tools); found {
 				result = toolResult

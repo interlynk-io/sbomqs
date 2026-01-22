@@ -717,3 +717,16 @@ func SBOMTool(doc sbom.Document) catalog.ProfFeatScore {
 		Ignore: false,
 	}
 }
+
+// checkUniqueID checks for PURL/CPE
+func checkUniqueIDs(c sbom.GetComponent) bool {
+	if commonV2.CompHasAnyPURLs(c) {
+		return true
+	}
+
+	if commonV2.CompHasAnyCPEs(c) {
+		return true
+	}
+
+	return false
+}

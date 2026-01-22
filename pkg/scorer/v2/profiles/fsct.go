@@ -132,9 +132,17 @@ func FSCTCompDependencies(doc sbom.Document) catalog.ProfFeatScore {
 
 func DependencyCompleteness(doc sbom.Document, compID string) sbom.CompositionAggregate {
 	for _, c := range doc.Composition() {
+
+		// 1. SBOM-level completeness applies to all components
+		if c.Scope() == sbom.ScopeGlobal {
+			return c.Aggregate()
+		}
+
+		// 2. Dependency-scoped completeness
 		if c.Scope() != sbom.ScopeDependencies {
 			continue
 		}
+
 		if slices.Contains(c.Dependencies(), compID) {
 			return c.Aggregate()
 		}
