@@ -15,7 +15,6 @@
 package profiles
 
 import (
-	"fmt"
 	"slices"
 	"strings"
 
@@ -40,7 +39,6 @@ func CompWithSupplier(doc sbom.Document) catalog.ProfFeatScore {
 
 	have := lo.CountBy(doc.Components(), func(c sbom.GetComponent) bool {
 		supplier := c.Suppliers()
-		fmt.Println("supplier: ", supplier)
 		if supplier != nil {
 			hasName := strings.TrimSpace(supplier.GetName()) != ""
 			hasURL := strings.TrimSpace(supplier.GetURL()) != ""
@@ -52,7 +50,6 @@ func CompWithSupplier(doc sbom.Document) catalog.ProfFeatScore {
 		}
 
 		manufacturer := c.Manufacturer()
-		fmt.Println("manufacturer: ", manufacturer)
 		if manufacturer != nil {
 			hasName := strings.TrimSpace(manufacturer.GetName()) != ""
 			hasURL := strings.TrimSpace(manufacturer.GetURL()) != ""
@@ -116,7 +113,7 @@ func NTIASBOMRelationships(doc sbom.Document) catalog.ProfFeatScore {
 	if len(directDeps) > 0 {
 		return catalog.ProfFeatScore{
 			Score:  10.0,
-			Desc:   "direct dependencies declared for primary component",
+			Desc:   "primary component has direct relationships",
 			Ignore: false,
 		}
 	}
@@ -137,21 +134,21 @@ func NTIASBOMRelationships(doc sbom.Document) catalog.ProfFeatScore {
 		case sbom.AggregateComplete:
 			return catalog.ProfFeatScore{
 				Score:  10.0,
-				Desc:   "primary component declares completeness",
+				Desc:   "primary comp declares relationships completeness complete",
 				Ignore: false,
 			}
 
 		case sbom.AggregateUnknown:
 			return catalog.ProfFeatScore{
 				Score:  5.0,
-				Desc:   "dependency completeness declared unknown",
+				Desc:   "primary comp declares relationships completeness unknown",
 				Ignore: false,
 			}
 
 		case sbom.AggregateIncomplete:
 			return catalog.ProfFeatScore{
 				Score:  0.0,
-				Desc:   "dependency data declared incomplete",
+				Desc:   "primary comp declares relationships completeness incomplete",
 				Ignore: false,
 			}
 		}
@@ -161,7 +158,7 @@ func NTIASBOMRelationships(doc sbom.Document) catalog.ProfFeatScore {
 	// Default interpretation per NTIA: incomplete
 	return catalog.ProfFeatScore{
 		Score:  0.0,
-		Desc:   "no dependency relationships declared",
+		Desc:   "primary component has no direct relationships and does not declare completeness",
 		Ignore: false,
 	}
 }
@@ -248,7 +245,6 @@ func SbomWithAuthors(doc sbom.Document) catalog.ProfFeatScore {
 		Desc:   "add author information",
 		Ignore: false,
 	}
-
 }
 
 // SBOM Timestamp

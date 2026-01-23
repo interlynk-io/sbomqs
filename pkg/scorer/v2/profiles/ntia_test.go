@@ -1360,7 +1360,7 @@ var spdxSBOMToolWrongType = []byte(`
 }
 `)
 
-// falback aythor as supplier, when not author or tool is present
+// fallback aythor as supplier, when not author or tool is present
 var cdxSBOMSupplierWithNameAndURL = []byte(`
 {
   "bomFormat": "CycloneDX",
@@ -2285,4 +2285,702 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		require.Error(t, err)
 	})
 
+}
+
+var cdxCompWithPrimaryRelationships = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {
+    "component": {
+      "bom-ref": "app-1.0",
+      "type": "application",
+      "name": "my-app",
+      "version": "1.0"
+    }
+  },
+  "components": [
+    {
+      "bom-ref": "library-a",
+      "type": "library",
+      "name": "library-a",
+      "version": "1.0.0"
+    },
+    {
+      "bom-ref": "library-b",
+      "type": "library",
+      "name": "library-b",
+      "version": "1.0.0"
+    },
+    {
+      "bom-ref": "library-c",
+      "type": "library",
+      "name": "library-c",
+      "version": "1.0.0"
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "app-1.0",
+      "dependsOn": [
+        "library-a",
+        "library-b"  
+      ]
+    },
+    {
+      "ref": "library-a",
+      "dependsOn": []
+    },
+    {
+      "ref": "library-b",
+      "dependsOn": [
+        "library-c"
+      ]
+    }
+  ]
+}
+`)
+
+var spdxCompWithPrimaryRelationships = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "my-app-sbom",
+  "dataLicense": "CC0-1.0",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": ["Tool: syft v0.95.0"]
+  },
+
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-App",
+      "name": "my-app",
+      "versionInfo": "1.0"
+    },
+    {
+      "SPDXID": "SPDXRef-LibA",
+      "name": "library-a",
+      "versionInfo": "1.0.0"
+    },
+    {
+      "SPDXID": "SPDXRef-LibB",
+      "name": "library-b",
+      "versionInfo": "1.0.0"
+    },
+    {
+      "SPDXID": "SPDXRef-LibC",
+      "name": "library-c",
+      "versionInfo": "1.0.0"
+    }
+  ],
+
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relationshipType": "DESCRIBES",
+      "relatedSpdxElement": "SPDXRef-App"
+    },
+    {
+      "spdxElementId": "SPDXRef-App",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-LibA"
+    },
+    {
+      "spdxElementId": "SPDXRef-App",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-LibB"
+    },
+    {
+      "spdxElementId": "SPDXRef-LibB",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-LibC"
+    }
+  ]
+}
+`)
+
+var cdxCompWithNoPrimaryRelationships = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {
+    "component": {
+      "bom-ref": "app-1.0",
+      "type": "application",
+      "name": "my-app",
+      "version": "1.0"
+    }
+  },
+  "components": [
+    {
+      "bom-ref": "library-a",
+      "type": "library",
+      "name": "library-a",
+      "version": "1.0.0"
+    },
+    {
+      "bom-ref": "library-b",
+      "type": "library",
+      "name": "library-b",
+      "version": "1.0.0"
+    },
+    {
+      "bom-ref": "library-c",
+      "type": "library",
+      "name": "library-c",
+      "version": "1.0.0"
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "library-a",
+      "dependsOn": []
+    },
+    {
+      "ref": "library-b",
+      "dependsOn": [
+        "library-c"
+      ]
+    }
+  ]
+}
+`)
+
+var spdxCompWithNoPrimaryRelationships = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "my-app-sbom",
+  "dataLicense": "CC0-1.0",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": ["Tool: syft v0.95.0"]
+  },
+
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-App",
+      "name": "my-app",
+      "versionInfo": "1.0"
+    },
+    {
+      "SPDXID": "SPDXRef-LibA",
+      "name": "library-a",
+      "versionInfo": "1.0.0"
+    },
+    {
+      "SPDXID": "SPDXRef-LibB",
+      "name": "library-b",
+      "versionInfo": "1.0.0"
+    },
+    {
+      "SPDXID": "SPDXRef-LibC",
+      "name": "library-c",
+      "versionInfo": "1.0.0"
+    }
+  ],
+
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relationshipType": "DESCRIBES",
+      "relatedSpdxElement": "SPDXRef-App"
+    },
+    {
+      "spdxElementId": "SPDXRef-LibB",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-LibC"
+    },
+    {
+      "spdxElementId": "SPDXRef-LibA",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-LibC"
+    }
+
+  ]
+}
+`)
+
+var cdxCompWithPrimaryComponentMissing = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "bom-ref": "library-a",
+      "type": "library",
+      "name": "library-a",
+      "version": "1.0.0"
+    },
+    {
+      "bom-ref": "library-b",
+      "type": "library",
+      "name": "library-b",
+      "version": "1.0.0"
+    },
+    {
+      "bom-ref": "library-c",
+      "type": "library",
+      "name": "library-c",
+      "version": "1.0.0"
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "library-a",
+      "dependsOn": []
+    },
+    {
+      "ref": "library-b",
+      "dependsOn": [
+        "library-c"
+      ]
+    }
+  ]
+}
+`)
+
+var spdxCompWithPrimaryComponentMissing = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "my-app-sbom",
+  "dataLicense": "CC0-1.0",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": ["Tool: syft v0.95.0"]
+  },
+
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-App",
+      "name": "my-app",
+      "versionInfo": "1.0"
+    },
+    {
+      "SPDXID": "SPDXRef-LibA",
+      "name": "library-a",
+      "versionInfo": "1.0.0"
+    },
+    {
+      "SPDXID": "SPDXRef-LibB",
+      "name": "library-b",
+      "versionInfo": "1.0.0"
+    },
+    {
+      "SPDXID": "SPDXRef-LibC",
+      "name": "library-c",
+      "versionInfo": "1.0.0"
+    }
+  ],
+
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-LibB",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-LibC"
+    },
+    {
+      "spdxElementId": "SPDXRef-LibA",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-LibC"
+    }
+  ]
+}
+`)
+
+var cdxCompWithPrimaryRelationshipsAndDeclaredRelationships = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {
+    "component": {
+      "bom-ref": "app-1.0",
+      "type": "application",
+      "name": "my-app",
+      "version": "1.0"
+    }
+  },
+  "components": [
+    {
+      "bom-ref": "library-a",
+      "type": "library",
+      "name": "library-a",
+      "version": "1.0.0"
+    },
+    {
+      "bom-ref": "library-b",
+      "type": "library",
+      "name": "library-b",
+      "version": "1.0.0"
+    },
+    {
+      "bom-ref": "library-c",
+      "type": "library",
+      "name": "library-c",
+      "version": "1.0.0"
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "app-1.0",
+      "dependsOn": [
+        "library-a",
+        "library-b"  
+      ]
+    },
+    {
+      "ref": "library-a",
+      "dependsOn": []
+    },
+    {
+      "ref": "library-b",
+      "dependsOn": [
+        "library-c"
+      ]
+    }
+  ],
+  "compositions": [
+    {
+      "aggregate": "complete",
+      "dependencies": ["app"]
+    }
+  ]
+}
+`)
+
+var cdxCompWithPrimaryDeclaredRelationshipsComplete = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {
+    "component": {
+      "bom-ref": "app-1.0",
+      "type": "application",
+      "name": "my-app",
+      "version": "1.0"
+    }
+  },
+  "components": [
+    {
+      "bom-ref": "library-a",
+      "type": "library",
+      "name": "library-a",
+      "version": "1.0.0"
+    },
+    {
+      "bom-ref": "library-b",
+      "type": "library",
+      "name": "library-b",
+      "version": "1.0.0"
+    },
+    {
+      "bom-ref": "library-c",
+      "type": "library",
+      "name": "library-c",
+      "version": "1.0.0"
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "library-a",
+      "dependsOn": []
+    },
+    {
+      "ref": "library-b",
+      "dependsOn": [
+        "library-c"
+      ]
+    }
+  ],
+  "compositions": [
+    {
+      "aggregate": "complete",
+      "dependencies": ["app-1.0"]
+    }
+  ]
+}
+`)
+
+var cdxCompWithPrimaryDeclaredRelationshipsUnknown = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {
+    "component": {
+      "bom-ref": "app-1.0",
+      "type": "application",
+      "name": "my-app",
+      "version": "1.0"
+    }
+  },
+  "components": [
+    {
+      "bom-ref": "library-a",
+      "type": "library",
+      "name": "library-a",
+      "version": "1.0.0"
+    },
+    {
+      "bom-ref": "library-b",
+      "type": "library",
+      "name": "library-b",
+      "version": "1.0.0"
+    },
+    {
+      "bom-ref": "library-c",
+      "type": "library",
+      "name": "library-c",
+      "version": "1.0.0"
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "library-a",
+      "dependsOn": []
+    },
+    {
+      "ref": "library-b",
+      "dependsOn": [
+        "library-c"
+      ]
+    }
+  ],
+  "compositions": [
+    {
+      "aggregate": "unknown",
+      "dependencies": ["app-1.0"]
+    }
+  ]
+}
+`)
+
+var cdxCompWithPrimaryDeclaredRelationshipsIncomplete = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {
+    "component": {
+      "bom-ref": "app-1.0",
+      "type": "application",
+      "name": "my-app",
+      "version": "1.0"
+    }
+  },
+  "components": [
+    {
+      "bom-ref": "library-a",
+      "type": "library",
+      "name": "library-a",
+      "version": "1.0.0"
+    },
+    {
+      "bom-ref": "library-b",
+      "type": "library",
+      "name": "library-b",
+      "version": "1.0.0"
+    },
+    {
+      "bom-ref": "library-c",
+      "type": "library",
+      "name": "library-c",
+      "version": "1.0.0"
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "library-a",
+      "dependsOn": []
+    },
+    {
+      "ref": "library-b",
+      "dependsOn": [
+        "library-c"
+      ]
+    }
+  ],
+  "compositions": [
+    {
+      "aggregate": "incomplete",
+      "dependencies": ["app-1.0"]
+    }
+  ]
+}
+`)
+
+var cdxCompWithRelationshipsAbsent = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {
+    "component": {
+      "bom-ref": "app-1.0",
+      "type": "application",
+      "name": "my-app",
+      "version": "1.0"
+    }
+  },
+  "components": [
+    {
+      "bom-ref": "library-a",
+      "type": "library",
+      "name": "library-a",
+      "version": "1.0.0"
+    },
+    {
+      "bom-ref": "library-b",
+      "type": "library",
+      "name": "library-b",
+      "version": "1.0.0"
+    },
+    {
+      "bom-ref": "library-c",
+      "type": "library",
+      "name": "library-c",
+      "version": "1.0.0"
+    }
+  ]
+}
+`)
+
+func TestBSIV2CompDependencies(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("cdxCompWithPrimaryRelationships", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithPrimaryRelationships, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIASBOMRelationships(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "primary component has direct relationships", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxCompWithPrimaryRelationships", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWithPrimaryRelationships, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIASBOMRelationships(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "primary component has direct relationships", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxCompWithNoPrimaryRelationships", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithNoPrimaryRelationships, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIASBOMRelationships(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "primary component has no direct relationships and does not declare completeness", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxCompWithNoPrimaryRelationships", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWithNoPrimaryRelationships, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIASBOMRelationships(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "primary component has no direct relationships and does not declare completeness", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxCompWithPrimaryComponentMissing", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithPrimaryComponentMissing, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIASBOMRelationships(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "define primary component", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxCompWithPrimaryComponentMissing", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWithPrimaryComponentMissing, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIASBOMRelationships(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "define primary component", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxCompWithPrimaryRelationshipsAndDeclaredRelationships", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithPrimaryRelationshipsAndDeclaredRelationships, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIASBOMRelationships(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "primary component has direct relationships", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxCompWithPrimaryDeclaredRelationshipsComplete", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithPrimaryDeclaredRelationshipsComplete, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIASBOMRelationships(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "primary comp declares relationships completeness complete", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxCompWithPrimaryDeclaredRelationshipsUnknown", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithPrimaryDeclaredRelationshipsUnknown, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIASBOMRelationships(doc)
+
+		assert.InDelta(t, 5.0, got.Score, 1e-9)
+		assert.Equal(t, "primary comp declares relationships completeness unknown", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxCompWithPrimaryDeclaredRelationshipsIncomplete", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithPrimaryDeclaredRelationshipsIncomplete, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIASBOMRelationships(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "primary comp declares relationships completeness incomplete", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxCompWithRelationshipsAbsent", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithRelationshipsAbsent, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIASBOMRelationships(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "primary component has no direct relationships and does not declare completeness", got.Desc)
+		assert.False(t, got.Ignore)
+	})
 }
