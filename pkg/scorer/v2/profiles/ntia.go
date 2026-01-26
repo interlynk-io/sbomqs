@@ -15,46 +15,140 @@
 package profiles
 
 import (
+	"fmt"
 	"slices"
+	"strings"
 
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/catalog"
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/formulae"
+	"github.com/samber/lo"
 )
 
-// Automation Support
-func SBOMWithAutomationSpec(doc sbom.Document) catalog.ProfFeatScore {
-	return SBOMAutomationSpec(doc)
+// // Automation Support
+// func SBOMWithAutomationSpec(doc sbom.Document) catalog.ProfFeatScore {
+// 	return SBOMAutomationSpec(doc)
+// }
+
+// NTIACompWithSupplier
+// NTIA says:
+// - This refers to the **authority responsible for the component’s identity**, not manufacturing or legal ownership.
+//
+// Mappings:
+// - For SPDX: PackageSupplier, PackageOriginator
+// - For CycloneDX: Component Supplier, Component Manufacturer
+func NTIACompWithSupplier(doc sbom.Document) catalog.ProfFeatScore {
+
+	comps := doc.Components()
+	if len(comps) == 0 {
+		return formulae.ScoreProfNA(true)
+	}
+
+	have := lo.CountBy(doc.Components(), func(c sbom.GetComponent) bool {
+		supplier := c.Suppliers()
+		if supplier != nil {
+			hasName := strings.TrimSpace(supplier.GetName()) != ""
+			hasURL := strings.TrimSpace(supplier.GetURL()) != ""
+			hasEmail := strings.TrimSpace(supplier.GetEmail()) != ""
+
+			if hasName || hasURL || hasEmail {
+				return true
+			}
+		}
+
+		manufacturer := c.Manufacturer()
+		if manufacturer != nil {
+			hasName := strings.TrimSpace(manufacturer.GetName()) != ""
+			hasURL := strings.TrimSpace(manufacturer.GetURL()) != ""
+			hasEmail := strings.TrimSpace(manufacturer.GetEmail()) != ""
+
+			if hasName || hasURL || hasEmail {
+				return true
+			}
+		}
+
+		return false
+	})
+
+	return formulae.ScoreProfFull(have, len(comps), false)
 }
 
-// NTIASBOMRelationships evaluates SBOM-level dependency requirements
-// as defined by NTIA Minimum Elements
+// NTIACompWithName check for component with name
+// NTIA says:
+// - Name assigned to the component by the supplier
 //
-// NTIA requires:
-//   - Identification of upstream (DEPENDS_ON) relationships
-//     for the primary component
+// Mappings:
+// - For SPDX: PackageName
+// - For CycloneDX: Component Name
+func NTIACompWithName(doc sbom.Document) catalog.ProfFeatScore {
+	return CompName(doc)
+}
+
+// NTIACompWithVersion check for Component with Version
+// NTIA says:
+// - Version identifier used to distinguish a specific release.
 //
-// NTIA does NOT require:
-//   - Complete transitive dependency graphs
-//   - Dependency declarations for every component
-func NTIASBOMRelationships(doc sbom.Document) catalog.ProfFeatScore {
+// Mappings:
+// - For SPDX: PackageVersion
+// - For CycloneDX: Component Version
+func NTIACompWithVersion(doc sbom.Document) catalog.ProfFeatScore {
+	return CompVersion(doc)
+}
+
+// NTIACompWithUniqID checks Component Other Identifiers such as PURL/CPE
+// NTIA says:
+// - At least one additional identifier if available (e.g., CPE, PURL, SWID).
+//
+// Mappings:
+// - For SPDX: PackageExternalRefs (PURL), PackageCPEs
+// - For CycloneDX: Component External References (PURL), Component CPEs
+func NTIACompWithUniqID(doc sbom.Document) catalog.ProfFeatScore {
+	comps := doc.Components()
+	if len(comps) == 0 {
+		return formulae.ScoreProfNA(true)
+	}
+
+	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
+		return checkUniqueIDs(c)
+	})
+
+	return formulae.ScoreProfFull(have, len(comps), false)
+}
+
+// NTIASBOMWithDependencyRelationships
+//
+// NTIA says:
+// - At minimum, top-level dependencies or explicit completeness declarations must be present.
+//
+// NTIA requires that an SBOM declare the upstream dependency relationships
+// of the *primary (top-level) component*.
+// - At a minimum, the SBOM must list the primary component's direct dependencies.
+// - or decalrer completeness if no dependencies exist.
+//
+// Mappings:
+// - For SPDX: Relationship with type "DEPENDS_ON" from primary component
+// - For CycloneDX: Component dependencies from primary component
+func NTIASBOMWithDependencyRelationships(doc sbom.Document) catalog.ProfFeatScore {
 	primary := doc.PrimaryComp()
 	if !primary.IsPresent() {
 		return formulae.ScoreProfileCustomNA(false, "define primary component")
 	}
 
 	// 1. Get direct dependencies of the primary component
+	// if the primary component declares at least one direct dependency,
+	// NTIA dependency requirement is satisfied
 	directDeps := doc.GetDirectDependencies(primary.GetID(), "DEPENDS_ON")
 	if len(directDeps) > 0 {
 		return catalog.ProfFeatScore{
 			Score:  10.0,
-			Desc:   "direct dependencies declared for primary component",
+			Desc:   fmt.Sprintf("primary component declares %d top-level dependencies", len(directDeps)),
 			Ignore: false,
 		}
 	}
 
 	// 2. no direct dependencies --> check declared completeness
 	for _, c := range doc.Composition() {
+
 		if c.Scope() != sbom.ScopeDependencies {
 			continue
 		}
@@ -68,21 +162,21 @@ func NTIASBOMRelationships(doc sbom.Document) catalog.ProfFeatScore {
 		case sbom.AggregateComplete:
 			return catalog.ProfFeatScore{
 				Score:  10.0,
-				Desc:   "primary component declares no dependencies (complete)",
+				Desc:   "primary component has no relationships but decalred (relationships completeness: complete)",
 				Ignore: false,
 			}
 
 		case sbom.AggregateUnknown:
 			return catalog.ProfFeatScore{
-				Score:  10.0,
-				Desc:   "dependency completeness declared unknown",
+				Score:  5.0,
+				Desc:   "primary component has no relationships but decalred (relationships completeness: unknown)",
 				Ignore: false,
 			}
 
 		case sbom.AggregateIncomplete:
 			return catalog.ProfFeatScore{
 				Score:  0.0,
-				Desc:   "dependency data declared incomplete",
+				Desc:   "primary component has no relationships but decalred (relationships completeness: incomplete)",
 				Ignore: false,
 			}
 		}
@@ -92,87 +186,151 @@ func NTIASBOMRelationships(doc sbom.Document) catalog.ProfFeatScore {
 	// Default interpretation per NTIA: incomplete
 	return catalog.ProfFeatScore{
 		Score:  0.0,
-		Desc:   "no dependency relationships declared",
+		Desc:   "primary component has no top-level relationships and nor declare relationships completeness",
 		Ignore: false,
 	}
-
 }
 
-// SBOM Author
-func SbomWithAuthors(doc sbom.Document) catalog.ProfFeatScore {
-	return SBOMAuthors(doc)
+// NTIASBOMWithAuthors
+// NTIA says
+// - Author reflects the source of the metadata, which could come from the creator of the software being described in the SBOM, the upstream component supplier, or some third-party analysis tool.
+//
+// Mappings:
+// - For SPDX: CreationInfo.Creators of type "Person" or "Organization" or "Tool"
+// - For CycloneDX: metadata.authors(preferred) or metadata.tools(allowed) or metadata.supplier(fallback) or metadata.manufacturer(fallback)
+func NTIASBOMWithAuthors(doc sbom.Document) catalog.ProfFeatScore {
+	authors := doc.Authors()
+
+	if len(authors) > 0 {
+		for _, author := range authors {
+			name := strings.TrimSpace(author.GetName())
+			email := strings.TrimSpace(author.GetEmail())
+
+			if name != "" || email != "" {
+				return catalog.ProfFeatScore{
+					Score:  10.0,
+					Desc:   "SBOM author declared explicitly",
+					Ignore: false,
+				}
+			}
+		}
+	}
+
+	tools := doc.Tools()
+	if len(tools) > 0 {
+		for _, tool := range tools {
+			name := strings.TrimSpace(tool.GetName())
+			version := strings.TrimSpace(tool.GetVersion())
+
+			if name != "" && version != "" {
+				return catalog.ProfFeatScore{
+					Score:  10.0,
+					Desc:   "SBOM author inferred from SBOM tool",
+					Ignore: false,
+				}
+			} else if name != "" {
+				return catalog.ProfFeatScore{
+					Score:  5.0,
+					Desc:   "SBOM author inferred from SBOM tool with name only",
+					Ignore: false,
+				}
+			} else if version != "" {
+				return catalog.ProfFeatScore{
+					Score:  0.0,
+					Desc:   "SBOM author inferred from SBOM tool with version only",
+					Ignore: false,
+				}
+			}
+		}
+	}
+
+	supplier := doc.Supplier()
+	if supplier != nil {
+		name := strings.TrimSpace(supplier.GetName())
+		email := strings.TrimSpace(supplier.GetEmail())
+		url := strings.TrimSpace(supplier.GetURL())
+
+		if name != "" || email != "" || url != "" {
+			return catalog.ProfFeatScore{
+				Score:  10.0,
+				Desc:   "SBOM author inferred from supplier (fallback)",
+				Ignore: false,
+			}
+		}
+	}
+
+	manufacturer := doc.Manufacturer()
+	if manufacturer != nil {
+		name := strings.TrimSpace(manufacturer.GetName())
+		email := strings.TrimSpace(manufacturer.GetEmail())
+		url := strings.TrimSpace(manufacturer.GetURL())
+
+		if name != "" || email != "" || url != "" {
+			return catalog.ProfFeatScore{
+				Score:  10.0,
+				Desc:   "SBOM author inferred from manufacturer (fallback)",
+				Ignore: false,
+			}
+		}
+	}
+
+	return catalog.ProfFeatScore{
+		Score:  0.0,
+		Desc:   "add SBOM author information",
+		Ignore: false,
+	}
 }
 
-// SBOM Timestamp
-func SbomWithTimeStamp(doc sbom.Document) catalog.ProfFeatScore {
+// NTIASBOMWithTimeStamp
+func NTIASBOMWithTimeStamp(doc sbom.Document) catalog.ProfFeatScore {
 	return SBOMCreationTimestamp(doc)
 }
 
-// Component Name
-func CompWithName(doc sbom.Document) catalog.ProfFeatScore {
-	return CompName(doc)
-}
+// // NTIA Optional Fields - These don't impact overall scoring but show field coverage
 
-// Component Version
-func CompWithVersion(doc sbom.Document) catalog.ProfFeatScore {
-	return CompVersion(doc)
-}
+// // Component Hash (SHOULD)
+// func NTIACompHash(doc sbom.Document) catalog.ProfFeatScore {
+// 	return CompHash(doc)
+// }
 
-// Component Supplier
-func CompWithSupplier(doc sbom.Document) catalog.ProfFeatScore {
-	return CompSupplier(doc)
-}
+// // SBOM Lifecycle (SHOULD)
+// func NTIASBOMLifecycle(doc sbom.Document) catalog.ProfFeatScore {
+// 	lifecycles := doc.Lifecycles()
+// 	if len(lifecycles) > 0 {
+// 		return catalog.ProfFeatScore{
+// 			Score: 10.0,
+// 			Desc:  "complete",
+// 		}
+// 	}
+// 	return catalog.ProfFeatScore{
+// 		Score: 0.0,
+// 		Desc:  "add lifecycle phase",
+// 	}
+// }
 
-// Component Other Identifiers
-func CompWithUniqID(doc sbom.Document) catalog.ProfFeatScore {
-	return CompUniqID(doc)
-}
+// // Component License (SHOULD)
+// func NTIACompLicense(doc sbom.Document) catalog.ProfFeatScore {
+// 	comps := doc.Components()
+// 	if len(comps) == 0 {
+// 		return catalog.ProfFeatScore{
+// 			Score: 0.0,
+// 			Desc:  formulae.NoComponentsNA(),
+// 		}
+// 	}
 
-// NTIA Optional Fields - These don't impact overall scoring but show field coverage
+// 	have := 0
+// 	for _, c := range comps {
+// 		licenses := c.GetLicenses()
+// 		if len(licenses) > 0 {
+// 			have++
+// 		}
+// 	}
 
-// Component Hash (SHOULD)
-func NTIACompHash(doc sbom.Document) catalog.ProfFeatScore {
-	return CompHash(doc)
-}
+// 	total := len(comps)
+// 	score := (float64(have) / float64(total)) * 10.0
 
-// SBOM Lifecycle (SHOULD)
-func NTIASBOMLifecycle(doc sbom.Document) catalog.ProfFeatScore {
-	lifecycles := doc.Lifecycles()
-	if len(lifecycles) > 0 {
-		return catalog.ProfFeatScore{
-			Score: 10.0,
-			Desc:  "complete",
-		}
-	}
-	return catalog.ProfFeatScore{
-		Score: 0.0,
-		Desc:  "add lifecycle phase",
-	}
-}
-
-// Component License (SHOULD)
-func NTIACompLicense(doc sbom.Document) catalog.ProfFeatScore {
-	comps := doc.Components()
-	if len(comps) == 0 {
-		return catalog.ProfFeatScore{
-			Score: 0.0,
-			Desc:  formulae.NoComponentsNA(),
-		}
-	}
-
-	have := 0
-	for _, c := range comps {
-		licenses := c.GetLicenses()
-		if len(licenses) > 0 {
-			have++
-		}
-	}
-
-	total := len(comps)
-	score := (float64(have) / float64(total)) * 10.0
-
-	return catalog.ProfFeatScore{
-		Score: score,
-		Desc:  formulae.CompDescription(have, total),
-	}
-}
+// 	return catalog.ProfFeatScore{
+// 		Score: score,
+// 		Desc:  formulae.CompDescription(have, total),
+// 	}
+// }

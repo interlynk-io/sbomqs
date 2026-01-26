@@ -354,7 +354,7 @@ func (s *SpdxDoc) parseComps() {
 
 		manu := s.getManufacturer(index)
 		if manu != nil {
-			nc.manufacturer = *manu
+			nc.Manufacture = *manu
 		}
 
 		supp := s.getSupplier(index)

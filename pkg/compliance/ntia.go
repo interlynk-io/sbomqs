@@ -17,6 +17,8 @@ package compliance
 import (
 	"context"
 	"fmt"
+	"slices"
+	"strings"
 	"time"
 
 	pkgcommon "github.com/interlynk-io/sbomqs/v2/pkg/common"
@@ -48,10 +50,16 @@ func ntiaResult(ctx context.Context, doc sbom.Document, fileName string, outForm
 
 	db := db.NewDB()
 
-	db.AddRecord(ntiaAutomationSpec(doc))
-	db.AddRecord(ntiaSbomCreator(doc))
+	// 1. Automation Support
+	db.AddRecord(ntiaMachineFormatAutomationSpec(doc))
+	db.AddRecord(ntiaSBOMGenerationAutomationTool(doc))
+
+	// 2. Required Document-level Data Fields
+	db.AddRecord(ntiaSbomAuthor(doc))
 	db.AddRecord(ntiaSbomCreatedTimestamp(doc))
-	db.AddRecord(ntiaSBOMRelationships(doc))
+	db.AddRecord(ntiaSBOMDependencyRelationships(doc))
+
+	// 3. Required Component-level Data Fields
 	db.AddRecords(ntiaComponents(doc))
 
 	if outFormat == pkgcommon.FormatJSON {
@@ -67,142 +75,141 @@ func ntiaResult(ctx context.Context, doc sbom.Document, fileName string, outForm
 	}
 }
 
-// format
-func ntiaAutomationSpec(doc sbom.Document) *db.Record {
-	result, score := "", SCORE_ZERO
-	spec := doc.Spec().GetSpecType()
-	fileFormat := doc.Spec().FileFormat()
+// 1.1 Automation Support: Machine-Readable Format
+func ntiaMachineFormatAutomationSpec(doc sbom.Document) *db.Record {
+	score := SCORE_ZERO
+	parts := []string{}
 
-	result = spec + ", " + fileFormat
+	spec := strings.TrimSpace(doc.Spec().GetSpecType())
+	fileFormat := strings.TrimSpace(doc.Spec().FileFormat())
 
-	if lo.Contains(validFormats, fileFormat) && lo.Contains(validSpec, spec) {
-		result = spec + ", " + fileFormat
+	if spec != "" {
+		parts = append(parts, spec)
+	}
+
+	if fileFormat != "" {
+		parts = append(parts, fileFormat)
+	}
+
+	result := strings.Join(parts, ", ")
+
+	if lo.Contains(validSpec, spec) && lo.Contains(validFormats, fileFormat) {
 		score = SCORE_FULL
 	}
+
+	if result == "" {
+		result = "not declared"
+	}
+
 	return db.NewRecordStmt(SBOM_MACHINE_FORMAT, "Automation Support", result, score, "")
 }
 
-// ntiaSBOMRelationships validates NTIA Minimum Elements dependency requirements.
-//
-// NTIA requires that an SBOM declare the upstream dependency relationships
-// of the *primary (top-level) component*. At a minimum, the SBOM must list
-// the primary component's direct dependencies.
-//
-// NTIA does NOT require:
-// - dependency declarations for every component
-// - transitive dependency completeness
-// - "included-in" or component-level relationship scoring
-func ntiaSBOMRelationships(doc sbom.Document) *db.Record {
-	primary := doc.PrimaryComp()
+// 1.2 Automation Support: ntiaSBOMGenerationAutomationTool
+func ntiaSBOMGenerationAutomationTool(doc sbom.Document) *db.Record {
+	score := SCORE_ZERO
+	var results []string
+	hasVersionOnly := false
 
-	// Primary component must be declared
-	if !primary.IsPresent() {
-		return db.NewRecordStmt(
-			SBOM_DEPENDENCY,
-			"SBOM Data Fields",
-			"primary component not declared",
-			SCORE_ZERO,
-			"",
-		)
+	if tools := doc.Tools(); tools != nil {
+		for _, tool := range tools {
+			name := strings.TrimSpace(tool.GetName())
+			version := strings.TrimSpace(tool.GetVersion())
+
+			switch {
+			case name != "" && version != "":
+				results = append(results, fmt.Sprintf("%s-%s", name, version))
+
+			case name != "":
+				results = append(results, name)
+
+			case name == "" && version != "":
+				hasVersionOnly = true
+			}
+		}
 	}
 
-	// Fetch direct dependencies of primary component
-	deps := doc.GetDirectDependencies(primary.GetID(), "DEPENDS_ON")
+	result := strings.Join(lo.Uniq(results), "; ")
 
-	// NTIA minimum: at least one direct dependency must be declared
-	if len(deps) == 0 {
-		return db.NewRecordStmt(
-			SBOM_DEPENDENCY,
-			"SBOM Data Fields",
-			"no primary component dependencies declared",
-			SCORE_ZERO,
-			"",
-		)
+	if len(results) > 0 {
+		score = SCORE_FULL
+	} else if hasVersionOnly {
+		result = "SBOM tool version declared without tool name"
+	} else {
+		result = "no SBOM generation tool declared"
 	}
 
-	// Requirement satisfied
-	return db.NewRecordStmt(
-		SBOM_DEPENDENCY,
-		"SBOM Data Fields",
-		fmt.Sprintf(
-			"primary component declares %d direct dependencies",
-			len(deps),
-		),
-		SCORE_FULL,
-		"",
-	)
+	return db.NewRecordStmt(SBOM_AUTOMATION_TOOL, "Automation Support", result, score, "")
 }
 
-func ntiaSbomCreator(doc sbom.Document) *db.Record {
-	spec := doc.Spec().GetSpecType()
-	result, score := "", SCORE_ZERO
+// 2.1 Required Document-level Data Fields: ntiaSbomAuthor
+// NTIA says
+// - Author reflects the source of the metadata, which could come from the creator of the software being described in the SBOM, the upstream component supplier, or some third-party analysis tool.
+//
+// Mappings:
+// - For SPDX: CreationInfo.Creators of type "Person" or "Organization" or "Tool"
+// - For CycloneDX: metadata.authors(preferred) or metadata.tools(allowed) or metadata.supplier(fallback) or metadata.manufacturer(fallback)
+func ntiaSbomAuthor(doc sbom.Document) *db.Record {
+	score := SCORE_ZERO
 
-	switch spec {
-	case string(sbom.SBOMSpecSPDX):
-		if tools := doc.Tools(); tools != nil {
-			if toolResult, found := getToolInfo(tools); found {
-				result = toolResult
-				score = SCORE_FULL
-				break
-			}
-		}
-		if authors := doc.Authors(); authors != nil {
-			if authorResult, found := getAuthorInfo(authors); found {
-				result = authorResult
-				score = SCORE_FULL
-				break
-			}
-		}
-	case string(sbom.SBOMSpecCDX):
-		if authors := doc.Authors(); authors != nil {
-			if authorResult, found := getAuthorInfo(authors); found {
-				result = authorResult
-				score = SCORE_FULL
-				break
-			}
-		}
-		if result != "" {
-			return db.NewRecordStmt(SBOM_CREATOR, "SBOM Data Fields", result, score, "")
-		}
-		if tools := doc.Tools(); tools != nil {
-			if toolResult, found := getToolInfo(tools); found {
-				result = toolResult
-				score = SCORE_FULL
-				break
-			}
-		}
-		if supplier := doc.Supplier(); supplier != nil {
-			if supplierResult, found := getSupplierInfo(supplier); found {
-				result = supplierResult
-				score = SCORE_FULL
-				break
-			}
-		}
-		if manufacturer := doc.Manufacturer(); manufacturer != nil {
-			if manufacturerResult, found := getManufacturerInfo(manufacturer); found {
-				result = manufacturerResult
-				score = SCORE_FULL
-				break
-			}
+	// 1. Explicit authors
+	if authors := doc.Authors(); len(authors) > 0 {
+		if val, ok := getAuthorInfo(authors); ok {
+			score = SCORE_FULL
+			return db.NewRecordStmt(SBOM_CREATOR, "Required Document-level", fmt.Sprintf("SBOM author declared explicitly: %s", val), score, "")
 		}
 	}
 
-	return db.NewRecordStmt(SBOM_CREATOR, "SBOM Data Fields", result, score, "")
+	// 2. SBOM generation tools
+	if tools := doc.Tools(); len(tools) > 0 {
+		if val, ok := getToolInfo(tools); ok {
+			score = SCORE_FULL
+			return db.NewRecordStmt(SBOM_CREATOR, "Required Document-level", fmt.Sprintf("SBOM author inferred from SBOM tool: %s", val), score, "")
+		}
+	}
+
+	// 3. Supplier fallback
+	if supplier := doc.Supplier(); supplier != nil {
+		if val, ok := getSupplierInfo(supplier); ok {
+			score = SCORE_FULL
+			return db.NewRecordStmt(SBOM_CREATOR, "Required Document-level", fmt.Sprintf("SBOM author inferred from supplier (fallback): %s", val), score, "")
+		}
+	}
+
+	// 4. Manufacturer fallback
+	if manufacturer := doc.Manufacturer(); manufacturer != nil {
+		if val, ok := getManufacturerInfo(manufacturer); ok {
+			score = SCORE_FULL
+			return db.NewRecordStmt(SBOM_CREATOR, "Required Document-level", fmt.Sprintf("SBOM author inferred from manufacturer (fallback): %s", val), score, "")
+		}
+	}
+
+	// 5. Not declared
+	return db.NewRecordStmt(SBOM_CREATOR, "Required Document-level", "SBOM author absent", SCORE_ZERO, "")
 }
 
-func getManufacturerInfo(manufacturer sbom.GetManufacturer) (string, bool) {
-	if manufacturer == nil {
-		return "", false
-	}
-	if email := manufacturer.GetEmail(); email != "" {
-		return email, true
-	}
-	if url := manufacturer.GetURL(); url != "" {
-		return url, true
-	}
-	for _, contact := range manufacturer.GetContacts() {
-		if email := contact.GetEmail(); email != "" {
+func getAuthorInfo(authors []sbom.GetAuthor) (string, bool) {
+	for _, author := range authors {
+		if name := strings.TrimSpace(author.GetName()); name != "" {
+			return name, true
+		}
+
+		if email := strings.TrimSpace(author.GetEmail()); email != "" {
 			return email, true
+		}
+	}
+	return "", false
+}
+
+func getToolInfo(tools []sbom.GetTool) (string, bool) {
+	for _, tool := range tools {
+		name := strings.TrimSpace(tool.GetName())
+		version := strings.TrimSpace(tool.GetVersion())
+
+		if name != "" && version != "" {
+			return fmt.Sprintf("%s-%s", name, version), true
+		}
+		if name != "" {
+			return name, true
 		}
 	}
 	return "", false
@@ -212,41 +219,35 @@ func getSupplierInfo(supplier sbom.GetSupplier) (string, bool) {
 	if supplier == nil {
 		return "", false
 	}
-	if email := supplier.GetEmail(); email != "" {
+	if name := strings.TrimSpace(supplier.GetName()); name != "" {
+		return name, true
+	}
+	if email := strings.TrimSpace(supplier.GetEmail()); email != "" {
 		return email, true
 	}
-	if url := supplier.GetURL(); url != "" {
+	if url := strings.TrimSpace(supplier.GetURL()); url != "" {
 		return url, true
 	}
-	for _, contact := range supplier.GetContacts() {
-		if email := contact.GetEmail(); email != "" {
-			return email, true
-		}
+	return "", false
+}
+
+func getManufacturerInfo(manufacturer sbom.GetManufacturer) (string, bool) {
+	if manufacturer == nil {
+		return "", false
+	}
+	if name := strings.TrimSpace(manufacturer.GetName()); name != "" {
+		return name, true
+	}
+	if email := strings.TrimSpace(manufacturer.GetEmail()); email != "" {
+		return email, true
+	}
+	if url := strings.TrimSpace(manufacturer.GetURL()); url != "" {
+		return url, true
 	}
 	return "", false
 }
 
-func getAuthorInfo(authors []sbom.GetAuthor) (string, bool) {
-	for _, author := range authors {
-		if email := author.GetEmail(); email != "" {
-			return email, true
-		}
-		if name := author.GetName(); name != "" {
-			return name, true
-		}
-	}
-	return "", false
-}
-
-func getToolInfo(tools []sbom.GetTool) (string, bool) {
-	for _, tool := range tools {
-		if name := tool.GetName(); name != "" {
-			return name, true
-		}
-	}
-	return "", false
-}
-
+// ntiaSbomCreatedTimestamp
 func ntiaSbomCreatedTimestamp(doc sbom.Document) *db.Record {
 	score := SCORE_ZERO
 	result := doc.Spec().GetCreationTimestamp()
@@ -259,7 +260,63 @@ func ntiaSbomCreatedTimestamp(doc sbom.Document) *db.Record {
 			score = SCORE_FULL
 		}
 	}
-	return db.NewRecordStmt(SBOM_TIMESTAMP, "SBOM Data Fields", result, score, "")
+	return db.NewRecordStmt(SBOM_TIMESTAMP, "Required Document-level", result, score, "")
+}
+
+// ntiaSBOMDependencyRelationships
+//
+// NTIA says:
+// - At minimum, top-level dependencies or explicit completeness declarations must be present.
+//
+// NTIA requires that an SBOM declare the upstream dependency relationships
+// of the *primary (top-level) component*.
+// - At a minimum, the SBOM must list the primary component's direct dependencies.
+// - or decalrer completeness if no dependencies exist.
+//
+// Mappings:
+// - For SPDX: Relationship with type "DEPENDS_ON" from primary component
+// - For CycloneDX: Component dependencies from primary component
+func ntiaSBOMDependencyRelationships(doc sbom.Document) *db.Record {
+	primary := doc.PrimaryComp()
+
+	// Primary component must be declared
+	if !primary.IsPresent() {
+		return db.NewRecordStmt(SBOM_DEPENDENCY_RELATIONSHIP, "Required Document-level", "primary component not declared", SCORE_ZERO, "")
+	}
+
+	// 1. Check direct dependencies of primary component
+	directDeps := doc.GetDirectDependencies(primary.GetID(), "DEPENDS_ON")
+	if len(directDeps) > 0 {
+		return db.NewRecordStmt(SBOM_DEPENDENCY_RELATIONSHIP, "Required Document-level", fmt.Sprintf("primary component declares %d top-level dependencies", len(directDeps)), SCORE_FULL, "")
+	}
+
+	// 2. No direct dependencies -> check declared completeness
+	for _, c := range doc.Composition() {
+
+		if c.Scope() != sbom.ScopeDependencies {
+			continue
+		}
+
+		if !slices.Contains(c.Dependencies(), primary.GetID()) {
+			continue
+		}
+
+		switch c.Aggregate() {
+
+		case sbom.AggregateComplete:
+			return db.NewRecordStmt(SBOM_DEPENDENCY_RELATIONSHIP, "Required Document-level", "primary component has no relationships but decalred (relationships completeness: complete)", SCORE_FULL, "")
+
+		case sbom.AggregateUnknown:
+			return db.NewRecordStmt(SBOM_DEPENDENCY_RELATIONSHIP, "Required Document-level", "primary component has no relationships but decalred (relationships completeness: unknown)", SCORE_FULL, "")
+
+		case sbom.AggregateIncomplete:
+			return db.NewRecordStmt(SBOM_DEPENDENCY_RELATIONSHIP, "Required Document-level", "primary component has no relationships but decalred (relationships completeness: incomplete)", SCORE_ZERO, "")
+		}
+	}
+
+	// 3. No dependencies and no completeness declaration
+	// Default NTIA interpretation: incomplete
+	return db.NewRecordStmt(SBOM_DEPENDENCY_RELATIONSHIP, "Required Document-level", "primary component has no top-level relationships and nor declare relationships completeness", SCORE_ZERO, "")
 }
 
 // Required component stuffs
@@ -272,56 +329,83 @@ func ntiaComponents(doc sbom.Document) []*db.Record {
 	}
 
 	for _, component := range doc.Components() {
+		records = append(records, ntiaComponentSupplier(component))
 		records = append(records, ntiaComponentName(component))
-		records = append(records, ntiaComponentCreator(doc, component))
 		records = append(records, ntiaComponentVersion(component))
-		records = append(records, ntiaComponentOtherUniqIDs(doc, component))
+		records = append(records, ntiaComponentOtherUniqIDs(component))
 	}
 	return records
 }
 
+// ntiaComponentSupplier
+// NTIA says:
+// - This refers to the **authority responsible for the component’s identity**, not manufacturing or legal ownership.
+//
+// Mappings:
+// - For SPDX: PackageSupplier, PackageOriginator
+// - For CycloneDX: Component Supplier, Component Manufacturer
+func ntiaComponentSupplier(component sbom.GetComponent) *db.Record {
+	result := ""
+	score := SCORE_ZERO
+
+	// 1. Supplier (primary)
+	if supplier := component.Suppliers(); supplier != nil {
+		if val, ok := getEntityIdentifier(supplier.GetName(), supplier.GetEmail(), supplier.GetURL()); ok {
+			result = val
+			score = SCORE_FULL
+			return db.NewRecordStmt(COMP_CREATOR, common.UniqueElementID(component), result, score, "")
+		}
+	}
+
+	// 2. Manufacturer (fallback)
+	if manufacturer := component.Manufacturer(); manufacturer != nil {
+		if val, ok := getEntityIdentifier(manufacturer.GetName(), manufacturer.GetEmail(), manufacturer.GetURL()); ok {
+			result = val
+			score = SCORE_FULL
+			return db.NewRecordStmt(COMP_CREATOR, common.UniqueElementID(component), result, score, "")
+		}
+	}
+
+	// 3. Not declared
+	return db.NewRecordStmt(COMP_CREATOR, common.UniqueElementID(component), "supplier not declared", SCORE_ZERO, "")
+}
+
+func getEntityIdentifier(name, email, url string) (string, bool) {
+	if v := strings.TrimSpace(name); v != "" {
+		return v, true
+	}
+	if v := strings.TrimSpace(email); v != "" {
+		return v, true
+	}
+	if v := strings.TrimSpace(url); v != "" {
+		return v, true
+	}
+	return "", false
+}
+
+// ntiaComponentName check for component with name
+// NTIA says:
+// - Name assigned to the component by the supplier
+//
+// Mappings:
+// - For SPDX: PackageName
+// - For CycloneDX: Component Name
 func ntiaComponentName(component sbom.GetComponent) *db.Record {
-	if result := component.GetName(); result != "" {
+	if result := strings.TrimSpace(component.GetName()); result != "" {
 		return db.NewRecordStmt(COMP_NAME, common.UniqueElementID(component), result, SCORE_FULL, "")
 	}
 	return db.NewRecordStmt(COMP_NAME, common.UniqueElementID(component), "", SCORE_ZERO, "")
 }
 
-func ntiaComponentCreator(doc sbom.Document, component sbom.GetComponent) *db.Record {
-	spec := doc.Spec().GetSpecType()
-	result, score := "", SCORE_ZERO
-
-	switch spec {
-	case pkgcommon.FormatSPDX:
-		if supplier := component.Suppliers(); supplier != nil {
-			if supplierResult, found := getSupplierInfo(supplier); found {
-				result = supplierResult
-				score = SCORE_FULL
-				break
-			}
-		}
-	case pkgcommon.FormatCycloneDX:
-		if supplier := component.Suppliers(); supplier != nil {
-			if supplierResult, found := getSupplierInfo(supplier); found {
-				result = supplierResult
-				score = SCORE_FULL
-				break
-			}
-		}
-
-		if manufacturer := component.Manufacturer(); manufacturer != nil {
-			if manufacturerResult, found := getManufacturerInfo(manufacturer); found {
-				result = manufacturerResult
-				score = SCORE_FULL
-				break
-			}
-		}
-	}
-	return db.NewRecordStmt(COMP_CREATOR, common.UniqueElementID(component), result, score, "")
-}
-
+// ntiaComponentVersion check for Component with Version
+// NTIA says:
+// - Version identifier used to distinguish a specific release.
+//
+// Mappings:
+// - For SPDX: PackageVersion
+// - For CycloneDX: Component Version
 func ntiaComponentVersion(component sbom.GetComponent) *db.Record {
-	result := component.GetVersion()
+	result := strings.TrimSpace(component.GetVersion())
 
 	if result != "" {
 		return db.NewRecordStmt(COMP_VERSION, common.UniqueElementID(component), result, SCORE_FULL, "")
@@ -330,47 +414,37 @@ func ntiaComponentVersion(component sbom.GetComponent) *db.Record {
 	return db.NewRecordStmt(COMP_VERSION, common.UniqueElementID(component), "", SCORE_ZERO, "")
 }
 
-func ntiaComponentOtherUniqIDs(doc sbom.Document, component sbom.GetComponent) *db.Record {
-	spec := doc.Spec().GetSpecType()
+// ntiaComponentOtherUniqIDs checks Component Other Identifiers such as PURL/CPE
+// NTIA says:
+// - At least one additional identifier if available (e.g., CPE, PURL, SWID).
+//
+// Mappings:
+// - For SPDX: PackageExternalRefs (PURL), PackageCPEs
+// - For CycloneDX: Component External References (PURL), Component CPEs
+func ntiaComponentOtherUniqIDs(component sbom.GetComponent) *db.Record {
+	result := ""
+	score := SCORE_ZERO
 
-	if spec == pkgcommon.FormatSPDX {
-		result, score, totalElements, containPurlElement := "", SCORE_ZERO, 0, 0
-
-		if extRefs := component.ExternalReferences(); extRefs != nil {
-			for _, extRef := range extRefs {
-				totalElements++
-				result = extRef.GetRefType()
-				if result == "purl" {
-					containPurlElement++
-				}
-			}
+	// 1. Prefer PURL if present
+	if purls := component.GetPurls(); len(purls) > 0 {
+		val := strings.TrimSpace(string(purls[0]))
+		if val != "" {
+			result = common.WrapLongTextIntoMulti(val, 100)
+			score = SCORE_FULL
+			return db.NewRecordStmtOptional(COMP_OTHER_UNIQ_IDS, common.UniqueElementID(component), result, score)
 		}
-		if containPurlElement != 0 {
-			score = (float64(containPurlElement) / float64(totalElements)) * SCORE_FULL
-			x := fmt.Sprintf(":(%d/%d)", containPurlElement, totalElements)
-			result += x
-		}
-		return db.NewRecordStmt(COMP_OTHER_UNIQ_IDS, common.UniqueElementID(component), result, score, "")
-	} else if spec == pkgcommon.FormatCycloneDX {
-		result := ""
-
-		purl := component.GetPurls()
-
-		if len(purl) > 0 {
-			result = string(purl[0])
-			result = common.WrapLongTextIntoMulti(result, 100)
-			return db.NewRecordStmtOptional(COMP_OTHER_UNIQ_IDS, common.UniqueElementID(component), result, SCORE_FULL)
-		}
-
-		cpes := component.GetCpes()
-
-		if len(cpes) > 0 {
-			result = string(cpes[0])
-			result = common.WrapLongTextIntoMulti(result, 100)
-			return db.NewRecordStmtOptional(COMP_OTHER_UNIQ_IDS, common.UniqueElementID(component), result, SCORE_FULL)
-		}
-
-		return db.NewRecordStmtOptional(COMP_OTHER_UNIQ_IDS, common.UniqueElementID(component), "", SCORE_ZERO)
 	}
-	return db.NewRecordStmt(COMP_OTHER_UNIQ_IDS, common.UniqueElementID(component), "", SCORE_ZERO, "")
+
+	// 2. Fallback to CPE if present
+	if cpes := component.GetCpes(); len(cpes) > 0 {
+		val := strings.TrimSpace(string(cpes[0]))
+		if val != "" {
+			result = common.WrapLongTextIntoMulti(val, 100)
+			score = SCORE_FULL
+			return db.NewRecordStmtOptional(COMP_OTHER_UNIQ_IDS, common.UniqueElementID(component), result, score)
+		}
+	}
+
+	// 3. Not present (optional per NTIA)
+	return db.NewRecordStmtOptional(COMP_OTHER_UNIQ_IDS, common.UniqueElementID(component), "no unique identifier declared", SCORE_ZERO)
 }

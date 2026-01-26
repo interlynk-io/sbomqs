@@ -29,16 +29,22 @@ import (
 )
 
 var ntiaSectionDetails = map[int]ntiaSection{
-	SBOM_MACHINE_FORMAT: {Title: "Automation Support", ID: "1.1", Required: true, DataField: "Machine-Readable Formats"},
-	SBOM_CREATOR:        {Title: "Required fields sboms ", ID: "2.1", Required: true, DataField: "Author"},
-	SBOM_TIMESTAMP:      {Title: "Required fields sboms", ID: "2.2", Required: true, DataField: "Timestamp"},
-	SBOM_DEPENDENCY:     {Title: "Required fields sboms", ID: "2.3", Required: true, DataField: "Dependencies"},
-	COMP_NAME:           {Title: "Required fields components", ID: "2.4", Required: true, DataField: "Package Name"},
-	COMP_DEPTH:          {Title: "Required fields components", ID: "2.5", Required: true, DataField: "Dependencies on other components"},
-	COMP_CREATOR:        {Title: "Required fields component", ID: "2.6", Required: true, DataField: "Package Supplier"},
-	PACK_SUPPLIER:       {Title: "Required fields component", ID: "2.6", Required: true, DataField: "Package Supplier"},
-	COMP_VERSION:        {Title: "Required fields components", ID: "2.7", Required: true, DataField: "Package Version"},
-	COMP_OTHER_UNIQ_IDS: {Title: "Required fields component", ID: "2.8", Required: true, DataField: "Other Uniq IDs"},
+	// 1. Automation Support
+	SBOM_MACHINE_FORMAT:  {Title: "Automation Support", ID: "1.1", Required: true, DataField: "Machine-Readable Formats"},
+	SBOM_AUTOMATION_TOOL: {Title: "Automation Support", ID: "1.2", Required: true, DataField: "SBOM generation tool declared"},
+
+	// 2. Required fields sboms
+	SBOM_CREATOR:                 {Title: "Required Document-level", ID: "2.1", Required: true, DataField: "Author"},
+	SBOM_TIMESTAMP:               {Title: "Required Document-level", ID: "2.2", Required: true, DataField: "Timestamp"},
+	SBOM_DEPENDENCY_RELATIONSHIP: {Title: "Required Document-level", ID: "2.3", Required: true, DataField: "Dependencies"},
+
+	// 3. Required fields components
+	COMP_NAME:           {Title: "Required Component-level", ID: "2.4", Required: true, DataField: "Package Name"},
+	COMP_DEPTH:          {Title: "Required Component-level", ID: "2.5", Required: true, DataField: "Dependencies on other components"},
+	COMP_CREATOR:        {Title: "Required Component-level", ID: "2.6", Required: true, DataField: "Package Supplier"},
+	PACK_SUPPLIER:       {Title: "Required Component-level", ID: "2.6", Required: true, DataField: "Package Supplier"},
+	COMP_VERSION:        {Title: "Required Component-level", ID: "2.7", Required: true, DataField: "Package Version"},
+	COMP_OTHER_UNIQ_IDS: {Title: "Required Component-level", ID: "2.8", Required: true, DataField: "Other Uniq IDs"},
 }
 
 type ntiaSection struct {
@@ -100,11 +106,11 @@ func ntiaJSONReport(db *db.DB, fileName string) {
 
 func ntiaConstructSections(db *db.DB) []ntiaSection {
 	allIDs := db.GetAllIDs()
-	
+
 	// Estimate capacity based on the number of IDs and potential records per ID
 	estimatedCapacity := len(allIDs) * 5 // rough estimate
 	sections := make([]ntiaSection, 0, estimatedCapacity)
-	
+
 	for _, id := range allIDs {
 		records := db.GetRecordsByID(id)
 

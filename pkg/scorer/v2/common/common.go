@@ -65,7 +65,7 @@ func HasComponentDependencies(c sbom.GetComponent) bool {
 	return c.HasRelationShips() || c.CountOfDependencies() > 0
 }
 
-func IsValidPURL(s string) bool {
+func isValidPURL(s string) bool {
 	s = strings.TrimSpace(s)
 	if s == "" {
 		return false
@@ -83,7 +83,7 @@ func IsValidPURL(s string) bool {
 	return true
 }
 
-func IsValidCPE(s string) bool {
+func isValidCPE(s string) bool {
 	ls := strings.TrimSpace(s)
 	low := strings.ToLower(ls)
 
@@ -100,22 +100,37 @@ func IsValidCPE(s string) bool {
 }
 
 func CompHasAnyPURLs(c sbom.GetComponent) bool {
+
 	for _, p := range c.GetPurls() {
-		if IsValidPURL(string(p)) {
+		if isValidPURL(string(p)) {
 			return true
 		}
 	}
+
 	return false
 }
 
 func CompHasAnyCPEs(c sbom.GetComponent) bool {
+
 	for _, p := range c.GetCpes() {
-		if IsValidCPE(string(p)) {
+		if isValidCPE(string(p)) {
 			return true
 		}
 	}
+
 	return false
 }
+
+// func CompHasAnySWID(c sbom.GetComponent) bool {
+
+// 	for _, p := range c.GetSWIDs() {
+// 		if IsValidSWIDs(string(p)) {
+// 			return true
+// 		}
+// 	}
+
+// 	return false
+// }
 
 // license with "NOASSERTION" or "NONE" are considered as
 // non-meaningful licenses

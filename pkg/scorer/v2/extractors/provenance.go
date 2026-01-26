@@ -168,6 +168,7 @@ func SBOMSupplier(doc sbom.Document) catalog.ComprFeatScore {
 				}
 			}
 		}
+
 		return catalog.ComprFeatScore{
 			Score:  formulae.BooleanScore(false),
 			Desc:   formulae.MissingField("supplier"),

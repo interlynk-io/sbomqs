@@ -647,6 +647,11 @@ func copyC(cdxc *cydx.Component, c *CdxDoc) *Component {
 		nc.Supplier = *supplier
 	}
 
+	manufacturer := c.assignManufacturer(cdxc)
+	if manufacturer != nil {
+		nc.Manufacture = *manufacturer
+	}
+
 	authors := c.assignAuthor(cdxc)
 	if authors != nil {
 		nc.Athrs = authors
@@ -1031,6 +1036,32 @@ func (c *CdxDoc) assignSupplier(comp *cydx.Component) *Supplier {
 	}
 
 	return &supplier
+}
+
+func (c *CdxDoc) assignManufacturer(comp *cydx.Component) *Manufacturer {
+	if comp.Manufacturer == nil {
+		c.addToLogs(fmt.Sprintf("cdx doc comp %s no manufacturer found", comp.Name))
+		return nil
+	}
+
+	manufacturer := Manufacturer{Name: comp.Manufacturer.Name}
+
+	if urls := lo.FromPtr(comp.Manufacturer.URL); len(urls) > 0 {
+		manufacturer.URL = urls[0]
+	}
+
+	contacts := lo.FromPtr(comp.Manufacturer.Contact)
+	if len(contacts) > 0 {
+		manufacturer.Contacts = make([]Contact, len(contacts))
+		for i, contact := range contacts {
+			manufacturer.Contacts[i] = Contact{
+				Name:  contact.Name,
+				Email: contact.Email,
+			}
+		}
+	}
+
+	return &manufacturer
 }
 
 func (c *CdxDoc) parseCompositions() {

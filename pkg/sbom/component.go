@@ -110,7 +110,7 @@ type Component struct {
 	ID                      string
 	Athrs                   []GetAuthor
 	Supplier                Supplier
-	manufacturer            Manufacturer
+	Manufacture             Manufacturer
 	Count                   int
 	Dep                     []string
 	SourceCodeURL           string
@@ -205,7 +205,7 @@ func (c Component) GetID() string {
 
 // Manufacturer returns the manufacturer information for the component
 func (c Component) Manufacturer() GetManufacturer {
-	return c.manufacturer
+	return c.Manufacture
 }
 
 // Suppliers returns the supplier information for the component
