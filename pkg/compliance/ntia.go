@@ -142,6 +142,12 @@ func ntiaSBOMGenerationAutomationTool(doc sbom.Document) *db.Record {
 }
 
 // 2.1 Required Document-level Data Fields: ntiaSbomAuthor
+// NTIA says
+// - Author reflects the source of the metadata, which could come from the creator of the software being described in the SBOM, the upstream component supplier, or some third-party analysis tool.
+//
+// Mappings:
+// - For SPDX: CreationInfo.Creators of type "Person" or "Organization" or "Tool"
+// - For CycloneDX: metadata.authors(preferred) or metadata.tools(allowed) or metadata.supplier(fallback) or metadata.manufacturer(fallback)
 func ntiaSbomAuthor(doc sbom.Document) *db.Record {
 	score := SCORE_ZERO
 
@@ -149,7 +155,7 @@ func ntiaSbomAuthor(doc sbom.Document) *db.Record {
 	if authors := doc.Authors(); len(authors) > 0 {
 		if val, ok := getAuthorInfo(authors); ok {
 			score = SCORE_FULL
-			return db.NewRecordStmt(SBOM_CREATOR, "Required Document-level", fmt.Sprintf("author declared explicitly: %s", val), score, "")
+			return db.NewRecordStmt(SBOM_CREATOR, "Required Document-level", fmt.Sprintf("SBOM author declared explicitly: %s", val), score, "")
 		}
 	}
 
@@ -157,7 +163,7 @@ func ntiaSbomAuthor(doc sbom.Document) *db.Record {
 	if tools := doc.Tools(); len(tools) > 0 {
 		if val, ok := getToolInfo(tools); ok {
 			score = SCORE_FULL
-			return db.NewRecordStmt(SBOM_CREATOR, "Required Document-level", fmt.Sprintf("author inferred from SBOM tool: %s", val), score, "")
+			return db.NewRecordStmt(SBOM_CREATOR, "Required Document-level", fmt.Sprintf("SBOM author inferred from SBOM tool: %s", val), score, "")
 		}
 	}
 
@@ -165,7 +171,7 @@ func ntiaSbomAuthor(doc sbom.Document) *db.Record {
 	if supplier := doc.Supplier(); supplier != nil {
 		if val, ok := getSupplierInfo(supplier); ok {
 			score = SCORE_FULL
-			return db.NewRecordStmt(SBOM_CREATOR, "Required Document-level", fmt.Sprintf("author inferred from supplier (fallback): %s", val), score, "")
+			return db.NewRecordStmt(SBOM_CREATOR, "Required Document-level", fmt.Sprintf("SBOM author inferred from supplier (fallback): %s", val), score, "")
 		}
 	}
 
@@ -173,7 +179,7 @@ func ntiaSbomAuthor(doc sbom.Document) *db.Record {
 	if manufacturer := doc.Manufacturer(); manufacturer != nil {
 		if val, ok := getManufacturerInfo(manufacturer); ok {
 			score = SCORE_FULL
-			return db.NewRecordStmt(SBOM_CREATOR, "Required Document-level", fmt.Sprintf("author inferred from manufacturer (fallback): %s", val), score, "")
+			return db.NewRecordStmt(SBOM_CREATOR, "Required Document-level", fmt.Sprintf("SBOM author inferred from manufacturer (fallback): %s", val), score, "")
 		}
 	}
 
@@ -241,7 +247,7 @@ func getManufacturerInfo(manufacturer sbom.GetManufacturer) (string, bool) {
 	return "", false
 }
 
-// 2.2 Required Document-level Data Fields: ntiaSbomCreatedTimestamp
+// ntiaSbomCreatedTimestamp
 func ntiaSbomCreatedTimestamp(doc sbom.Document) *db.Record {
 	score := SCORE_ZERO
 	result := doc.Spec().GetCreationTimestamp()
@@ -254,15 +260,22 @@ func ntiaSbomCreatedTimestamp(doc sbom.Document) *db.Record {
 			score = SCORE_FULL
 		}
 	}
-	return db.NewRecordStmt(SBOM_TIMESTAMP, "SBOM Data Fields", result, score, "")
+	return db.NewRecordStmt(SBOM_TIMESTAMP, "Required Document-level", result, score, "")
 }
 
-// 2.3 Required Document-level Data Fields: ntiaSBOMDependencyRelationships
-
+// ntiaSBOMDependencyRelationships
+//
+// NTIA says:
+// - At minimum, top-level dependencies or explicit completeness declarations must be present.
+//
 // NTIA requires that an SBOM declare the upstream dependency relationships
 // of the *primary (top-level) component*.
 // - At a minimum, the SBOM must list the primary component's direct dependencies.
 // - or decalrer completeness if no dependencies exist.
+//
+// Mappings:
+// - For SPDX: Relationship with type "DEPENDS_ON" from primary component
+// - For CycloneDX: Component dependencies from primary component
 func ntiaSBOMDependencyRelationships(doc sbom.Document) *db.Record {
 	primary := doc.PrimaryComp()
 
@@ -272,9 +285,9 @@ func ntiaSBOMDependencyRelationships(doc sbom.Document) *db.Record {
 	}
 
 	// 1. Check direct dependencies of primary component
-	deps := doc.GetDirectDependencies(primary.GetID(), "DEPENDS_ON")
-	if len(deps) > 0 {
-		return db.NewRecordStmt(SBOM_DEPENDENCY_RELATIONSHIP, "Required Document-level", fmt.Sprintf("primary component declares %d direct dependencies", len(deps)), SCORE_FULL, "")
+	directDeps := doc.GetDirectDependencies(primary.GetID(), "DEPENDS_ON")
+	if len(directDeps) > 0 {
+		return db.NewRecordStmt(SBOM_DEPENDENCY_RELATIONSHIP, "Required Document-level", fmt.Sprintf("primary component declares %d top-level dependencies", len(directDeps)), SCORE_FULL, "")
 	}
 
 	// 2. No direct dependencies -> check declared completeness
@@ -291,19 +304,19 @@ func ntiaSBOMDependencyRelationships(doc sbom.Document) *db.Record {
 		switch c.Aggregate() {
 
 		case sbom.AggregateComplete:
-			return db.NewRecordStmt(SBOM_DEPENDENCY_RELATIONSHIP, "Required Document-level", "primary component declares dependencies completeness complete", SCORE_FULL, "")
+			return db.NewRecordStmt(SBOM_DEPENDENCY_RELATIONSHIP, "Required Document-level", "primary component has no relationships but decalred (relationships completeness: complete)", SCORE_FULL, "")
 
 		case sbom.AggregateUnknown:
-			return db.NewRecordStmt(SBOM_DEPENDENCY_RELATIONSHIP, "Required Document-level", "primary component declares dependencies completeness unknown", SCORE_FULL, "")
+			return db.NewRecordStmt(SBOM_DEPENDENCY_RELATIONSHIP, "Required Document-level", "primary component has no relationships but decalred (relationships completeness: unknown)", SCORE_FULL, "")
 
 		case sbom.AggregateIncomplete:
-			return db.NewRecordStmt(SBOM_DEPENDENCY_RELATIONSHIP, "Required Document-level", "primary component declares dependencies completeness incomplete", SCORE_ZERO, "")
+			return db.NewRecordStmt(SBOM_DEPENDENCY_RELATIONSHIP, "Required Document-level", "primary component has no relationships but decalred (relationships completeness: incomplete)", SCORE_ZERO, "")
 		}
 	}
 
 	// 3. No dependencies and no completeness declaration
 	// Default NTIA interpretation: incomplete
-	return db.NewRecordStmt(SBOM_DEPENDENCY_RELATIONSHIP, "Required Document-level", "no dependency relationships or completeness declared for primary component", SCORE_ZERO, "")
+	return db.NewRecordStmt(SBOM_DEPENDENCY_RELATIONSHIP, "Required Document-level", "primary component has no top-level relationships and nor declare relationships completeness", SCORE_ZERO, "")
 }
 
 // Required component stuffs
@@ -324,6 +337,13 @@ func ntiaComponents(doc sbom.Document) []*db.Record {
 	return records
 }
 
+// ntiaComponentSupplier
+// NTIA says:
+// - This refers to the **authority responsible for the component’s identity**, not manufacturing or legal ownership.
+//
+// Mappings:
+// - For SPDX: PackageSupplier, PackageOriginator
+// - For CycloneDX: Component Supplier, Component Manufacturer
 func ntiaComponentSupplier(component sbom.GetComponent) *db.Record {
 	result := ""
 	score := SCORE_ZERO
@@ -363,6 +383,13 @@ func getEntityIdentifier(name, email, url string) (string, bool) {
 	return "", false
 }
 
+// ntiaComponentName check for component with name
+// NTIA says:
+// - Name assigned to the component by the supplier
+//
+// Mappings:
+// - For SPDX: PackageName
+// - For CycloneDX: Component Name
 func ntiaComponentName(component sbom.GetComponent) *db.Record {
 	if result := strings.TrimSpace(component.GetName()); result != "" {
 		return db.NewRecordStmt(COMP_NAME, common.UniqueElementID(component), result, SCORE_FULL, "")
@@ -370,6 +397,13 @@ func ntiaComponentName(component sbom.GetComponent) *db.Record {
 	return db.NewRecordStmt(COMP_NAME, common.UniqueElementID(component), "", SCORE_ZERO, "")
 }
 
+// ntiaComponentVersion check for Component with Version
+// NTIA says:
+// - Version identifier used to distinguish a specific release.
+//
+// Mappings:
+// - For SPDX: PackageVersion
+// - For CycloneDX: Component Version
 func ntiaComponentVersion(component sbom.GetComponent) *db.Record {
 	result := strings.TrimSpace(component.GetVersion())
 
@@ -380,6 +414,13 @@ func ntiaComponentVersion(component sbom.GetComponent) *db.Record {
 	return db.NewRecordStmt(COMP_VERSION, common.UniqueElementID(component), "", SCORE_ZERO, "")
 }
 
+// ntiaComponentOtherUniqIDs checks Component Other Identifiers such as PURL/CPE
+// NTIA says:
+// - At least one additional identifier if available (e.g., CPE, PURL, SWID).
+//
+// Mappings:
+// - For SPDX: PackageExternalRefs (PURL), PackageCPEs
+// - For CycloneDX: Component External References (PURL), Component CPEs
 func ntiaComponentOtherUniqIDs(component sbom.GetComponent) *db.Record {
 	result := ""
 	score := SCORE_ZERO

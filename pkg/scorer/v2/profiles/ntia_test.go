@@ -236,14 +236,14 @@ var spdxCompSupplierWithOrganizationName = []byte(`
       "SPDXID": "SPDXRef-App",
       "name": "application-a",
       "versionInfo": "1.0",
-      "supplier": "Organization:  Samantha Wright",
+      "supplier": "Organization: Samantha Wright",
       "homepage" : "http://ftp.gnu.org/gnu/glibc"
     }
   ]
 }
 `)
 
-var cdxCompSupplierMissing = []byte(`
+var cdxCompSupplierAbsent = []byte(`
 {
   "bomFormat": "CycloneDX",
   "specVersion": "1.6",
@@ -259,7 +259,7 @@ var cdxCompSupplierMissing = []byte(`
 }
 `)
 
-var spdxCompSupplierMissing = []byte(`
+var spdxCompSupplierAbsent = []byte(`
 {
   "spdxVersion": "SPDX-2.3",
   "SPDXID": "SPDXRef-DOCUMENT",
@@ -332,24 +332,6 @@ var cdxCompSupplierWithWhiteSpaceName = []byte(`
       "version": "9.1.1",
       "supplier": {
         "name": "  "
-      }
-    }
-  ]
-}
-`)
-
-var cdxCompSupplierWithMissingName = []byte(`
-{
-  "bomFormat": "CycloneDX",
-  "specVersion": "1.6",
-  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
-  "version": 1,
-  "components": [
-    {
-      "type": "application",
-      "name": "Acme Application",
-      "version": "9.1.1",
-      "supplier": {
       }
     }
   ]
@@ -450,7 +432,7 @@ var cdxCompManufacturerWithName = []byte(`
 }
 `)
 
-var cdxCompManufacturerMissing = []byte(`
+var cdxCompManufacturerAbsent = []byte(`
 {
   "bomFormat": "CycloneDX",
   "specVersion": "1.6",
@@ -504,7 +486,7 @@ var cdxCompManufacturerWithWhiteSpaceName = []byte(`
 }
 `)
 
-var cdxCompManufacturerMissingName = []byte(`
+var cdxCompManufacturerMissing = []byte(`
 {
   "bomFormat": "CycloneDX",
   "specVersion": "1.6",
@@ -515,8 +497,7 @@ var cdxCompManufacturerMissingName = []byte(`
       "type": "application",
       "name": "Acme Application",
       "version": "9.1.1",
-      "manufacturer": {
-      }
+      "manufacturer": {}
     }
   ]
 }
@@ -530,7 +511,7 @@ func TestNTIACompSupplier(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompSupplierWithNameURLAndEmail, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithSupplier(doc)
+		got := NTIACompWithSupplier(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "complete", got.Desc)
@@ -542,7 +523,7 @@ func TestNTIACompSupplier(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompSupplierAsPersonWithNameAndEmail, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithSupplier(doc)
+		got := NTIACompWithSupplier(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "complete", got.Desc)
@@ -554,7 +535,7 @@ func TestNTIACompSupplier(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompSupplierAsOrganizationWithNameAndEmail, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithSupplier(doc)
+		got := NTIACompWithSupplier(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "complete", got.Desc)
@@ -566,7 +547,7 @@ func TestNTIACompSupplier(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompSupplierWithNameAndURL, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithSupplier(doc)
+		got := NTIACompWithSupplier(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "complete", got.Desc)
@@ -578,7 +559,7 @@ func TestNTIACompSupplier(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompSupplierWithPersonEmail, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithSupplier(doc)
+		got := NTIACompWithSupplier(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "complete", got.Desc)
@@ -590,7 +571,7 @@ func TestNTIACompSupplier(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompSupplierWithOrganizationEmail, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithSupplier(doc)
+		got := NTIACompWithSupplier(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "complete", got.Desc)
@@ -602,7 +583,7 @@ func TestNTIACompSupplier(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompSupplierWithNameAndEmail, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithSupplier(doc)
+		got := NTIACompWithSupplier(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "complete", got.Desc)
@@ -614,7 +595,7 @@ func TestNTIACompSupplier(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompSupplierWithName, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithSupplier(doc)
+		got := NTIACompWithSupplier(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "complete", got.Desc)
@@ -626,7 +607,7 @@ func TestNTIACompSupplier(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompSupplierWithPersonName, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithSupplier(doc)
+		got := NTIACompWithSupplier(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "complete", got.Desc)
@@ -638,31 +619,31 @@ func TestNTIACompSupplier(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompSupplierWithOrganizationName, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithSupplier(doc)
+		got := NTIACompWithSupplier(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "complete", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
-	// cdxCompSupplierMissing
-	t.Run("cdxCompSupplierMissing", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompSupplierMissing, sbom.Signature{})
+	// cdxCompSupplierAbsent
+	t.Run("cdxCompSupplierAbsent", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompSupplierAbsent, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithSupplier(doc)
+		got := NTIACompWithSupplier(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add to 1 component", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
-	// spdxCompSupplierMissing
-	t.Run("spdxCompSupplierMissing", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompSupplierMissing, sbom.Signature{})
+	// spdxCompSupplierAbsent
+	t.Run("spdxCompSupplierAbsent", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompSupplierAbsent, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithSupplier(doc)
+		got := NTIACompWithSupplier(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add to 1 component", got.Desc)
@@ -674,7 +655,19 @@ func TestNTIACompSupplier(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompSupplierWithEmptyName, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithSupplier(doc)
+		got := NTIACompWithSupplier(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "add to 1 component", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// spdxCompSupplierWithPersonNameEmpty
+	t.Run("spdxCompSupplierWithPersonNameEmpty", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompSupplierWithPersonNameEmpty, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIACompWithSupplier(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add to 1 component", got.Desc)
@@ -686,19 +679,7 @@ func TestNTIACompSupplier(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompSupplierWithWhiteSpaceName, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithSupplier(doc)
-
-		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add to 1 component", got.Desc)
-		assert.False(t, got.Ignore)
-	})
-
-	// cdxCompSupplierWithMissingName
-	t.Run("cdxCompSupplierWithMissingName", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompSupplierWithMissingName, sbom.Signature{})
-		require.NoError(t, err)
-
-		got := CompWithSupplier(doc)
+		got := NTIACompWithSupplier(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add to 1 component", got.Desc)
@@ -710,7 +691,7 @@ func TestNTIACompSupplier(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompManufacturerWithNameURLAndEmail, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithSupplier(doc)
+		got := NTIACompWithSupplier(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "complete", got.Desc)
@@ -722,7 +703,7 @@ func TestNTIACompSupplier(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompManufacturerWithNameAndURL, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithSupplier(doc)
+		got := NTIACompWithSupplier(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "complete", got.Desc)
@@ -734,7 +715,7 @@ func TestNTIACompSupplier(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompManufacturerWithNameAndEmail, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithSupplier(doc)
+		got := NTIACompWithSupplier(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "complete", got.Desc)
@@ -746,19 +727,19 @@ func TestNTIACompSupplier(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompManufacturerWithName, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithSupplier(doc)
+		got := NTIACompWithSupplier(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "complete", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
-	// cdxCompManufacturerMissing
-	t.Run("cdxCompManufacturerMissing", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompManufacturerMissing, sbom.Signature{})
+	// cdxCompManufacturerAbsent
+	t.Run("cdxCompManufacturerAbsent", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompManufacturerAbsent, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithSupplier(doc)
+		got := NTIACompWithSupplier(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add to 1 component", got.Desc)
@@ -770,7 +751,7 @@ func TestNTIACompSupplier(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompManufacturerWithEmptyName, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithSupplier(doc)
+		got := NTIACompWithSupplier(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add to 1 component", got.Desc)
@@ -782,7 +763,7 @@ func TestNTIACompSupplier(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompManufacturerWithWhiteSpaceName, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithSupplier(doc)
+		got := NTIACompWithSupplier(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add to 1 component", got.Desc)
@@ -790,11 +771,11 @@ func TestNTIACompSupplier(t *testing.T) {
 	})
 
 	// cdxCompManufacturerMissingName
-	t.Run("cdxCompManufacturerMissingName", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompManufacturerMissingName, sbom.Signature{})
+	t.Run("cdxCompManufacturerMissing", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompManufacturerMissing, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithSupplier(doc)
+		got := NTIACompWithSupplier(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add to 1 component", got.Desc)
@@ -821,7 +802,7 @@ var cdxSBOMAuthorWithNameAndEmail = []byte(`
 }
 `)
 
-var spdxSBOMAuthorWithNameAndEmail = []byte(`
+var spdxSBOMAuthorWithPersonNameAndEmail = []byte(`
 {
   "spdxVersion": "SPDX-2.3",
   "SPDXID": "SPDXRef-DOCUMENT",
@@ -968,6 +949,17 @@ var cdxSBOMAuthorMissing = []byte(`
 }
 `)
 
+var spdxSBOMCreatorMissing = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "creators": []
+  },
+  "packages": []
+}
+`)
+
 var spdxSBOMAuthorPersonMissing = []byte(`
 {
   "spdxVersion": "SPDX-2.3",
@@ -994,7 +986,7 @@ var spdxSBOMAuthorOrganizationMissing = []byte(`
 }
 `)
 
-var cdxSBOMAuthorsWithEmptyString = []byte(`
+var cdxSBOMAuthorsWithNameAndEmailEmptyString = []byte(`
 {
   "bomFormat": "CycloneDX",
   "specVersion": "1.6",
@@ -1013,7 +1005,7 @@ var cdxSBOMAuthorsWithEmptyString = []byte(`
 }
 `)
 
-var spdxSBOMAuthorsWithEmptyString = []byte(`
+var spdxSBOMCreatorsWithEmptyString = []byte(`
 {
   "spdxVersion": "SPDX-2.3",
   "SPDXID": "SPDXRef-DOCUMENT",
@@ -1213,7 +1205,7 @@ var spdxSBOMToolAbsent = []byte(`
   "spdxVersion": "SPDX-2.3",
   "SPDXID": "SPDXRef-DOCUMENT",
   "creationInfo": {},
-  packages: []
+  "packages": []
 }
 `)
 
@@ -1236,6 +1228,19 @@ var spdxSBOMToolMissing = []byte(`
   "SPDXID": "SPDXRef-DOCUMENT",
   "creationInfo": {
     "creators": []
+  },
+  "packages": []
+}
+`)
+
+var spdxSBOMToolWithEmptyString = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "creators": [
+      "Tool: "
+      ]
   },
   "packages": []
 }
@@ -1311,19 +1316,6 @@ var cdxSBOMDeprecatedToolWithNameAndVersionEmptyString = []byte(`
     ]
   },
   "components": []
-}
-`)
-
-var spdxSBOMToolWithEmptyString = []byte(`
-{
-  "spdxVersion": "SPDX-2.3",
-  "SPDXID": "SPDXRef-DOCUMENT",
-  "creationInfo": {
-    "creators": [
-	"Tool: "
-	]
-  },
-  "packages": []
 }
 `)
 
@@ -1636,22 +1628,22 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthorWithNameAndEmail, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SbomWithAuthors(doc)
+		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM author present", got.Desc)
+		assert.Equal(t, "SBOM author declared explicitly", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
-	// spdxSBOMAuthorWithNameAndEmail
-	t.Run("spdxSBOMAuthorWithNameAndEmail", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorWithNameAndEmail, sbom.Signature{})
+	// spdxSBOMAuthorWithPersonNameAndEmail
+	t.Run("spdxSBOMAuthorWithPersonNameAndEmail", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorWithPersonNameAndEmail, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SbomWithAuthors(doc)
+		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM author present", got.Desc)
+		assert.Equal(t, "SBOM author declared explicitly", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1660,10 +1652,10 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorWithOrganizationNameAndEmail, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SbomWithAuthors(doc)
+		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM author present", got.Desc)
+		assert.Equal(t, "SBOM author declared explicitly", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1672,10 +1664,10 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthorWithEmail, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SbomWithAuthors(doc)
+		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM author present", got.Desc)
+		assert.Equal(t, "SBOM author declared explicitly", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1684,10 +1676,10 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorWithPersonEmail, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SbomWithAuthors(doc)
+		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM author present", got.Desc)
+		assert.Equal(t, "SBOM author declared explicitly", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1696,10 +1688,10 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorWithOrganizationEmail, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SbomWithAuthors(doc)
+		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM author present", got.Desc)
+		assert.Equal(t, "SBOM author declared explicitly", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1708,10 +1700,10 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthorWithName, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SbomWithAuthors(doc)
+		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM author present", got.Desc)
+		assert.Equal(t, "SBOM author declared explicitly", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1720,10 +1712,10 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorWithPersonName, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SbomWithAuthors(doc)
+		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM author present", got.Desc)
+		assert.Equal(t, "SBOM author declared explicitly", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1732,10 +1724,10 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorWithOrganizationName, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SbomWithAuthors(doc)
+		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM author present", got.Desc)
+		assert.Equal(t, "SBOM author declared explicitly", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1744,10 +1736,10 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthorsAbsent, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SbomWithAuthors(doc)
+		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add author information", got.Desc)
+		assert.Equal(t, "add SBOM author information", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1756,10 +1748,10 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorAbsent, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SbomWithAuthors(doc)
+		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add author information", got.Desc)
+		assert.Equal(t, "add SBOM author information", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1768,10 +1760,22 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthorMissing, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SbomWithAuthors(doc)
+		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add author information", got.Desc)
+		assert.Equal(t, "add SBOM author information", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// spdxSBOMCreatorMissing
+	t.Run("spdxSBOMCreatorMissing", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMCreatorMissing, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIASBOMWithAuthors(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "add SBOM author information", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1780,10 +1784,10 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorPersonMissing, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SbomWithAuthors(doc)
+		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add author information", got.Desc)
+		assert.Equal(t, "add SBOM author information", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1792,28 +1796,28 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorOrganizationMissing, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SbomWithAuthors(doc)
+		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add author information", got.Desc)
+		assert.Equal(t, "add SBOM author information", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
-	// cdxSBOMAuthorsWithEmptyString
-	t.Run("cdxSBOMAuthorsWithEmptyString", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthorsWithEmptyString, sbom.Signature{})
+	// cdxSBOMAuthorsWithNameAndEmailEmptyString
+	t.Run("cdxSBOMAuthorsWithNameAndEmailEmptyString", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthorsWithNameAndEmailEmptyString, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SbomWithAuthors(doc)
+		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add author information", got.Desc)
+		assert.Equal(t, "add SBOM author information", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
-	// spdxSBOMAuthorsWithEmptyString
-	t.Run("spdxSBOMAuthorsWithEmptyString", func(t *testing.T) {
-		_, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorsWithEmptyString, sbom.Signature{})
+	// spdxSBOMCreatorsWithEmptyString
+	t.Run("spdxSBOMCreatorsWithEmptyString", func(t *testing.T) {
+		_, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMCreatorsWithEmptyString, sbom.Signature{})
 		require.Error(t, err)
 	})
 
@@ -1822,10 +1826,10 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthorsWithEmptyArray, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SbomWithAuthors(doc)
+		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add author information", got.Desc)
+		assert.Equal(t, "add SBOM author information", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1834,10 +1838,10 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthorsWithEmptyArrayObject, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SbomWithAuthors(doc)
+		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add author information", got.Desc)
+		assert.Equal(t, "add SBOM author information", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1846,10 +1850,10 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorsWithEmptyArray, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SbomWithAuthors(doc)
+		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add author information", got.Desc)
+		assert.Equal(t, "add SBOM author information", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1876,10 +1880,10 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMToolWithNameAndVersion, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SbomWithAuthors(doc)
+		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM tool present", got.Desc)
+		assert.Equal(t, "SBOM author inferred from SBOM tool", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1888,10 +1892,10 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMToolWithNameAndVersion, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SbomWithAuthors(doc)
+		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM tool present", got.Desc)
+		assert.Equal(t, "SBOM author inferred from SBOM tool", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1900,10 +1904,10 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMToolWithName, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SbomWithAuthors(doc)
+		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 5.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM tool name present only", got.Desc)
+		assert.Equal(t, "SBOM author inferred from SBOM tool with name only", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1912,10 +1916,10 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMToolWithName, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SbomWithAuthors(doc)
+		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 5.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM tool name present only", got.Desc)
+		assert.Equal(t, "SBOM author inferred from SBOM tool with name only", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1924,10 +1928,10 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMToolWithVersion, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SbomWithAuthors(doc)
+		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM tool version present only", got.Desc)
+		assert.Equal(t, "SBOM author inferred from SBOM tool with version only", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1936,10 +1940,10 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMToolWithVersion, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SbomWithAuthors(doc)
+		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM tool version present only", got.Desc)
+		assert.Equal(t, "SBOM author inferred from SBOM tool with version only", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1948,10 +1952,10 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMToolAbsent, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SbomWithAuthors(doc)
+		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add author information", got.Desc)
+		assert.Equal(t, "add SBOM author information", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1960,10 +1964,10 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMToolAbsent, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SbomWithAuthors(doc)
+		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add author information", got.Desc)
+		assert.Equal(t, "add SBOM author information", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1972,10 +1976,10 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMToolMissing, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SbomWithAuthors(doc)
+		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add author information", got.Desc)
+		assert.Equal(t, "add SBOM author information", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1984,58 +1988,10 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMToolMissing, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SbomWithAuthors(doc)
+		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add author information", got.Desc)
-		assert.False(t, got.Ignore)
-	})
-
-	// cdxSBOMDeprecatedToolWithNameAndVersion
-	t.Run("cdxSBOMDeprecatedToolWithNameAndVersion", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMDeprecatedToolWithNameAndVersion, sbom.Signature{})
-		require.NoError(t, err)
-
-		got := SbomWithAuthors(doc)
-
-		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM tool present", got.Desc)
-		assert.False(t, got.Ignore)
-	})
-
-	// cdxSBOMDeprecatedToolWithName
-	t.Run("cdxSBOMDeprecatedToolWithName", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMDeprecatedToolWithName, sbom.Signature{})
-		require.NoError(t, err)
-
-		got := SbomWithAuthors(doc)
-
-		assert.InDelta(t, 5.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM tool name present only", got.Desc)
-		assert.False(t, got.Ignore)
-	})
-
-	// cdxSBOMDeprecatedToolWithVersion
-	t.Run("cdxSBOMDeprecatedToolWithVersion", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMDeprecatedToolWithVersion, sbom.Signature{})
-		require.NoError(t, err)
-
-		got := SbomWithAuthors(doc)
-
-		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM tool version present only", got.Desc)
-		assert.False(t, got.Ignore)
-	})
-
-	// cdxSBOMDeprecatedToolWithNameAndVersionEmptyString
-	t.Run("cdxSBOMDeprecatedToolWithNameAndVersionEmptyString", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMDeprecatedToolWithNameAndVersionEmptyString, sbom.Signature{})
-		require.NoError(t, err)
-
-		got := SbomWithAuthors(doc)
-
-		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add author information", got.Desc)
+		assert.Equal(t, "add SBOM author information", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2044,10 +2000,58 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMToolWithEmptyString, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SbomWithAuthors(doc)
+		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add author information", got.Desc)
+		assert.Equal(t, "add SBOM author information", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// cdxSBOMDeprecatedToolWithNameAndVersion
+	t.Run("cdxSBOMDeprecatedToolWithNameAndVersion", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMDeprecatedToolWithNameAndVersion, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIASBOMWithAuthors(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "SBOM author inferred from SBOM tool", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// cdxSBOMDeprecatedToolWithName
+	t.Run("cdxSBOMDeprecatedToolWithName", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMDeprecatedToolWithName, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIASBOMWithAuthors(doc)
+
+		assert.InDelta(t, 5.0, got.Score, 1e-9)
+		assert.Equal(t, "SBOM author inferred from SBOM tool with name only", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// cdxSBOMDeprecatedToolWithVersion
+	t.Run("cdxSBOMDeprecatedToolWithVersion", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMDeprecatedToolWithVersion, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIASBOMWithAuthors(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "SBOM author inferred from SBOM tool with version only", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// cdxSBOMDeprecatedToolWithNameAndVersionEmptyString
+	t.Run("cdxSBOMDeprecatedToolWithNameAndVersionEmptyString", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMDeprecatedToolWithNameAndVersionEmptyString, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIASBOMWithAuthors(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "add SBOM author information", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2056,10 +2060,10 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMDeprecatedToolAbsent, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SbomWithAuthors(doc)
+		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add author information", got.Desc)
+		assert.Equal(t, "add SBOM author information", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2068,10 +2072,10 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMToolWrongType, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SbomWithAuthors(doc)
+		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add author information", got.Desc)
+		assert.Equal(t, "add SBOM author information", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2086,10 +2090,10 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMSupplierWithNameAndURL, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SbomWithAuthors(doc)
+		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "supplier used as SBOM author fallback", got.Desc)
+		assert.Equal(t, "SBOM author inferred from supplier (fallback)", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2098,10 +2102,10 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMSupplierWithName, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SbomWithAuthors(doc)
+		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "supplier used as SBOM author fallback", got.Desc)
+		assert.Equal(t, "SBOM author inferred from supplier (fallback)", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2110,10 +2114,10 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMSupplierWithURL, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SbomWithAuthors(doc)
+		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "supplier used as SBOM author fallback", got.Desc)
+		assert.Equal(t, "SBOM author inferred from supplier (fallback)", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2122,10 +2126,10 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMSupplierMissing, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SbomWithAuthors(doc)
+		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add author information", got.Desc)
+		assert.Equal(t, "add SBOM author information", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2134,10 +2138,10 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMSupplierAbsent, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SbomWithAuthors(doc)
+		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add author information", got.Desc)
+		assert.Equal(t, "add SBOM author information", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2146,10 +2150,10 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMSupplierWithNameEmptyString, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SbomWithAuthors(doc)
+		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add author information", got.Desc)
+		assert.Equal(t, "add SBOM author information", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2158,10 +2162,10 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMSupplierWithURLEmptyString, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SbomWithAuthors(doc)
+		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add author information", got.Desc)
+		assert.Equal(t, "add SBOM author information", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2170,10 +2174,10 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMSupplierWithNameWhitespace, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SbomWithAuthors(doc)
+		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add author information", got.Desc)
+		assert.Equal(t, "add SBOM author information", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2188,10 +2192,10 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMManufacturerWithNameAndURL, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SbomWithAuthors(doc)
+		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "manufacturer used as SBOM author fallback", got.Desc)
+		assert.Equal(t, "SBOM author inferred from manufacturer (fallback)", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2200,10 +2204,10 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMManufacturerWithName, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SbomWithAuthors(doc)
+		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "manufacturer used as SBOM author fallback", got.Desc)
+		assert.Equal(t, "SBOM author inferred from manufacturer (fallback)", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2212,10 +2216,10 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMManufactureWithURL, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SbomWithAuthors(doc)
+		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "manufacturer used as SBOM author fallback", got.Desc)
+		assert.Equal(t, "SBOM author inferred from manufacturer (fallback)", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2224,10 +2228,10 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMManufactureMissing, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SbomWithAuthors(doc)
+		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add author information", got.Desc)
+		assert.Equal(t, "add SBOM author information", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2236,10 +2240,10 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMManufactureAbsent, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SbomWithAuthors(doc)
+		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add author information", got.Desc)
+		assert.Equal(t, "add SBOM author information", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2248,10 +2252,10 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMManufactureWithNameEmptyString, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SbomWithAuthors(doc)
+		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add author information", got.Desc)
+		assert.Equal(t, "add SBOM author information", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2260,10 +2264,10 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMManufactureWithURLEmptyString, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SbomWithAuthors(doc)
+		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add author information", got.Desc)
+		assert.Equal(t, "add SBOM author information", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2272,10 +2276,10 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMManufactureWithNameWhitespace, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SbomWithAuthors(doc)
+		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add author information", got.Desc)
+		assert.Equal(t, "add SBOM author information", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2860,17 +2864,17 @@ var cdxCompWithRelationshipsAbsent = []byte(`
 }
 `)
 
-func TestBSIV2CompDependencies(t *testing.T) {
+func TestNTIACompDependencies(t *testing.T) {
 	ctx := context.Background()
 
 	t.Run("cdxCompWithPrimaryRelationships", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithPrimaryRelationships, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := NTIASBOMRelationships(doc)
+		got := NTIASBOMWithDependencyRelationships(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "primary component has direct relationships", got.Desc)
+		assert.Equal(t, "primary component declares 2 top-level dependencies", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2878,10 +2882,10 @@ func TestBSIV2CompDependencies(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWithPrimaryRelationships, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := NTIASBOMRelationships(doc)
+		got := NTIASBOMWithDependencyRelationships(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "primary component has direct relationships", got.Desc)
+		assert.Equal(t, "primary component declares 2 top-level dependencies", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2889,10 +2893,10 @@ func TestBSIV2CompDependencies(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithNoPrimaryRelationships, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := NTIASBOMRelationships(doc)
+		got := NTIASBOMWithDependencyRelationships(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "primary component has no direct relationships and does not declare completeness", got.Desc)
+		assert.Equal(t, "primary component has no top-level relationships and nor declare relationships completeness", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2900,10 +2904,10 @@ func TestBSIV2CompDependencies(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWithNoPrimaryRelationships, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := NTIASBOMRelationships(doc)
+		got := NTIASBOMWithDependencyRelationships(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "primary component has no direct relationships and does not declare completeness", got.Desc)
+		assert.Equal(t, "primary component has no top-level relationships and nor declare relationships completeness", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2911,7 +2915,7 @@ func TestBSIV2CompDependencies(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithPrimaryComponentMissing, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := NTIASBOMRelationships(doc)
+		got := NTIASBOMWithDependencyRelationships(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "define primary component", got.Desc)
@@ -2922,7 +2926,7 @@ func TestBSIV2CompDependencies(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWithPrimaryComponentMissing, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := NTIASBOMRelationships(doc)
+		got := NTIASBOMWithDependencyRelationships(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "define primary component", got.Desc)
@@ -2933,10 +2937,10 @@ func TestBSIV2CompDependencies(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithPrimaryRelationshipsAndDeclaredRelationships, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := NTIASBOMRelationships(doc)
+		got := NTIASBOMWithDependencyRelationships(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "primary component has direct relationships", got.Desc)
+		assert.Equal(t, "primary component declares 2 top-level dependencies", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2944,10 +2948,10 @@ func TestBSIV2CompDependencies(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithPrimaryDeclaredRelationshipsComplete, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := NTIASBOMRelationships(doc)
+		got := NTIASBOMWithDependencyRelationships(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "primary comp declares relationships completeness complete", got.Desc)
+		assert.Equal(t, "primary component has no relationships but decalred (relationships completeness: complete)", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2955,10 +2959,10 @@ func TestBSIV2CompDependencies(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithPrimaryDeclaredRelationshipsUnknown, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := NTIASBOMRelationships(doc)
+		got := NTIASBOMWithDependencyRelationships(doc)
 
 		assert.InDelta(t, 5.0, got.Score, 1e-9)
-		assert.Equal(t, "primary comp declares relationships completeness unknown", got.Desc)
+		assert.Equal(t, "primary component has no relationships but decalred (relationships completeness: unknown)", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2966,10 +2970,10 @@ func TestBSIV2CompDependencies(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithPrimaryDeclaredRelationshipsIncomplete, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := NTIASBOMRelationships(doc)
+		got := NTIASBOMWithDependencyRelationships(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "primary comp declares relationships completeness incomplete", got.Desc)
+		assert.Equal(t, "primary component has no relationships but decalred (relationships completeness: incomplete)", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2977,10 +2981,261 @@ func TestBSIV2CompDependencies(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithRelationshipsAbsent, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := NTIASBOMRelationships(doc)
+		got := NTIASBOMWithDependencyRelationships(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "primary component has no direct relationships and does not declare completeness", got.Desc)
+		assert.Equal(t, "primary component has no top-level relationships and nor declare relationships completeness", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+}
+
+var cdxSBOMWithCompleteFields = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "Awesome Vendor",
+          "name": "Awesome Tool",
+          "version": "9.1.2"
+        }
+      ]
+    },
+    "authors": [
+      {
+        "bom-ref": "author-1",
+        "name": "Samantha Wright",
+        "email": "samantha.wright@example.com"
+      }
+    ],
+    "supplier": {
+      "name": "Acme, Inc.",
+      "url": [
+        "https://example.com"
+      ]
+    },
+    "manufacture": {
+      "name": "Acme, Inc.",
+      "url": [
+        "https://example.com"
+      ]
+    },
+    "component": {
+      "bom-ref": "app-1.0",
+      "type": "application",
+      "name": "my-app",
+      "version": "1.0"
+    }
+  },
+  "components": [
+    {
+      "bom-ref": "library-a",
+      "type": "library",
+      "name": "library-a",
+      "version": "1.0.0",
+      "supplier": {
+        "name": "Acme, Inc.",
+        "url": [
+          "https://example.com"
+        ],
+        "contact": [
+          {
+            "name": "Acme Professional Services",
+            "email": "professional.services@example.com"
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "library-b",
+      "type": "library",
+      "name": "library-b",
+      "version": "1.0.0",
+      "manufacturer": {
+        "name": "Acme, Inc.",
+        "url": [
+          "https://example.com"
+        ],
+        "contact": [
+          {
+            "name": "Acme Professional Services",
+            "email": "professional.services@example.com"
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "library-c",
+      "type": "library",
+      "name": "library-c",
+      "version": "1.0.0"
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "app-1.0",
+      "dependsOn": [
+        "library-a",
+        "library-b"  
+      ]
+    },
+    {
+      "ref": "library-a",
+      "dependsOn": []
+    },
+    {
+      "ref": "library-b",
+      "dependsOn": [
+        "library-c"
+      ]
+    }
+  ]
+}
+`)
+
+var spdxSBOMWithCompleteFields = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "my-app-sbom",
+  "dataLicense": "CC0-1.0",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": [
+      "Person: Samantha Wright (samantha.wright@example.com)",
+      "Tool: Awesome Tool-9.1.2"
+    ]
+  },
+
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-App",
+      "name": "my-app",
+      "versionInfo": "1.0",
+      "supplier": "Person: Samantha Wright (samantha.wright@example.com)",
+      "homepage" : "http://ftp.gnu.org/gnu/glibc"
+    },
+    {
+      "SPDXID": "SPDXRef-LibA",
+      "name": "library-a",
+      "versionInfo": "1.0.0"
+    },
+    {
+      "SPDXID": "SPDXRef-LibB",
+      "name": "library-b",
+      "versionInfo": "1.0.0"
+    },
+    {
+      "SPDXID": "SPDXRef-LibC",
+      "name": "library-c",
+      "versionInfo": "1.0.0"
+    }
+  ],
+
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relationshipType": "DESCRIBES",
+      "relatedSpdxElement": "SPDXRef-App"
+    },
+    {
+      "spdxElementId": "SPDXRef-App",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-LibA"
+    },
+    {
+      "spdxElementId": "SPDXRef-App",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-LibB"
+    },
+    {
+      "spdxElementId": "SPDXRef-LibB",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-LibC"
+    }
+  ]
+}
+`)
+
+func TestNTIAComplete(t *testing.T) {
+	ctx := context.Background()
+
+	// --- 1. TEST DEPENDENCY RELATIONSHIPS ----
+	// cdxSBOMWithCompleteFields
+	t.Run("cdxSBOMWithCompleteFields", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMWithCompleteFields, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIASBOMWithDependencyRelationships(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "primary component declares 2 top-level dependencies", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// spdxSBOMWithCompleteFields
+	t.Run("spdxSBOMWithCompleteFields", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMWithCompleteFields, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIASBOMWithDependencyRelationships(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "primary component declares 2 top-level dependencies", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// --- 2. TEST SBOM Author FIELDS ----
+	// cdxSBOMWithCompleteFields
+	t.Run("cdxSBOMWithCompleteFields", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMWithCompleteFields, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIASBOMWithAuthors(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "SBOM author declared explicitly", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// spdxSBOMWithCompleteFields
+	t.Run("spdxSBOMWithCompleteFields", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMWithCompleteFields, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIASBOMWithAuthors(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "SBOM author declared explicitly", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// 3. TEST Component Supplier FALLBACK ----
+	t.Run("cdxSBOMWithCompleteFields", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMWithCompleteFields, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIACompWithSupplier(doc)
+
+		assert.InDelta(t, 5.0, got.Score, 1e-9)
+		assert.Equal(t, "add to 2 components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// spdxSBOMWithCompleteFields
+	t.Run("spdxSBOMWithCompleteFields", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMWithCompleteFields, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIACompWithSupplier(doc)
+
+		assert.InDelta(t, 2.5, got.Score, 1e-9)
+		assert.Equal(t, "add to 3 components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 }

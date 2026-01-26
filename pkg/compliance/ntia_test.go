@@ -1452,7 +1452,7 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_CREATOR, got.CheckKey)
 		assert.Equal(t, "Required Document-level", got.ID)
-		assert.Equal(t, "author declared explicitly: Samantha Wright", got.CheckValue)
+		assert.Equal(t, "SBOM author declared explicitly: Samantha Wright", got.CheckValue)
 	})
 
 	// spdxSBOMAuthorWithNameAndEmail
@@ -1465,7 +1465,7 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_CREATOR, got.CheckKey)
 		assert.Equal(t, "Required Document-level", got.ID)
-		assert.Equal(t, "author declared explicitly: Samantha Wright", got.CheckValue)
+		assert.Equal(t, "SBOM author declared explicitly: Samantha Wright", got.CheckValue)
 	})
 
 	// spdxSBOMAuthorWithOrganizationNameAndEmail
@@ -1478,7 +1478,7 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_CREATOR, got.CheckKey)
 		assert.Equal(t, "Required Document-level", got.ID)
-		assert.Equal(t, "author declared explicitly: Samantha Wright", got.CheckValue)
+		assert.Equal(t, "SBOM author declared explicitly: Samantha Wright", got.CheckValue)
 	})
 
 	// cdxSBOMAuthorWithEmail
@@ -1491,7 +1491,7 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_CREATOR, got.CheckKey)
 		assert.Equal(t, "Required Document-level", got.ID)
-		assert.Equal(t, "author declared explicitly: samantha.wright@example.com", got.CheckValue)
+		assert.Equal(t, "SBOM author declared explicitly: samantha.wright@example.com", got.CheckValue)
 	})
 
 	// spdxSBOMAuthorWithPersonEmail
@@ -1504,7 +1504,7 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_CREATOR, got.CheckKey)
 		assert.Equal(t, "Required Document-level", got.ID)
-		assert.Equal(t, "author declared explicitly: samantha.wright@example.com", got.CheckValue)
+		assert.Equal(t, "SBOM author declared explicitly: samantha.wright@example.com", got.CheckValue)
 	})
 
 	// spdxSBOMAuthorWithOrganizationEmail
@@ -1517,7 +1517,7 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_CREATOR, got.CheckKey)
 		assert.Equal(t, "Required Document-level", got.ID)
-		assert.Equal(t, "author declared explicitly: samantha.wright@example.com", got.CheckValue)
+		assert.Equal(t, "SBOM author declared explicitly: samantha.wright@example.com", got.CheckValue)
 	})
 
 	// cdxSBOMAuthorWithName
@@ -1530,7 +1530,7 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_CREATOR, got.CheckKey)
 		assert.Equal(t, "Required Document-level", got.ID)
-		assert.Equal(t, "author declared explicitly: Samantha Wright", got.CheckValue)
+		assert.Equal(t, "SBOM author declared explicitly: Samantha Wright", got.CheckValue)
 	})
 
 	// spdxSBOMAuthorWithPersonName
@@ -1543,7 +1543,7 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_CREATOR, got.CheckKey)
 		assert.Equal(t, "Required Document-level", got.ID)
-		assert.Equal(t, "author declared explicitly: Samantha Wright", got.CheckValue)
+		assert.Equal(t, "SBOM author declared explicitly: Samantha Wright", got.CheckValue)
 	})
 
 	// spdxSBOMAuthorWithOrganizationName
@@ -1556,7 +1556,7 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_CREATOR, got.CheckKey)
 		assert.Equal(t, "Required Document-level", got.ID)
-		assert.Equal(t, "author declared explicitly: Samantha Wright", got.CheckValue)
+		assert.Equal(t, "SBOM author declared explicitly: Samantha Wright", got.CheckValue)
 	})
 
 	// cdxSBOMAuthorsAbsent
@@ -1710,7 +1710,7 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_CREATOR, got.CheckKey)
 		assert.Equal(t, "Required Document-level", got.ID)
-		assert.Equal(t, "author inferred from supplier (fallback): Acme, Inc.", got.CheckValue)
+		assert.Equal(t, "SBOM author inferred from supplier (fallback): Acme, Inc.", got.CheckValue)
 	})
 
 	// cdxSBOMSupplierWithName
@@ -1723,7 +1723,7 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_CREATOR, got.CheckKey)
 		assert.Equal(t, "Required Document-level", got.ID)
-		assert.Equal(t, "author inferred from supplier (fallback): Acme, Inc.", got.CheckValue)
+		assert.Equal(t, "SBOM author inferred from supplier (fallback): Acme, Inc.", got.CheckValue)
 	})
 
 	// cdxSBOMSupplierWithURL
@@ -1736,7 +1736,7 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_CREATOR, got.CheckKey)
 		assert.Equal(t, "Required Document-level", got.ID)
-		assert.Equal(t, "author inferred from supplier (fallback): https://example.com", got.CheckValue)
+		assert.Equal(t, "SBOM author inferred from supplier (fallback): https://example.com", got.CheckValue)
 	})
 
 	// cdxSBOMSupplierMissing
@@ -1820,7 +1820,7 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_CREATOR, got.CheckKey)
 		assert.Equal(t, "Required Document-level", got.ID)
-		assert.Equal(t, "author inferred from manufacturer (fallback): Acme, Inc.", got.CheckValue)
+		assert.Equal(t, "SBOM author inferred from manufacturer (fallback): Acme, Inc.", got.CheckValue)
 	})
 
 	// cdxSBOMManufacturerWithName
@@ -1833,7 +1833,7 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_CREATOR, got.CheckKey)
 		assert.Equal(t, "Required Document-level", got.ID)
-		assert.Equal(t, "author inferred from manufacturer (fallback): Acme, Inc.", got.CheckValue)
+		assert.Equal(t, "SBOM author inferred from manufacturer (fallback): Acme, Inc.", got.CheckValue)
 	})
 
 	// cdxSBOMManufactureWithURL
@@ -1846,7 +1846,7 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_CREATOR, got.CheckKey)
 		assert.Equal(t, "Required Document-level", got.ID)
-		assert.Equal(t, "author inferred from manufacturer (fallback): https://example.com", got.CheckValue)
+		assert.Equal(t, "SBOM author inferred from manufacturer (fallback): https://example.com", got.CheckValue)
 	})
 
 	// cdxSBOMManufactureMissing
@@ -2507,7 +2507,7 @@ func TestNTIASBOMDependenciesRelationships(t *testing.T) {
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_DEPENDENCY_RELATIONSHIP, got.CheckKey)
 		assert.Equal(t, "Required Document-level", got.ID)
-		assert.Equal(t, "primary component declares 2 direct dependencies", got.CheckValue)
+		assert.Equal(t, "primary component declares 2 top-level dependencies", got.CheckValue)
 	})
 
 	// spdxCompWithPrimaryRelationships
@@ -2520,7 +2520,7 @@ func TestNTIASBOMDependenciesRelationships(t *testing.T) {
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_DEPENDENCY_RELATIONSHIP, got.CheckKey)
 		assert.Equal(t, "Required Document-level", got.ID)
-		assert.Equal(t, "primary component declares 2 direct dependencies", got.CheckValue)
+		assert.Equal(t, "primary component declares 2 top-level dependencies", got.CheckValue)
 	})
 
 	// cdxCompWithNoPrimaryRelationships
@@ -2533,7 +2533,7 @@ func TestNTIASBOMDependenciesRelationships(t *testing.T) {
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_DEPENDENCY_RELATIONSHIP, got.CheckKey)
 		assert.Equal(t, "Required Document-level", got.ID)
-		assert.Equal(t, "no dependency relationships or completeness declared for primary component", got.CheckValue)
+		assert.Equal(t, "primary component has no top-level relationships and nor declare relationships completeness", got.CheckValue)
 	})
 
 	// spdxCompWithNoPrimaryRelationships
@@ -2546,7 +2546,7 @@ func TestNTIASBOMDependenciesRelationships(t *testing.T) {
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_DEPENDENCY_RELATIONSHIP, got.CheckKey)
 		assert.Equal(t, "Required Document-level", got.ID)
-		assert.Equal(t, "no dependency relationships or completeness declared for primary component", got.CheckValue)
+		assert.Equal(t, "primary component has no top-level relationships and nor declare relationships completeness", got.CheckValue)
 	})
 
 	// cdxCompWithPrimaryComponentMissing
@@ -2585,7 +2585,7 @@ func TestNTIASBOMDependenciesRelationships(t *testing.T) {
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_DEPENDENCY_RELATIONSHIP, got.CheckKey)
 		assert.Equal(t, "Required Document-level", got.ID)
-		assert.Equal(t, "primary component declares 2 direct dependencies", got.CheckValue)
+		assert.Equal(t, "primary component declares 2 top-level dependencies", got.CheckValue)
 	})
 
 	// cdxCompWithPrimaryDeclaredRelationshipsComplete
@@ -2598,7 +2598,7 @@ func TestNTIASBOMDependenciesRelationships(t *testing.T) {
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_DEPENDENCY_RELATIONSHIP, got.CheckKey)
 		assert.Equal(t, "Required Document-level", got.ID)
-		assert.Equal(t, "primary component declares dependencies completeness complete", got.CheckValue)
+		assert.Equal(t, "primary component has no relationships but decalred (relationships completeness: complete)", got.CheckValue)
 	})
 
 	// cdxCompWithPrimaryDeclaredRelationshipsUnknown
@@ -2611,7 +2611,7 @@ func TestNTIASBOMDependenciesRelationships(t *testing.T) {
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_DEPENDENCY_RELATIONSHIP, got.CheckKey)
 		assert.Equal(t, "Required Document-level", got.ID)
-		assert.Equal(t, "primary component declares dependencies completeness unknown", got.CheckValue)
+		assert.Equal(t, "primary component has no relationships but decalred (relationships completeness: unknown)", got.CheckValue)
 	})
 
 	// cdxCompWithPrimaryDeclaredRelationshipsIncomplete
@@ -2624,7 +2624,7 @@ func TestNTIASBOMDependenciesRelationships(t *testing.T) {
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_DEPENDENCY_RELATIONSHIP, got.CheckKey)
 		assert.Equal(t, "Required Document-level", got.ID)
-		assert.Equal(t, "primary component declares dependencies completeness incomplete", got.CheckValue)
+		assert.Equal(t, "primary component has no relationships but decalred (relationships completeness: incomplete)", got.CheckValue)
 	})
 
 	// cdxCompWithRelationshipsAbsent
@@ -2637,7 +2637,7 @@ func TestNTIASBOMDependenciesRelationships(t *testing.T) {
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_DEPENDENCY_RELATIONSHIP, got.CheckKey)
 		assert.Equal(t, "Required Document-level", got.ID)
-		assert.Equal(t, "no dependency relationships or completeness declared for primary component", got.CheckValue)
+		assert.Equal(t, "primary component has no top-level relationships and nor declare relationships completeness", got.CheckValue)
 	})
 
 }

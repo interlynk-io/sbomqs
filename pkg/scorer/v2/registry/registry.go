@@ -46,13 +46,14 @@ const (
 )
 
 var NTIAKeyToEvaluatingFunction = map[string]catalog.ProfFeatEval{
-	"sbom_machine_format": profiles.SBOMAutomationSpec,
-	"comp_name":           profiles.CompName,
-	"comp_version":        profiles.CompVersion,
-	"comp_uniq_id":        profiles.CompWithUniqID,
-	"sbom_dependencies":   profiles.SBOMDepedencies,
-	"sbom_creator":        profiles.SBOMAuthors,
-	"sbom_timestamp":      profiles.SBOMCreationTimestamp,
+	// "sbom_machine_format": profiles.SBOMAutomationSpec,
+	"comp_supplier":      profiles.NTIACompWithSupplier,
+	"comp_name":          profiles.NTIACompWithName,
+	"comp_version":       profiles.NTIACompWithVersion,
+	"comp_uniq_id":       profiles.NTIACompWithUniqID,
+	"sbom_relationships": profiles.NTIASBOMWithDependencyRelationships,
+	"sbom_authors":       profiles.NTIASBOMWithAuthors,
+	"sbom_timestamp":     profiles.NTIASBOMWithTimeStamp,
 }
 
 var FSCTKeyToEvaluatingFunction = map[string]catalog.ProfFeatEval{
@@ -757,14 +758,14 @@ var profileNTIASpec = catalog.ProfSpec{
 	Description: "NTIA Minimum Elements Profile",
 	Features: []catalog.ProfFeatSpec{
 		// Required (SHALL) fields
-		{Key: "sbom_machine_format", Name: "Automation Support", Required: true, Description: "Valid spec (SPDX/CycloneDX) and format (JSON/XML)", Evaluate: profiles.SBOMAutomationSpec},
-		{Key: "comp_supplier", Name: "Supplier Name", Required: true, Description: "Component supplier information", Evaluate: profiles.CompWithSupplier},
-		{Key: "comp_name", Name: "Component Name", Required: true, Description: "All components must have names", Evaluate: profiles.CompName},
-		{Key: "comp_version", Name: "Component Version", Required: true, Description: "Version strings for all components", Evaluate: profiles.CompVersion},
-		{Key: "comp_uniq_id", Name: "Component Other Identifiers", Required: true, Description: "PURL, CPE, or other unique IDs", Evaluate: profiles.CompWithUniqID},
-		{Key: "sbom_dependencies", Name: "SBOM Relationships", Required: true, Description: "SBOM direct relationship for primary element", Evaluate: profiles.NTIASBOMRelationships},
-		{Key: "sbom_creator", Name: "SBOM Author", Required: true, Description: "Tool or person who created SBOM", Evaluate: profiles.SBOMAuthors},
-		{Key: "sbom_timestamp", Name: "SBOM Timestamp", Required: true, Description: "ISO 8601 creation timestamp", Evaluate: profiles.SBOMCreationTimestamp},
+		// {Key: "sbom_machine_format", Name: "Automation Support", Required: true, Description: "Valid spec (SPDX/CycloneDX) and format (JSON/XML)", Evaluate: profiles.SBOMAutomationSpec},
+		{Key: "comp_supplier", Name: "Supplier Name", Required: true, Description: "Component supplier information", Evaluate: profiles.NTIACompWithSupplier},
+		{Key: "comp_name", Name: "Component Name", Required: true, Description: "All components must have names", Evaluate: profiles.NTIACompWithName},
+		{Key: "comp_version", Name: "Component Version", Required: true, Description: "Version strings for all components", Evaluate: profiles.NTIACompWithVersion},
+		{Key: "comp_uniq_id", Name: "Component Other Identifiers", Required: true, Description: "PURL, CPE, or other unique IDs", Evaluate: profiles.NTIACompWithUniqID},
+		{Key: "sbom_relationships", Name: "SBOM Relationships", Required: true, Description: "SBOM direct relationship for primary element", Evaluate: profiles.NTIASBOMWithDependencyRelationships},
+		{Key: "sbom_authors", Name: "SBOM Author", Required: true, Description: "Tool or person who created SBOM", Evaluate: profiles.NTIASBOMWithAuthors},
+		{Key: "sbom_timestamp", Name: "SBOM Timestamp", Required: true, Description: "ISO 8601 creation timestamp", Evaluate: profiles.NTIASBOMWithTimeStamp},
 		// Optional (SHOULD) fields - don't impact score
 		// {Key: "comp_hash", Name: "Component Hash", Required: false, Description: "Component checksums (optional)", Evaluate: profiles.NTIACompHash},
 		// {Key: "sbom_lifecycle", Name: "Lifecycle Phase", Required: false, Description: "SBOM lifecycle phase (optional)", Evaluate: profiles.NTIASBOMLifecycle},

@@ -15,6 +15,7 @@
 package profiles
 
 import (
+	"fmt"
 	"slices"
 	"strings"
 
@@ -29,8 +30,14 @@ import (
 // 	return SBOMAutomationSpec(doc)
 // }
 
-// Component Supplier
-func CompWithSupplier(doc sbom.Document) catalog.ProfFeatScore {
+// NTIACompWithSupplier
+// NTIA says:
+// - This refers to the **authority responsible for the component’s identity**, not manufacturing or legal ownership.
+//
+// Mappings:
+// - For SPDX: PackageSupplier, PackageOriginator
+// - For CycloneDX: Component Supplier, Component Manufacturer
+func NTIACompWithSupplier(doc sbom.Document) catalog.ProfFeatScore {
 
 	comps := doc.Components()
 	if len(comps) == 0 {
@@ -66,18 +73,36 @@ func CompWithSupplier(doc sbom.Document) catalog.ProfFeatScore {
 	return formulae.ScoreProfFull(have, len(comps), false)
 }
 
-// CompWithName check for component with name
-func CompWithName(doc sbom.Document) catalog.ProfFeatScore {
+// NTIACompWithName check for component with name
+// NTIA says:
+// - Name assigned to the component by the supplier
+//
+// Mappings:
+// - For SPDX: PackageName
+// - For CycloneDX: Component Name
+func NTIACompWithName(doc sbom.Document) catalog.ProfFeatScore {
 	return CompName(doc)
 }
 
-// CompWithVersion check for Component with Version
-func CompWithVersion(doc sbom.Document) catalog.ProfFeatScore {
+// NTIACompWithVersion check for Component with Version
+// NTIA says:
+// - Version identifier used to distinguish a specific release.
+//
+// Mappings:
+// - For SPDX: PackageVersion
+// - For CycloneDX: Component Version
+func NTIACompWithVersion(doc sbom.Document) catalog.ProfFeatScore {
 	return CompVersion(doc)
 }
 
-// CompWithUniqID checks Component Other Identifiers such as PURL/CPE
-func CompWithUniqID(doc sbom.Document) catalog.ProfFeatScore {
+// NTIACompWithUniqID checks Component Other Identifiers such as PURL/CPE
+// NTIA says:
+// - At least one additional identifier if available (e.g., CPE, PURL, SWID).
+//
+// Mappings:
+// - For SPDX: PackageExternalRefs (PURL), PackageCPEs
+// - For CycloneDX: Component External References (PURL), Component CPEs
+func NTIACompWithUniqID(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
 		return formulae.ScoreProfNA(true)
@@ -90,17 +115,20 @@ func CompWithUniqID(doc sbom.Document) catalog.ProfFeatScore {
 	return formulae.ScoreProfFull(have, len(comps), false)
 }
 
-// NTIASBOMRelationships evaluates SBOM-level dependency requirements
-// as defined by NTIA Minimum Elements
+// NTIASBOMWithDependencyRelationships
 //
-// NTIA requires:
-//   - Identification of upstream (DEPENDS_ON) relationships
-//     for the primary component
+// NTIA says:
+// - At minimum, top-level dependencies or explicit completeness declarations must be present.
 //
-// NTIA does NOT require:
-//   - Complete transitive dependency graphs
-//   - Dependency declarations for every component
-func NTIASBOMRelationships(doc sbom.Document) catalog.ProfFeatScore {
+// NTIA requires that an SBOM declare the upstream dependency relationships
+// of the *primary (top-level) component*.
+// - At a minimum, the SBOM must list the primary component's direct dependencies.
+// - or decalrer completeness if no dependencies exist.
+//
+// Mappings:
+// - For SPDX: Relationship with type "DEPENDS_ON" from primary component
+// - For CycloneDX: Component dependencies from primary component
+func NTIASBOMWithDependencyRelationships(doc sbom.Document) catalog.ProfFeatScore {
 	primary := doc.PrimaryComp()
 	if !primary.IsPresent() {
 		return formulae.ScoreProfileCustomNA(false, "define primary component")
@@ -113,7 +141,7 @@ func NTIASBOMRelationships(doc sbom.Document) catalog.ProfFeatScore {
 	if len(directDeps) > 0 {
 		return catalog.ProfFeatScore{
 			Score:  10.0,
-			Desc:   "primary component has direct relationships",
+			Desc:   fmt.Sprintf("primary component declares %d top-level dependencies", len(directDeps)),
 			Ignore: false,
 		}
 	}
@@ -134,21 +162,21 @@ func NTIASBOMRelationships(doc sbom.Document) catalog.ProfFeatScore {
 		case sbom.AggregateComplete:
 			return catalog.ProfFeatScore{
 				Score:  10.0,
-				Desc:   "primary comp declares relationships completeness complete",
+				Desc:   "primary component has no relationships but decalred (relationships completeness: complete)",
 				Ignore: false,
 			}
 
 		case sbom.AggregateUnknown:
 			return catalog.ProfFeatScore{
 				Score:  5.0,
-				Desc:   "primary comp declares relationships completeness unknown",
+				Desc:   "primary component has no relationships but decalred (relationships completeness: unknown)",
 				Ignore: false,
 			}
 
 		case sbom.AggregateIncomplete:
 			return catalog.ProfFeatScore{
 				Score:  0.0,
-				Desc:   "primary comp declares relationships completeness incomplete",
+				Desc:   "primary component has no relationships but decalred (relationships completeness: incomplete)",
 				Ignore: false,
 			}
 		}
@@ -158,13 +186,19 @@ func NTIASBOMRelationships(doc sbom.Document) catalog.ProfFeatScore {
 	// Default interpretation per NTIA: incomplete
 	return catalog.ProfFeatScore{
 		Score:  0.0,
-		Desc:   "primary component has no direct relationships and does not declare completeness",
+		Desc:   "primary component has no top-level relationships and nor declare relationships completeness",
 		Ignore: false,
 	}
 }
 
-// SBOM Author
-func SbomWithAuthors(doc sbom.Document) catalog.ProfFeatScore {
+// NTIASBOMWithAuthors
+// NTIA says
+// - Author reflects the source of the metadata, which could come from the creator of the software being described in the SBOM, the upstream component supplier, or some third-party analysis tool.
+//
+// Mappings:
+// - For SPDX: CreationInfo.Creators of type "Person" or "Organization" or "Tool"
+// - For CycloneDX: metadata.authors(preferred) or metadata.tools(allowed) or metadata.supplier(fallback) or metadata.manufacturer(fallback)
+func NTIASBOMWithAuthors(doc sbom.Document) catalog.ProfFeatScore {
 	authors := doc.Authors()
 
 	if len(authors) > 0 {
@@ -175,7 +209,7 @@ func SbomWithAuthors(doc sbom.Document) catalog.ProfFeatScore {
 			if name != "" || email != "" {
 				return catalog.ProfFeatScore{
 					Score:  10.0,
-					Desc:   "SBOM author present",
+					Desc:   "SBOM author declared explicitly",
 					Ignore: false,
 				}
 			}
@@ -191,19 +225,19 @@ func SbomWithAuthors(doc sbom.Document) catalog.ProfFeatScore {
 			if name != "" && version != "" {
 				return catalog.ProfFeatScore{
 					Score:  10.0,
-					Desc:   "SBOM tool present",
+					Desc:   "SBOM author inferred from SBOM tool",
 					Ignore: false,
 				}
 			} else if name != "" {
 				return catalog.ProfFeatScore{
 					Score:  5.0,
-					Desc:   "SBOM tool name present only",
+					Desc:   "SBOM author inferred from SBOM tool with name only",
 					Ignore: false,
 				}
 			} else if version != "" {
 				return catalog.ProfFeatScore{
 					Score:  0.0,
-					Desc:   "SBOM tool version present only",
+					Desc:   "SBOM author inferred from SBOM tool with version only",
 					Ignore: false,
 				}
 			}
@@ -219,7 +253,7 @@ func SbomWithAuthors(doc sbom.Document) catalog.ProfFeatScore {
 		if name != "" || email != "" || url != "" {
 			return catalog.ProfFeatScore{
 				Score:  10.0,
-				Desc:   "supplier used as SBOM author fallback",
+				Desc:   "SBOM author inferred from supplier (fallback)",
 				Ignore: false,
 			}
 		}
@@ -234,7 +268,7 @@ func SbomWithAuthors(doc sbom.Document) catalog.ProfFeatScore {
 		if name != "" || email != "" || url != "" {
 			return catalog.ProfFeatScore{
 				Score:  10.0,
-				Desc:   "manufacturer used as SBOM author fallback",
+				Desc:   "SBOM author inferred from manufacturer (fallback)",
 				Ignore: false,
 			}
 		}
@@ -242,13 +276,13 @@ func SbomWithAuthors(doc sbom.Document) catalog.ProfFeatScore {
 
 	return catalog.ProfFeatScore{
 		Score:  0.0,
-		Desc:   "add author information",
+		Desc:   "add SBOM author information",
 		Ignore: false,
 	}
 }
 
-// SBOM Timestamp
-func SbomWithTimeStamp(doc sbom.Document) catalog.ProfFeatScore {
+// NTIASBOMWithTimeStamp
+func NTIASBOMWithTimeStamp(doc sbom.Document) catalog.ProfFeatScore {
 	return SBOMCreationTimestamp(doc)
 }
 
