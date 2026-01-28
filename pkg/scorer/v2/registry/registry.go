@@ -57,15 +57,15 @@ var NTIAKeyToEvaluatingFunction = map[string]catalog.ProfFeatEval{
 }
 
 var FSCTKeyToEvaluatingFunction = map[string]catalog.ProfFeatEval{
-	"sbom_author":            profiles.FSCTSBOMAuthors,
-	"sbom_timestamp":         profiles.FSCTSBOMTimeStamp,
-	"sbom_build":             profiles.FSCTSBOMBuildLifecycle,
+	"sbom_author":    profiles.FSCTSBOMAuthors,
+	"sbom_timestamp": profiles.FSCTSBOMTimeStamp,
+	// "sbom_build":             profiles.FSCTSBOMBuildLifecycle,
 	"sbom_primary_component": profiles.FSCTSBOMPrimaryComponent,
 	"comp_name":              profiles.FSCTCompName,
 	"comp_version":           profiles.FSCTCompVersion,
 	"comp_supplier":          profiles.FSCTCompSupplier,
 	"comp_uniq_id":           profiles.FSCTCompUniqID,
-	"comp_hash":              profiles.FSCTCompHash,
+	"comp_hash":              profiles.FSCTCompChecksum,
 	"comp_dependencies":      profiles.FSCTCompDependencies,
 	"comp_license":           profiles.FSCTCompLicense,
 	"comp_copyright":         profiles.FSCTCompCopyright,
@@ -807,13 +807,13 @@ var profileFSCTSpec = catalog.ProfSpec{
 		{Key: "comp_version", Name: "Component Version", Required: true, Description: "Version strings for all components", Evaluate: profiles.FSCTCompVersion},
 		{Key: "comp_supplier", Name: "Component Supplier", Required: true, Description: "Component supplier info", Evaluate: profiles.FSCTCompSupplier},
 		{Key: "comp_uniq_id", Name: "Component Other Identifiers", Required: true, Description: "PURL, CPE, or other unique IDs", Evaluate: profiles.FSCTCompUniqID},
-		{Key: "comp_hash", Name: "Component Hash", Required: true, Description: "Component checksums", Evaluate: profiles.FSCTCompHash},
+		{Key: "comp_hash", Name: "Component Hash", Required: true, Description: "Component checksums", Evaluate: profiles.FSCTCompChecksum},
 		{Key: "comp_dependencies", Name: "Component Dependencies", Required: true, Description: "Dependency relationships", Evaluate: profiles.FSCTCompDependencies},
 		{Key: "comp_license", Name: "License Information", Required: true, Description: "Component licenses (optional)", Evaluate: profiles.FSCTCompLicense},
 		{Key: "comp_copyright", Name: "Copyright Text", Required: true, Description: "Copyright information", Evaluate: profiles.FSCTCompCopyright},
 
 		// Optional (SHOULD) fields - don't impact score
-		{Key: "sbom_build", Name: "Build Information", Required: false, Description: "Build phase indication", Evaluate: profiles.FSCTSBOMBuildLifecycle},
+		// {Key: "sbom_build", Name: "Build Information", Required: false, Description: "Build phase indication", Evaluate: profiles.FSCTSBOMBuildLifecycle},
 	},
 }
 

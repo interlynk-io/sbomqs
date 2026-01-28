@@ -50,6 +50,10 @@ const (
 	// whether the information is complete or not.
 	AggregateUnknown CompositionAggregate = "unknown"
 
+	// AggregateMissing indicates no completeness assertion
+	// is provided for the given scope.
+	AggregateMissing CompositionAggregate = "missing"
+
 	// AggregateIncompleteFirstPartyOnly indicates completeness
 	// is asserted only for first-party components, not third-party
 	AggregateIncompleteFirstPartyOnly CompositionAggregate = "incomplete_first_party_only"
