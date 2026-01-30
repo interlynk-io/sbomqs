@@ -210,6 +210,13 @@ func FSCTCompSupplier(doc sbom.Document) catalog.ProfFeatScore {
 		url := strings.TrimSpace(supplier.GetURL())
 		email := strings.TrimSpace(supplier.GetEmail())
 
+		var contactName, contactEmail string
+
+		for _, c := range supplier.GetContacts() {
+			contactEmail = strings.TrimSpace(c.GetEmail())
+			contactName = strings.TrimSpace(c.GetName())
+		}
+
 		// Explicitly declared as unknown
 		if strings.EqualFold(name, "unknown") {
 			declaredUnknown++
@@ -217,24 +224,24 @@ func FSCTCompSupplier(doc sbom.Document) catalog.ProfFeatScore {
 		}
 
 		// Supplier identified
-		if name != "" || url != "" || email != "" {
+		if name != "" || url != "" || email != "" || contactEmail != "" || contactName != "" {
 			identified++
 		}
 	}
 
 	have := identified + declaredUnknown
 
-	desc := "supplier information missing for some components"
+	desc := fmt.Sprintf("supplier information missing for all(%d) components", total)
 	if have == total {
 		if declaredUnknown > 0 && identified == 0 {
 			desc = "supplier declared as unknown for all components"
 		} else if declaredUnknown > 0 {
-			desc = "supplier identified for some components; explicitly unknown for others"
+			desc = fmt.Sprintf("supplier identified for %d components; explicitly unknown for %d", identified, declaredUnknown)
 		} else {
 			desc = "supplier identified for all components"
 		}
 	} else if have > 0 {
-		desc = "supplier declared for some components; missing for others"
+		desc = fmt.Sprintf("supplier declared for %d components; missing for %d", have, total-have)
 	}
 
 	return catalog.ProfFeatScore{
@@ -259,46 +266,156 @@ func FSCTCompUniqID(doc sbom.Document) catalog.ProfFeatScore {
 		return formulae.ScoreProfNA(true)
 	}
 
-	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
-		return checkFsctUniqueID(c)
-	})
+	var (
+		have        int
+		purlSeen    bool
+		cpeSeen     bool
+		swhidSeen   bool
+		swidSeen    bool
+		omniborSeen bool
+	)
 
-	return formulae.ScoreProfFull(have, len(comps), false)
+	for _, c := range comps {
+		t := detectFsctUniqueIDTypes(c)
+
+		if t.purl || t.cpe || t.swhid || t.swid || t.omnibor {
+			have++
+		}
+
+		purlSeen = purlSeen || t.purl
+		cpeSeen = cpeSeen || t.cpe
+		swhidSeen = swhidSeen || t.swhid
+		swidSeen = swidSeen || t.swid
+		omniborSeen = omniborSeen || t.omnibor
+	}
+
+	// Build identifier kind list (for explainability)
+	var kinds []string
+	if purlSeen {
+		kinds = append(kinds, "PURL")
+	}
+	if cpeSeen {
+		kinds = append(kinds, "CPE")
+	}
+	if swhidSeen {
+		kinds = append(kinds, "SWHID")
+	}
+	if swidSeen {
+		kinds = append(kinds, "SWID")
+	}
+	if omniborSeen {
+		kinds = append(kinds, "OmniborID")
+	}
+
+	// Description (supplier-style)
+	desc := fmt.Sprintf(
+		"unique identifier missing for all (%d) components",
+		len(comps),
+	)
+
+	if have == len(comps) {
+		desc = fmt.Sprintf(
+			"unique identifier declared for all components (%s)",
+			strings.Join(kinds, ", "),
+		)
+	} else if have > 0 {
+		desc = fmt.Sprintf(
+			"unique identifier declared for %d components; missing for %d (%s)",
+			have,
+			len(comps)-have,
+			strings.Join(kinds, ", "),
+		)
+	}
+
+	score := formulae.ScoreProfFull(have, len(comps), false)
+
+	return catalog.ProfFeatScore{
+		Score:  score.Score,
+		Desc:   desc,
+		Ignore: false,
+	}
 }
 
-// checkFsctUniqueID checks whether the component declares at least one
-// unique identifier as expected by FSCT.
-func checkFsctUniqueID(c sbom.GetComponent) bool {
-	// PURL (do not require full validation)
+type uniqIDTypes struct {
+	purl    bool
+	cpe     bool
+	swhid   bool
+	swid    bool
+	omnibor bool
+}
+
+func detectFsctUniqueIDTypes(c sbom.GetComponent) uniqIDTypes {
+	var t uniqIDTypes
+
 	for _, p := range c.GetPurls() {
 		if strings.TrimSpace(string(p)) != "" {
-			return true
+			t.purl = true
 		}
 	}
-
-	// CPE
-	for _, c := range c.GetCpes() {
-		if strings.TrimSpace(string(c)) != "" {
-			return true
+	for _, cpe := range c.GetCpes() {
+		if strings.TrimSpace(string(cpe)) != "" {
+			t.cpe = true
 		}
 	}
-
-	// SWHID
 	for _, id := range c.Swhids() {
 		if strings.TrimSpace(string(id)) != "" {
-			return true
+			t.swhid = true
 		}
 	}
-
-	// SWID
 	for _, id := range c.Swids() {
 		if strings.TrimSpace(string(swid.SWID(id).String())) != "" {
-			return true
+			t.swid = true
+		}
+	}
+	for _, id := range c.OmniborIDs() {
+		if strings.TrimSpace(string(id)) != "" {
+			t.omnibor = true
 		}
 	}
 
-	return false
+	return t
 }
+
+// // checkFsctUniqueID checks whether the component declares at least one
+// // unique identifier as expected by FSCT.
+// func checkFsctUniqueID(c sbom.GetComponent) bool {
+// 	// PURL (do not require full validation)
+// 	for _, p := range c.GetPurls() {
+// 		if strings.TrimSpace(string(p)) != "" {
+// 			return true
+// 		}
+// 	}
+
+// 	// CPE
+// 	for _, c := range c.GetCpes() {
+// 		if strings.TrimSpace(string(c)) != "" {
+// 			return true
+// 		}
+// 	}
+
+// 	// SWHID
+// 	for _, id := range c.Swhids() {
+// 		if strings.TrimSpace(string(id)) != "" {
+// 			return true
+// 		}
+// 	}
+
+// 	// SWID
+// 	for _, id := range c.Swids() {
+// 		if strings.TrimSpace(string(swid.SWID(id).String())) != "" {
+// 			return true
+// 		}
+// 	}
+
+// 	// OmniborID
+// 	for _, id := range c.OmniborIDs() {
+// 		if strings.TrimSpace(string(id)) != "" {
+// 			return true
+// 		}
+// 	}
+
+// 	return false
+// }
 
 // Component Cryptographic Hash (Must)
 // FSCT says:
