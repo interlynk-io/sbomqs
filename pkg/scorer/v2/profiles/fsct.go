@@ -91,7 +91,7 @@ func FSCTSBOMAuthors(doc sbom.Document) catalog.ProfFeatScore {
 
 	return catalog.ProfFeatScore{
 		Score:  0.0,
-		Desc:   "add identifiable SBOM author information",
+		Desc:   "add authors",
 		Ignore: false,
 	}
 }

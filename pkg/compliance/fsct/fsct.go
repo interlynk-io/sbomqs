@@ -16,6 +16,7 @@ package fsct
 
 import (
 	"context"
+	"fmt"
 	"slices"
 	"sort"
 	"strings"
@@ -84,40 +85,66 @@ func SBOMAuthor(doc sbom.Document) *db.Record {
 	var score float64
 	var maturity, result string
 
-	// 	--- Check authors (FSCT minimum expected) ---
-	authorResult, authorPresent := "", false
-	if authors := doc.Authors(); authors != nil {
-		authorResult, authorPresent = checkAuthors(authors)
+	// --- Check authors (FSCT Minimum Expected) ---
+	authorStr, authorPresent := "", false
+	if a := doc.Authors(); a != nil {
+		authorStr, authorPresent = checkAuthors(a)
 	}
 
-	// --- Check tools (recommended practice) ---
-	toolResult, toolPresent := "", false
-	if tools := doc.Tools(); tools != nil {
-		toolResult, toolPresent = checkTools(tools)
-	}
-
-	// --- FSCT compliance logic ---
-	// Minimum Expected not met: no author entity
+	// Minimum Expected not met
 	if !authorPresent {
-		score = 0.0
-		maturity = "Non-Compliant"
-		result = "SBOM author not declared"
-		return db.NewRecordStmt(SBOM_AUTHOR, "doc", result, score, maturity)
+		return db.NewRecordStmt(SBOM_AUTHOR, "doc", "SBOM author not declared", 0.0, "Non-Compliant")
 	}
 
-	// Minimum Expected met
+	authorItems := strings.Split(authorStr, "; ")
+
+	authorBlock := formatDeclaredBlock(
+		"AUTHORS DECLARED",
+		authorItems,
+	)
+
+	// --- Check tools (FSCT Recommended Practice) ---
+	toolStr, toolPresent := "", false
+	var toolItems []string
+
+	if t := doc.Tools(); t != nil {
+		toolStr, toolPresent = checkTools(t)
+		if toolPresent {
+			toolItems = strings.Split(toolStr, "; ")
+		}
+	}
+
+	// --- Minimum Expected ---
 	score = 10.0
 	maturity = "Minimum Expected"
-	result = authorResult
+	result = authorBlock
 
-	// Recommended Practice met (author + tools)
+	// --- Recommended Practice (authors + tools) ---
 	if toolPresent {
+		toolBlock := formatDeclaredBlock(
+			"TOOLS DECLARED",
+			toolItems,
+		)
+
 		score = 12.0
 		maturity = "Recommended Practice"
-		result = authorResult + "; " + toolResult
+
+		result = authorBlock + " | " + toolBlock
 	}
 
 	return db.NewRecordStmt(SBOM_AUTHOR, "doc", result, score, maturity)
+}
+
+func formatDeclaredBlock(title string, items []string) string {
+	var b strings.Builder
+
+	b.WriteString(fmt.Sprintf("%s: ", title))
+
+	for i, item := range items {
+		b.WriteString(fmt.Sprintf("(%d) %s", i+1, item))
+	}
+
+	return strings.TrimRight(b.String(), "\n")
 }
 
 func checkAuthors(authors []sbom.GetAuthor) (string, bool) {
@@ -165,7 +192,7 @@ func checkAuthors(authors []sbom.GetAuthor) (string, bool) {
 		return "", false
 	}
 
-	return strings.Join(result, ", "), true
+	return strings.Join(result, "; "), true
 }
 
 func checkTools(tools []sbom.GetTool) (string, bool) {
@@ -185,7 +212,7 @@ func checkTools(tools []sbom.GetTool) (string, bool) {
 		return "", false
 	}
 
-	return strings.Join(result, ", "), true
+	return strings.Join(result, "; "), true
 }
 
 func SBOMTimestamp(doc sbom.Document) *db.Record {
@@ -256,7 +283,7 @@ func SBOMType(doc sbom.Document) *db.Record {
 
 	// FSCT: SBOM Type is aspirational; absence is acceptable
 	if len(lifecycles) == 0 {
-		return db.NewRecordStmt(SBOM_TYPE, "doc", "SBOM type not declared", 0.0, "Minimum Expected")
+		return db.NewRecordStmt(SBOM_TYPE, "doc", "SBOM type not declared; optional per FSCT", 0.0, "Minimum Expected")
 	}
 
 	// Join declared lifecycle types for explainability
@@ -493,9 +520,9 @@ func checkHash(checksums []sbom.GetChecksum) (string, bool, bool) {
 
 		algos[algo] = struct{}{}
 
-		if IsStrongChecksum(algo) {
+		if isStrongChecksum(algo) {
 			hasStrong = true
-		} else if IsWeakChecksum(algo) {
+		} else if isWeakChecksum(algo) {
 			hasWeak = true
 		}
 	}
@@ -518,7 +545,7 @@ func checkHash(checksums []sbom.GetChecksum) (string, bool, bool) {
 //   - MD family: MD2, MD4, MD5, MD6
 //   - SHA-1
 //   - Adler-32 (non-cryptographic)
-func IsWeakChecksum(algo string) bool {
+func isWeakChecksum(algo string) bool {
 	switch algo {
 	case "MD2", "MD4", "MD5", "MD6":
 		return true
@@ -537,7 +564,7 @@ func IsWeakChecksum(algo string) bool {
 //   - SHA-3 family: SHA3-224, SHA3-256, SHA3-384, SHA3-512
 //   - BLAKE family: BLAKE2b-256, BLAKE2b-384, BLAKE2b-512, BLAKE3
 //   - Streebog family: Streebog-256, Streebog-512
-func IsStrongChecksum(algo string) bool {
+func isStrongChecksum(algo string) bool {
 	switch algo {
 	// SHA-2 family (SHA-224 and above)
 	case "SHA224", "SHA256", "SHA384", "SHA512":

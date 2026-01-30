@@ -126,9 +126,9 @@ var spdxCompSupplierWithPersonEmail = []byte(`
   },
   "packages": [
     {
-      "SPDXID": "SPDXRef-App",
-      "name": "application-a",
-      "versionInfo": "1.0",
+      "SPDXID": "SPDXRef-AcmeLib",
+      "name": "Acme Library",
+      "versionInfo": "3.0",
       "supplier": "Person: (samantha.wright@example.com)",
       "homepage" : "http://ftp.gnu.org/gnu/glibc"
     }
@@ -147,9 +147,9 @@ var spdxCompSupplierWithOrganizationEmail = []byte(`
   },
   "packages": [
     {
-      "SPDXID": "SPDXRef-App",
-      "name": "application-a",
-      "versionInfo": "1.0",
+      "SPDXID": "SPDXRef-AcmeLib",
+      "name": "Acme Library",
+      "versionInfo": "3.0",
       "supplier": "Organization:  (samantha.wright@example.com)",
       "homepage" : "http://ftp.gnu.org/gnu/glibc"
     }
@@ -190,9 +190,9 @@ var cdxCompSupplierWithName = []byte(`
   "version": 1,
   "components": [
     {
-      "type": "application",
-      "name": "Acme Application",
-      "version": "9.1.1",
+      "SPDXID": "SPDXRef-AcmeLib",
+      "name": "Acme Library",
+      "versionInfo": "3.0",
       "supplier": {
         "name": "Acme, Inc."
       }
