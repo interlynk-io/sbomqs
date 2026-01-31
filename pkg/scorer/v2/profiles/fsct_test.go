@@ -1934,7 +1934,6 @@ var cdxTwoCompWithValidPURLCPESWIDSWHIDAndOmniborID = []byte(`
 func TestFSCTCompUniqueIDs(t *testing.T) {
 	ctx := context.Background()
 
-	// cdxCompValidPURL
 	t.Run("cdxCompValidPURL", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompValidPURL, sbom.Signature{})
 		require.NoError(t, err)
@@ -2211,7 +2210,6 @@ func TestFSCTCompUniqueIDs(t *testing.T) {
 		assert.False(t, got.Ignore)
 	})
 
-	// --------
 	t.Run("cdxCompOmniborIDValid", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompOmniborIDValid, sbom.Signature{})
 		require.NoError(t, err)
@@ -2332,5 +2330,1245 @@ func TestFSCTCompUniqueIDs(t *testing.T) {
 		assert.Equal(t, "unique identifier declared for all components (PURL, CPE, SWHID, SWID, OmniborID)", got.Desc)
 		assert.False(t, got.Ignore)
 	})
+}
 
+var cdxCompWithMixValidChecksums = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "name": "acme-example",
+      "version": "1.0.0",
+      "hashes": [
+        {
+          "alg": "MD5",
+          "content": "641b6e166f8b33c5e959e2adcc18b1c7"
+        },
+        {
+          "alg": "SHA-1",
+          "content": "9188560f22e0b73070d2efce670c74af2bdf30af"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "d88bc4e70bfb34d18b5542136639acbb26a8ae2429aa1e47489332fb389cc964"
+        },
+        {
+          "alg": "SHA-512",
+          "content": "74a51ff45e4c11df9ba1f0094282c80489649cb157a75fa337992d2d4592a5a1b8cb4525de8db0ae25233553924d76c36e093ea7fa9df4e5b8b07fd2e074efd6"
+        }
+      ]
+    }
+  ]
+}
+`)
+
+var spdxCompWithMixValidChecksums = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": ["Tool: syft v0.95.0"]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Pkg",
+      "name": "acme-example",
+      "versionInfo": "1.0.0",
+      "checksums": [
+        {
+          "algorithm": "MD5",
+          "checksumValue": "641b6e166f8b33c5e959e2adcc18b1c7"
+        },
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "9188560f22e0b73070d2efce670c74af2bdf30af"
+        },
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "d88bc4e70bfb34d18b5542136639acbb26a8ae2429aa1e47489332fb389cc964"
+        },
+        {
+          "algorithm": "SHA512",
+          "checksumValue": "74a51ff45e4c11df9ba1f0094282c80489649cb157a75fa337992d2d4592a5a1b8cb4525de8db0ae25233553924d76c36e093ea7fa9df4e5b8b07fd2e074efd6"
+        }
+      ]
+    }
+  ]
+}
+`)
+
+var cdxCompChecksumWeak = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "name": "acme-example",
+      "version": "1.0.0",
+      "hashes": [
+        {
+          "alg": "MD5",
+          "content": "641b6e166f8b33c5e959e2adcc18b1c7"
+        },
+        {
+          "alg": "SHA-1",
+          "content": "9188560f22e0b73070d2efce670c74af2bdf30af"
+        }
+      ]
+    }
+  ]
+}
+`)
+
+var spdxCompChecksumWeak = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": ["Tool: syft v0.95.0"]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Pkg",
+      "name": "acme-example",
+      "versionInfo": "1.0.0",
+      "checksums": [
+        {
+          "algorithm": "MD5",
+          "checksumValue": "641b6e166f8b33c5e959e2adcc18b1c7"
+        },
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "9188560f22e0b73070d2efce670c74af2bdf30af"
+        }
+      ]
+    }
+  ]
+}
+`)
+
+var cdxCompChecksumStrong = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "name": "acme-example",
+      "version": "1.0.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "d88bc4e70bfb34d18b5542136639acbb26a8ae2429aa1e47489332fb389cc964"
+        },
+        {
+          "alg": "SHA-512",
+          "content": "74a51ff45e4c11df9ba1f0094282c80489649cb157a75fa337992d2d4592a5a1b8cb4525de8db0ae25233553924d76c36e093ea7fa9df4e5b8b07fd2e074efd6"
+        }
+      ]
+    }
+  ]
+}
+`)
+
+var spdxCompChecksumStrong = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": ["Tool: syft v0.95.0"]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Pkg",
+      "name": "acme-example",
+      "versionInfo": "1.0.0",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "d88bc4e70bfb34d18b5542136639acbb26a8ae2429aa1e47489332fb389cc964"
+        },
+        {
+          "algorithm": "SHA512",
+          "checksumValue": "74a51ff45e4c11df9ba1f0094282c80489649cb157a75fa337992d2d4592a5a1b8cb4525de8db0ae25233553924d76c36e093ea7fa9df4e5b8b07fd2e074efd6"
+        }
+      ]
+    }
+  ]
+}
+`)
+
+var cdxCompChecksumWithEmptyValue = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "name": "acme-example",
+      "version": "1.0.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": ""
+        }
+      ]
+    }
+  ]
+}
+`)
+
+var spdxCompChecksumWithEmptyValue = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": ["Tool: syft v0.95.0"]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Pkg",
+      "name": "acme-example",
+      "versionInfo": "1.0.0",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": ""
+        }
+      ]
+    }
+  ]
+}
+`)
+
+var cdxCompChecksumMissing = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "name": "acme-example",
+      "version": "1.0.0",
+      "hashes": []
+    }
+  ]
+}
+`)
+
+var spdxCompChecksumMissing = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": ["Tool: syft v0.95.0"]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Pkg",
+      "name": "acme-example",
+      "versionInfo": "1.0.0",
+      "checksums": []
+    }
+  ]
+}
+`)
+
+var cdxCompChecksumAbsent = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "name": "acme-example",
+      "version": "1.0.0"
+    }
+  ]
+}
+`)
+
+var spdxCompChecksumAbsent = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": ["Tool: syft v0.95.0"]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Pkg",
+      "name": "acme-example",
+      "versionInfo": "1.0.0"
+    }
+  ]
+}
+`)
+
+var cdxCompChecksumWithOnePresentAndOneMissing = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "name": "acme-example",
+      "version": "1.0.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "d88bc4e70bfb34d18b5542136639acbb26a8ae2429aa1e47489332fb389cc964"
+        },
+        {
+          "alg": "SHA-512",
+          "content": ""
+        }
+      ]
+    }
+  ]
+}
+`)
+
+var spdxCompChecksumWithOnePresentAndOneMissing = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": ["Tool: syft v0.95.0"]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Pkg",
+      "name": "acme-example",
+      "versionInfo": "1.0.0",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "d88bc4e70bfb34d18b5542136639acbb26a8ae2429aa1e47489332fb389cc964"
+        },
+        {
+          "algorithm": "SHA512",
+          "checksumValue": ""
+        }
+      ]
+    }
+  ]
+}
+`)
+
+func TestFSCTCompChecksum(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("cdxCompWithMixValidChecksums", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithMixValidChecksums, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompChecksum(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "cryptographic hash declared for all components (MD5, SHA1, SHA256, SHA512)", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxCompWithMixValidChecksums", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWithMixValidChecksums, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompChecksum(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "cryptographic hash declared for all components (MD5, SHA1, SHA256, SHA512)", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxCompChecksumWeak", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompChecksumWeak, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompChecksum(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "cryptographic hash declared for all components (MD5, SHA1)", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxCompChecksumWeak", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompChecksumWeak, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompChecksum(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "cryptographic hash declared for all components (MD5, SHA1)", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxCompChecksumStrong", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompChecksumStrong, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompChecksum(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "cryptographic hash declared for all components (SHA256, SHA512)", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxCompChecksumStrong", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompChecksumStrong, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompChecksum(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "cryptographic hash declared for all components (SHA256, SHA512)", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxCompChecksumWithEmptyValue", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompChecksumWithEmptyValue, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompChecksum(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "cryptographic hash missing for all (1) components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxCompChecksumWithEmptyValue", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompChecksumWithEmptyValue, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompChecksum(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "cryptographic hash missing for all (1) components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxCompChecksumMissing", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompChecksumMissing, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompChecksum(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "cryptographic hash missing for all (1) components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxCompChecksumMissing", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompChecksumMissing, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompChecksum(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "cryptographic hash missing for all (1) components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxCompChecksumAbsent", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompChecksumAbsent, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompChecksum(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "cryptographic hash missing for all (1) components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxCompChecksumAbsent", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompChecksumAbsent, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompChecksum(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "cryptographic hash missing for all (1) components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxCompChecksumWithOnePresentAndOneMissing", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompChecksumWithOnePresentAndOneMissing, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompChecksum(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "cryptographic hash declared for all components (SHA256)", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxCompChecksumWithOnePresentAndOneMissing", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompChecksumWithOnePresentAndOneMissing, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompChecksum(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "cryptographic hash declared for all components (SHA256)", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+}
+
+var cdxCompValidLicenseID = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "name": "acme",
+      "version": "0.1.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0",
+            "acknowledgement": "concluded"
+          }
+        }
+      ]
+    }
+  ]
+}
+`)
+
+var spdxCompValidLicense = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "test-doc",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": ["Tool: syft v0.95.0"]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Pkg",
+      "name": "acme",
+      "versionInfo": "0.1.0",
+      "licenseConcluded": "Apache-2.0"
+    }
+  ]
+}
+`)
+
+var cdxCompValidDeclaredLicenseID = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "name": "acme",
+      "version": "0.1.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0",
+            "acknowledgement": "declared"
+			    }
+        }
+      ]
+    }
+  ]
+}
+`)
+
+var spdxCompValidDeclaredLicense = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "test-doc",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": ["Tool: syft v0.95.0"]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Pkg",
+      "name": "acme",
+      "versionInfo": "0.1.0",
+      "licenseDeclared": "Apache-2.0"
+    }
+  ]
+}
+`)
+
+var cdxCompDeprecatedLicenseID = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "name": "acme",
+      "version": "0.1.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "AGPL-1.0",
+            "acknowledgement": "concluded"
+          }
+        }
+      ]
+    }
+  ]
+}
+`)
+
+var spdxCompDeprecatedLicense = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "test-doc",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": ["Tool: syft v0.95.0"]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Pkg",
+      "name": "acme",
+      "versionInfo": "0.1.0",
+      "licenseConcluded": "AGPL-1.0"
+    }
+  ]
+}
+`)
+
+var cdxCompRestrictiveLicenseID = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "name": "acme",
+      "version": "0.1.0",
+	  "licenses": [
+        {
+          "license": {
+            "id": "GPL-2.0-only",
+			"acknowledgement": "concluded"
+			}
+        }
+      ]
+    }
+  ]
+}
+`)
+
+var spdxCompRestrictiveLicense = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "test-doc",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": ["Tool: syft v0.95.0"]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Pkg",
+      "name": "acme",
+      "versionInfo": "0.1.0",
+      "licenseConcluded": "GPL-2.0-only"
+    }
+  ]
+}
+`)
+
+var cdxCompLicenseAbsent = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "name": "acme",
+      "version": "0.1.0"
+    }
+  ]
+}
+`)
+
+var spdxCompLicenseAbsent = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "test-doc",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": ["Tool: syft v0.95.0"]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Pkg",
+      "name": "acme",
+      "versionInfo": "0.1.0"
+    }
+  ]
+}
+`)
+
+var cdxCompLicenseEmptyArray = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "name": "acme",
+      "version": "0.1.0",
+      "licenses": []
+    }
+  ]
+}
+`)
+
+var cdxCompLicenseEmptyObject = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,,
+  "components": [
+    {
+      "type": "library",
+      "name": "acme",
+      "version": "0.1.0",
+      "licenses": [
+        {}
+      ]
+    }
+  ]
+}
+`)
+
+var cdxCompLicenseIDEmptyString = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "name": "acme",
+      "version": "0.1.0",
+      "licenses": [
+        {
+          "license": {
+            "id": ""
+          }
+        }
+      ]
+    }
+  ]
+}
+`)
+
+var spdxCompEmptyString = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "test-doc",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": ["Tool: syft v0.95.0"]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Pkg",
+      "name": "acme",
+      "versionInfo": "0.1.0",
+      "licenseConcluded": ""
+    }
+  ]
+}
+`)
+
+var cdxCompLicenseNameEmpty = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "name": "acme",
+      "version": "0.1.0",
+      "licenses": [
+        {
+          "license": {
+            "name": ""
+          }
+        }
+      ]
+    }
+  ]
+}
+`)
+
+var cdxCompLicenseInvalidID = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "name": "acme",
+      "version": "0.1.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "FooBarLicense"
+          }
+        }
+      ]
+    }
+  ]
+}
+`)
+
+var cdxCompValidLicenseName = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "name": "acme",
+      "version": "0.1.0",
+      "licenses": [
+        {
+          "license": {
+            "name": "Apache License 2.0",
+            "acknowledgement": "concluded"
+          }
+        }
+      ]
+    }
+  ]
+}
+`)
+
+var cdxCompValidLicenseExpression = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "name": "tomcat-catalina",
+      "version": "9.0.14",
+      "licenses": [
+        {
+          "expression": "(Apache-2.0 AND MIT) OR BSD-3-Clause"
+          }
+      ]
+    }
+  ]
+}
+`)
+
+var cdxCompDeclaredExpression = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "name": "acme",
+      "version": "1.0.0",
+      "licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ]
+    }
+  ]
+}
+`)
+
+var spdxCompValidLicenseExpression = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "test-doc",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": ["Tool: syft v0.95.0"]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Pkg",
+      "name": "acme",
+      "versionInfo": "0.1.0",
+      "licenseConcluded": "MIT OR Apache-2.0"
+    }
+  ]
+}
+`)
+
+var cdxCompLicenseWrongType = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "name": "acme",
+      "version": "0.1.0",
+      "licenses": {}
+    }
+  ]
+}
+`)
+
+var spdxCompLicenseWrongType = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "test-doc",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": ["Tool: syft v0.95.0"]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Pkg",
+      "name": "acme",
+      "versionInfo": "0.1.0",
+      "licenseConcluded": {}
+    }
+  ]
+}
+`)
+
+var spdxCompWhiteSpaceString = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "test-doc",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": ["Tool: syft v0.95.0"]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Pkg",
+      "name": "acme",
+      "versionInfo": "0.1.0",
+      "licenseConcluded": "  "
+    }
+  ]
+}
+`)
+
+var spdxCompLicenseNoassertion = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "test-doc",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": ["Tool: syft v0.95.0"]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Pkg",
+      "name": "acme",
+      "versionInfo": "0.1.0",
+      "licenseConcluded": "NOASSERTION"
+    }
+  ]
+}
+`)
+
+var spdxCompLicenseNone = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "test-doc",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": ["Tool: syft v0.95.0"]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Pkg",
+      "name": "acme",
+      "versionInfo": "0.1.0",
+      "licenseConcluded": "NOASSERTION"
+    }
+  ]
+}
+`)
+
+var spdxCompCustomLicense = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "test-doc",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": ["Tool: syft v0.95.0"]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Pkg",
+      "name": "acme",
+      "versionInfo": "0.1.0",
+      "licenseConcluded": "LicenseRef-Proprietary"
+    }
+  ]
+}
+`)
+
+func TestFSCTCompLicense(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("cdxCompValidLicenseID", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompValidLicenseID, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompLicense(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "license declared for all components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxCompValidLicense", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompValidLicense, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompLicense(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "license declared for all components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// only concluded licenses are scored positively
+	t.Run("cdxCompValidDeclaredLicenseID", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompValidDeclaredLicenseID, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompLicense(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "license missing for all (1) components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxCompValidDeclaredLicense", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompValidDeclaredLicense, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompLicense(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "license missing for all (1) components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxCompDeprecatedLicenseID", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompDeprecatedLicenseID, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompLicense(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "license declared for all components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxCompDeprecatedLicense", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompDeprecatedLicense, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompLicense(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "license declared for all components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxCompRestrictiveLicenseID", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompRestrictiveLicenseID, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompLicense(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "license declared for all components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxCompRestrictiveLicense", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompRestrictiveLicense, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompLicense(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "license declared for all components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxCompLicenseAbsent", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompLicenseAbsent, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompLicense(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "license missing for all (1) components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxCompLicenseAbsent", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompLicenseAbsent, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompLicense(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "license missing for all (1) components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxCompLicenseEmptyArray", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompLicenseEmptyArray, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompLicense(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "license missing for all (1) components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxCompLicenseEmptyObject", func(t *testing.T) {
+		_, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompLicenseEmptyObject, sbom.Signature{})
+		require.Error(t, err)
+	})
+
+	t.Run("cdxCompLicenseIDEmptyString", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompLicenseIDEmptyString, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompLicense(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "license missing for all (1) components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxCompEmptyString", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompEmptyString, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompLicense(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "license missing for all (1) components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxCompLicenseNameEmpty", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompLicenseNameEmpty, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompLicense(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "license missing for all (1) components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxCompLicenseInvalidID", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompLicenseInvalidID, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompLicense(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "license missing for all (1) components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxCompValidLicenseName", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompValidLicenseName, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompLicense(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "license declared for all components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxCompValidLicenseExpression", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompValidLicenseExpression, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompLicense(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "license declared for all components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
 }

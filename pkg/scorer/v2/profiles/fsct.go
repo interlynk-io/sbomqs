@@ -17,12 +17,13 @@ package profiles
 import (
 	"fmt"
 	"slices"
+	"sort"
 	"strings"
 	"time"
 
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/catalog"
-	commonV2 "github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/common"
+	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/common"
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/formulae"
 	"github.com/interlynk-io/sbomqs/v2/pkg/swid"
 	"github.com/samber/lo"
@@ -376,47 +377,6 @@ func detectFsctUniqueIDTypes(c sbom.GetComponent) uniqIDTypes {
 	return t
 }
 
-// // checkFsctUniqueID checks whether the component declares at least one
-// // unique identifier as expected by FSCT.
-// func checkFsctUniqueID(c sbom.GetComponent) bool {
-// 	// PURL (do not require full validation)
-// 	for _, p := range c.GetPurls() {
-// 		if strings.TrimSpace(string(p)) != "" {
-// 			return true
-// 		}
-// 	}
-
-// 	// CPE
-// 	for _, c := range c.GetCpes() {
-// 		if strings.TrimSpace(string(c)) != "" {
-// 			return true
-// 		}
-// 	}
-
-// 	// SWHID
-// 	for _, id := range c.Swhids() {
-// 		if strings.TrimSpace(string(id)) != "" {
-// 			return true
-// 		}
-// 	}
-
-// 	// SWID
-// 	for _, id := range c.Swids() {
-// 		if strings.TrimSpace(string(swid.SWID(id).String())) != "" {
-// 			return true
-// 		}
-// 	}
-
-// 	// OmniborID
-// 	for _, id := range c.OmniborIDs() {
-// 		if strings.TrimSpace(string(id)) != "" {
-// 			return true
-// 		}
-// 	}
-
-// 	return false
-// }
-
 // Component Cryptographic Hash (Must)
 // FSCT says:
 // - A cryptographic hash is an intrinsic identifier for a software Component.
@@ -431,11 +391,87 @@ func FSCTCompChecksum(doc sbom.Document) catalog.ProfFeatScore {
 		return formulae.ScoreProfNA(true)
 	}
 
-	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
-		return commonV2.HasAnyChecksum(c)
-	})
+	total := len(comps)
+	have := 0
 
-	return formulae.ScoreProfFull(have, len(comps), false)
+	algoSeen := make(map[string]bool)
+
+	for _, c := range comps {
+		k := detectFsctChecksumKinds(c)
+
+		if len(k.weak) > 0 || len(k.strong) > 0 {
+			have++
+		}
+
+		for a := range k.weak {
+			algoSeen[a] = true
+		}
+		for a := range k.strong {
+			algoSeen[a] = true
+		}
+	}
+
+	// Build algorithm list for description
+	var algos []string
+	for a := range algoSeen {
+		algos = append(algos, a)
+	}
+	sort.Strings(algos)
+
+	desc := fmt.Sprintf(
+		"cryptographic hash missing for all (%d) components",
+		total,
+	)
+
+	if have == total {
+		desc = fmt.Sprintf(
+			"cryptographic hash declared for all components (%s)",
+			strings.Join(algos, ", "),
+		)
+	} else if have > 0 {
+		desc = fmt.Sprintf(
+			"cryptographic hash declared for %d components; missing for %d (%s)",
+			have,
+			total-have,
+			strings.Join(algos, ", "),
+		)
+	}
+
+	score := formulae.ScoreProfFull(have, total, false)
+
+	return catalog.ProfFeatScore{
+		Score:  score.Score,
+		Desc:   desc,
+		Ignore: false,
+	}
+}
+
+type checksumKinds struct {
+	weak   map[string]bool
+	strong map[string]bool
+}
+
+func detectFsctChecksumKinds(c sbom.GetComponent) checksumKinds {
+	k := checksumKinds{
+		weak:   make(map[string]bool),
+		strong: make(map[string]bool),
+	}
+
+	for _, cs := range c.GetChecksums() {
+		algo := common.NormalizeAlgoName(cs.GetAlgo())
+		content := strings.TrimSpace(cs.GetContent())
+		if content == "" {
+			continue
+		}
+
+		if common.IsWeakChecksum(algo) {
+			k.weak[algo] = true
+		} else if common.IsStrongChecksum(algo) {
+			k.strong[algo] = true
+		}
+	}
+
+	return k
 }
 
 // Component Dependencies(Must)
@@ -518,12 +554,93 @@ func DependencyCompleteness(doc sbom.Document, compID string) sbom.CompositionAg
 	return sbom.AggregateUnknown
 }
 
-// Component License(Must)
+// Component License (Must)
+// FSCT says:
+// - License information identifies the legal terms under which a Component may be used.
+// - Each Component should declare its concluded license.
+// - If the license cannot be determined, it should be explicitly stated.
+//
+// Notes:
+// - FSCT does not require SPDX license identifiers.
+// - FSCT does not require license validation.
+// - Presence and transparency are the goal.
 func FSCTCompLicense(doc sbom.Document) catalog.ProfFeatScore {
-	return CompLicenses(doc)
+	comps := doc.Components()
+	if len(comps) == 0 {
+		return formulae.ScoreProfNA(true)
+	}
+
+	total := len(comps)
+	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
+		return common.ComponentHasAnyConcluded(c)
+	})
+
+	desc := fmt.Sprintf(
+		"license missing for all (%d) components",
+		total,
+	)
+
+	if have == total {
+		desc = "license declared for all components"
+	} else if have > 0 {
+		desc = fmt.Sprintf(
+			"license declared for %d components; missing for %d",
+			have,
+			total-have,
+		)
+	}
+
+	score := formulae.ScoreProfFull(have, total, false)
+
+	return catalog.ProfFeatScore{
+		Score:  score.Score,
+		Desc:   desc,
+		Ignore: false,
+	}
 }
 
-// Component Copyright(Must)
+// Component Copyright (Must)
+// FSCT says:
+// - Copyright identifies the legal ownership of a Component.
+// - Each Component should declare copyright information.
+// - If the copyright holder cannot be determined, this should be explicitly stated.
+//
+// Notes:
+// - FSCT does not mandate a specific format.
+// - FSCT does not require validation or legal correctness.
+// - Presence and transparency are the goal.
 func FSCTCompCopyright(doc sbom.Document) catalog.ProfFeatScore {
-	return CompCopyright(doc)
+	comps := doc.Components()
+	if len(comps) == 0 {
+		return formulae.ScoreProfNA(true)
+	}
+
+	total := len(comps)
+	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
+		val := strings.ToLower(strings.TrimSpace(c.GetCopyRight()))
+		return val != "" && val != "none" && val != "noassertion"
+	})
+
+	desc := fmt.Sprintf(
+		"copyright missing for all (%d) components",
+		total,
+	)
+
+	if have == total {
+		desc = "copyright declared for all components"
+	} else if have > 0 {
+		desc = fmt.Sprintf(
+			"copyright declared for %d components; missing for %d",
+			have,
+			total-have,
+		)
+	}
+
+	score := formulae.ScoreProfFull(have, total, false)
+
+	return catalog.ProfFeatScore{
+		Score:  score.Score,
+		Desc:   desc,
+		Ignore: false,
+	}
 }

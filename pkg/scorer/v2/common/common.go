@@ -223,7 +223,7 @@ func ComponentHasAnyRestrictive(c sbom.GetComponent) bool {
 // (weak or strong). This represents the FSCT baseline expectation.
 func HasAnyChecksum(c sbom.GetComponent) bool {
 	for _, checksum := range c.GetChecksums() {
-		algo := normalizeAlgoName(checksum.GetAlgo())
+		algo := NormalizeAlgoName(checksum.GetAlgo())
 		content := strings.TrimSpace(checksum.GetContent())
 
 		if content == "" {
@@ -243,7 +243,7 @@ func HasAnyChecksum(c sbom.GetComponent) bool {
 // (Not required by FSCT baseline; useful for maturity/quality signals.)
 func HasStrongChecksum(c sbom.GetComponent) bool {
 	for _, checksum := range c.GetChecksums() {
-		algo := normalizeAlgoName(checksum.GetAlgo())
+		algo := NormalizeAlgoName(checksum.GetAlgo())
 		if IsStrongChecksum(algo) && strings.TrimSpace(checksum.GetContent()) != "" {
 			return true
 		}
@@ -257,7 +257,7 @@ func HasWeakChecksum(c sbom.GetComponent) bool {
 	hasWeak := false
 
 	for _, checksum := range c.GetChecksums() {
-		algo := normalizeAlgoName(checksum.GetAlgo())
+		algo := NormalizeAlgoName(checksum.GetAlgo())
 		content := strings.TrimSpace(checksum.GetContent())
 
 		if content == "" {
@@ -341,7 +341,7 @@ func HasSHA256Plus(c sbom.GetComponent) bool {
 //   - SPDX: "SHA256", "SHA3_256", "BLAKE2b-256"
 //
 // After normalization, "SHA-256", "SHA256", "sha_256" all become "SHA256"
-func normalizeAlgoName(algo string) string {
+func NormalizeAlgoName(algo string) string {
 	n := strings.ToUpper(algo)
 	n = strings.ReplaceAll(n, "-", "")
 	n = strings.ReplaceAll(n, "_", "")
