@@ -310,7 +310,7 @@ func FSCTCompUniqID(doc sbom.Document) catalog.ProfFeatScore {
 
 	// Description (supplier-style)
 	desc := fmt.Sprintf(
-		"unique identifier missing for all (%d) components",
+		"unique identifier missing for all(%d) components",
 		len(comps),
 	)
 
@@ -419,7 +419,7 @@ func FSCTCompChecksum(doc sbom.Document) catalog.ProfFeatScore {
 	sort.Strings(algos)
 
 	desc := fmt.Sprintf(
-		"cryptographic hash missing for all (%d) components",
+		"cryptographic hash missing for all(%d) components",
 		total,
 	)
 
@@ -476,65 +476,76 @@ func detectFsctChecksumKinds(c sbom.GetComponent) checksumKinds {
 
 // Component Dependencies(Must)
 // FSCT says:
-// - The Primary Component's direct Dependencies must be declared.
-// - The completeness of the declared Dependencies must be indicated.
+//   - FSCT baseline requires that dependency completeness be declared not only
+//     for the Primary Component, but also for each of its direct dependencies.
+//     This does not mean that all transitive dependencies must be listed.
+//     It means that whenever a component appears in the dependency graph,
+//     the SBOM must explicitly state whether that component’s dependency list is complete, incomplete, or unknown.
+//     Declaring “unknown” is acceptable; failing to declare completeness at all is not.
 //
-// - Relationships declared for the Primary Component
-// - Relationships declared for its direct Dependencies
-// - Leaf dependencies valid and transitive components mdeps doesn't matter
+// In Short:
+//  - In FSCT baseline, any component that participates in the dependency graph must
+//    declare whether its dependency list is complete — even if that list is empty.
+
+// - The Primary Component's direct dependencies must be declared.
+// - The completeness of the declared Dependencies must be indicated.
+// - Completeness declaration can be considered as complete, incomplete, or unknown
+// - Only direct Dependencies are required at baseline.
+// - Leaf dependencies valid and transitive components deps doesn't matter
 func FSCTCompDependencies(doc sbom.Document) catalog.ProfFeatScore {
 	primary := doc.PrimaryComp()
 	if !primary.IsPresent() {
 		return formulae.ScoreProfileCustomNA(false, "define primary component")
 	}
 
-	hasUnknown := false
-
-	// --- 1. Check primary component completeness ---
+	// --- 1. Primary Component completeness ---
 	primaryAgg := DependencyCompleteness(doc, primary.GetID())
 	if primaryAgg == sbom.AggregateMissing {
 		return formulae.ScoreProfileCustomNA(false, "dependency completeness not declared for primary component")
 	}
 
-	if primaryAgg == sbom.AggregateUnknown {
-		hasUnknown = true
-	}
-
-	// --- 2. Check direct dependencies ---
+	// --- 2. Check direct dependencies(may be empty) ---
 	primaryDeps := doc.GetDirectDependencies(primary.GetID(), "DEPENDS_ON")
+	totalDeps := len(primaryDeps)
 
+	depsMissing := 0
+	depsDeclared := 0
+
+	// --- 3. Completeness for each direct dependency
 	for _, dep := range primaryDeps {
-		depID := dep.GetID()
-		agg := DependencyCompleteness(doc, depID)
+		agg := DependencyCompleteness(doc, dep.GetID())
 
 		if agg == sbom.AggregateMissing {
-			return formulae.ScoreProfileCustomNA(
-				false,
-				fmt.Sprintf("dependency completeness not declared for dependency %s", dep.GetName()),
-			)
+			depsMissing++
+			continue
 		}
 
-		if agg == sbom.AggregateUnknown {
-			hasUnknown = true
-		}
+		depsDeclared++
 	}
 
-	if hasUnknown {
-		return catalog.ProfFeatScore{
-			Score:  10.0,
-			Desc:   "relationships declared; completeness explicitly unknown or partial",
-			Ignore: false,
-		}
+	// --- 4. Description (explain intent clearly) ---
+
+	var desc string
+
+	if totalDeps == 0 {
+		desc = "no dependencies declared; completeness explicitly indicated for primary component"
+	} else if depsDeclared == totalDeps {
+		desc = "dependency relationships and completeness declared for primary and all direct dependencies"
+	} else if depsDeclared > 0 {
+		desc = fmt.Sprintf("dependency relationships declared; completeness declared for primary and %d direct dependencies; missing for %d direct dependencies", depsDeclared, depsMissing)
+	} else {
+		desc = fmt.Sprintf("dependency relationships declared; completeness declared for primary component; missing for all %d direct dependencies", totalDeps)
 	}
 
 	return catalog.ProfFeatScore{
 		Score:  10.0,
-		Desc:   "relationships and completeness declared for primary and direct dependencies",
+		Desc:   desc,
 		Ignore: false,
 	}
 }
 
 func DependencyCompleteness(doc sbom.Document, compID string) sbom.CompositionAggregate {
+	found := false
 	for _, c := range doc.Composition() {
 
 		// 1. SBOM-level completeness applies to all components
@@ -548,9 +559,15 @@ func DependencyCompleteness(doc sbom.Document, compID string) sbom.CompositionAg
 		}
 
 		if slices.Contains(c.Dependencies(), compID) {
+			found = true
 			return c.Aggregate()
 		}
 	}
+
+	if !found {
+		return sbom.AggregateMissing
+	}
+
 	return sbom.AggregateUnknown
 }
 
@@ -576,7 +593,7 @@ func FSCTCompLicense(doc sbom.Document) catalog.ProfFeatScore {
 	})
 
 	desc := fmt.Sprintf(
-		"license missing for all (%d) components",
+		"license missing for all(%d) components",
 		total,
 	)
 
@@ -622,7 +639,7 @@ func FSCTCompCopyright(doc sbom.Document) catalog.ProfFeatScore {
 	})
 
 	desc := fmt.Sprintf(
-		"copyright missing for all (%d) components",
+		"copyright missing for all(%d) components",
 		total,
 	)
 

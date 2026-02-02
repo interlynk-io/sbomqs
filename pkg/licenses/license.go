@@ -169,11 +169,11 @@ func LookupExpression(expression string, customLicenses []License) []License {
 	// SPDX expression parser treats '+' as a grammatical operator.
 	// Deprecated SPDX IDs ending with '+' (e.g. LGPL-2.0+) get normalized
 	// and lose their original deprecated form.
-	if lickk, ok := licenseList[expression]; ok &&
-		lickk.deprecated && strings.HasSuffix(lickk.ShortID(), "+") {
+	if lis, ok := licenseList[expression]; ok &&
+		lis.deprecated && strings.HasSuffix(lis.ShortID(), "+") {
 
 		// Preserve deprecated '+' license exactly as authored
-		extLicenses = []string{lickk.ShortID()}
+		extLicenses = []string{lis.ShortID()}
 
 	} else {
 		// Normal path: semantic parsing

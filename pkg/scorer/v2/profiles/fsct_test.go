@@ -1963,7 +1963,7 @@ func TestFSCTCompUniqueIDs(t *testing.T) {
 		got := FSCTCompUniqID(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "unique identifier missing for all (1) components", got.Desc)
+		assert.Equal(t, "unique identifier missing for all(1) components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1974,7 +1974,7 @@ func TestFSCTCompUniqueIDs(t *testing.T) {
 		got := FSCTCompUniqID(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "unique identifier missing for all (1) components", got.Desc)
+		assert.Equal(t, "unique identifier missing for all(1) components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1985,7 +1985,7 @@ func TestFSCTCompUniqueIDs(t *testing.T) {
 		got := FSCTCompUniqID(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "unique identifier missing for all (1) components", got.Desc)
+		assert.Equal(t, "unique identifier missing for all(1) components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1996,7 +1996,7 @@ func TestFSCTCompUniqueIDs(t *testing.T) {
 		got := FSCTCompUniqID(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "unique identifier missing for all (1) components", got.Desc)
+		assert.Equal(t, "unique identifier missing for all(1) components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2007,7 +2007,7 @@ func TestFSCTCompUniqueIDs(t *testing.T) {
 		got := FSCTCompUniqID(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "unique identifier missing for all (1) components", got.Desc)
+		assert.Equal(t, "unique identifier missing for all(1) components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2018,7 +2018,7 @@ func TestFSCTCompUniqueIDs(t *testing.T) {
 		got := FSCTCompUniqID(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "unique identifier missing for all (1) components", got.Desc)
+		assert.Equal(t, "unique identifier missing for all(1) components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2029,7 +2029,7 @@ func TestFSCTCompUniqueIDs(t *testing.T) {
 		got := FSCTCompUniqID(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "unique identifier missing for all (1) components", got.Desc)
+		assert.Equal(t, "unique identifier missing for all(1) components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2040,7 +2040,7 @@ func TestFSCTCompUniqueIDs(t *testing.T) {
 		got := FSCTCompUniqID(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "unique identifier missing for all (1) components", got.Desc)
+		assert.Equal(t, "unique identifier missing for all(1) components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2095,7 +2095,7 @@ func TestFSCTCompUniqueIDs(t *testing.T) {
 		got := FSCTCompUniqID(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "unique identifier missing for all (1) components", got.Desc)
+		assert.Equal(t, "unique identifier missing for all(1) components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2106,7 +2106,7 @@ func TestFSCTCompUniqueIDs(t *testing.T) {
 		got := FSCTCompUniqID(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "unique identifier missing for all (1) components", got.Desc)
+		assert.Equal(t, "unique identifier missing for all(1) components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2117,7 +2117,7 @@ func TestFSCTCompUniqueIDs(t *testing.T) {
 		got := FSCTCompUniqID(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "unique identifier missing for all (1) components", got.Desc)
+		assert.Equal(t, "unique identifier missing for all(1) components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2128,7 +2128,7 @@ func TestFSCTCompUniqueIDs(t *testing.T) {
 		got := FSCTCompUniqID(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "unique identifier missing for all (1) components", got.Desc)
+		assert.Equal(t, "unique identifier missing for all(1) components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2139,7 +2139,7 @@ func TestFSCTCompUniqueIDs(t *testing.T) {
 		got := FSCTCompUniqID(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "unique identifier missing for all (1) components", got.Desc)
+		assert.Equal(t, "unique identifier missing for all(1) components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2162,7 +2162,7 @@ func TestFSCTCompUniqueIDs(t *testing.T) {
 		got := FSCTCompUniqID(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "unique identifier missing for all (1) components", got.Desc)
+		assert.Equal(t, "unique identifier missing for all(1) components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2173,7 +2173,7 @@ func TestFSCTCompUniqueIDs(t *testing.T) {
 		got := FSCTCompUniqID(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "unique identifier missing for all (1) components", got.Desc)
+		assert.Equal(t, "unique identifier missing for all(1) components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2184,7 +2184,7 @@ func TestFSCTCompUniqueIDs(t *testing.T) {
 		got := FSCTCompUniqID(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "unique identifier missing for all (1) components", got.Desc)
+		assert.Equal(t, "unique identifier missing for all(1) components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2195,7 +2195,7 @@ func TestFSCTCompUniqueIDs(t *testing.T) {
 		got := FSCTCompUniqID(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "unique identifier missing for all (1) components", got.Desc)
+		assert.Equal(t, "unique identifier missing for all(1) components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2206,7 +2206,7 @@ func TestFSCTCompUniqueIDs(t *testing.T) {
 		got := FSCTCompUniqID(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "unique identifier missing for all (1) components", got.Desc)
+		assert.Equal(t, "unique identifier missing for all(1) components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2228,7 +2228,7 @@ func TestFSCTCompUniqueIDs(t *testing.T) {
 		got := FSCTCompUniqID(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "unique identifier missing for all (1) components", got.Desc)
+		assert.Equal(t, "unique identifier missing for all(1) components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2239,7 +2239,7 @@ func TestFSCTCompUniqueIDs(t *testing.T) {
 		got := FSCTCompUniqID(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "unique identifier missing for all (1) components", got.Desc)
+		assert.Equal(t, "unique identifier missing for all(1) components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2250,7 +2250,7 @@ func TestFSCTCompUniqueIDs(t *testing.T) {
 		got := FSCTCompUniqID(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "unique identifier missing for all (1) components", got.Desc)
+		assert.Equal(t, "unique identifier missing for all(1) components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2261,7 +2261,7 @@ func TestFSCTCompUniqueIDs(t *testing.T) {
 		got := FSCTCompUniqID(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "unique identifier missing for all (1) components", got.Desc)
+		assert.Equal(t, "unique identifier missing for all(1) components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2272,7 +2272,7 @@ func TestFSCTCompUniqueIDs(t *testing.T) {
 		got := FSCTCompUniqID(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "unique identifier missing for all (1) components", got.Desc)
+		assert.Equal(t, "unique identifier missing for all(1) components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2756,7 +2756,7 @@ func TestFSCTCompChecksum(t *testing.T) {
 		got := FSCTCompChecksum(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "cryptographic hash missing for all (1) components", got.Desc)
+		assert.Equal(t, "cryptographic hash missing for all(1) components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2767,7 +2767,7 @@ func TestFSCTCompChecksum(t *testing.T) {
 		got := FSCTCompChecksum(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "cryptographic hash missing for all (1) components", got.Desc)
+		assert.Equal(t, "cryptographic hash missing for all(1) components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2778,7 +2778,7 @@ func TestFSCTCompChecksum(t *testing.T) {
 		got := FSCTCompChecksum(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "cryptographic hash missing for all (1) components", got.Desc)
+		assert.Equal(t, "cryptographic hash missing for all(1) components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2789,7 +2789,7 @@ func TestFSCTCompChecksum(t *testing.T) {
 		got := FSCTCompChecksum(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "cryptographic hash missing for all (1) components", got.Desc)
+		assert.Equal(t, "cryptographic hash missing for all(1) components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2800,7 +2800,7 @@ func TestFSCTCompChecksum(t *testing.T) {
 		got := FSCTCompChecksum(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "cryptographic hash missing for all (1) components", got.Desc)
+		assert.Equal(t, "cryptographic hash missing for all(1) components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2811,7 +2811,7 @@ func TestFSCTCompChecksum(t *testing.T) {
 		got := FSCTCompChecksum(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "cryptographic hash missing for all (1) components", got.Desc)
+		assert.Equal(t, "cryptographic hash missing for all(1) components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2838,7 +2838,7 @@ func TestFSCTCompChecksum(t *testing.T) {
 	})
 }
 
-var cdxCompValidLicenseID = []byte(`
+var cdxCompWithConcludedLicenseID = []byte(`
 {
   "bomFormat": "CycloneDX",
   "specVersion": "1.6",
@@ -2862,7 +2862,7 @@ var cdxCompValidLicenseID = []byte(`
 }
 `)
 
-var spdxCompValidLicense = []byte(`
+var spdxCompWithConcludedLicense = []byte(`
 {
   "spdxVersion": "SPDX-2.3",
   "SPDXID": "SPDXRef-DOCUMENT",
@@ -2882,7 +2882,7 @@ var spdxCompValidLicense = []byte(`
 }
 `)
 
-var cdxCompValidDeclaredLicenseID = []byte(`
+var cdxCompWithDeclaredLicenseID = []byte(`
 {
   "bomFormat": "CycloneDX",
   "specVersion": "1.6",
@@ -2926,7 +2926,7 @@ var spdxCompValidDeclaredLicense = []byte(`
 }
 `)
 
-var cdxCompDeprecatedLicenseID = []byte(`
+var cdxCompWithConcludedDeprecatedLicenseID = []byte(`
 {
   "bomFormat": "CycloneDX",
   "specVersion": "1.6",
@@ -2950,7 +2950,7 @@ var cdxCompDeprecatedLicenseID = []byte(`
 }
 `)
 
-var spdxCompDeprecatedLicense = []byte(`
+var spdxCompWithConcludedDeprecatedLicense = []byte(`
 {
   "spdxVersion": "SPDX-2.3",
   "SPDXID": "SPDXRef-DOCUMENT",
@@ -2970,7 +2970,51 @@ var spdxCompDeprecatedLicense = []byte(`
 }
 `)
 
-var cdxCompRestrictiveLicenseID = []byte(`
+var cdxCompWithDeclaredDeprecatedLicenseID = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "name": "acme",
+      "version": "0.1.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "AGPL-1.0",
+            "acknowledgement": "declared"
+          }
+        }
+      ]
+    }
+  ]
+}
+`)
+
+var spdxCompWithDeclaredDeprecatedLicense = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "test-doc",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": ["Tool: syft v0.95.0"]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Pkg",
+      "name": "acme",
+      "versionInfo": "0.1.0",
+      "licenseDeclared": "AGPL-1.0"
+    }
+  ]
+}
+`)
+
+var cdxCompWithConcludedRestrictiveLicenseID = []byte(`
 {
   "bomFormat": "CycloneDX",
   "specVersion": "1.6",
@@ -2985,8 +3029,8 @@ var cdxCompRestrictiveLicenseID = []byte(`
         {
           "license": {
             "id": "GPL-2.0-only",
-			"acknowledgement": "concluded"
-			}
+            "acknowledgement": "concluded"
+          }
         }
       ]
     }
@@ -2994,7 +3038,7 @@ var cdxCompRestrictiveLicenseID = []byte(`
 }
 `)
 
-var spdxCompRestrictiveLicense = []byte(`
+var spdxCompWithConcludedRestrictiveLicense = []byte(`
 {
   "spdxVersion": "SPDX-2.3",
   "SPDXID": "SPDXRef-DOCUMENT",
@@ -3009,6 +3053,50 @@ var spdxCompRestrictiveLicense = []byte(`
       "name": "acme",
       "versionInfo": "0.1.0",
       "licenseConcluded": "GPL-2.0-only"
+    }
+  ]
+}
+`)
+
+var cdxCompWithDeclaredRestrictiveLicenseID = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "name": "acme",
+      "version": "0.1.0",
+	  "licenses": [
+        {
+          "license": {
+            "id": "GPL-2.0-only",
+            "acknowledgement": "declared"
+          }
+        }
+      ]
+    }
+  ]
+}
+`)
+
+var spdxCompWithDeclaredRestrictiveLicense = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "test-doc",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": ["Tool: syft v0.95.0"]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Pkg",
+      "name": "acme",
+      "versionInfo": "0.1.0",
+      "licenseDeclared": "GPL-2.0-only"
     }
   ]
 }
@@ -3174,7 +3262,7 @@ var cdxCompLicenseInvalidID = []byte(`
 }
 `)
 
-var cdxCompValidLicenseName = []byte(`
+var cdxCompWithConcludedLicenseName = []byte(`
 {
   "bomFormat": "CycloneDX",
   "specVersion": "1.6",
@@ -3198,6 +3286,30 @@ var cdxCompValidLicenseName = []byte(`
 }
 `)
 
+var cdxCompWithDeclaredLicenseName = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "name": "acme",
+      "version": "0.1.0",
+      "licenses": [
+        {
+          "license": {
+            "name": "Apache License 2.0",
+            "acknowledgement": "declared"
+          }
+        }
+      ]
+    }
+  ]
+}
+`)
+
 var cdxCompValidLicenseExpression = []byte(`
 {
   "bomFormat": "CycloneDX",
@@ -3212,26 +3324,6 @@ var cdxCompValidLicenseExpression = []byte(`
       "licenses": [
         {
           "expression": "(Apache-2.0 AND MIT) OR BSD-3-Clause"
-          }
-      ]
-    }
-  ]
-}
-`)
-
-var cdxCompDeclaredExpression = []byte(`
-{
-  "bomFormat": "CycloneDX",
-  "specVersion": "1.6",
-  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
-  "version": 1,
-  "components": [
-    {
-      "name": "acme",
-      "version": "1.0.0",
-      "licenses": [
-        {
-          "expression": "MIT OR Apache-2.0"
         }
       ]
     }
@@ -3239,7 +3331,7 @@ var cdxCompDeclaredExpression = []byte(`
 }
 `)
 
-var spdxCompValidLicenseExpression = []byte(`
+var spdxCompWithConcludedLicenseExpression = []byte(`
 {
   "spdxVersion": "SPDX-2.3",
   "SPDXID": "SPDXRef-DOCUMENT",
@@ -3254,6 +3346,26 @@ var spdxCompValidLicenseExpression = []byte(`
       "name": "acme",
       "versionInfo": "0.1.0",
       "licenseConcluded": "MIT OR Apache-2.0"
+    }
+  ]
+}
+`)
+
+var spdxCompWithDeclaredLicenseExpression = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "test-doc",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": ["Tool: syft v0.95.0"]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Pkg",
+      "name": "acme",
+      "versionInfo": "0.1.0",
+      "licenseDeclared": "MIT OR Apache-2.0"
     }
   ]
 }
@@ -3316,7 +3428,7 @@ var spdxCompWhiteSpaceString = []byte(`
 }
 `)
 
-var spdxCompLicenseNoassertion = []byte(`
+var spdxCompWithConcludedLicenseNoassertion = []byte(`
 {
   "spdxVersion": "SPDX-2.3",
   "SPDXID": "SPDXRef-DOCUMENT",
@@ -3336,7 +3448,7 @@ var spdxCompLicenseNoassertion = []byte(`
 }
 `)
 
-var spdxCompLicenseNone = []byte(`
+var spdxCompWithConcludedLicenseNone = []byte(`
 {
   "spdxVersion": "SPDX-2.3",
   "SPDXID": "SPDXRef-DOCUMENT",
@@ -3350,13 +3462,13 @@ var spdxCompLicenseNone = []byte(`
       "SPDXID": "SPDXRef-Pkg",
       "name": "acme",
       "versionInfo": "0.1.0",
-      "licenseConcluded": "NOASSERTION"
+      "licenseConcluded": "NONE"
     }
   ]
 }
 `)
 
-var spdxCompCustomLicense = []byte(`
+var spdxCompWithCocnludedCustomLicense = []byte(`
 {
   "spdxVersion": "SPDX-2.3",
   "SPDXID": "SPDXRef-DOCUMENT",
@@ -3379,8 +3491,8 @@ var spdxCompCustomLicense = []byte(`
 func TestFSCTCompLicense(t *testing.T) {
 	ctx := context.Background()
 
-	t.Run("cdxCompValidLicenseID", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompValidLicenseID, sbom.Signature{})
+	t.Run("cdxCompWithConcludedLicenseID", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithConcludedLicenseID, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := FSCTCompLicense(doc)
@@ -3390,8 +3502,8 @@ func TestFSCTCompLicense(t *testing.T) {
 		assert.False(t, got.Ignore)
 	})
 
-	t.Run("spdxCompValidLicense", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompValidLicense, sbom.Signature{})
+	t.Run("spdxCompWithConcludedLicense", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWithConcludedLicense, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := FSCTCompLicense(doc)
@@ -3402,14 +3514,14 @@ func TestFSCTCompLicense(t *testing.T) {
 	})
 
 	// only concluded licenses are scored positively
-	t.Run("cdxCompValidDeclaredLicenseID", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompValidDeclaredLicenseID, sbom.Signature{})
+	t.Run("cdxCompWithDeclaredLicenseID", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithDeclaredLicenseID, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := FSCTCompLicense(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "license missing for all (1) components", got.Desc)
+		assert.Equal(t, "license missing for all(1) components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -3420,12 +3532,12 @@ func TestFSCTCompLicense(t *testing.T) {
 		got := FSCTCompLicense(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "license missing for all (1) components", got.Desc)
+		assert.Equal(t, "license missing for all(1) components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
-	t.Run("cdxCompDeprecatedLicenseID", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompDeprecatedLicenseID, sbom.Signature{})
+	t.Run("cdxCompWithConcludedDeprecatedLicenseID", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithConcludedDeprecatedLicenseID, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := FSCTCompLicense(doc)
@@ -3435,8 +3547,8 @@ func TestFSCTCompLicense(t *testing.T) {
 		assert.False(t, got.Ignore)
 	})
 
-	t.Run("spdxCompDeprecatedLicense", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompDeprecatedLicense, sbom.Signature{})
+	t.Run("spdxCompWithConcludedDeprecatedLicense", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWithConcludedDeprecatedLicense, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := FSCTCompLicense(doc)
@@ -3446,8 +3558,30 @@ func TestFSCTCompLicense(t *testing.T) {
 		assert.False(t, got.Ignore)
 	})
 
-	t.Run("cdxCompRestrictiveLicenseID", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompRestrictiveLicenseID, sbom.Signature{})
+	t.Run("cdxCompWithDeclaredDeprecatedLicenseID", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithDeclaredDeprecatedLicenseID, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompLicense(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "license missing for all(1) components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxCompWithDeclaredDeprecatedLicense", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWithDeclaredDeprecatedLicense, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompLicense(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "license missing for all(1) components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxCompWithConcludedRestrictiveLicenseID", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithConcludedRestrictiveLicenseID, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := FSCTCompLicense(doc)
@@ -3457,14 +3591,36 @@ func TestFSCTCompLicense(t *testing.T) {
 		assert.False(t, got.Ignore)
 	})
 
-	t.Run("spdxCompRestrictiveLicense", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompRestrictiveLicense, sbom.Signature{})
+	t.Run("spdxCompWithConcludedRestrictiveLicense", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWithConcludedRestrictiveLicense, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := FSCTCompLicense(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "license declared for all components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxCompWithDeclaredRestrictiveLicenseID", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithDeclaredRestrictiveLicenseID, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompLicense(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "license missing for all(1) components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxCompWithDeclaredRestrictiveLicense", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWithDeclaredRestrictiveLicense, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompLicense(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "license missing for all(1) components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -3475,7 +3631,7 @@ func TestFSCTCompLicense(t *testing.T) {
 		got := FSCTCompLicense(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "license missing for all (1) components", got.Desc)
+		assert.Equal(t, "license missing for all(1) components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -3486,7 +3642,7 @@ func TestFSCTCompLicense(t *testing.T) {
 		got := FSCTCompLicense(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "license missing for all (1) components", got.Desc)
+		assert.Equal(t, "license missing for all(1) components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -3497,7 +3653,7 @@ func TestFSCTCompLicense(t *testing.T) {
 		got := FSCTCompLicense(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "license missing for all (1) components", got.Desc)
+		assert.Equal(t, "license missing for all(1) components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -3513,7 +3669,7 @@ func TestFSCTCompLicense(t *testing.T) {
 		got := FSCTCompLicense(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "license missing for all (1) components", got.Desc)
+		assert.Equal(t, "license missing for all(1) components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -3524,7 +3680,7 @@ func TestFSCTCompLicense(t *testing.T) {
 		got := FSCTCompLicense(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "license missing for all (1) components", got.Desc)
+		assert.Equal(t, "license missing for all(1) components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -3535,7 +3691,7 @@ func TestFSCTCompLicense(t *testing.T) {
 		got := FSCTCompLicense(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "license missing for all (1) components", got.Desc)
+		assert.Equal(t, "license missing for all(1) components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -3546,18 +3702,29 @@ func TestFSCTCompLicense(t *testing.T) {
 		got := FSCTCompLicense(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "license missing for all (1) components", got.Desc)
+		assert.Equal(t, "license missing for all(1) components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
-	t.Run("cdxCompValidLicenseName", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompValidLicenseName, sbom.Signature{})
+	t.Run("cdxCompWithConcludedLicenseName", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithConcludedLicenseName, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := FSCTCompLicense(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "license declared for all components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxCompWithDeclaredLicenseName", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithDeclaredLicenseName, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompLicense(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "license missing for all(1) components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -3567,8 +3734,1082 @@ func TestFSCTCompLicense(t *testing.T) {
 
 		got := FSCTCompLicense(doc)
 
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "license missing for all(1) components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxCompWithConcludedLicenseExpression", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWithConcludedLicenseExpression, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompLicense(doc)
+
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "license declared for all components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxCompWithDeclaredLicenseExpression", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWithDeclaredLicenseExpression, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompLicense(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "license missing for all(1) components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxCompLicenseWrongType", func(t *testing.T) {
+		_, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompLicenseWrongType, sbom.Signature{})
+		require.Error(t, err)
+	})
+
+	t.Run("spdxCompLicenseWrongType", func(t *testing.T) {
+		_, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompLicenseWrongType, sbom.Signature{})
+		require.Error(t, err)
+	})
+
+	t.Run("spdxCompWhiteSpaceString", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWhiteSpaceString, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompLicense(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "license missing for all(1) components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxCompWithConcludedLicenseNoassertion", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWithConcludedLicenseNoassertion, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompLicense(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "license missing for all(1) components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxCompWithConcludedLicenseNone", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWithConcludedLicenseNone, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompLicense(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "license missing for all(1) components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxCompWithCocnludedCustomLicense", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWithCocnludedCustomLicense, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompLicense(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "license declared for all components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+}
+
+var cdxCompCopyrightValid = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "name": "cel.dev/expr",
+      "version": "v0.19.1",
+      "copyright": "Copyright 2025, the Cel project"
+    }
+  ]
+}
+`)
+
+var spdxCompCopyrightValid = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "test-doc",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": ["Tool: syft v0.95.0"]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Package-expr-v0.19.1",
+      "name": "cel.dev/expr",
+      "versionInfo": "v0.19.1",
+      "copyrightText": "Copyright 2025, the Cel project"
+    }
+  ]
+}
+`)
+
+var cdxCompCopyrightWithEmptyString = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "name": "cel.dev/expr",
+      "version": "v0.19.1",
+      "copyright": ""
+    }
+  ]
+}
+`)
+
+var spdxCompCopyrightWithEmptyString = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "test-doc",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": ["Tool: syft v0.95.0"]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Package-expr-v0.19.1",
+      "name": "cel.dev/expr",
+      "versionInfo": "v0.19.1",
+      "copyrightText": ""
+    }
+  ]
+}
+`)
+
+var cdxCompCopyrightAbsent = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "name": "cel.dev/expr",
+      "version": "v0.19.1"
+    }
+  ]
+}
+`)
+
+var spdxCompCopyrightAbsent = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "test-doc",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": ["Tool: syft v0.95.0"]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Package-expr-v0.19.1",
+      "name": "cel.dev/expr",
+      "versionInfo": "v0.19.1"
+    }
+  ]
+}
+`)
+
+var cdxCompCopyrightWrongType = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "name": "cel.dev/expr",
+      "version": "v0.19.1",
+      "copyright": {}
+    }
+  ]
+}
+`)
+
+var spdxCompCopyrightWrongType = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "test-doc",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": ["Tool: syft v0.95.0"]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Package-expr-v0.19.1",
+      "name": "cel.dev/expr",
+      "versionInfo": "v0.19.1",
+      "copyrightText": {}
+    }
+  ]
+}
+`)
+
+func TestFSCTCompCopyright(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("cdxCompCopyrightValid", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompCopyrightValid, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompCopyright(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "copyright declared for all components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxCompCopyrightValid", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompCopyrightValid, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompCopyright(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "copyright declared for all components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxCompCopyrightWithEmptyString", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompCopyrightWithEmptyString, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompCopyright(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "copyright missing for all(1) components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxCompCopyrightWithEmptyString", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompCopyrightWithEmptyString, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompCopyright(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "copyright missing for all(1) components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxCompCopyrightAbsent", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompCopyrightAbsent, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompCopyright(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "copyright missing for all(1) components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxCompCopyrightAbsent", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompCopyrightAbsent, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompCopyright(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "copyright missing for all(1) components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxCompCopyrightWrongType", func(t *testing.T) {
+		_, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompCopyrightWrongType, sbom.Signature{})
+		require.Error(t, err)
+	})
+
+	t.Run("spdxCompCopyrightWrongType", func(t *testing.T) {
+		_, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompCopyrightWrongType, sbom.Signature{})
+		require.Error(t, err)
+	})
+
+}
+
+var cdxDepsWithPrimaryCompletenessWithDirectDepsCompleteness = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:11111111-2222-3333-4444-555555555555",
+  "version": 1,
+
+  "metadata": {
+    "component": {
+      "bom-ref": "pkg:generic/my-app@1.0.0",
+      "type": "application",
+      "name": "my-app",
+      "version": "1.0.0"
+    }
+  },
+
+  "components": [
+    {
+      "bom-ref": "pkg:generic/lib-a@2.1.0",
+      "type": "library",
+      "name": "lib-a",
+      "version": "2.1.0"
+    },
+    {
+      "bom-ref": "pkg:generic/lib-b@3.4.5",
+      "type": "library",
+      "name": "lib-b",
+      "version": "3.4.5"
+    }
+  ],
+
+  "dependencies": [
+    {
+      "ref": "pkg:generic/my-app@1.0.0",
+      "dependsOn": [
+        "pkg:generic/lib-a@2.1.0",
+        "pkg:generic/lib-b@3.4.5"
+      ]
+    },
+    {
+      "ref": "pkg:generic/lib-a@2.1.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:generic/lib-b@3.4.5",
+      "dependsOn": []
+    }
+  ],
+
+  "compositions": [
+    {
+      "aggregate": "complete",
+      "dependencies": [
+        "pkg:generic/my-app@1.0.0"
+      ]
+    },
+    {
+      "aggregate": "complete",
+      "dependencies": [
+        "pkg:generic/lib-a@2.1.0"
+      ]
+    },
+    {
+      "aggregate": "complete",
+      "dependencies": [
+        "pkg:generic/lib-b@3.4.5"
+      ]
+    }
+  ]
+}
+`)
+
+var cdxDepsWithPrimaryCompletenessWithOneDepCompleteAndAnotherDepMissing = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:11111111-2222-3333-4444-555555555555",
+  "version": 1,
+
+  "metadata": {
+    "component": {
+      "bom-ref": "pkg:generic/my-app@1.0.0",
+      "type": "application",
+      "name": "my-app",
+      "version": "1.0.0"
+    }
+  },
+
+  "components": [
+    {
+      "bom-ref": "pkg:generic/lib-a@2.1.0",
+      "type": "library",
+      "name": "lib-a",
+      "version": "2.1.0"
+    },
+    {
+      "bom-ref": "pkg:generic/lib-b@3.4.5",
+      "type": "library",
+      "name": "lib-b",
+      "version": "3.4.5"
+    }
+  ],
+
+  "dependencies": [
+    {
+      "ref": "pkg:generic/my-app@1.0.0",
+      "dependsOn": [
+        "pkg:generic/lib-a@2.1.0",
+        "pkg:generic/lib-b@3.4.5"
+      ]
+    },
+    {
+      "ref": "pkg:generic/lib-a@2.1.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:generic/lib-b@3.4.5",
+      "dependsOn": []
+    }
+  ],
+
+  "compositions": [
+    {
+      "aggregate": "complete",
+      "dependencies": [
+        "pkg:generic/my-app@1.0.0"
+      ]
+    },
+    {
+      "aggregate": "complete",
+      "dependencies": [
+        "pkg:generic/lib-a@2.1.0"
+      ]
+    }
+  ]
+}
+`)
+
+var cdxDepsWithPrimaryCompletenessWithOneDepCompleteAndAnotherDepIncomplete = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:11111111-2222-3333-4444-555555555555",
+  "version": 1,
+
+  "metadata": {
+    "component": {
+      "bom-ref": "pkg:generic/my-app@1.0.0",
+      "type": "application",
+      "name": "my-app",
+      "version": "1.0.0"
+    }
+  },
+
+  "components": [
+    {
+      "bom-ref": "pkg:generic/lib-a@2.1.0",
+      "type": "library",
+      "name": "lib-a",
+      "version": "2.1.0"
+    },
+    {
+      "bom-ref": "pkg:generic/lib-b@3.4.5",
+      "type": "library",
+      "name": "lib-b",
+      "version": "3.4.5"
+    }
+  ],
+
+  "dependencies": [
+    {
+      "ref": "pkg:generic/my-app@1.0.0",
+      "dependsOn": [
+        "pkg:generic/lib-a@2.1.0",
+        "pkg:generic/lib-b@3.4.5"
+      ]
+    },
+    {
+      "ref": "pkg:generic/lib-a@2.1.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:generic/lib-b@3.4.5",
+      "dependsOn": []
+    }
+  ],
+
+  "compositions": [
+    {
+      "aggregate": "complete",
+      "dependencies": [
+        "pkg:generic/my-app@1.0.0"
+      ]
+    },
+    {
+      "aggregate": "complete",
+      "dependencies": [
+        "pkg:generic/lib-a@2.1.0"
+      ]
+    },
+    {
+      "aggregate": "incomplete",
+      "dependencies": [
+        "pkg:generic/lib-b@3.4.5"
+      ]
+    }
+  ]
+}
+`)
+
+var cdxDepsWithPrimaryCompletenessWithOneDepCompleteAndAnotherDepUnknown = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:11111111-2222-3333-4444-555555555555",
+  "version": 1,
+
+  "metadata": {
+    "component": {
+      "bom-ref": "pkg:generic/my-app@1.0.0",
+      "type": "application",
+      "name": "my-app",
+      "version": "1.0.0"
+    }
+  },
+
+  "components": [
+    {
+      "bom-ref": "pkg:generic/lib-a@2.1.0",
+      "type": "library",
+      "name": "lib-a",
+      "version": "2.1.0"
+    },
+    {
+      "bom-ref": "pkg:generic/lib-b@3.4.5",
+      "type": "library",
+      "name": "lib-b",
+      "version": "3.4.5"
+    }
+  ],
+
+  "dependencies": [
+    {
+      "ref": "pkg:generic/my-app@1.0.0",
+      "dependsOn": [
+        "pkg:generic/lib-a@2.1.0",
+        "pkg:generic/lib-b@3.4.5"
+      ]
+    },
+    {
+      "ref": "pkg:generic/lib-a@2.1.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:generic/lib-b@3.4.5",
+      "dependsOn": []
+    }
+  ],
+
+  "compositions": [
+    {
+      "aggregate": "complete",
+      "dependencies": [
+        "pkg:generic/my-app@1.0.0"
+      ]
+    },
+    {
+      "aggregate": "complete",
+      "dependencies": [
+        "pkg:generic/lib-a@2.1.0"
+      ]
+    },
+    {
+      "aggregate": "unknown",
+      "dependencies": [
+        "pkg:generic/lib-b@3.4.5"
+      ]
+    }
+  ]
+}
+`)
+
+var cdxDepsWithPrimaryCompletenessWithZeroDirectDepsCompleteness = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:11111111-2222-3333-4444-555555555555",
+  "version": 1,
+
+  "metadata": {
+    "component": {
+      "bom-ref": "pkg:generic/my-app@1.0.0",
+      "type": "application",
+      "name": "my-app",
+      "version": "1.0.0"
+    }
+  },
+
+  "components": [
+    {
+      "bom-ref": "pkg:generic/lib-a@2.1.0",
+      "type": "library",
+      "name": "lib-a",
+      "version": "2.1.0"
+    },
+    {
+      "bom-ref": "pkg:generic/lib-b@3.4.5",
+      "type": "library",
+      "name": "lib-b",
+      "version": "3.4.5"
+    }
+  ],
+
+  "dependencies": [
+    {
+      "ref": "pkg:generic/my-app@1.0.0",
+      "dependsOn": [
+        "pkg:generic/lib-a@2.1.0",
+        "pkg:generic/lib-b@3.4.5"
+      ]
+    },
+    {
+      "ref": "pkg:generic/lib-a@2.1.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:generic/lib-b@3.4.5",
+      "dependsOn": []
+    }
+  ],
+
+  "compositions": [
+    {
+      "aggregate": "complete",
+      "dependencies": [
+        "pkg:generic/my-app@1.0.0"
+      ]
+    }
+  ]
+}
+`)
+
+var cdxDepsWithPrimaryMissingCompletenessWithZeroDirectDepsCompleteness = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:11111111-2222-3333-4444-555555555555",
+  "version": 1,
+
+  "metadata": {
+    "component": {
+      "bom-ref": "pkg:generic/my-app@1.0.0",
+      "type": "application",
+      "name": "my-app",
+      "version": "1.0.0"
+    }
+  },
+
+  "components": [
+    {
+      "bom-ref": "pkg:generic/lib-a@2.1.0",
+      "type": "library",
+      "name": "lib-a",
+      "version": "2.1.0"
+    },
+    {
+      "bom-ref": "pkg:generic/lib-b@3.4.5",
+      "type": "library",
+      "name": "lib-b",
+      "version": "3.4.5"
+    }
+  ],
+
+  "dependencies": [
+    {
+      "ref": "pkg:generic/my-app@1.0.0",
+      "dependsOn": [
+        "pkg:generic/lib-a@2.1.0",
+        "pkg:generic/lib-b@3.4.5"
+      ]
+    },
+    {
+      "ref": "pkg:generic/lib-a@2.1.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:generic/lib-b@3.4.5",
+      "dependsOn": []
+    }
+  ]
+}
+`)
+
+var cdxDepsWithPrimaryCompletenessIncompleteWithZeroDirectDepsCompleteness = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:11111111-2222-3333-4444-555555555555",
+  "version": 1,
+
+  "metadata": {
+    "component": {
+      "bom-ref": "pkg:generic/my-app@1.0.0",
+      "type": "application",
+      "name": "my-app",
+      "version": "1.0.0"
+    }
+  },
+
+  "components": [
+    {
+      "bom-ref": "pkg:generic/lib-a@2.1.0",
+      "type": "library",
+      "name": "lib-a",
+      "version": "2.1.0"
+    },
+    {
+      "bom-ref": "pkg:generic/lib-b@3.4.5",
+      "type": "library",
+      "name": "lib-b",
+      "version": "3.4.5"
+    }
+  ],
+
+  "dependencies": [
+    {
+      "ref": "pkg:generic/my-app@1.0.0",
+      "dependsOn": [
+        "pkg:generic/lib-a@2.1.0",
+        "pkg:generic/lib-b@3.4.5"
+      ]
+    },
+    {
+      "ref": "pkg:generic/lib-a@2.1.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:generic/lib-b@3.4.5",
+      "dependsOn": []
+    }
+  ],
+
+  "compositions": [
+    {
+      "aggregate": "incomplete",
+      "dependencies": [
+        "pkg:generic/my-app@1.0.0"
+      ]
+    }
+  ]
+}
+`)
+
+var cdxDepsWithPrimaryCompletenessIncompleteWithBothDepsIncomplete = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:11111111-2222-3333-4444-555555555555",
+  "version": 1,
+
+  "metadata": {
+    "component": {
+      "bom-ref": "pkg:generic/my-app@1.0.0",
+      "type": "application",
+      "name": "my-app",
+      "version": "1.0.0"
+    }
+  },
+
+  "components": [
+    {
+      "bom-ref": "pkg:generic/lib-a@2.1.0",
+      "type": "library",
+      "name": "lib-a",
+      "version": "2.1.0"
+    },
+    {
+      "bom-ref": "pkg:generic/lib-b@3.4.5",
+      "type": "library",
+      "name": "lib-b",
+      "version": "3.4.5"
+    }
+  ],
+
+  "dependencies": [
+    {
+      "ref": "pkg:generic/my-app@1.0.0",
+      "dependsOn": [
+        "pkg:generic/lib-a@2.1.0",
+        "pkg:generic/lib-b@3.4.5"
+      ]
+    },
+    {
+      "ref": "pkg:generic/lib-a@2.1.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:generic/lib-b@3.4.5",
+      "dependsOn": []
+    }
+  ],
+
+  "compositions": [
+    {
+      "aggregate": "incomplete",
+      "dependencies": [
+        "pkg:generic/my-app@1.0.0"
+      ]
+    },
+    {
+      "aggregate": "incomplete",
+      "dependencies": [
+        "pkg:generic/lib-a@2.1.0"
+      ]
+    },
+    {
+      "aggregate": "incomplete",
+      "dependencies": [
+        "pkg:generic/lib-b@3.4.5"
+      ]
+    }
+  ]
+}
+`)
+
+var cdxDepsWithPrimaryCompletenessUnknownWithBothDepsMissingCompleteness = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:11111111-2222-3333-4444-555555555555",
+  "version": 1,
+
+  "metadata": {
+    "component": {
+      "bom-ref": "pkg:generic/my-app@1.0.0",
+      "type": "application",
+      "name": "my-app",
+      "version": "1.0.0"
+    }
+  },
+
+  "components": [
+    {
+      "bom-ref": "pkg:generic/lib-a@2.1.0",
+      "type": "library",
+      "name": "lib-a",
+      "version": "2.1.0"
+    },
+    {
+      "bom-ref": "pkg:generic/lib-b@3.4.5",
+      "type": "library",
+      "name": "lib-b",
+      "version": "3.4.5"
+    }
+  ],
+
+  "dependencies": [
+    {
+      "ref": "pkg:generic/my-app@1.0.0",
+      "dependsOn": [
+        "pkg:generic/lib-a@2.1.0",
+        "pkg:generic/lib-b@3.4.5"
+      ]
+    },
+    {
+      "ref": "pkg:generic/lib-a@2.1.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:generic/lib-b@3.4.5",
+      "dependsOn": []
+    }
+  ],
+
+  "compositions": [
+    {
+      "aggregate": "incomplete",
+      "dependencies": [
+        "pkg:generic/my-app@1.0.0"
+      ]
+    }
+  ]
+}
+`)
+
+var cdxDepsWithPrimaryCompletenessUnknownWithBothDepsUnknown = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:11111111-2222-3333-4444-555555555555",
+  "version": 1,
+
+  "metadata": {
+    "component": {
+      "bom-ref": "pkg:generic/my-app@1.0.0",
+      "type": "application",
+      "name": "my-app",
+      "version": "1.0.0"
+    }
+  },
+
+  "components": [
+    {
+      "bom-ref": "pkg:generic/lib-a@2.1.0",
+      "type": "library",
+      "name": "lib-a",
+      "version": "2.1.0"
+    },
+    {
+      "bom-ref": "pkg:generic/lib-b@3.4.5",
+      "type": "library",
+      "name": "lib-b",
+      "version": "3.4.5"
+    }
+  ],
+
+  "dependencies": [
+    {
+      "ref": "pkg:generic/my-app@1.0.0",
+      "dependsOn": [
+        "pkg:generic/lib-a@2.1.0",
+        "pkg:generic/lib-b@3.4.5"
+      ]
+    },
+    {
+      "ref": "pkg:generic/lib-a@2.1.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:generic/lib-b@3.4.5",
+      "dependsOn": []
+    }
+  ],
+
+  "compositions": [
+    {
+      "aggregate": "unknown",
+      "dependencies": [
+        "pkg:generic/my-app@1.0.0"
+      ]
+    },
+    {
+      "aggregate": "unknown",
+      "dependencies": [
+        "pkg:generic/lib-a@2.1.0"
+      ]
+    },
+    {
+      "aggregate": "unknown",
+      "dependencies": [
+        "pkg:generic/lib-b@3.4.5"
+      ]
+    }
+  ]
+}
+`)
+
+func TestFSCTCompDependencies(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("cdxDepsWithPrimaryCompletenessWithDirectDepsCompleteness", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxDepsWithPrimaryCompletenessWithDirectDepsCompleteness, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompDependencies(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "dependency relationships and completeness declared for primary and all direct dependencies", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxDepsWithPrimaryCompletenessWithOneDepCompleteAndAnotherDepMissing", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxDepsWithPrimaryCompletenessWithOneDepCompleteAndAnotherDepMissing, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompDependencies(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "dependency relationships declared; completeness declared for primary and 1 direct dependencies; missing for 1 direct dependencies", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxDepsWithPrimaryCompletenessWithOneDepCompleteAndAnotherDepIncomplete", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxDepsWithPrimaryCompletenessWithOneDepCompleteAndAnotherDepIncomplete, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompDependencies(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "dependency relationships and completeness declared for primary and all direct dependencies", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxDepsWithPrimaryCompletenessWithOneDepCompleteAndAnotherDepUnknown", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxDepsWithPrimaryCompletenessWithOneDepCompleteAndAnotherDepUnknown, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompDependencies(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "dependency relationships and completeness declared for primary and all direct dependencies", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxDepsWithPrimaryCompletenessWithZeroDirectDepsCompleteness", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxDepsWithPrimaryCompletenessWithZeroDirectDepsCompleteness, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompDependencies(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "dependency relationships declared; completeness declared for primary component; missing for all 2 direct dependencies", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxDepsWithPrimaryMissingCompletenessWithZeroDirectDepsCompleteness", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxDepsWithPrimaryMissingCompletenessWithZeroDirectDepsCompleteness, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompDependencies(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "dependency completeness not declared for primary component", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxDepsWithPrimaryCompletenessIncompleteWithZeroDirectDepsCompleteness", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxDepsWithPrimaryCompletenessIncompleteWithZeroDirectDepsCompleteness, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompDependencies(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "dependency relationships declared; completeness declared for primary component; missing for all 2 direct dependencies", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxDepsWithPrimaryCompletenessIncompleteWithBothDepsIncomplete", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxDepsWithPrimaryCompletenessIncompleteWithBothDepsIncomplete, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompDependencies(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "dependency relationships and completeness declared for primary and all direct dependencies", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxDepsWithPrimaryCompletenessUnknownWithBothDepsMissingCompleteness", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxDepsWithPrimaryCompletenessUnknownWithBothDepsMissingCompleteness, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompDependencies(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "dependency relationships declared; completeness declared for primary component; missing for all 2 direct dependencies", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxDepsWithPrimaryCompletenessUnknownWithBothDepsUnknown", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxDepsWithPrimaryCompletenessUnknownWithBothDepsUnknown, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompDependencies(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "dependency relationships and completeness declared for primary and all direct dependencies", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 }

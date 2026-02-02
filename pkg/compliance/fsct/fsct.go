@@ -605,18 +605,13 @@ func normalizeAlgoName(algo string) string {
 // - OR required relationships are missing
 //
 // Minimum Expected:
-// - Relationships declared for:
-//   - Primary component
-//   - Direct dependencies of the primary component
-//
-// - Leaf dependencies are valid
-// - Dependency completeness may be Unknown or Complete
+//   - 1. Primary component
+//   - 2. Direct dependencies of the primary component
+//   - 3. Dependency Declareness for primary and direct dependencies is either Complete or Unknown or incomplete.
 //
 // Recommended Practice:
-// - Relationships declared for all included components
-// - For a direct dependency of primary:
-//   - It declares its own direct dependencies
-//   - AND dependency completeness is explicitly Complete
+// - All baseline requirements met, AND
+// - all direct deps declare their own deps AND completeness == complete
 //
 // Notes:
 // - Transitive leaf components are valid
@@ -624,112 +619,87 @@ func normalizeAlgoName(algo string) string {
 // - Completeness is scoped to immediate upstream dependencies only
 func fsctCompRelationships(doc sbom.Document, component sbom.GetComponent) *db.Record {
 	compID := component.GetID()
-	result := ""
-	maturity := "None"
 
 	primary := doc.PrimaryComp()
 	if !primary.IsPresent() {
-		return db.NewRecordStmt(COMP_RELATIONSHIP, common.UniqueElementID(component), "no primary component", 0.0, maturity)
-	}
-
-	// Helper function: to fetch dependency completeness for a component
-	getAgg := func(id string) sbom.CompositionAggregate {
-		for _, c := range doc.Composition() {
-
-			// 1. SBOM-level completeness applies to all components
-			if c.Scope() == sbom.ScopeGlobal {
-				return c.Aggregate()
-			}
-
-			// 2. Dependency-scoped completeness
-			if c.Scope() == sbom.ScopeDependencies &&
-				slices.Contains(c.Dependencies(), id) {
-				return c.Aggregate()
-			}
-		}
-		return sbom.AggregateUnknown
+		return db.NewRecordStmt(COMP_RELATIONSHIP, common.UniqueElementID(component), "primary component not declared", 0.0, "Non-Compliant")
 	}
 
 	primaryID := primary.GetID()
 	primaryDeps := doc.GetDirectDependencies(primaryID, "DEPENDS_ON")
-	primaryAgg := getAgg(compID)
 
 	// Case 1: Primary Component
 	if compID == primaryID {
-
-		// relationship declared
-		if len(primaryDeps) > 0 {
-			names := make([]string, 0, len(primaryDeps))
-
-			for _, dep := range primaryDeps {
-				name := strings.TrimSpace(dep.GetName())
-				if name != "" {
-					names = append(names, name)
-				}
-			}
-
-			result = strings.Join(names, ", ")
-			return db.NewRecordStmt(COMP_RELATIONSHIP, common.UniqueElementID(component), result, 10.0, "Minimum")
-		}
+		agg := getCompleteness(doc, primaryID)
 
 		// no dependencies --> check completeness declaration
-		if primaryAgg == sbom.AggregateComplete {
-			return db.NewRecordStmt(COMP_RELATIONSHIP, common.UniqueElementID(component), result, 10.0, "Minimum")
+		if agg == sbom.AggregateMissing {
+			return db.NewRecordStmt(COMP_RELATIONSHIP, common.UniqueElementID(component), "dependency completeness not declared for primary component", 0.0, "Non-Compliant")
 		}
 
-		// nothing declared,set to none
-		return db.NewRecordStmt(COMP_RELATIONSHIP, common.UniqueElementID(component), "no relationships declared; completeness unknown", 0.0, "None")
+		// relationship declared
+		if len(primaryDeps) == 0 {
+			return db.NewRecordStmt(COMP_RELATIONSHIP, common.UniqueElementID(component), "no dependencies declared; completeness explicitly stated for primary component", 10.0, "Minimum Expected")
+		}
+
+		return db.NewRecordStmt(COMP_RELATIONSHIP, common.UniqueElementID(component), fmt.Sprintf("direct dependencies declared (%d)", len(primaryDeps)), 10.0, "Minimum Expected")
 	}
 
-	// Case 2: Non-Primary COmponent
-	// chck if it is a direct dependency of primary
-	isDirectDepOfPrimary := false
+	// Case 2: Non-Primary Component
+	// - check if it is a direct dependency of primary
+	isDirect := false
 	for _, dep := range primaryDeps {
 		if dep.GetID() == compID {
-			isDirectDepOfPrimary = true
+			isDirect = true
 			break
 		}
 	}
 
-	if !isDirectDepOfPrimary {
-		return db.NewRecordStmt(COMP_RELATIONSHIP, common.UniqueElementID(component), "not part of primary dependency graph", 0.0, "None")
+	if !isDirect {
+		return db.NewRecordStmt(COMP_RELATIONSHIP, common.UniqueElementID(component), "component not part of primary dependency graph", 0.0, "None")
+	}
+
+	agg := getCompleteness(doc, compID)
+	if agg == sbom.AggregateMissing {
+		return db.NewRecordStmt(COMP_RELATIONSHIP, common.UniqueElementID(component), "dependency completeness not declared for direct dependency", 0.0, "Non-Compliant")
 	}
 
 	componentDeps := doc.GetDirectDependencies(compID, "DEPENDS_ON")
-	componentAgg := getAgg(compID)
 
 	// Case 3: direct dependency with own dependencies
-	// declared dependencies
-	if len(componentDeps) > 0 {
-		names := make([]string, 0, len(componentDeps))
-
-		for _, dep := range componentDeps {
-			name := strings.TrimSpace(dep.GetName())
-			if name != "" {
-				names = append(names, name)
-			}
-		}
-
-		result = strings.Join(names, ", ")
-
-		// Recommended only if completeness is explicity "complete"
-		// declared completeness
-		if componentAgg == sbom.AggregateComplete {
-			return db.NewRecordStmt(COMP_RELATIONSHIP, common.UniqueElementID(component), result, 12.0, "Recommended")
-		}
-
-		// otherwise, still Minimum
-		return db.NewRecordStmt(COMP_RELATIONSHIP, common.UniqueElementID(component), result, 10.0, "Minimum")
+	// - declared completeness
+	if len(componentDeps) > 0 && agg == sbom.AggregateComplete {
+		return db.NewRecordStmt(COMP_RELATIONSHIP, common.UniqueElementID(component), fmt.Sprintf("dependencies declared and marked complete (%d)", len(componentDeps)), 12.0, "Recommended Practice")
 	}
 
-	// Case 4: leaf depdency of primary with completeness declared "complete"
-	switch componentAgg {
-	case sbom.AggregateComplete:
-		return db.NewRecordStmt(COMP_RELATIONSHIP, common.UniqueElementID(component), result, 10.0, "Minimum")
+	return db.NewRecordStmt(COMP_RELATIONSHIP, common.UniqueElementID(component), "dependency relationship and completeness explicitly declared", 10.0, "Minimum Expected")
+}
 
-	default:
-		return db.NewRecordStmt(COMP_RELATIONSHIP, common.UniqueElementID(component), result, 0.0, "None")
+func getCompleteness(doc sbom.Document, primaryID string) sbom.CompositionAggregate {
+	found := false
+	for _, c := range doc.Composition() {
+
+		// 1. SBOM-level completeness applies to all components
+		if c.Scope() == sbom.ScopeGlobal {
+			return c.Aggregate()
+		}
+
+		// 2. Dependency-scoped completeness
+		if c.Scope() != sbom.ScopeDependencies {
+			continue
+		}
+
+		if slices.Contains(c.Dependencies(), primaryID) {
+			found = true
+			return c.Aggregate()
+		}
 	}
+
+	if !found {
+		return sbom.AggregateMissing
+	}
+
+	return sbom.AggregateUnknown
 }
 
 func fsctCompLicense(component sbom.GetComponent) *db.Record {
