@@ -37,10 +37,11 @@ func Result(ctx context.Context, doc sbom.Document, fileName string, outFormat s
 	dtb := db.NewDB()
 
 	// SBOM Level
-	dtb.AddRecord(SBOMAuthor(doc))
-	dtb.AddRecord(SBOMTimestamp(doc))
-	dtb.AddRecord(SBOMType(doc)) // optional
-	dtb.AddRecord(SBOMPrimaryComponent(doc))
+	dtb.AddRecord(FSCTSBOMAuthor(doc))
+	dtb.AddRecord(FSCTSBOMTimestamp(doc))
+	dtb.AddRecord(FSCTSBOMType(doc)) // optional
+	dtb.AddRecord(FSCTSBOMPrimaryComponent(doc))
+	dtb.AddRecord(FSCTSBOMRelationships(doc))
 
 	// component Level
 	dtb.AddRecords(Components(doc))
@@ -81,7 +82,7 @@ func Result(ctx context.Context, doc sbom.Document, fileName string, outFormat s
 // Notes:
 // - Declaring a tool without an author does NOT satisfy FSCT Minimum Expected.
 // - Tool information enhances maturity but never replaces the Author requirement.
-func SBOMAuthor(doc sbom.Document) *db.Record {
+func FSCTSBOMAuthor(doc sbom.Document) *db.Record {
 	var score float64
 	var maturity, result string
 
@@ -215,7 +216,7 @@ func checkTools(tools []sbom.GetTool) (string, bool) {
 	return strings.Join(result, "; "), true
 }
 
-func SBOMTimestamp(doc sbom.Document) *db.Record {
+func FSCTSBOMTimestamp(doc sbom.Document) *db.Record {
 	ts := strings.TrimSpace(doc.Spec().GetCreationTimestamp())
 	if ts == "" {
 		return db.NewRecordStmt(SBOM_TIMESTAMP, "doc", "SBOM creation timestamp not declared", 0.0, "Non-Compliant")
@@ -244,7 +245,7 @@ func SBOMTimestamp(doc sbom.Document) *db.Record {
 // Notes:
 // - Absence of a Primary Component makes the SBOM non-compliant with FSCT.
 // - There are no Recommended or Aspirational levels for this field.
-func SBOMPrimaryComponent(doc sbom.Document) *db.Record {
+func FSCTSBOMPrimaryComponent(doc sbom.Document) *db.Record {
 	primary := doc.PrimaryComp()
 
 	if !primary.IsPresent() {
@@ -278,7 +279,7 @@ func SBOMPrimaryComponent(doc sbom.Document) *db.Record {
 //     the SBOM was generated (e.g., design, source, build, deployed, runtime).
 //   - Declaring SBOM Type provides context for interpretation and correlation
 //     across SBOMs.
-func SBOMType(doc sbom.Document) *db.Record {
+func FSCTSBOMType(doc sbom.Document) *db.Record {
 	lifecycles := doc.Lifecycles()
 
 	// FSCT: SBOM Type is aspirational; absence is acceptable
@@ -297,6 +298,74 @@ func SBOMType(doc sbom.Document) *db.Record {
 	return db.NewRecordStmt(SBOM_TYPE, "doc", strings.Join(declared, ", "), 15.0, "Aspirational")
 }
 
+func dependencyCompleteness(doc sbom.Document, compID string) sbom.CompositionAggregate {
+	found := false
+	for _, c := range doc.Composition() {
+
+		// 1. SBOM-level completeness applies to all components
+		if c.Scope() == sbom.ScopeGlobal {
+			return c.Aggregate()
+		}
+
+		// 2. Dependency-scoped completeness
+		if c.Scope() != sbom.ScopeDependencies {
+			continue
+		}
+
+		if slices.Contains(c.Dependencies(), compID) {
+			found = true
+			return c.Aggregate()
+		}
+	}
+
+	if !found {
+		return sbom.AggregateMissing
+	}
+
+	return sbom.AggregateUnknown
+}
+
+func FSCTSBOMRelationships(doc sbom.Document) *db.Record {
+	primary := doc.PrimaryComp()
+	if !primary.IsPresent() {
+		return db.NewRecordStmt(SBOM_RELATIONSHIPS, "doc", "Primary component not declared", 0.0, "Non-Compliant")
+	}
+
+	primaryID := primary.GetID()
+	primaryDeps := doc.GetDirectDependencies(primaryID, "DEPENDS_ON")
+
+	primaryAgg := dependencyCompleteness(doc, primaryID)
+	if primaryAgg == sbom.AggregateMissing {
+		return db.NewRecordStmt(SBOM_RELATIONSHIPS, "doc", fmt.Sprintf("dependency relationship(%d), but dependency completeness missing for primary component", len(primaryDeps)), 0.0, "None")
+	}
+
+	missingDeps := 0
+	for _, dep := range primaryDeps {
+		if dependencyCompleteness(doc, dep.GetID()) == sbom.AggregateMissing {
+			missingDeps++
+		}
+	}
+
+	if missingDeps > 0 {
+		return db.NewRecordStmt(SBOM_RELATIONSHIPS, "doc", fmt.Sprintf("dependency completeness missing for %d of %d direct dependencies", missingDeps, len(primaryDeps)), 0.0, "None")
+	}
+
+	// Check Recommended Practice
+	allComps := doc.Components()
+	declared := 0
+
+	for _, c := range allComps {
+		if dependencyCompleteness(doc, c.GetID()) != sbom.AggregateMissing {
+			declared++
+		}
+	}
+
+	if declared == len(allComps) {
+		return db.NewRecordStmt(SBOM_RELATIONSHIPS, "doc", "relationships and completeness declared for all included components", 12.0, "Recommended Practice")
+	}
+
+	return db.NewRecordStmt(SBOM_RELATIONSHIPS, "doc", "relationships and completeness explicitly declared for primary component and direct dependencies", 10.0, "Minimum Expected")
+}
 func Components(doc sbom.Document) []*db.Record {
 	records := []*db.Record{}
 
@@ -310,7 +379,7 @@ func Components(doc sbom.Document) []*db.Record {
 		records = append(records, fsctCompSupplier(component))
 		records = append(records, fsctCompUniqIDs(component))
 		records = append(records, fsctCompChecksum(component))
-		records = append(records, fsctCompRelationships(doc, component))
+		// records = append(records, fsctCompRelationships(doc, component))
 		records = append(records, fsctCompLicense(component))
 		records = append(records, fsctCompCopyright(component))
 	}
@@ -598,110 +667,21 @@ func normalizeAlgoName(algo string) string {
 	return n
 }
 
-// FSCT Relationship requirements (§2.2.2.6):
-//
-// None:
-// - Component is unrelated to the primary component
-// - OR required relationships are missing
+// FSCT says:
+// - The License Attribute conveys the legal terms under which a Component may be used, modified, or redistributed.
+// - Component license enables transparency of the terms and conditions under which the
+// - software can be used, modified, and distributed.
 //
 // Minimum Expected:
-//   - 1. Primary component
-//   - 2. Direct dependencies of the primary component
-//   - 3. Dependency Declareness for primary and direct dependencies is either Complete or Unknown or incomplete.
+// - Provide license information for the Primary Component.
 //
 // Recommended Practice:
-// - All baseline requirements met, AND
-// - all direct deps declare their own deps AND completeness == complete
+// - Provide license information for as many Components as possible.
 //
-// Notes:
-// - Transitive leaf components are valid
-// - Unrelated components are out of scope
-// - Completeness is scoped to immediate upstream dependencies only
-func fsctCompRelationships(doc sbom.Document, component sbom.GetComponent) *db.Record {
-	compID := component.GetID()
-
-	primary := doc.PrimaryComp()
-	if !primary.IsPresent() {
-		return db.NewRecordStmt(COMP_RELATIONSHIP, common.UniqueElementID(component), "primary component not declared", 0.0, "Non-Compliant")
-	}
-
-	primaryID := primary.GetID()
-	primaryDeps := doc.GetDirectDependencies(primaryID, "DEPENDS_ON")
-
-	// Case 1: Primary Component
-	if compID == primaryID {
-		agg := getCompleteness(doc, primaryID)
-
-		// no dependencies --> check completeness declaration
-		if agg == sbom.AggregateMissing {
-			return db.NewRecordStmt(COMP_RELATIONSHIP, common.UniqueElementID(component), "dependency completeness not declared for primary component", 0.0, "Non-Compliant")
-		}
-
-		// relationship declared
-		if len(primaryDeps) == 0 {
-			return db.NewRecordStmt(COMP_RELATIONSHIP, common.UniqueElementID(component), "no dependencies declared; completeness explicitly stated for primary component", 10.0, "Minimum Expected")
-		}
-
-		return db.NewRecordStmt(COMP_RELATIONSHIP, common.UniqueElementID(component), fmt.Sprintf("direct dependencies declared (%d)", len(primaryDeps)), 10.0, "Minimum Expected")
-	}
-
-	// Case 2: Non-Primary Component
-	// - check if it is a direct dependency of primary
-	isDirect := false
-	for _, dep := range primaryDeps {
-		if dep.GetID() == compID {
-			isDirect = true
-			break
-		}
-	}
-
-	if !isDirect {
-		return db.NewRecordStmt(COMP_RELATIONSHIP, common.UniqueElementID(component), "component not part of primary dependency graph", 0.0, "None")
-	}
-
-	agg := getCompleteness(doc, compID)
-	if agg == sbom.AggregateMissing {
-		return db.NewRecordStmt(COMP_RELATIONSHIP, common.UniqueElementID(component), "dependency completeness not declared for direct dependency", 0.0, "Non-Compliant")
-	}
-
-	componentDeps := doc.GetDirectDependencies(compID, "DEPENDS_ON")
-
-	// Case 3: direct dependency with own dependencies
-	// - declared completeness
-	if len(componentDeps) > 0 && agg == sbom.AggregateComplete {
-		return db.NewRecordStmt(COMP_RELATIONSHIP, common.UniqueElementID(component), fmt.Sprintf("dependencies declared and marked complete (%d)", len(componentDeps)), 12.0, "Recommended Practice")
-	}
-
-	return db.NewRecordStmt(COMP_RELATIONSHIP, common.UniqueElementID(component), "dependency relationship and completeness explicitly declared", 10.0, "Minimum Expected")
-}
-
-func getCompleteness(doc sbom.Document, primaryID string) sbom.CompositionAggregate {
-	found := false
-	for _, c := range doc.Composition() {
-
-		// 1. SBOM-level completeness applies to all components
-		if c.Scope() == sbom.ScopeGlobal {
-			return c.Aggregate()
-		}
-
-		// 2. Dependency-scoped completeness
-		if c.Scope() != sbom.ScopeDependencies {
-			continue
-		}
-
-		if slices.Contains(c.Dependencies(), primaryID) {
-			found = true
-			return c.Aggregate()
-		}
-	}
-
-	if !found {
-		return sbom.AggregateMissing
-	}
-
-	return sbom.AggregateUnknown
-}
-
+// Aspirational Goal:
+// - Provide license information for all listed SBOM Components.
+// - Attestation of Concluded License information, i.e., license text and concluded terms and
+// - conditions, is included in the SBOM
 func fsctCompLicense(component sbom.GetComponent) *db.Record {
 	result, score, maturity := "", 0.0, "None"
 

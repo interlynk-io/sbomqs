@@ -61,14 +61,15 @@ var FSCTKeyToEvaluatingFunction = map[string]catalog.ProfFeatEval{
 	"sbom_timestamp": profiles.FSCTSBOMTimeStamp,
 	// "sbom_build":             profiles.FSCTSBOMBuildLifecycle,
 	"sbom_primary_component": profiles.FSCTSBOMPrimaryComponent,
+	"sbom_relationships":     profiles.FSCTSBOMRelationships,
 	"comp_name":              profiles.FSCTCompName,
 	"comp_version":           profiles.FSCTCompVersion,
 	"comp_supplier":          profiles.FSCTCompSupplier,
 	"comp_uniq_id":           profiles.FSCTCompUniqID,
 	"comp_hash":              profiles.FSCTCompChecksum,
-	"comp_dependencies":      profiles.FSCTCompDependencies,
-	"comp_license":           profiles.FSCTCompLicense,
-	"comp_copyright":         profiles.FSCTCompCopyright,
+	// "comp_dependencies":      profiles.FSCTCompRelationships,
+	"comp_license":   profiles.FSCTCompLicense,
+	"comp_copyright": profiles.FSCTCompCopyright,
 }
 
 var NTIA2025KeyToEvaluatingFunction = map[string]catalog.ProfFeatEval{
@@ -796,19 +797,21 @@ var profileNTIA2025Spec = catalog.ProfSpec{
 
 var profileFSCTSpec = catalog.ProfSpec{
 	Key:         ProfileFSCT,
-	Name:        "Framing Third Edition Compliance",
+	Name:        "Framing 3rd Edition Compliance",
 	Description: "Framing Third Edition Compliance Profile",
 	Features: []catalog.ProfFeatSpec{
 		// Required (SHALL) fields
 		{Key: "sbom_author", Name: "SBOM Author", Required: true, Description: "Tool or person who created SBOM", Evaluate: profiles.FSCTSBOMAuthors},
 		{Key: "sbom_timestamp", Name: "SBOM Timestamp", Required: true, Description: "ISO 8601 creation timestamp", Evaluate: profiles.FSCTSBOMTimeStamp},
 		{Key: "sbom_primary_component", Name: "Primary Component", Required: true, Description: "Primary Component for which SBOM is created", Evaluate: profiles.FSCTSBOMPrimaryComponent},
+		{Key: "sbom_relationships", Name: "SBOM Relationships", Required: true, Description: "Dependency relationships", Evaluate: profiles.FSCTSBOMRelationships},
+
 		{Key: "comp_name", Name: "Component Name", Required: true, Description: "All components must have names", Evaluate: profiles.FSCTCompName},
 		{Key: "comp_version", Name: "Component Version", Required: true, Description: "Version strings for all components", Evaluate: profiles.FSCTCompVersion},
 		{Key: "comp_supplier", Name: "Component Supplier", Required: true, Description: "Component supplier info", Evaluate: profiles.FSCTCompSupplier},
 		{Key: "comp_uniq_id", Name: "Component Other Identifiers", Required: true, Description: "PURL, CPE, or other unique IDs", Evaluate: profiles.FSCTCompUniqID},
 		{Key: "comp_hash", Name: "Component Hash", Required: true, Description: "Component checksums", Evaluate: profiles.FSCTCompChecksum},
-		{Key: "comp_dependencies", Name: "Component Dependencies", Required: true, Description: "Dependency relationships", Evaluate: profiles.FSCTCompDependencies},
+		// {Key: "comp_dependencies", Name: "Component Dependencies", Required: true, Description: "Dependency relationships", Evaluate: profiles.FSCTCompRelationships},
 		{Key: "comp_license", Name: "License Information", Required: true, Description: "Component licenses (optional)", Evaluate: profiles.FSCTCompLicense},
 		{Key: "comp_copyright", Name: "Copyright Text", Required: true, Description: "Copyright information", Evaluate: profiles.FSCTCompCopyright},
 

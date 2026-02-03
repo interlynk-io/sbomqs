@@ -552,7 +552,7 @@ func TestFSCTSBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthorWithNameAndEmail, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMAuthor(doc)
+		got := FSCTSBOMAuthor(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_AUTHOR, got.CheckKey)
@@ -566,7 +566,7 @@ func TestFSCTSBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorWithNameAndEmail, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMAuthor(doc)
+		got := FSCTSBOMAuthor(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_AUTHOR, got.CheckKey)
@@ -580,7 +580,7 @@ func TestFSCTSBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorWithOrganizationNameAndEmail, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMAuthor(doc)
+		got := FSCTSBOMAuthor(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_AUTHOR, got.CheckKey)
@@ -594,7 +594,7 @@ func TestFSCTSBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthorAndTool, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMAuthor(doc)
+		got := FSCTSBOMAuthor(doc)
 
 		assert.InDelta(t, 12.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_AUTHOR, got.CheckKey)
@@ -608,7 +608,7 @@ func TestFSCTSBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorAndTool, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMAuthor(doc)
+		got := FSCTSBOMAuthor(doc)
 
 		assert.InDelta(t, 12.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_AUTHOR, got.CheckKey)
@@ -622,7 +622,7 @@ func TestFSCTSBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMMultipleAuthorsWithNameAndEmail, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMAuthor(doc)
+		got := FSCTSBOMAuthor(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_AUTHOR, got.CheckKey)
@@ -636,7 +636,7 @@ func TestFSCTSBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMMultipleAuthorWithNameAndEmail, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMAuthor(doc)
+		got := FSCTSBOMAuthor(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_AUTHOR, got.CheckKey)
@@ -650,7 +650,7 @@ func TestFSCTSBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMMultipleAuthorsAndTools, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMAuthor(doc)
+		got := FSCTSBOMAuthor(doc)
 
 		assert.InDelta(t, 12.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_AUTHOR, got.CheckKey)
@@ -664,7 +664,7 @@ func TestFSCTSBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMMultipleAuthorsAndTools, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMAuthor(doc)
+		got := FSCTSBOMAuthor(doc)
 
 		assert.InDelta(t, 12.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_AUTHOR, got.CheckKey)
@@ -678,7 +678,7 @@ func TestFSCTSBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthorWithEmail, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMAuthor(doc)
+		got := FSCTSBOMAuthor(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_AUTHOR, got.CheckKey)
@@ -692,7 +692,7 @@ func TestFSCTSBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorWithPersonEmail, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMAuthor(doc)
+		got := FSCTSBOMAuthor(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_AUTHOR, got.CheckKey)
@@ -706,7 +706,7 @@ func TestFSCTSBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorWithOrganizationEmail, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMAuthor(doc)
+		got := FSCTSBOMAuthor(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_AUTHOR, got.CheckKey)
@@ -720,7 +720,7 @@ func TestFSCTSBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthorWithName, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMAuthor(doc)
+		got := FSCTSBOMAuthor(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_AUTHOR, got.CheckKey)
@@ -734,7 +734,7 @@ func TestFSCTSBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorWithPersonName, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMAuthor(doc)
+		got := FSCTSBOMAuthor(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_AUTHOR, got.CheckKey)
@@ -748,7 +748,7 @@ func TestFSCTSBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorWithOrganizationName, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMAuthor(doc)
+		got := FSCTSBOMAuthor(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_AUTHOR, got.CheckKey)
@@ -762,7 +762,7 @@ func TestFSCTSBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthorsAbsent, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMAuthor(doc)
+		got := FSCTSBOMAuthor(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_AUTHOR, got.CheckKey)
@@ -776,7 +776,7 @@ func TestFSCTSBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorAbsent, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMAuthor(doc)
+		got := FSCTSBOMAuthor(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_AUTHOR, got.CheckKey)
@@ -790,7 +790,7 @@ func TestFSCTSBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthorMissing, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMAuthor(doc)
+		got := FSCTSBOMAuthor(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_AUTHOR, got.CheckKey)
@@ -804,7 +804,7 @@ func TestFSCTSBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorPersonMissing, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMAuthor(doc)
+		got := FSCTSBOMAuthor(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_AUTHOR, got.CheckKey)
@@ -818,7 +818,7 @@ func TestFSCTSBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorOrganizationMissing, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMAuthor(doc)
+		got := FSCTSBOMAuthor(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_AUTHOR, got.CheckKey)
@@ -832,7 +832,7 @@ func TestFSCTSBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthorsWithEmptyString, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMAuthor(doc)
+		got := FSCTSBOMAuthor(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_AUTHOR, got.CheckKey)
@@ -852,7 +852,7 @@ func TestFSCTSBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthorsWithEmptyArray, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMAuthor(doc)
+		got := FSCTSBOMAuthor(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_AUTHOR, got.CheckKey)
@@ -866,7 +866,7 @@ func TestFSCTSBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthorsWithEmptyArrayObject, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMAuthor(doc)
+		got := FSCTSBOMAuthor(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_AUTHOR, got.CheckKey)
@@ -880,7 +880,7 @@ func TestFSCTSBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorsWithEmptyArray, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMAuthor(doc)
+		got := FSCTSBOMAuthor(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_AUTHOR, got.CheckKey)
@@ -912,7 +912,7 @@ func TestFSCTSBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMTool, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMAuthor(doc)
+		got := FSCTSBOMAuthor(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_AUTHOR, got.CheckKey)
@@ -926,7 +926,7 @@ func TestFSCTSBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMTool, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMAuthor(doc)
+		got := FSCTSBOMAuthor(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_AUTHOR, got.CheckKey)
@@ -1005,7 +1005,7 @@ func TestFSCTSBOMLifecycle(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMLifecycleBuildType, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMType(doc)
+		got := FSCTSBOMType(doc)
 
 		assert.InDelta(t, 15.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_TYPE, got.CheckKey)
@@ -1019,7 +1019,7 @@ func TestFSCTSBOMLifecycle(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMLifecycleWithMultipleTypes, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMType(doc)
+		got := FSCTSBOMType(doc)
 
 		assert.InDelta(t, 15.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_TYPE, got.CheckKey)
@@ -1033,7 +1033,7 @@ func TestFSCTSBOMLifecycle(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMLifecycleEmpty, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMType(doc)
+		got := FSCTSBOMType(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_TYPE, got.CheckKey)
@@ -1047,7 +1047,7 @@ func TestFSCTSBOMLifecycle(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMLifecycleWithMultipleTypes, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMType(doc)
+		got := FSCTSBOMType(doc)
 
 		assert.InDelta(t, 15.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_TYPE, got.CheckKey)
@@ -3516,5 +3516,375 @@ func TestFSCTCompChecksums(t *testing.T) {
 			assert.Equal(t, "Recommended Practice", got.Maturity)
 			assert.Equal(t, "SHA256", got.CheckValue)
 		}
+	})
+}
+
+var cdxDepsWithPrimaryCompletenessAndAllComponentCompleteness = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:11111111-2222-3333-4444-555555555555",
+  "version": 1,
+  "metadata": {
+    "component": {
+      "bom-ref": "pkg:generic/my-app@1.0.0",
+      "type": "application",
+      "name": "my-app",
+      "version": "1.0.0"
+    }
+  },
+
+  "components": [
+    {
+      "bom-ref": "pkg:generic/lib-a@2.1.0",
+      "type": "library",
+      "name": "lib-a",
+      "version": "2.1.0"
+    },
+    {
+      "bom-ref": "pkg:generic/lib-b@3.4.5",
+      "type": "library",
+      "name": "lib-b",
+      "version": "3.4.5"
+    },
+    {
+      "bom-ref": "pkg:generic/lib-c@4.1.3",
+      "type": "library",
+      "name": "lib-c",
+      "version": "4.1.3"
+    }
+  ],
+
+  "dependencies": [
+    {
+      "ref": "pkg:generic/my-app@1.0.0",
+      "dependsOn": [
+        "pkg:generic/lib-a@2.1.0",
+        "pkg:generic/lib-b@3.4.5"
+      ]
+    },
+    {
+      "ref": "pkg:generic/lib-a@2.1.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:generic/lib-b@3.4.5",
+      "dependsOn": [
+        "pkg:generic/lib-c@4.1.3"
+      ]
+    },
+    {
+      "ref": "pkg:generic/lib-c@4.1.3",
+      "dependsOn": []
+    }
+  ],
+
+  "compositions": [
+    {
+      "aggregate": "complete",
+      "dependencies": [
+        "pkg:generic/my-app@1.0.0"
+      ]
+    },
+    {
+      "aggregate": "complete",
+      "dependencies": [
+        "pkg:generic/lib-a@2.1.0"
+      ]
+    },
+    {
+      "aggregate": "complete",
+      "dependencies": [
+        "pkg:generic/lib-b@3.4.5"
+      ]
+    },
+    {
+      "aggregate": "complete",
+      "dependencies": [
+        "pkg:generic/lib-c@4.1.3"
+      ]
+    }
+  ]
+}
+`)
+
+var cdxDepsWithPrimaryCompletenessAndBothDirectDepsCompleteness = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:11111111-2222-3333-4444-555555555555",
+  "version": 1,
+  "metadata": {
+    "component": {
+      "bom-ref": "pkg:generic/my-app@1.0.0",
+      "type": "application",
+      "name": "my-app",
+      "version": "1.0.0"
+    }
+  },
+
+  "components": [
+    {
+      "bom-ref": "pkg:generic/lib-a@2.1.0",
+      "type": "library",
+      "name": "lib-a",
+      "version": "2.1.0"
+    },
+    {
+      "bom-ref": "pkg:generic/lib-b@3.4.5",
+      "type": "library",
+      "name": "lib-b",
+      "version": "3.4.5"
+    },
+    {
+      "bom-ref": "pkg:generic/lib-c@4.1.3",
+      "type": "library",
+      "name": "lib-c",
+      "version": "4.1.3"
+    }
+  ],
+
+  "dependencies": [
+    {
+      "ref": "pkg:generic/my-app@1.0.0",
+      "dependsOn": [
+        "pkg:generic/lib-a@2.1.0",
+        "pkg:generic/lib-b@3.4.5"
+      ]
+    },
+    {
+      "ref": "pkg:generic/lib-a@2.1.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:generic/lib-b@3.4.5",
+      "dependsOn": [
+        "pkg:generic/lib-c@4.1.3"
+      ]
+    },
+    {
+      "ref": "pkg:generic/lib-c@4.1.3",
+      "dependsOn": []
+    }
+  ],
+
+  "compositions": [
+    {
+      "aggregate": "complete",
+      "dependencies": [
+        "pkg:generic/my-app@1.0.0"
+      ]
+    },
+    {
+      "aggregate": "complete",
+      "dependencies": [
+        "pkg:generic/lib-a@2.1.0"
+      ]
+    },
+    {
+      "aggregate": "complete",
+      "dependencies": [
+        "pkg:generic/lib-b@3.4.5"
+      ]
+    }
+  ]
+}
+`)
+
+var cdxDepsWithPrimaryCompletenessAndOneDirectDepMissingCompleteness = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:11111111-2222-3333-4444-555555555555",
+  "version": 1,
+  "metadata": {
+    "component": {
+      "bom-ref": "pkg:generic/my-app@1.0.0",
+      "type": "application",
+      "name": "my-app",
+      "version": "1.0.0"
+    }
+  },
+
+  "components": [
+    {
+      "bom-ref": "pkg:generic/lib-a@2.1.0",
+      "type": "library",
+      "name": "lib-a",
+      "version": "2.1.0"
+    },
+    {
+      "bom-ref": "pkg:generic/lib-b@3.4.5",
+      "type": "library",
+      "name": "lib-b",
+      "version": "3.4.5"
+    },
+    {
+      "bom-ref": "pkg:generic/lib-c@4.1.3",
+      "type": "library",
+      "name": "lib-c",
+      "version": "4.1.3"
+    }
+  ],
+
+  "dependencies": [
+    {
+      "ref": "pkg:generic/my-app@1.0.0",
+      "dependsOn": [
+        "pkg:generic/lib-a@2.1.0",
+        "pkg:generic/lib-b@3.4.5"
+      ]
+    },
+    {
+      "ref": "pkg:generic/lib-a@2.1.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:generic/lib-b@3.4.5",
+      "dependsOn": [
+        "pkg:generic/lib-c@4.1.3"
+      ]
+    },
+    {
+      "ref": "pkg:generic/lib-c@4.1.3",
+      "dependsOn": []
+    }
+  ],
+
+  "compositions": [
+    {
+      "aggregate": "complete",
+      "dependencies": [
+        "pkg:generic/my-app@1.0.0"
+      ]
+    },
+    {
+      "aggregate": "complete",
+      "dependencies": [
+        "pkg:generic/lib-a@2.1.0"
+      ]
+    }
+  ]
+}
+`)
+
+var cdxDepsWithPrimaryCompletenessMissing = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:11111111-2222-3333-4444-555555555555",
+  "version": 1,
+  "metadata": {
+    "component": {
+      "bom-ref": "pkg:generic/my-app@1.0.0",
+      "type": "application",
+      "name": "my-app",
+      "version": "1.0.0"
+    }
+  },
+
+  "components": [
+    {
+      "bom-ref": "pkg:generic/lib-a@2.1.0",
+      "type": "library",
+      "name": "lib-a",
+      "version": "2.1.0"
+    },
+    {
+      "bom-ref": "pkg:generic/lib-b@3.4.5",
+      "type": "library",
+      "name": "lib-b",
+      "version": "3.4.5"
+    }
+  ],
+
+  "dependencies": [
+    {
+      "ref": "pkg:generic/my-app@1.0.0",
+      "dependsOn": [
+        "pkg:generic/lib-a@2.1.0",
+        "pkg:generic/lib-b@3.4.5"
+      ]
+    },
+    {
+      "ref": "pkg:generic/lib-a@2.1.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:generic/lib-b@3.4.5",
+      "dependsOn": []
+    }
+  ],
+
+  "compositions": [
+    {
+      "aggregate": "complete",
+      "dependencies": [
+        "pkg:generic/lib-a@2.1.0"
+      ]
+    },
+    {
+      "aggregate": "complete",
+      "dependencies": [
+        "pkg:generic/lib-b@3.4.5"
+      ]
+    }
+  ]
+}
+`)
+
+func TestFSCTSBOMRelationships(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("cdxDepsWithPrimaryCompletenessAndAllComponentCompleteness", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxDepsWithPrimaryCompletenessAndAllComponentCompleteness, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTSBOMRelationships(doc)
+
+		assert.InDelta(t, 12.0, got.Score, 1e-9)
+		assert.Equal(t, SBOM_RELATIONSHIPS, got.CheckKey)
+		assert.Equal(t, "doc", got.ID)
+		assert.Equal(t, "Recommended Practice", got.Maturity)
+		assert.Equal(t, "relationships and completeness declared for all included components", got.CheckValue)
+	})
+
+	t.Run("cdxDepsWithPrimaryCompletenessAndBothDirectDepsCompleteness", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxDepsWithPrimaryCompletenessAndBothDirectDepsCompleteness, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTSBOMRelationships(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, SBOM_RELATIONSHIPS, got.CheckKey)
+		assert.Equal(t, "doc", got.ID)
+		assert.Equal(t, "Minimum Expected", got.Maturity)
+		assert.Equal(t, "relationships and completeness explicitly declared for primary component and direct dependencies", got.CheckValue)
+	})
+
+	t.Run("cdxDepsWithPrimaryCompletenessAndOneDirectDepMissingCompleteness", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxDepsWithPrimaryCompletenessAndOneDirectDepMissingCompleteness, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTSBOMRelationships(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, SBOM_RELATIONSHIPS, got.CheckKey)
+		assert.Equal(t, "doc", got.ID)
+		assert.Equal(t, "None", got.Maturity)
+		assert.Equal(t, "dependency completeness missing for 1 of 2 direct dependencies", got.CheckValue)
+	})
+
+	t.Run("cdxDepsWithPrimaryCompletenessMissing", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxDepsWithPrimaryCompletenessMissing, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTSBOMRelationships(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, SBOM_RELATIONSHIPS, got.CheckKey)
+		assert.Equal(t, "doc", got.ID)
+		assert.Equal(t, "None", got.Maturity)
+		assert.Equal(t, "dependency relationship(2), but dependency completeness missing for primary component", got.CheckValue)
 	})
 }

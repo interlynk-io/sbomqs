@@ -39,7 +39,7 @@ const (
 	COMP_SUPPLIER
 	COMP_UNIQ_ID
 	COMP_CHECKSUM
-	COMP_RELATIONSHIP
+	SBOM_RELATIONSHIPS
 	COMP_LICENSE
 	COMP_COPYRIGHT
 )
@@ -49,14 +49,16 @@ var fsctSectionDetails = map[int]fsctSection{
 	SBOM_TIMESTAMP:         {Title: "SBOM Level", ID: "2.2.1.2", Required: true, DataField: "SBOM Timestamp"},
 	SBOM_TYPE:              {Title: "SBOM Level", ID: "2.2.1.3", Required: false, DataField: "SBOM Type"},
 	SBOM_PRIMARY_COMPONENT: {Title: "SBOM Level", ID: "2.2.1.4", Required: true, DataField: "Primary Component"},
-	COMP_NAME:              {Title: "Component Level", ID: "2.2.2.1", Required: true, DataField: "Component Name"},
-	COMP_VERSION:           {Title: "Component Level", ID: "2.2.2.2", Required: true, DataField: "Component Version"},
-	COMP_SUPPLIER:          {Title: "Component Level", ID: "2.2.2.3", Required: true, DataField: "Component Supplier"},
-	COMP_UNIQ_ID:           {Title: "Component Level", ID: "2.2.2.4", Required: true, DataField: "Component Unique ID"},
-	COMP_CHECKSUM:          {Title: "Component Level", ID: "2.2.2.5", Required: true, DataField: "Component Checksum"},
-	COMP_RELATIONSHIP:      {Title: "Component Level", ID: "2.2.2.6", Required: true, DataField: "Component Relationship"},
-	COMP_LICENSE:           {Title: "Component Level", ID: "2.2.2.7", Required: true, DataField: "Component License"},
-	COMP_COPYRIGHT:         {Title: "Component Level", ID: "2.2.2.8", Required: true, DataField: "Component Copyright"},
+	SBOM_RELATIONSHIPS:     {Title: "SBOM Level", ID: "2.2.2.6", Required: true, DataField: "SBOM Relationship"},
+
+	COMP_NAME:     {Title: "Component Level", ID: "2.2.2.1", Required: true, DataField: "Component Name"},
+	COMP_VERSION:  {Title: "Component Level", ID: "2.2.2.2", Required: true, DataField: "Component Version"},
+	COMP_SUPPLIER: {Title: "Component Level", ID: "2.2.2.3", Required: true, DataField: "Component Supplier"},
+	COMP_UNIQ_ID:  {Title: "Component Level", ID: "2.2.2.4", Required: true, DataField: "Component Unique ID"},
+	COMP_CHECKSUM: {Title: "Component Level", ID: "2.2.2.5", Required: true, DataField: "Component Checksum"},
+	// COMP_RELATIONSHIP:      {Title: "Component Level", ID: "2.2.2.6", Required: true, DataField: "Component Relationship"},
+	COMP_LICENSE:   {Title: "Component Level", ID: "2.2.2.7", Required: true, DataField: "Component License"},
+	COMP_COPYRIGHT: {Title: "Component Level", ID: "2.2.2.8", Required: true, DataField: "Component Copyright"},
 }
 
 type fsctSection struct {

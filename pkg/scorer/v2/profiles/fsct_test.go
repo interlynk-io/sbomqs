@@ -4707,7 +4707,7 @@ func TestFSCTCompDependencies(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxDepsWithPrimaryCompletenessWithDirectDepsCompleteness, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := FSCTCompDependencies(doc)
+		got := FSCTSBOMRelationships(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "dependency relationships and completeness declared for primary and all direct dependencies", got.Desc)
@@ -4718,7 +4718,7 @@ func TestFSCTCompDependencies(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxDepsWithPrimaryCompletenessWithOneDepCompleteAndAnotherDepMissing, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := FSCTCompDependencies(doc)
+		got := FSCTSBOMRelationships(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "dependency relationships declared; completeness declared for primary and 1 direct dependencies; missing for 1 direct dependencies", got.Desc)
@@ -4729,7 +4729,7 @@ func TestFSCTCompDependencies(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxDepsWithPrimaryCompletenessWithOneDepCompleteAndAnotherDepIncomplete, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := FSCTCompDependencies(doc)
+		got := FSCTSBOMRelationships(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "dependency relationships and completeness declared for primary and all direct dependencies", got.Desc)
@@ -4740,7 +4740,7 @@ func TestFSCTCompDependencies(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxDepsWithPrimaryCompletenessWithOneDepCompleteAndAnotherDepUnknown, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := FSCTCompDependencies(doc)
+		got := FSCTSBOMRelationships(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "dependency relationships and completeness declared for primary and all direct dependencies", got.Desc)
@@ -4751,7 +4751,7 @@ func TestFSCTCompDependencies(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxDepsWithPrimaryCompletenessWithZeroDirectDepsCompleteness, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := FSCTCompDependencies(doc)
+		got := FSCTSBOMRelationships(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "dependency relationships declared; completeness declared for primary component; missing for all 2 direct dependencies", got.Desc)
@@ -4762,10 +4762,10 @@ func TestFSCTCompDependencies(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxDepsWithPrimaryMissingCompletenessWithZeroDirectDepsCompleteness, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := FSCTCompDependencies(doc)
+		got := FSCTSBOMRelationships(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "dependency completeness not declared for primary component", got.Desc)
+		assert.Equal(t, "dependency relationship(2), but dependency completeness missing for primary component", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -4773,7 +4773,7 @@ func TestFSCTCompDependencies(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxDepsWithPrimaryCompletenessIncompleteWithZeroDirectDepsCompleteness, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := FSCTCompDependencies(doc)
+		got := FSCTSBOMRelationships(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "dependency relationships declared; completeness declared for primary component; missing for all 2 direct dependencies", got.Desc)
@@ -4784,7 +4784,7 @@ func TestFSCTCompDependencies(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxDepsWithPrimaryCompletenessIncompleteWithBothDepsIncomplete, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := FSCTCompDependencies(doc)
+		got := FSCTSBOMRelationships(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "dependency relationships and completeness declared for primary and all direct dependencies", got.Desc)
@@ -4795,7 +4795,7 @@ func TestFSCTCompDependencies(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxDepsWithPrimaryCompletenessUnknownWithBothDepsMissingCompleteness, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := FSCTCompDependencies(doc)
+		got := FSCTSBOMRelationships(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "dependency relationships declared; completeness declared for primary component; missing for all 2 direct dependencies", got.Desc)
@@ -4806,7 +4806,7 @@ func TestFSCTCompDependencies(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxDepsWithPrimaryCompletenessUnknownWithBothDepsUnknown, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := FSCTCompDependencies(doc)
+		got := FSCTSBOMRelationships(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "dependency relationships and completeness declared for primary and all direct dependencies", got.Desc)
