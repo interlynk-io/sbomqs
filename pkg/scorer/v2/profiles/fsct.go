@@ -115,7 +115,7 @@ func FSCTSBOMTimeStamp(doc sbom.Document) catalog.ProfFeatScore {
 	}
 
 	// accept both RFC3339 and RFC3339Nano
-	if _, err := time.Parse(time.RFC3339, ts); err != nil {
+	if _, err := time.Parse(time.RFC3339Nano, ts); err != nil {
 		return catalog.ProfFeatScore{
 			Score:  0.0,
 			Desc:   "SBOM creation timestamp is not RFC3339 compliant",

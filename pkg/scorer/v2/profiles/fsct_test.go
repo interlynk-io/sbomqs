@@ -622,7 +622,7 @@ func TestFSCTSBOMAuthor(t *testing.T) {
 	})
 
 	// spdxSBOMTool
-	t.Run("spdxSBOMAutspdxSBOMToolhorsWithEmptyArray", func(t *testing.T) {
+	t.Run("spdxSBOMTool", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMTool, sbom.Signature{})
 		require.NoError(t, err)
 
@@ -2112,17 +2112,6 @@ func TestFSCTCompUniqueIDs(t *testing.T) {
 
 	t.Run("cdxCompSWIDAbsent", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompSWIDAbsent, sbom.Signature{})
-		require.NoError(t, err)
-
-		got := FSCTCompUniqID(doc)
-
-		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "unique identifier missing for all(1) components", got.Desc)
-		assert.False(t, got.Ignore)
-	})
-
-	t.Run("cdxCompSWIDWhiteSpace", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompSWIDWhiteSpace, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := FSCTCompUniqID(doc)

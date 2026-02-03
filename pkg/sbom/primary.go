@@ -67,7 +67,7 @@ func (pc PrimaryComponentInfo) IsPresent() bool {
 	return pc.Present
 }
 
-// IsPresent returns whether primary component information is available
+// Component return the primary component as a Component type
 func (pc PrimaryComponentInfo) Component() GetComponent {
 	return Component{
 		ID:      pc.ID,

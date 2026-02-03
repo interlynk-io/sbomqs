@@ -219,7 +219,7 @@ func ComponentHasAnyRestrictive(c sbom.GetComponent) bool {
 	return false
 }
 
-// HasAnyChecksumFSCT checks whether a component declares any cryptographic hash
+// HasAnyChecksum checks whether a component declares any cryptographic hash
 // (weak or strong). This represents the FSCT baseline expectation.
 func HasAnyChecksum(c sbom.GetComponent) bool {
 	for _, checksum := range c.GetChecksums() {
