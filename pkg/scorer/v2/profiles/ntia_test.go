@@ -790,6 +790,7 @@ var cdxSBOMAuthorWithNameAndEmail = []byte(`
   "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
   "version": 1,
   "metadata": {
+    "timestamp": "2025-11-07T14:10:59Z",
     "authors": [
       {
         "bom-ref": "author-1",
@@ -807,6 +808,7 @@ var spdxSBOMAuthorWithPersonNameAndEmail = []byte(`
   "spdxVersion": "SPDX-2.3",
   "SPDXID": "SPDXRef-DOCUMENT",
   "creationInfo": {
+    "created": "2023-01-12T22:06:03Z",
     "creators": [
       "Person: Samantha Wright (samantha.wright@example.com)"
     ]
@@ -820,6 +822,7 @@ var spdxSBOMAuthorWithOrganizationNameAndEmail = []byte(`
   "spdxVersion": "SPDX-2.3",
   "SPDXID": "SPDXRef-DOCUMENT",
   "creationInfo": {
+    "created": "2023-01-12T22:06:03Z",
     "creators": [
       "Organization: Samantha Wright (samantha.wright@example.com)"
     ]
@@ -835,6 +838,7 @@ var cdxSBOMAuthorWithEmail = []byte(`
   "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
   "version": 1,
   "metadata": {
+    "timestamp": "2025-11-07T14:10:59Z",
     "authors": [
       {
         "bom-ref": "author-1",
@@ -851,6 +855,7 @@ var spdxSBOMAuthorWithPersonEmail = []byte(`
   "spdxVersion": "SPDX-2.3",
   "SPDXID": "SPDXRef-DOCUMENT",
   "creationInfo": {
+    "created": "2023-01-12T22:06:03Z",
     "creators": [
       "Person: (samantha.wright@example.com)"
     ]
@@ -864,6 +869,7 @@ var spdxSBOMAuthorWithOrganizationEmail = []byte(`
   "spdxVersion": "SPDX-2.3",
   "SPDXID": "SPDXRef-DOCUMENT",
   "creationInfo": {
+    "created": "2023-01-12T22:06:03Z",
     "creators": [
       "Organization:  (samantha.wright@example.com)"
     ]
@@ -879,6 +885,7 @@ var cdxSBOMAuthorWithName = []byte(`
   "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
   "version": 1,
   "metadata": {
+    "timestamp": "2025-11-07T14:10:59Z",
     "authors": [
       {
         "bom-ref": "author-1",
@@ -895,6 +902,7 @@ var spdxSBOMAuthorWithPersonName = []byte(`
   "spdxVersion": "SPDX-2.3",
   "SPDXID": "SPDXRef-DOCUMENT",
   "creationInfo": {
+    "created": "2023-01-12T22:06:03Z",
     "creators": [
       "Person: Samantha Wright"
     ]
@@ -908,6 +916,7 @@ var spdxSBOMAuthorWithOrganizationName = []byte(`
   "spdxVersion": "SPDX-2.3",
   "SPDXID": "SPDXRef-DOCUMENT",
   "creationInfo": {
+    "created": "2023-01-12T22:06:03Z",
     "creators": [
       "Organization: Samantha Wright"
     ]
@@ -922,7 +931,9 @@ var cdxSBOMAuthorsAbsent = []byte(`
   "specVersion": "1.6",
   "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
   "version": 1,
-  "metadata": {},
+  "metadata": {
+    "timestamp": "2025-11-07T14:10:59Z"
+    },
   "components": []
 }
 `)
@@ -931,7 +942,9 @@ var spdxSBOMAuthorAbsent = []byte(`
 {
   "spdxVersion": "SPDX-2.3",
   "SPDXID": "SPDXRef-DOCUMENT",
-  "creationInfo": {},
+  "creationInfo": {
+    "created": "2023-01-12T22:06:03Z"
+    },
   "packages": []
 }
 `)
@@ -943,6 +956,7 @@ var cdxSBOMAuthorMissing = []byte(`
   "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
   "version": 1,
   "metadata": {
+    "timestamp": "2025-11-07T14:10:59Z",
     "authors": []
   },
   "components": []
@@ -954,6 +968,7 @@ var spdxSBOMCreatorMissing = []byte(`
   "spdxVersion": "SPDX-2.3",
   "SPDXID": "SPDXRef-DOCUMENT",
   "creationInfo": {
+    "created": "2023-01-12T22:06:03Z",
     "creators": []
   },
   "packages": []
@@ -965,6 +980,7 @@ var spdxSBOMAuthorPersonMissing = []byte(`
   "spdxVersion": "SPDX-2.3",
   "SPDXID": "SPDXRef-DOCUMENT",
   "creationInfo": {
+    "created": "2023-01-12T22:06:03Z",
     "creators": [
       "Person: "
     ]
@@ -978,6 +994,7 @@ var spdxSBOMAuthorOrganizationMissing = []byte(`
   "spdxVersion": "SPDX-2.3",
   "SPDXID": "SPDXRef-DOCUMENT",
   "creationInfo": {
+    "created": "2023-01-12T22:06:03Z",
     "creators": [
       "Organization: "
     ]
@@ -993,6 +1010,7 @@ var cdxSBOMAuthorsWithNameAndEmailEmptyString = []byte(`
   "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
   "version": 1,
   "metadata": {
+    "timestamp": "2025-11-07T14:10:59Z",
     "authors": [
       {
         "bom-ref": "author-1",
@@ -1010,6 +1028,7 @@ var spdxSBOMCreatorsWithEmptyString = []byte(`
   "spdxVersion": "SPDX-2.3",
   "SPDXID": "SPDXRef-DOCUMENT",
   "creationInfo": {
+    "created": "2023-01-12T22:06:03Z",
     "creators": [""]
   },
   "packages": []
@@ -1021,6 +1040,7 @@ var cdxSBOMAuthorsWithEmptyArray = []byte(`
   "bomFormat": "CycloneDX",
   "specVersion": "1.6",
   "metadata": {
+    "timestamp": "2025-11-07T14:10:59Z",
     "authors": []
   },
   "components": []
@@ -1034,6 +1054,7 @@ var cdxSBOMAuthorsWithEmptyArrayObject = []byte(`
   "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
   "version": 1,
   "metadata": {
+    "timestamp": "2025-11-07T14:10:59Z",
     "authors": [{}]
   },
   "components": []
@@ -1045,6 +1066,7 @@ var spdxSBOMAuthorsWithEmptyArray = []byte(`
   "spdxVersion": "SPDX-2.3",
   "SPDXID": "SPDXRef-DOCUMENT",
   "creationInfo": {
+    "created": "2023-01-12T22:06:03Z",
     "creators": []
   },
   "packages": []
@@ -1058,6 +1080,7 @@ var cdxSBOMAuthorsWithWrongType = []byte(`
   "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
   "version": 1,
   "metadata": {
+    "timestamp": "2025-11-07T14:10:59Z",
     "authors": {}
   },
   "components": []
@@ -1069,6 +1092,7 @@ var spdxSBOMCreatorsWithWrongTypeSomeValue = []byte(`
   "spdxVersion": "SPDX-2.3",
   "SPDXID": "SPDXRef-DOCUMENT",
   "creationInfo": {
+    "created": "2023-01-12T22:06:03Z",
     "creators": ["foobar"]
   },
   "packages": []
@@ -1080,6 +1104,7 @@ var spdxSBOMCreatorsWithWhitespace = []byte(`
   "spdxVersion": "SPDX-2.3",
   "SPDXID": "SPDXRef-DOCUMENT",
   "creationInfo": {
+    "created": "2023-01-12T22:06:03Z",
     "creators": ["    "]
   },
   "packages": []
@@ -1093,6 +1118,7 @@ var cdxSBOMToolWithNameAndVersion = []byte(`
   "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
   "version": 1,
   "metadata": {
+    "timestamp": "2025-11-07T14:10:59Z",
     "tools": {
       "components": [
         {
@@ -1113,6 +1139,7 @@ var spdxSBOMToolWithNameAndVersion = []byte(`
   "spdxVersion": "SPDX-2.3",
   "SPDXID": "SPDXRef-DOCUMENT",
   "creationInfo": {
+    "created": "2023-01-12T22:06:03Z",
     "creators": [
       "Tool: Awesome Tool-9.1.2"
     ]
@@ -1128,6 +1155,7 @@ var cdxSBOMToolWithName = []byte(`
   "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
   "version": 1,
   "metadata": {
+    "timestamp": "2025-11-07T14:10:59Z",
     "tools": {
       "components": [
         {
@@ -1147,6 +1175,7 @@ var spdxSBOMToolWithName = []byte(`
   "spdxVersion": "SPDX-2.3",
   "SPDXID": "SPDXRef-DOCUMENT",
   "creationInfo": {
+    "created": "2023-01-12T22:06:03Z",
     "creators": [
       "Tool: Awesome Tool"
     ]
@@ -1162,6 +1191,7 @@ var cdxSBOMToolWithVersion = []byte(`
   "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
   "version": 1,
   "metadata": {
+    "timestamp": "2025-11-07T14:10:59Z",
     "tools": {
       "components": [
         {
@@ -1181,6 +1211,7 @@ var spdxSBOMToolWithVersion = []byte(`
   "spdxVersion": "SPDX-2.3",
   "SPDXID": "SPDXRef-DOCUMENT",
   "creationInfo": {
+    "created": "2023-01-12T22:06:03Z",
     "creators": [
       "Tool: -9.1.2"
     ]

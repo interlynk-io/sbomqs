@@ -24,13 +24,14 @@ import (
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/catalog"
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/common"
-	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/formulae"
 	"github.com/interlynk-io/sbomqs/v2/pkg/swid"
 	"github.com/samber/lo"
 )
 
-// FSCTSBOMAuthors
-// FSCT says
+// FSCTSBOMProvenance(must)
+// - is a combination of both author and timestamp information
+//
+// FSCT Author says
 // - The Author Name is intended to be the name of the entity (e.g., person or organization but not the tool) that created the SBOM data.
 //
 // Mappings:
@@ -47,94 +48,86 @@ import (
 // Notes:
 // - Contact information may be used when a legal entity name is not available.
 // - Tools may be declared separately but do not satisfy the Author requirement
-func FSCTSBOMAuthors(doc sbom.Document) catalog.ProfFeatScore {
-	total := len(doc.Authors())
+//
+// FSCT Timestamp says:
+// - The Timestamp is the date and time that the SBOM was produced
+//
+// Mappings:
+// - For SPDX: CreationInfo.Created
+// - For CycloneDX: metadata.timestamp
+func FSCTSBOMProvenance(doc sbom.Document) catalog.ProfFeatScore {
+	// ---------- Timestamp check ----------
+	ts := strings.TrimSpace(doc.Spec().GetCreationTimestamp())
+	timestampPresent := true
 
-	if total == 0 {
-		return formulae.ScoreSBOMProfMissingNA("authors", false)
+	if ts == "" {
+		timestampPresent = false
+	} else {
+		if _, err := time.Parse(time.RFC3339Nano, ts); err != nil {
+			return catalog.ProfFeatScore{
+				Score:  0.0,
+				Desc:   "SBOM provenance incomplete: creation timestamp present but not RFC3339 compliant; author status evaluated separately",
+				Ignore: false,
+			}
+		}
 	}
 
-	identified := 0
-	contactOnly := 0
+	// ---------- Author check ----------
+	authors := doc.Authors()
+	authorIdentified := false
+	authorContactOnly := false
 
-	for _, author := range doc.Authors() {
+	for _, author := range authors {
 		name := strings.TrimSpace(author.GetName())
 		email := strings.TrimSpace(author.GetEmail())
-		contact := strings.TrimSpace(author.GetPhone())
+		phone := strings.TrimSpace(author.GetPhone())
 
-		// Identified author
 		if name != "" || email != "" {
-			identified++
-			continue
+			authorIdentified = true
+			break
 		}
 
-		// Contact-only author (FSCT-allowed but weak)
-		if contact != "" {
-			contactOnly++
-		}
-	}
-
-	if identified > 0 {
-		return catalog.ProfFeatScore{
-			Score:  10.0,
-			Desc:   "SBOM author entity explicitly identified",
-			Ignore: false,
+		if phone != "" {
+			authorContactOnly = true
 		}
 	}
 
-	if contactOnly > 0 {
+	authorPresent := authorIdentified || authorContactOnly
+
+	// ---------- Build description ----------
+	var parts []string
+
+	if timestampPresent {
+		parts = append(parts, "creation timestamp present")
+	} else {
+		parts = append(parts, "creation timestamp missing")
+	}
+
+	if authorIdentified {
+		parts = append(parts, "author identified")
+	} else if authorContactOnly {
+		parts = append(parts, "author declared using contact information only")
+	} else {
+		parts = append(parts, "author information missing")
+	}
+
+	desc := "SBOM provenance: " + strings.Join(parts, "; ")
+
+	// ---------- Final decision ----------
+	if timestampPresent && authorPresent {
 		return catalog.ProfFeatScore{
 			Score:  10.0,
-			Desc:   "SBOM author declared using contact information only",
+			Desc:   desc,
 			Ignore: false,
 		}
 	}
 
 	return catalog.ProfFeatScore{
 		Score:  0.0,
-		Desc:   "add authors",
+		Desc:   desc,
 		Ignore: false,
 	}
 }
-
-// SBOM Timestamp(must)
-// FSCT says:
-// - The Timestamp is the date and time that the SBOM was produced
-//
-// Mappings:
-// - For SPDX: CreationInfo.Created
-// - For CycloneDX: metadata.timestamp
-func FSCTSBOMTimeStamp(doc sbom.Document) catalog.ProfFeatScore {
-	ts := strings.TrimSpace(doc.Spec().GetCreationTimestamp())
-	if ts == "" {
-		return catalog.ProfFeatScore{
-			Score:  0.0,
-			Desc:   "SBOM creation timestamp not declared",
-			Ignore: false,
-		}
-	}
-
-	// accept both RFC3339 and RFC3339Nano
-	if _, err := time.Parse(time.RFC3339Nano, ts); err != nil {
-		return catalog.ProfFeatScore{
-			Score:  0.0,
-			Desc:   "SBOM creation timestamp is not RFC3339 compliant",
-			Ignore: false,
-		}
-	}
-
-	return catalog.ProfFeatScore{
-		Score:  10.0,
-		Desc:   "present",
-		Ignore: false,
-	}
-}
-
-// // FSCTSBOMBuildLifecycle checks Build Information
-// // optional
-// func FSCTSBOMBuildLifecycle(doc sbom.Document) catalog.ProfFeatScore {
-// 	return SBOMLifeCycle(doc)
-// }
 
 // FSCTSBOMPrimaryComponent(must)
 // FSCT says:
@@ -146,83 +139,86 @@ func FSCTSBOMTimeStamp(doc sbom.Document) catalog.ProfFeatScore {
 func FSCTSBOMPrimaryComponent(doc sbom.Document) catalog.ProfFeatScore {
 	primary := doc.PrimaryComp()
 
-	if primary.IsPresent() {
+	if !primary.IsPresent() {
 		return catalog.ProfFeatScore{
-			Score:  10.0,
-			Desc:   "present",
+			Score:  0.0,
+			Desc:   "SBOM primary component not declared",
+			Ignore: false,
+		}
+	}
+
+	name := strings.TrimSpace(primary.GetName())
+	version := strings.TrimSpace(primary.GetVersion())
+
+	if name == "" || version == "" {
+		return catalog.ProfFeatScore{
+			Score:  0.0,
+			Desc:   "SBOM primary component declared but lacks name or version",
 			Ignore: false,
 		}
 	}
 
 	return catalog.ProfFeatScore{
-		Score:  0.0,
-		Desc:   "add primary component",
+		Score:  10.0,
+		Desc:   "SBOM subject defined via primary component",
 		Ignore: false,
 	}
 }
 
-// SBOM Relationships and Completeness(Must)
-// FSCT says:
-//  - FSCT baseline requires that dependency completeness be declared not only
-//    for the Primary Component, but also for each of its direct dependencies.
-//    This does not mean that all transitive dependencies must be listed.
-//    It means that whenever a component appears in the dependency graph,
-//    the SBOM must explicitly state whether that component’s dependency list is complete, incomplete, or unknown.
-//    Declaring “unknown” is acceptable; failing to declare completeness at all is not.
-//
-// In Short:
-//  - In FSCT baseline, any component that participates in the dependency graph must
-//    declare whether its dependency list is complete — even if that list is empty.
-
-// - The Primary Component's direct dependencies must be declared.
-// - The completeness of the declared Dependencies must be indicated.
-// - Completeness declaration can be considered as complete, incomplete, or unknown
-// - Only direct Dependencies are required at baseline.
-// - Leaf dependencies valid and transitive components deps doesn't matter
 func FSCTSBOMRelationships(doc sbom.Document) catalog.ProfFeatScore {
 	primary := doc.PrimaryComp()
 	if !primary.IsPresent() {
-		return formulae.ScoreProfileCustomNA(false, "define primary component")
-	}
-
-	// --- 1. Primary Component completeness ---
-	primaryAgg := DependencyCompleteness(doc, primary.GetID())
-
-	// --- 2. Check direct dependencies(may be empty) ---
-	primaryDeps := doc.GetDirectDependencies(primary.GetID(), "DEPENDS_ON")
-
-	if primaryAgg == sbom.AggregateMissing {
-		return formulae.ScoreProfileCustomNA(false, fmt.Sprintf("dependency relationship(%d), but dependency completeness missing for primary component", len(primaryDeps)))
-	}
-
-	totalDeps := len(primaryDeps)
-
-	depsWithMissingCompleteness := 0
-	depsWithCompleteness := 0
-
-	// --- 3. Completeness for each direct dependency
-	for _, dep := range primaryDeps {
-		agg := DependencyCompleteness(doc, dep.GetID())
-
-		if agg == sbom.AggregateMissing {
-			depsWithMissingCompleteness++
-		} else {
-			depsWithCompleteness++
+		return catalog.ProfFeatScore{
+			Score:  0.0,
+			Desc:   "dependency relationships cannot be evaluated: primary component missing",
+			Ignore: false,
 		}
 	}
 
-	// --- 4. Description (explain intent clearly) ---
+	// --- 1. Primary component completeness ---
+	primaryAgg := DependencyCompleteness(doc, primary.GetID())
+	primaryDeps := doc.GetDirectDependencies(primary.GetID(), "DEPENDS_ON")
 
+	if primaryAgg == sbom.AggregateMissing {
+		return catalog.ProfFeatScore{
+			Score: 0.0,
+			Desc: fmt.Sprintf(
+				"dependency relationships declared (%d), but dependency completeness missing for primary component",
+				len(primaryDeps),
+			),
+			Ignore: false,
+		}
+	}
+
+	// --- 2. Check completeness for all direct dependencies ---
+	totalDeps := len(primaryDeps)
+	missingDirectDepsCompleteness := 0
+
+	for _, dep := range primaryDeps {
+		agg := DependencyCompleteness(doc, dep.GetID())
+		if agg == sbom.AggregateMissing {
+			missingDirectDepsCompleteness++
+		}
+	}
+
+	// --- 3. Baseline decision ---
+	if missingDirectDepsCompleteness > 0 {
+		return catalog.ProfFeatScore{
+			Score: 0.0,
+			Desc: fmt.Sprintf(
+				"dependency relationships declared; completeness missing for %d of %d direct dependencies",
+				missingDirectDepsCompleteness, totalDeps,
+			),
+			Ignore: false,
+		}
+	}
+
+	// --- 4. Baseline satisfied ---
 	var desc string
-
 	if totalDeps == 0 {
 		desc = "no dependencies declared; completeness explicitly indicated for primary component"
-	} else if depsWithCompleteness == totalDeps {
-		desc = "dependency relationships and completeness declared for primary and all direct dependencies"
-	} else if depsWithCompleteness > 0 {
-		desc = fmt.Sprintf("dependency relationships declared; completeness declared for primary and %d direct dependencies; missing for %d direct dependencies", depsWithCompleteness, depsWithMissingCompleteness)
 	} else {
-		desc = fmt.Sprintf("dependency relationships declared; completeness declared for primary component; missing for all %d direct dependencies", totalDeps)
+		desc = "dependency relationships and completeness declared for primary component and all direct dependencies"
 	}
 
 	return catalog.ProfFeatScore{
@@ -231,6 +227,77 @@ func FSCTSBOMRelationships(doc sbom.Document) catalog.ProfFeatScore {
 		Ignore: false,
 	}
 }
+
+// // SBOM Relationships and Completeness(Must)
+// // FSCT says:
+// //  - FSCT baseline requires that dependency completeness be declared not only
+// //    for the Primary Component, but also for each of its direct dependencies.
+// //    This does not mean that all transitive dependencies must be listed.
+// //    It means that whenever a component appears in the dependency graph,
+// //    the SBOM must explicitly state whether that component’s dependency list is complete, incomplete, or unknown.
+// //    Declaring “unknown” is acceptable; failing to declare completeness at all is not.
+// //
+// // In Short:
+// //  - In FSCT baseline, any component that participates in the dependency graph must
+// //    declare whether its dependency list is complete — even if that list is empty.
+
+// // - The Primary Component's direct dependencies must be declared.
+// // - The completeness of the declared Dependencies must be indicated.
+// // - Completeness declaration can be considered as complete, incomplete, or unknown
+// // - Only direct Dependencies are required at baseline.
+// // - Leaf dependencies valid and transitive components deps doesn't matter
+// func FSCTSBOMRelationships(doc sbom.Document) catalog.ProfFeatScore {
+// 	primary := doc.PrimaryComp()
+// 	if !primary.IsPresent() {
+// 		return formulae.ScoreProfileCustomNA(false, "define primary component")
+// 	}
+
+// 	// --- 1. Primary Component completeness ---
+// 	primaryAgg := DependencyCompleteness(doc, primary.GetID())
+
+// 	// --- 2. Check direct dependencies(may be empty) ---
+// 	primaryDeps := doc.GetDirectDependencies(primary.GetID(), "DEPENDS_ON")
+
+// 	if primaryAgg == sbom.AggregateMissing {
+// 		return formulae.ScoreProfileCustomNA(false, fmt.Sprintf("dependency relationship(%d), but dependency completeness missing for primary component", len(primaryDeps)))
+// 	}
+
+// 	totalDeps := len(primaryDeps)
+
+// 	depsWithMissingCompleteness := 0
+// 	depsWithCompleteness := 0
+
+// 	// --- 3. Completeness for each direct dependency
+// 	for _, dep := range primaryDeps {
+// 		agg := DependencyCompleteness(doc, dep.GetID())
+
+// 		if agg == sbom.AggregateMissing {
+// 			depsWithMissingCompleteness++
+// 		} else {
+// 			depsWithCompleteness++
+// 		}
+// 	}
+
+// 	// --- 4. Description (explain intent clearly) ---
+
+// 	var desc string
+
+// 	if totalDeps == 0 {
+// 		desc = "no dependencies declared; completeness explicitly indicated for primary component"
+// 	} else if depsWithCompleteness == totalDeps {
+// 		desc = "dependency relationships and completeness declared for primary and all direct dependencies"
+// 	} else if depsWithCompleteness > 0 {
+// 		desc = fmt.Sprintf("dependency relationships declared; completeness declared for primary and %d direct dependencies; missing for %d direct dependencies", depsWithCompleteness, depsWithMissingCompleteness)
+// 	} else {
+// 		desc = fmt.Sprintf("dependency relationships declared; completeness declared for primary component; missing for all %d direct dependencies", totalDeps)
+// 	}
+
+// 	return catalog.ProfFeatScore{
+// 		Score:  10.0,
+// 		Desc:   desc,
+// 		Ignore: false,
+// 	}
+// }
 
 func DependencyCompleteness(doc sbom.Document, compID string) sbom.CompositionAggregate {
 	found := false
@@ -259,26 +326,45 @@ func DependencyCompleteness(doc sbom.Document, compID string) sbom.CompositionAg
 	return sbom.AggregateUnknown
 }
 
-// FSCTCompName(Must)
-// FSCT says:
-// - The Component Name is defined as the public name for a Component defined by the Originating Supplier of the Component.
-//
-// Mappings:
-// - For SPDX: PackageName
-// - For CycloneDX: components[].name
-func FSCTCompName(doc sbom.Document) catalog.ProfFeatScore {
-	return CompName(doc)
-}
+func FSCTCompIdentity(doc sbom.Document) catalog.ProfFeatScore {
+	comps := doc.Components()
+	total := len(comps)
 
-// FSCTCompVersion(Must)
-// FSCT says:
-// - The Version is a supplier-defined identifier that specifies an update change in the software from a previously identified version.
-//
-// Mappings:
-// - For SPDX: PackageVersion
-// - For CycloneDX: components[].version
-func FSCTCompVersion(doc sbom.Document) catalog.ProfFeatScore {
-	return CompVersion(doc)
+	if total == 0 {
+		return catalog.ProfFeatScore{
+			Score:  0.0,
+			Desc:   "no components declared in SBOM",
+			Ignore: false,
+		}
+	}
+
+	missing := 0
+
+	for _, comp := range comps {
+		name := strings.TrimSpace(comp.GetName())
+		version := strings.TrimSpace(comp.GetVersion())
+
+		if name == "" || version == "" {
+			missing++
+		}
+	}
+
+	if missing > 0 {
+		return catalog.ProfFeatScore{
+			Score: 0.0,
+			Desc: fmt.Sprintf(
+				"component identity incomplete for %d of %d components",
+				missing, total,
+			),
+			Ignore: false,
+		}
+	}
+
+	return catalog.ProfFeatScore{
+		Score:  10.0,
+		Desc:   "component name and version declared for all components",
+		Ignore: false,
+	}
 }
 
 // Component Supplier(Must)
@@ -291,17 +377,24 @@ func FSCTCompVersion(doc sbom.Document) catalog.ProfFeatScore {
 // - For CycloneDX: components[].supplier
 func FSCTCompSupplier(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
-	if len(comps) == 0 {
-		return formulae.ScoreProfNA(true)
+	total := len(comps)
+
+	if total == 0 {
+		return catalog.ProfFeatScore{
+			Score:  0.0,
+			Desc:   "no components declared in SBOM",
+			Ignore: false,
+		}
 	}
 
-	total := len(comps)
 	identified := 0
 	declaredUnknown := 0
+	missing := 0
 
-	for _, c := range comps {
-		supplier := c.Suppliers()
+	for _, comp := range comps {
+		supplier := comp.Suppliers()
 		if supplier == nil {
+			missing++
 			continue
 		}
 
@@ -309,11 +402,12 @@ func FSCTCompSupplier(doc sbom.Document) catalog.ProfFeatScore {
 		url := strings.TrimSpace(supplier.GetURL())
 		email := strings.TrimSpace(supplier.GetEmail())
 
-		var contactName, contactEmail string
-
+		contactIdentified := false
 		for _, c := range supplier.GetContacts() {
-			contactEmail = strings.TrimSpace(c.GetEmail())
-			contactName = strings.TrimSpace(c.GetName())
+			if strings.TrimSpace(c.GetName()) != "" || strings.TrimSpace(c.GetEmail()) != "" {
+				contactIdentified = true
+				break
+			}
 		}
 
 		// Explicitly declared as unknown
@@ -323,29 +417,49 @@ func FSCTCompSupplier(doc sbom.Document) catalog.ProfFeatScore {
 		}
 
 		// Supplier identified
-		if name != "" || url != "" || email != "" || contactEmail != "" || contactName != "" {
+		if name != "" || url != "" || email != "" || contactIdentified {
 			identified++
+			continue
+		}
+
+		missing++
+	}
+
+	// Any missing supplier breaks minimum expectation
+	if missing > 0 {
+		return catalog.ProfFeatScore{
+			Score: 0.0,
+			Desc: fmt.Sprintf(
+				"supplier attribution missing for %d components",
+				missing,
+			),
+			Ignore: false,
 		}
 	}
 
-	have := identified + declaredUnknown
-
-	desc := fmt.Sprintf("supplier information missing for all(%d) components", total)
-	if have == total {
-		if declaredUnknown > 0 && identified == 0 {
-			desc = "supplier declared as unknown for all components"
-		} else if declaredUnknown > 0 {
-			desc = fmt.Sprintf("supplier identified for %d components; explicitly unknown for %d", identified, declaredUnknown)
-		} else {
-			desc = "supplier identified for all components"
+	// All components have supplier declared
+	if declaredUnknown > 0 && identified == 0 {
+		return catalog.ProfFeatScore{
+			Score:  10.0,
+			Desc:   "supplier declared as unknown for all components",
+			Ignore: false,
 		}
-	} else if have > 0 {
-		desc = fmt.Sprintf("supplier declared for %d components; missing for %d", have, total-have)
+	}
+
+	if declaredUnknown > 0 {
+		return catalog.ProfFeatScore{
+			Score: 10.0,
+			Desc: fmt.Sprintf(
+				"supplier identified for %d components; explicitly unknown for %d",
+				identified, declaredUnknown,
+			),
+			Ignore: false,
+		}
 	}
 
 	return catalog.ProfFeatScore{
-		Score:  formulae.ScoreProfFull(have, total, false).Score,
-		Desc:   desc,
+		Score:  10.0,
+		Desc:   "supplier identified for all components",
 		Ignore: false,
 	}
 }
@@ -361,12 +475,19 @@ func FSCTCompSupplier(doc sbom.Document) catalog.ProfFeatScore {
 // against external identifier specifications.
 func FSCTCompUniqID(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
-	if len(comps) == 0 {
-		return formulae.ScoreProfNA(true)
+	total := len(comps)
+
+	if total == 0 {
+		return catalog.ProfFeatScore{
+			Score:  0.0,
+			Desc:   "no components declared in SBOM",
+			Ignore: false,
+		}
 	}
 
+	have := 0
+
 	var (
-		have        int
 		purlSeen    bool
 		cpeSeen     bool
 		swhidSeen   bool
@@ -388,7 +509,19 @@ func FSCTCompUniqID(doc sbom.Document) catalog.ProfFeatScore {
 		omniborSeen = omniborSeen || t.omnibor
 	}
 
-	// Build identifier kind list (for explainability)
+	// Any missing unique identifier breaks minimum expectation
+	if have != total {
+		return catalog.ProfFeatScore{
+			Score: 0.0,
+			Desc: fmt.Sprintf(
+				"unique identifier missing for %d components",
+				total-have,
+			),
+			Ignore: false,
+		}
+	}
+
+	// Build identifier kind list (quality signal)
 	var kinds []string
 	if purlSeen {
 		kinds = append(kinds, "PURL")
@@ -403,33 +536,19 @@ func FSCTCompUniqID(doc sbom.Document) catalog.ProfFeatScore {
 		kinds = append(kinds, "SWID")
 	}
 	if omniborSeen {
-		kinds = append(kinds, "OmniborID")
+		kinds = append(kinds, "OmniBOR")
 	}
 
-	// Description (supplier-style)
-	desc := fmt.Sprintf(
-		"unique identifier missing for all(%d) components",
-		len(comps),
-	)
-
-	if have == len(comps) {
+	desc := "unique identifier declared for all components"
+	if len(kinds) > 0 {
 		desc = fmt.Sprintf(
 			"unique identifier declared for all components (%s)",
 			strings.Join(kinds, ", "),
 		)
-	} else if have > 0 {
-		desc = fmt.Sprintf(
-			"unique identifier declared for %d components; missing for %d (%s)",
-			have,
-			len(comps)-have,
-			strings.Join(kinds, ", "),
-		)
 	}
 
-	score := formulae.ScoreProfFull(have, len(comps), false)
-
 	return catalog.ProfFeatScore{
-		Score:  score.Score,
+		Score:  10.0,
 		Desc:   desc,
 		Ignore: false,
 	}
@@ -485,13 +604,17 @@ func detectFsctUniqueIDTypes(c sbom.GetComponent) uniqIDTypes {
 // FSCT does not mandate a specific hash algorithm or require cryptographic strength.
 func FSCTCompChecksum(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
-	if len(comps) == 0 {
-		return formulae.ScoreProfNA(true)
+	total := len(comps)
+
+	if total == 0 {
+		return catalog.ProfFeatScore{
+			Score:  0.0,
+			Desc:   "no components declared in SBOM",
+			Ignore: false,
+		}
 	}
 
-	total := len(comps)
 	have := 0
-
 	algoSeen := make(map[string]bool)
 
 	for _, c := range comps {
@@ -509,36 +632,35 @@ func FSCTCompChecksum(doc sbom.Document) catalog.ProfFeatScore {
 		}
 	}
 
-	// Build algorithm list for description
+	// Any missing checksum breaks minimum expectation
+	if have != total {
+		return catalog.ProfFeatScore{
+			Score: 0.0,
+			Desc: fmt.Sprintf(
+				"cryptographic hash missing for %d components",
+				total-have,
+			),
+			Ignore: false,
+		}
+	}
+
+	// Build algorithm list for description (quality signal)
 	var algos []string
 	for a := range algoSeen {
 		algos = append(algos, a)
 	}
 	sort.Strings(algos)
 
-	desc := fmt.Sprintf(
-		"cryptographic hash missing for all(%d) components",
-		total,
-	)
-
-	if have == total {
+	desc := "cryptographic hash declared for all components"
+	if len(algos) > 0 {
 		desc = fmt.Sprintf(
 			"cryptographic hash declared for all components (%s)",
 			strings.Join(algos, ", "),
 		)
-	} else if have > 0 {
-		desc = fmt.Sprintf(
-			"cryptographic hash declared for %d components; missing for %d (%s)",
-			have,
-			total-have,
-			strings.Join(algos, ", "),
-		)
 	}
 
-	score := formulae.ScoreProfFull(have, total, false)
-
 	return catalog.ProfFeatScore{
-		Score:  score.Score,
+		Score:  10.0,
 		Desc:   desc,
 		Ignore: false,
 	}
@@ -584,34 +706,64 @@ func detectFsctChecksumKinds(c sbom.GetComponent) checksumKinds {
 // - Presence and transparency are the goal.
 func FSCTCompLicense(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
-	if len(comps) == 0 {
-		return formulae.ScoreProfNA(true)
+	total := len(comps)
+
+	if total == 0 {
+		return catalog.ProfFeatScore{
+			Score:  0.0,
+			Desc:   "no components declared in SBOM",
+			Ignore: false,
+		}
 	}
 
-	total := len(comps)
+	primary := doc.PrimaryComp()
+	if !primary.IsPresent() {
+		return catalog.ProfFeatScore{
+			Score:  0.0,
+			Desc:   "license coverage cannot be evaluated: primary component missing",
+			Ignore: false,
+		}
+	}
+
+	// Count license presence across all components
 	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
-		return common.ComponentHasAnyConcluded(c)
+		return common.ComponentHasAnyLicense(c)
 	})
 
-	desc := fmt.Sprintf(
-		"license missing for all(%d) components",
-		total,
-	)
+	for _, c := range comps {
+		if c.GetID() == primary.GetID() {
+			if !common.ComponentHasAnyLicense(c) {
+				desc := "license missing for primary component (minimum expectation not met) and all components"
+				if have > 0 {
+					desc = fmt.Sprintf(
+						"license missing for primary component (minimum expectation not met); "+
+							"license present for %d components",
+						have,
+					)
+				}
+
+				return catalog.ProfFeatScore{
+					Score:  0.0,
+					Desc:   desc,
+					Ignore: false,
+				}
+			}
+		}
+	}
+
+	desc := "license declared only for primary component (minimum coverage)"
 
 	if have == total {
-		desc = "license declared for all components"
-	} else if have > 0 {
+		desc = "license declared for all components (full coverage: aspirational)"
+	} else if have > 1 {
 		desc = fmt.Sprintf(
-			"license declared for %d components; missing for %d",
-			have,
-			total-have,
+			"license declared for %d of %d components (partial coverage: recommended)",
+			have, total,
 		)
 	}
 
-	score := formulae.ScoreProfFull(have, total, false)
-
 	return catalog.ProfFeatScore{
-		Score:  score.Score,
+		Score:  10.0,
 		Desc:   desc,
 		Ignore: false,
 	}
@@ -629,35 +781,70 @@ func FSCTCompLicense(doc sbom.Document) catalog.ProfFeatScore {
 // - Presence and transparency are the goal.
 func FSCTCompCopyright(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
-	if len(comps) == 0 {
-		return formulae.ScoreProfNA(true)
+	total := len(comps)
+
+	if total == 0 {
+		return catalog.ProfFeatScore{
+			Score:  0.0,
+			Desc:   "no components declared in SBOM",
+			Ignore: false,
+		}
 	}
 
-	total := len(comps)
+	primary := doc.PrimaryComp()
+	if !primary.IsPresent() {
+		return catalog.ProfFeatScore{
+			Score:  0.0,
+			Desc:   "copyright coverage cannot be evaluated: primary component missing",
+			Ignore: false,
+		}
+	}
+
+	// Count copyright presence across all components
 	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
 		val := strings.ToLower(strings.TrimSpace(c.GetCopyRight()))
 		return val != "" && val != "none" && val != "noassertion"
 	})
 
-	desc := fmt.Sprintf(
-		"copyright missing for all(%d) components",
-		total,
-	)
+	for _, c := range comps {
+		if c.GetID() == primary.GetID() {
+
+			// ----- Minimum expectation: primary component must have copyright -----
+			primaryVal := strings.ToLower(strings.TrimSpace(c.GetCopyRight()))
+			if primaryVal == "" || primaryVal == "none" || primaryVal == "noassertion" {
+
+				desc := "copyright missing for primary component (minimum expectation not met) and all components"
+				if have > 0 {
+					desc = fmt.Sprintf(
+						"copyright missing for primary component (minimum expectation not met); "+
+							"copyright present for %d components",
+						have,
+					)
+				}
+
+				return catalog.ProfFeatScore{
+					Score:  0.0,
+					Desc:   desc,
+					Ignore: false,
+				}
+			}
+		}
+	}
+
+	// ----- Coverage evaluation (minimum satisfied) -----
+	desc := "copyright declared only for primary component (minimum coverage)"
 
 	if have == total {
-		desc = "copyright declared for all components"
-	} else if have > 0 {
+		desc = "copyright declared for all components (full coverage: aspirational)"
+	} else if have > 1 {
 		desc = fmt.Sprintf(
-			"copyright declared for %d components; missing for %d",
-			have,
-			total-have,
+			"copyright declared for %d of %d components (partial coverage: recommended)",
+			have, total,
 		)
 	}
 
-	score := formulae.ScoreProfFull(have, total, false)
-
 	return catalog.ProfFeatScore{
-		Score:  score.Score,
+		Score:  10.0,
 		Desc:   desc,
 		Ignore: false,
 	}

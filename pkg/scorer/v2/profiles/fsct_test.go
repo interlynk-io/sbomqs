@@ -23,13 +23,113 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var spdxSBOMAuthorWithNameAndEmail = []byte(`
+var cdxSBOMAuthorAndTimestamp = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2025-11-07T14:10:59Z",
+    "authors": [
+      {
+        "bom-ref": "author-1",
+        "name": "Samantha Wright",
+        "email": "samantha.wright@example.com"
+      }
+    ]
+  },
+  "components": []
+}
+`)
+
+var spdxSBOMAuthorAndTimestamp = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "created": "2023-01-12T22:06:03Z",
+    "creators": [
+      "Person: Samantha Wright (samantha.wright@example.com)"
+    ]
+  },
+  "packages": []
+}
+`)
+
+var cdxSBOMAuthorAndTimestampWrongType = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2025-11-02210:59Z",
+    "authors": [
+      {
+        "bom-ref": "author-1",
+        "name": "Samantha Wright",
+        "email": "samantha.wright@example.com"
+      }
+    ]
+  },
+  "components": []
+}
+`)
+
+var spdxSBOMAuthorAndTimestampWrongType = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "created": "2023-01-133:06:03Z",
+    "creators": [
+      "Person: Samantha Wright (samantha.wright@example.com)"
+    ]
+  },
+  "packages": []
+}
+`)
+
+var cdxSBOMAuthorTimestampMissing = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {
+    "authors": [
+      {
+        "bom-ref": "author-1",
+        "name": "Samantha Wright",
+        "email": "samantha.wright@example.com"
+      }
+    ]
+  },
+  "components": []
+}
+`)
+
+var spdxSBOMAuthorPersonAndTimestampMissing = []byte(`
 {
   "spdxVersion": "SPDX-2.3",
   "SPDXID": "SPDXRef-DOCUMENT",
   "creationInfo": {
     "creators": [
       "Person: Samantha Wright (samantha.wright@example.com)"
+    ]
+  },
+  "packages": []
+}
+`)
+
+var spdxSBOMAuthorOrganizationAndTimestampMissing = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "creators": [
+      "Organization: Samantha Wright (samantha.wright@example.com)"
     ]
   },
   "packages": []
@@ -87,6 +187,7 @@ var spdxSBOMAuthorAndTool = []byte(`
   "spdxVersion": "SPDX-2.3",
   "SPDXID": "SPDXRef-DOCUMENT",
   "creationInfo": {
+    "created": "2023-01-12T22:06:03Z",
     "creators": [
       "Person: Samantha Wright (samantha.wright@example.com)",
       "Tool: cyclonedx-gomod-v1.9.0"
@@ -103,6 +204,7 @@ var cdxSBOMMultipleAuthorsWithNameAndEmail = []byte(`
   "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
   "version": 1,
   "metadata": {
+    "timestamp": "2025-11-07T14:10:59Z",
     "authors": [
         {
             "name": "Interlynk",
@@ -130,6 +232,7 @@ var spdxSBOMMultipleAuthorWithNameAndEmail = []byte(`
   "spdxVersion": "SPDX-2.3",
   "SPDXID": "SPDXRef-DOCUMENT",
   "creationInfo": {
+    "created": "2023-01-12T22:06:03Z",
     "creators": [
       "Organization: Interlynk (hello@interlynk.io, 800-555-1212)",
       "Organization: VulnCon SBOM Generation Workshop (vulncon@sbom.dev, 800-555-1313)",
@@ -147,6 +250,7 @@ var cdxSBOMMultipleAuthorsAndTools = []byte(`
   "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
   "version": 1,
   "metadata": {
+    "timestamp": "2025-11-07T14:10:59Z",
     "authors": [
         {
             "name": "Interlynk",
@@ -201,6 +305,7 @@ var spdxSBOMMultipleAuthorsAndTools = []byte(`
   "spdxVersion": "SPDX-2.3",
   "SPDXID": "SPDXRef-DOCUMENT",
   "creationInfo": {
+    "created": "2023-01-12T22:06:03Z",
     "creators": [
       "Organization: Interlynk (hello@interlynk.io, 800-555-1212)",
       "Organization: VulnCon SBOM Generation Workshop (vulncon@sbom.dev, 800-555-1313)",
@@ -219,6 +324,7 @@ var cdxSBOMAuthorsWithEmptyString = []byte(`
   "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
   "version": 1,
   "metadata": {
+    "timestamp": "2025-11-07T14:10:59Z",
     "authors": [
       {
         "bom-ref": "author-1",
@@ -236,6 +342,7 @@ var spdxSBOMAuthorsWithEmptyString = []byte(`
   "spdxVersion": "SPDX-2.3",
   "SPDXID": "SPDXRef-DOCUMENT",
   "creationInfo": {
+    "created": "2023-01-12T22:06:03Z",
     "creators": [""]
   },
   "packages": []
@@ -249,33 +356,34 @@ var cdxSBOMTool = []byte(`
   "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
   "version": 1,
   "metadata": {
-	"tools": [
-      {
-        "vendor": "CycloneDX",
-        "name": "cyclonedx-gomod",
-        "version": "v1.9.0",
-        "hashes": [
-          {
-            "alg": "MD5",
-            "content": "c3d43dcbd0fe759f08bf015a813a9b8a"
-          },
-          {
-            "alg": "SHA-256",
-            "content": "64440820e5d881ec20bc7b9937fdc9bd67d15ba4637b2e7959a8f31dd12c5b21"
-          }
-        ],
-        "externalReferences": [
-          {
-            "url": "https://github.com/CycloneDX/cyclonedx-gomod",
-            "type": "vcs"
-          },
-          {
-            "url": "https://cyclonedx.org",
-            "type": "website"
-          }
-        ]
-      }
-    ]
+    "timestamp": "2025-11-07T14:10:59Z",
+    "tools": [
+        {
+          "vendor": "CycloneDX",
+          "name": "cyclonedx-gomod",
+          "version": "v1.9.0",
+          "hashes": [
+            {
+              "alg": "MD5",
+              "content": "c3d43dcbd0fe759f08bf015a813a9b8a"
+            },
+            {
+              "alg": "SHA-256",
+              "content": "64440820e5d881ec20bc7b9937fdc9bd67d15ba4637b2e7959a8f31dd12c5b21"
+            }
+          ],
+          "externalReferences": [
+            {
+              "url": "https://github.com/CycloneDX/cyclonedx-gomod",
+              "type": "vcs"
+            },
+            {
+              "url": "https://cyclonedx.org",
+              "type": "website"
+            }
+          ]
+        }
+      ]
   },
   "components": []
 }
@@ -286,6 +394,7 @@ var spdxSBOMTool = []byte(`
   "spdxVersion": "SPDX-2.3",
   "SPDXID": "SPDXRef-DOCUMENT",
   "creationInfo": {
+    "created": "2023-01-12T22:06:03Z",
     "creators": [
       "Tool: cyclonedx-gomod-v1.9.0"
     ]
@@ -294,114 +403,66 @@ var spdxSBOMTool = []byte(`
 }
 `)
 
-func TestFSCTSBOMAuthor(t *testing.T) {
+func TestFSCTSBOMProvenance(t *testing.T) {
 	ctx := context.Background()
 
-	// cdxSBOMAuthorWithNameAndEmail
-	t.Run("cdxSBOMAuthorWithNameAndEmail", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthorWithNameAndEmail, sbom.Signature{})
+	// cdxSBOMAuthorAndTimestamp
+	t.Run("cdxSBOMAuthorAndTimestamp", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthorAndTimestamp, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := FSCTSBOMAuthors(doc)
+		got := FSCTSBOMProvenance(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM author entity explicitly identified", got.Desc)
+		assert.Equal(t, "SBOM provenance: creation timestamp present; author identified", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
-	// spdxSBOMAuthorWithNameAndEmail
-	t.Run("spdxSBOMAuthorWithNameAndEmail", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorWithNameAndEmail, sbom.Signature{})
+	// spdxSBOMAuthorAndTimestamp
+	t.Run("spdxSBOMAuthorAndTimestamp", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorAndTimestamp, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := FSCTSBOMAuthors(doc)
+		got := FSCTSBOMProvenance(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM author entity explicitly identified", got.Desc)
+		assert.Equal(t, "SBOM provenance: creation timestamp present; author identified", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
-	// spdxSBOMAuthorWithOrganizationNameAndEmail
-	t.Run("spdxSBOMAuthorWithOrganizationNameAndEmail", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorWithOrganizationNameAndEmail, sbom.Signature{})
+	// cdxSBOMAuthorTimestampMissing
+	t.Run("cdxSBOMAuthorTimestampMissing", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthorTimestampMissing, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := FSCTSBOMAuthors(doc)
+		got := FSCTSBOMProvenance(doc)
 
-		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM author entity explicitly identified", got.Desc)
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "SBOM provenance: creation timestamp missing; author identified", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
-	// cdxSBOMAuthorAndTool
-	t.Run("cdxSBOMAuthorAndTool", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthorAndTool, sbom.Signature{})
+	// spdxSBOMAuthorPersonAndTimestampMissing
+	t.Run("spdxSBOMAuthorPersonAndTimestampMissing", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorPersonAndTimestampMissing, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := FSCTSBOMAuthors(doc)
+		got := FSCTSBOMProvenance(doc)
 
-		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM author entity explicitly identified", got.Desc)
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "SBOM provenance: creation timestamp missing; author identified", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
-	// spdxSBOMAuthorAndTool
-	t.Run("spdxSBOMAuthorAndTool", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorAndTool, sbom.Signature{})
+	// spdxSBOMAuthorOrganizationAndTimestampMissing
+	t.Run("spdxSBOMAuthorOrganizationAndTimestampMissing", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorOrganizationAndTimestampMissing, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := FSCTSBOMAuthors(doc)
+		got := FSCTSBOMProvenance(doc)
 
-		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM author entity explicitly identified", got.Desc)
-		assert.False(t, got.Ignore)
-	})
-
-	// cdxSBOMMultipleAuthorsWithNameAndEmail
-	t.Run("cdxSBOMMultipleAuthorsWithNameAndEmail", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMMultipleAuthorsWithNameAndEmail, sbom.Signature{})
-		require.NoError(t, err)
-
-		got := FSCTSBOMAuthors(doc)
-
-		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM author entity explicitly identified", got.Desc)
-		assert.False(t, got.Ignore)
-	})
-
-	// spdxSBOMMultipleAuthorWithNameAndEmail
-	t.Run("spdxSBOMMultipleAuthorWithNameAndEmail", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMMultipleAuthorWithNameAndEmail, sbom.Signature{})
-		require.NoError(t, err)
-
-		got := FSCTSBOMAuthors(doc)
-
-		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM author entity explicitly identified", got.Desc)
-		assert.False(t, got.Ignore)
-	})
-
-	// cdxSBOMMultipleAuthorsAndTools
-	t.Run("cdxSBOMMultipleAuthorsAndTools", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMMultipleAuthorsAndTools, sbom.Signature{})
-		require.NoError(t, err)
-
-		got := FSCTSBOMAuthors(doc)
-
-		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM author entity explicitly identified", got.Desc)
-		assert.False(t, got.Ignore)
-	})
-
-	// spdxSBOMMultipleAuthorsAndTools
-	t.Run("spdxSBOMMultipleAuthorsAndTools", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMMultipleAuthorsAndTools, sbom.Signature{})
-		require.NoError(t, err)
-
-		got := FSCTSBOMAuthors(doc)
-
-		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM author entity explicitly identified", got.Desc)
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "SBOM provenance: creation timestamp missing; author identified", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -410,10 +471,10 @@ func TestFSCTSBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthorWithEmail, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := FSCTSBOMAuthors(doc)
+		got := FSCTSBOMProvenance(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM author entity explicitly identified", got.Desc)
+		assert.Equal(t, "SBOM provenance: creation timestamp present; author identified", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -422,10 +483,10 @@ func TestFSCTSBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorWithPersonEmail, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := FSCTSBOMAuthors(doc)
+		got := FSCTSBOMProvenance(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM author entity explicitly identified", got.Desc)
+		assert.Equal(t, "SBOM provenance: creation timestamp present; author identified", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -434,10 +495,10 @@ func TestFSCTSBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorWithOrganizationEmail, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := FSCTSBOMAuthors(doc)
+		got := FSCTSBOMProvenance(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM author entity explicitly identified", got.Desc)
+		assert.Equal(t, "SBOM provenance: creation timestamp present; author identified", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -446,10 +507,10 @@ func TestFSCTSBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthorWithName, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := FSCTSBOMAuthors(doc)
+		got := FSCTSBOMProvenance(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM author entity explicitly identified", got.Desc)
+		assert.Equal(t, "SBOM provenance: creation timestamp present; author identified", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -458,10 +519,10 @@ func TestFSCTSBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorWithPersonName, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := FSCTSBOMAuthors(doc)
+		got := FSCTSBOMProvenance(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM author entity explicitly identified", got.Desc)
+		assert.Equal(t, "SBOM provenance: creation timestamp present; author identified", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -470,10 +531,10 @@ func TestFSCTSBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorWithOrganizationName, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := FSCTSBOMAuthors(doc)
+		got := FSCTSBOMProvenance(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM author entity explicitly identified", got.Desc)
+		assert.Equal(t, "SBOM provenance: creation timestamp present; author identified", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -482,10 +543,10 @@ func TestFSCTSBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthorsAbsent, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := FSCTSBOMAuthors(doc)
+		got := FSCTSBOMProvenance(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add authors", got.Desc)
+		assert.Equal(t, "SBOM provenance: creation timestamp present; author information missing", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -494,10 +555,10 @@ func TestFSCTSBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorAbsent, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := FSCTSBOMAuthors(doc)
+		got := FSCTSBOMProvenance(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add authors", got.Desc)
+		assert.Equal(t, "SBOM provenance: creation timestamp present; author information missing", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -506,10 +567,10 @@ func TestFSCTSBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthorMissing, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := FSCTSBOMAuthors(doc)
+		got := FSCTSBOMProvenance(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add authors", got.Desc)
+		assert.Equal(t, "SBOM provenance: creation timestamp present; author information missing", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -518,10 +579,10 @@ func TestFSCTSBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorPersonMissing, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := FSCTSBOMAuthors(doc)
+		got := FSCTSBOMProvenance(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add authors", got.Desc)
+		assert.Equal(t, "SBOM provenance: creation timestamp present; author information missing", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -530,10 +591,10 @@ func TestFSCTSBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorOrganizationMissing, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := FSCTSBOMAuthors(doc)
+		got := FSCTSBOMProvenance(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add authors", got.Desc)
+		assert.Equal(t, "SBOM provenance: creation timestamp present; author information missing", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -542,10 +603,10 @@ func TestFSCTSBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthorsWithEmptyString, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := FSCTSBOMAuthors(doc)
+		got := FSCTSBOMProvenance(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add authors", got.Desc)
+		assert.Equal(t, "SBOM provenance: creation timestamp present; author information missing", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -560,10 +621,10 @@ func TestFSCTSBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthorsWithEmptyArray, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := FSCTSBOMAuthors(doc)
+		got := FSCTSBOMProvenance(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add authors", got.Desc)
+		assert.Equal(t, "SBOM provenance: creation timestamp present; author information missing", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -572,10 +633,10 @@ func TestFSCTSBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthorsWithEmptyArrayObject, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := FSCTSBOMAuthors(doc)
+		got := FSCTSBOMProvenance(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add authors", got.Desc)
+		assert.Equal(t, "SBOM provenance: creation timestamp present; author information missing", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -584,10 +645,34 @@ func TestFSCTSBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorsWithEmptyArray, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := FSCTSBOMAuthors(doc)
+		got := FSCTSBOMProvenance(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add authors", got.Desc)
+		assert.Equal(t, "SBOM provenance: creation timestamp present; author information missing", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// cdxSBOMAuthorAndTimestampWrongType
+	t.Run("cdxSBOMAuthorAndTimestampWrongType", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthorAndTimestampWrongType, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTSBOMProvenance(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "SBOM provenance incomplete: creation timestamp present but not RFC3339 compliant; author status evaluated separately", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// spdxSBOMAuthorWithNameAndEmailAndTimestampWrongType
+	t.Run("spdxSBOMAuthorAndTimestampWrongType", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorAndTimestampWrongType, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTSBOMProvenance(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "SBOM provenance incomplete: creation timestamp present but not RFC3339 compliant; author status evaluated separately", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -609,15 +694,63 @@ func TestFSCTSBOMAuthor(t *testing.T) {
 		require.Error(t, err)
 	})
 
+	// cdxSBOMMultipleAuthorsWithNameAndEmail
+	t.Run("cdxSBOMMultipleAuthorsWithNameAndEmail", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMMultipleAuthorsWithNameAndEmail, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTSBOMProvenance(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "SBOM provenance: creation timestamp present; author identified", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// spdxSBOMMultipleAuthorWithNameAndEmail
+	t.Run("spdxSBOMMultipleAuthorWithNameAndEmail", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMMultipleAuthorWithNameAndEmail, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTSBOMProvenance(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "SBOM provenance: creation timestamp present; author identified", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// cdxSBOMMultipleAuthorsAndTools
+	t.Run("cdxSBOMMultipleAuthorsAndTools", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMMultipleAuthorsAndTools, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTSBOMProvenance(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "SBOM provenance: creation timestamp present; author identified", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// spdxSBOMMultipleAuthorsAndTools
+	t.Run("spdxSBOMMultipleAuthorsAndTools", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMMultipleAuthorsAndTools, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTSBOMProvenance(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "SBOM provenance: creation timestamp present; author identified", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
 	// cdxSBOMTool
 	t.Run("cdxSBOMTool", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMTool, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := FSCTSBOMAuthors(doc)
+		got := FSCTSBOMProvenance(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add authors", got.Desc)
+		assert.Equal(t, "SBOM provenance: creation timestamp present; author information missing", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -626,10 +759,62 @@ func TestFSCTSBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMTool, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := FSCTSBOMAuthors(doc)
+		got := FSCTSBOMProvenance(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add authors", got.Desc)
+		assert.Equal(t, "SBOM provenance: creation timestamp present; author information missing", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+}
+
+func TestFSCTSBOMPrimaryComponent(t *testing.T) {
+	ctx := context.Background()
+
+	// cdxDepsWithPrimaryCompletenessWithDirectDepsCompleteness
+	t.Run("cdxDepsWithPrimaryCompletenessWithDirectDepsCompleteness", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxDepsWithPrimaryCompletenessWithDirectDepsCompleteness, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTSBOMPrimaryComponent(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "SBOM subject defined via primary component", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// cdxWithPrimaryComponentMissing
+	t.Run("cdxWithPrimaryComponentMissing", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxWithPrimaryComponentMissing, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTSBOMPrimaryComponent(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "SBOM primary component not declared", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// cdxWithPrimaryComponentWithNameMissing
+	t.Run("cdxWithPrimaryComponentWithNameMissing", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxWithPrimaryComponentWithNameMissing, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTSBOMPrimaryComponent(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "SBOM primary component declared but lacks name or version", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// cdxWithPrimaryComponentWithVersionMissing
+	t.Run("cdxWithPrimaryComponentWithVersionMissing", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxWithPrimaryComponentWithVersionMissing, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTSBOMPrimaryComponent(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "SBOM primary component declared but lacks name or version", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 }
@@ -1038,7 +1223,7 @@ func TestFSCTCompSupplier(t *testing.T) {
 		got := FSCTCompSupplier(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "supplier information missing for all(1) components", got.Desc)
+		assert.Equal(t, "supplier attribution missing for 1 components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1049,7 +1234,7 @@ func TestFSCTCompSupplier(t *testing.T) {
 		got := FSCTCompSupplier(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "supplier information missing for all(1) components", got.Desc)
+		assert.Equal(t, "supplier attribution missing for 1 components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1060,7 +1245,7 @@ func TestFSCTCompSupplier(t *testing.T) {
 		got := FSCTCompSupplier(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "supplier information missing for all(1) components", got.Desc)
+		assert.Equal(t, "supplier attribution missing for 1 components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1071,7 +1256,7 @@ func TestFSCTCompSupplier(t *testing.T) {
 		got := FSCTCompSupplier(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "supplier information missing for all(1) components", got.Desc)
+		assert.Equal(t, "supplier attribution missing for 1 components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1082,7 +1267,7 @@ func TestFSCTCompSupplier(t *testing.T) {
 		got := FSCTCompSupplier(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "supplier information missing for all(1) components", got.Desc)
+		assert.Equal(t, "supplier attribution missing for 1 components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1093,7 +1278,7 @@ func TestFSCTCompSupplier(t *testing.T) {
 		got := FSCTCompSupplier(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "supplier information missing for all(1) components", got.Desc)
+		assert.Equal(t, "supplier attribution missing for 1 components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1104,7 +1289,7 @@ func TestFSCTCompSupplier(t *testing.T) {
 		got := FSCTCompSupplier(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "supplier information missing for all(1) components", got.Desc)
+		assert.Equal(t, "supplier attribution missing for 1 components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1114,8 +1299,8 @@ func TestFSCTCompSupplier(t *testing.T) {
 
 		got := FSCTCompSupplier(doc)
 
-		assert.InDelta(t, 5.0, got.Score, 1e-9)
-		assert.Equal(t, "supplier declared for 1 components; missing for 1", got.Desc)
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "supplier attribution missing for 1 components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1125,8 +1310,8 @@ func TestFSCTCompSupplier(t *testing.T) {
 
 		got := FSCTCompSupplier(doc)
 
-		assert.InDelta(t, 6.666666666666666, got.Score, 1e-9)
-		assert.Equal(t, "supplier declared for 2 components; missing for 1", got.Desc)
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "supplier attribution missing for 1 components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1137,7 +1322,7 @@ func TestFSCTCompSupplier(t *testing.T) {
 		got := FSCTCompSupplier(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "supplier information missing for all(2) components", got.Desc)
+		assert.Equal(t, "supplier attribution missing for 2 components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1148,7 +1333,7 @@ func TestFSCTCompSupplier(t *testing.T) {
 		got := FSCTCompSupplier(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "supplier information missing for all(2) components", got.Desc)
+		assert.Equal(t, "supplier attribution missing for 2 components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 }
@@ -1963,7 +2148,7 @@ func TestFSCTCompUniqueIDs(t *testing.T) {
 		got := FSCTCompUniqID(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "unique identifier missing for all(1) components", got.Desc)
+		assert.Equal(t, "unique identifier missing for 1 components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1974,7 +2159,7 @@ func TestFSCTCompUniqueIDs(t *testing.T) {
 		got := FSCTCompUniqID(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "unique identifier missing for all(1) components", got.Desc)
+		assert.Equal(t, "unique identifier missing for 1 components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1985,7 +2170,7 @@ func TestFSCTCompUniqueIDs(t *testing.T) {
 		got := FSCTCompUniqID(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "unique identifier missing for all(1) components", got.Desc)
+		assert.Equal(t, "unique identifier missing for 1 components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1996,7 +2181,7 @@ func TestFSCTCompUniqueIDs(t *testing.T) {
 		got := FSCTCompUniqID(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "unique identifier missing for all(1) components", got.Desc)
+		assert.Equal(t, "unique identifier missing for 1 components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2007,7 +2192,7 @@ func TestFSCTCompUniqueIDs(t *testing.T) {
 		got := FSCTCompUniqID(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "unique identifier missing for all(1) components", got.Desc)
+		assert.Equal(t, "unique identifier missing for 1 components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2018,7 +2203,7 @@ func TestFSCTCompUniqueIDs(t *testing.T) {
 		got := FSCTCompUniqID(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "unique identifier missing for all(1) components", got.Desc)
+		assert.Equal(t, "unique identifier missing for 1 components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2029,7 +2214,7 @@ func TestFSCTCompUniqueIDs(t *testing.T) {
 		got := FSCTCompUniqID(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "unique identifier missing for all(1) components", got.Desc)
+		assert.Equal(t, "unique identifier missing for 1 components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2040,7 +2225,7 @@ func TestFSCTCompUniqueIDs(t *testing.T) {
 		got := FSCTCompUniqID(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "unique identifier missing for all(1) components", got.Desc)
+		assert.Equal(t, "unique identifier missing for 1 components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2095,7 +2280,7 @@ func TestFSCTCompUniqueIDs(t *testing.T) {
 		got := FSCTCompUniqID(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "unique identifier missing for all(1) components", got.Desc)
+		assert.Equal(t, "unique identifier missing for 1 components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2106,7 +2291,7 @@ func TestFSCTCompUniqueIDs(t *testing.T) {
 		got := FSCTCompUniqID(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "unique identifier missing for all(1) components", got.Desc)
+		assert.Equal(t, "unique identifier missing for 1 components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2117,7 +2302,7 @@ func TestFSCTCompUniqueIDs(t *testing.T) {
 		got := FSCTCompUniqID(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "unique identifier missing for all(1) components", got.Desc)
+		assert.Equal(t, "unique identifier missing for 1 components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2128,7 +2313,7 @@ func TestFSCTCompUniqueIDs(t *testing.T) {
 		got := FSCTCompUniqID(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "unique identifier missing for all(1) components", got.Desc)
+		assert.Equal(t, "unique identifier missing for 1 components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2151,7 +2336,7 @@ func TestFSCTCompUniqueIDs(t *testing.T) {
 		got := FSCTCompUniqID(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "unique identifier missing for all(1) components", got.Desc)
+		assert.Equal(t, "unique identifier missing for 1 components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2162,7 +2347,7 @@ func TestFSCTCompUniqueIDs(t *testing.T) {
 		got := FSCTCompUniqID(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "unique identifier missing for all(1) components", got.Desc)
+		assert.Equal(t, "unique identifier missing for 1 components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2173,7 +2358,7 @@ func TestFSCTCompUniqueIDs(t *testing.T) {
 		got := FSCTCompUniqID(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "unique identifier missing for all(1) components", got.Desc)
+		assert.Equal(t, "unique identifier missing for 1 components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2184,7 +2369,7 @@ func TestFSCTCompUniqueIDs(t *testing.T) {
 		got := FSCTCompUniqID(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "unique identifier missing for all(1) components", got.Desc)
+		assert.Equal(t, "unique identifier missing for 1 components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2195,7 +2380,7 @@ func TestFSCTCompUniqueIDs(t *testing.T) {
 		got := FSCTCompUniqID(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "unique identifier missing for all(1) components", got.Desc)
+		assert.Equal(t, "unique identifier missing for 1 components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2206,7 +2391,7 @@ func TestFSCTCompUniqueIDs(t *testing.T) {
 		got := FSCTCompUniqID(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "unique identifier declared for all components (OmniborID)", got.Desc)
+		assert.Equal(t, "unique identifier declared for all components (OmniBOR)", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2217,7 +2402,7 @@ func TestFSCTCompUniqueIDs(t *testing.T) {
 		got := FSCTCompUniqID(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "unique identifier missing for all(1) components", got.Desc)
+		assert.Equal(t, "unique identifier missing for 1 components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2228,7 +2413,7 @@ func TestFSCTCompUniqueIDs(t *testing.T) {
 		got := FSCTCompUniqID(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "unique identifier missing for all(1) components", got.Desc)
+		assert.Equal(t, "unique identifier missing for 1 components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2239,7 +2424,7 @@ func TestFSCTCompUniqueIDs(t *testing.T) {
 		got := FSCTCompUniqID(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "unique identifier missing for all(1) components", got.Desc)
+		assert.Equal(t, "unique identifier missing for 1 components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2250,7 +2435,7 @@ func TestFSCTCompUniqueIDs(t *testing.T) {
 		got := FSCTCompUniqID(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "unique identifier missing for all(1) components", got.Desc)
+		assert.Equal(t, "unique identifier missing for 1 components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2261,7 +2446,7 @@ func TestFSCTCompUniqueIDs(t *testing.T) {
 		got := FSCTCompUniqID(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "unique identifier missing for all(1) components", got.Desc)
+		assert.Equal(t, "unique identifier missing for 1 components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2316,7 +2501,7 @@ func TestFSCTCompUniqueIDs(t *testing.T) {
 		got := FSCTCompUniqID(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "unique identifier declared for all components (PURL, CPE, SWHID, SWID, OmniborID)", got.Desc)
+		assert.Equal(t, "unique identifier declared for all components (PURL, CPE, SWHID, SWID, OmniBOR)", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 }
@@ -2745,7 +2930,7 @@ func TestFSCTCompChecksum(t *testing.T) {
 		got := FSCTCompChecksum(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "cryptographic hash missing for all(1) components", got.Desc)
+		assert.Equal(t, "cryptographic hash missing for 1 components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2756,7 +2941,7 @@ func TestFSCTCompChecksum(t *testing.T) {
 		got := FSCTCompChecksum(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "cryptographic hash missing for all(1) components", got.Desc)
+		assert.Equal(t, "cryptographic hash missing for 1 components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2767,7 +2952,7 @@ func TestFSCTCompChecksum(t *testing.T) {
 		got := FSCTCompChecksum(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "cryptographic hash missing for all(1) components", got.Desc)
+		assert.Equal(t, "cryptographic hash missing for 1 components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2778,7 +2963,7 @@ func TestFSCTCompChecksum(t *testing.T) {
 		got := FSCTCompChecksum(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "cryptographic hash missing for all(1) components", got.Desc)
+		assert.Equal(t, "cryptographic hash missing for 1 components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2789,7 +2974,7 @@ func TestFSCTCompChecksum(t *testing.T) {
 		got := FSCTCompChecksum(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "cryptographic hash missing for all(1) components", got.Desc)
+		assert.Equal(t, "cryptographic hash missing for 1 components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2800,7 +2985,7 @@ func TestFSCTCompChecksum(t *testing.T) {
 		got := FSCTCompChecksum(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "cryptographic hash missing for all(1) components", got.Desc)
+		assert.Equal(t, "cryptographic hash missing for 1 components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2833,6 +3018,23 @@ var cdxCompWithConcludedLicenseID = []byte(`
   "specVersion": "1.6",
   "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
   "version": 1,
+  "metadata": {
+    "timestamp": "2025-01-01T00:00:00Z",
+    "component": {
+      "type": "application",
+      "bom-ref": "e42c6c94-705e-45e1-aea0-fd2047f37db3",
+      "name": "STM32CubeH7",
+      "version": "1.12.1",
+      "licenses": [
+        {
+          "license": {
+            "name": "Apache-2.0",
+            "acknowledgement": "concluded"
+          }
+        }
+      ]
+    }
+  },
   "components": [
     {
       "type": "library",
@@ -2862,10 +3064,122 @@ var spdxCompWithConcludedLicense = []byte(`
   },
   "packages": [
     {
-      "SPDXID": "SPDXRef-Pkg",
+      "SPDXID": "SPDXRef-Pkg-acme",
       "name": "acme",
       "versionInfo": "0.1.0",
       "licenseConcluded": "Apache-2.0"
+    }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relatedSpdxElement": "SPDXRef-Pkg-acme",
+      "relationshipType": "DESCRIBES"
+    },
+  ]
+}
+`)
+
+var cdxCompWithPrimaryCompConcludedLicenseIDMissing = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2025-01-01T00:00:00Z",
+    "component": {
+      "type": "application",
+      "bom-ref": "e42c6c94-705e-45e1-aea0-fd2047f37db3",
+      "name": "STM32CubeH7",
+      "version": "1.12.1"
+    }
+  },
+  "components": [
+    {
+      "type": "library",
+      "name": "acme",
+      "version": "0.1.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0",
+            "acknowledgement": "concluded"
+          }
+        }
+      ]
+    }
+  ]
+}
+`)
+
+var spdxCompWithPrimaryCompConcludedLicenseMissing = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "test-doc",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": ["Tool: syft v0.95.0"]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Pkg-acme",
+      "name": "acme",
+      "versionInfo": "0.1.0"
+    }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relatedSpdxElement": "SPDXRef-Pkg-acme",
+      "relationshipType": "DESCRIBES"
+    },
+  ]
+}
+`)
+
+var cdxCompWithPrimaryCompMissing = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2025-01-01T00:00:00Z"
+  },
+  "components": [
+    {
+      "type": "library",
+      "name": "acme",
+      "version": "0.1.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0",
+            "acknowledgement": "concluded"
+          }
+        }
+      ]
+    }
+  ]
+}
+`)
+
+var spdxCompWithPrimaryCompMissing = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "test-doc",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": ["Tool: syft v0.95.0"]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Pkg-acme",
+      "name": "acme",
+      "versionInfo": "0.1.0"
     }
   ]
 }
@@ -2877,6 +3191,23 @@ var cdxCompWithDeclaredLicenseID = []byte(`
   "specVersion": "1.6",
   "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
   "version": 1,
+  "metadata": {
+    "timestamp": "2025-01-01T00:00:00Z",
+    "component": {
+      "type": "application",
+      "bom-ref": "e42c6c94-705e-45e1-aea0-fd2047f37db3",
+      "name": "STM32CubeH7",
+      "version": "1.12.1",
+      "licenses": [
+        {
+          "license": {
+            "name": "Apache-2.0",
+            "acknowledgement": "declared"
+          }
+        }
+      ]
+    }
+  },
   "components": [
     {
       "type": "library",
@@ -2887,7 +3218,7 @@ var cdxCompWithDeclaredLicenseID = []byte(`
           "license": {
             "id": "Apache-2.0",
             "acknowledgement": "declared"
-			    }
+          }
         }
       ]
     }
@@ -2895,7 +3226,7 @@ var cdxCompWithDeclaredLicenseID = []byte(`
 }
 `)
 
-var spdxCompValidDeclaredLicense = []byte(`
+var spdxCompWithDeclaredLicense = []byte(`
 {
   "spdxVersion": "SPDX-2.3",
   "SPDXID": "SPDXRef-DOCUMENT",
@@ -2906,21 +3237,37 @@ var spdxCompValidDeclaredLicense = []byte(`
   },
   "packages": [
     {
-      "SPDXID": "SPDXRef-Pkg",
+      "SPDXID": "SPDXRef-Pkg-acme",
       "name": "acme",
       "versionInfo": "0.1.0",
       "licenseDeclared": "Apache-2.0"
     }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relatedSpdxElement": "SPDXRef-Pkg-acme",
+      "relationshipType": "DESCRIBES"
+    },
   ]
 }
 `)
 
-var cdxCompWithConcludedDeprecatedLicenseID = []byte(`
+var cdxCompWithPrimaryCompDeclaredLicenseIDMissing = []byte(`
 {
   "bomFormat": "CycloneDX",
   "specVersion": "1.6",
   "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
   "version": 1,
+  "metadata": {
+    "timestamp": "2025-01-01T00:00:00Z",
+    "component": {
+      "type": "application",
+      "bom-ref": "e42c6c94-705e-45e1-aea0-fd2047f37db3",
+      "name": "STM32CubeH7",
+      "version": "1.12.1"
+    }
+  },
   "components": [
     {
       "type": "library",
@@ -2929,13 +3276,66 @@ var cdxCompWithConcludedDeprecatedLicenseID = []byte(`
       "licenses": [
         {
           "license": {
-            "id": "AGPL-1.0",
-            "acknowledgement": "concluded"
+            "id": "Apache-2.0",
+            "acknowledgement": "declared"
           }
         }
       ]
     }
   ]
+}
+`)
+
+var spdxCompWithPrimaryDeclaredLicenseMissing = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "test-doc",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": ["Tool: syft v0.95.0"]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Pkg-acme",
+      "name": "acme",
+      "versionInfo": "0.1.0"
+    }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relatedSpdxElement": "SPDXRef-Pkg-acme",
+      "relationshipType": "DESCRIBES"
+    },
+  ]
+}
+`)
+
+//+++++++++++++++++++
+
+var cdxCompWithConcludedDeprecatedLicenseID = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {
+    "component": {
+        "type": "application",
+        "bom-ref": "e42c6c94-705e-45e1-aea0-fd2047f37db3",
+        "name": "STM32CubeH7",
+        "version": "1.12.1",
+        "licenses": [
+          {
+            "license": {
+              "name": "AGPL-1.0",
+              "acknowledgement": "concluded"
+            }
+          }
+        ]
+    }
+  }
 }
 `)
 
@@ -2950,11 +3350,18 @@ var spdxCompWithConcludedDeprecatedLicense = []byte(`
   },
   "packages": [
     {
-      "SPDXID": "SPDXRef-Pkg",
+      "SPDXID": "SPDXRef-Pkg-acme",
       "name": "acme",
       "versionInfo": "0.1.0",
       "licenseConcluded": "AGPL-1.0"
     }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relatedSpdxElement": "SPDXRef-Pkg-acme",
+      "relationshipType": "DESCRIBES"
+    },
   ]
 }
 `)
@@ -2965,21 +3372,22 @@ var cdxCompWithDeclaredDeprecatedLicenseID = []byte(`
   "specVersion": "1.6",
   "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
   "version": 1,
-  "components": [
-    {
-      "type": "library",
-      "name": "acme",
-      "version": "0.1.0",
-      "licenses": [
-        {
-          "license": {
-            "id": "AGPL-1.0",
-            "acknowledgement": "declared"
+  "metadata": {
+    "component": {
+        "type": "application",
+        "bom-ref": "e42c6c94-705e-45e1-aea0-fd2047f37db3",
+        "name": "STM32CubeH7",
+        "version": "1.12.1",
+        "licenses": [
+          {
+            "license": {
+              "name": "AGPL-1.0",
+              "acknowledgement": "declared"
+            }
           }
-        }
-      ]
+        ]
     }
-  ]
+  }
 }
 `)
 
@@ -2994,10 +3402,17 @@ var spdxCompWithDeclaredDeprecatedLicense = []byte(`
   },
   "packages": [
     {
-      "SPDXID": "SPDXRef-Pkg",
+      "SPDXID": "SPDXRef-Pkg-acme",
       "name": "acme",
       "versionInfo": "0.1.0",
       "licenseDeclared": "AGPL-1.0"
+    }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relatedSpdxElement": "SPDXRef-Pkg-acme",
+      "relationshipType": "DESCRIBES"
     }
   ]
 }
@@ -3009,21 +3424,22 @@ var cdxCompWithConcludedRestrictiveLicenseID = []byte(`
   "specVersion": "1.6",
   "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
   "version": 1,
-  "components": [
-    {
-      "type": "library",
-      "name": "acme",
-      "version": "0.1.0",
-	  "licenses": [
-        {
-          "license": {
-            "id": "GPL-2.0-only",
-            "acknowledgement": "concluded"
+  "metadata": {
+    "component": {
+        "type": "application",
+        "bom-ref": "e42c6c94-705e-45e1-aea0-fd2047f37db3",
+        "name": "STM32CubeH7",
+        "version": "1.12.1",
+        "licenses": [
+          {
+            "license": {
+              "name": "GPL-2.0-only",
+              "acknowledgement": "concluded"
+            }
           }
-        }
-      ]
+        ]
     }
-  ]
+  }
 }
 `)
 
@@ -3038,10 +3454,17 @@ var spdxCompWithConcludedRestrictiveLicense = []byte(`
   },
   "packages": [
     {
-      "SPDXID": "SPDXRef-Pkg",
+      "SPDXID": "SPDXRef-Pkg-acme",
       "name": "acme",
       "versionInfo": "0.1.0",
       "licenseConcluded": "GPL-2.0-only"
+    }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relatedSpdxElement": "SPDXRef-Pkg-acme",
+      "relationshipType": "DESCRIBES"
     }
   ]
 }
@@ -3053,21 +3476,22 @@ var cdxCompWithDeclaredRestrictiveLicenseID = []byte(`
   "specVersion": "1.6",
   "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
   "version": 1,
-  "components": [
-    {
-      "type": "library",
-      "name": "acme",
-      "version": "0.1.0",
-	  "licenses": [
-        {
-          "license": {
-            "id": "GPL-2.0-only",
-            "acknowledgement": "declared"
+  "metadata": {
+    "component": {
+        "type": "application",
+        "bom-ref": "e42c6c94-705e-45e1-aea0-fd2047f37db3",
+        "name": "STM32CubeH7",
+        "version": "1.12.1",
+        "licenses": [
+          {
+            "license": {
+              "name": "GPL-2.0-only",
+              "acknowledgement": "declared"
+            }
           }
-        }
-      ]
+        ]
     }
-  ]
+  }
 }
 `)
 
@@ -3082,21 +3506,44 @@ var spdxCompWithDeclaredRestrictiveLicense = []byte(`
   },
   "packages": [
     {
-      "SPDXID": "SPDXRef-Pkg",
+      "SPDXID": "SPDXRef-Pkg-acme",
       "name": "acme",
       "versionInfo": "0.1.0",
       "licenseDeclared": "GPL-2.0-only"
+    }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relatedSpdxElement": "SPDXRef-Pkg-acme",
+      "relationshipType": "DESCRIBES"
     }
   ]
 }
 `)
 
-var cdxCompLicenseAbsent = []byte(`
+var cdxCompLicenseAbsentForNormalComponent = []byte(`
 {
   "bomFormat": "CycloneDX",
   "specVersion": "1.6",
   "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
   "version": 1,
+  "metadata": {
+    "component": {
+        "type": "application",
+        "bom-ref": "e42c6c94-705e-45e1-aea0-fd2047f37db3",
+        "name": "STM32CubeH7",
+        "version": "1.12.1",
+        "licenses": [
+          {
+            "license": {
+              "name": "GPL-2.0-only",
+              "acknowledgement": "declared"
+            }
+          }
+        ]
+    }
+  },
   "components": [
     {
       "type": "library",
@@ -3107,7 +3554,7 @@ var cdxCompLicenseAbsent = []byte(`
 }
 `)
 
-var spdxCompLicenseAbsent = []byte(`
+var spdxCompLicenseAbsentForNormalComponent = []byte(`
 {
   "spdxVersion": "SPDX-2.3",
   "SPDXID": "SPDXRef-DOCUMENT",
@@ -3118,362 +3565,148 @@ var spdxCompLicenseAbsent = []byte(`
   },
   "packages": [
     {
-      "SPDXID": "SPDXRef-Pkg",
+      "SPDXID": "SPDXRef-Pkg-acme",
       "name": "acme",
-      "versionInfo": "0.1.0"
+      "versionInfo": "0.1.0",
+      "licenseConcluded": "GPL-2.0-only"
+    },
+    {
+      "name": "zstd-libs",
+      "SPDXID": "SPDXRef-zstd-libs-1.4.5-2.ph3",
+      "versionInfo": "1.4.5-2.ph3"
+    }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relatedSpdxElement": "SPDXRef-Pkg-acme",
+      "relationshipType": "DESCRIBES"
     }
   ]
 }
 `)
 
-var cdxCompLicenseEmptyArray = []byte(`
+var cdxCompLicenseNoassertion = []byte(`
 {
   "bomFormat": "CycloneDX",
   "specVersion": "1.6",
   "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
   "version": 1,
+  "metadata": {
+    "component": {
+        "type": "application",
+        "bom-ref": "e42c6c94-705e-45e1-aea0-fd2047f37db3",
+        "name": "STM32CubeH7",
+        "version": "1.12.1",
+        "licenses": [
+          {
+            "license": {
+              "name": "NOASSERTION",
+              "acknowledgement": "declared"
+            }
+          }
+        ]
+    }
+  },
   "components": [
     {
       "type": "library",
       "name": "acme",
-      "version": "0.1.0",
-      "licenses": []
+      "version": "0.1.0"
     }
   ]
 }
 `)
 
-var cdxCompLicenseEmptyObject = []byte(`
+var spdxCompLicenseNoassertion = []byte(`
 {
-  "bomFormat": "CycloneDX",
-  "specVersion": "1.6",
-  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
-  "version": 1,,
-  "components": [
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "test-doc",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": ["Tool: syft v0.95.0"]
+  },
+  "packages": [
     {
-      "type": "library",
+      "SPDXID": "SPDXRef-Pkg-acme",
       "name": "acme",
-      "version": "0.1.0",
-      "licenses": [
-        {}
-      ]
+      "versionInfo": "0.1.0",
+      "licenseConcluded": "NOASSERTION"
+    },
+    {
+      "name": "zstd-libs",
+      "SPDXID": "SPDXRef-zstd-libs-1.4.5-2.ph3",
+      "versionInfo": "1.4.5-2.ph3"
+    }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relatedSpdxElement": "SPDXRef-Pkg-acme",
+      "relationshipType": "DESCRIBES"
     }
   ]
 }
 `)
 
-var cdxCompLicenseIDEmptyString = []byte(`
+var cdxPrimaryCompLicenseEmptyArray = []byte(`
 {
   "bomFormat": "CycloneDX",
   "specVersion": "1.6",
   "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
   "version": 1,
-  "components": [
-    {
-      "type": "library",
-      "name": "acme",
-      "version": "0.1.0",
-      "licenses": [
-        {
-          "license": {
+  "metadata": {
+    "component": {
+        "type": "application",
+        "bom-ref": "e42c6c94-705e-45e1-aea0-fd2047f37db3",
+        "name": "STM32CubeH7",
+        "version": "1.12.1",
+        "licenses": []
+    }
+  }
+}
+`)
+
+var cdxPrimaryCompLicenseEmptyObject = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {
+    "component": {
+        "type": "application",
+        "bom-ref": "e42c6c94-705e-45e1-aea0-fd2047f37db3",
+        "name": "STM32CubeH7",
+        "version": "1.12.1",
+        "licenses": [{}]
+    }
+  }
+}
+`)
+
+var cdxPrimaryCompLicenseIDEmptyString = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {
+    "component": {
+        "type": "application",
+        "bom-ref": "e42c6c94-705e-45e1-aea0-fd2047f37db3",
+        "name": "STM32CubeH7",
+        "version": "1.12.1",
+        "licenses": [
+          {
+            "license": {
             "id": ""
           }
         }
       ]
     }
-  ]
-}
-`)
-
-var spdxCompEmptyString = []byte(`
-{
-  "spdxVersion": "SPDX-2.3",
-  "SPDXID": "SPDXRef-DOCUMENT",
-  "name": "test-doc",
-  "creationInfo": {
-    "created": "2025-01-01T00:00:00Z",
-    "creators": ["Tool: syft v0.95.0"]
-  },
-  "packages": [
-    {
-      "SPDXID": "SPDXRef-Pkg",
-      "name": "acme",
-      "versionInfo": "0.1.0",
-      "licenseConcluded": ""
-    }
-  ]
-}
-`)
-
-var cdxCompLicenseNameEmpty = []byte(`
-{
-  "bomFormat": "CycloneDX",
-  "specVersion": "1.6",
-  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
-  "version": 1,
-  "components": [
-    {
-      "type": "library",
-      "name": "acme",
-      "version": "0.1.0",
-      "licenses": [
-        {
-          "license": {
-            "name": ""
-          }
-        }
-      ]
-    }
-  ]
-}
-`)
-
-var cdxCompLicenseInvalidID = []byte(`
-{
-  "bomFormat": "CycloneDX",
-  "specVersion": "1.6",
-  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
-  "version": 1,
-  "components": [
-    {
-      "type": "library",
-      "name": "acme",
-      "version": "0.1.0",
-      "licenses": [
-        {
-          "license": {
-            "id": "FooBarLicense"
-          }
-        }
-      ]
-    }
-  ]
-}
-`)
-
-var cdxCompWithConcludedLicenseName = []byte(`
-{
-  "bomFormat": "CycloneDX",
-  "specVersion": "1.6",
-  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
-  "version": 1,
-  "components": [
-    {
-      "type": "library",
-      "name": "acme",
-      "version": "0.1.0",
-      "licenses": [
-        {
-          "license": {
-            "name": "Apache License 2.0",
-            "acknowledgement": "concluded"
-          }
-        }
-      ]
-    }
-  ]
-}
-`)
-
-var cdxCompWithDeclaredLicenseName = []byte(`
-{
-  "bomFormat": "CycloneDX",
-  "specVersion": "1.6",
-  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
-  "version": 1,
-  "components": [
-    {
-      "type": "library",
-      "name": "acme",
-      "version": "0.1.0",
-      "licenses": [
-        {
-          "license": {
-            "name": "Apache License 2.0",
-            "acknowledgement": "declared"
-          }
-        }
-      ]
-    }
-  ]
-}
-`)
-
-var cdxCompValidLicenseExpression = []byte(`
-{
-  "bomFormat": "CycloneDX",
-  "specVersion": "1.6",
-  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
-  "version": 1,
-  "components": [
-    {
-      "type": "library",
-      "name": "tomcat-catalina",
-      "version": "9.0.14",
-      "licenses": [
-        {
-          "expression": "(Apache-2.0 AND MIT) OR BSD-3-Clause"
-        }
-      ]
-    }
-  ]
-}
-`)
-
-var spdxCompWithConcludedLicenseExpression = []byte(`
-{
-  "spdxVersion": "SPDX-2.3",
-  "SPDXID": "SPDXRef-DOCUMENT",
-  "name": "test-doc",
-  "creationInfo": {
-    "created": "2025-01-01T00:00:00Z",
-    "creators": ["Tool: syft v0.95.0"]
-  },
-  "packages": [
-    {
-      "SPDXID": "SPDXRef-Pkg",
-      "name": "acme",
-      "versionInfo": "0.1.0",
-      "licenseConcluded": "MIT OR Apache-2.0"
-    }
-  ]
-}
-`)
-
-var spdxCompWithDeclaredLicenseExpression = []byte(`
-{
-  "spdxVersion": "SPDX-2.3",
-  "SPDXID": "SPDXRef-DOCUMENT",
-  "name": "test-doc",
-  "creationInfo": {
-    "created": "2025-01-01T00:00:00Z",
-    "creators": ["Tool: syft v0.95.0"]
-  },
-  "packages": [
-    {
-      "SPDXID": "SPDXRef-Pkg",
-      "name": "acme",
-      "versionInfo": "0.1.0",
-      "licenseDeclared": "MIT OR Apache-2.0"
-    }
-  ]
-}
-`)
-
-var cdxCompLicenseWrongType = []byte(`
-{
-  "bomFormat": "CycloneDX",
-  "specVersion": "1.6",
-  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
-  "version": 1,
-  "components": [
-    {
-      "type": "library",
-      "name": "acme",
-      "version": "0.1.0",
-      "licenses": {}
-    }
-  ]
-}
-`)
-
-var spdxCompLicenseWrongType = []byte(`
-{
-  "spdxVersion": "SPDX-2.3",
-  "SPDXID": "SPDXRef-DOCUMENT",
-  "name": "test-doc",
-  "creationInfo": {
-    "created": "2025-01-01T00:00:00Z",
-    "creators": ["Tool: syft v0.95.0"]
-  },
-  "packages": [
-    {
-      "SPDXID": "SPDXRef-Pkg",
-      "name": "acme",
-      "versionInfo": "0.1.0",
-      "licenseConcluded": {}
-    }
-  ]
-}
-`)
-
-var spdxCompWhiteSpaceString = []byte(`
-{
-  "spdxVersion": "SPDX-2.3",
-  "SPDXID": "SPDXRef-DOCUMENT",
-  "name": "test-doc",
-  "creationInfo": {
-    "created": "2025-01-01T00:00:00Z",
-    "creators": ["Tool: syft v0.95.0"]
-  },
-  "packages": [
-    {
-      "SPDXID": "SPDXRef-Pkg",
-      "name": "acme",
-      "versionInfo": "0.1.0",
-      "licenseConcluded": "  "
-    }
-  ]
-}
-`)
-
-var spdxCompWithConcludedLicenseNoassertion = []byte(`
-{
-  "spdxVersion": "SPDX-2.3",
-  "SPDXID": "SPDXRef-DOCUMENT",
-  "name": "test-doc",
-  "creationInfo": {
-    "created": "2025-01-01T00:00:00Z",
-    "creators": ["Tool: syft v0.95.0"]
-  },
-  "packages": [
-    {
-      "SPDXID": "SPDXRef-Pkg",
-      "name": "acme",
-      "versionInfo": "0.1.0",
-      "licenseConcluded": "NOASSERTION"
-    }
-  ]
-}
-`)
-
-var spdxCompWithConcludedLicenseNone = []byte(`
-{
-  "spdxVersion": "SPDX-2.3",
-  "SPDXID": "SPDXRef-DOCUMENT",
-  "name": "test-doc",
-  "creationInfo": {
-    "created": "2025-01-01T00:00:00Z",
-    "creators": ["Tool: syft v0.95.0"]
-  },
-  "packages": [
-    {
-      "SPDXID": "SPDXRef-Pkg",
-      "name": "acme",
-      "versionInfo": "0.1.0",
-      "licenseConcluded": "NONE"
-    }
-  ]
-}
-`)
-
-var spdxCompWithCocnludedCustomLicense = []byte(`
-{
-  "spdxVersion": "SPDX-2.3",
-  "SPDXID": "SPDXRef-DOCUMENT",
-  "name": "test-doc",
-  "creationInfo": {
-    "created": "2025-01-01T00:00:00Z",
-    "creators": ["Tool: syft v0.95.0"]
-  },
-  "packages": [
-    {
-      "SPDXID": "SPDXRef-Pkg",
-      "name": "acme",
-      "versionInfo": "0.1.0",
-      "licenseConcluded": "LicenseRef-Proprietary"
-    }
-  ]
+  }
 }
 `)
 
@@ -3487,7 +3720,7 @@ func TestFSCTCompLicense(t *testing.T) {
 		got := FSCTCompLicense(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "license declared for all components", got.Desc)
+		assert.Equal(t, "license declared for all components (full coverage: aspirational)", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -3498,30 +3731,95 @@ func TestFSCTCompLicense(t *testing.T) {
 		got := FSCTCompLicense(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "license declared for all components", got.Desc)
+		assert.Equal(t, "license declared for all components (full coverage: aspirational)", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
-	// only concluded licenses are scored positively
+	t.Run("cdxCompWithPrimaryCompConcludedLicenseIDMissing", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithPrimaryCompConcludedLicenseIDMissing, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompLicense(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "license missing for primary component (minimum expectation not met); license present for 1 components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxCompWithPrimaryCompConcludedLicenseMissing", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWithPrimaryCompConcludedLicenseMissing, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompLicense(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "license missing for primary component (minimum expectation not met) and all components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxCompWithPrimaryCompMissing", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithPrimaryCompMissing, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompLicense(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "license coverage cannot be evaluated: primary component missing", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxCompWithPrimaryCompMissing", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWithPrimaryCompMissing, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompLicense(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "license coverage cannot be evaluated: primary component missing", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
 	t.Run("cdxCompWithDeclaredLicenseID", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithDeclaredLicenseID, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := FSCTCompLicense(doc)
 
-		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "license missing for all(1) components", got.Desc)
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "license declared for all components (full coverage: aspirational)", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
-	t.Run("spdxCompValidDeclaredLicense", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompValidDeclaredLicense, sbom.Signature{})
+	t.Run("spdxCompWithDeclaredLicense", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWithDeclaredLicense, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompLicense(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "license declared for all components (full coverage: aspirational)", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxCompWithPrimaryCompDeclaredLicenseIDMissing", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithPrimaryCompDeclaredLicenseIDMissing, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := FSCTCompLicense(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "license missing for all(1) components", got.Desc)
+		assert.Equal(t, "license missing for primary component (minimum expectation not met); license present for 1 components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxCompWithPrimaryDeclaredLicenseMissing", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWithPrimaryDeclaredLicenseMissing, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompLicense(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "license missing for primary component (minimum expectation not met) and all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -3532,7 +3830,7 @@ func TestFSCTCompLicense(t *testing.T) {
 		got := FSCTCompLicense(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "license declared for all components", got.Desc)
+		assert.Equal(t, "license declared for all components (full coverage: aspirational)", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -3543,7 +3841,7 @@ func TestFSCTCompLicense(t *testing.T) {
 		got := FSCTCompLicense(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "license declared for all components", got.Desc)
+		assert.Equal(t, "license declared for all components (full coverage: aspirational)", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -3553,8 +3851,8 @@ func TestFSCTCompLicense(t *testing.T) {
 
 		got := FSCTCompLicense(doc)
 
-		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "license missing for all(1) components", got.Desc)
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "license declared for all components (full coverage: aspirational)", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -3564,8 +3862,8 @@ func TestFSCTCompLicense(t *testing.T) {
 
 		got := FSCTCompLicense(doc)
 
-		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "license missing for all(1) components", got.Desc)
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "license declared for all components (full coverage: aspirational)", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -3576,7 +3874,7 @@ func TestFSCTCompLicense(t *testing.T) {
 		got := FSCTCompLicense(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "license declared for all components", got.Desc)
+		assert.Equal(t, "license declared for all components (full coverage: aspirational)", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -3587,7 +3885,7 @@ func TestFSCTCompLicense(t *testing.T) {
 		got := FSCTCompLicense(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "license declared for all components", got.Desc)
+		assert.Equal(t, "license declared for all components (full coverage: aspirational)", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -3597,8 +3895,8 @@ func TestFSCTCompLicense(t *testing.T) {
 
 		got := FSCTCompLicense(doc)
 
-		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "license missing for all(1) components", got.Desc)
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "license declared for all components (full coverage: aspirational)", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -3608,209 +3906,104 @@ func TestFSCTCompLicense(t *testing.T) {
 
 		got := FSCTCompLicense(doc)
 
-		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "license missing for all(1) components", got.Desc)
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "license declared for all components (full coverage: aspirational)", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
-	t.Run("cdxCompLicenseAbsent", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompLicenseAbsent, sbom.Signature{})
-		require.NoError(t, err)
-
-		got := FSCTCompLicense(doc)
-
-		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "license missing for all(1) components", got.Desc)
-		assert.False(t, got.Ignore)
-	})
-
-	t.Run("spdxCompLicenseAbsent", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompLicenseAbsent, sbom.Signature{})
-		require.NoError(t, err)
-
-		got := FSCTCompLicense(doc)
-
-		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "license missing for all(1) components", got.Desc)
-		assert.False(t, got.Ignore)
-	})
-
-	t.Run("cdxCompLicenseEmptyArray", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompLicenseEmptyArray, sbom.Signature{})
-		require.NoError(t, err)
-
-		got := FSCTCompLicense(doc)
-
-		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "license missing for all(1) components", got.Desc)
-		assert.False(t, got.Ignore)
-	})
-
-	t.Run("cdxCompLicenseEmptyObject", func(t *testing.T) {
-		_, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompLicenseEmptyObject, sbom.Signature{})
-		require.Error(t, err)
-	})
-
-	t.Run("cdxCompLicenseIDEmptyString", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompLicenseIDEmptyString, sbom.Signature{})
-		require.NoError(t, err)
-
-		got := FSCTCompLicense(doc)
-
-		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "license missing for all(1) components", got.Desc)
-		assert.False(t, got.Ignore)
-	})
-
-	t.Run("spdxCompEmptyString", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompEmptyString, sbom.Signature{})
-		require.NoError(t, err)
-
-		got := FSCTCompLicense(doc)
-
-		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "license missing for all(1) components", got.Desc)
-		assert.False(t, got.Ignore)
-	})
-
-	t.Run("cdxCompLicenseNameEmpty", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompLicenseNameEmpty, sbom.Signature{})
-		require.NoError(t, err)
-
-		got := FSCTCompLicense(doc)
-
-		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "license missing for all(1) components", got.Desc)
-		assert.False(t, got.Ignore)
-	})
-
-	t.Run("cdxCompLicenseInvalidID", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompLicenseInvalidID, sbom.Signature{})
-		require.NoError(t, err)
-
-		got := FSCTCompLicense(doc)
-
-		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "license missing for all(1) components", got.Desc)
-		assert.False(t, got.Ignore)
-	})
-
-	t.Run("cdxCompWithConcludedLicenseName", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithConcludedLicenseName, sbom.Signature{})
+	t.Run("cdxCompLicenseAbsentForNormalComponent", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompLicenseAbsentForNormalComponent, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := FSCTCompLicense(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "license declared for all components", got.Desc)
+		assert.Equal(t, "license declared only for primary component (minimum coverage)", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
-	t.Run("cdxCompWithDeclaredLicenseName", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithDeclaredLicenseName, sbom.Signature{})
-		require.NoError(t, err)
-
-		got := FSCTCompLicense(doc)
-
-		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "license missing for all(1) components", got.Desc)
-		assert.False(t, got.Ignore)
-	})
-
-	t.Run("cdxCompValidLicenseExpression", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompValidLicenseExpression, sbom.Signature{})
-		require.NoError(t, err)
-
-		got := FSCTCompLicense(doc)
-
-		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "license missing for all(1) components", got.Desc)
-		assert.False(t, got.Ignore)
-	})
-
-	t.Run("spdxCompWithConcludedLicenseExpression", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWithConcludedLicenseExpression, sbom.Signature{})
+	t.Run("spdxCompLicenseAbsentForNormalComponent", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompLicenseAbsentForNormalComponent, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := FSCTCompLicense(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "license declared for all components", got.Desc)
+		assert.Equal(t, "license declared only for primary component (minimum coverage)", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
-	t.Run("spdxCompWithDeclaredLicenseExpression", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWithDeclaredLicenseExpression, sbom.Signature{})
+	t.Run("cdxCompLicenseNoassertion", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompLicenseNoassertion, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := FSCTCompLicense(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "license missing for all(1) components", got.Desc)
+		assert.Equal(t, "license missing for primary component (minimum expectation not met) and all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
-	t.Run("cdxCompLicenseWrongType", func(t *testing.T) {
-		_, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompLicenseWrongType, sbom.Signature{})
-		require.Error(t, err)
-	})
-
-	t.Run("spdxCompLicenseWrongType", func(t *testing.T) {
-		_, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompLicenseWrongType, sbom.Signature{})
-		require.Error(t, err)
-	})
-
-	t.Run("spdxCompWhiteSpaceString", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWhiteSpaceString, sbom.Signature{})
+	t.Run("spdxCompLicenseNoassertion", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompLicenseNoassertion, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := FSCTCompLicense(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "license missing for all(1) components", got.Desc)
+		assert.Equal(t, "license missing for primary component (minimum expectation not met) and all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
-	t.Run("spdxCompWithConcludedLicenseNoassertion", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWithConcludedLicenseNoassertion, sbom.Signature{})
+	t.Run("cdxPrimaryCompLicenseEmptyArray", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxPrimaryCompLicenseEmptyArray, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := FSCTCompLicense(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "license missing for all(1) components", got.Desc)
+		assert.Equal(t, "license missing for primary component (minimum expectation not met) and all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
-	t.Run("spdxCompWithConcludedLicenseNone", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWithConcludedLicenseNone, sbom.Signature{})
+	t.Run("cdxPrimaryCompLicenseEmptyObject", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxPrimaryCompLicenseEmptyObject, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := FSCTCompLicense(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "license missing for all(1) components", got.Desc)
+		assert.Equal(t, "license missing for primary component (minimum expectation not met) and all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
-	t.Run("spdxCompWithCocnludedCustomLicense", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWithCocnludedCustomLicense, sbom.Signature{})
+	t.Run("cdxPrimaryCompLicenseIDEmptyString", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxPrimaryCompLicenseIDEmptyString, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := FSCTCompLicense(doc)
 
-		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "license declared for all components", got.Desc)
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "license missing for primary component (minimum expectation not met) and all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 }
 
-var cdxCompCopyrightValid = []byte(`
+var cdxCompCopyrightForBothPrimaryAndNormalComponent = []byte(`
 {
   "bomFormat": "CycloneDX",
   "specVersion": "1.6",
   "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
   "version": 1,
+  "metadata": {
+    "component": {
+        "type": "application",
+        "bom-ref": "e42c6c94-705e-45e1-aea0-fd2047f37db3",
+        "name": "STM32CubeH7",
+        "version": "1.12.1",
+        "copyright": "Copyright 2025, the STM project"
+    }
+  },
   "components": [
     {
       "type": "library",
@@ -3822,7 +4015,7 @@ var cdxCompCopyrightValid = []byte(`
 }
 `)
 
-var spdxCompCopyrightValid = []byte(`
+var spdxCompCopyrightForBothPrimaryAndNormalComponent = []byte(`
 {
   "spdxVersion": "SPDX-2.3",
   "SPDXID": "SPDXRef-DOCUMENT",
@@ -3838,6 +4031,143 @@ var spdxCompCopyrightValid = []byte(`
       "versionInfo": "v0.19.1",
       "copyrightText": "Copyright 2025, the Cel project"
     }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relatedSpdxElement": "SPDXRef-Package-expr-v0.19.1",
+      "relationshipType": "DESCRIBES"
+    }
+  ]
+}
+`)
+
+var cdxCompCopyrightForPrimaryComponent = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {
+    "component": {
+        "type": "application",
+        "bom-ref": "e42c6c94-705e-45e1-aea0-fd2047f37db3",
+        "name": "STM32CubeH7",
+        "version": "1.12.1",
+        "copyright": "Copyright 2025, the STM project"
+    }
+  }
+}
+`)
+
+var cdxCompCopyrightMissingForPrimaryComponent = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {
+    "component": {
+        "type": "application",
+        "bom-ref": "e42c6c94-705e-45e1-aea0-fd2047f37db3",
+        "name": "STM32CubeH7",
+        "version": "1.12.1"
+    }
+  },
+  "components": [
+    {
+      "type": "library",
+      "name": "cel.dev/expr",
+      "version": "v0.19.1",
+      "copyright": "Copyright 2025, the Cel project"
+    }
+  ]
+}
+`)
+
+var spdxCompCopyrightMissingForPrimaryComponent = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "test-doc",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": ["Tool: syft v0.95.0"]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Package-expr-v0.19.1",
+      "name": "cel.dev/expr",
+      "versionInfo": "v0.19.1"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-acme",
+      "name": "acme",
+      "versionInfo": "v1.9.0",
+      "copyrightText": "Copyright 2025, the Acme project"
+    }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relatedSpdxElement": "SPDXRef-Package-expr-v0.19.1",
+      "relationshipType": "DESCRIBES"
+    }
+  ]
+}
+`)
+
+var cdxCompCopyrightMissingForBoth = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {
+    "component": {
+        "type": "application",
+        "bom-ref": "e42c6c94-705e-45e1-aea0-fd2047f37db3",
+        "name": "STM32CubeH7",
+        "version": "1.12.1"
+    }
+  },
+  "components": [
+    {
+      "type": "library",
+      "name": "cel.dev/expr",
+      "version": "v0.19.1"
+    }
+  ]
+}
+`)
+
+var spdxCompCopyrightMissingForBoth = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "test-doc",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": ["Tool: syft v0.95.0"]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Package-expr-v0.19.1",
+      "name": "cel.dev/expr",
+      "versionInfo": "v0.19.1"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-acme",
+      "name": "acme",
+      "versionInfo": "v1.9.0"
+    }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relatedSpdxElement": "SPDXRef-Package-expr-v0.19.1",
+      "relationshipType": "DESCRIBES"
+    }
   ]
 }
 `)
@@ -3848,14 +4178,16 @@ var cdxCompCopyrightWithEmptyString = []byte(`
   "specVersion": "1.6",
   "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
   "version": 1,
-  "components": [
-    {
-      "type": "library",
-      "name": "cel.dev/expr",
-      "version": "v0.19.1",
-      "copyright": ""
+  "metadata": {
+    "component": {
+        "type": "application",
+        "bom-ref": "e42c6c94-705e-45e1-aea0-fd2047f37db3",
+        "name": "STM32CubeH7",
+        "version": "1.12.1",
+        "copyright": ""
+
     }
-  ]
+  }
 }
 `)
 
@@ -3875,6 +4207,13 @@ var spdxCompCopyrightWithEmptyString = []byte(`
       "versionInfo": "v0.19.1",
       "copyrightText": ""
     }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relatedSpdxElement": "SPDXRef-Package-expr-v0.19.1",
+      "relationshipType": "DESCRIBES"
+    }
   ]
 }
 `)
@@ -3885,13 +4224,15 @@ var cdxCompCopyrightAbsent = []byte(`
   "specVersion": "1.6",
   "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
   "version": 1,
-  "components": [
-    {
-      "type": "library",
-      "name": "cel.dev/expr",
-      "version": "v0.19.1"
+  "metadata": {
+    "component": {
+        "type": "application",
+        "bom-ref": "e42c6c94-705e-45e1-aea0-fd2047f37db3",
+        "name": "STM32CubeH7",
+        "version": "1.12.1"
+
     }
-  ]
+  }
 }
 `)
 
@@ -3910,6 +4251,13 @@ var spdxCompCopyrightAbsent = []byte(`
       "name": "cel.dev/expr",
       "versionInfo": "v0.19.1"
     }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relatedSpdxElement": "SPDXRef-Package-expr-v0.19.1",
+      "relationshipType": "DESCRIBES"
+    }
   ]
 }
 `)
@@ -3920,14 +4268,16 @@ var cdxCompCopyrightWrongType = []byte(`
   "specVersion": "1.6",
   "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
   "version": 1,
-  "components": [
-    {
-      "type": "library",
-      "name": "cel.dev/expr",
-      "version": "v0.19.1",
-      "copyright": {}
+  "metadata": {
+    "component": {
+        "type": "application",
+        "bom-ref": "e42c6c94-705e-45e1-aea0-fd2047f37db3",
+        "name": "STM32CubeH7",
+        "version": "1.12.1",
+        "copyright": {}
+
     }
-  ]
+  }
 }
 `)
 
@@ -3947,6 +4297,13 @@ var spdxCompCopyrightWrongType = []byte(`
       "versionInfo": "v0.19.1",
       "copyrightText": {}
     }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relatedSpdxElement": "SPDXRef-Package-expr-v0.19.1",
+      "relationshipType": "DESCRIBES"
+    }
   ]
 }
 `)
@@ -3954,25 +4311,80 @@ var spdxCompCopyrightWrongType = []byte(`
 func TestFSCTCompCopyright(t *testing.T) {
 	ctx := context.Background()
 
-	t.Run("cdxCompCopyrightValid", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompCopyrightValid, sbom.Signature{})
+	t.Run("cdxCompCopyrightForBothPrimaryAndNormalComponent", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompCopyrightForBothPrimaryAndNormalComponent, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := FSCTCompCopyright(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "copyright declared for all components", got.Desc)
+		assert.Equal(t, "copyright declared for all components (full coverage: aspirational)", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
-	t.Run("spdxCompCopyrightValid", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompCopyrightValid, sbom.Signature{})
+	t.Run("spdxCompCopyrightForBothPrimaryAndNormalComponent", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompCopyrightForBothPrimaryAndNormalComponent, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := FSCTCompCopyright(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "copyright declared for all components", got.Desc)
+		assert.Equal(t, "copyright declared for all components (full coverage: aspirational)", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxCompCopyrightForPrimaryComponent", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompCopyrightForPrimaryComponent, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompCopyright(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "copyright declared for all components (full coverage: aspirational)", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxCompCopyrightMissingForPrimaryComponent", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompCopyrightMissingForPrimaryComponent, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompCopyright(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "copyright missing for primary component (minimum expectation not met); copyright present for 1 components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxCompCopyrightMissingForPrimaryComponent", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompCopyrightMissingForPrimaryComponent, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompCopyright(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "copyright missing for primary component (minimum expectation not met); copyright present for 1 components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxCompCopyrightMissingForBoth", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompCopyrightMissingForBoth, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompCopyright(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "copyright missing for primary component (minimum expectation not met) and all components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxCompCopyrightMissingForBoth", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompCopyrightMissingForBoth, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompCopyright(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "copyright missing for primary component (minimum expectation not met) and all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -3983,7 +4395,7 @@ func TestFSCTCompCopyright(t *testing.T) {
 		got := FSCTCompCopyright(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "copyright missing for all(1) components", got.Desc)
+		assert.Equal(t, "copyright missing for primary component (minimum expectation not met) and all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -3994,7 +4406,7 @@ func TestFSCTCompCopyright(t *testing.T) {
 		got := FSCTCompCopyright(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "copyright missing for all(1) components", got.Desc)
+		assert.Equal(t, "copyright missing for primary component (minimum expectation not met) and all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -4005,7 +4417,7 @@ func TestFSCTCompCopyright(t *testing.T) {
 		got := FSCTCompCopyright(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "copyright missing for all(1) components", got.Desc)
+		assert.Equal(t, "copyright missing for primary component (minimum expectation not met) and all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -4016,7 +4428,7 @@ func TestFSCTCompCopyright(t *testing.T) {
 		got := FSCTCompCopyright(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "copyright missing for all(1) components", got.Desc)
+		assert.Equal(t, "copyright missing for primary component (minimum expectation not met) and all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -4689,6 +5101,60 @@ var cdxDepsWithPrimaryCompletenessUnknownWithBothDepsUnknown = []byte(`
 }
 `)
 
+var cdxWithPrimaryComponentMissing = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:11111111-2222-3333-4444-555555555555",
+  "version": 1,
+
+  "metadata": {},
+  "components": [],
+  "dependencies": [],
+  "compositions": []
+}
+`)
+
+var cdxWithPrimaryComponentWithNameMissing = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:11111111-2222-3333-4444-555555555555",
+  "version": 1,
+
+  "metadata": {
+    "component": {
+      "bom-ref": "pkg:generic/my-app@1.0.0",
+      "type": "application",
+      "version": "1.0.0"
+    }
+  },
+  "components": [],
+  "dependencies": [],
+  "compositions": []
+}
+`)
+
+var cdxWithPrimaryComponentWithVersionMissing = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:11111111-2222-3333-4444-555555555555",
+  "version": 1,
+
+  "metadata": {
+    "component": {
+      "bom-ref": "pkg:generic/my-app@1.0.0",
+      "type": "application",
+      "name": "my-app"
+    }  
+  },
+  "components": [],
+  "dependencies": [],
+  "compositions": []
+}
+`)
+
 func TestFSCTCompDependencies(t *testing.T) {
 	ctx := context.Background()
 
@@ -4699,7 +5165,7 @@ func TestFSCTCompDependencies(t *testing.T) {
 		got := FSCTSBOMRelationships(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "dependency relationships and completeness declared for primary and all direct dependencies", got.Desc)
+		assert.Equal(t, "dependency relationships and completeness declared for primary component and all direct dependencies", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -4709,8 +5175,8 @@ func TestFSCTCompDependencies(t *testing.T) {
 
 		got := FSCTSBOMRelationships(doc)
 
-		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "dependency relationships declared; completeness declared for primary and 1 direct dependencies; missing for 1 direct dependencies", got.Desc)
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "dependency relationships declared; completeness missing for 1 of 2 direct dependencies", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -4721,7 +5187,7 @@ func TestFSCTCompDependencies(t *testing.T) {
 		got := FSCTSBOMRelationships(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "dependency relationships and completeness declared for primary and all direct dependencies", got.Desc)
+		assert.Equal(t, "dependency relationships and completeness declared for primary component and all direct dependencies", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -4732,7 +5198,7 @@ func TestFSCTCompDependencies(t *testing.T) {
 		got := FSCTSBOMRelationships(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "dependency relationships and completeness declared for primary and all direct dependencies", got.Desc)
+		assert.Equal(t, "dependency relationships and completeness declared for primary component and all direct dependencies", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -4742,8 +5208,8 @@ func TestFSCTCompDependencies(t *testing.T) {
 
 		got := FSCTSBOMRelationships(doc)
 
-		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "dependency relationships declared; completeness declared for primary component; missing for all 2 direct dependencies", got.Desc)
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "dependency relationships declared; completeness missing for 2 of 2 direct dependencies", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -4754,7 +5220,7 @@ func TestFSCTCompDependencies(t *testing.T) {
 		got := FSCTSBOMRelationships(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "dependency relationship(2), but dependency completeness missing for primary component", got.Desc)
+		assert.Equal(t, "dependency relationships declared (2), but dependency completeness missing for primary component", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -4764,8 +5230,8 @@ func TestFSCTCompDependencies(t *testing.T) {
 
 		got := FSCTSBOMRelationships(doc)
 
-		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "dependency relationships declared; completeness declared for primary component; missing for all 2 direct dependencies", got.Desc)
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "dependency relationships declared; completeness missing for 2 of 2 direct dependencies", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -4776,7 +5242,7 @@ func TestFSCTCompDependencies(t *testing.T) {
 		got := FSCTSBOMRelationships(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "dependency relationships and completeness declared for primary and all direct dependencies", got.Desc)
+		assert.Equal(t, "dependency relationships and completeness declared for primary component and all direct dependencies", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -4786,8 +5252,8 @@ func TestFSCTCompDependencies(t *testing.T) {
 
 		got := FSCTSBOMRelationships(doc)
 
-		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "dependency relationships declared; completeness declared for primary component; missing for all 2 direct dependencies", got.Desc)
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "dependency relationships declared; completeness missing for 2 of 2 direct dependencies", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -4798,7 +5264,18 @@ func TestFSCTCompDependencies(t *testing.T) {
 		got := FSCTSBOMRelationships(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "dependency relationships and completeness declared for primary and all direct dependencies", got.Desc)
+		assert.Equal(t, "dependency relationships and completeness declared for primary component and all direct dependencies", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxWithPrimaryComponentMissing", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxWithPrimaryComponentMissing, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTSBOMRelationships(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "dependency relationships cannot be evaluated: primary component missing", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 }
