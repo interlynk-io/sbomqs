@@ -189,6 +189,27 @@ func ComponentHasAnyConcluded(c sbom.GetComponent) bool {
 	return false
 }
 
+func ComponentHasAnyLicense(c sbom.GetComponent) bool {
+	for _, l := range c.ConcludedLicenses() {
+		if id := strings.TrimSpace(l.ShortID()); ValidateLicenseText(id) {
+			return true
+		}
+		if nm := strings.TrimSpace(l.Name()); ValidateLicenseText(nm) {
+			return true
+		}
+	}
+
+	for _, l := range c.DeclaredLicenses() {
+		if id := strings.TrimSpace(l.ShortID()); ValidateLicenseText(id) {
+			return true
+		}
+		if nm := strings.TrimSpace(l.Name()); ValidateLicenseText(nm) {
+			return true
+		}
+	}
+	return false
+}
+
 func ComponentHasAnyDeclared(c sbom.GetComponent) bool {
 	for _, l := range c.DeclaredLicenses() {
 		if id := strings.TrimSpace(l.ShortID()); ValidateLicenseText(id) {
