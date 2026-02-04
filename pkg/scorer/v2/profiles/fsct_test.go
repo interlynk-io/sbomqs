@@ -3075,7 +3075,7 @@ var spdxCompWithConcludedLicense = []byte(`
       "spdxElementId": "SPDXRef-DOCUMENT",
       "relatedSpdxElement": "SPDXRef-Pkg-acme",
       "relationshipType": "DESCRIBES"
-    },
+    }
   ]
 }
 `)
@@ -3134,7 +3134,7 @@ var spdxCompWithPrimaryCompConcludedLicenseMissing = []byte(`
       "spdxElementId": "SPDXRef-DOCUMENT",
       "relatedSpdxElement": "SPDXRef-Pkg-acme",
       "relationshipType": "DESCRIBES"
-    },
+    }
   ]
 }
 `)
@@ -3248,7 +3248,7 @@ var spdxCompWithDeclaredLicense = []byte(`
       "spdxElementId": "SPDXRef-DOCUMENT",
       "relatedSpdxElement": "SPDXRef-Pkg-acme",
       "relationshipType": "DESCRIBES"
-    },
+    }
   ]
 }
 `)
@@ -3359,7 +3359,7 @@ var spdxCompWithConcludedDeprecatedLicense = []byte(`
       "spdxElementId": "SPDXRef-DOCUMENT",
       "relatedSpdxElement": "SPDXRef-Pkg-acme",
       "relationshipType": "DESCRIBES"
-    },
+    }
   ]
 }
 `)
