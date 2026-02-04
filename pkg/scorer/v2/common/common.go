@@ -219,45 +219,60 @@ func ComponentHasAnyRestrictive(c sbom.GetComponent) bool {
 	return false
 }
 
-// HasAnyChecksum checks if component has any recognized checksum algorithm (weak or strong).
+// HasAnyChecksum checks whether a component declares any cryptographic hash
+// (weak or strong). This represents the FSCT baseline expectation.
 func HasAnyChecksum(c sbom.GetComponent) bool {
 	for _, checksum := range c.GetChecksums() {
-		algo := normalizeAlgoName(checksum.GetAlgo())
-		if IsWeakChecksum(algo) || IsStrongChecksum(algo) {
-			if strings.TrimSpace(checksum.GetContent()) != "" {
-				return true
-			}
-		}
-	}
-	return false
-}
+		algo := NormalizeAlgoName(checksum.GetAlgo())
+		content := strings.TrimSpace(checksum.GetContent())
 
-// HasStrongChecksum checks if component has a strong hash algorithm.
-func HasStrongChecksum(c sbom.GetComponent) bool {
-	for _, checksum := range c.GetChecksums() {
-		if IsStrongChecksum(normalizeAlgoName(checksum.GetAlgo())) && strings.TrimSpace(checksum.GetContent()) != "" {
+		if content == "" {
+			continue
+		}
+
+		// FSCT allows both weak and strong hashes at baseline
+		if IsWeakChecksum(algo) || IsStrongChecksum(algo) {
 			return true
 		}
 	}
 	return false
 }
 
-// HasWeakChecksum checks if component has only weak hash algorithms (no strong ones).
+// HasStrongChecksum checks if the component declares at least one
+// cryptographically strong hash algorithm.
+// (Not required by FSCT baseline; useful for maturity/quality signals.)
+func HasStrongChecksum(c sbom.GetComponent) bool {
+	for _, checksum := range c.GetChecksums() {
+		algo := NormalizeAlgoName(checksum.GetAlgo())
+		if IsStrongChecksum(algo) && strings.TrimSpace(checksum.GetContent()) != "" {
+			return true
+		}
+	}
+	return false
+}
+
+// HasWeakChecksum checks if the component declares only weak hash algorithms
+// (i.e., no strong hashes present).
 func HasWeakChecksum(c sbom.GetComponent) bool {
 	hasWeak := false
+
 	for _, checksum := range c.GetChecksums() {
-		algo := normalizeAlgoName(checksum.GetAlgo())
+		algo := NormalizeAlgoName(checksum.GetAlgo())
 		content := strings.TrimSpace(checksum.GetContent())
+
 		if content == "" {
 			continue
 		}
+
 		if IsStrongChecksum(algo) {
 			return false // Has strong, so not "weak only"
 		}
+
 		if IsWeakChecksum(algo) {
 			hasWeak = true
 		}
 	}
+
 	return hasWeak
 }
 
@@ -326,7 +341,7 @@ func HasSHA256Plus(c sbom.GetComponent) bool {
 //   - SPDX: "SHA256", "SHA3_256", "BLAKE2b-256"
 //
 // After normalization, "SHA-256", "SHA256", "sha_256" all become "SHA256"
-func normalizeAlgoName(algo string) string {
+func NormalizeAlgoName(algo string) string {
 	n := strings.ToUpper(algo)
 	n = strings.ReplaceAll(n, "-", "")
 	n = strings.ReplaceAll(n, "_", "")

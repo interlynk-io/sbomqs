@@ -31,9 +31,9 @@ var cdxCompSupplierWithNameURLAndEmail = []byte(`
   "version": 1,
   "components": [
     {
-      "type": "application",
-      "name": "Acme Application",
-      "version": "9.1.1",
+      "type": "library",
+      "name": "Acme Library",
+      "version": "3.0",
       "supplier": {
         "name": "Acme, Inc.",
         "url": [
@@ -126,9 +126,9 @@ var spdxCompSupplierWithPersonEmail = []byte(`
   },
   "packages": [
     {
-      "SPDXID": "SPDXRef-App",
-      "name": "application-a",
-      "versionInfo": "1.0",
+      "SPDXID": "SPDXRef-AcmeLib",
+      "name": "Acme Library",
+      "versionInfo": "3.0",
       "supplier": "Person: (samantha.wright@example.com)",
       "homepage" : "http://ftp.gnu.org/gnu/glibc"
     }
@@ -147,9 +147,9 @@ var spdxCompSupplierWithOrganizationEmail = []byte(`
   },
   "packages": [
     {
-      "SPDXID": "SPDXRef-App",
-      "name": "application-a",
-      "versionInfo": "1.0",
+      "SPDXID": "SPDXRef-AcmeLib",
+      "name": "Acme Library",
+      "versionInfo": "3.0",
       "supplier": "Organization:  (samantha.wright@example.com)",
       "homepage" : "http://ftp.gnu.org/gnu/glibc"
     }
@@ -190,9 +190,9 @@ var cdxCompSupplierWithName = []byte(`
   "version": 1,
   "components": [
     {
-      "type": "application",
-      "name": "Acme Application",
-      "version": "9.1.1",
+      "SPDXID": "SPDXRef-AcmeLib",
+      "name": "Acme Library",
+      "versionInfo": "3.0",
       "supplier": {
         "name": "Acme, Inc."
       }
@@ -212,9 +212,9 @@ var spdxCompSupplierWithPersonName = []byte(`
   },
   "packages": [
     {
-      "SPDXID": "SPDXRef-App",
-      "name": "application-a",
-      "versionInfo": "1.0",
+      "SPDXID": "SPDXRef-AcmeLib",
+      "name": "Acme Library",
+      "versionInfo": "3.0",
       "supplier": "Person: Samantha Wright",
       "homepage" : "http://ftp.gnu.org/gnu/glibc"
     }
@@ -233,9 +233,9 @@ var spdxCompSupplierWithOrganizationName = []byte(`
   },
   "packages": [
     {
-      "SPDXID": "SPDXRef-App",
-      "name": "application-a",
-      "versionInfo": "1.0",
+      "SPDXID": "SPDXRef-AcmeLib",
+      "name": "Acme Library",
+      "versionInfo": "3.0",
       "supplier": "Organization: Samantha Wright",
       "homepage" : "http://ftp.gnu.org/gnu/glibc"
     }
@@ -251,9 +251,9 @@ var cdxCompSupplierAbsent = []byte(`
   "version": 1,
   "components": [
     {
-      "type": "application",
-      "name": "Acme Application",
-      "version": "9.1.1"
+      "type": "library",
+      "name": "Acme Library",
+      "version": "3.0"
     }
   ]
 }
@@ -270,9 +270,9 @@ var spdxCompSupplierAbsent = []byte(`
   },
   "packages": [
     {
-      "SPDXID": "SPDXRef-App",
-      "name": "application-a",
-      "versionInfo": "1.0",
+      "SPDXID": "SPDXRef-AcmeLib",
+      "name": "Acme Library",
+      "versionInfo": "3.0",
       "homepage" : "http://ftp.gnu.org/gnu/glibc"
     }
   ]
@@ -287,9 +287,9 @@ var cdxCompSupplierWithEmptyName = []byte(`
   "version": 1,
   "components": [
     {
-      "type": "application",
-      "name": "Acme Application",
-      "version": "9.1.1",
+      "type": "library",
+      "name": "Acme Library",
+      "version": "3.0",
       "supplier": {
         "name": ""
       }
@@ -309,9 +309,9 @@ var spdxCompSupplierWithPersonNameEmpty = []byte(`
   },
   "packages": [
     {
-      "SPDXID": "SPDXRef-App",
-      "name": "application-a",
-      "versionInfo": "1.0",
+      "SPDXID": "SPDXRef-AcmeLib",
+      "name": "Acme Library",
+      "versionInfo": "3.0",
       "supplier": "Person:  ( )",
       "homepage" : "http://ftp.gnu.org/gnu/glibc"
     }
@@ -327,9 +327,9 @@ var cdxCompSupplierWithWhiteSpaceName = []byte(`
   "version": 1,
   "components": [
     {
-      "type": "application",
-      "name": "Acme Application",
-      "version": "9.1.1",
+      "type": "library",
+      "name": "Acme Library",
+      "version": "3.0",
       "supplier": {
         "name": "  "
       }
@@ -346,9 +346,9 @@ var cdxCompManufacturerWithNameURLAndEmail = []byte(`
   "version": 1,
   "components": [
     {
-      "type": "application",
-      "name": "Acme Application",
-      "version": "9.1.1",
+      "type": "library",
+      "name": "Acme Library",
+      "version": "3.0",
       "manufacturer": {
         "name": "Acme, Inc.",
         "url": [

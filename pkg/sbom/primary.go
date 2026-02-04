@@ -29,6 +29,8 @@ type GetPrimaryComponentInfo interface {
 
 	// IsPresent returns whether primary component information is available
 	IsPresent() bool
+
+	Component() GetComponent
 }
 
 // PrimaryComp represents a concrete implementation of primary component information
@@ -63,4 +65,13 @@ func (pc PrimaryComponentInfo) GetType() string {
 // IsPresent returns whether primary component information is available
 func (pc PrimaryComponentInfo) IsPresent() bool {
 	return pc.Present
+}
+
+// Component return the primary component as a Component type
+func (pc PrimaryComponentInfo) Component() GetComponent {
+	return Component{
+		ID:      pc.ID,
+		Name:    pc.Name,
+		Version: pc.Version,
+	}
 }
