@@ -3307,12 +3307,10 @@ var spdxCompWithPrimaryDeclaredLicenseMissing = []byte(`
       "spdxElementId": "SPDXRef-DOCUMENT",
       "relatedSpdxElement": "SPDXRef-Pkg-acme",
       "relationshipType": "DESCRIBES"
-    },
+    }
   ]
 }
 `)
-
-//+++++++++++++++++++
 
 var cdxCompWithConcludedDeprecatedLicenseID = []byte(`
 {
