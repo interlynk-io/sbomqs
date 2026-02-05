@@ -503,6 +503,257 @@ var cdxCompManufacturerMissing = []byte(`
 }
 `)
 
+var cdxMultipleCompWithSupplierAndManufacturer = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "application",
+      "name": "Acme Application",
+      "version": "9.1.1",
+      "manufacturer": {
+        "name": "Acme, Inc.",
+        "url": [
+          "https://example.com"
+        ],
+        "contact": [
+          {
+            "name": "Acme Professional Services",
+            "email": "professional.services@example.com"
+          }
+        ]
+      }
+    },
+    {
+      "type": "application",
+      "name": "STME Application",
+      "version": "1.1.1",
+      "supplier": {
+        "name": "STME, Inc.",
+        "url": [
+          "https://example.com"
+        ],
+        "contact": [
+          {
+            "name": "STME Professional Services",
+            "email": "professional.services@example.com"
+          }
+        ]
+      }
+    }
+  ]
+}
+`)
+
+var cdxMultipleCompWithBothSupplier = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "application",
+      "name": "Acme Application",
+      "version": "9.1.1",
+      "supplier": {
+        "name": "Acme, Inc.",
+        "url": [
+          "https://example.com"
+        ],
+        "contact": [
+          {
+            "name": "Acme Professional Services",
+            "email": "professional.services@example.com"
+          }
+        ]
+      }
+    },
+    {
+      "type": "application",
+      "name": "STME Application",
+      "version": "1.1.1",
+      "supplier": {
+        "name": "STME, Inc.",
+        "url": [
+          "https://example.com"
+        ],
+        "contact": [
+          {
+            "name": "STME Professional Services",
+            "email": "professional.services@example.com"
+          }
+        ]
+      }
+    }
+  ]
+}
+`)
+
+var cdxMultipleCompWithOneSupplierAndAnotherMissing = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "application",
+      "name": "Acme Application",
+      "version": "9.1.1",
+      "supplier": {
+        "name": "Acme, Inc.",
+        "url": [
+          "https://example.com"
+        ],
+        "contact": [
+          {
+            "name": "Acme Professional Services",
+            "email": "professional.services@example.com"
+          }
+        ]
+      }
+    },
+    {
+      "type": "application",
+      "name": "STME Application",
+      "version": "1.1.1"
+    }
+  ]
+}
+`)
+
+var cdxMultipleCompWithBothManufacturer = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "application",
+      "name": "Acme Application",
+      "version": "9.1.1",
+      "manufacturer": {
+        "name": "Acme, Inc.",
+        "url": [
+          "https://example.com"
+        ],
+        "contact": [
+          {
+            "name": "Acme Professional Services",
+            "email": "professional.services@example.com"
+          }
+        ]
+      }
+    },
+    {
+      "type": "application",
+      "name": "STME Application",
+      "version": "1.1.1",
+      "manufacturer": {
+        "name": "STME, Inc.",
+        "url": [
+          "https://example.com"
+        ],
+        "contact": [
+          {
+            "name": "STME Professional Services",
+            "email": "professional.services@example.com"
+          }
+        ]
+      }
+    }
+  ]
+}
+`)
+
+var cdxMultipleCompWithOneManufacturerAndAnotherMissing = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "application",
+      "name": "Acme Application",
+      "version": "9.1.1",
+      "manufacturer": {
+        "name": "Acme, Inc.",
+        "url": [
+          "https://example.com"
+        ],
+        "contact": [
+          {
+            "name": "Acme Professional Services",
+            "email": "professional.services@example.com"
+          }
+        ]
+      }
+    },
+    {
+      "type": "application",
+      "name": "STME Application",
+      "version": "1.1.1"
+    }
+  ]
+}
+`)
+
+var cdxMultipleCompWithOneSupplierOneManufacturerAndOneMissing = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "application",
+      "name": "Acme Application",
+      "version": "9.1.1",
+      "supplier": {
+        "name": "Acme, Inc.",
+        "url": [
+          "https://example.com"
+        ],
+        "contact": [
+          {
+            "name": "Acme Professional Services",
+            "email": "professional.services@example.com"
+          }
+        ]
+      }
+    },
+    {
+      "type": "application",
+      "name": "STME Application",
+      "version": "1.1.1",
+      "supplier": {
+        "name": "STME, Inc.",
+        "url": [
+          "https://example.com"
+        ],
+        "contact": [
+          {
+            "name": "STME Professional Services",
+            "email": "professional.services@example.com"
+          }
+        ]
+      }
+    },
+    {
+      "type": "application",
+      "name": "curl",
+      "version": "4.1.1"
+    }
+  ]
+}
+`)
+
 func TestNTIACompSupplier(t *testing.T) {
 	ctx := context.Background()
 
@@ -514,7 +765,7 @@ func TestNTIACompSupplier(t *testing.T) {
 		got := NTIACompWithSupplier(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "complete", got.Desc)
+		assert.Equal(t, "supplier information declared for all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -526,7 +777,7 @@ func TestNTIACompSupplier(t *testing.T) {
 		got := NTIACompWithSupplier(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "complete", got.Desc)
+		assert.Equal(t, "supplier information declared for all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -538,7 +789,7 @@ func TestNTIACompSupplier(t *testing.T) {
 		got := NTIACompWithSupplier(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "complete", got.Desc)
+		assert.Equal(t, "supplier information declared for all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -550,7 +801,7 @@ func TestNTIACompSupplier(t *testing.T) {
 		got := NTIACompWithSupplier(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "complete", got.Desc)
+		assert.Equal(t, "supplier information declared for all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -562,7 +813,7 @@ func TestNTIACompSupplier(t *testing.T) {
 		got := NTIACompWithSupplier(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "complete", got.Desc)
+		assert.Equal(t, "supplier information declared for all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -574,7 +825,7 @@ func TestNTIACompSupplier(t *testing.T) {
 		got := NTIACompWithSupplier(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "complete", got.Desc)
+		assert.Equal(t, "supplier information declared for all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -586,7 +837,7 @@ func TestNTIACompSupplier(t *testing.T) {
 		got := NTIACompWithSupplier(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "complete", got.Desc)
+		assert.Equal(t, "supplier information declared for all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -598,7 +849,7 @@ func TestNTIACompSupplier(t *testing.T) {
 		got := NTIACompWithSupplier(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "complete", got.Desc)
+		assert.Equal(t, "supplier information declared for all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -610,7 +861,7 @@ func TestNTIACompSupplier(t *testing.T) {
 		got := NTIACompWithSupplier(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "complete", got.Desc)
+		assert.Equal(t, "supplier information declared for all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -622,7 +873,7 @@ func TestNTIACompSupplier(t *testing.T) {
 		got := NTIACompWithSupplier(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "complete", got.Desc)
+		assert.Equal(t, "supplier information declared for all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -634,7 +885,7 @@ func TestNTIACompSupplier(t *testing.T) {
 		got := NTIACompWithSupplier(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add to 1 component", got.Desc)
+		assert.Equal(t, "supplier or manufacturer information missing for all 1 components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -646,7 +897,7 @@ func TestNTIACompSupplier(t *testing.T) {
 		got := NTIACompWithSupplier(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add to 1 component", got.Desc)
+		assert.Equal(t, "supplier or manufacturer information missing for all 1 components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -658,7 +909,7 @@ func TestNTIACompSupplier(t *testing.T) {
 		got := NTIACompWithSupplier(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add to 1 component", got.Desc)
+		assert.Equal(t, "supplier or manufacturer information missing for all 1 components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -670,7 +921,7 @@ func TestNTIACompSupplier(t *testing.T) {
 		got := NTIACompWithSupplier(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add to 1 component", got.Desc)
+		assert.Equal(t, "supplier or manufacturer information missing for all 1 components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -682,7 +933,7 @@ func TestNTIACompSupplier(t *testing.T) {
 		got := NTIACompWithSupplier(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add to 1 component", got.Desc)
+		assert.Equal(t, "supplier or manufacturer information missing for all 1 components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -694,7 +945,7 @@ func TestNTIACompSupplier(t *testing.T) {
 		got := NTIACompWithSupplier(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "complete", got.Desc)
+		assert.Equal(t, "manufacturer information declared for all components (supplier not present)", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -706,7 +957,7 @@ func TestNTIACompSupplier(t *testing.T) {
 		got := NTIACompWithSupplier(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "complete", got.Desc)
+		assert.Equal(t, "manufacturer information declared for all components (supplier not present)", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -718,7 +969,7 @@ func TestNTIACompSupplier(t *testing.T) {
 		got := NTIACompWithSupplier(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "complete", got.Desc)
+		assert.Equal(t, "manufacturer information declared for all components (supplier not present)", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -730,7 +981,7 @@ func TestNTIACompSupplier(t *testing.T) {
 		got := NTIACompWithSupplier(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "complete", got.Desc)
+		assert.Equal(t, "manufacturer information declared for all components (supplier not present)", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -742,7 +993,7 @@ func TestNTIACompSupplier(t *testing.T) {
 		got := NTIACompWithSupplier(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add to 1 component", got.Desc)
+		assert.Equal(t, "supplier or manufacturer information missing for all 1 components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -754,7 +1005,7 @@ func TestNTIACompSupplier(t *testing.T) {
 		got := NTIACompWithSupplier(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add to 1 component", got.Desc)
+		assert.Equal(t, "supplier or manufacturer information missing for all 1 components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -766,7 +1017,7 @@ func TestNTIACompSupplier(t *testing.T) {
 		got := NTIACompWithSupplier(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add to 1 component", got.Desc)
+		assert.Equal(t, "supplier or manufacturer information missing for all 1 components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -778,7 +1029,341 @@ func TestNTIACompSupplier(t *testing.T) {
 		got := NTIACompWithSupplier(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add to 1 component", got.Desc)
+		assert.Equal(t, "supplier or manufacturer information missing for all 1 components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// cdxMultipleCompWithSupplierAndManufacturer
+	t.Run("cdxMultipleCompWithSupplierAndManufacturer", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxMultipleCompWithSupplierAndManufacturer, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIACompWithSupplier(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "supplier information declared for 1 components; manufacturer used as fallback for 1 components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// cdxMultipleCompWithBothSupplier
+	t.Run("cdxMultipleCompWithBothSupplier", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxMultipleCompWithBothSupplier, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIACompWithSupplier(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "supplier information declared for all components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// cdxMultipleCompWithOneSupplierAndAnotherMissing
+	t.Run("cdxMultipleCompWithOneSupplierAndAnotherMissing", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxMultipleCompWithOneSupplierAndAnotherMissing, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIACompWithSupplier(doc)
+
+		assert.InDelta(t, 5.0, got.Score, 1e-9)
+		assert.Equal(t, "supplier or manufacturer information declared for 1 of 2 components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// cdxMultipleCompWithBothManufacturer
+	t.Run("cdxMultipleCompWithBothManufacturer", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxMultipleCompWithBothManufacturer, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIACompWithSupplier(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "manufacturer information declared for all components (supplier not present)", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// cdxMultipleCompWithOneManufacturerAndAnotherMissing
+	t.Run("cdxMultipleCompWithOneManufacturerAndAnotherMissing", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxMultipleCompWithOneManufacturerAndAnotherMissing, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIACompWithSupplier(doc)
+
+		assert.InDelta(t, 5.0, got.Score, 1e-9)
+		assert.Equal(t, "supplier or manufacturer information declared for 1 of 2 components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// cdxMultipleCompWithOneSupplierOneManufacturerAndOneMissing
+	t.Run("cdxMultipleCompWithOneSupplierOneManufacturerAndOneMissing", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxMultipleCompWithOneSupplierOneManufacturerAndOneMissing, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIACompWithSupplier(doc)
+
+		assert.InDelta(t, 6.6666666666666, got.Score, 1e-9)
+		assert.Equal(t, "supplier or manufacturer information declared for 2 of 3 components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+}
+
+var cdxMultipleCompWithValidPURL = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "name": "Acme Library",
+      "version": "3.0",
+      "purl": "pkg:golang/github.com/pkg/errors@0.9.1"
+    },
+    {
+      "type": "library",
+      "name": "cel.dev/expr",
+      "version": "v0.19.1",
+      "purl": "pkg:golang/cel.dev/expr@v0.19.1?type=module\u0026goos=linux\u0026goarch=amd64"
+    }
+  ]
+}
+`)
+
+var cdxMultipleCompWithOnePURLAndAnotherCPE = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "name": "Acme Library",
+      "version": "3.0",
+      "purl": "pkg:golang/github.com/pkg/errors@0.9.1"
+    },
+    {
+      "type": "library",
+      "name": "cel.dev/expr",
+      "version": "v0.19.1",
+      "cpe": "cpe:/golang/cel.dev/expr:v0.19.1"
+    }
+  ]
+}
+`)
+
+var cdxMultipleCompWithOnePURLAndAnotherMissing = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "name": "Acme Library",
+      "version": "3.0",
+      "purl": "pkg:golang/github.com/pkg/errors@0.9.1"
+    },
+    {
+      "type": "library",
+      "name": "cel.dev/expr",
+      "version": "v0.19.1"
+    }
+  ]
+}
+`)
+
+var cdxMultipleCompWithOneCPEAndAnotherMissing = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "name": "Acme Library",
+      "version": "3.0"
+    },
+    {
+      "type": "library",
+      "name": "cel.dev/expr",
+      "version": "v0.19.1",
+      "cpe": "cpe:/golang/cel.dev/expr:v0.19.1"
+    }
+  ]
+}
+`)
+
+func TestNTIACompUniqueID(t *testing.T) {
+	ctx := context.Background()
+
+	// cdxCompValidPURL
+	t.Run("cdxCompValidPURL", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompValidPURL, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIACompWithUniqID(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "unique identifier declared for all components (PURL)", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// spdxCompPURLValid
+	t.Run("spdxCompPURLValid", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompPURLValid, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIACompWithUniqID(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "unique identifier declared for all components (PURL)", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// cdxCompPURLInValid
+	t.Run("cdxCompPURLInValid", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompPURLInValid, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIACompWithUniqID(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "unique identifier missing for all 1 components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// spdxCompInValidPURL
+	t.Run("spdxCompInValidPURL", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompInValidPURL, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIACompWithUniqID(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "unique identifier missing for all 1 components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// cdxCompPURLWithEmptyString
+	t.Run("cdxCompPURLWithEmptyString", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompPURLWithEmptyString, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIACompWithUniqID(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "unique identifier missing for all 1 components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// cdxCompPURLWhitespace
+	t.Run("cdxCompPURLWhitespace", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompPURLWhitespace, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIACompWithUniqID(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "unique identifier missing for all 1 components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// spdxCompPURLWhitespace
+	t.Run("spdxCompPURLWhitespace", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompPURLWhitespace, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIACompWithUniqID(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "unique identifier missing for all 1 components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// cdxCompPURLAbsent
+	t.Run("cdxCompPURLAbsent", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompPURLAbsent, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIACompWithUniqID(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "unique identifier missing for all 1 components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// spdxCompPURLAbsent
+	t.Run("spdxCompPURLAbsent", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompPURLAbsent, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIACompWithUniqID(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "unique identifier missing for all 1 components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// cdxCompPURLWrongType
+	t.Run("cdxCompPURLWrongType", func(t *testing.T) {
+		_, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompPURLWrongType, sbom.Signature{})
+		require.Error(t, err)
+	})
+
+	// spdxCompPURLWrongType
+	t.Run("spdxCompPURLWrongType", func(t *testing.T) {
+		_, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompPURLWrongType, sbom.Signature{})
+		require.Error(t, err)
+	})
+
+	// cdxMultipleCompWithValidPURL
+	t.Run("cdxMultipleCompWithValidPURL", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxMultipleCompWithValidPURL, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIACompWithUniqID(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "unique identifier declared for all components (PURL)", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// cdxMultipleCompWithOnePURLAndAnotherCPE
+	t.Run("cdxMultipleCompWithOnePURLAndAnotherCPE", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxMultipleCompWithOnePURLAndAnotherCPE, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIACompWithUniqID(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "unique identifier declared for all components (PURL, CPE)", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// cdxMultipleCompWithOnePURLAndAnotherMissing
+	t.Run("cdxMultipleCompWithOnePURLAndAnotherMissing", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxMultipleCompWithOnePURLAndAnotherMissing, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIACompWithUniqID(doc)
+
+		assert.InDelta(t, 5.0, got.Score, 1e-9)
+		assert.Equal(t, "unique identifier declared for 1 of 2 components (PURL)", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// cdxMultipleCompWithOneCPEAndAnotherMissing
+	t.Run("cdxMultipleCompWithOneCPEAndAnotherMissing", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxMultipleCompWithOneCPEAndAnotherMissing, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIACompWithUniqID(doc)
+
+		assert.InDelta(t, 5.0, got.Score, 1e-9)
+		assert.Equal(t, "unique identifier declared for 1 of 2 components (CPE)", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 }
@@ -1770,7 +2355,7 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add SBOM author information", got.Desc)
+		assert.Equal(t, "SBOM author information missing", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1782,7 +2367,7 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add SBOM author information", got.Desc)
+		assert.Equal(t, "SBOM author information missing", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1794,7 +2379,7 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add SBOM author information", got.Desc)
+		assert.Equal(t, "SBOM author information missing", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1806,7 +2391,7 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add SBOM author information", got.Desc)
+		assert.Equal(t, "SBOM author information missing", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1818,7 +2403,7 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add SBOM author information", got.Desc)
+		assert.Equal(t, "SBOM author information missing", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1830,7 +2415,7 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add SBOM author information", got.Desc)
+		assert.Equal(t, "SBOM author information missing", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1842,7 +2427,7 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add SBOM author information", got.Desc)
+		assert.Equal(t, "SBOM author information missing", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1860,7 +2445,7 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add SBOM author information", got.Desc)
+		assert.Equal(t, "SBOM author information missing", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1872,7 +2457,7 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add SBOM author information", got.Desc)
+		assert.Equal(t, "SBOM author information missing", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1884,7 +2469,7 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add SBOM author information", got.Desc)
+		assert.Equal(t, "SBOM author information missing", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1914,7 +2499,7 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM author inferred from SBOM tool", got.Desc)
+		assert.Equal(t, "SBOM author inferred from SBOM generation tool", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1926,7 +2511,7 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM author inferred from SBOM tool", got.Desc)
+		assert.Equal(t, "SBOM author inferred from SBOM generation tool", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1938,7 +2523,7 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 5.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM author inferred from SBOM tool with name only", got.Desc)
+		assert.Equal(t, "SBOM author inferred from SBOM generation tool (name only)", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1950,7 +2535,7 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 5.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM author inferred from SBOM tool with name only", got.Desc)
+		assert.Equal(t, "SBOM author inferred from SBOM generation tool (name only)", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1962,7 +2547,7 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM author inferred from SBOM tool with version only", got.Desc)
+		assert.Equal(t, "SBOM author inferred from SBOM generation tool (version only)", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1974,7 +2559,7 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM author inferred from SBOM tool with version only", got.Desc)
+		assert.Equal(t, "SBOM author inferred from SBOM generation tool (version only)", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1986,7 +2571,7 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add SBOM author information", got.Desc)
+		assert.Equal(t, "SBOM author information missing", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1998,7 +2583,7 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add SBOM author information", got.Desc)
+		assert.Equal(t, "SBOM author information missing", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2010,7 +2595,7 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add SBOM author information", got.Desc)
+		assert.Equal(t, "SBOM author information missing", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2022,7 +2607,7 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add SBOM author information", got.Desc)
+		assert.Equal(t, "SBOM author information missing", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2034,7 +2619,7 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add SBOM author information", got.Desc)
+		assert.Equal(t, "SBOM author information missing", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2046,7 +2631,7 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM author inferred from SBOM tool", got.Desc)
+		assert.Equal(t, "SBOM author inferred from SBOM generation tool", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2058,7 +2643,7 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 5.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM author inferred from SBOM tool with name only", got.Desc)
+		assert.Equal(t, "SBOM author inferred from SBOM generation tool (name only)", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2070,7 +2655,7 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM author inferred from SBOM tool with version only", got.Desc)
+		assert.Equal(t, "SBOM author inferred from SBOM generation tool (version only)", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2082,7 +2667,7 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add SBOM author information", got.Desc)
+		assert.Equal(t, "SBOM author information missing", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2094,7 +2679,7 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add SBOM author information", got.Desc)
+		assert.Equal(t, "SBOM author information missing", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2106,7 +2691,7 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add SBOM author information", got.Desc)
+		assert.Equal(t, "SBOM author information missing", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2160,7 +2745,7 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add SBOM author information", got.Desc)
+		assert.Equal(t, "SBOM author information missing", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2172,7 +2757,7 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add SBOM author information", got.Desc)
+		assert.Equal(t, "SBOM author information missing", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2184,7 +2769,7 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add SBOM author information", got.Desc)
+		assert.Equal(t, "SBOM author information missing", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2196,7 +2781,7 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add SBOM author information", got.Desc)
+		assert.Equal(t, "SBOM author information missing", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2208,7 +2793,7 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add SBOM author information", got.Desc)
+		assert.Equal(t, "SBOM author information missing", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2262,7 +2847,7 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add SBOM author information", got.Desc)
+		assert.Equal(t, "SBOM author information missing", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2274,7 +2859,7 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add SBOM author information", got.Desc)
+		assert.Equal(t, "SBOM author information missing", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2286,7 +2871,7 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add SBOM author information", got.Desc)
+		assert.Equal(t, "SBOM author information missing", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2298,7 +2883,7 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add SBOM author information", got.Desc)
+		assert.Equal(t, "SBOM author information missing", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2310,7 +2895,7 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		got := NTIASBOMWithAuthors(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add SBOM author information", got.Desc)
+		assert.Equal(t, "SBOM author information missing", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2693,7 +3278,7 @@ var cdxCompWithPrimaryRelationshipsAndDeclaredRelationships = []byte(`
 }
 `)
 
-var cdxCompWithPrimaryDeclaredRelationshipsComplete = []byte(`
+var cdxCompWithNoRelationshipButDeclaredRelationshipsComplete = []byte(`
 {
   "bomFormat": "CycloneDX",
   "specVersion": "1.6",
@@ -2748,7 +3333,7 @@ var cdxCompWithPrimaryDeclaredRelationshipsComplete = []byte(`
 }
 `)
 
-var cdxCompWithPrimaryDeclaredRelationshipsUnknown = []byte(`
+var cdxCompWithNoRelationshipsButDeclaredRelationshipsUnknown = []byte(`
 {
   "bomFormat": "CycloneDX",
   "specVersion": "1.6",
@@ -2803,7 +3388,7 @@ var cdxCompWithPrimaryDeclaredRelationshipsUnknown = []byte(`
 }
 `)
 
-var cdxCompWithPrimaryDeclaredRelationshipsIncomplete = []byte(`
+var cdxCompWithNoRelationshpsButDeclaredRelationshipsIncomplete = []byte(`
 {
   "bomFormat": "CycloneDX",
   "specVersion": "1.6",
@@ -2905,7 +3490,7 @@ func TestNTIACompDependencies(t *testing.T) {
 		got := NTIASBOMWithDependencyRelationships(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "primary component declares 2 top-level dependencies", got.Desc)
+		assert.Equal(t, "primary component declares 2 direct (top-level) dependencies", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2916,7 +3501,7 @@ func TestNTIACompDependencies(t *testing.T) {
 		got := NTIASBOMWithDependencyRelationships(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "primary component declares 2 top-level dependencies", got.Desc)
+		assert.Equal(t, "primary component declares 2 direct (top-level) dependencies", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2927,7 +3512,7 @@ func TestNTIACompDependencies(t *testing.T) {
 		got := NTIASBOMWithDependencyRelationships(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "primary component has no top-level relationships and nor declare relationships completeness", got.Desc)
+		assert.Equal(t, "primary component declares no direct dependencies and does not declare relationship completeness", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2938,7 +3523,7 @@ func TestNTIACompDependencies(t *testing.T) {
 		got := NTIASBOMWithDependencyRelationships(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "primary component has no top-level relationships and nor declare relationships completeness", got.Desc)
+		assert.Equal(t, "primary component declares no direct dependencies and does not declare relationship completeness", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2971,40 +3556,40 @@ func TestNTIACompDependencies(t *testing.T) {
 		got := NTIASBOMWithDependencyRelationships(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "primary component declares 2 top-level dependencies", got.Desc)
+		assert.Equal(t, "primary component declares 2 direct (top-level) dependencies", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
-	t.Run("cdxCompWithPrimaryDeclaredRelationshipsComplete", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithPrimaryDeclaredRelationshipsComplete, sbom.Signature{})
+	t.Run("cdxCompWithNoRelationshipButDeclaredRelationshipsComplete", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithNoRelationshipButDeclaredRelationshipsComplete, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := NTIASBOMWithDependencyRelationships(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "primary component has no relationships but decalred (relationships completeness: complete)", got.Desc)
+		assert.Equal(t, "primary component declares no direct dependencies and explicitly states relationship completeness (complete)", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
-	t.Run("cdxCompWithPrimaryDeclaredRelationshipsUnknown", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithPrimaryDeclaredRelationshipsUnknown, sbom.Signature{})
+	t.Run("cdxCompWithNoRelationshipsButDeclaredRelationshipsUnknown", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithNoRelationshipsButDeclaredRelationshipsUnknown, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := NTIASBOMWithDependencyRelationships(doc)
 
 		assert.InDelta(t, 5.0, got.Score, 1e-9)
-		assert.Equal(t, "primary component has no relationships but decalred (relationships completeness: unknown)", got.Desc)
+		assert.Equal(t, "primary component declares no direct dependencies and states relationship completeness as unknown", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
-	t.Run("cdxCompWithPrimaryDeclaredRelationshipsIncomplete", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithPrimaryDeclaredRelationshipsIncomplete, sbom.Signature{})
+	t.Run("cdxCompWithNoRelationshpsButDeclaredRelationshipsIncomplete", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithNoRelationshpsButDeclaredRelationshipsIncomplete, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := NTIASBOMWithDependencyRelationships(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "primary component has no relationships but decalred (relationships completeness: incomplete)", got.Desc)
+		assert.Equal(t, "primary component declares no direct dependencies and states relationship completeness as incomplete", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -3015,7 +3600,7 @@ func TestNTIACompDependencies(t *testing.T) {
 		got := NTIASBOMWithDependencyRelationships(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "primary component has no top-level relationships and nor declare relationships completeness", got.Desc)
+		assert.Equal(t, "primary component declares no direct dependencies and does not declare relationship completeness", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 }
@@ -3205,7 +3790,7 @@ func TestNTIAComplete(t *testing.T) {
 		got := NTIASBOMWithDependencyRelationships(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "primary component declares 2 top-level dependencies", got.Desc)
+		assert.Equal(t, "primary component declares 2 direct (top-level) dependencies", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -3217,7 +3802,7 @@ func TestNTIAComplete(t *testing.T) {
 		got := NTIASBOMWithDependencyRelationships(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "primary component declares 2 top-level dependencies", got.Desc)
+		assert.Equal(t, "primary component declares 2 direct (top-level) dependencies", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -3254,7 +3839,7 @@ func TestNTIAComplete(t *testing.T) {
 		got := NTIACompWithSupplier(doc)
 
 		assert.InDelta(t, 5.0, got.Score, 1e-9)
-		assert.Equal(t, "add to 2 components", got.Desc)
+		assert.Equal(t, "supplier or manufacturer information declared for 2 of 4 components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -3266,7 +3851,7 @@ func TestNTIAComplete(t *testing.T) {
 		got := NTIACompWithSupplier(doc)
 
 		assert.InDelta(t, 2.5, got.Score, 1e-9)
-		assert.Equal(t, "add to 3 components", got.Desc)
+		assert.Equal(t, "supplier or manufacturer information declared for 1 of 4 components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 }
