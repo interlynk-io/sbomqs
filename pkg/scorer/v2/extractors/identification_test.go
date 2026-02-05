@@ -486,13 +486,8 @@ func TestCompWithUniqLocalIDs(t *testing.T) {
 	})
 
 	t.Run("spdxSBOMWithComponentNameVersionAndEmptyStringID", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMWithComponentNameVersionAndEmptyStringID, sbom.Signature{})
-		require.NoError(t, err)
-
-		got := CompWithUniqLocalIDs(doc)
-		assert.InDelta(t, 0.0, got.Score, 0.0001)
-		assert.Equal(t, "add to 1 component", got.Desc)
-		assert.False(t, got.Ignore)
+		_, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMWithComponentNameVersionAndEmptyStringID, sbom.Signature{})
+		require.Error(t, err)
 	})
 
 	t.Run("cdxSBOMComponentWithNameVersionAndMissingID", func(t *testing.T) {
