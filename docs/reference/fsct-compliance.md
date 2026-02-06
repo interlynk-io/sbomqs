@@ -5,13 +5,13 @@
 This document explains how **sbomqs** evaluates **FSCT (Framing Software Component Transparency)** across **profiling** (quality scoring) and **compliance-style baseline checks**.
 
 FSCT is **not a minimum-field checklist** like NTIA.
-Instead, it focuses on **transparency**, **declaration**, and **coverage** of SBOM data. It's more of community driven compliance whose motive to make SBOM better.
+Instead, it focuses on **transparency**, **declaration**, and **coverage** of SBOM data. It's more of a community-driven compliance whose motive is to make SBOMs better.
 
 This document defines:
 
-* the **official FSCT intent** for each transparency signal,
-* mapping each field to **SPDX** and **CycloneDX**, and
-* the **exact logic sbomqs applies**, including baseline rules, coverage handling, and scoring behavior.
+- the **official FSCT intent** for each transparency signal,
+- mapping each field to **SPDX** and **CycloneDX**, and
+- the **exact logic sbomqs applies**, including baseline rules, coverage handling, and scoring behavior.
 
 The goal is to make FSCT evaluation **fully explainable**, so users understand **what is missing**, **what is already present**, and **why a score was produced**.
 
@@ -31,7 +31,7 @@ The goal is to make FSCT evaluation **fully explainable**, so users understand *
 | `license_coverage`       | License Coverage            | Coverage-based            | PackageLicenseDeclared                      | component.licenses                     |
 | `copyright_coverage`     | Copyright Coverage          | Coverage-based            | PackageCopyrightText                        | component.copyright                    |
 
-## 3. SBOM Provenance
+## 1.1 SBOM Provenance
 
 ### FSCT Definition
 
@@ -64,7 +64,7 @@ Both are required at minimum level.
 
 ---
 
-## 4. Primary Component (SBOM Subject)
+## 1.2 Primary Component (SBOM Subject)
 
 ### SBOM Primary Component official definition
 
@@ -82,7 +82,7 @@ Both are required at minimum level.
 
 ---
 
-## 5. Component Identity
+## 1.3 Component Identity
 
 ### Component Name official definition
 
@@ -112,7 +112,7 @@ a previously identified version.
 
 ---
 
-## 6. Supplier Attribution
+## 1.4 Supplier Attribution
 
 ### Supplier official definition
 
@@ -130,7 +130,7 @@ a previously identified version.
 
 ---
 
-## 7. Unique Identification
+## 1.5 Unique Identification
 
 ### Unique ID official definition
 
@@ -151,7 +151,6 @@ a previously identified version.
   - `purl`
   - `cpe23Type`
 
-
 **CycloneDX:**
 
 - `component.purl`
@@ -159,7 +158,7 @@ a previously identified version.
 
 ---
 
-## 8. Artifact Integrity (Cryptographic Hashes)
+## 1.6 Artifact Integrity (Cryptographic Hashes)
 
 ### Cryptographic Hashes official definition
 
@@ -177,7 +176,7 @@ a previously identified version.
 
 ---
 
-## 9. Dependency Relationships & Completeness
+## 1.7 Dependency Relationships & Completeness
 
 ### Dependency Relationship official definition
 
@@ -192,7 +191,7 @@ a previously identified version.
 
 ---
 
-## 10. License Coverage
+## 1.8 License Coverage
 
 ### License official definition
 
@@ -210,7 +209,7 @@ a previously identified version.
 
 ---
 
-## 11. Copyright Coverage
+## 1.9 Copyright Coverage
 
 ### Copyright official definition
 
@@ -224,7 +223,7 @@ Same as license.
 
 ---
 
-## 12. FSCT Compliance Structure
+## FSCT Compliance Structure
 
 ```text
 FSCT Transparency Report
@@ -247,19 +246,3 @@ FSCT Transparency Report
    - License coverage
    - Copyright coverage
 ```
-
----
-
-## Final Takeaway
-
-> **FSCT is about transparency, not checklists.
-> sbomqs evaluates whether information is declared, how consistently it is declared, and where transparency gaps remain.
-> Baseline signals establish trust; coverage signals express maturity.
-> Both are reported explicitly and explainably.**
-
----
-
-If you want next, I can:
-
-* condense this into a **one-page FSCT explainer**, or
-* create a **side-by-side NTIA vs FSCT comparison doc**, which would be extremely valuable for users
