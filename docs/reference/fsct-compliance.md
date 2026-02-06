@@ -103,7 +103,7 @@ a previously identified version.
 **SPDX:**
 
 - `PackageName`
-- `PackageVersionInfo`
+- `PackageVersion`
 
 **CycloneDX:**
 
