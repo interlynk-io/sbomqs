@@ -167,7 +167,11 @@ func NTIACompWithVersion(doc sbom.Document) catalog.ProfFeatScore {
 	total := len(comps)
 
 	if total == 0 {
-		formulae.ScoreProfNA(true)
+		return catalog.ProfFeatScore{
+			Score:  0.0,
+			Desc:   "no components declared in SBOM",
+			Ignore: false,
+		}
 	}
 
 	have := lo.CountBy(doc.Components(), func(c sbom.GetComponent) bool {
@@ -189,13 +193,6 @@ func NTIACompWithVersion(doc sbom.Document) catalog.ProfFeatScore {
 	}
 }
 
-// NTIACompWithUniqID checks Component Other Identifiers such as PURL/CPE
-// NTIA says:
-// - At least one additional identifier if available (e.g., CPE, PURL, SWID).
-//
-// Mappings:
-// - For SPDX: PackageExternalRefs (PURL), PackageCPEs
-// - For CycloneDX: Component External References (PURL), Component CPEs
 // NTIACompWithUniqID checks Component Other Identifiers such as PURL/CPE
 // NTIA says:
 // - At least one additional identifier if available (e.g., CPE, PURL, SWID).
@@ -277,7 +274,7 @@ func NTIACompWithUniqID(doc sbom.Document) catalog.ProfFeatScore {
 	}
 }
 
-// checkUniqueID checks for PURL/CPE
+// detectPURLOrCPEsUniqueIDs detects unique IDs such as PURL/CPE
 func detectPURLOrCPEsUniqueIDs(c sbom.GetComponent) uniqIDTypes {
 	var t uniqIDTypes
 

@@ -3388,7 +3388,7 @@ var cdxCompWithNoRelationshipsButDeclaredRelationshipsUnknown = []byte(`
 }
 `)
 
-var cdxCompWithNoRelationshpsButDeclaredRelationshipsIncomplete = []byte(`
+var cdxCompWithNoRelationshipsButDeclaredRelationshipsIncomplete = []byte(`
 {
   "bomFormat": "CycloneDX",
   "specVersion": "1.6",
@@ -3582,8 +3582,8 @@ func TestNTIACompDependencies(t *testing.T) {
 		assert.False(t, got.Ignore)
 	})
 
-	t.Run("cdxCompWithNoRelationshpsButDeclaredRelationshipsIncomplete", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithNoRelationshpsButDeclaredRelationshipsIncomplete, sbom.Signature{})
+	t.Run("cdxCompWithNoRelationshipsButDeclaredRelationshipsIncomplete", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithNoRelationshipsButDeclaredRelationshipsIncomplete, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := NTIASBOMWithDependencyRelationships(doc)
