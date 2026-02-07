@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"slices"
 	"strings"
+	"time"
 
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/catalog"
@@ -38,13 +39,26 @@ import (
 // - For SPDX: PackageSupplier, PackageOriginator
 // - For CycloneDX: Component Supplier, Component Manufacturer
 func NTIACompWithSupplier(doc sbom.Document) catalog.ProfFeatScore {
-
 	comps := doc.Components()
-	if len(comps) == 0 {
-		return formulae.ScoreProfNA(true)
+	total := len(comps)
+
+	if total == 0 {
+		return catalog.ProfFeatScore{
+			Score:  0.0,
+			Desc:   "no components declared in SBOM",
+			Ignore: false,
+		}
 	}
 
-	have := lo.CountBy(doc.Components(), func(c sbom.GetComponent) bool {
+	var (
+		haveSupplier     int
+		haveManufacturer int
+		haveAny          int
+	)
+
+	for _, c := range comps {
+
+		// --- 1. Prefer supplier (SPDX + CycloneDX) ---
 		supplier := c.Suppliers()
 		if supplier != nil {
 			hasName := strings.TrimSpace(supplier.GetName()) != ""
@@ -52,7 +66,9 @@ func NTIACompWithSupplier(doc sbom.Document) catalog.ProfFeatScore {
 			hasEmail := strings.TrimSpace(supplier.GetEmail()) != ""
 
 			if hasName || hasURL || hasEmail {
-				return true
+				haveSupplier++
+				haveAny++
+				continue // if supplier is present, skip manufacturer check
 			}
 		}
 
@@ -63,14 +79,42 @@ func NTIACompWithSupplier(doc sbom.Document) catalog.ProfFeatScore {
 			hasEmail := strings.TrimSpace(manufacturer.GetEmail()) != ""
 
 			if hasName || hasURL || hasEmail {
-				return true
+				haveManufacturer++
+				haveAny++
+				continue
 			}
 		}
+	}
 
-		return false
-	})
+	// --- 3. Build description ---
+	desc := fmt.Sprintf(
+		"supplier or manufacturer information missing for all %d components",
+		total,
+	)
 
-	return formulae.ScoreProfFull(have, len(comps), false)
+	if haveAny == total {
+		if haveSupplier == total {
+			desc = "supplier information declared for all components"
+		} else if haveSupplier > 0 {
+			desc = fmt.Sprintf(
+				"supplier information declared for %d components; manufacturer used as fallback for %d components",
+				haveSupplier, haveManufacturer,
+			)
+		} else {
+			desc = "manufacturer information declared for all components (supplier not present)"
+		}
+	} else if haveAny > 0 {
+		desc = fmt.Sprintf(
+			"supplier or manufacturer information declared for %d of %d components",
+			haveAny, total,
+		)
+	}
+
+	return catalog.ProfFeatScore{
+		Score:  float64(haveAny) / float64(total) * 10.0,
+		Desc:   desc,
+		Ignore: false,
+	}
 }
 
 // NTIACompWithName check for component with name
@@ -81,7 +125,34 @@ func NTIACompWithSupplier(doc sbom.Document) catalog.ProfFeatScore {
 // - For SPDX: PackageName
 // - For CycloneDX: Component Name
 func NTIACompWithName(doc sbom.Document) catalog.ProfFeatScore {
-	return CompName(doc)
+	comps := doc.Components()
+	total := len(comps)
+
+	if total == 0 {
+		return catalog.ProfFeatScore{
+			Score:  0.0,
+			Desc:   "no components declared in SBOM",
+			Ignore: false,
+		}
+	}
+
+	have := lo.CountBy(doc.Components(), func(c sbom.GetComponent) bool {
+		return strings.TrimSpace(c.GetName()) != ""
+	})
+
+	var desc string
+
+	if have == total {
+		desc = "name declared for all components"
+	} else {
+		desc = fmt.Sprintf("name declared for %d of %d components", have, total)
+	}
+
+	return catalog.ProfFeatScore{
+		Score:  float64(have) / float64(total) * 10.0,
+		Desc:   desc,
+		Ignore: false,
+	}
 }
 
 // NTIACompWithVersion check for Component with Version
@@ -92,7 +163,34 @@ func NTIACompWithName(doc sbom.Document) catalog.ProfFeatScore {
 // - For SPDX: PackageVersion
 // - For CycloneDX: Component Version
 func NTIACompWithVersion(doc sbom.Document) catalog.ProfFeatScore {
-	return CompVersion(doc)
+	comps := doc.Components()
+	total := len(comps)
+
+	if total == 0 {
+		return catalog.ProfFeatScore{
+			Score:  0.0,
+			Desc:   "no components declared in SBOM",
+			Ignore: false,
+		}
+	}
+
+	have := lo.CountBy(doc.Components(), func(c sbom.GetComponent) bool {
+		return strings.TrimSpace(c.GetVersion()) != ""
+	})
+
+	var desc string
+
+	if have == total {
+		desc = "version declared for all components"
+	} else {
+		desc = fmt.Sprintf("version declared for %d of %d components", have, total)
+	}
+
+	return catalog.ProfFeatScore{
+		Score:  float64(have) / float64(total) * 10.0,
+		Desc:   desc,
+		Ignore: false,
+	}
 }
 
 // NTIACompWithUniqID checks Component Other Identifiers such as PURL/CPE
@@ -104,15 +202,93 @@ func NTIACompWithVersion(doc sbom.Document) catalog.ProfFeatScore {
 // - For CycloneDX: Component External References (PURL), Component CPEs
 func NTIACompWithUniqID(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
-	if len(comps) == 0 {
-		return formulae.ScoreProfNA(true)
+	total := len(comps)
+
+	if total == 0 {
+		return catalog.ProfFeatScore{
+			Score:  0.0,
+			Desc:   "no components declared in SBOM",
+			Ignore: false,
+		}
 	}
 
-	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
-		return checkUniqueIDs(c)
-	})
+	var (
+		have     int
+		purlSeen bool
+		cpeSeen  bool
+	)
 
-	return formulae.ScoreProfFull(have, len(comps), false)
+	for _, c := range comps {
+		t := detectPURLOrCPEsUniqueIDs(c)
+
+		if t.purl || t.cpe {
+			have++
+		}
+
+		purlSeen = purlSeen || t.purl
+		cpeSeen = cpeSeen || t.cpe
+	}
+
+	// Build identifier kind list (informational only)
+	var kinds []string
+	if purlSeen {
+		kinds = append(kinds, "PURL")
+	}
+	if cpeSeen {
+		kinds = append(kinds, "CPE")
+	}
+
+	// Description
+	desc := fmt.Sprintf(
+		"unique identifier missing for all %d components",
+		total,
+	)
+
+	if have == total {
+		if len(kinds) > 0 {
+			desc = fmt.Sprintf(
+				"unique identifier declared for all components (%s)",
+				strings.Join(kinds, ", "),
+			)
+		} else {
+			desc = "unique identifier declared for all components"
+		}
+	} else if have > 0 {
+		if len(kinds) > 0 {
+			desc = fmt.Sprintf(
+				"unique identifier declared for %d of %d components (%s)",
+				have, total, strings.Join(kinds, ", "),
+			)
+		} else {
+			desc = fmt.Sprintf(
+				"unique identifier declared for %d of %d components",
+				have, total,
+			)
+		}
+	}
+
+	return catalog.ProfFeatScore{
+		Score:  float64(have) / float64(total) * 10.0,
+		Desc:   desc,
+		Ignore: false,
+	}
+}
+
+// detectPURLOrCPEsUniqueIDs detects unique IDs such as PURL/CPE
+func detectPURLOrCPEsUniqueIDs(c sbom.GetComponent) uniqIDTypes {
+	var t uniqIDTypes
+
+	for _, p := range c.GetPurls() {
+		if strings.TrimSpace(string(p)) != "" {
+			t.purl = true
+		}
+	}
+	for _, cpe := range c.GetCpes() {
+		if strings.TrimSpace(string(cpe)) != "" {
+			t.cpe = true
+		}
+	}
+	return t
 }
 
 // NTIASBOMWithDependencyRelationships
@@ -141,12 +317,12 @@ func NTIASBOMWithDependencyRelationships(doc sbom.Document) catalog.ProfFeatScor
 	if len(directDeps) > 0 {
 		return catalog.ProfFeatScore{
 			Score:  10.0,
-			Desc:   fmt.Sprintf("primary component declares %d top-level dependencies", len(directDeps)),
+			Desc:   fmt.Sprintf("primary component declares %d direct (top-level) dependencies", len(directDeps)),
 			Ignore: false,
 		}
 	}
 
-	// 2. no direct dependencies --> check declared completeness
+	// 2. no direct dependencies --> check relationship completeness
 	for _, c := range doc.Composition() {
 
 		if c.Scope() != sbom.ScopeDependencies {
@@ -162,31 +338,31 @@ func NTIASBOMWithDependencyRelationships(doc sbom.Document) catalog.ProfFeatScor
 		case sbom.AggregateComplete:
 			return catalog.ProfFeatScore{
 				Score:  10.0,
-				Desc:   "primary component has no relationships but decalred (relationships completeness: complete)",
+				Desc:   "primary component declares no direct dependencies and explicitly states relationship completeness (complete)",
 				Ignore: false,
 			}
 
 		case sbom.AggregateUnknown:
 			return catalog.ProfFeatScore{
 				Score:  5.0,
-				Desc:   "primary component has no relationships but decalred (relationships completeness: unknown)",
+				Desc:   "primary component declares no direct dependencies and states relationship completeness as unknown",
 				Ignore: false,
 			}
 
 		case sbom.AggregateIncomplete:
 			return catalog.ProfFeatScore{
 				Score:  0.0,
-				Desc:   "primary component has no relationships but decalred (relationships completeness: incomplete)",
+				Desc:   "primary component declares no direct dependencies and states relationship completeness as incomplete",
 				Ignore: false,
 			}
 		}
 	}
 
 	// 3. No dependencies and no completeness declaration
-	// Default interpretation per NTIA: incomplete
+	// Default interpretation per NTIA: missing
 	return catalog.ProfFeatScore{
 		Score:  0.0,
-		Desc:   "primary component has no top-level relationships and nor declare relationships completeness",
+		Desc:   "primary component declares no direct dependencies and does not declare relationship completeness",
 		Ignore: false,
 	}
 }
@@ -201,49 +377,49 @@ func NTIASBOMWithDependencyRelationships(doc sbom.Document) catalog.ProfFeatScor
 func NTIASBOMWithAuthors(doc sbom.Document) catalog.ProfFeatScore {
 	authors := doc.Authors()
 
-	if len(authors) > 0 {
-		for _, author := range authors {
-			name := strings.TrimSpace(author.GetName())
-			email := strings.TrimSpace(author.GetEmail())
+	for _, author := range authors {
+		name := strings.TrimSpace(author.GetName())
+		email := strings.TrimSpace(author.GetEmail())
 
-			if name != "" || email != "" {
-				return catalog.ProfFeatScore{
-					Score:  10.0,
-					Desc:   "SBOM author declared explicitly",
-					Ignore: false,
-				}
+		if name != "" || email != "" {
+			return catalog.ProfFeatScore{
+				Score:  10.0,
+				Desc:   "SBOM author declared explicitly",
+				Ignore: false,
 			}
 		}
 	}
 
-	tools := doc.Tools()
-	if len(tools) > 0 {
-		for _, tool := range tools {
-			name := strings.TrimSpace(tool.GetName())
-			version := strings.TrimSpace(tool.GetVersion())
+	for _, tool := range doc.Tools() {
+		name := strings.TrimSpace(tool.GetName())
+		version := strings.TrimSpace(tool.GetVersion())
 
-			if name != "" && version != "" {
-				return catalog.ProfFeatScore{
-					Score:  10.0,
-					Desc:   "SBOM author inferred from SBOM tool",
-					Ignore: false,
-				}
-			} else if name != "" {
-				return catalog.ProfFeatScore{
-					Score:  5.0,
-					Desc:   "SBOM author inferred from SBOM tool with name only",
-					Ignore: false,
-				}
-			} else if version != "" {
-				return catalog.ProfFeatScore{
-					Score:  0.0,
-					Desc:   "SBOM author inferred from SBOM tool with version only",
-					Ignore: false,
-				}
+		if name != "" && version != "" {
+			return catalog.ProfFeatScore{
+				Score:  10.0,
+				Desc:   "SBOM author inferred from SBOM generation tool",
+				Ignore: false,
+			}
+		}
+
+		if name != "" {
+			return catalog.ProfFeatScore{
+				Score:  5.0,
+				Desc:   "SBOM author inferred from SBOM generation tool (name only)",
+				Ignore: false,
+			}
+		}
+
+		if version != "" {
+			return catalog.ProfFeatScore{
+				Score:  0.0,
+				Desc:   "SBOM author inferred from SBOM generation tool (version only)",
+				Ignore: false,
 			}
 		}
 	}
 
+	// 3. Supplier fallback
 	supplier := doc.Supplier()
 	if supplier != nil {
 		name := strings.TrimSpace(supplier.GetName())
@@ -259,6 +435,7 @@ func NTIASBOMWithAuthors(doc sbom.Document) catalog.ProfFeatScore {
 		}
 	}
 
+	// 4. Manufacturer fallback
 	manufacturer := doc.Manufacturer()
 	if manufacturer != nil {
 		name := strings.TrimSpace(manufacturer.GetName())
@@ -276,14 +453,39 @@ func NTIASBOMWithAuthors(doc sbom.Document) catalog.ProfFeatScore {
 
 	return catalog.ProfFeatScore{
 		Score:  0.0,
-		Desc:   "add SBOM author information",
+		Desc:   "SBOM author information missing",
 		Ignore: false,
 	}
 }
 
 // NTIASBOMWithTimeStamp
 func NTIASBOMWithTimeStamp(doc sbom.Document) catalog.ProfFeatScore {
-	return SBOMCreationTimestamp(doc)
+	ts := strings.TrimSpace(doc.Spec().GetCreationTimestamp())
+
+	if ts == "" {
+		return catalog.ProfFeatScore{
+			Score:  0.0,
+			Desc:   "SBOM creation timestamp missing",
+			Ignore: false,
+		}
+	}
+
+	// Accept RFC3339 or RFC3339Nano
+	if _, err := time.Parse(time.RFC3339, ts); err != nil {
+		if _, err2 := time.Parse(time.RFC3339Nano, ts); err2 != nil {
+			return catalog.ProfFeatScore{
+				Score:  0.0,
+				Desc:   "SBOM creation timestamp present but not RFC3339 compliant",
+				Ignore: false,
+			}
+		}
+	}
+
+	return catalog.ProfFeatScore{
+		Score:  10.0,
+		Desc:   "SBOM creation timestamp declared",
+		Ignore: false,
+	}
 }
 
 // // NTIA Optional Fields - These don't impact overall scoring but show field coverage
