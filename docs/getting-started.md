@@ -67,11 +67,16 @@ Download signature and certificate fom release:
 - `sbomqs-linux-amd64.pem`
 
 ```bash
+export VERSION=2.0.3
+
+curl -LO https://github.com/interlynk-io/sbomqs/releases/download/$VERSION/sbomqs_$VERSION_Linux_x86_64.tar.gz
+curl -LO https://github.com/interlynk-io/sbomqs/releases/download/$VERSION/sbomqs_$VERSION_Linux_x86_64.tar.gz.bundle
+
 cosign verify-blob \
-  --bundle sbomqs_2.0.3_Linux_x86_64.tar.gz.bundle \
-  --certificate-identity-regexp='^https://github.com/interlynk-io/sbomqs/.github/workflows/release.yml@refs/tags/.*$' \
+  --bundle sbomqs_$VERSION_Linux_x86_64.tar.gz.bundle \
+  --certificate-identity-regexp='^https://github.com/interlynk-io/sbomqs/\.github/workflows/release\.yml@refs/tags/.*$' \
   --certificate-oidc-issuer=https://token.actions.githubusercontent.com \
-  sbomqs_2.0.3_Linux_x86_64.tar.gz
+  sbomqs_$VERSION_Linux_x86_64.tar.gz
 ```
 
 ### Linux
