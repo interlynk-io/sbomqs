@@ -40,11 +40,12 @@ signs:
   - cmd: cosign
     env:
       - COSIGN_EXPERIMENTAL=1
+    signature: "${artifact}.sigstore.json"
     args:
-      - sign-blob
-      - --bundle=${artifact}.bundle
-      - ${artifact}
-      - --yes
+      - "sign-blob"
+      - "--bundle=${signature}"
+      - "${artifact}"
+      - "--yes"
     artifacts: archive
     output: true
 
