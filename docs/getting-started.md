@@ -44,16 +44,15 @@ sbomqs version
 
 ```bash
 # Download latest release for macOS (Intel)
-curl -LO https://github.com/interlynk-io/sbomqs/releases/latest/download/sbomqs-darwin-amd64
+curl -LO https://github.com/interlynk-io/sbomqs/releases/download/v2.0.4/sbomqs_2.0.4_Darwin_x86_64.tar.gz
+tar -xzf sbomqs_2.0.4_Darwin_x86_64.tar.gz
 
 # For Apple Silicon (M1/M2)
-curl -LO https://github.com/interlynk-io/sbomqs/releases/latest/download/sbomqs-darwin-arm64
-
-# Make executable
-chmod +x sbomqs-darwin-*
+curl -LO https://github.com/interlynk-io/sbomqs/releases/download/v2.0.4/sbomqs_2.0.4_Darwin_arm64.tar.gz
+tar -xzf sbomqs_2.0.4_Darwin_arm64.tar.gz
 
 # Move to PATH
-sudo mv sbomqs-darwin-* /usr/local/bin/sbomqs
+sudo mv sbomqs /usr/local/bin/
 
 # Verify
 sbomqs version
@@ -61,22 +60,16 @@ sbomqs version
 
 #### Verifying sbomqs artifacts with cosign
 
-Download signature and certificate fom release:
-
-- `sbomqs-linux-amd64.sig`
-- `sbomqs-linux-amd64.pem`
-
 ```bash
-export VERSION=2.0.3
+export VERSION=$(curl -s https://api.github.com/repos/interlynk-io/sbomqs/releases/latest | jq -r '.tag_name' | sed 's/v//')
 
-curl -LO https://github.com/interlynk-io/sbomqs/releases/download/$VERSION/sbomqs_$VERSION_Linux_x86_64.tar.gz
-curl -LO https://github.com/interlynk-io/sbomqs/releases/download/$VERSION/sbomqs_$VERSION_Linux_x86_64.tar.gz.bundle
+curl -LO https://github.com/interlynk-io/sbomqs/releases/download/v${VERSION}/sbomqs_${VERSION}_Linux_x86_64.tar.gz
+curl -LO https://github.com/interlynk-io/sbomqs/releases/download/v${VERSION}/sbomqs_${VERSION}_Linux_x86_64.tar.gz.sigstore.json
 
 cosign verify-blob \
-  --bundle sbomqs_$VERSION_Linux_x86_64.tar.gz.bundle \
-  --certificate-identity-regexp='^https://github.com/interlynk-io/sbomqs/\.github/workflows/release\.yml@refs/tags/.*$' \
-  --certificate-oidc-issuer=https://token.actions.githubusercontent.com \
-  sbomqs_$VERSION_Linux_x86_64.tar.gz
+  sbomqs_${VERSION}_Linux_x86_64.tar.gz --bundle sbomqs_${VERSION}_Linux_x86_64.tar.gz.sigstore.json \
+  --certificate-identity="https://github.com/interlynk-io/sbomqs/.github/workflows/release.yml@refs/tags/v${VERSION}" \
+  --certificate-oidc-issuer="https://token.actions.githubusercontent.com"
 ```
 
 ### Linux
@@ -87,11 +80,12 @@ cosign verify-blob \
 
 ```bash
 # Download the .deb package (x86_64)
-VERSION=$(curl -s https://api.github.com/repos/interlynk-io/sbomqs/releases/latest | jq -r '.tag_name' | sed 's/v//')
-wget https://github.com/interlynk-io/sbomqs/releases/latest/download/sbomqs_${VERSION}_amd64.deb
+export VERSION=$(curl -s https://api.github.com/repos/interlynk-io/sbomqs/releases/latest | jq -r '.tag_name' | sed 's/v//')
+
+curl -LO https://github.com/interlynk-io/sbomqs/releases/download/v${VERSION}/sbomqs_${VERSION}_amd64.deb
 
 # For ARM64
-wget https://github.com/interlynk-io/sbomqs/releases/latest/download/sbomqs_${VERSION}_arm64.deb
+curl -LO https://github.com/interlynk-io/sbomqs/releases/download/v${VERSION}/sbomqs_${VERSION}_arm64.deb
 
 # Install
 sudo dpkg -i sbomqs_*.deb
@@ -104,11 +98,13 @@ sudo apt-get install -f
 
 ```bash
 # Download the .rpm package (x86_64)
-VERSION=$(curl -s https://api.github.com/repos/interlynk-io/sbomqs/releases/latest | jq -r '.tag_name' | sed 's/v//')
-wget https://github.com/interlynk-io/sbomqs/releases/latest/download/sbomqs-${VERSION}-1.x86_64.rpm
+export VERSION=$(curl -s https://api.github.com/repos/interlynk-io/sbomqs/releases/latest | jq -r '.tag_name' | sed 's/v//')
+
+     
+curl -LO https://github.com/interlynk-io/sbomqs/releases/download/v${VERSION}/sbomqs-${VERSION}-1.x86_64.rpm
 
 # For ARM64/aarch64
-wget https://github.com/interlynk-io/sbomqs/releases/latest/download/sbomqs-${VERSION}-1.aarch64.rpm
+curl -LO https://github.com/interlynk-io/sbomqs/releases/download/v${VERSION}/sbomqs-${VERSION}-1.aarch64.rpm
 
 # Install
 sudo rpm -i sbomqs-*.rpm
@@ -118,16 +114,16 @@ sudo rpm -i sbomqs-*.rpm
 
 ```bash
 # Download for Linux (x86_64)
-curl -LO https://github.com/interlynk-io/sbomqs/releases/latest/download/sbomqs-linux-amd64
+curl -LO https://github.com/interlynk-io/sbomqs/releases/download/v2.0.4/sbomqs_2.0.4_Linux_x86_64.tar.gz
+tar -xzf sbomqs_2.0.4_Linux_x86_64.tar.gz
 
 # For ARM64
-curl -LO https://github.com/interlynk-io/sbomqs/releases/latest/download/sbomqs-linux-arm64
+curl -LO https://github.com/interlynk-io/sbomqs/releases/download/v2.0.4/sbomqs_2.0.4_Linux_arm64.tar.gz
+tar -xzf sbomqs_2.0.4_Linux_arm64.tar.gz
 
-# Make executable
-chmod +x sbomqs-linux-*
 
 # Move to PATH
-sudo mv sbomqs-linux-* /usr/local/bin/sbomqs
+sudo mv sbomqs /usr/local/bin/
 
 # Verify
 sbomqs version
@@ -183,7 +179,7 @@ sbomqs version
 docker pull ghcr.io/interlynk-io/sbomqs:latest
 
 # Specific version
-docker pull ghcr.io/interlynk-io/sbomqs:v1.0.0
+docker pull ghcr.io/interlynk-io/sbomqs:v2.0.4
 ```
 
 ### Create an Alias
