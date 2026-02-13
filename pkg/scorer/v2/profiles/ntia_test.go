@@ -1510,18 +1510,18 @@ var spdxSBOMAuthorWithOrganizationName = []byte(`
 }
 `)
 
-var cdxSBOMAuthorsAbsent = []byte(`
-{
-  "bomFormat": "CycloneDX",
-  "specVersion": "1.6",
-  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
-  "version": 1,
-  "metadata": {
-    "timestamp": "2025-11-07T14:10:59Z"
-    },
-  "components": []
-}
-`)
+// var cdxSBOMAuthorsAbsent = []byte(`
+// {
+//   "bomFormat": "CycloneDX",
+//   "specVersion": "1.6",
+//   "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+//   "version": 1,
+//   "metadata": {
+//     "timestamp": "2025-11-07T14:10:59Z"
+//     },
+//   "components": []
+// }
+// `)
 
 var spdxSBOMAuthorAbsent = []byte(`
 {
