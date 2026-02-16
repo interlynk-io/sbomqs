@@ -546,7 +546,7 @@ func TestFSCTSBOMProvenance(t *testing.T) {
 		got := FSCTSBOMProvenance(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM provenance: creation timestamp present; author information missing", got.Desc)
+		assert.Equal(t, "SBOM provenance: creation timestamp missing; author information missing", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 

@@ -1013,12 +1013,15 @@ func (c *CdxDoc) assignAuthor(comp *cydx.Component) []GetAuthor {
 }
 
 func (c *CdxDoc) assignSupplier(comp *cydx.Component) *Supplier {
+	supplier := Supplier{}
+
 	if comp.Supplier == nil {
+		supplier.Absent = true
 		c.addToLogs(fmt.Sprintf("cdx doc comp %s no supplier found", comp.Name))
-		return nil
+		return &supplier
 	}
 
-	supplier := Supplier{Name: comp.Supplier.Name}
+	supplier.Name = comp.Supplier.Name
 
 	if urls := lo.FromPtr(comp.Supplier.URL); len(urls) > 0 {
 		supplier.URL = urls[0]
@@ -1039,12 +1042,15 @@ func (c *CdxDoc) assignSupplier(comp *cydx.Component) *Supplier {
 }
 
 func (c *CdxDoc) assignManufacturer(comp *cydx.Component) *Manufacturer {
+	manufacturer := Manufacturer{}
+
 	if comp.Manufacturer == nil {
 		c.addToLogs(fmt.Sprintf("cdx doc comp %s no manufacturer found", comp.Name))
-		return nil
+		manufacturer.Absent = true
+		return &manufacturer
 	}
 
-	manufacturer := Manufacturer{Name: comp.Manufacturer.Name}
+	manufacturer.Name = comp.Manufacturer.Name
 
 	if urls := lo.FromPtr(comp.Manufacturer.URL); len(urls) > 0 {
 		manufacturer.URL = urls[0]

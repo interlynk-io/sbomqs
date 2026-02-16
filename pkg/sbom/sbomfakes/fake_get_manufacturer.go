@@ -48,6 +48,16 @@ type FakeGetManufacturer struct {
 	getURLReturnsOnCall map[int]struct {
 		result1 string
 	}
+	IsAbsentStub        func() bool
+	isAbsentMutex       sync.RWMutex
+	isAbsentArgsForCall []struct {
+	}
+	isAbsentReturns struct {
+		result1 bool
+	}
+	isAbsentReturnsOnCall map[int]struct {
+		result1 bool
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
@@ -261,6 +271,59 @@ func (fake *FakeGetManufacturer) GetURLReturnsOnCall(i int, result1 string) {
 	}
 	fake.getURLReturnsOnCall[i] = struct {
 		result1 string
+	}{result1}
+}
+
+func (fake *FakeGetManufacturer) IsAbsent() bool {
+	fake.isAbsentMutex.Lock()
+	ret, specificReturn := fake.isAbsentReturnsOnCall[len(fake.isAbsentArgsForCall)]
+	fake.isAbsentArgsForCall = append(fake.isAbsentArgsForCall, struct {
+	}{})
+	stub := fake.IsAbsentStub
+	fakeReturns := fake.isAbsentReturns
+	fake.recordInvocation("IsAbsent", []interface{}{})
+	fake.isAbsentMutex.Unlock()
+	if stub != nil {
+		return stub()
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeGetManufacturer) IsAbsentCallCount() int {
+	fake.isAbsentMutex.RLock()
+	defer fake.isAbsentMutex.RUnlock()
+	return len(fake.isAbsentArgsForCall)
+}
+
+func (fake *FakeGetManufacturer) IsAbsentCalls(stub func() bool) {
+	fake.isAbsentMutex.Lock()
+	defer fake.isAbsentMutex.Unlock()
+	fake.IsAbsentStub = stub
+}
+
+func (fake *FakeGetManufacturer) IsAbsentReturns(result1 bool) {
+	fake.isAbsentMutex.Lock()
+	defer fake.isAbsentMutex.Unlock()
+	fake.IsAbsentStub = nil
+	fake.isAbsentReturns = struct {
+		result1 bool
+	}{result1}
+}
+
+func (fake *FakeGetManufacturer) IsAbsentReturnsOnCall(i int, result1 bool) {
+	fake.isAbsentMutex.Lock()
+	defer fake.isAbsentMutex.Unlock()
+	fake.IsAbsentStub = nil
+	if fake.isAbsentReturnsOnCall == nil {
+		fake.isAbsentReturnsOnCall = make(map[int]struct {
+			result1 bool
+		})
+	}
+	fake.isAbsentReturnsOnCall[i] = struct {
+		result1 bool
 	}{result1}
 }
 

@@ -20,14 +20,18 @@ package sbom
 type GetSupplier interface {
 	// GetName returns the name of the supplier
 	GetName() string
+
 	// GetEmail returns the email address of the supplier
 	GetEmail() string
+
 	// GetURL returns the website URL of the supplier
 	GetURL() string
+
 	// GetContacts returns the contact information for the supplier
 	GetContacts() []Contact
-	// IsPresent returns whether supplier information is available
-	IsPresent() bool
+
+	// IsAbsent returns whether supplier information is available
+	IsAbsent() bool
 }
 
 // Supplier represents a concrete implementation of supplier information
@@ -36,6 +40,7 @@ type Supplier struct {
 	Email    string
 	URL      string
 	Contacts []Contact
+	Absent   bool
 }
 
 // GetName returns the name of the supplier
@@ -58,7 +63,7 @@ func (s Supplier) GetContacts() []Contact {
 	return s.Contacts
 }
 
-// IsPresent returns whether supplier information is available
-func (s Supplier) IsPresent() bool {
-	return s.Name != "" || s.Email != "" || s.URL != "" || len(s.Contacts) > 0
+// IsAbsent returns whether supplier information is available
+func (s Supplier) IsAbsent() bool {
+	return s.Absent
 }
