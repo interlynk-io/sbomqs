@@ -48,14 +48,14 @@ type FakeGetSupplier struct {
 	getURLReturnsOnCall map[int]struct {
 		result1 string
 	}
-	IsPresentStub        func() bool
-	isPresentMutex       sync.RWMutex
-	isPresentArgsForCall []struct {
+	IsAbsentStub        func() bool
+	isAbsentMutex       sync.RWMutex
+	isAbsentArgsForCall []struct {
 	}
-	isPresentReturns struct {
+	isAbsentReturns struct {
 		result1 bool
 	}
-	isPresentReturnsOnCall map[int]struct {
+	isAbsentReturnsOnCall map[int]struct {
 		result1 bool
 	}
 	invocations      map[string][][]interface{}
@@ -274,15 +274,15 @@ func (fake *FakeGetSupplier) GetURLReturnsOnCall(i int, result1 string) {
 	}{result1}
 }
 
-func (fake *FakeGetSupplier) IsPresent() bool {
-	fake.isPresentMutex.Lock()
-	ret, specificReturn := fake.isPresentReturnsOnCall[len(fake.isPresentArgsForCall)]
-	fake.isPresentArgsForCall = append(fake.isPresentArgsForCall, struct {
+func (fake *FakeGetSupplier) IsAbsent() bool {
+	fake.isAbsentMutex.Lock()
+	ret, specificReturn := fake.isAbsentReturnsOnCall[len(fake.isAbsentArgsForCall)]
+	fake.isAbsentArgsForCall = append(fake.isAbsentArgsForCall, struct {
 	}{})
-	stub := fake.IsPresentStub
-	fakeReturns := fake.isPresentReturns
-	fake.recordInvocation("IsPresent", []interface{}{})
-	fake.isPresentMutex.Unlock()
+	stub := fake.IsAbsentStub
+	fakeReturns := fake.isAbsentReturns
+	fake.recordInvocation("IsAbsent", []interface{}{})
+	fake.isAbsentMutex.Unlock()
 	if stub != nil {
 		return stub()
 	}
@@ -292,37 +292,37 @@ func (fake *FakeGetSupplier) IsPresent() bool {
 	return fakeReturns.result1
 }
 
-func (fake *FakeGetSupplier) IsPresentCallCount() int {
-	fake.isPresentMutex.RLock()
-	defer fake.isPresentMutex.RUnlock()
-	return len(fake.isPresentArgsForCall)
+func (fake *FakeGetSupplier) IsAbsentCallCount() int {
+	fake.isAbsentMutex.RLock()
+	defer fake.isAbsentMutex.RUnlock()
+	return len(fake.isAbsentArgsForCall)
 }
 
-func (fake *FakeGetSupplier) IsPresentCalls(stub func() bool) {
-	fake.isPresentMutex.Lock()
-	defer fake.isPresentMutex.Unlock()
-	fake.IsPresentStub = stub
+func (fake *FakeGetSupplier) IsAbsentCalls(stub func() bool) {
+	fake.isAbsentMutex.Lock()
+	defer fake.isAbsentMutex.Unlock()
+	fake.IsAbsentStub = stub
 }
 
-func (fake *FakeGetSupplier) IsPresentReturns(result1 bool) {
-	fake.isPresentMutex.Lock()
-	defer fake.isPresentMutex.Unlock()
-	fake.IsPresentStub = nil
-	fake.isPresentReturns = struct {
+func (fake *FakeGetSupplier) IsAbsentReturns(result1 bool) {
+	fake.isAbsentMutex.Lock()
+	defer fake.isAbsentMutex.Unlock()
+	fake.IsAbsentStub = nil
+	fake.isAbsentReturns = struct {
 		result1 bool
 	}{result1}
 }
 
-func (fake *FakeGetSupplier) IsPresentReturnsOnCall(i int, result1 bool) {
-	fake.isPresentMutex.Lock()
-	defer fake.isPresentMutex.Unlock()
-	fake.IsPresentStub = nil
-	if fake.isPresentReturnsOnCall == nil {
-		fake.isPresentReturnsOnCall = make(map[int]struct {
+func (fake *FakeGetSupplier) IsAbsentReturnsOnCall(i int, result1 bool) {
+	fake.isAbsentMutex.Lock()
+	defer fake.isAbsentMutex.Unlock()
+	fake.IsAbsentStub = nil
+	if fake.isAbsentReturnsOnCall == nil {
+		fake.isAbsentReturnsOnCall = make(map[int]struct {
 			result1 bool
 		})
 	}
-	fake.isPresentReturnsOnCall[i] = struct {
+	fake.isAbsentReturnsOnCall[i] = struct {
 		result1 bool
 	}{result1}
 }

@@ -51,7 +51,7 @@ var cdxSBOMAuthorEmailOnly = []byte(`
     "authors": [
       {
         "bom-ref": "author-1",
-        "email": "samantha.wright@example.com"
+        "email": "samantha@gmail.com"
       }
     ]
   },
@@ -65,7 +65,7 @@ var spdxSBOMPersonAuthorEmailOnly = []byte(`
   "SPDXID": "SPDXRef-DOCUMENT",
   "creationInfo": {
     "creators": [
-      "Person: (samantha.wright@example.com)"
+      "Person: (samantha@example.com)"
     ]
   },
   "packages": []
@@ -446,6 +446,50 @@ var cdxSBOMManufacturerNameOnly = []byte(`
 }
 `)
 
+var cdxSBOMManufacturerOthersOnly = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {
+    "manufacture": {
+      "bom-ref": "manufacture-1",
+      "address": {
+        "bom-ref": "address-1",
+        "country": "USA",
+        "locality": "San Francisco"
+      }
+    }
+  },
+  "components": []
+}
+`)
+
+var cdxSBOMManufacturerEmpty = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {
+    "manufacture": {}
+  },
+  "components": []
+}
+`)
+
+var cdxSBOMManufacturerAbsent = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {},
+  "components": []
+}
+`)
+
 func TestBSIV11SBOMCreator(t *testing.T) {
 	ctx := context.Background()
 
@@ -456,7 +500,7 @@ func TestBSIV11SBOMCreator(t *testing.T) {
 		got := BSIV11SBOMCreator(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM creator is provided using the authors field.", got.Desc)
+		assert.Equal(t, "SBOM creator contact(email) provided via authors", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -467,7 +511,7 @@ func TestBSIV11SBOMCreator(t *testing.T) {
 		got := BSIV11SBOMCreator(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM creator is provided using the authors field.", got.Desc)
+		assert.Equal(t, "SBOM creator contact(email) provided via authors", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -478,7 +522,7 @@ func TestBSIV11SBOMCreator(t *testing.T) {
 		got := BSIV11SBOMCreator(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM creator is provided using the authors field.", got.Desc)
+		assert.Equal(t, "SBOM creator contact(email) provided via authors", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -489,7 +533,7 @@ func TestBSIV11SBOMCreator(t *testing.T) {
 		got := BSIV11SBOMCreator(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM creator is provided using the authors field.", got.Desc)
+		assert.Equal(t, "SBOM creator contact(email) provided via authors", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -500,7 +544,7 @@ func TestBSIV11SBOMCreator(t *testing.T) {
 		got := BSIV11SBOMCreator(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM creator information is present, but only valid email or URL are accepted.", got.Desc)
+		assert.Equal(t, "SBOM creator present but lacks valid email or URL", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -511,7 +555,7 @@ func TestBSIV11SBOMCreator(t *testing.T) {
 		got := BSIV11SBOMCreator(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM creator information is present, but only valid email or URL are accepted.", got.Desc)
+		assert.Equal(t, "SBOM creator present but lacks valid email or URL", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -522,7 +566,7 @@ func TestBSIV11SBOMCreator(t *testing.T) {
 		got := BSIV11SBOMCreator(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM creator is provided using the authors field.", got.Desc)
+		assert.Equal(t, "SBOM creator contact(email) provided via authors", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -533,7 +577,7 @@ func TestBSIV11SBOMCreator(t *testing.T) {
 		got := BSIV11SBOMCreator(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM creator is provided using the authors field.", got.Desc)
+		assert.Equal(t, "SBOM creator contact(email) provided via authors", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -544,7 +588,7 @@ func TestBSIV11SBOMCreator(t *testing.T) {
 		got := BSIV11SBOMCreator(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM creator information is present, but only valid email or URL are accepted.", got.Desc)
+		assert.Equal(t, "SBOM creator present but lacks valid email or URL", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -555,7 +599,7 @@ func TestBSIV11SBOMCreator(t *testing.T) {
 		got := BSIV11SBOMCreator(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM creator is missing.", got.Desc)
+		assert.Equal(t, "SBOM creator is missing", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -566,7 +610,7 @@ func TestBSIV11SBOMCreator(t *testing.T) {
 		got := BSIV11SBOMCreator(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM creator is missing.", got.Desc)
+		assert.Equal(t, "SBOM creator is missing", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -577,7 +621,7 @@ func TestBSIV11SBOMCreator(t *testing.T) {
 		got := BSIV11SBOMCreator(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM creator information is present, but only valid email or URL are accepted.", got.Desc)
+		assert.Equal(t, "SBOM creator present but lacks valid email or URL", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -593,7 +637,7 @@ func TestBSIV11SBOMCreator(t *testing.T) {
 		got := BSIV11SBOMCreator(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM creator is missing.", got.Desc)
+		assert.Equal(t, "SBOM creator is missing", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -604,7 +648,7 @@ func TestBSIV11SBOMCreator(t *testing.T) {
 		got := BSIV11SBOMCreator(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM creator information is present, but only valid email or URL are accepted.", got.Desc)
+		assert.Equal(t, "SBOM creator present but lacks valid email or URL", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -615,7 +659,7 @@ func TestBSIV11SBOMCreator(t *testing.T) {
 		got := BSIV11SBOMCreator(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM creator is missing.", got.Desc)
+		assert.Equal(t, "SBOM creator is missing", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -626,7 +670,7 @@ func TestBSIV11SBOMCreator(t *testing.T) {
 		got := BSIV11SBOMCreator(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM creator is missing.", got.Desc)
+		assert.Equal(t, "SBOM creator is missing", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -657,7 +701,7 @@ func TestBSIV11SBOMCreator(t *testing.T) {
 		got := BSIV11SBOMCreator(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM creator is provided using the supplier field (fallback).", got.Desc)
+		assert.Equal(t, "SBOM creator contact(email/URL) provided via supplier (fallback)", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -668,7 +712,7 @@ func TestBSIV11SBOMCreator(t *testing.T) {
 		got := BSIV11SBOMCreator(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM creator is provided using the supplier field (fallback).", got.Desc)
+		assert.Equal(t, "SBOM creator contact(email/URL) provided via supplier (fallback)", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -679,7 +723,7 @@ func TestBSIV11SBOMCreator(t *testing.T) {
 		got := BSIV11SBOMCreator(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM creator is provided using the supplier field (fallback).", got.Desc)
+		assert.Equal(t, "SBOM creator contact(email/URL) provided via supplier (fallback)", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -690,7 +734,7 @@ func TestBSIV11SBOMCreator(t *testing.T) {
 		got := BSIV11SBOMCreator(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM creator information is present, but only valid email or URL are accepted.", got.Desc)
+		assert.Equal(t, "SBOM creator present but lacks valid email or URL", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -702,7 +746,7 @@ func TestBSIV11SBOMCreator(t *testing.T) {
 		got := BSIV11SBOMCreator(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM creator is provided using the manufacturer field.", got.Desc)
+		assert.Equal(t, "SBOM creator contact(email/URL) provided via manufacturer", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -713,7 +757,7 @@ func TestBSIV11SBOMCreator(t *testing.T) {
 		got := BSIV11SBOMCreator(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM creator is provided using the manufacturer field.", got.Desc)
+		assert.Equal(t, "SBOM creator contact(email/URL) provided via manufacturer", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -724,7 +768,7 @@ func TestBSIV11SBOMCreator(t *testing.T) {
 		got := BSIV11SBOMCreator(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "author with contact present", got.Desc)
+		assert.Equal(t, "SBOM creator contact(email/URL) provided via manufacturer", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -735,12 +779,46 @@ func TestBSIV11SBOMCreator(t *testing.T) {
 		got := BSIV11SBOMCreator(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM creator information is present, but only valid email or URL are accepted.", got.Desc)
+		assert.Equal(t, "SBOM creator present but lacks valid email or URL", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// cdxSBOMManufacturerOthersOnly
+	t.Run("cdxSBOMManufacturerOthersOnly", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMManufacturerOthersOnly, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11SBOMCreator(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "SBOM creator present but lacks valid email or URL", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// cdxSBOMManufacturerEmpty
+	t.Run("cdxSBOMManufacturerEmpty", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMManufacturerEmpty, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11SBOMCreator(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "SBOM creator present but lacks valid email or URL", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// cdxSBOMManufacturerAbsent
+	t.Run("cdxSBOMManufacturerAbsent", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMManufacturerAbsent, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11SBOMCreator(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "SBOM creator is missing", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 }
-
-//
 
 var cdxCompAuthor = []byte(`
 {
@@ -1136,7 +1214,7 @@ var cdxCompSupplierContactEmailOnly = []byte(`
         "contact": [
           {
             "name": "Acme Professional Services",
-            "email": "professional.services@example.com"
+            "email": "acme@gmail.com"
           }
         ]
       }
@@ -1268,6 +1346,75 @@ var cdxCompManufacturerNameOnly = []byte(`
 }
 `)
 
+var cdxCompWithMultipleComponents = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "application",
+      "name": "Acme Application",
+      "version": "9.1.1",
+      "manufacturer": {
+        "name": "Acme, Inc.",
+        "contact": [
+          {
+            "name": "Acme Professional Services",
+            "email": "professional.services@example.com"
+          }
+        ]
+      }
+    },
+    {
+      "type": "application",
+      "name": "Zoo Application",
+      "version": "9.0.1"
+    },
+    {
+      "type": "library",
+      "name": "Bar Application",
+      "version": "1.1.1"
+    }
+  ]
+}
+`)
+
+var cdxCompInvalidManufacturerWithMultipleComponents = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "application",
+      "name": "Acme Application",
+      "version": "9.1.1",
+      "manufacturer": {
+        "name": "Acme, Inc.",
+        "contact": [
+          {
+            "name": "Acme Professional Services"
+          }
+        ]
+      }
+    },
+    {
+      "type": "application",
+      "name": "Zoo Application",
+      "version": "9.0.1"
+    },
+    {
+      "type": "library",
+      "name": "Bar Application",
+      "version": "1.1.1"
+    }
+  ]
+}
+`)
+
 func TestBSIV11CompCreator(t *testing.T) {
 	ctx := context.Background()
 
@@ -1278,7 +1425,7 @@ func TestBSIV11CompCreator(t *testing.T) {
 		got := BSIV11CompCreator(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "complete", got.Desc)
+		assert.Equal(t, "creator contact (email or URL) declared for all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1289,7 +1436,7 @@ func TestBSIV11CompCreator(t *testing.T) {
 		got := BSIV11CompCreator(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "complete", got.Desc)
+		assert.Equal(t, "creator contact (email or URL) declared for all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1300,7 +1447,7 @@ func TestBSIV11CompCreator(t *testing.T) {
 		got := BSIV11CompCreator(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "complete", got.Desc)
+		assert.Equal(t, "creator contact (email or URL) declared for all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1311,7 +1458,7 @@ func TestBSIV11CompCreator(t *testing.T) {
 		got := BSIV11CompCreator(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "complete", got.Desc)
+		assert.Equal(t, "creator contact (email or URL) declared for all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1322,7 +1469,7 @@ func TestBSIV11CompCreator(t *testing.T) {
 		got := BSIV11CompCreator(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "complete", got.Desc)
+		assert.Equal(t, "creator contact (email or URL) declared for all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1333,7 +1480,7 @@ func TestBSIV11CompCreator(t *testing.T) {
 		got := BSIV11CompCreator(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "complete", got.Desc)
+		assert.Equal(t, "creator contact (email or URL) declared for all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1344,7 +1491,7 @@ func TestBSIV11CompCreator(t *testing.T) {
 		got := BSIV11CompCreator(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add to 1 component", got.Desc)
+		assert.Equal(t, "1/1 components have creator info, but only valid email or URL required", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1355,7 +1502,7 @@ func TestBSIV11CompCreator(t *testing.T) {
 		got := BSIV11CompCreator(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add to 1 component", got.Desc)
+		assert.Equal(t, "1/1 components have creator info, but only valid email or URL required", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1366,7 +1513,7 @@ func TestBSIV11CompCreator(t *testing.T) {
 		got := BSIV11CompCreator(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add to 1 component", got.Desc)
+		assert.Equal(t, "1/1 components have creator info, but only valid email or URL required", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1377,7 +1524,7 @@ func TestBSIV11CompCreator(t *testing.T) {
 		got := BSIV11CompCreator(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add to 1 component", got.Desc)
+		assert.Equal(t, "creator information missing for all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1388,7 +1535,7 @@ func TestBSIV11CompCreator(t *testing.T) {
 		got := BSIV11CompCreator(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add to 1 component", got.Desc)
+		assert.Equal(t, "1/1 components have creator info, but only valid email or URL required", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1399,7 +1546,7 @@ func TestBSIV11CompCreator(t *testing.T) {
 		got := BSIV11CompCreator(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add to 1 component", got.Desc)
+		assert.Equal(t, "1/1 components have creator info, but only valid email or URL required", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1410,7 +1557,7 @@ func TestBSIV11CompCreator(t *testing.T) {
 		got := BSIV11CompCreator(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add to 1 component", got.Desc)
+		assert.Equal(t, "1/1 components have creator info, but only valid email or URL required", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1421,7 +1568,7 @@ func TestBSIV11CompCreator(t *testing.T) {
 		got := BSIV11CompCreator(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add to 1 component", got.Desc)
+		assert.Equal(t, "creator information missing for all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1432,7 +1579,7 @@ func TestBSIV11CompCreator(t *testing.T) {
 		got := BSIV11CompCreator(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add to 1 component", got.Desc)
+		assert.Equal(t, "1/1 components have creator info, but only valid email or URL required", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1448,7 +1595,7 @@ func TestBSIV11CompCreator(t *testing.T) {
 		got := BSIV11CompCreator(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "complete", got.Desc)
+		assert.Equal(t, "creator contact (email or URL) declared for all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1459,7 +1606,7 @@ func TestBSIV11CompCreator(t *testing.T) {
 		got := BSIV11CompCreator(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "complete", got.Desc)
+		assert.Equal(t, "creator contact (email or URL) declared for all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1470,7 +1617,7 @@ func TestBSIV11CompCreator(t *testing.T) {
 		got := BSIV11CompCreator(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "complete", got.Desc)
+		assert.Equal(t, "creator contact (email or URL) declared for all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1481,7 +1628,7 @@ func TestBSIV11CompCreator(t *testing.T) {
 		got := BSIV11CompCreator(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add to 1 component", got.Desc)
+		assert.Equal(t, "1/1 components have creator info, but only valid email or URL required", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1493,7 +1640,7 @@ func TestBSIV11CompCreator(t *testing.T) {
 		got := BSIV11CompCreator(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "complete", got.Desc)
+		assert.Equal(t, "creator contact (email or URL) declared for all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1504,7 +1651,7 @@ func TestBSIV11CompCreator(t *testing.T) {
 		got := BSIV11CompCreator(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "complete", got.Desc)
+		assert.Equal(t, "creator contact (email or URL) declared for all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1515,7 +1662,7 @@ func TestBSIV11CompCreator(t *testing.T) {
 		got := BSIV11CompCreator(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "complete", got.Desc)
+		assert.Equal(t, "creator contact (email or URL) declared for all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1526,7 +1673,29 @@ func TestBSIV11CompCreator(t *testing.T) {
 		got := BSIV11CompCreator(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "add to 1 component", got.Desc)
+		assert.Equal(t, "1/1 components have creator info, but only valid email or URL required", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxCompWithMultipleComponents", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithMultipleComponents, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompCreator(doc)
+
+		assert.InDelta(t, 3.333333333333333, got.Score, 1e-9)
+		assert.Equal(t, "1/3 components provide a valid creator contact (email or URL)", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxCompInvalidManufacturerWithMultipleComponents", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompInvalidManufacturerWithMultipleComponents, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompCreator(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "1/3 components have creator info, but only valid email or URL required", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 }
@@ -2156,7 +2325,7 @@ func TestBSIV11CompDependencies(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxWithCompleteDependencies, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := BSIV1CompDependencies(doc)
+		got := BSIV11CompDependencies(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "Dependencies are recursively declared and structurally complete.", got.Desc)
@@ -2168,7 +2337,7 @@ func TestBSIV11CompDependencies(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxWithCompleteReplationship, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := BSIV1CompDependencies(doc)
+		got := BSIV11CompDependencies(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "Dependencies are recursively declared and structurally complete.", got.Desc)
@@ -2180,7 +2349,7 @@ func TestBSIV11CompDependencies(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxWithMissingDependenciesSection, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := BSIV1CompDependencies(doc)
+		got := BSIV11CompDependencies(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "Dependency information is missing.", got.Desc)
@@ -2192,7 +2361,7 @@ func TestBSIV11CompDependencies(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxWithMissingRelationships, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := BSIV1CompDependencies(doc)
+		got := BSIV11CompDependencies(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "Dependency information is missing.", got.Desc)
@@ -2204,7 +2373,7 @@ func TestBSIV11CompDependencies(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxWithMissingSourceDependencyInSBOM, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := BSIV1CompDependencies(doc)
+		got := BSIV11CompDependencies(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "Dependency source references undefined component.", got.Desc)
@@ -2216,7 +2385,7 @@ func TestBSIV11CompDependencies(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxWithMissingSourceRelationshipInSBOM, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := BSIV1CompDependencies(doc)
+		got := BSIV11CompDependencies(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "Dependency source references undefined component.", got.Desc)
@@ -2228,7 +2397,7 @@ func TestBSIV11CompDependencies(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxWithMissingTargetDependencyInSBOM, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := BSIV1CompDependencies(doc)
+		got := BSIV11CompDependencies(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "Dependency target references undefined component.", got.Desc)
@@ -2240,7 +2409,7 @@ func TestBSIV11CompDependencies(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxWithMissingTargetRelationshipInSBOM, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := BSIV1CompDependencies(doc)
+		got := BSIV11CompDependencies(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "Dependency target references undefined component.", got.Desc)
@@ -2252,7 +2421,7 @@ func TestBSIV11CompDependencies(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxWithOrphanComponentInSBOM, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := BSIV1CompDependencies(doc)
+		got := BSIV11CompDependencies(doc)
 
 		assert.InDelta(t, 5.0, got.Score, 1e-9)
 		assert.Equal(t, "Some components are not reachable from the primary component.", got.Desc)
@@ -2264,7 +2433,7 @@ func TestBSIV11CompDependencies(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxWithOrphanComponentInSBOM, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := BSIV1CompDependencies(doc)
+		got := BSIV11CompDependencies(doc)
 
 		assert.InDelta(t, 5.0, got.Score, 1e-9)
 		assert.Equal(t, "Some components are not reachable from the primary component.", got.Desc)
@@ -2276,7 +2445,7 @@ func TestBSIV11CompDependencies(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxWithPrimaryCompDepenencyMissingButOthersPresent, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := BSIV1CompDependencies(doc)
+		got := BSIV11CompDependencies(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "Primary component does not declare its dependencies.", got.Desc)
@@ -2288,7 +2457,7 @@ func TestBSIV11CompDependencies(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxWithPrimaryCompRelationshipMissingButOthersPresent, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := BSIV1CompDependencies(doc)
+		got := BSIV11CompDependencies(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "Primary component does not declare its dependencies.", got.Desc)
@@ -2300,7 +2469,7 @@ func TestBSIV11CompDependencies(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxWithMissingDependencies, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := BSIV1CompDependencies(doc)
+		got := BSIV11CompDependencies(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "Dependency information is missing.", got.Desc)
@@ -2312,7 +2481,7 @@ func TestBSIV11CompDependencies(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxWithMissingRelationship, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := BSIV1CompDependencies(doc)
+		got := BSIV11CompDependencies(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "Dependency information is missing.", got.Desc)
@@ -2324,7 +2493,7 @@ func TestBSIV11CompDependencies(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithPrimaryCompMissing, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := BSIV1CompDependencies(doc)
+		got := BSIV11CompDependencies(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "Primary component is missing.", got.Desc)
@@ -2336,7 +2505,7 @@ func TestBSIV11CompDependencies(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWithPrimaryCompMissing, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := BSIV1CompDependencies(doc)
+		got := BSIV11CompDependencies(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "Primary component is missing.", got.Desc)
@@ -2688,10 +2857,10 @@ func TestBSIV11CompLicense(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithLicenseExpression, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := BSIV1CompLicenses(doc)
+		got := BSIV11CompLicenses(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "All components declare valid licence information.", got.Desc)
+		assert.Equal(t, "licence information declared for all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2699,10 +2868,10 @@ func TestBSIV11CompLicense(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWithLicenseExpression, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := BSIV1CompLicenses(doc)
+		got := BSIV11CompLicenses(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "All components declare valid licence information.", got.Desc)
+		assert.Equal(t, "licence information declared for all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2710,10 +2879,10 @@ func TestBSIV11CompLicense(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithCustomLicense, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := BSIV1CompLicenses(doc)
+		got := BSIV11CompLicenses(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "All components declare valid licence information.", got.Desc)
+		assert.Equal(t, "licence information declared for all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2721,10 +2890,10 @@ func TestBSIV11CompLicense(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWithCustomLicense, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := BSIV1CompLicenses(doc)
+		got := BSIV11CompLicenses(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "All components declare valid licence information.", got.Desc)
+		assert.Equal(t, "licence information declared for all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2732,10 +2901,10 @@ func TestBSIV11CompLicense(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithNoneLicense, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := BSIV1CompLicenses(doc)
+		got := BSIV11CompLicenses(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "Licence information is missing for all components.", got.Desc)
+		assert.Equal(t, "licence info is missing for all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2743,10 +2912,10 @@ func TestBSIV11CompLicense(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWithNoneLicense, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := BSIV1CompLicenses(doc)
+		got := BSIV11CompLicenses(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "Licence information is missing for all components.", got.Desc)
+		assert.Equal(t, "licence info is missing for all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2754,10 +2923,10 @@ func TestBSIV11CompLicense(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithNoAssertionLicense, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := BSIV1CompLicenses(doc)
+		got := BSIV11CompLicenses(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "Licence information is missing for all components.", got.Desc)
+		assert.Equal(t, "licence info is missing for all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2765,10 +2934,10 @@ func TestBSIV11CompLicense(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWithNoAssertionLicense, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := BSIV1CompLicenses(doc)
+		got := BSIV11CompLicenses(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "Licence information is missing for all components.", got.Desc)
+		assert.Equal(t, "licence info is missing for all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2776,10 +2945,10 @@ func TestBSIV11CompLicense(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithInvalidLicenseID, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := BSIV1CompLicenses(doc)
+		got := BSIV11CompLicenses(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "1 components out of 1 have Licence information but invalid.", got.Desc)
+		assert.Equal(t, "1/1 components have invalid licence info", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2787,10 +2956,10 @@ func TestBSIV11CompLicense(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWithInvalidLicenseID, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := BSIV1CompLicenses(doc)
+		got := BSIV11CompLicenses(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "1 components out of 1 have Licence information but invalid.", got.Desc)
+		assert.Equal(t, "1/1 components have invalid licence info", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2798,10 +2967,10 @@ func TestBSIV11CompLicense(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithInvalidExpression, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := BSIV1CompLicenses(doc)
+		got := BSIV11CompLicenses(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "1 components out of 1 have Licence information but invalid.", got.Desc)
+		assert.Equal(t, "1/1 components have invalid licence info", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2809,10 +2978,10 @@ func TestBSIV11CompLicense(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWithInvalidExpression, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := BSIV1CompLicenses(doc)
+		got := BSIV11CompLicenses(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "1 components out of 1 have Licence information but invalid.", got.Desc)
+		assert.Equal(t, "1/1 components have invalid licence info", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2820,10 +2989,10 @@ func TestBSIV11CompLicense(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithMixedLicenses, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := BSIV1CompLicenses(doc)
+		got := BSIV11CompLicenses(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "All components declare valid licence information.", got.Desc)
+		assert.Equal(t, "licence information declared for all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2831,10 +3000,10 @@ func TestBSIV11CompLicense(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWithMixedLicenses, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := BSIV1CompLicenses(doc)
+		got := BSIV11CompLicenses(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "1 components out of 1 have Licence information but invalid.", got.Desc)
+		assert.Equal(t, "1/1 components have invalid licence info", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2842,10 +3011,10 @@ func TestBSIV11CompLicense(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithInvalidLicenseSPDXID, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := BSIV1CompLicenses(doc)
+		got := BSIV11CompLicenses(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "1 components out of 1 have Licence information but invalid.", got.Desc)
+		assert.Equal(t, "1/1 components have invalid licence info", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2853,10 +3022,10 @@ func TestBSIV11CompLicense(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWithInvalidLicenseSPDXID, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := BSIV1CompLicenses(doc)
+		got := BSIV11CompLicenses(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "1 components out of 1 have Licence information but invalid.", got.Desc)
+		assert.Equal(t, "1/1 components have invalid licence info", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2864,10 +3033,10 @@ func TestBSIV11CompLicense(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithConcludedLicenseID, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := BSIV1CompLicenses(doc)
+		got := BSIV11CompLicenses(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "All components declare valid licence information.", got.Desc)
+		assert.Equal(t, "licence information declared for all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2875,10 +3044,10 @@ func TestBSIV11CompLicense(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWithConcludedLicense, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := BSIV1CompLicenses(doc)
+		got := BSIV11CompLicenses(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "All components declare valid licence information.", got.Desc)
+		assert.Equal(t, "licence information declared for all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2886,10 +3055,10 @@ func TestBSIV11CompLicense(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithPrimaryCompConcludedLicenseIDMissing, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := BSIV1CompLicenses(doc)
+		got := BSIV11CompLicenses(doc)
 
 		assert.InDelta(t, 5.0, got.Score, 1e-9)
-		assert.Equal(t, "1 components out of 2 have valid licence information.", got.Desc)
+		assert.Equal(t, "1/2 components have valid licence info", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2897,10 +3066,10 @@ func TestBSIV11CompLicense(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWithPrimaryCompConcludedLicenseMissing, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := BSIV1CompLicenses(doc)
+		got := BSIV11CompLicenses(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "Licence information is missing for all components.", got.Desc)
+		assert.Equal(t, "licence info is missing for all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2908,10 +3077,10 @@ func TestBSIV11CompLicense(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithDeclaredLicenseID, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := BSIV1CompLicenses(doc)
+		got := BSIV11CompLicenses(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "All components declare valid licence information.", got.Desc)
+		assert.Equal(t, "licence information declared for all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2919,10 +3088,10 @@ func TestBSIV11CompLicense(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWithDeclaredLicense, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := BSIV1CompLicenses(doc)
+		got := BSIV11CompLicenses(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "All components declare valid licence information.", got.Desc)
+		assert.Equal(t, "licence information declared for all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2930,10 +3099,10 @@ func TestBSIV11CompLicense(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithConcludedDeprecatedLicenseID, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := BSIV1CompLicenses(doc)
+		got := BSIV11CompLicenses(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "All components declare valid licence information.", got.Desc)
+		assert.Equal(t, "licence information declared for all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2941,10 +3110,10 @@ func TestBSIV11CompLicense(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWithConcludedDeprecatedLicense, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := BSIV1CompLicenses(doc)
+		got := BSIV11CompLicenses(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "All components declare valid licence information.", got.Desc)
+		assert.Equal(t, "licence information declared for all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2952,10 +3121,10 @@ func TestBSIV11CompLicense(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithDeclaredDeprecatedLicenseID, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := BSIV1CompLicenses(doc)
+		got := BSIV11CompLicenses(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "All components declare valid licence information.", got.Desc)
+		assert.Equal(t, "licence information declared for all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2963,10 +3132,10 @@ func TestBSIV11CompLicense(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWithDeclaredDeprecatedLicense, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := BSIV1CompLicenses(doc)
+		got := BSIV11CompLicenses(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "All components declare valid licence information.", got.Desc)
+		assert.Equal(t, "licence information declared for all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2974,10 +3143,10 @@ func TestBSIV11CompLicense(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithConcludedRestrictiveLicenseID, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := BSIV1CompLicenses(doc)
+		got := BSIV11CompLicenses(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "All components declare valid licence information.", got.Desc)
+		assert.Equal(t, "licence information declared for all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2985,10 +3154,10 @@ func TestBSIV11CompLicense(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWithConcludedRestrictiveLicense, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := BSIV1CompLicenses(doc)
+		got := BSIV11CompLicenses(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "All components declare valid licence information.", got.Desc)
+		assert.Equal(t, "licence information declared for all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2996,10 +3165,10 @@ func TestBSIV11CompLicense(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithDeclaredRestrictiveLicenseID, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := BSIV1CompLicenses(doc)
+		got := BSIV11CompLicenses(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "All components declare valid licence information.", got.Desc)
+		assert.Equal(t, "licence information declared for all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -3007,10 +3176,10 @@ func TestBSIV11CompLicense(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWithDeclaredRestrictiveLicense, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := BSIV1CompLicenses(doc)
+		got := BSIV11CompLicenses(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "All components declare valid licence information.", got.Desc)
+		assert.Equal(t, "licence information declared for all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -3018,10 +3187,10 @@ func TestBSIV11CompLicense(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompLicenseAbsentForNormalComponent, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := BSIV1CompLicenses(doc)
+		got := BSIV11CompLicenses(doc)
 
 		assert.InDelta(t, 5.0, got.Score, 1e-9)
-		assert.Equal(t, "1 components out of 2 have valid licence information.", got.Desc)
+		assert.Equal(t, "1/2 components have valid licence info", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -3029,10 +3198,10 @@ func TestBSIV11CompLicense(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompLicenseAbsentForNormalComponent, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := BSIV1CompLicenses(doc)
+		got := BSIV11CompLicenses(doc)
 
 		assert.InDelta(t, 5.0, got.Score, 1e-9)
-		assert.Equal(t, "1 components out of 2 have valid licence information.", got.Desc)
+		assert.Equal(t, "1/2 components have valid licence info", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -3040,10 +3209,10 @@ func TestBSIV11CompLicense(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxPrimaryCompLicenseEmptyArray, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := BSIV1CompLicenses(doc)
+		got := BSIV11CompLicenses(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "Licence information is missing for all components.", got.Desc)
+		assert.Equal(t, "licence info is missing for all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -3051,11 +3220,10 @@ func TestBSIV11CompLicense(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxPrimaryCompLicenseEmptyObject, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := BSIV1CompLicenses(doc)
+		got := BSIV11CompLicenses(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "Licence information is missing for all components.", got.Desc)
+		assert.Equal(t, "licence info is missing for all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
-
 }
