@@ -835,16 +835,16 @@ var profileBSI11Spec = catalog.ProfSpec{
 		{Key: "sbom_timestamp", Name: "Creation Time", Required: true, Description: "Valid timestamp (ISO-8601)", Evaluate: profiles.BSIV11SBOMCreationTimestamp},
 		// {Key: "sbom_uri", Name: "URI/Namespace", Required: true, Description: "Unique SBOM identifier", Evaluate: profiles.BSISBOMNamespace},
 
+		{Key: "comp_creator", Name: "Component Creator", Required: true, Description: "Creator of each component", Evaluate: profiles.BSIV11CompCreator},
 		{Key: "comp_name", Name: "Component Name", Required: true, Description: "All components named", Evaluate: profiles.BSIV11CompName},
 		{Key: "comp_version", Name: "Component Version", Required: true, Description: "Version for each component", Evaluate: profiles.BSIV11CompVersion},
-		{Key: "comp_creator", Name: "Component Creator", Required: true, Description: "Creator of each component", Evaluate: profiles.BSIV11CompCreator},
+		{Key: "comp_depth", Name: "Component Dependencies", Required: true, Description: "Dependency relationships", Evaluate: profiles.BSIV11CompDependencies},
 
 		{Key: "comp_license", Name: "Component License", Required: true, Description: "License information", Evaluate: profiles.BSIV11CompLicenses},
 		{Key: "comp_hash", Name: "Component Hash", Required: true, Description: "Checksums for components", Evaluate: profiles.BSIV11CompExecutableHash},
 		// {Key: "comp_source_code_url", Name: "Component Source URL", Required: false, Description: "Source code repository", Evaluate: profiles.BSICompWithSourceCodeURI},
 		// {Key: "comp_download_url", Name: "Component Download URL", Required: true, Description: "Where to obtain component", Evaluate: profiles.BSICompWithDownloadURI},
 		// {Key: "comp_source_hash", Name: "Component Source Hash", Required: false, Description: "Hash of source code", Evaluate: profiles.BSICompWithSourceCodeHash},
-		{Key: "comp_depth", Name: "Component Dependencies", Required: true, Description: "Dependency relationships", Evaluate: profiles.BSIV11CompDependencies},
 	},
 }
 
