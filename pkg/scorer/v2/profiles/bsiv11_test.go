@@ -490,6 +490,38 @@ var cdxSBOMManufacturerAbsent = []byte(`
 }
 `)
 
+var spdxSBOMToolOnlyCreator = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "created": "2026-01-01T00:00:00Z",
+    "creators": ["Tool: syft-0.95.0"]
+  },
+  "packages": []
+}
+`)
+
+// CDX: author is present but email is syntactically invalid.
+var cdxSBOMAuthorInvalidEmail = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b00",
+  "version": 1,
+  "metadata": {
+    "authors": [
+      {
+        "bom-ref": "author-1",
+        "name": "Samantha Wright",
+        "email": "notanemail"
+      }
+    ]
+  },
+  "components": []
+}
+`)
+
 func TestBSIV11SBOMCreator(t *testing.T) {
 	ctx := context.Background()
 
@@ -816,6 +848,32 @@ func TestBSIV11SBOMCreator(t *testing.T) {
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "SBOM creator is missing", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// spdxSBOMToolOnlyCreator — Tool entries are skipped when building Authors();
+	// no manufacturer or supplier either, so the result is "SBOM creator is missing".
+	t.Run("spdxSBOMToolOnlyCreator", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMToolOnlyCreator, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11SBOMCreator(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "SBOM creator is missing", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// cdxSBOMAuthorInvalidEmail: author exists (anyFieldPresent=true) but email
+	// fails mail.ParseAddress validation, so score is 0 "present but lacks".
+	t.Run("cdxSBOMAuthorInvalidEmail", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthorInvalidEmail, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11SBOMCreator(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "SBOM creator present but lacks valid email or URL", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 }
@@ -1698,6 +1756,31 @@ func TestBSIV11CompCreator(t *testing.T) {
 		assert.Equal(t, "1/3 components have creator info, but only valid email or URL required", got.Desc)
 		assert.False(t, got.Ignore)
 	})
+
+	// cdxSBOMAuthor has "components": [] and no metadata.component, so
+	// doc.Components() is empty, exercises the total==0 guard.
+	t.Run("cdxNoComponents", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthor, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompCreator(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "No components declared in SBOM", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// spdxSBOMPersonAuthor has "packages": [], so doc.Components() is empty.
+	t.Run("spdxNoComponents", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMPersonAuthor, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompCreator(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "No components declared in SBOM", got.Desc)
+		assert.False(t, got.Ignore)
+	})
 }
 
 // ---------
@@ -2317,6 +2400,178 @@ var spdxWithMissingRelationship = []byte(`
 }
 `)
 
+// CDX: deep transitive chain, primary -> lib-b -> lib-c -> lib-d.
+// DFS must recurse all the way through; all components end up visited -> score 10.
+var cdxWithDeepTransitiveDependencies = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:deep-cdx-0001",
+  "version": 1,
+  "metadata": {
+    "component": {
+      "bom-ref": "pkg:generic/my-app@1.0.0",
+      "type": "application",
+      "name": "my-app",
+      "version": "1.0.0"
+    }
+  },
+  "components": [
+    {
+      "bom-ref": "pkg:generic/lib-b@2.0.0",
+      "type": "library",
+      "name": "lib-b",
+      "version": "2.0.0"
+    },
+    {
+      "bom-ref": "pkg:generic/lib-c@3.0.0",
+      "type": "library",
+      "name": "lib-c",
+      "version": "3.0.0"
+    },
+    {
+      "bom-ref": "pkg:generic/lib-d@4.0.0",
+      "type": "library",
+      "name": "lib-d",
+      "version": "4.0.0"
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "pkg:generic/my-app@1.0.0",
+      "dependsOn": ["pkg:generic/lib-b@2.0.0"]
+    },
+    {
+      "ref": "pkg:generic/lib-b@2.0.0",
+      "dependsOn": ["pkg:generic/lib-c@3.0.0"]
+    },
+    {
+      "ref": "pkg:generic/lib-c@3.0.0",
+      "dependsOn": ["pkg:generic/lib-d@4.0.0"]
+    },
+    {
+      "ref": "pkg:generic/lib-d@4.0.0",
+      "dependsOn": []
+    }
+  ]
+}
+`)
+
+// SPDX: deep transitive chain: my-app -> lib-b -> lib-c -> lib-d.
+var spdxWithDeepTransitiveDependencies = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "deep-chain-sbom",
+  "dataLicense": "CC0-1.0",
+  "documentNamespace": "urn:uuid:deep-spdx-0001",
+  "creationInfo": {
+    "creators": ["Tool: sbomqs"],
+    "created": "2026-01-01T00:00:00Z"
+  },
+  "packages": [
+    { "SPDXID": "SPDXRef-my-app", "name": "my-app", "versionInfo": "1.0.0" },
+    { "SPDXID": "SPDXRef-lib-b",  "name": "lib-b",  "versionInfo": "2.0.0" },
+    { "SPDXID": "SPDXRef-lib-c",  "name": "lib-c",  "versionInfo": "3.0.0" },
+    { "SPDXID": "SPDXRef-lib-d",  "name": "lib-d",  "versionInfo": "4.0.0" }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relationshipType": "DESCRIBES",
+      "relatedSpdxElement": "SPDXRef-my-app"
+    },
+    {
+      "spdxElementId": "SPDXRef-my-app",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-lib-b"
+    },
+    {
+      "spdxElementId": "SPDXRef-lib-b",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-lib-c"
+    },
+    {
+      "spdxElementId": "SPDXRef-lib-c",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-lib-d"
+    }
+  ]
+}
+`)
+
+// CDX: cyclic dependency: primary -> lib-b -> primary.
+var cdxWithCyclicDependencies = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:cyclic-cdx-0001",
+  "version": 1,
+  "metadata": {
+    "component": {
+      "bom-ref": "pkg:generic/my-app@1.0.0",
+      "type": "application",
+      "name": "my-app",
+      "version": "1.0.0"
+    }
+  },
+  "components": [
+    {
+      "bom-ref": "pkg:generic/lib-b@2.0.0",
+      "type": "library",
+      "name": "lib-b",
+      "version": "2.0.0"
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "pkg:generic/my-app@1.0.0",
+      "dependsOn": ["pkg:generic/lib-b@2.0.0"]
+    },
+    {
+      "ref": "pkg:generic/lib-b@2.0.0",
+      "dependsOn": ["pkg:generic/my-app@1.0.0"]
+    }
+  ]
+}
+`)
+
+// SPDX: cyclic dependency: my-app -> lib-b -> my-app.
+var spdxWithCyclicDependencies = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "cyclic-sbom",
+  "dataLicense": "CC0-1.0",
+  "documentNamespace": "urn:uuid:cyclic-spdx-0001",
+  "creationInfo": {
+    "creators": ["Tool: sbomqs"],
+    "created": "2026-01-01T00:00:00Z"
+  },
+  "packages": [
+    { "SPDXID": "SPDXRef-my-app", "name": "my-app", "versionInfo": "1.0.0" },
+    { "SPDXID": "SPDXRef-lib-b",  "name": "lib-b",  "versionInfo": "2.0.0" }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relationshipType": "DESCRIBES",
+      "relatedSpdxElement": "SPDXRef-my-app"
+    },
+    {
+      "spdxElementId": "SPDXRef-my-app",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-lib-b"
+    },
+    {
+      "spdxElementId": "SPDXRef-lib-b",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-my-app"
+    }
+  ]
+}
+`)
+
 func TestBSIV11CompDependencies(t *testing.T) {
 	ctx := context.Background()
 
@@ -2509,6 +2764,55 @@ func TestBSIV11CompDependencies(t *testing.T) {
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "Primary component is missing.", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// cdxWithDeepTransitiveDependencies: DFS must recurse through 4 levels;
+	// all nodes reachable -> score 10.
+	t.Run("cdxWithDeepTransitiveDependencies", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxWithDeepTransitiveDependencies, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompDependencies(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "Dependencies are recursively declared and structurally complete.", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// spdxWithDeepTransitiveDependencies
+	t.Run("spdxWithDeepTransitiveDependencies", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxWithDeepTransitiveDependencies, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompDependencies(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "Dependencies are recursively declared and structurally complete.", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// cdxWithCyclicDependencies: visited-guard prevents infinite recursion
+	t.Run("cdxWithCyclicDependencies", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxWithCyclicDependencies, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompDependencies(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "Dependencies are recursively declared and structurally complete.", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// spdxWithCyclicDependencies
+	t.Run("spdxWithCyclicDependencies", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxWithCyclicDependencies, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompDependencies(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "Dependencies are recursively declared and structurally complete.", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 }
@@ -3224,6 +3528,1858 @@ func TestBSIV11CompLicense(t *testing.T) {
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "licence info is missing for all components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// cdxSBOMAuthor has "components": [] and no metadata.component → exercises total==0 guard.
+	t.Run("cdxNoComponents", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthor, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompLicenses(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "No components found in SBOM.", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// spdxSBOMPersonAuthor has "packages": [] → doc.Components() is empty.
+	t.Run("spdxNoComponents", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMPersonAuthor, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompLicenses(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "No components found in SBOM.", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+}
+
+// BSIV11CompExecutableHash test cases
+
+// CDX: primary component with a valid SHA-256 hash
+var cdxPrimaryCompWithSHA256Hash = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:hash-cdx-0001",
+  "version": 1,
+  "metadata": {
+    "component": {
+      "bom-ref": "pkg:generic/my-app@1.0.0",
+      "type": "application",
+      "name": "my-app",
+      "version": "1.0.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "aec070645fe53ee3b3763059376134f058cc337247c978616ddbb"
+        }
+      ]
+    }
+  },
+  "components": []
+}
+`)
+
+// CDX: primary component with MD5 hash only (not SHA-256)
+var cdxPrimaryCompWithMD5HashOnly = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:hash-cdx-0002",
+  "version": 1,
+  "metadata": {
+    "component": {
+      "bom-ref": "pkg:generic/my-app@1.0.0",
+      "type": "application",
+      "name": "my-app",
+      "version": "1.0.0",
+      "hashes": [
+        {
+          "alg": "MD5",
+          "content": "d41d8cd98f00b204e9800998ecf8427e"
+        }
+      ]
+    }
+  },
+  "components": []
+}
+`)
+
+// CDX: primary component with SHA-1 hash only (not SHA-256)
+var cdxPrimaryCompWithSHA1HashOnly = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:hash-cdx-0003",
+  "version": 1,
+  "metadata": {
+    "component": {
+      "bom-ref": "pkg:generic/my-app@1.0.0",
+      "type": "application",
+      "name": "my-app",
+      "version": "1.0.0",
+      "hashes": [
+        {
+          "alg": "SHA-1",
+          "content": "da39a3ee5e6b4b0d3255bfef95601890afd80709"
+        }
+      ]
+    }
+  },
+  "components": []
+}
+`)
+
+// CDX: primary component with SHA-512 hash only (not SHA-256)
+var cdxPrimaryCompWithSHA512HashOnly = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:hash-cdx-0004",
+  "version": 1,
+  "metadata": {
+    "component": {
+      "bom-ref": "pkg:generic/my-app@1.0.0",
+      "type": "application",
+      "name": "my-app",
+      "version": "1.0.0",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e"
+        }
+      ]
+    }
+  },
+  "components": []
+}
+`)
+
+// CDX: primary component with SHA-256 present but empty hash value
+var cdxPrimaryCompWithSHA256EmptyValue = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:hash-cdx-0005",
+  "version": 1,
+  "metadata": {
+    "component": {
+      "bom-ref": "pkg:generic/my-app@1.0.0",
+      "type": "application",
+      "name": "my-app",
+      "version": "1.0.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": ""
+        }
+      ]
+    }
+  },
+  "components": []
+}
+`)
+
+// CDX: primary component with no hashes at all
+var cdxPrimaryCompWithNoHash = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:hash-cdx-0006",
+  "version": 1,
+  "metadata": {
+    "component": {
+      "bom-ref": "pkg:generic/my-app@1.0.0",
+      "type": "application",
+      "name": "my-app",
+      "version": "1.0.0"
+    }
+  },
+  "components": []
+}
+`)
+
+// CDX: primary component with multiple hashes including SHA-256
+var cdxPrimaryCompWithMultipleHashesIncludingSHA256 = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:hash-cdx-0007",
+  "version": 1,
+  "metadata": {
+    "component": {
+      "bom-ref": "pkg:generic/my-app@1.0.0",
+      "type": "application",
+      "name": "my-app",
+      "version": "1.0.0",
+      "hashes": [
+        {
+          "alg": "MD5",
+          "content": "d41d8cd98f00b204e9800998ecf8427e"
+        },
+        {
+          "alg": "SHA-1",
+          "content": "da39a3ee5e6b4b0d3255bfef95601890afd80709"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "aec070645fe53ee3b3763059376134f058cc337247c978616ddbb"
+        }
+      ]
+    }
+  },
+  "components": []
+}
+`)
+
+// SPDX: primary component with a valid SHA256 checksum
+var spdxPrimaryCompWithSHA256Hash = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "my-app-sbom",
+  "dataLicense": "CC0-1.0",
+  "documentNamespace": "urn:uuid:hash-spdx-0001",
+  "creationInfo": {
+    "creators": ["Tool: sbomqs"],
+    "created": "2026-01-01T00:00:00Z"
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-my-app",
+      "name": "my-app",
+      "versionInfo": "1.0.0",
+      "downloadLocation": "https://example.com",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "aec070645fe53ee3b3763059376134f058cc337247c978616ddbb"
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relationshipType": "DESCRIBES",
+      "relatedSpdxElement": "SPDXRef-my-app"
+    }
+  ]
+}
+`)
+
+// SPDX: primary component with SHA1 hash only (not SHA256)
+var spdxPrimaryCompWithSHA1HashOnly = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "my-app-sbom",
+  "dataLicense": "CC0-1.0",
+  "documentNamespace": "urn:uuid:hash-spdx-0002",
+  "creationInfo": {
+    "creators": ["Tool: sbomqs"],
+    "created": "2026-01-01T00:00:00Z"
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-my-app",
+      "name": "my-app",
+      "versionInfo": "1.0.0",
+      "downloadLocation": "https://example.com",
+      "checksums": [
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "da39a3ee5e6b4b0d3255bfef95601890afd80709"
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relationshipType": "DESCRIBES",
+      "relatedSpdxElement": "SPDXRef-my-app"
+    }
+  ]
+}
+`)
+
+// SPDX: primary component with MD5 hash only (not SHA256)
+var spdxPrimaryCompWithMD5HashOnly = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "my-app-sbom",
+  "dataLicense": "CC0-1.0",
+  "documentNamespace": "urn:uuid:hash-spdx-0003",
+  "creationInfo": {
+    "creators": ["Tool: sbomqs"],
+    "created": "2026-01-01T00:00:00Z"
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-my-app",
+      "name": "my-app",
+      "versionInfo": "1.0.0",
+      "downloadLocation": "https://example.com",
+      "checksums": [
+        {
+          "algorithm": "MD5",
+          "checksumValue": "d41d8cd98f00b204e9800998ecf8427e"
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relationshipType": "DESCRIBES",
+      "relatedSpdxElement": "SPDXRef-my-app"
+    }
+  ]
+}
+`)
+
+// SPDX: primary component with no checksums at all
+var spdxPrimaryCompWithNoHash = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "my-app-sbom",
+  "dataLicense": "CC0-1.0",
+  "documentNamespace": "urn:uuid:hash-spdx-0004",
+  "creationInfo": {
+    "creators": ["Tool: sbomqs"],
+    "created": "2026-01-01T00:00:00Z"
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-my-app",
+      "name": "my-app",
+      "versionInfo": "1.0.0",
+      "downloadLocation": "https://example.com"
+    }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relationshipType": "DESCRIBES",
+      "relatedSpdxElement": "SPDXRef-my-app"
+    }
+  ]
+}
+`)
+
+// SPDX: primary component with multiple checksums including SHA256
+var spdxPrimaryCompWithMultipleHashesIncludingSHA256 = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "my-app-sbom",
+  "dataLicense": "CC0-1.0",
+  "documentNamespace": "urn:uuid:hash-spdx-0005",
+  "creationInfo": {
+    "creators": ["Tool: sbomqs"],
+    "created": "2026-01-01T00:00:00Z"
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-my-app",
+      "name": "my-app",
+      "versionInfo": "1.0.0",
+      "downloadLocation": "https://example.com",
+      "checksums": [
+        {
+          "algorithm": "MD5",
+          "checksumValue": "d41d8cd98f00b204e9800998ecf8427e"
+        },
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "da39a3ee5e6b4b0d3255bfef95601890afd80709"
+        },
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "aec070645fe53ee3b3763059376134f058cc337247c978616ddbb"
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relationshipType": "DESCRIBES",
+      "relatedSpdxElement": "SPDXRef-my-app"
+    }
+  ]
+}
+`)
+
+// SPDX: primary component with SHA256 present but checksumValue is empty string.
+var spdxPrimaryCompWithSHA256EmptyValue = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "my-app-sbom",
+  "dataLicense": "CC0-1.0",
+  "documentNamespace": "urn:uuid:hash-spdx-0006",
+  "creationInfo": {
+    "creators": ["Tool: sbomqs"],
+    "created": "2026-01-01T00:00:00Z"
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-my-app",
+      "name": "my-app",
+      "versionInfo": "1.0.0",
+      "downloadLocation": "https://example.com",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "   "
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relationshipType": "DESCRIBES",
+      "relatedSpdxElement": "SPDXRef-my-app"
+    }
+  ]
+}
+`)
+
+func TestBSIV11CompExecutableHash(t *testing.T) {
+	ctx := context.Background()
+
+	// cdxPrimaryCompWithSHA256Hash
+	t.Run("cdxPrimaryCompWithSHA256Hash", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxPrimaryCompWithSHA256Hash, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompExecutableHash(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "primary executable declares a valid SHA-256 hash.", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// spdxPrimaryCompWithSHA256Hash
+	t.Run("spdxPrimaryCompWithSHA256Hash", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxPrimaryCompWithSHA256Hash, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompExecutableHash(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "primary executable declares a valid SHA-256 hash.", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// cdxPrimaryCompWithMD5HashOnly
+	t.Run("cdxPrimaryCompWithMD5HashOnly", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxPrimaryCompWithMD5HashOnly, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompExecutableHash(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "primary executable component must declare a SHA-256 hash.", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// spdxPrimaryCompWithMD5HashOnly
+	t.Run("spdxPrimaryCompWithMD5HashOnly", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxPrimaryCompWithMD5HashOnly, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompExecutableHash(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "primary executable component must declare a SHA-256 hash.", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// cdxPrimaryCompWithSHA1HashOnly
+	t.Run("cdxPrimaryCompWithSHA1HashOnly", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxPrimaryCompWithSHA1HashOnly, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompExecutableHash(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "primary executable component must declare a SHA-256 hash.", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// spdxPrimaryCompWithSHA1HashOnly
+	t.Run("spdxPrimaryCompWithSHA1HashOnly", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxPrimaryCompWithSHA1HashOnly, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompExecutableHash(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "primary executable component must declare a SHA-256 hash.", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// cdxPrimaryCompWithSHA512HashOnly
+	t.Run("cdxPrimaryCompWithSHA512HashOnly", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxPrimaryCompWithSHA512HashOnly, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompExecutableHash(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "primary executable component must declare a SHA-256 hash.", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// cdxPrimaryCompWithSHA256EmptyValue
+	t.Run("cdxPrimaryCompWithSHA256EmptyValue", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxPrimaryCompWithSHA256EmptyValue, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompExecutableHash(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "primary executable component must declare a SHA-256 hash.", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// cdxPrimaryCompWithNoHash
+	t.Run("cdxPrimaryCompWithNoHash", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxPrimaryCompWithNoHash, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompExecutableHash(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "primary executable component must declare a SHA-256 hash.", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// spdxPrimaryCompWithNoHash
+	t.Run("spdxPrimaryCompWithNoHash", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxPrimaryCompWithNoHash, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompExecutableHash(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "primary executable component must declare a SHA-256 hash.", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// cdxPrimaryCompWithMultipleHashesIncludingSHA256
+	t.Run("cdxPrimaryCompWithMultipleHashesIncludingSHA256", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxPrimaryCompWithMultipleHashesIncludingSHA256, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompExecutableHash(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "primary executable declares a valid SHA-256 hash.", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// spdxPrimaryCompWithMultipleHashesIncludingSHA256
+	t.Run("spdxPrimaryCompWithMultipleHashesIncludingSHA256", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxPrimaryCompWithMultipleHashesIncludingSHA256, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompExecutableHash(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "primary executable declares a valid SHA-256 hash.", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxCompWithPrimaryCompMissing", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithPrimaryCompMissing, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompExecutableHash(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "primary executable component must declare a SHA-256 hash.", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// spdxCompWithPrimaryCompMissing (reused from fsct_test.go — no DESCRIBES relationship)
+	t.Run("spdxCompWithPrimaryCompMissing", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWithPrimaryCompMissing, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompExecutableHash(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "primary executable component must declare a SHA-256 hash.", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// spdxPrimaryCompWithSHA256EmptyValue
+	t.Run("spdxPrimaryCompWithSHA256EmptyValue", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxPrimaryCompWithSHA256EmptyValue, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompExecutableHash(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "primary executable component must declare a SHA-256 hash.", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+}
+
+// ===================================
+// TestBSIV11SBOMCreationTimestamp
+// ===================================
+
+// cdxSBOMWithValidTimestamp — metadata.timestamp is a valid RFC3339 timestamp.
+var cdxSBOMWithValidTimestamp = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2026-01-01T00:00:00Z"
+  },
+  "components": []
+}
+`)
+
+// spdxSBOMWithValidTimestamp — creationInfo.created is a valid RFC3339 timestamp.
+var spdxSBOMWithValidTimestamp = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "created": "2026-01-01T00:00:00Z",
+    "creators": ["Tool: syft-0.95.0"]
+  },
+  "packages": []
+}
+`)
+
+var cdxSBOMWithInvalidTimestamp = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {
+    "timestamp": "01-01-2026"
+  },
+  "components": []
+}
+`)
+
+var spdxSBOMWithInvalidTimestamp = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "created": "01-01-2026",
+    "creators": ["Tool: syft-0.95.0"]
+  },
+  "packages": []
+}
+`)
+
+func TestBSIV11SBOMCreationTimestamp(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("cdxWithValidTimestamp", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMWithValidTimestamp, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11SBOMCreationTimestamp(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "SBOM creation timestamp is valid and RFC3339-compliant.", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxWithValidTimestamp", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMWithValidTimestamp, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11SBOMCreationTimestamp(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "SBOM creation timestamp is valid and RFC3339-compliant.", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// cdxSBOMAuthor has no metadata.timestamp -> GetCreationTimestamp() returns "" -> missing.
+	t.Run("cdxWithMissingTimestamp", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthor, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11SBOMCreationTimestamp(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "SBOM creation timestamp is missing", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// spdxSBOMPersonAuthor has no creationInfo.created -> GetCreationTimestamp() returns "" -> missing.
+	t.Run("spdxWithMissingTimestamp", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMPersonAuthor, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11SBOMCreationTimestamp(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "SBOM creation timestamp is missing", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// "01-01-2026" is present but not RFC3339
+	t.Run("cdxWithInvalidTimestamp", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMWithInvalidTimestamp, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11SBOMCreationTimestamp(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "SBOM creation timestamp is not a valid RFC3339 (ISO-8601) timestamp.", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxWithInvalidTimestamp", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMWithInvalidTimestamp, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11SBOMCreationTimestamp(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "SBOM creation timestamp is not a valid RFC3339 (ISO-8601) timestamp.", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+}
+
+// ====================
+// TestBSIV11CompName
+// ====================
+
+func TestBSIV11CompName(t *testing.T) {
+	ctx := context.Background()
+
+	// cdxCompAuthorAbsent has one component: {"name": "Acme Application", "version": "9.1.1"}.
+	t.Run("cdxSingleNamedComponent", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompAuthorAbsent, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompName(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "component name declared for all components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// spdxCompPersonSupplierAbsent has one package with name "application-a".
+	t.Run("spdxSingleNamedPackage", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompPersonSupplierAbsent, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompName(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "component name declared for all components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// cdxSBOMAuthor has "components": [] -> total == 0.
+	t.Run("cdxNoComponents", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthor, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompName(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "no components declared in SBOM", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// spdxSBOMPersonAuthor has "packages": [] -> total == 0.
+	t.Run("spdxNoComponents", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMPersonAuthor, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompName(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "no components declared in SBOM", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+}
+
+// =======================
+// TestBSIV11CompVersion
+// =======================
+
+// cdxCompWithMissingVersion
+var cdxCompWithMissingVersion = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "comp-1",
+      "name": "libfoo"
+    }
+  ]
+}
+`)
+
+// spdxCompWithMissingVersion
+var spdxCompWithMissingVersion = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "creators": ["Tool: syft-0.95.0"]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Pkg",
+      "name": "libfoo"
+    }
+  ]
+}
+`)
+
+// spdxWithPartialVersions: two SPDX packages: first has versionInfo, second does not.
+var spdxWithPartialVersions = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "creators": ["Tool: syft-0.95.0"]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-PkgA",
+      "name": "libfoo",
+      "versionInfo": "1.0.0"
+    },
+    {
+      "SPDXID": "SPDXRef-PkgB",
+      "name": "libbar"
+    }
+  ]
+}
+`)
+
+func TestBSIV11CompVersion(t *testing.T) {
+	ctx := context.Background()
+
+	// cdxCompAuthorAbsent has one component with version "9.1.1".
+	t.Run("cdxAllComponentsHaveVersions", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompAuthorAbsent, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompVersion(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "component version declared for all components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// spdxCompPersonSupplierAbsent has one package with versionInfo "1.0".
+	t.Run("spdxAllPackagesHaveVersions", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompPersonSupplierAbsent, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompVersion(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "component version declared for all components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// cdxSBOMAuthor has "components": [] -> total == 0.
+	t.Run("cdxNoComponents", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthor, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompVersion(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "no components declared in SBOM", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// spdxSBOMPersonAuthor has "packages": [] -> total == 0.
+	t.Run("spdxNoComponents", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMPersonAuthor, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompVersion(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "no components declared in SBOM", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// CDX component without version field -> GetVersion() returns "" -> 1 missing out of 1.
+	t.Run("cdxWithMissingVersion", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithMissingVersion, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompVersion(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "component version missing for 1 out of 1 components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// SPDX package without versionInfo
+	t.Run("spdxWithMissingVersion", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWithMissingVersion, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompVersion(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "component version missing for 1 out of 1 components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// Two SPDX packages: one with version, one without -> 1 missing out of 2.
+	t.Run("spdxWithPartialVersions", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxWithPartialVersions, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompVersion(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "component version missing for 1 out of 2 components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+}
+
+// ===========================================================================
+// TestBSIV11SBOMURI
+// ===========================================================================
+
+// cdxSBOMWithoutSerialNumber — CDX BOM with no serialNumber field.
+// sp.URI is only set when serialNumber is non-empty and starts with "urn:uuid:",
+// so GetURI() returns "" → "SBOM-URI is missing", Ignore: true.
+var cdxSBOMWithoutSerialNumber = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2026-01-01T00:00:00Z"
+  },
+  "components": []
+}
+`)
+
+// spdxSBOMWithDocumentNamespace — SPDX with a valid HTTP documentNamespace.
+// sp.URI = documentNamespace → isValidURL passes → score 10.
+var spdxSBOMWithDocumentNamespace = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "documentNamespace": "https://example.com/sboms/my-sbom-v1.0",
+  "creationInfo": {
+    "created": "2026-01-01T00:00:00Z",
+    "creators": ["Tool: syft-0.95.0"]
+  },
+  "packages": []
+}
+`)
+
+// spdxSBOMWithInvalidNamespace — SPDX documentNamespace is neither a URL nor a URN.
+// isValidURL("not-a-valid-uri") = false and no "urn:" prefix → score 0, Ignore: false.
+var spdxSBOMWithInvalidNamespace = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "documentNamespace": "not-a-valid-uri",
+  "creationInfo": {
+    "created": "2026-01-01T00:00:00Z",
+    "creators": ["Tool: syft-0.95.0"]
+  },
+  "packages": []
+}
+`)
+
+func TestBSIV11SBOMURI(t *testing.T) {
+	ctx := context.Background()
+
+	// cdxSBOMAuthor has "serialNumber": "urn:uuid:..." and "version": 1
+	// → sp.URI = "urn:uuid:.../1" which starts with "urn:" → score 10.
+	t.Run("cdxWithValidSerialNumber", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthor, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11SBOMURI(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "SBOM-URI is declared.", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxWithDocumentNamespaceURL", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMWithDocumentNamespace, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11SBOMURI(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "SBOM-URI is declared.", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// No serialNumber → sp.URI = "" → missing, optional field → Ignore: true.
+	t.Run("cdxWithoutSerialNumber", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMWithoutSerialNumber, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11SBOMURI(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "SBOM-URI is missing (additional field).", got.Desc)
+		assert.True(t, got.Ignore)
+	})
+
+	// spdxSBOMPersonAuthor has no documentNamespace → sp.URI = "" → Ignore: true.
+	t.Run("spdxWithoutDocumentNamespace", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMPersonAuthor, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11SBOMURI(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "SBOM-URI is missing (additional field).", got.Desc)
+		assert.True(t, got.Ignore)
+	})
+
+	// documentNamespace is present but not a URL and not a URN → invalid, Ignore: false.
+	t.Run("spdxWithInvalidNamespace", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMWithInvalidNamespace, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11SBOMURI(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "SBOM-URI is present but invalid.", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+}
+
+// ===========================================================================
+// TestBSIV11CompSourceURI
+// ===========================================================================
+
+var cdxCompWithVCSRef = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "comp-1",
+      "name": "libfoo",
+      "version": "1.0.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/example/libfoo",
+          "type": "vcs"
+        }
+      ]
+    }
+  ]
+}
+`)
+
+var cdxCompWithSourceDistributionRef = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "comp-1",
+      "name": "libfoo",
+      "version": "1.0.0",
+      "externalReferences": [
+        {
+          "url": "https://example.com/libfoo-1.0.0-source.tar.gz",
+          "type": "source-distribution"
+        }
+      ]
+    }
+  ]
+}
+`)
+
+var cdxTwoCompsOneWithSourceURI = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "comp-1",
+      "name": "libfoo",
+      "version": "1.0.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/example/libfoo",
+          "type": "vcs"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "comp-2",
+      "name": "libbar",
+      "version": "2.0.0"
+    }
+  ]
+}
+`)
+
+var cdxCompWithInvalidSourceURI = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "comp-1",
+      "name": "libfoo",
+      "version": "1.0.0",
+      "externalReferences": [
+        {
+          "url": "not-a-valid-url",
+          "type": "vcs"
+        }
+      ]
+    }
+  ]
+}
+`)
+
+func TestBSIV11CompSourceURI(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("cdxWithVCSRef", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithVCSRef, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompSourceURI(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "Source code URI declared for all components.", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxWithSourceDistributionRef", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithSourceDistributionRef, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompSourceURI(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "Source code URI declared for all components.", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// cdxCompPURLAbsent has one component with no externalReferences -> SourceCodeURL = "".
+	t.Run("cdxNoSourceRef", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompPURLAbsent, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompSourceURI(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "No components declare source code URI (additional field).", got.Desc)
+		assert.True(t, got.Ignore)
+	})
+
+	// VCS externalRef is present but its URL is not a valid URL
+	t.Run("cdxWithInvalidSourceURI", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithInvalidSourceURI, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompSourceURI(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "Source code URI declared but invalid for all components.", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// SPDX has no deterministic source-code-URI field.
+	t.Run("spdxAlwaysIgnored", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompPURLValid, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompSourceURI(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "No components declare source code URI (additional field).", got.Desc)
+		assert.True(t, got.Ignore)
+	})
+
+	// 1 out of 2 components has a source URI
+	t.Run("cdxPartialSourceURI", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxTwoCompsOneWithSourceURI, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompSourceURI(doc)
+
+		assert.InDelta(t, 5.0, got.Score, 1e-9)
+		assert.Equal(t, "1/2 components declare source code URI.", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// cdxSBOMAuthor has no components
+	t.Run("cdxNoComponents", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthor, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompSourceURI(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "No components found.", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+}
+
+// ===========================================================================
+// TestBSIV11CompExecutableURI
+// ===========================================================================
+
+var cdxCompWithDistributionRef = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "comp-1",
+      "name": "libfoo",
+      "version": "1.0.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.example.com/libfoo-1.0.0.tar.gz",
+          "type": "distribution"
+        }
+      ]
+    }
+  ]
+}
+`)
+
+var cdxCompWithDistributionIntakeRef = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "comp-1",
+      "name": "libfoo",
+      "version": "1.0.0",
+      "externalReferences": [
+        {
+          "url": "https://intake.example.com/libfoo-1.0.0.tar.gz",
+          "type": "distribution-intake"
+        }
+      ]
+    }
+  ]
+}
+`)
+
+var spdxCompWithValidDownloadLocation = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "creators": ["Tool: syft-0.95.0"]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Pkg",
+      "name": "libfoo",
+      "versionInfo": "1.0.0",
+      "downloadLocation": "https://example.com/libfoo-1.0.0.tar.gz"
+    }
+  ]
+}
+`)
+
+var spdxCompWithNoassertionLocation = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "creators": ["Tool: syft-0.95.0"]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Pkg",
+      "name": "libfoo",
+      "versionInfo": "1.0.0",
+      "downloadLocation": "NOASSERTION"
+    }
+  ]
+}
+`)
+
+var cdxTwoCompsOneWithDistributionRef = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "comp-1",
+      "name": "libfoo",
+      "version": "1.0.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.example.com/libfoo-1.0.0.tar.gz",
+          "type": "distribution"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "comp-2",
+      "name": "libbar",
+      "version": "2.0.0"
+    }
+  ]
+}
+`)
+
+var cdxCompWithInvalidExecutableURI = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "comp-1",
+      "name": "libfoo",
+      "version": "1.0.0",
+      "externalReferences": [
+        {
+          "url": "not-a-valid-url",
+          "type": "distribution"
+        }
+      ]
+    }
+  ]
+}
+`)
+
+func TestBSIV11CompExecutableURI(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("cdxWithDistributionRef", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithDistributionRef, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompExecutableURI(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "Executable URI declared for all components.", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxWithDistributionIntakeRef", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithDistributionIntakeRef, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompExecutableURI(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "Executable URI declared for all components.", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxWithValidDownloadLocation", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWithValidDownloadLocation, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompExecutableURI(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "Executable URI declared for all components.", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// SPDX PackageDownloadLocation = "NOASSERTION"
+	t.Run("spdxWithNoassertionLocation", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWithNoassertionLocation, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompExecutableURI(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "Executable URI declared but invalid for all components.", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// cdxCompPURLAbsent has one component with no externalReferences
+	t.Run("cdxNoDownloadRef", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompPURLAbsent, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompExecutableURI(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "No components declare executable URI (additional field).", got.Desc)
+		assert.True(t, got.Ignore)
+	})
+
+	// Distribution externalRef is present but its URL is not a valid URL
+	t.Run("cdxWithInvalidExecutableURI", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithInvalidExecutableURI, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompExecutableURI(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "Executable URI declared but invalid for all components.", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// 1 out of 2 components has a distribution ref
+	t.Run("cdxPartialExecutableURI", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxTwoCompsOneWithDistributionRef, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompExecutableURI(doc)
+
+		assert.InDelta(t, 5.0, got.Score, 1e-9)
+		assert.Equal(t, "1/2 components declare executable URI.", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// cdxSBOMAuthor has no components
+	t.Run("cdxNoComponents", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthor, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompExecutableURI(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "No components found.", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+}
+
+// ===========================================================================
+// TestBSIV11CompSourceHash
+// ===========================================================================
+
+var cdxCompWithVCSAndSHA256 = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "comp-1",
+      "name": "libfoo",
+      "version": "1.0.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/example/libfoo",
+          "type": "vcs",
+          "hashes": [
+            {
+              "alg": "SHA-256",
+              "content": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+`)
+
+var cdxCompWithSourceDistributionAndSHA256 = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "comp-1",
+      "name": "libfoo",
+      "version": "1.0.0",
+      "externalReferences": [
+        {
+          "url": "https://example.com/libfoo-1.0.0-source.tar.gz",
+          "type": "source-distribution",
+          "hashes": [
+            {
+              "alg": "SHA-256",
+              "content": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+`)
+
+var cdxCompWithVCSAndNonSHA256Hash = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "comp-1",
+      "name": "libfoo",
+      "version": "1.0.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/example/libfoo",
+          "type": "vcs",
+          "hashes": [
+            {
+              "alg": "MD5",
+              "content": "c3d43dcbd0fe759f08bf015a813a9b8a"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+`)
+
+var spdxCompWithVerificationCode = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "creators": ["Tool: syft-0.95.0"]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Pkg",
+      "name": "libfoo",
+      "versionInfo": "1.0.0",
+      "packageVerificationCode": {
+        "packageVerificationCodeValue": "d6a770ba38583ed4bb4525bd96e50461655d2758"
+      }
+    }
+  ]
+}
+`)
+
+func TestBSIV11CompSourceHash(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("cdxVCSSHA256Hash", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithVCSAndSHA256, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompSourceHash(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "source hash declared for all components.", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxSourceDistributionSHA256Hash", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithSourceDistributionAndSHA256, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompSourceHash(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "source hash declared for all components.", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxWithVerificationCode", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWithVerificationCode, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompSourceHash(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "source hash declared for all components.", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// VCS ref present but only MD5 hash
+	t.Run("cdxVCSNonSHA256Hash", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithVCSAndNonSHA256Hash, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompSourceHash(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "No components declare source hash (additional field).", got.Desc)
+		assert.True(t, got.Ignore)
+	})
+
+	// cdxCompWithVCSRef has a VCS ref but no hashes array
+	t.Run("cdxVCSRefWithNoHashes", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithVCSRef, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompSourceHash(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "No components declare source hash (additional field).", got.Desc)
+		assert.True(t, got.Ignore)
+	})
+
+	// cdxCompPURLAbsent has one component with no externalReferences
+	t.Run("cdxNoSourceRef", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompPURLAbsent, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompSourceHash(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "No components declare source hash (additional field).", got.Desc)
+		assert.True(t, got.Ignore)
+	})
+
+	// cdxSBOMAuthor has no components
+	t.Run("cdxNoComponents", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthor, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompSourceHash(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "No components found.", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+}
+
+// ===========================================================================
+// TestBSIV11CompOtherIdentifiers
+// ===========================================================================
+
+var cdxCompWithCPEOnly = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "comp-1",
+      "name": "libfoo",
+      "version": "1.0.0",
+      "cpe": "cpe:2.3:a:example:libfoo:1.0.0:*:*:*:*:*:*:*"
+    }
+  ]
+}
+`)
+
+var spdxCompWithCPEOnly = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "created": "2026-01-01T00:00:00Z",
+    "creators": ["Tool: syft-0.95.0"]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Pkg",
+      "name": "libfoo",
+      "versionInfo": "1.0.0",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:example:libfoo:1.0.0:*:*:*:*:*:*:*"
+        }
+      ]
+    }
+  ]
+}
+`)
+
+var cdxTwoCompsOneWithPURL = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "comp-1",
+      "name": "libfoo",
+      "version": "1.0.0",
+      "purl": "pkg:golang/github.com/example/libfoo@v1.0.0"
+    },
+    {
+      "type": "library",
+      "bom-ref": "comp-2",
+      "name": "libbar",
+      "version": "2.0.0"
+    }
+  ]
+}
+`)
+
+func TestBSIV11CompOtherIdentifiers(t *testing.T) {
+	ctx := context.Background()
+
+	// cdxCompValidPURL has one component with a valid PURL (from fsct_test.go).
+	t.Run("cdxWithPURL", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompValidPURL, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompOtherIdentifiers(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "Unique identifiers declared for all components.", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// spdxCompPURLValid has one package with a valid PURL externalRef (from fsct_test.go).
+	t.Run("spdxWithPURL", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompPURLValid, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompOtherIdentifiers(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "Unique identifiers declared for all components.", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// CDX component with CPE only (no PURL)
+	t.Run("cdxWithCPEOnly", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithCPEOnly, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompOtherIdentifiers(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "Unique identifiers declared for all components.", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// SPDX package with CPE externalRef only (no PURL)
+	t.Run("spdxWithCPEOnly", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWithCPEOnly, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompOtherIdentifiers(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "Unique identifiers declared for all components.", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// cdxTwoCompWithValidPURL has 2 components both with valid PURLs (from fsct_test.go).
+	t.Run("cdxMultipleCompsAllWithPURL", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxTwoCompWithValidPURL, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompOtherIdentifiers(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "Unique identifiers declared for all components.", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// cdxCompPURLAbsent has one component with no PURL and no CPE
+	t.Run("cdxNoIdentifiers", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompPURLAbsent, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompOtherIdentifiers(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "No components declare additional unique identifiers (optional field).", got.Desc)
+		assert.True(t, got.Ignore)
+	})
+
+	// spdxCompPURLAbsent has one package with no externalRefs
+	t.Run("spdxNoIdentifiers", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompPURLAbsent, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompOtherIdentifiers(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "No components declare additional unique identifiers (optional field).", got.Desc)
+		assert.True(t, got.Ignore)
+	})
+
+	// cdxSBOMAuthor has no components
+	t.Run("cdxNoComponents", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthor, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompOtherIdentifiers(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "No components found.", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// 1 out of 2 components has a PURL
+	t.Run("cdxPartialIdentifiers", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxTwoCompsOneWithPURL, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompOtherIdentifiers(doc)
+
+		assert.InDelta(t, 5.0, got.Score, 1e-9)
+		assert.Equal(t, "1/2 components declare unique identifiers.", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 }

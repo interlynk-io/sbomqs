@@ -26,6 +26,7 @@ import (
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/catalog"
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/common"
+	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/formulae"
 	"github.com/samber/lo"
 )
 
@@ -71,7 +72,7 @@ SPDX:
 CDX:
 - metadata.authors[].email
 - metadata.manufacturer.email OR .url
-- metadata.supplier.URL OR metadata.supplier.contacts[].email
+- metadata.supplier.email OR metadata.supplier.contacts[].email/url
 */
 func BSIV11SBOMCreator(doc sbom.Document) catalog.ProfFeatScore {
 
@@ -183,16 +184,85 @@ func BSIV11SBOMCreationTimestamp(doc sbom.Document) catalog.ProfFeatScore {
 
 	// RFC3339 covers fractional seconds
 	if _, err := time.Parse(time.RFC3339, ts); err != nil {
+		return formulae.ScoreSBOMProfNA(
+			"SBOM creation timestamp is not a valid RFC3339 (ISO-8601) timestamp.",
+			false,
+		)
+	}
+
+	return catalog.ProfFeatScore{
+		Score:  10.0,
+		Desc:   "SBOM creation timestamp is valid and RFC3339-compliant.",
+		Ignore: false,
+	}
+}
+
+// component Name
+func BSIV11CompName(doc sbom.Document) catalog.ProfFeatScore {
+	comps := doc.Components()
+	total := len(comps)
+
+	if total == 0 {
 		return catalog.ProfFeatScore{
 			Score:  0.0,
-			Desc:   "SBOM creation timestamp is not a valid RFC3339 (ISO-8601) timestamp",
+			Desc:   "no components declared in SBOM",
+			Ignore: false,
+		}
+	}
+
+	have := lo.CountBy(doc.Components(), func(c sbom.GetComponent) bool {
+		return strings.TrimSpace(c.GetName()) != ""
+	})
+
+	if total-have > 0 {
+		return catalog.ProfFeatScore{
+			Score: 0.0,
+			Desc: fmt.Sprintf(
+				"component name missing for %d out of %d components",
+				total-have, total,
+			),
 			Ignore: false,
 		}
 	}
 
 	return catalog.ProfFeatScore{
 		Score:  10.0,
-		Desc:   "SBOM creation timestamp is valid and RFC3339-compliant",
+		Desc:   "component name declared for all components",
+		Ignore: false,
+	}
+}
+
+// Component Version
+func BSIV11CompVersion(doc sbom.Document) catalog.ProfFeatScore {
+	comps := doc.Components()
+	total := len(comps)
+
+	if total == 0 {
+		return catalog.ProfFeatScore{
+			Score:  0.0,
+			Desc:   "no components declared in SBOM",
+			Ignore: false,
+		}
+	}
+
+	have := lo.CountBy(doc.Components(), func(c sbom.GetComponent) bool {
+		return strings.TrimSpace(c.GetVersion()) != ""
+	})
+
+	if total-have > 0 {
+		return catalog.ProfFeatScore{
+			Score: 0.0,
+			Desc: fmt.Sprintf(
+				"component version missing for %d out of %d components",
+				total-have, total,
+			),
+			Ignore: false,
+		}
+	}
+
+	return catalog.ProfFeatScore{
+		Score:  10.0,
+		Desc:   "component version declared for all components",
 		Ignore: false,
 	}
 }
@@ -200,7 +270,8 @@ func BSIV11SBOMCreationTimestamp(doc sbom.Document) catalog.ProfFeatScore {
 // BSIV11CompCreator validates the BSI TR-03183-2 requirement
 // for "Creator of the component".
 //
-// BSI Official Definition:
+// # BSI Official Definition
+//
 // - The SBOM must identify the creator of each component and provide
 // - a valid contact channel.
 //
@@ -214,6 +285,20 @@ func BSIV11SBOMCreationTimestamp(doc sbom.Document) catalog.ProfFeatScore {
 // - therefore contact information must be machine-readable and actionable, which is why email or URL is required.
 // - Name or phone alone is not sufficient, as they do not provide a standardized way to reach the responsible party.
 //
+// Accepted Fields (BSI Interpretation)
+// -----------------------------------------------------------------------------
+// For each component, at least ONE of the following must provide
+// a valid contact (email or URL):
+//
+// - Authors (email)
+// - Manufacturer (email or URL)
+// - Supplier (email or URL)
+//
+// Notes:
+// - Name or phone alone is NOT sufficient.
+// - Presence without valid email/URL is considered invalid.
+// - Only one valid contact per component is required.
+//
 // Component Creator Mapping:
 // SPDX:
 // - PackageOriginator  (preferred)
@@ -221,9 +306,9 @@ func BSIV11SBOMCreationTimestamp(doc sbom.Document) catalog.ProfFeatScore {
 //
 // CycloneDX:
 // - components[].authors[].email
-// - components[].manufacturer.URL OR components[].manufacturer.contacts[].email
-// - components[].supplier.URL OR components[].supplier.contacts[].email
-
+// - components[].manufacturer.email / .url / .contact.email
+// - components[].supplier.email / .url / .contact.email
+//
 // What Function Says:
 // - Iterates over all declared components.
 // - For each component, checks Authors, Manufacturer, then Supplier.
@@ -345,203 +430,6 @@ func BSIV11CompCreator(doc sbom.Document) catalog.ProfFeatScore {
 	}
 }
 
-// component Name
-func BSIV11CompName(doc sbom.Document) catalog.ProfFeatScore {
-	comps := doc.Components()
-	total := len(comps)
-
-	if total == 0 {
-		return catalog.ProfFeatScore{
-			Score:  0.0,
-			Desc:   "no components declared in SBOM",
-			Ignore: false,
-		}
-	}
-
-	have := lo.CountBy(doc.Components(), func(c sbom.GetComponent) bool {
-		return strings.TrimSpace(c.GetName()) != ""
-	})
-
-	if total-have > 0 {
-		score := float64(total-have) / float64(total) * 10.0
-
-		return catalog.ProfFeatScore{
-			Score: score,
-			Desc: fmt.Sprintf(
-				"component name missing for %d out of %d components",
-				total-have, total,
-			),
-			Ignore: false,
-		}
-	}
-
-	return catalog.ProfFeatScore{
-		Score:  10.0,
-		Desc:   "component name declared for all components",
-		Ignore: false,
-	}
-}
-
-// Component Version
-func BSIV11CompVersion(doc sbom.Document) catalog.ProfFeatScore {
-	comps := doc.Components()
-	total := len(comps)
-
-	if total == 0 {
-		return catalog.ProfFeatScore{
-			Score:  0.0,
-			Desc:   "no components declared in SBOM",
-			Ignore: false,
-		}
-	}
-
-	have := lo.CountBy(doc.Components(), func(c sbom.GetComponent) bool {
-		return strings.TrimSpace(c.GetVersion()) != ""
-	})
-
-	if total-have > 0 {
-		return catalog.ProfFeatScore{
-			Score: 0.0,
-			Desc: fmt.Sprintf(
-				"component version missing for %d out of %d components",
-				total-have, total,
-			),
-			Ignore: false,
-		}
-	}
-
-	return catalog.ProfFeatScore{
-		Score:  10.0,
-		Desc:   "component version declared for all components",
-		Ignore: false,
-	}
-}
-
-// BSIV11CompDependencies validates the BSI TR-03183-2 requirement
-// for "Dependencies on other components".
-//
-// In simple terms:
-// - If your software depends on something, that component must be present
-// - in the SBOM. If that component depends on something else, that must also
-// - be present. This continues until no further dependencies exist.
-//
-// The intent is to ensure complete recursive dependency closure of the
-// delivered software artifact.
-//
-// - The dependency section must exist.
-// - The primary component must declare its dependencies.
-// - All dependency relationships must reference defined components.
-// - All components must be reachable from the primary component.
-// - No orphan or disconnected components are allowed.
-func BSIV11CompDependencies(doc sbom.Document) catalog.ProfFeatScore {
-	primary := doc.PrimaryComp()
-	if !primary.IsPresent() {
-		return catalog.ProfFeatScore{
-			Score:  0.0,
-			Desc:   "Primary component is missing.",
-			Ignore: false,
-		}
-	}
-
-	rels := doc.GetRelationships()
-	if len(rels) == 0 {
-		return catalog.ProfFeatScore{
-			Score:  0.0,
-			Desc:   "Dependency information is missing.",
-			Ignore: false,
-		}
-	}
-
-	// Build component map
-	componentMap := make(map[string]sbom.GetComponent)
-	for _, c := range doc.Components() {
-		componentMap[c.GetID()] = c
-	}
-	componentMap[primary.GetID()] = primary.Component()
-
-	// 1. Validate all relationships reference valid components
-	for _, r := range rels {
-
-		// exception here:
-		// - From refers to SPDXRef-DOCUMENT, which is not a component but is valid for DESCRIBES relationships
-		if r.GetType() == "DESCRIBES" {
-			continue
-		}
-
-		// check all source relationships reference in components list
-		// - if missing, that means the it's not present in the component list
-		// - and this is not acceptable, because all the relationships must present in components list
-		if _, ok := componentMap[r.GetFrom()]; !ok {
-			return catalog.ProfFeatScore{
-				Score:  0.0,
-				Desc:   "Dependency source references undefined component.",
-				Ignore: false,
-			}
-		}
-
-		// check all target relationships reference in components list
-		// - if missing, that means the it's not present in the component list
-		// - and this is not acceptable, because all the relationships must present in components list
-		if _, ok := componentMap[r.GetTo()]; !ok {
-			return catalog.ProfFeatScore{
-				Score:  0.0,
-				Desc:   "Dependency target references undefined component.",
-				Ignore: false,
-			}
-		}
-	}
-
-	// 2. Ensure primary declares dependencies
-	outgoing := doc.GetOutgoingRelations(primary.GetID())
-	if len(outgoing) == 0 {
-		return catalog.ProfFeatScore{
-			Score:  0.0,
-			Desc:   "Primary component does not declare its dependencies.",
-			Ignore: false,
-		}
-	}
-
-	// 3. Recursive traversal from primary
-	visited := make(map[string]bool)
-
-	var dfs func(string)
-	dfs = func(id string) {
-		if visited[id] {
-			return
-		}
-		visited[id] = true
-
-		for _, rel := range doc.GetOutgoingRelations(id) {
-			if rel.GetType() == "DEPENDS_ON" {
-				dfs(rel.GetTo())
-			}
-		}
-	}
-
-	dfs(primary.GetID())
-
-	// 4. Ensure all reachable deps are valid components
-	// (already ensured by relationship validation)
-
-	// 5. Ensure no orphan components (strict enforcement)
-	for id := range componentMap {
-		if !visited[id] {
-			return catalog.ProfFeatScore{
-				Score:  5.0,
-				Desc:   "Some components are not reachable from the primary component.",
-				Ignore: false,
-			}
-		}
-	}
-
-	// Fully compliant
-	return catalog.ProfFeatScore{
-		Score:  10.0,
-		Desc:   "Dependencies are recursively declared and structurally complete.",
-		Ignore: false,
-	}
-}
-
 // BSIV11CompLicenses validates the BSI TR-03183-2 requirement
 // for "Licence(s) associated with the component".
 //
@@ -567,6 +455,7 @@ func BSIV11CompDependencies(doc sbom.Document) catalog.ProfFeatScore {
 // - Invalid SPDX syntax (e.g., "Apache License" instead of "Apache-2.0")
 //
 // License Mapping:
+//
 // SPDX:
 // - PackageLicenseConcluded
 // - PackageLicenseDeclared
@@ -717,6 +606,12 @@ func isAcceptableLicense(s licenses.License) bool {
 // CycloneDX:
 // - metadata.component.hashes[].alg = "SHA-256"
 // - components[].hashes[].alg = "SHA-256"
+//
+// What This Function says:
+// - The primary (executable) component must exist.
+// - It must declare a SHA-256 checksum.
+// - The checksum value must be non-empty.
+// - Other algorithms do NOT satisfy the requirement.
 func BSIV11CompExecutableHash(doc sbom.Document) catalog.ProfFeatScore {
 
 	primary := doc.PrimaryComp()
@@ -750,6 +645,463 @@ func BSIV11CompExecutableHash(doc sbom.Document) catalog.ProfFeatScore {
 	return catalog.ProfFeatScore{
 		Score:  0.0,
 		Desc:   "primary executable component must declare a SHA-256 hash.",
+		Ignore: false,
+	}
+}
+
+// BSIV11CompDependencies validates the BSI TR-03183-2 requirement
+// for "Dependencies on other components".
+//
+// BSI Definition (Simplified)
+// 1. All direct dependencies of a component must be enumerated.
+// 2. Dependencies must be resolved recursively (transitively).
+// 3. Resolution must continue until the boundary of what is delivered.
+//
+// In simple terms:
+// - If your software depends on something, that component must be present
+// - in the SBOM. If that component depends on something else, that must also
+// - be present. This continues until no further dependencies exist.
+//
+// The intent is to ensure complete recursive dependency closure of the
+// delivered software artifact.
+//
+// - The dependency section must exist.
+// - The primary component must declare its dependencies.
+// - All dependency relationships must reference defined components.
+// - All components must be reachable from the primary component.
+// - No orphan or disconnected components are allowed.
+func BSIV11CompDependencies(doc sbom.Document) catalog.ProfFeatScore {
+
+	primary := doc.PrimaryComp()
+	if !primary.IsPresent() {
+		return catalog.ProfFeatScore{
+			Score:  0.0,
+			Desc:   "Primary component is missing.",
+			Ignore: false,
+		}
+	}
+
+	rels := doc.GetRelationships()
+	if len(rels) == 0 {
+		return catalog.ProfFeatScore{
+			Score:  0.0,
+			Desc:   "Dependency information is missing.",
+			Ignore: false,
+		}
+	}
+
+	// Build component map
+	componentMap := make(map[string]sbom.GetComponent)
+	for _, c := range doc.Components() {
+		componentMap[c.GetID()] = c
+	}
+	componentMap[primary.GetID()] = primary.Component()
+
+	// 1. Validate all relationships reference valid components
+	for _, r := range rels {
+
+		// exception here:
+		// - From refers to SPDXRef-DOCUMENT, which is not a component but is valid for DESCRIBES relationships
+		if r.GetType() == "DESCRIBES" {
+			continue
+		}
+
+		// check all source relationships reference in components list
+		// - if missing, that means the it's not present in the component list
+		// - and this is not acceptable, because all the relationships must present in components list
+		if _, ok := componentMap[r.GetFrom()]; !ok {
+			return catalog.ProfFeatScore{
+				Score:  0.0,
+				Desc:   "Dependency source references undefined component.",
+				Ignore: false,
+			}
+		}
+
+		// check all target relationships reference in components list
+		// - if missing, that means the it's not present in the component list
+		// - and this is not acceptable, because all the relationships must present in components list
+		if _, ok := componentMap[r.GetTo()]; !ok {
+			return catalog.ProfFeatScore{
+				Score:  0.0,
+				Desc:   "Dependency target references undefined component.",
+				Ignore: false,
+			}
+		}
+	}
+
+	// 2. Ensure primary declares dependencies
+	outgoing := doc.GetOutgoingRelations(primary.GetID())
+	if len(outgoing) == 0 {
+		return catalog.ProfFeatScore{
+			Score:  0.0,
+			Desc:   "Primary component does not declare its dependencies.",
+			Ignore: false,
+		}
+	}
+
+	// 3. Recursive traversal from primary
+	visited := make(map[string]bool)
+
+	var dfs func(string)
+	dfs = func(id string) {
+		if visited[id] {
+			return
+		}
+		visited[id] = true
+
+		for _, rel := range doc.GetOutgoingRelations(id) {
+			if rel.GetType() == "DEPENDS_ON" {
+				dfs(rel.GetTo())
+			}
+		}
+	}
+
+	dfs(primary.GetID())
+
+	// 4. Ensure all reachable deps are valid components
+	// (already ensured by relationship validation)
+
+	// 5. Ensure no orphan components (strict enforcement)
+	for id := range componentMap {
+		if !visited[id] {
+			return catalog.ProfFeatScore{
+				Score:  5.0,
+				Desc:   "Some components are not reachable from the primary component.",
+				Ignore: false,
+			}
+		}
+	}
+
+	// Fully compliant
+	return catalog.ProfFeatScore{
+		Score:  10.0,
+		Desc:   "Dependencies are recursively declared and structurally complete.",
+		Ignore: false,
+	}
+}
+
+// ===============================
+// Additional Fields of BSI:v1.1
+// ===============================
+
+// BSIV11SBOMURI validates the BSI TR-03183-2 optional requirement
+// for "SBOM-URI".
+//
+// BSI Official Definition:
+//   - The SBOM must declare a Uniform Resource Identifier (URI)
+//     identifying the SBOM document itself.
+//
+// Accepted Mapping:
+// SPDX:
+// - documentNamespace
+//
+// CycloneDX:
+// - serialNumber+version
+//
+// NOTE: It's a Optional field.
+func BSIV11SBOMURI(doc sbom.Document) catalog.ProfFeatScore {
+
+	uri := strings.TrimSpace(doc.Spec().GetURI())
+
+	if uri == "" {
+		return catalog.ProfFeatScore{
+			Score:  0.0,
+			Desc:   "SBOM-URI is missing (additional field).",
+			Ignore: true,
+		}
+	}
+
+	if !isValidURL(uri) && !strings.HasPrefix(uri, "urn:") {
+		return catalog.ProfFeatScore{
+			Score:  0.0,
+			Desc:   "SBOM-URI is present but invalid.",
+			Ignore: false,
+		}
+	}
+
+	return catalog.ProfFeatScore{
+		Score:  10.0,
+		Desc:   "SBOM-URI is declared.",
+		Ignore: false,
+	}
+}
+
+/*
+BSI Official Definition::
+  - Uniform Resource Identifier (URI)” of the source code of the component, e. g. the URL of the source code repository
+
+- Meaning:
+  - Where the source code of the component can be obtained.
+  - Examples: Github Repo, Gitlab, BitBucket, Internal Git URL
+
+- SPDX Acceptable:
+  - no deterministic field
+
+- CycloneDX Acceptable:
+  - externalReferences with type:
+  - VSC
+  - source-distribution
+
+NOTE: It's a Optional field.
+*/
+func BSIV11CompSourceURI(doc sbom.Document) catalog.ProfFeatScore {
+
+	comps := doc.Components()
+	total := len(comps)
+
+	if total == 0 {
+		return catalog.ProfFeatScore{
+			Score:  0.0,
+			Desc:   "No components found.",
+			Ignore: false,
+		}
+	}
+
+	valid := 0
+
+	for _, c := range comps {
+
+		hasValid := false
+
+		sourceURL := strings.TrimSpace(c.GetSourceCodeURL())
+		if sourceURL != "" {
+			if isValidURL(sourceURL) {
+				hasValid = true
+			}
+		}
+
+		if hasValid {
+			valid++
+		}
+	}
+
+	if valid == 0 {
+		return catalog.ProfFeatScore{
+			Score:  0.0,
+			Desc:   "No components declare source code URI (additional field).",
+			Ignore: true,
+		}
+	}
+
+	if valid == total {
+		return catalog.ProfFeatScore{
+			Score:  10.0,
+			Desc:   "Source code URI declared for all components.",
+			Ignore: false,
+		}
+	}
+
+	return catalog.ProfFeatScore{
+		Score:  float64(valid) / float64(total) * 10.0,
+		Desc:   fmt.Sprintf("%d/%d components declare source code URI.", valid, total),
+		Ignore: false,
+	}
+}
+
+/*
+BSI Official Definition:
+  - Uniform Resource Identifier (URI)”, which points directly to the executable form of the component.
+
+- Meaning:
+  - where the compiled artifact or binary is present.
+  - Examples: docker image registry URL, binary download link, artifact repo link
+
+- SPDX Acceptable:
+  - PackageDownloadLocation
+
+- CycloneDX Acceptable:
+  - externalReferences with type:
+  - distribution
+  - distribution-intake
+
+NOTE: It's a Optional field.
+*/
+func BSIV11CompExecutableURI(doc sbom.Document) catalog.ProfFeatScore {
+
+	comps := doc.Components()
+	total := len(comps)
+
+	if total == 0 {
+		return catalog.ProfFeatScore{Score: 0.0, Desc: "No components found.", Ignore: false}
+	}
+
+	valid := 0
+
+	for _, c := range comps {
+		hasValid := false
+
+		downloadURL := strings.TrimSpace(c.GetDownloadLocationURL())
+		if downloadURL != "" {
+			if isValidURL(downloadURL) {
+				hasValid = true
+			}
+		}
+
+		if hasValid {
+			valid++
+		}
+	}
+
+	if valid == 0 {
+		return catalog.ProfFeatScore{
+			Score:  0.0,
+			Desc:   "No components declare executable URI (additional field).",
+			Ignore: true,
+		}
+	}
+
+	if valid == total {
+		return catalog.ProfFeatScore{
+			Score:  10.0,
+			Desc:   "Executable URI declared for all components.",
+			Ignore: false,
+		}
+	}
+
+	return catalog.ProfFeatScore{
+		Score:  float64(valid) / float64(total) * 10.0,
+		Desc:   fmt.Sprintf("%d/%d components declare executable URI.", valid, total),
+		Ignore: false,
+	}
+}
+
+/*
+BSI Official Definition::
+  - Cryptographically secure checksum (hash value) of the component source  code16 as SHA-256
+
+- SPDX Acceptable:
+  - PackageVerificationCode
+
+- CycloneDX Acceptable:
+  - externalReferences with hashes of  type:
+  - VSC
+  - source-distribution
+
+NOTE: It's a Optional field.
+*/
+func BSIV11CompSourceHash(doc sbom.Document) catalog.ProfFeatScore {
+
+	comps := doc.Components()
+	total := len(comps)
+
+	if total == 0 {
+		return catalog.ProfFeatScore{Score: 0.0, Desc: "No components found.", Ignore: false}
+	}
+
+	valid := 0
+
+	for _, c := range comps {
+
+		hasHash := false
+
+		sourceCodeHas := strings.TrimSpace(c.SourceCodeHash())
+		if sourceCodeHas != "" {
+			hasHash = true
+		}
+
+		if hasHash {
+			valid++
+		}
+	}
+
+	if valid == 0 {
+		return catalog.ProfFeatScore{
+			Score:  0.0,
+			Desc:   "No components declare source hash (additional field).",
+			Ignore: true,
+		}
+	}
+
+	if valid == total {
+		return catalog.ProfFeatScore{
+			Score:  10.0,
+			Desc:   "source hash declared for all components.",
+			Ignore: false,
+		}
+	}
+
+	return catalog.ProfFeatScore{
+		Score:  float64(valid) / float64(total) * 10.0,
+		Desc:   fmt.Sprintf("%d/%d components declare source SHA-256 hash.", valid, total),
+		Ignore: false,
+	}
+}
+
+/*
+- Official Def:
+  - Other identifiers that can be used to identify the component or to look it up in relevant databases, such as Common Platform Enumeration (CPE) or Package URL (purl).
+
+- SPDX Acceptable:
+  - ExternalReferences of type
+  - PURL or CPE
+
+- CycloneDX Acceptable:
+  - PURL
+  - CPE
+
+NOTE: It's a Optional field.
+*/
+func BSIV11CompOtherIdentifiers(doc sbom.Document) catalog.ProfFeatScore {
+
+	comps := doc.Components()
+	total := len(comps)
+
+	if total == 0 {
+		return catalog.ProfFeatScore{
+			Score:  0.0,
+			Desc:   "No components found.",
+			Ignore: false,
+		}
+	}
+
+	valid := 0
+
+	for _, comp := range comps {
+
+		hasIdentifier := false
+
+		// Check PURLs
+		for _, p := range comp.GetPurls() {
+			if strings.TrimSpace(string(p)) != "" {
+				hasIdentifier = true
+				break
+			}
+		}
+
+		// Check CPEs (only if not already valid)
+		if !hasIdentifier {
+			for _, cpe := range comp.GetCpes() {
+				if strings.TrimSpace(string(cpe)) != "" {
+					hasIdentifier = true
+					break
+				}
+			}
+		}
+
+		if hasIdentifier {
+			valid++
+		}
+	}
+
+	if valid == 0 {
+		return catalog.ProfFeatScore{
+			Score:  0.0,
+			Desc:   "No components declare additional unique identifiers (optional field).",
+			Ignore: true,
+		}
+	}
+
+	if valid == total {
+		return catalog.ProfFeatScore{
+			Score:  10.0,
+			Desc:   "Unique identifiers declared for all components.",
+			Ignore: false,
+		}
+	}
+
+	return catalog.ProfFeatScore{
+		Score:  float64(valid) / float64(total) * 10.0,
+		Desc:   fmt.Sprintf("%d/%d components declare unique identifiers.", valid, total),
 		Ignore: false,
 	}
 }

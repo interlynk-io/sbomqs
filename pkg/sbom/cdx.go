@@ -659,7 +659,7 @@ func copyC(cdxc *cydx.Component, c *CdxDoc) *Component {
 
 	if cdxc.ExternalReferences != nil {
 		sources := lo.Filter(*cdxc.ExternalReferences, func(er cydx.ExternalReference, _ int) bool {
-			return er.Type == cydx.ERTypeVCS
+			return er.Type == cydx.ERTypeVCS || er.Type == cydx.ERTypeSourceDistribution
 		})
 
 		if len(sources) > 0 {
@@ -672,6 +672,25 @@ func copyC(cdxc *cydx.Component, c *CdxDoc) *Component {
 
 		if len(downloads) > 0 {
 			nc.DownloadLocation = downloads[0].URL
+		}
+	}
+
+	// add source code hash if available in external references of type VCS or Source Distribution.
+	if cdxc.ExternalReferences != nil {
+		for _, er := range *cdxc.ExternalReferences {
+			if er.Type == cydx.ERTypeVCS || er.Type == cydx.ERTypeSourceDistribution {
+				if er.Hashes != nil {
+					for _, h := range *er.Hashes {
+						if h.Algorithm == cydx.HashAlgoSHA256 && strings.TrimSpace(h.Value) != "" {
+							nc.sourceCodeHash = h.Value
+							break
+						}
+					}
+				}
+			}
+			if nc.sourceCodeHash != "" {
+				break
+			}
 		}
 	}
 
