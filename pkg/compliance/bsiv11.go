@@ -1,4 +1,4 @@
-// Copyright 2025 Interlynk.io
+// Copyright 2026 Interlynk.io
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,15 +16,38 @@ package compliance
 
 import (
 	"context"
+	"net/mail"
+	"net/url"
 	"strings"
+	"time"
 
 	pkgcommon "github.com/interlynk-io/sbomqs/v2/pkg/common"
 	"github.com/interlynk-io/sbomqs/v2/pkg/compliance/common"
 	db "github.com/interlynk-io/sbomqs/v2/pkg/compliance/db"
 	"github.com/interlynk-io/sbomqs/v2/pkg/logger"
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
-	"github.com/samber/lo"
 )
+
+func bsiIsValidEmail(e string) bool {
+	e = strings.TrimSpace(e)
+	if e == "" {
+		return false
+	}
+	_, err := mail.ParseAddress(e)
+	return err == nil
+}
+
+func bsiIsValidURL(u string) bool {
+	u = strings.TrimSpace(u)
+	if u == "" {
+		return false
+	}
+	parsed, err := url.ParseRequestURI(u)
+	if err != nil {
+		return false
+	}
+	return parsed.Scheme != "" && parsed.Host != ""
+}
 
 var (
 	validBsiSpdxVersions = []string{"SPDX-2.3"}
@@ -112,12 +135,12 @@ func bsiResult(ctx context.Context, doc sbom.Document, fileName string, outForma
 
 	dtb := db.NewDB()
 
-	dtb.AddRecord(bsiSpec(doc))
-	dtb.AddRecord(bsiSpecVersion(doc))
-	dtb.AddRecord(bsiBuildPhase(doc))
-	dtb.AddRecord(bsiCreator(doc))
-	dtb.AddRecord(bsiTimestamp(doc))
-	dtb.AddRecord(bsiSbomURI(doc))
+	// Required SBOM-level checks
+	dtb.AddRecord(bsiv11SBOMCreator(doc))
+	dtb.AddRecord(bsiv11SBOMTimestamp(doc))
+
+	// Additional SBOM-level checks
+	dtb.AddRecord(bsiv11SBOMURI(doc))
 	dtb.AddRecords(bsiComponents(doc))
 
 	if outFormat == pkgcommon.FormatJSON {
@@ -133,180 +156,78 @@ func bsiResult(ctx context.Context, doc sbom.Document, fileName string, outForma
 	}
 }
 
-// bsiSpec returns the spec type of the SBOM document.
-// spec type can be either SPDX or CycloneDX.
-func bsiSpec(doc sbom.Document) *db.Record {
-	v := doc.Spec().GetSpecType()
-	vToLower := strings.Trim(strings.ToLower(v), " ")
-	result := ""
-	score := 0.0
+func bsiv11SBOMCreator(doc sbom.Document) *db.Record {
 
-	if vToLower == string(sbom.SBOMSpecSPDX) {
-		result = v
-		score = 10.0
-	} else if vToLower == string(sbom.SBOMSpecCDX) {
-		result = v
-		score = 10.0
-	}
-	return db.NewRecordStmt(SBOM_SPEC, "doc", result, score, "")
-}
-
-func bsiSpecVersion(doc sbom.Document) *db.Record {
-	spec := doc.Spec().GetSpecType()
-	version := doc.Spec().GetVersion()
-
-	result := ""
-	score := 0.0
-
-	if spec == string(sbom.SBOMSpecSPDX) {
-		count := lo.Count(validBsiSpdxVersions, version)
-		validate := lo.Contains(validSpdxVersion, version)
-		if validate {
-			if count > 0 {
-				result = version
-				score = 10.0
-			} else {
-				result = version
-				score = 0.0
-			}
-		}
-	} else if spec == string(sbom.SBOMSpecCDX) {
-		count := lo.Count(validBsiCdxVersions, version)
-		if count > 0 {
-			result = version
-			score = 10.0
-		}
-	}
-
-	return db.NewRecordStmt(SBOM_SPEC_VERSION, "doc", result, score, "")
-}
-
-func bsiBuildPhase(doc sbom.Document) *db.Record {
-	lifecycles := doc.Lifecycles()
-	result := ""
-	score := 0.0
-
-	found := lo.Count(lifecycles, "build")
-
-	if found > 0 {
-		result = "build"
-		score = 10.0
-	}
-
-	return db.NewRecordStmt(SBOM_BUILD, "doc", result, score, "")
-}
-
-func bsiCreator(doc sbom.Document) *db.Record {
-	result := ""
-	score := 0.0
-
+	// Authors: valid email only
 	for _, author := range doc.Authors() {
-		if author.GetEmail() != "" {
-			result = author.GetEmail()
-			score = 10.0
-			break
+		if bsiIsValidEmail(author.GetEmail()) {
+			return db.NewRecordStmt(SBOM_CREATOR, "doc", author.GetEmail(), 10.0, "")
 		}
 	}
 
-	if result != "" {
-		return db.NewRecordStmt(SBOM_CREATOR, "doc", result, score, "")
-	}
-
-	supplier := doc.Supplier()
-
-	if supplier != nil {
-		if supplier.GetEmail() != "" {
-			result = supplier.GetEmail()
-			score = 10.0
+	// Manufacturer: email -> URL -> contacts email (checked before supplier per BSI spec)
+	if m := doc.Manufacturer(); m != nil {
+		if bsiIsValidEmail(m.GetEmail()) {
+			return db.NewRecordStmt(SBOM_CREATOR, "doc", m.GetEmail(), 10.0, "")
 		}
 
-		if result != "" {
-			return db.NewRecordStmt(SBOM_CREATOR, "doc", result, score, "")
+		if bsiIsValidURL(m.GetURL()) {
+			return db.NewRecordStmt(SBOM_CREATOR, "doc", m.GetURL(), 10.0, "")
 		}
 
-		if supplier.GetURL() != "" {
-			result = supplier.GetURL()
-			score = 10.0
-		}
-
-		if result != "" {
-			return db.NewRecordStmt(SBOM_CREATOR, "doc", result, score, "")
-		}
-
-		if supplier.GetContacts() != nil {
-			for _, contact := range supplier.GetContacts() {
-				if contact.GetEmail() != "" {
-					result = contact.GetEmail()
-					score = 10.0
-					break
-				}
-			}
-
-			if result != "" {
-				return db.NewRecordStmt(SBOM_CREATOR, "doc", result, score, "")
+		for _, c := range m.GetContacts() {
+			if bsiIsValidEmail(c.GetEmail()) {
+				return db.NewRecordStmt(SBOM_CREATOR, "doc", c.GetEmail(), 10.0, "")
 			}
 		}
 	}
 
-	manufacturer := doc.Manufacturer()
-
-	if manufacturer != nil {
-		if manufacturer.GetEmail() != "" {
-			result = manufacturer.GetEmail()
-			score = 10.0
+	// Supplier: email -> URL -> contacts email (fallback)
+	if s := doc.Supplier(); s != nil {
+		if bsiIsValidEmail(s.GetEmail()) {
+			return db.NewRecordStmt(SBOM_CREATOR, "doc", s.GetEmail(), 10.0, "")
 		}
 
-		if result != "" {
-			return db.NewRecordStmt(SBOM_CREATOR, "doc", result, score, "")
+		if bsiIsValidURL(s.GetURL()) {
+			return db.NewRecordStmt(SBOM_CREATOR, "doc", s.GetURL(), 10.0, "")
 		}
 
-		if manufacturer.GetURL() != "" {
-			result = manufacturer.GetURL()
-			score = 10.0
-		}
-
-		if result != "" {
-			return db.NewRecordStmt(SBOM_CREATOR, "doc", result, score, "")
-		}
-
-		if manufacturer.GetContacts() != nil {
-			for _, contact := range manufacturer.GetContacts() {
-				if contact.GetEmail() != "" {
-					result = contact.GetEmail()
-					score = 10.0
-					break
-				}
-			}
-
-			if result != "" {
-				return db.NewRecordStmt(SBOM_CREATOR, "doc", result, score, "")
+		for _, c := range s.GetContacts() {
+			if bsiIsValidEmail(c.GetEmail()) {
+				return db.NewRecordStmt(SBOM_CREATOR, "doc", c.GetEmail(), 10.0, "")
 			}
 		}
 	}
+
 	return db.NewRecordStmt(SBOM_CREATOR, "doc", "", 0.0, "")
 }
 
-func bsiTimestamp(doc sbom.Document) *db.Record {
+func bsiv11SBOMTimestamp(doc sbom.Document) *db.Record {
 	result, score := "", 0.0
+	result = strings.TrimSpace(doc.Spec().GetCreationTimestamp())
 
-	if result = doc.Spec().GetCreationTimestamp(); result != "" {
-		if _, isTimeCorrect := common.CheckTimestamp(result); isTimeCorrect {
+	if result != "" {
+		if _, err := time.Parse(time.RFC3339, result); err == nil {
 			score = 10.0
 		}
 	}
 	return db.NewRecordStmt(SBOM_TIMESTAMP, "doc", result, score, "")
 }
 
-func bsiSbomURI(doc sbom.Document) *db.Record {
-	uri := doc.Spec().GetURI()
+func bsiv11SBOMURI(doc sbom.Document) *db.Record {
+	uri := strings.TrimSpace(doc.Spec().GetURI())
 
-	if uri != "" {
-		brokenResult := breakLongString(uri, 50)
-		result := strings.Join(brokenResult, "\n")
-		return db.NewRecordStmt(SBOM_URI, "doc", result, 10.0, "")
+	if uri == "" {
+		return db.NewRecordStmt(SBOM_URI, "doc", "", 0.0, "")
 	}
 
-	return db.NewRecordStmt(SBOM_URI, "doc", "", 0.0, "")
+	if !bsiIsValidURL(uri) && !strings.HasPrefix(uri, "urn:") {
+		return db.NewRecordStmt(SBOM_URI, "doc", uri, 0.0, "")
+	}
+
+	brokenResult := breakLongString(uri, 50)
+	result := strings.Join(brokenResult, "\n")
+	return db.NewRecordStmt(SBOM_URI, "doc", result, 10.0, "")
 }
 
 func bsiComponents(doc sbom.Document) []*db.Record {
@@ -318,16 +239,18 @@ func bsiComponents(doc sbom.Document) []*db.Record {
 	}
 
 	for _, component := range doc.Components() {
-		records = append(records, bsiComponentCreator(component))
-		records = append(records, bsiComponentName(component))
-		records = append(records, bsiComponentVersion(component))
-		records = append(records, bsiComponentLicense(component))
-		records = append(records, bsiComponentDependencies(doc, component))
-		records = append(records, bsiComponentHash(component))
-		records = append(records, bsiComponentSourceCodeURL(component))
-		records = append(records, bsiComponentDownloadURL(component))
-		records = append(records, bsiComponentSourceHash(component))
-		records = append(records, bsiComponentOtherUniqIDs(component))
+		records = append(records, bsiv11ComponentCreator(component))
+		records = append(records, bsiv11ComponentName(component))
+		records = append(records, bsiv11ComponentVersion(component))
+		records = append(records, bsiv11ComponentDependencies(doc, component))
+		records = append(records, bsiv11ComponentLicense(component))
+		records = append(records, bsiv11ComponentHash(component))
+
+		// Assitional fields
+		records = append(records, bsiv11ComponentSourceCodeURL(component))
+		records = append(records, bsiv11ComponentDownloadURL(component))
+		records = append(records, bsiv11ComponentSourceHash(component))
+		records = append(records, bsiv11ComponentOtherUniqueIdentifiers(component))
 	}
 
 	records = append(records, db.NewRecordStmt(SBOM_COMPONENTS, "doc", "present", 10.0, ""))
@@ -335,7 +258,70 @@ func bsiComponents(doc sbom.Document) []*db.Record {
 	return records
 }
 
-// bsiComponentDependencies reports dependency enumeration for a single component
+func bsiv11ComponentCreator(component sbom.GetComponent) *db.Record {
+	id := common.UniqueElementID(component)
+
+	// Authors: valid email only
+	for _, a := range component.Authors() {
+		if bsiIsValidEmail(a.GetEmail()) {
+			return db.NewRecordStmt(COMP_CREATOR, id, a.GetEmail(), 10.0, "")
+		}
+	}
+
+	// Manufacturer: email -> URL -> contacts email (checked before supplier per BSI spec)
+	if m := component.Manufacturer(); !m.IsAbsent() {
+		if bsiIsValidEmail(m.GetEmail()) {
+			return db.NewRecordStmt(COMP_CREATOR, id, m.GetEmail(), 10.0, "")
+		}
+		if bsiIsValidURL(m.GetURL()) {
+			return db.NewRecordStmt(COMP_CREATOR, id, m.GetURL(), 10.0, "")
+		}
+		for _, c := range m.GetContacts() {
+			if bsiIsValidEmail(c.GetEmail()) {
+				return db.NewRecordStmt(COMP_CREATOR, id, c.GetEmail(), 10.0, "")
+			}
+		}
+	}
+
+	// Suppliers: email -> URL -> contacts email (fallback)
+	if s := component.Suppliers(); !s.IsAbsent() {
+		if bsiIsValidEmail(s.GetEmail()) {
+			return db.NewRecordStmt(COMP_CREATOR, id, s.GetEmail(), 10.0, "")
+		}
+		if bsiIsValidURL(s.GetURL()) {
+			return db.NewRecordStmt(COMP_CREATOR, id, s.GetURL(), 10.0, "")
+		}
+		for _, c := range s.GetContacts() {
+			if bsiIsValidEmail(c.GetEmail()) {
+				return db.NewRecordStmt(COMP_CREATOR, id, c.GetEmail(), 10.0, "")
+			}
+		}
+	}
+
+	return db.NewRecordStmt(COMP_CREATOR, id, "", 0.0, "")
+}
+
+func bsiv11ComponentName(component sbom.GetComponent) *db.Record {
+	result := strings.TrimSpace(component.GetName())
+
+	if result != "" {
+		return db.NewRecordStmt(COMP_NAME, common.UniqueElementID(component), result, 10.0, "")
+	}
+
+	return db.NewRecordStmt(COMP_NAME, common.UniqueElementID(component), "", 0.0, "")
+}
+
+func bsiv11ComponentVersion(component sbom.GetComponent) *db.Record {
+	result := strings.TrimSpace(component.GetVersion())
+
+	if result != "" {
+		return db.NewRecordStmt(COMP_VERSION, common.UniqueElementID(component), result, 10.0, "")
+	}
+
+	return db.NewRecordStmt(COMP_VERSION, common.UniqueElementID(component), "", 0.0, "")
+}
+
+// bsiv11ComponentDependencies reports dependency enumeration for a single component
 // according to BSI TR-03183.
 //
 // BSI semantics:
@@ -345,110 +331,137 @@ func bsiComponents(doc sbom.Document) []*db.Record {
 //     those references MUST be valid and resolvable.
 //   - Missing dependencies do NOT cause failure.
 //   - Only incorrect or broken dependency declarations result in a failing score.
-func bsiComponentDependencies(doc sbom.Document, component sbom.GetComponent) *db.Record {
-
+func bsiv11ComponentDependencies(doc sbom.Document, component sbom.GetComponent) *db.Record {
 	compID := component.GetID()
-	deps := doc.GetDirectDependencies(compID, "DEPENDS_ON", "CONTAINS")
 
-	// Leaf Component
-	if len(deps) == 0 {
-		return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), "no-dependencies", SCORE_FULL, "")
+	componentMap := make(map[string]sbom.GetComponent)
+	for _, c := range doc.Components() {
+		componentMap[c.GetID()] = c
 	}
 
-	names := make([]string, 0, len(deps))
-	for _, dep := range deps {
-		name := strings.TrimSpace(dep.GetName())
+	var declared []string
+	for _, r := range doc.GetOutgoingRelations(compID) {
+		if strings.EqualFold(r.GetType(), "DEPENDS_ON") || strings.EqualFold(r.GetType(), "CONTAINS") {
+			declared = append(declared, r.GetTo())
+		}
+	}
+
+	// case:1 Leaf components
+	if len(declared) == 0 {
+		return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), "no-dependencies", 10.0, "")
+	}
+
+	// case:2 validate each dependency
+	var names []string
+	for _, depID := range declared {
+		depComp, exists := componentMap[depID]
+		if !exists {
+			return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), "broken-dependencies", 0.0, "")
+
+		}
+
+		name := strings.TrimSpace(depComp.GetName())
 		if name != "" {
 			names = append(names, name)
 		}
 	}
 
+	// case:3 validate dependency
 	result := strings.Join(names, ", ")
-	return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), result, SCORE_FULL, "")
+
+	return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), result, 10.0, "")
 }
 
-func bsiComponentLicense(component sbom.GetComponent) *db.Record {
-	licenses := component.GetLicenses()
+func bsiv11ComponentLicense(component sbom.GetComponent) *db.Record {
+
 	score := 0.0
+	result := ""
 
-	if len(licenses) == 0 {
-		return db.NewRecordStmt(COMP_LICENSE, common.UniqueElementID(component), "not-compliant", score, "")
+	hasAny := false
+	hasValid := false
+
+	// Check Concluded Licenses
+	for _, l := range component.ConcludedLicenses() {
+
+		hasAny = true
+
+		id := strings.TrimSpace(l.ShortID())
+		if id == "" {
+			continue
+		}
+
+		u := strings.ToUpper(id)
+		if u == "NONE" || u == "NOASSERTION" {
+			continue
+		}
+
+		// Accept valid SPDX
+		if l.Spdx() {
+			hasValid = true
+			break
+		}
+
+		// Accept valid LicenseRef-*
+		if l.Custom() && strings.HasPrefix(id, "LicenseRef-") {
+			hasValid = true
+			break
+		}
 	}
 
-	if !common.AreLicensesValid(licenses) {
-		return db.NewRecordStmt(COMP_LICENSE, common.UniqueElementID(component), "non-compliant", 0.0, "")
+	//  Check Declared Licenses (fallback)
+	if !hasValid {
+		for _, l := range component.DeclaredLicenses() {
+
+			hasAny = true
+
+			id := strings.TrimSpace(l.ShortID())
+			if id == "" {
+				continue
+			}
+
+			u := strings.ToUpper(id)
+			if u == "NONE" || u == "NOASSERTION" {
+				continue
+			}
+
+			if l.Spdx() {
+				hasValid = true
+				break
+			}
+
+			if l.Custom() && strings.HasPrefix(id, "LicenseRef-") {
+				hasValid = true
+				break
+			}
+		}
 	}
 
-	return db.NewRecordStmt(COMP_LICENSE, common.UniqueElementID(component), "compliant", 10.0, "")
+	switch {
+	case hasValid:
+		score = 10.0
+		result = "compliant"
+
+	case hasAny:
+		score = 0.0
+		result = "non-compliant"
+
+	default:
+		score = 0.0
+		result = "missing"
+	}
+
+	return db.NewRecordStmt(COMP_LICENSE, common.UniqueElementID(component), result, score, "")
 }
 
-func bsiComponentSourceHash(component sbom.GetComponent) *db.Record {
+func bsiv11ComponentHash(component sbom.GetComponent) *db.Record {
 	result := ""
 	score := 0.0
 
-	if component.SourceCodeHash() != "" {
-		result = component.SourceCodeHash()
-		score = 10.0
-	}
+	for _, checksum := range component.GetChecksums() {
+		algo := strings.ToUpper(strings.ReplaceAll(checksum.GetAlgo(), "-", ""))
+		value := strings.TrimSpace(checksum.GetContent())
 
-	return db.NewRecordStmtOptional(COMP_SOURCE_HASH, common.UniqueElementID(component), result, score)
-}
-
-func bsiComponentOtherUniqIDs(component sbom.GetComponent) *db.Record {
-	result := ""
-	score := 0.0
-
-	purl := component.GetPurls()
-
-	if len(purl) > 0 {
-		result = string(purl[0])
-		result := common.WrapLongTextIntoMulti(result, 100)
-		score = 10.0
-
-		return db.NewRecordStmtOptional(COMP_OTHER_UNIQ_IDS, common.UniqueElementID(component), result, score)
-	}
-
-	cpes := component.GetCpes()
-
-	if len(cpes) > 0 {
-		result = string(cpes[0])
-		result := common.WrapLongTextIntoMulti(result, 100)
-		score = 10.0
-
-		return db.NewRecordStmtOptional(COMP_OTHER_UNIQ_IDS, common.UniqueElementID(component), result, score)
-	}
-
-	return db.NewRecordStmtOptional(COMP_OTHER_UNIQ_IDS, common.UniqueElementID(component), "", 0.0)
-}
-
-func bsiComponentDownloadURL(component sbom.GetComponent) *db.Record {
-	result := component.GetDownloadLocationURL()
-
-	if result != "" {
-		return db.NewRecordStmtOptional(COMP_DOWNLOAD_URL, common.UniqueElementID(component), result, 10.0)
-	}
-	return db.NewRecordStmtOptional(COMP_DOWNLOAD_URL, common.UniqueElementID(component), "", 0.0)
-}
-
-func bsiComponentSourceCodeURL(component sbom.GetComponent) *db.Record {
-	result := component.GetSourceCodeURL()
-
-	if result != "" {
-		return db.NewRecordStmtOptional(COMP_SOURCE_CODE_URL, common.UniqueElementID(component), result, 10.0)
-	}
-
-	return db.NewRecordStmtOptional(COMP_SOURCE_CODE_URL, common.UniqueElementID(component), "", 0.0)
-}
-
-func bsiComponentHash(component sbom.GetComponent) *db.Record {
-	result := ""
-	algos := []string{"SHA256", "SHA-256", "sha256", "sha-256"}
-	score := 0.0
-
-	checksums := component.GetChecksums()
-
-	for _, checksum := range checksums {
-		if lo.Count(algos, checksum.GetAlgo()) > 0 {
+		if algo == "SHA256" && value != "" {
 			result = checksum.GetContent()
 			score = 10.0
 			break
@@ -458,100 +471,67 @@ func bsiComponentHash(component sbom.GetComponent) *db.Record {
 	return db.NewRecordStmt(COMP_HASH, common.UniqueElementID(component), result, score, "")
 }
 
-func bsiComponentVersion(component sbom.GetComponent) *db.Record {
-	result := component.GetVersion()
+func bsiv11ComponentSourceCodeURL(component sbom.GetComponent) *db.Record {
+	result := strings.TrimSpace(component.GetSourceCodeURL())
 
 	if result != "" {
-		return db.NewRecordStmt(COMP_VERSION, common.UniqueElementID(component), result, 10.0, "")
+		if bsiIsValidURL(result) {
+			return db.NewRecordStmtOptional(COMP_SOURCE_CODE_URL, common.UniqueElementID(component), result, 10.0)
+		}
 	}
 
-	return db.NewRecordStmt(COMP_VERSION, common.UniqueElementID(component), "", 0.0, "")
+	return db.NewRecordStmtOptional(COMP_SOURCE_CODE_URL, common.UniqueElementID(component), "", 0.0)
 }
 
-func bsiComponentName(component sbom.GetComponent) *db.Record {
-	result := component.GetName()
+func bsiv11ComponentDownloadURL(component sbom.GetComponent) *db.Record {
+	result := strings.TrimSpace(component.GetDownloadLocationURL())
 
 	if result != "" {
-		return db.NewRecordStmt(COMP_NAME, common.UniqueElementID(component), result, 10.0, "")
+		if bsiIsValidURL(result) {
+			return db.NewRecordStmtOptional(COMP_DOWNLOAD_URL, common.UniqueElementID(component), result, 10.0)
+		}
 	}
-
-	return db.NewRecordStmt(COMP_NAME, common.UniqueElementID(component), "", 0.0, "")
+	return db.NewRecordStmtOptional(COMP_DOWNLOAD_URL, common.UniqueElementID(component), "", 0.0)
 }
 
-func bsiComponentCreator(component sbom.GetComponent) *db.Record {
-	result := ""
+func bsiv11ComponentSourceHash(component sbom.GetComponent) *db.Record {
+	result := strings.TrimSpace(component.SourceCodeHash())
 	score := 0.0
 
-	supplier := component.Suppliers()
-	if supplier != nil {
-		if supplier.GetEmail() != "" {
-			result = supplier.GetEmail()
+	if result != "" {
+		result = component.SourceCodeHash()
+		score = 10.0
+	}
+
+	return db.NewRecordStmtOptional(COMP_SOURCE_HASH, common.UniqueElementID(component), result, score)
+}
+
+func bsiv11ComponentOtherUniqueIdentifiers(component sbom.GetComponent) *db.Record {
+
+	var result string
+	score := 0.0
+
+	// Check PURLs
+	for _, p := range component.GetPurls() {
+		v := strings.TrimSpace(string(p))
+		if v != "" {
+			result = v
 			score = 10.0
+			break
 		}
+	}
 
-		if result != "" {
-			return db.NewRecordStmt(COMP_CREATOR, common.UniqueElementID(component), result, score, "")
-		}
-
-		if supplier.GetURL() != "" {
-			result = supplier.GetURL()
-			score = 10.0
-		}
-
-		if result != "" {
-			return db.NewRecordStmt(COMP_CREATOR, common.UniqueElementID(component), result, score, "")
-		}
-
-		if supplier.GetContacts() != nil {
-			for _, contact := range supplier.GetContacts() {
-				if contact.GetEmail() != "" {
-					result = contact.GetEmail()
-					score = 10.0
-					break
-				}
-			}
-
-			if result != "" {
-				return db.NewRecordStmt(COMP_CREATOR, common.UniqueElementID(component), result, score, "")
+	// Check CPEs (fallback)resul
+	if result == "" {
+		for _, cpe := range component.GetCpes() {
+			v := strings.TrimSpace(string(cpe))
+			if v != "" {
+				result = v
+				score = 10.0
+				break
 			}
 		}
 	}
 
-	manufacturer := component.Manufacturer()
-
-	if manufacturer != nil {
-		if manufacturer.GetEmail() != "" {
-			result = manufacturer.GetEmail()
-			score = 10.0
-		}
-
-		if result != "" {
-			return db.NewRecordStmt(COMP_CREATOR, common.UniqueElementID(component), result, score, "")
-		}
-
-		if manufacturer.GetURL() != "" {
-			result = manufacturer.GetURL()
-			score = 10.0
-		}
-
-		if result != "" {
-			return db.NewRecordStmt(COMP_CREATOR, common.UniqueElementID(component), result, score, "")
-		}
-
-		if manufacturer.GetContacts() != nil {
-			for _, contact := range manufacturer.GetContacts() {
-				if contact.GetEmail() != "" {
-					result = contact.GetEmail()
-					score = 10.0
-					break
-				}
-			}
-
-			if result != "" {
-				return db.NewRecordStmt(COMP_CREATOR, common.UniqueElementID(component), result, score, "")
-			}
-		}
-	}
-
-	return db.NewRecordStmt(COMP_CREATOR, common.UniqueElementID(component), "", 0.0, "")
+	return db.NewRecordStmtOptional(COMP_OTHER_UNIQ_IDS, common.UniqueElementID(component), result, score)
 }
