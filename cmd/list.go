@@ -1,4 +1,4 @@
-// Copyright 2025 Interlynk.io
+// Copyright 2026 Interlynk.io
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"sort"
 	"strings"
 
 	"github.com/interlynk-io/sbomqs/v2/pkg/engine"
@@ -104,7 +105,7 @@ var listCmd = &cobra.Command{
 func parseListParams(cmd *cobra.Command, args []string) *userListCmd {
 	uCmd := &userListCmd{}
 
-	// Input control
+	// -- Input control --
 	uCmd.path = args[0]
 
 	// Filter control
@@ -114,7 +115,7 @@ func parseListParams(cmd *cobra.Command, args []string) *userListCmd {
 	missing, _ := cmd.Flags().GetBool("missing")
 	uCmd.missing = missing
 
-	// Output control
+	// -- Output control --
 	basic, _ := cmd.Flags().GetBool("basic")
 	uCmd.basic = basic
 
@@ -130,7 +131,7 @@ func parseListParams(cmd *cobra.Command, args []string) *userListCmd {
 	show, _ := cmd.Flags().GetBool("show")
 	uCmd.show = show
 
-	// Debug control
+	// -- Debug control --
 	debug, _ := cmd.Flags().GetBool("debug")
 	uCmd.debug = debug
 
@@ -154,34 +155,39 @@ func fromListToEngineParams(uCmd *userListCmd) *engine.Params {
 func init() {
 	rootCmd.AddCommand(listCmd)
 
-	// Filter Control
-	listCmd.Flags().String("feature", "", "Filter by feature (e.g., 'sbom_authors', 'comp_with_name', 'sbom_creation_timestamp'); if repeated, last value is used")
-	err := listCmd.MarkFlagRequired("feature")
-	if err != nil {
-		log.Fatal(err)
-	}
+	// -- Filter Control --
+	listCmd.Flags().String("feature", "", "Filter by a supported feature (run 'sbomqs features' to list all)")
+	_ = listCmd.MarkFlagRequired("feature")
+
 	listCmd.Flags().BoolP("missing", "m", false, "List components or properties missing the specified feature")
 
-	// Output Control
+	// -- Output Control --
 	listCmd.Flags().BoolP("basic", "b", false, "Results in single-line format")
 	listCmd.Flags().BoolP("json", "j", false, "Results in JSON")
 	listCmd.Flags().BoolP("detailed", "d", true, "Results in table format, default")
 	listCmd.Flags().BoolP("color", "l", false, "Output in color")
 	listCmd.Flags().BoolP("show", "s", false, "Show values of features, (default: false)")
 
-	// Debug Control
+	// -- Debug Control --
 	listCmd.Flags().BoolP("debug", "D", false, "Enable debug logging")
 
 	// Register flag completion for --feature
-	err = listCmd.RegisterFlagCompletionFunc("feature", func(_ *cobra.Command, _ []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		var completions []string
-		for feature := range isFeaturePresent {
-			if strings.HasPrefix(feature, toComplete) {
-				completions = append(completions, feature)
+	err := listCmd.RegisterFlagCompletionFunc("feature",
+		func(_ *cobra.Command, _ []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+
+			var completions []string
+
+			for _, f := range FeatureRegistry {
+				if strings.HasPrefix(f.Name, toComplete) {
+					completions = append(completions, f.Name)
+				}
 			}
-		}
-		return completions, cobra.ShellCompDirectiveNoFileComp
-	})
+
+			sort.Strings(completions)
+
+			return completions, cobra.ShellCompDirectiveNoFileComp
+		})
+
 	if err != nil {
 		log.Fatalf("Failed to register flag completion for --feature: %v", err)
 	}
@@ -195,7 +201,7 @@ func validateparsedListCmd(uCmd *userListCmd) error {
 
 	// Validate feature
 	feature := uCmd.feature
-	if feature == "" {
+	if strings.TrimSpace(feature) == "" {
 		return errors.New("feature is required")
 	}
 
@@ -209,103 +215,132 @@ func validateparsedListCmd(uCmd *userListCmd) error {
 
 	// Trim spaces
 	cleaned := strings.TrimSpace(feature)
-
 	uCmd.feature = cleaned
 
-	// // Validate against supported features
-	// if _, ok := isFeaturePresent[cleaned]; !ok {
-	// 	var supportedFeatures []string
-	// 	for f := range isFeaturePresent {
-	// 		supportedFeatures = append(supportedFeatures, f)
-	// 	}
-	// 	return fmt.Errorf("feature %q is not supported; supported features are: %s", cleaned, strings.Join(supportedFeatures, ", "))
-	// }
+	if _, ok := featureLookup[cleaned]; !ok {
+		return fmt.Errorf(
+			"feature %q is not supported.\n\nRun \"sbomqs features\" to see supported features.",
+			cleaned,
+		)
+	}
 
 	return nil
 }
 
-var isFeaturePresent = map[string]bool{
-	"comp_with_name":                 true,
-	"comp_name":                      true,
-	"comp_with_version":              true,
-	"comp_version":                   true,
-	"comp_with_supplier":             true,
-	"comp_supplier":                  true,
-	"comp_with_uniq_ids":             true,
-	"comp_license":                   true,
-	"comp_valid_licenses":            true,
-	"comp_with_any_vuln_lookup_id":   true,
-	"comp_with_deprecated_licenses":  true,
-	"comp_with_multi_vuln_lookup_id": true,
-	"comp_with_primary_purpose":      true,
-	"comp_with_restrictive_licenses": true,
+type Feature struct {
+	Name        string
+	Category    string
+	Description string
+}
 
-	"comp_with_checksums":        true,
-	"comp_hash":                  true,
-	"comp_with_sha256":           true,
-	"comp_hash_sha256":           true,
-	"comp_with_licenses":         true,
-	"comp_with_checksums_sha256": true,
-	"comp_with_source_code_uri":  true,
-	"comp_with_source_code":      true,
-	"comp_with_source_code_hash": true,
-	"comp_source_hash":           true,
-	"comp_with_executable_uri":   true,
-	"comp_with_dependencies":     true,
-	"comp_dependencies":          true,
-	"comp_depth":                 true,
+var FeatureRegistry = []Feature{
 
-	// "comp_with_executable_hash":      true,
+	// == SBOM: Metadata & Structure ==
 
-	"comp_with_valid_licenses":     true,
-	"comp_with_associated_license": true,
-	"comp_associated_license":      true,
-	"comp_with_concluded_license":  true,
-	"comp_with_declared_license":   true,
-	"comp_no_deprecated_licenses":  true,
-	"comp_no_restrictive_licenses": true,
+	{Name: "sbom_name", Category: "SBOM", Description: "Validate SBOM name field"},
+	{Name: "sbom_creator", Category: "SBOM", Description: "Validate SBOM creator information"},
+	{Name: "sbom_authors", Category: "SBOM", Description: "Validate SBOM authors field"},
+	{Name: "sbom_creation_timestamp", Category: "SBOM", Description: "Validate SBOM creation timestamp"},
+	{Name: "sbom_timestamp", Category: "SBOM", Description: "Validate SBOM timestamp field"},
+	{Name: "sbom_tool", Category: "SBOM", Description: "Validate SBOM tool metadata"},
+	{Name: "sbom_organization", Category: "SBOM", Description: "Validate SBOM organization metadata"},
+	{Name: "sbom_spdxid", Category: "SBOM", Description: "Validate SPDX ID presence"},
+	{Name: "sbom_schema_valid", Category: "SBOM", Description: "Validate SBOM against schema"},
+	{Name: "sbom_parsable", Category: "SBOM", Description: "Ensure SBOM can be parsed successfully"},
+	{Name: "sbom_machine_format", Category: "SBOM", Description: "Validate machine-readable SBOM format"},
+	{Name: "sbom_sharable", Category: "SBOM", Description: "Validate SBOM sharability compliance"},
 
-	"comp_with_purpose":          true,
-	"comp_purpose":               true,
-	"comp_with_purl":             true,
-	"comp_with_cpe":              true,
-	"comp_purl":                  true,
-	"comp_cpe":                   true,
-	"comp_with_weak_checksums":   true,
-	"comp_with_strong_checksums": true,
-	"comp_with_copyright":        true,
-	"comp_with_local_id":         true,
+	// == SBOM: Specification & Format ==
+	{Name: "sbom_spec", Category: "SBOM", Description: "Ensure SBOM specification is declared"},
+	{Name: "sbom_spec_declared", Category: "SBOM", Description: "Validate SBOM specification declaration"},
+	{Name: "sbom_spec_version", Category: "SBOM", Description: "Validate SBOM specification version"},
+	{Name: "spec_with_version_compliant", Category: "SBOM", Description: "Validate SBOM spec version compliance"},
+	{Name: "sbom_spec_file_format", Category: "SBOM", Description: "Validate SBOM specification file format"},
+	{Name: "sbom_file_format", Category: "SBOM", Description: "Validate SBOM file format"},
 
-	"sbom_creation_timestamp":       true,
-	"sbom_timestamp":                true,
-	"sbom_authors":                  true,
-	"sbom_creator":                  true,
-	"sbom_with_creator_and_version": true,
-	"sbom_tool":                     true,
-	"sbom_with_primary_component":   true,
-	"sbom_primary_component":        true,
-	"sbom_dependencies":             true,
-	"sbom_depth":                    true,
-	"sbom_sharable":                 true,
-	"sbom_parsable":                 true,
-	"sbom_spec":                     true,
-	"sbom_spec_declared":            true,
-	"sbom_spec_file_format":         true,
-	"sbom_file_format":              true,
-	"sbom_spec_version":             true,
-	"spec_with_version_compliant":   true,
-	"sbom_with_uri":                 true,
-	"sbom_uri":                      true,
-	"sbom_with_vuln":                true,
-	"sbom_build_process":            true,
-	"sbom_build":                    true,
-	"sbom_with_bomlinks":            true,
-	"sbom_bomlinks":                 true,
-	"sbom_vulnerabilities":          true,
-	"sbom_machine_format":           true,
-	"sbom_spdxid":                   true,
-	"sbom_name":                     true,
-	"sbom_organization":             true,
-	"sbom_schema_valid":             true,
-	// "sbom_with_signature":           true,
+	// == SBOM: Structure & Relationships ==
+	{Name: "sbom_dependencies", Category: "SBOM", Description: "Validate SBOM dependency graph"},
+	{Name: "sbom_depth", Category: "SBOM", Description: "Validate SBOM dependency depth"},
+	{Name: "sbom_with_primary_component", Category: "SBOM", Description: "Validate SBOM has a primary component"},
+	{Name: "sbom_primary_component", Category: "SBOM", Description: "Validate primary component details"},
+	{Name: "sbom_with_uri", Category: "SBOM", Description: "Validate SBOM contains URI reference"},
+	{Name: "sbom_uri", Category: "SBOM", Description: "Validate SBOM URI field"},
+	{Name: "sbom_build", Category: "SBOM", Description: "Validate SBOM build metadata"},
+	{Name: "sbom_build_process", Category: "SBOM", Description: "Validate SBOM build process information"},
+	{Name: "sbom_with_bomlinks", Category: "SBOM", Description: "Validate presence of BOM links"},
+	{Name: "sbom_bomlinks", Category: "SBOM", Description: "Validate SBOM BOM links section"},
+
+	// == SBOM: Security ==
+	{Name: "sbom_vulnerabilities", Category: "Security", Description: "Validate SBOM vulnerability section"},
+	{Name: "sbom_with_vuln", Category: "Security", Description: "Validate SBOM contains vulnerability entries"},
+
+	// == Component: Identity ==
+
+	{Name: "comp_name", Category: "Component", Description: "Validate component name"},
+	{Name: "comp_with_name", Category: "Component", Description: "Ensure component has a name"},
+	{Name: "comp_version", Category: "Component", Description: "Validate component version"},
+	{Name: "comp_with_version", Category: "Component", Description: "Ensure component has version"},
+	{Name: "comp_supplier", Category: "Component", Description: "Validate component supplier"},
+	{Name: "comp_with_supplier", Category: "Component", Description: "Ensure component supplier exists"},
+	{Name: "comp_with_uniq_ids", Category: "Component", Description: "Ensure component has unique identifiers"},
+	{Name: "comp_with_local_id", Category: "Component", Description: "Validate component local identifier"},
+	{Name: "comp_purl", Category: "Component", Description: "Validate component PURL"},
+	{Name: "comp_with_purl", Category: "Component", Description: "Ensure component has PURL"},
+	{Name: "comp_cpe", Category: "Component", Description: "Validate component CPE"},
+	{Name: "comp_with_cpe", Category: "Component", Description: "Ensure component has CPE"},
+	{Name: "comp_purpose", Category: "Component", Description: "Validate component purpose field"},
+	{Name: "comp_with_purpose", Category: "Component", Description: "Ensure component purpose exists"},
+	{Name: "comp_with_primary_purpose", Category: "Component", Description: "Validate primary purpose designation"},
+
+	// == Component: Structure & Relationships ==
+
+	{Name: "comp_dependencies", Category: "Component", Description: "Validate component dependencies"},
+	{Name: "comp_with_dependencies", Category: "Component", Description: "Ensure component dependency section exists"},
+	{Name: "comp_depth", Category: "Component", Description: "Validate component dependency depth"},
+
+	// == Component: Integrity & Checksums ==
+
+	{Name: "comp_hash", Category: "Component", Description: "Validate component hash presence"},
+	{Name: "comp_with_sha256", Category: "Component", Description: "Ensure component has SHA256 checksum"},
+	{Name: "comp_hash_sha256", Category: "Component", Description: "Validate component SHA256 checksum"},
+	{Name: "comp_with_checksums", Category: "Component", Description: "Ensure component has checksums"},
+	{Name: "comp_with_checksums_sha256", Category: "Component", Description: "Ensure component has SHA256 checksum entry"},
+	{Name: "comp_with_strong_checksums", Category: "Component", Description: "Validate component uses strong checksums"},
+	{Name: "comp_with_weak_checksums", Category: "Component", Description: "Detect weak checksum algorithms"},
+	{Name: "comp_source_hash", Category: "Component", Description: "Validate source code hash"},
+	{Name: "comp_with_source_code_hash", Category: "Component", Description: "Ensure source code hash exists"},
+
+	// == Component: Source & Executable ==
+
+	{Name: "comp_with_source_code", Category: "Component", Description: "Ensure component references source code"},
+	{Name: "comp_with_source_code_uri", Category: "Component", Description: "Validate source code URI"},
+	{Name: "comp_with_executable_uri", Category: "Component", Description: "Validate executable URI"},
+
+	// == License ==
+
+	{Name: "comp_license", Category: "License", Description: "Validate component license presence"},
+	{Name: "comp_with_licenses", Category: "License", Description: "Ensure component license section exists"},
+	{Name: "comp_valid_licenses", Category: "License", Description: "Validate license identifiers"},
+	{Name: "comp_with_valid_licenses", Category: "License", Description: "Ensure licenses are valid SPDX identifiers"},
+	{Name: "comp_with_declared_license", Category: "License", Description: "Validate declared license"},
+	{Name: "comp_with_concluded_license", Category: "License", Description: "Validate concluded license"},
+	{Name: "comp_associated_license", Category: "License", Description: "Validate associated license"},
+	{Name: "comp_with_associated_license", Category: "License", Description: "Ensure associated license exists"},
+	{Name: "comp_with_deprecated_licenses", Category: "License", Description: "Detect deprecated licenses"},
+	{Name: "comp_no_deprecated_licenses", Category: "License", Description: "Ensure no deprecated licenses are used"},
+	{Name: "comp_with_restrictive_licenses", Category: "License", Description: "Detect restrictive licenses"},
+	{Name: "comp_no_restrictive_licenses", Category: "License", Description: "Ensure no restrictive licenses are used"},
+
+	// == Security — Vulnerabilities ==
+
+	{Name: "comp_with_any_vuln_lookup_id", Category: "Security", Description: "Ensure component has vulnerability lookup ID"},
+	{Name: "comp_with_multi_vuln_lookup_id", Category: "Security", Description: "Ensure component has multiple vulnerability lookup IDs"},
+}
+
+var featureLookup = make(map[string]Feature)
+
+func init() {
+	for _, f := range FeatureRegistry {
+		featureLookup[f.Name] = f
+	}
 }
