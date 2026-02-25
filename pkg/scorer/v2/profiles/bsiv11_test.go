@@ -4729,8 +4729,8 @@ func TestBSIV11CompSourceURI(t *testing.T) {
 		got := BSIV11CompSourceURI(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "Source code URI declared but invalid for all components.", got.Desc)
-		assert.False(t, got.Ignore)
+		assert.Equal(t, "No components declare source code URI (additional field).", got.Desc)
+		assert.True(t, got.Ignore)
 	})
 
 	// SPDX has no deterministic source-code-URI field.
@@ -4952,8 +4952,8 @@ func TestBSIV11CompExecutableURI(t *testing.T) {
 		got := BSIV11CompExecutableURI(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "Executable URI declared but invalid for all components.", got.Desc)
-		assert.False(t, got.Ignore)
+		assert.Equal(t, "No components declare executable URI (additional field).", got.Desc)
+		assert.True(t, got.Ignore)
 	})
 
 	// cdxCompPURLAbsent has one component with no externalReferences
@@ -4976,8 +4976,8 @@ func TestBSIV11CompExecutableURI(t *testing.T) {
 		got := BSIV11CompExecutableURI(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "Executable URI declared but invalid for all components.", got.Desc)
-		assert.False(t, got.Ignore)
+		assert.Equal(t, "No components declare executable URI (additional field).", got.Desc)
+		assert.True(t, got.Ignore)
 	})
 
 	// 1 out of 2 components has a distribution ref
