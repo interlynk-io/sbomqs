@@ -659,7 +659,7 @@ func copyC(cdxc *cydx.Component, c *CdxDoc) *Component {
 
 	if cdxc.ExternalReferences != nil {
 		sources := lo.Filter(*cdxc.ExternalReferences, func(er cydx.ExternalReference, _ int) bool {
-			return er.Type == cydx.ERTypeVCS
+			return er.Type == cydx.ERTypeVCS || er.Type == cydx.ERTypeSourceDistribution
 		})
 
 		if len(sources) > 0 {
@@ -672,6 +672,25 @@ func copyC(cdxc *cydx.Component, c *CdxDoc) *Component {
 
 		if len(downloads) > 0 {
 			nc.DownloadLocation = downloads[0].URL
+		}
+	}
+
+	// add source code hash if available in external references of type VCS or Source Distribution.
+	if cdxc.ExternalReferences != nil {
+		for _, er := range *cdxc.ExternalReferences {
+			if er.Type == cydx.ERTypeVCS || er.Type == cydx.ERTypeSourceDistribution {
+				if er.Hashes != nil {
+					for _, h := range *er.Hashes {
+						if h.Algorithm == cydx.HashAlgoSHA256 && strings.TrimSpace(h.Value) != "" {
+							nc.sourceCodeHash = h.Value
+							break
+						}
+					}
+				}
+			}
+			if nc.sourceCodeHash != "" {
+				break
+			}
 		}
 	}
 
@@ -1013,12 +1032,15 @@ func (c *CdxDoc) assignAuthor(comp *cydx.Component) []GetAuthor {
 }
 
 func (c *CdxDoc) assignSupplier(comp *cydx.Component) *Supplier {
+	supplier := Supplier{}
+
 	if comp.Supplier == nil {
+		supplier.Absent = true
 		c.addToLogs(fmt.Sprintf("cdx doc comp %s no supplier found", comp.Name))
-		return nil
+		return &supplier
 	}
 
-	supplier := Supplier{Name: comp.Supplier.Name}
+	supplier.Name = comp.Supplier.Name
 
 	if urls := lo.FromPtr(comp.Supplier.URL); len(urls) > 0 {
 		supplier.URL = urls[0]
@@ -1039,12 +1061,15 @@ func (c *CdxDoc) assignSupplier(comp *cydx.Component) *Supplier {
 }
 
 func (c *CdxDoc) assignManufacturer(comp *cydx.Component) *Manufacturer {
+	manufacturer := Manufacturer{}
+
 	if comp.Manufacturer == nil {
 		c.addToLogs(fmt.Sprintf("cdx doc comp %s no manufacturer found", comp.Name))
-		return nil
+		manufacturer.Absent = true
+		return &manufacturer
 	}
 
-	manufacturer := Manufacturer{Name: comp.Manufacturer.Name}
+	manufacturer.Name = comp.Manufacturer.Name
 
 	if urls := lo.FromPtr(comp.Manufacturer.URL); len(urls) > 0 {
 		manufacturer.URL = urls[0]

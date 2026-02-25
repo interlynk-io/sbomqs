@@ -444,6 +444,10 @@ func (s *SpdxDoc) parseRelationships() {
 	s.Relationships = make([]GetRelationship, 0, len(s.doc.Relationships))
 
 	for _, r := range s.doc.Relationships {
+		if r.Relationship == spdx.RelationshipDescribes {
+			continue
+		}
+
 		aBytes, err := r.RefA.MarshalJSON()
 		if err != nil {
 			continue
