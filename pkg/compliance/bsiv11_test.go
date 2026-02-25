@@ -24,9 +24,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// =====================================================================
 // SBOM Creator fixtures (reused from bsiv11_test.go pattern)
-// =====================================================================
 
 var bsiCdxSBOMAuthor = []byte(`
 {
@@ -335,7 +333,7 @@ func TestBSISBOMCreator(t *testing.T) {
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_CREATOR, got.CheckKey)
 		assert.Equal(t, "doc", got.ID)
-		assert.Equal(t, "samantha.wright@example.com", got.CheckValue)
+		assert.Equal(t, "samantha.wright@example.com (author)", got.CheckValue)
 	})
 
 	t.Run("spdxSBOMWithPersonAuthorEmail", func(t *testing.T) {
@@ -347,7 +345,7 @@ func TestBSISBOMCreator(t *testing.T) {
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_CREATOR, got.CheckKey)
 		assert.Equal(t, "doc", got.ID)
-		assert.Equal(t, "samantha.wright@example.com", got.CheckValue)
+		assert.Equal(t, "samantha.wright@example.com (author)", got.CheckValue)
 	})
 
 	t.Run("spdxSBOMWithOrganizationAuthorEmail", func(t *testing.T) {
@@ -359,7 +357,7 @@ func TestBSISBOMCreator(t *testing.T) {
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_CREATOR, got.CheckKey)
 		assert.Equal(t, "doc", got.ID)
-		assert.Equal(t, "samantha.wright@example.com", got.CheckValue)
+		assert.Equal(t, "samantha.wright@example.com (author)", got.CheckValue)
 	})
 
 	t.Run("cdxSBOMWithAuthorEmailOnly", func(t *testing.T) {
@@ -371,7 +369,7 @@ func TestBSISBOMCreator(t *testing.T) {
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_CREATOR, got.CheckKey)
 		assert.Equal(t, "doc", got.ID)
-		assert.Equal(t, "samantha@gmail.com", got.CheckValue)
+		assert.Equal(t, "samantha@gmail.com (author)", got.CheckValue)
 	})
 
 	t.Run("cdxSBOMWithAuthorNameOnly", func(t *testing.T) {
@@ -431,7 +429,7 @@ func TestBSISBOMCreator(t *testing.T) {
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_CREATOR, got.CheckKey)
 		assert.Equal(t, "doc", got.ID)
-		assert.Equal(t, "https://example.com", got.CheckValue)
+		assert.Equal(t, "https://example.com (manufacturer)", got.CheckValue)
 	})
 
 	t.Run("cdxSBOMWithManufacturerURLOnly", func(t *testing.T) {
@@ -443,7 +441,7 @@ func TestBSISBOMCreator(t *testing.T) {
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_CREATOR, got.CheckKey)
 		assert.Equal(t, "doc", got.ID)
-		assert.Equal(t, "https://example.com", got.CheckValue)
+		assert.Equal(t, "https://example.com (manufacturer)", got.CheckValue)
 	})
 
 	t.Run("cdxSBOMWithManufacturerContactEmailOnly", func(t *testing.T) {
@@ -455,7 +453,7 @@ func TestBSISBOMCreator(t *testing.T) {
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_CREATOR, got.CheckKey)
 		assert.Equal(t, "doc", got.ID)
-		assert.Equal(t, "professional.services@gmail.com", got.CheckValue)
+		assert.Equal(t, "professional.services@gmail.com (manufacturer contact)", got.CheckValue)
 	})
 
 	t.Run("cdxSBOMWithManufacturerNameOnly", func(t *testing.T) {
@@ -479,7 +477,7 @@ func TestBSISBOMCreator(t *testing.T) {
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_CREATOR, got.CheckKey)
 		assert.Equal(t, "doc", got.ID)
-		assert.Equal(t, "https://example.com", got.CheckValue)
+		assert.Equal(t, "https://example.com (supplier)", got.CheckValue)
 	})
 
 	t.Run("cdxSBOMWithSupplierURLOnly", func(t *testing.T) {
@@ -491,7 +489,7 @@ func TestBSISBOMCreator(t *testing.T) {
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_CREATOR, got.CheckKey)
 		assert.Equal(t, "doc", got.ID)
-		assert.Equal(t, "https://example.com", got.CheckValue)
+		assert.Equal(t, "https://example.com (supplier)", got.CheckValue)
 	})
 
 	t.Run("cdxSBOMWithSupplierContactEmailOnly", func(t *testing.T) {
@@ -503,7 +501,7 @@ func TestBSISBOMCreator(t *testing.T) {
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_CREATOR, got.CheckKey)
 		assert.Equal(t, "doc", got.ID)
-		assert.Equal(t, "xyz@gmail.com", got.CheckValue)
+		assert.Equal(t, "xyz@gmail.com (supplier contact)", got.CheckValue)
 	})
 
 	t.Run("cdxSBOMWithSupplierNameOnly", func(t *testing.T) {
@@ -990,7 +988,7 @@ func TestBSIComponentCreator(t *testing.T) {
 			assert.InDelta(t, 10.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_CREATOR, got.CheckKey)
 			assert.Equal(t, common.UniqueElementID(c), got.ID)
-			assert.Equal(t, "ironman@example.org", got.CheckValue)
+			assert.Equal(t, "ironman@example.org (author)", got.CheckValue)
 		}
 	})
 
@@ -1004,7 +1002,7 @@ func TestBSIComponentCreator(t *testing.T) {
 			assert.InDelta(t, 10.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_CREATOR, got.CheckKey)
 			assert.Equal(t, common.UniqueElementID(c), got.ID)
-			assert.Equal(t, "samantha.wright@example.com", got.CheckValue)
+			assert.Equal(t, "samantha.wright@example.com (supplier)", got.CheckValue)
 		}
 	})
 
@@ -1018,7 +1016,7 @@ func TestBSIComponentCreator(t *testing.T) {
 			assert.InDelta(t, 10.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_CREATOR, got.CheckKey)
 			assert.Equal(t, common.UniqueElementID(c), got.ID)
-			assert.Equal(t, "samantha.wright@example.com", got.CheckValue)
+			assert.Equal(t, "samantha.wright@example.com (supplier)", got.CheckValue)
 		}
 	})
 
@@ -1060,7 +1058,7 @@ func TestBSIComponentCreator(t *testing.T) {
 			assert.InDelta(t, 10.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_CREATOR, got.CheckKey)
 			assert.Equal(t, common.UniqueElementID(c), got.ID)
-			assert.Equal(t, "https://example.com", got.CheckValue)
+			assert.Equal(t, "https://example.com (manufacturer)", got.CheckValue)
 		}
 	})
 
@@ -1074,7 +1072,7 @@ func TestBSIComponentCreator(t *testing.T) {
 			assert.InDelta(t, 10.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_CREATOR, got.CheckKey)
 			assert.Equal(t, common.UniqueElementID(c), got.ID)
-			assert.Equal(t, "https://example.com", got.CheckValue)
+			assert.Equal(t, "https://example.com (manufacturer)", got.CheckValue)
 		}
 	})
 
@@ -1088,7 +1086,7 @@ func TestBSIComponentCreator(t *testing.T) {
 			assert.InDelta(t, 10.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_CREATOR, got.CheckKey)
 			assert.Equal(t, common.UniqueElementID(c), got.ID)
-			assert.Equal(t, "professional.services@example.com", got.CheckValue)
+			assert.Equal(t, "professional.services@example.com (manufacturer contact)", got.CheckValue)
 		}
 	})
 
@@ -1116,7 +1114,7 @@ func TestBSIComponentCreator(t *testing.T) {
 			assert.InDelta(t, 10.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_CREATOR, got.CheckKey)
 			assert.Equal(t, common.UniqueElementID(c), got.ID)
-			assert.Equal(t, "https://example.com", got.CheckValue)
+			assert.Equal(t, "https://example.com (supplier)", got.CheckValue)
 		}
 	})
 
@@ -1130,7 +1128,7 @@ func TestBSIComponentCreator(t *testing.T) {
 			assert.InDelta(t, 10.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_CREATOR, got.CheckKey)
 			assert.Equal(t, common.UniqueElementID(c), got.ID)
-			assert.Equal(t, "https://example.com", got.CheckValue)
+			assert.Equal(t, "https://example.com (supplier)", got.CheckValue)
 		}
 	})
 
@@ -1144,7 +1142,7 @@ func TestBSIComponentCreator(t *testing.T) {
 			assert.InDelta(t, 10.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_CREATOR, got.CheckKey)
 			assert.Equal(t, common.UniqueElementID(c), got.ID)
-			assert.Equal(t, "acme@gmail.com", got.CheckValue)
+			assert.Equal(t, "acme@gmail.com (supplier contact)", got.CheckValue)
 		}
 	})
 
@@ -1457,7 +1455,7 @@ func TestBSIComponentLicense(t *testing.T) {
 			assert.InDelta(t, 10.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_LICENSE, got.CheckKey)
 			assert.Equal(t, common.UniqueElementID(c), got.ID)
-			assert.Equal(t, "compliant", got.CheckValue)
+			assert.Equal(t, "Apache-2.0 (compliant)", got.CheckValue)
 		}
 	})
 
@@ -1471,7 +1469,7 @@ func TestBSIComponentLicense(t *testing.T) {
 			assert.InDelta(t, 10.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_LICENSE, got.CheckKey)
 			assert.Equal(t, common.UniqueElementID(c), got.ID)
-			assert.Equal(t, "compliant", got.CheckValue)
+			assert.Equal(t, "Apache-2.0 (compliant)", got.CheckValue)
 		}
 	})
 
@@ -1485,7 +1483,7 @@ func TestBSIComponentLicense(t *testing.T) {
 			assert.InDelta(t, 10.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_LICENSE, got.CheckKey)
 			assert.Equal(t, common.UniqueElementID(c), got.ID)
-			assert.Equal(t, "compliant", got.CheckValue)
+			assert.Equal(t, "LicenseRef-Acme-Proprietary-License (compliant)", got.CheckValue)
 		}
 	})
 
@@ -1499,7 +1497,7 @@ func TestBSIComponentLicense(t *testing.T) {
 			assert.InDelta(t, 0.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_LICENSE, got.CheckKey)
 			assert.Equal(t, common.UniqueElementID(c), got.ID)
-			assert.Equal(t, "non-compliant", got.CheckValue)
+			assert.Equal(t, "Apache-9999 (non-compliant)", got.CheckValue)
 		}
 	})
 
@@ -1513,7 +1511,7 @@ func TestBSIComponentLicense(t *testing.T) {
 			assert.InDelta(t, 0.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_LICENSE, got.CheckKey)
 			assert.Equal(t, common.UniqueElementID(c), got.ID)
-			assert.Equal(t, "non-compliant", got.CheckValue)
+			assert.Equal(t, "Apache-9999 (non-compliant)", got.CheckValue)
 		}
 	})
 
@@ -1527,7 +1525,7 @@ func TestBSIComponentLicense(t *testing.T) {
 			assert.InDelta(t, 0.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_LICENSE, got.CheckKey)
 			assert.Equal(t, common.UniqueElementID(c), got.ID)
-			assert.Equal(t, "missing", got.CheckValue)
+			assert.Equal(t, "", got.CheckValue)
 		}
 	})
 
@@ -1541,7 +1539,7 @@ func TestBSIComponentLicense(t *testing.T) {
 			assert.InDelta(t, 0.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_LICENSE, got.CheckKey)
 			assert.Equal(t, common.UniqueElementID(c), got.ID)
-			assert.Equal(t, "missing", got.CheckValue)
+			assert.Equal(t, "", got.CheckValue)
 		}
 	})
 }
@@ -1645,7 +1643,7 @@ func TestBSIComponentHash(t *testing.T) {
 			assert.InDelta(t, 10.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_HASH, got.CheckKey)
 			assert.Equal(t, common.UniqueElementID(c), got.ID)
-			assert.Equal(t, "64440820e5d881ec20bc7b9937fdc9bd67d15ba4637b2e7959a8f31dd12c5b21", got.CheckValue)
+			assert.Equal(t, "SHA-256: 64440820e5d881ec20bc7b9937fdc9bd67d15ba4637b2e7959a8f31dd12c5b21", got.CheckValue)
 		}
 	})
 
@@ -1659,7 +1657,7 @@ func TestBSIComponentHash(t *testing.T) {
 			assert.InDelta(t, 10.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_HASH, got.CheckKey)
 			assert.Equal(t, common.UniqueElementID(c), got.ID)
-			assert.Equal(t, "64440820e5d881ec20bc7b9937fdc9bd67d15ba4637b2e7959a8f31dd12c5b21", got.CheckValue)
+			assert.Equal(t, "SHA-256: 64440820e5d881ec20bc7b9937fdc9bd67d15ba4637b2e7959a8f31dd12c5b21", got.CheckValue)
 		}
 	})
 
@@ -1883,7 +1881,7 @@ func TestBSIComponentDependencies(t *testing.T) {
 			assert.InDelta(t, 10.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_DEPTH, got.CheckKey)
 			assert.Equal(t, common.UniqueElementID(c), got.ID)
-			assert.Equal(t, "no-dependencies", got.CheckValue)
+			assert.Equal(t, "no-dependencies (leaf element)", got.CheckValue)
 		}
 	})
 
@@ -1897,7 +1895,7 @@ func TestBSIComponentDependencies(t *testing.T) {
 			assert.InDelta(t, 10.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_DEPTH, got.CheckKey)
 			assert.Equal(t, common.UniqueElementID(c), got.ID)
-			assert.Equal(t, "no-dependencies", got.CheckValue)
+			assert.Equal(t, "no-dependencies (leaf element)", got.CheckValue)
 		}
 	})
 
@@ -1912,7 +1910,7 @@ func TestBSIComponentDependencies(t *testing.T) {
 				assert.InDelta(t, 10.0, got.Score, 1e-9)
 				assert.Equal(t, COMP_DEPTH, got.CheckKey)
 				assert.Equal(t, common.UniqueElementID(c), got.ID)
-				assert.Equal(t, "dep-lib", got.CheckValue)
+				assert.Equal(t, "(all dependencies resolved) dep-lib", got.CheckValue)
 			}
 		}
 	})
@@ -1928,7 +1926,7 @@ func TestBSIComponentDependencies(t *testing.T) {
 				assert.InDelta(t, 10.0, got.Score, 1e-9)
 				assert.Equal(t, COMP_DEPTH, got.CheckKey)
 				assert.Equal(t, common.UniqueElementID(c), got.ID)
-				assert.Equal(t, "dep-lib", got.CheckValue)
+				assert.Equal(t, "(all dependencies resolved) dep-lib", got.CheckValue)
 			}
 		}
 	})
@@ -1943,7 +1941,7 @@ func TestBSIComponentDependencies(t *testing.T) {
 			assert.InDelta(t, 0.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_DEPTH, got.CheckKey)
 			assert.Equal(t, common.UniqueElementID(c), got.ID)
-			assert.Equal(t, "broken-dependencies", got.CheckValue)
+			assert.Equal(t, "broken-dependencies (nonexistent-dep not found in SBOM)", got.CheckValue)
 		}
 	})
 
@@ -1957,7 +1955,7 @@ func TestBSIComponentDependencies(t *testing.T) {
 			assert.InDelta(t, 0.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_DEPTH, got.CheckKey)
 			assert.Equal(t, common.UniqueElementID(c), got.ID)
-			assert.Equal(t, "broken-dependencies", got.CheckValue)
+			assert.Equal(t, "broken-dependencies (nonexistent not found in SBOM)", got.CheckValue)
 		}
 	})
 
@@ -1973,7 +1971,7 @@ func TestBSIComponentDependencies(t *testing.T) {
 				assert.InDelta(t, 0.0, got.Score, 1e-9)
 				assert.Equal(t, COMP_DEPTH, got.CheckKey)
 				assert.Equal(t, common.UniqueElementID(c), got.ID)
-				assert.Equal(t, "broken-dependencies", got.CheckValue)
+				assert.Equal(t, "broken-dependencies (ghost-lib not found in SBOM)", got.CheckValue)
 			}
 		}
 	})

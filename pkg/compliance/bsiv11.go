@@ -28,27 +28,6 @@ import (
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
 )
 
-func bsiIsValidEmail(e string) bool {
-	e = strings.TrimSpace(e)
-	if e == "" {
-		return false
-	}
-	_, err := mail.ParseAddress(e)
-	return err == nil
-}
-
-func bsiIsValidURL(u string) bool {
-	u = strings.TrimSpace(u)
-	if u == "" {
-		return false
-	}
-	parsed, err := url.ParseRequestURI(u)
-	if err != nil {
-		return false
-	}
-	return parsed.Scheme != "" && parsed.Host != ""
-}
-
 var (
 	validBsiSpdxVersions = []string{"SPDX-2.3"}
 	validSpdxVersion     = []string{"SPDX-2.1", "SPDX-2.2", "SPDX-2.3"}
@@ -156,28 +135,49 @@ func bsiResult(ctx context.Context, doc sbom.Document, fileName string, outForma
 	}
 }
 
+func bsiIsValidEmail(e string) bool {
+	e = strings.TrimSpace(e)
+	if e == "" {
+		return false
+	}
+	_, err := mail.ParseAddress(e)
+	return err == nil
+}
+
+func bsiIsValidURL(u string) bool {
+	u = strings.TrimSpace(u)
+	if u == "" {
+		return false
+	}
+	parsed, err := url.ParseRequestURI(u)
+	if err != nil {
+		return false
+	}
+	return parsed.Scheme != "" && parsed.Host != ""
+}
+
 func bsiv11SBOMCreator(doc sbom.Document) *db.Record {
 
 	// Authors: valid email only
 	for _, author := range doc.Authors() {
 		if bsiIsValidEmail(author.GetEmail()) {
-			return db.NewRecordStmt(SBOM_CREATOR, "doc", author.GetEmail(), 10.0, "")
+			return db.NewRecordStmt(SBOM_CREATOR, "doc", author.GetEmail()+" (author)", 10.0, "")
 		}
 	}
 
 	// Manufacturer: email -> URL -> contacts email (checked before supplier per BSI spec)
 	if m := doc.Manufacturer(); m != nil {
 		if bsiIsValidEmail(m.GetEmail()) {
-			return db.NewRecordStmt(SBOM_CREATOR, "doc", m.GetEmail(), 10.0, "")
+			return db.NewRecordStmt(SBOM_CREATOR, "doc", m.GetEmail()+" (manufacturer)", 10.0, "")
 		}
 
 		if bsiIsValidURL(m.GetURL()) {
-			return db.NewRecordStmt(SBOM_CREATOR, "doc", m.GetURL(), 10.0, "")
+			return db.NewRecordStmt(SBOM_CREATOR, "doc", m.GetURL()+" (manufacturer)", 10.0, "")
 		}
 
 		for _, c := range m.GetContacts() {
 			if bsiIsValidEmail(c.GetEmail()) {
-				return db.NewRecordStmt(SBOM_CREATOR, "doc", c.GetEmail(), 10.0, "")
+				return db.NewRecordStmt(SBOM_CREATOR, "doc", c.GetEmail()+" (manufacturer contact)", 10.0, "")
 			}
 		}
 	}
@@ -185,16 +185,16 @@ func bsiv11SBOMCreator(doc sbom.Document) *db.Record {
 	// Supplier: email -> URL -> contacts email (fallback)
 	if s := doc.Supplier(); s != nil {
 		if bsiIsValidEmail(s.GetEmail()) {
-			return db.NewRecordStmt(SBOM_CREATOR, "doc", s.GetEmail(), 10.0, "")
+			return db.NewRecordStmt(SBOM_CREATOR, "doc", s.GetEmail()+" (supplier)", 10.0, "")
 		}
 
 		if bsiIsValidURL(s.GetURL()) {
-			return db.NewRecordStmt(SBOM_CREATOR, "doc", s.GetURL(), 10.0, "")
+			return db.NewRecordStmt(SBOM_CREATOR, "doc", s.GetURL()+" (supplier)", 10.0, "")
 		}
 
 		for _, c := range s.GetContacts() {
 			if bsiIsValidEmail(c.GetEmail()) {
-				return db.NewRecordStmt(SBOM_CREATOR, "doc", c.GetEmail(), 10.0, "")
+				return db.NewRecordStmt(SBOM_CREATOR, "doc", c.GetEmail()+" (supplier contact)", 10.0, "")
 			}
 		}
 	}
@@ -225,8 +225,7 @@ func bsiv11SBOMURI(doc sbom.Document) *db.Record {
 		return db.NewRecordStmt(SBOM_URI, "doc", uri, 0.0, "")
 	}
 
-	brokenResult := breakLongString(uri, 50)
-	result := strings.Join(brokenResult, "\n")
+	result := strings.Join(breakLongString(uri, 80), "\n")
 	return db.NewRecordStmt(SBOM_URI, "doc", result, 10.0, "")
 }
 
@@ -264,21 +263,21 @@ func bsiv11ComponentCreator(component sbom.GetComponent) *db.Record {
 	// Authors: valid email only
 	for _, a := range component.Authors() {
 		if bsiIsValidEmail(a.GetEmail()) {
-			return db.NewRecordStmt(COMP_CREATOR, id, a.GetEmail(), 10.0, "")
+			return db.NewRecordStmt(COMP_CREATOR, id, a.GetEmail()+" (author)", 10.0, "")
 		}
 	}
 
 	// Manufacturer: email -> URL -> contacts email (checked before supplier per BSI spec)
 	if m := component.Manufacturer(); !m.IsAbsent() {
 		if bsiIsValidEmail(m.GetEmail()) {
-			return db.NewRecordStmt(COMP_CREATOR, id, m.GetEmail(), 10.0, "")
+			return db.NewRecordStmt(COMP_CREATOR, id, m.GetEmail()+" (manufacturer)", 10.0, "")
 		}
 		if bsiIsValidURL(m.GetURL()) {
-			return db.NewRecordStmt(COMP_CREATOR, id, m.GetURL(), 10.0, "")
+			return db.NewRecordStmt(COMP_CREATOR, id, m.GetURL()+" (manufacturer)", 10.0, "")
 		}
 		for _, c := range m.GetContacts() {
 			if bsiIsValidEmail(c.GetEmail()) {
-				return db.NewRecordStmt(COMP_CREATOR, id, c.GetEmail(), 10.0, "")
+				return db.NewRecordStmt(COMP_CREATOR, id, c.GetEmail()+" (manufacturer contact)", 10.0, "")
 			}
 		}
 	}
@@ -286,14 +285,14 @@ func bsiv11ComponentCreator(component sbom.GetComponent) *db.Record {
 	// Suppliers: email -> URL -> contacts email (fallback)
 	if s := component.Suppliers(); !s.IsAbsent() {
 		if bsiIsValidEmail(s.GetEmail()) {
-			return db.NewRecordStmt(COMP_CREATOR, id, s.GetEmail(), 10.0, "")
+			return db.NewRecordStmt(COMP_CREATOR, id, s.GetEmail()+" (supplier)", 10.0, "")
 		}
 		if bsiIsValidURL(s.GetURL()) {
-			return db.NewRecordStmt(COMP_CREATOR, id, s.GetURL(), 10.0, "")
+			return db.NewRecordStmt(COMP_CREATOR, id, s.GetURL()+" (supplier)", 10.0, "")
 		}
 		for _, c := range s.GetContacts() {
 			if bsiIsValidEmail(c.GetEmail()) {
-				return db.NewRecordStmt(COMP_CREATOR, id, c.GetEmail(), 10.0, "")
+				return db.NewRecordStmt(COMP_CREATOR, id, c.GetEmail()+" (supplier contact)", 10.0, "")
 			}
 		}
 	}
@@ -321,16 +320,6 @@ func bsiv11ComponentVersion(component sbom.GetComponent) *db.Record {
 	return db.NewRecordStmt(COMP_VERSION, common.UniqueElementID(component), "", 0.0, "")
 }
 
-// bsiv11ComponentDependencies reports dependency enumeration for a single component
-// according to BSI TR-03183.
-//
-// BSI semantics:
-//   - Dependency evaluation is strictly component-scoped (not SBOM- or primary-scoped).
-//   - A component MAY declare zero dependencies (valid leaf component).
-//   - If a component declares dependencies (DEPENDS_ON or CONTAINS),
-//     those references MUST be valid and resolvable.
-//   - Missing dependencies do NOT cause failure.
-//   - Only incorrect or broken dependency declarations result in a failing score.
 func bsiv11ComponentDependencies(doc sbom.Document, component sbom.GetComponent) *db.Record {
 	compID := component.GetID()
 
@@ -348,7 +337,7 @@ func bsiv11ComponentDependencies(doc sbom.Document, component sbom.GetComponent)
 
 	// case:1 Leaf components
 	if len(declared) == 0 {
-		return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), "no-dependencies", 10.0, "")
+		return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), "no-dependencies (leaf element)", 10.0, "")
 	}
 
 	// case:2 validate each dependency
@@ -356,8 +345,7 @@ func bsiv11ComponentDependencies(doc sbom.Document, component sbom.GetComponent)
 	for _, depID := range declared {
 		depComp, exists := componentMap[depID]
 		if !exists {
-			return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), "broken-dependencies", 0.0, "")
-
+			return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), "broken-dependencies ("+depID+" not found in SBOM)", 0.0, "")
 		}
 
 		name := strings.TrimSpace(depComp.GetName())
@@ -366,8 +354,8 @@ func bsiv11ComponentDependencies(doc sbom.Document, component sbom.GetComponent)
 		}
 	}
 
-	// case:3 validate dependency
-	result := strings.Join(names, ", ")
+	// case:3 all declared dependencies resolved
+	result := "(all dependencies resolved) " + strings.Join(names, ", ")
 
 	return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), result, 10.0, "")
 }
@@ -377,17 +365,19 @@ func bsiv11ComponentLicense(component sbom.GetComponent) *db.Record {
 	score := 0.0
 	result := ""
 
-	hasAny := false
-	hasValid := false
+	var validID string
+	var anyID string
 
 	// Check Concluded Licenses
 	for _, l := range component.ConcludedLicenses() {
 
-		hasAny = true
-
 		id := strings.TrimSpace(l.ShortID())
 		if id == "" {
 			continue
+		}
+
+		if anyID == "" {
+			anyID = id
 		}
 
 		u := strings.ToUpper(id)
@@ -397,26 +387,28 @@ func bsiv11ComponentLicense(component sbom.GetComponent) *db.Record {
 
 		// Accept valid SPDX
 		if l.Spdx() {
-			hasValid = true
+			validID = id
 			break
 		}
 
 		// Accept valid LicenseRef-*
 		if l.Custom() && strings.HasPrefix(id, "LicenseRef-") {
-			hasValid = true
+			validID = id
 			break
 		}
 	}
 
-	//  Check Declared Licenses (fallback)
-	if !hasValid {
+	// Check Declared Licenses (fallback)
+	if validID == "" {
 		for _, l := range component.DeclaredLicenses() {
-
-			hasAny = true
 
 			id := strings.TrimSpace(l.ShortID())
 			if id == "" {
 				continue
+			}
+
+			if anyID == "" {
+				anyID = id
 			}
 
 			u := strings.ToUpper(id)
@@ -425,29 +417,29 @@ func bsiv11ComponentLicense(component sbom.GetComponent) *db.Record {
 			}
 
 			if l.Spdx() {
-				hasValid = true
+				validID = id
 				break
 			}
 
 			if l.Custom() && strings.HasPrefix(id, "LicenseRef-") {
-				hasValid = true
+				validID = id
 				break
 			}
 		}
 	}
 
 	switch {
-	case hasValid:
+	case validID != "":
 		score = 10.0
-		result = "compliant"
+		result = validID + " (compliant)"
 
-	case hasAny:
+	case anyID != "":
 		score = 0.0
-		result = "non-compliant"
+		result = anyID + " (non-compliant)"
 
 	default:
 		score = 0.0
-		result = "missing"
+		result = ""
 	}
 
 	return db.NewRecordStmt(COMP_LICENSE, common.UniqueElementID(component), result, score, "")
@@ -462,7 +454,7 @@ func bsiv11ComponentHash(component sbom.GetComponent) *db.Record {
 		value := strings.TrimSpace(checksum.GetContent())
 
 		if algo == "SHA256" && value != "" {
-			result = checksum.GetContent()
+			result = "SHA-256: " + checksum.GetContent()
 			score = 10.0
 			break
 		}
@@ -515,18 +507,18 @@ func bsiv11ComponentOtherUniqueIdentifiers(component sbom.GetComponent) *db.Reco
 	for _, p := range component.GetPurls() {
 		v := strings.TrimSpace(string(p))
 		if v != "" {
-			result = v
+			result = "purl: " + v
 			score = 10.0
 			break
 		}
 	}
 
-	// Check CPEs (fallback)resul
+	// Check CPEs (fallback)
 	if result == "" {
 		for _, cpe := range component.GetCpes() {
 			v := strings.TrimSpace(string(cpe))
 			if v != "" {
-				result = v
+				result = "cpe: " + v
 				score = 10.0
 				break
 			}
