@@ -109,29 +109,40 @@ var BSIV11KeyToEvaluatingFunction = map[string]catalog.ProfFeatEval{
 }
 
 var BSIV20KeyToEvaluatingFunction = map[string]catalog.ProfFeatEval{
-	"sbom_spec": profiles.SBOMAutomationSpec,
-	// "sbom_spec_version": profiles.BSISBOMSpecVersion,
-	// "sbom_build":        profiles.BSISBOMBuildLifecycle,
-	// "sbom_depth":        profiles.SBOMDepedencies,
-	"sbom_creator":   profiles.SBOMAuthors,
-	"sbom_timestamp": profiles.SBOMCreationTimestamp,
-	"sbom_uri":       profiles.BSISBOMNamespace,
+	// Required: SBOM level
+	"sbom_creator":   profiles.BSIV20SBOMCreator,
+	"sbom_timestamp": profiles.BSIV20SBOMCreationTimestamp,
+	"sbom_uri":       profiles.BSIV20SBOMURI,
 
-	"comp_name":    profiles.CompName,
-	"comp_version": profiles.CompVersion,
+	// Required: component level
+	"comp_creator":             profiles.BSIV20CompCreator,
+	"comp_name":                profiles.BSIV20CompName,
+	"comp_version":             profiles.BSIV20CompVersion,
+	"comp_filename":            profiles.BSIV20CompFilename,
+	"comp_depth":               profiles.BSIV20CompDependencies,
+	"comp_associated_license":  profiles.BSIV20CompAssociatedLicenses,
+	"comp_hash":                profiles.BSIV20CompDeployableHash,
+	"comp_executable_property": profiles.BSIV20CompExecutableProperty,
+	"comp_archive_property":    profiles.BSIV20CompArchiveProperty,
+	"comp_structured_property": profiles.BSIV20CompStructuredProperty,
 
+	// Additional: SBOM level
+	// Additional: component level
+	"comp_source_code_url":   profiles.BSIV20CompSourceURI,
+	"comp_download_url":      profiles.BSIV20CompDeployableURI,
+	"comp_other_identifiers": profiles.BSIV20CompOtherIdentifiers,
+	"comp_concluded_license": profiles.BSIV20CompConcludedLicenses,
+
+	// Optional: component level
+	"comp_declared_license": profiles.BSIV20CompDeclaredLicenses,
+	"comp_source_hash":      profiles.BSIV20CompSourceHash,
+
+	// Optional: SBOM level
+	"sbom_spec":            profiles.SBOMAutomationSpec,
+	"sbom_signature":       profiles.BSISBOMWithSignature,
+	"sbom_bomlinks":        profiles.BSISBOMWithBomLinks,
+	"sbom_vulnerabilities": profiles.BSISBOMWithVulnerabilities,
 	"comp_license":         profiles.BSICompWithLicenses,
-	"comp_hash":            profiles.BSIV11CompExecutableHash,
-	"comp_source_code_url": profiles.BSICompWithSourceCodeURI,
-	"comp_download_url":    profiles.BSICompWithDownloadURI,
-	"comp_source_hash":     profiles.BSICompWithSourceCodeHash,
-	"comp_depth":           profiles.BSICompWithDependencies,
-
-	"sbom_signature":          profiles.BSISBOMWithSignature,
-	"sbom_bomlinks":           profiles.BSISBOMWithBomLinks,
-	"sbom_vulnerabilities":    profiles.BSISBOMWithVulnerabilities,
-	"comp_hash_sha256":        profiles.CompSHA256Plus,
-	"comp_associated_license": profiles.BSICompWithAssociatedLicenses,
 }
 
 var OCTV11KeyToEvaluatingFunction = map[string]catalog.ProfFeatEval{
@@ -848,29 +859,39 @@ var profileBSI20Spec = catalog.ProfSpec{
 	Name:        "BSI TR-03183-2 v2.0",
 	Description: "BSI TR-03183-2 v2.0 Profile",
 	Features: []catalog.ProfFeatSpec{
-		{Key: "sbom_spec", Name: "SBOM Formats", Required: true, Description: "SPDX or CycloneDX", Evaluate: profiles.SBOMSpec},
-		// {Key: "sbom_spec_version", Name: "SBOM Spec Version", Required: true, Description: "Valid supported version", Evaluate: profiles.BSISBOMSpecVersion},
-		// {Key: "sbom_build", Name: "Build Information", Required: false, Description: "Build phase indication", Evaluate: profiles.BSISBOMBuildLifecycle},
-		// {Key: "sbom_depth", Name: "SBOM Depth", Required: true, Description: "Complete dependency tree", Evaluate: profiles.SBOMDepedencies},
-		{Key: "sbom_creator", Name: "Creator Info", Required: true, Description: "Contact email/URL", Evaluate: profiles.SBOMAuthors},
-		{Key: "sbom_timestamp", Name: "Creation Time", Required: true, Description: "Valid timestamp (ISO-8601)", Evaluate: profiles.SBOMCreationTimestamp},
-		{Key: "sbom_uri", Name: "URI/Namespace", Required: true, Description: "Unique SBOM identifier", Evaluate: profiles.BSISBOMNamespace},
+		// Required: SBOM level (5.2.1)
+		{Key: "sbom_creator", Name: "Creator Info", Required: true, Description: "Contact email or URL", Evaluate: profiles.BSIV20SBOMCreator},
+		{Key: "sbom_timestamp", Name: "Creation Time", Required: true, Description: "Valid RFC 3339 timestamp", Evaluate: profiles.BSIV20SBOMCreationTimestamp},
 
-		{Key: "comp_name", Name: "Component Name", Required: true, Description: "All components named", Evaluate: profiles.BSIV11CompName},
-		{Key: "comp_version", Name: "Component Version", Required: true, Description: "Version for each component", Evaluate: profiles.BSIV11CompVersion},
+		// Required: component level (5.2.2)
+		{Key: "comp_creator", Name: "Component Creator", Required: true, Description: "Creator email or URL per component", Evaluate: profiles.BSIV20CompCreator},
+		{Key: "comp_name", Name: "Component Name", Required: true, Description: "All components named (filename fallback)", Evaluate: profiles.BSIV20CompName},
+		{Key: "comp_version", Name: "Component Version", Required: true, Description: "Version or creation-date fallback", Evaluate: profiles.BSIV20CompVersion},
+		{Key: "comp_filename", Name: "Component Filename", Required: true, Description: "Actual filename of the component", Evaluate: profiles.BSIV20CompFilename},
+		{Key: "comp_depth", Name: "Component Dependencies", Required: true, Description: "Direct deps and contained components", Evaluate: profiles.BSIV20CompDependencies},
+		{Key: "comp_associated_license", Name: "Associated Licences", Required: true, Description: "Valid SPDX licence per component", Evaluate: profiles.BSIV20CompAssociatedLicenses},
+		{Key: "comp_hash", Name: "Deployable Hash (SHA-512)", Required: true, Description: "SHA-512 hash of deliverable component", Evaluate: profiles.BSIV20CompDeployableHash},
+		{Key: "comp_executable_property", Name: "Executable Property", Required: true, Description: "executable or non-executable", Evaluate: profiles.BSIV20CompExecutableProperty},
+		{Key: "comp_archive_property", Name: "Archive Property", Required: true, Description: "archive or no archive", Evaluate: profiles.BSIV20CompArchiveProperty},
+		{Key: "comp_structured_property", Name: "Structured Property", Required: true, Description: "structured or unstructured", Evaluate: profiles.BSIV20CompStructuredProperty},
 
-		{Key: "comp_license", Name: "Component License", Required: true, Description: "License information", Evaluate: profiles.BSICompWithLicenses},
-		{Key: "comp_hash", Name: "Component Hash", Required: true, Description: "Checksums for components", Evaluate: profiles.BSICompWithHash},
-		{Key: "comp_source_code_url", Name: "Component Source URL", Required: false, Description: "Source code repository", Evaluate: profiles.BSICompWithSourceCodeURI},
-		{Key: "comp_download_url", Name: "Component Download URL", Required: true, Description: "Where to obtain component", Evaluate: profiles.BSICompWithDownloadURI},
-		{Key: "comp_source_hash", Name: "Component Source Hash", Required: false, Description: "Hash of source code", Evaluate: profiles.BSICompWithSourceCodeHash},
-		{Key: "comp_depth", Name: "Component Dependencies", Required: true, Description: "Dependency relationships", Evaluate: profiles.BSICompWithDependencies},
+		// Additiona: SBOM level (5.3.1)
+		{Key: "sbom_uri", Name: "SBOM URI", Required: false, Description: "Unique SBOM document identifier", Evaluate: profiles.BSIV20SBOMURI},
 
-		{Key: "sbom_signature", Name: "Digital Signature", Required: true, Description: "Cryptographic signature verification", Evaluate: profiles.BSISBOMWithSignature},
-		{Key: "sbom_bomlinks", Name: "External References", Required: false, Description: "Links to other SBOMs", Evaluate: profiles.BSISBOMWithBomLinks},
-		{Key: "sbom_vulnerabilities", Name: "Vulnerability Info", Required: false, Description: "Known vulnerabilities (absence preferred)", Evaluate: profiles.BSISBOMWithVulnerabilities},
-		{Key: "comp_hash_sha256", Name: "SHA-256 Checksums", Required: true, Description: "SHA-256 or stronger required", Evaluate: profiles.CompSHA256Plus},
-		{Key: "comp_associated_license", Name: "License Validation", Required: true, Description: "Valid SPDX license identifiers", Evaluate: profiles.BSICompWithAssociatedLicenses},
+		// Additional: component level (5.3.2)
+		{Key: "comp_source_code_url", Name: "Source Code URI", Required: false, Description: "Source code repository URL", Evaluate: profiles.BSIV20CompSourceURI},
+		{Key: "comp_download_url", Name: "Deployable URI", Required: false, Description: "Download URL for deliverable", Evaluate: profiles.BSIV20CompDeployableURI},
+		{Key: "comp_other_identifiers", Name: "Other Unique Identifiers", Required: false, Description: "CPE and/or PURL", Evaluate: profiles.BSIV20CompOtherIdentifiers},
+		{Key: "comp_concluded_license", Name: "Concluded Licences", Required: false, Description: "Licensee-chosen licence per component", Evaluate: profiles.BSIV20CompConcludedLicenses},
+
+		// Optional: component level (5.4.1)
+		{Key: "comp_declared_license", Name: "Declared Licences", Required: false, Description: "Licensor-declared licence per component", Evaluate: profiles.BSIV20CompDeclaredLicenses},
+		{Key: "comp_source_hash", Name: "Source Code Hash", Required: false, Description: "Hash of component source code", Evaluate: profiles.BSIV20CompSourceHash},
+
+		// BSI v2.0 additional governance checks
+		{Key: "sbom_signature", Name: "Digital Signature", Required: false, Description: "Cryptographic signature of SBOM", Evaluate: profiles.BSISBOMWithSignature},
+		{Key: "sbom_bomlinks", Name: "BOM Links", Required: false, Description: "Links to external SBOMs", Evaluate: profiles.BSISBOMWithBomLinks},
+		{Key: "sbom_vulnerabilities", Name: "Vulnerability Info", Required: false, Description: "Absence of vuln data (MUST NOT be present)", Evaluate: profiles.BSISBOMWithVulnerabilities},
 	},
 }
 
