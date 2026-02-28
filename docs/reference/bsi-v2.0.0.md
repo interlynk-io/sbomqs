@@ -1,0 +1,188 @@
+## BSI TR-03183:2.0.0
+
+### 1. SBOM Required Element
+
+| BSI Field                                   | Required | **SPDX 2.3**                                                                     | **CycloneDX 1.6**                                                                                                                                                                                                                          | **SPDX 3.0**             |
+| ------------------------------------------- | -------- | -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------ |
+| **SBOM Author** (renamed from SBOM Creator) | YES      | `CreationInfo.Creator` <br/>Person or Organization; email recommended if present | Accepted by BSI v2.0.0 as author evidence: <br/>Primary: `metadata.authors[].email` <br/>Also accepted: `metadata.supplier.url` or `metadata.supplier.contact.email`; `metadata.manufacturer.url` or `metadata.manufacturer.contact.email` | `CreationInfo.createdBy` |
+| **Creation Timestamp**                      | YES      | `CreationInfo.Created`                                                           | `metadata.timestamp`                                                                                                                                                                                                                       | `CreationInfo.created`   |
+
+### 2. Component Required Element
+
+| #  | BSI Required Component Field               | Description (BSI intent)                       | **SPDX 2.3 Mapping**                                                                | **CycloneDX 1.6 Mapping**                                                                                                                                                                                     | **SPDX 3.0 Mapping**              |
+| -- | ------------------------------------------ | ---------------------------------------------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------- |
+| 1  | **Component creator** (component supplier) | Email or URL of component creator / maintainer | `PackageSupplier` or `PackageOriginator` (Person or Organization; email if present) | Accepted by BSI v2.0.0 as author evidence: `metadata.authors[].email`; `component.supplier.url` or `component.supplier.contact.email`; `component.manufacturer.url` or `component.manufacturer.contact.email` | `software_Package.suppliedBy`     |
+| 2  | **Component name**                         | Creator-defined name; fallback to filename     | `PackageName` (fallback: filename)                                                  | `component.name`                                                                                                                                                                                              | `software_Package.name`           |
+| 3  | **Component version**                      | Version string; fallback to creation date      | `PackageVersion`                                                                    | `component.version`                                                                                                                                                                                           | `software_Package.version`        |
+| 4  | **Filename**                               | Deployable filename without path               | `PackageFileName`                                                                   | `component.name` when `component.type == file`                                                                                                                                                                | `software_File.name`              |
+| 5  | **Dependencies**                           | Direct dependencies or containment             | Relationships: `DEPENDS_ON`, `CONTAINS` (completeness not required)                 | `dependencies.dependsOn`                                                                                                                                                                                      | `dependsOn`                       |
+| 6  | **Associated licence(s)**                  | Distribution or concluded licences             | `PackageLicenseConcluded`                                                           | `component.licenses[]` with `licenseAcknowledgement = concluded`                                                                                                                                              | `hasConcludedLicense`             |
+| 7  | **Hash (deployable)**                      | Cryptographic hash of deployable file          | `PackageChecksum`                                                                   | `component.hashes[]`                                                                                                                                                                                          | `verifiedUsing.algorithm`         |
+| 8  | **Executable file**                        | Whether the component is executable            | Indirect mapping via `PackagePurpose = EXECUTABLE`                                  | `component.properties` with name `bsi:component:executable`                                                                                                                                                   | `software_File.fileType`          |
+| 9  | **Archive file**                           | Whether the component is an archive            | Indirect mapping via `PackagePurpose = ARCHIVE`                                     | `component.properties` with name `bsi:component:archive`                                                                                                                                                      | `software_File.fileType`          |
+| 10 | **Structured file**                        | Structured vs unstructured component           | No native field                                                                     | `component.properties` with name `bsi:component:structured`                                                                                                                                                   | `additionalPurpose` (approximate) |
+
+### 3. Additional SBOM Fields
+
+| # | BSI Additional SBOM Field | Description (BSI intent)                       | **SPDX 2.3 Mapping** | **CycloneDX 1.6 Mapping** | **SPDX 3.0 Mapping** |
+| - | ------------------------- | ---------------------------------------------- | -------------------- | ------------------------- | -------------------- |
+| 1 | **SBOM-URI**              | URI that uniquely identifies the SBOM document | `DocumentNamespace`  | `serialNumber`            | `software_Sbom.id`   |
+
+### 4. Additional Component Fields
+
+| # | BSI Additional Component Field | Description (BSI intent)                                          | **SPDX 2.3 Mapping**                                                                                                                                           | **CycloneDX 1.6 Mapping**                                                                                                                              | **SPDX 3.0 Mapping**                |
+| - | ------------------------------ | ----------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------- |
+| 1 | **Source code URI**            | URI to the component’s source code (repository or source archive) | No single dedicated field. Commonly represented using `PackageDownloadLocation` (when pointing to source) or `ExternalRef` with an appropriate reference type. | `component.externalReferences[type=source-distribution].url` (source archive) or `component.externalReferences[type=vcs].url` (version control system) | `software_Package.sourceRepository` |
+| 2 | **Deployable component URI**   | Direct URI to download the deployable artifact                    | No single dedicated field. Commonly represented using `PackageDownloadLocation` or `ExternalRef` with a download-related reference type.                       | `component.externalReferences[type=distribution].url`                                                                                                  | `software_Package.downloadLocation` |
+| 3 | **Other unique identifiers**   | Additional identifiers such as PURL, CPE, or SWID                 | `ExternalRef` with reference type identifying PURL or CPE (for example `purl`, `cpe23Type`, or security-related external references)                           | `component.purl`, `component.cpe`, or `component.swid`                                                                                                 | `externalIdentifier`                |
+| 4 | **Concluded licences**         | Licence(s) concluded by the SBOM creator (licensee view)          | `PackageLicenseConcluded`                                                                                                                                      | `component.licenses[]` with `licenseAcknowledgement = concluded`                                                                                       | `hasConcludedLicense`               |
+
+### 5. Optional data fields for each component
+
+| # | BSI Optional Component Field | Description (BSI intent)                                                    | **SPDX 2.3 Mapping**                                                                                                                                 | **CycloneDX 1.6 Mapping**                                         | **SPDX 3.0 Mapping**                   |
+| - | ---------------------------- | --------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- | -------------------------------------- |
+| 1 | **Declared licences**        | Licences declared by the component creator or licensor                      | `PackageLicenseDeclared`                                                                                                                             | `component.licenses[]` with `licenseAcknowledgement = declared`   | `hasDeclaredLicense`                   |
+| 2 | **Hash of the source code**  | Cryptographic hash of the component’s source code (algorithm not specified) | No single dedicated field. Commonly represented using `PackageChecksum` when the package represents source code, or `FileChecksum` for source files. | `component.externalReferences[type=source-distribution].hashes[]` | `verifiedUsing` (for source artifacts) |
+
+## Confusion / Clarification Needed (BSI v2.0.0)
+
+The following points were identified while mapping BSI v2.0.0 requirements to **SPDX 2.3 / 3.0** and **CycloneDX 1.6**.
+
+### 1. Source Code URI in SPDX
+
+**Question**
+
+- What is the corresponding field for it in the SPDX ?
+- Can `PackageDownloadLocation` be considered a valid **“Source Code URI”** in SPDX?
+
+**Context**
+
+- SPDX 2.3 does not define a dedicated “source code URI” field.
+- `PackageDownloadLocation` is often reused for multiple purposes (source, binary, homepage).
+
+### 2. Source Code URI in CycloneDX: `vcs` vs `source-distribution`
+
+**Question**
+
+- Can `externalReferences.type = "vcs"` be accepted as a valid **“Source Code URI”** in CycloneDX?
+
+**Context**
+
+- BSI v2.0.1 examples explicitly show acceptance of `externalReferences.type = "source-distribution"`.
+- CycloneDX also defines `vcs` for version control system URLs.
+- It is unclear whether both are equivalent for BSI compliance.
+
+**Clarification requested**
+
+- Is `vcs` equivalent to `source-distribution` for the “Source Code URI” requirement?
+- If both are present, is one preferred?
+
+### 3. Source Code URI vs Deployable Component URI
+
+**Question**
+
+- What is the **intended semantic difference** between:
+ - “Source Code URI”
+ - “Deployable Component URI”
+
+**Context**
+
+- In CycloneDX, the distinction is clear:
+  - `source-distribution` / `vcs` → source
+  - `distribution` → deployable artifact
+- In SPDX, both concepts are often represented using `PackageDownloadLocation` or `ExternalRef`.
+
+**Clarification requested**
+
+- What are the recommended SPDX fields for each of these concepts?
+- How should tooling distinguish between source and deployable URIs in SPDX documents?
+
+### 4. Associated License vs Declared / Concluded License
+
+**Question**
+
+- In SPDX 2.3 or CycloneDX 1.6, if **either** a declared license **or** a concluded license is present, can it be considered an **“associated license”** for BSI compliance?
+
+**Context**
+
+- BSI uses the term “associated license(s)”.
+- SPDX and CycloneDX distinguish between declared and concluded licenses.
+- Neither SPDX nor CycloneDX defines a field explicity named "associated license".
+
+**Clarification requested**
+
+- Is the presence of either declared or concluded license sufficient?
+- Is one preferred over the other for compliance purposes?
+
+### 5. Executable, Structured, and Archive Files in SPDX
+
+**Question**
+
+- Can the community provide **concrete SPDX examples** for representing:
+  - Executable files
+  - Archive files
+  - Structured files
+
+- Does SBOM generating tools for CycloneDX, create component properties in the following form:
+  - bsi:component:executable for executable files
+  - bsi:component:archive for archive files
+  - bsi:component:structured for structured files.
+
+**Context**
+
+- SPDX has no direct, first-class fields for these classifications.
+- Current mappings rely on indirect fields such as `PackagePurpose` or file semantics.
+- BSI requirements reference these concepts explicitly.
+
+**Clarification requested**
+
+- Are there recommended SPDX patterns for these classifications?
+- Should these be treated as optional or not applicable for SPDX?
+
+### 6. Difference Between "Hash of the deployable component" and “Hash of the source code of the component”
+
+**Question**
+
+- What is the intended difference between:
+  - “Hash of the deployable component”
+  - “Hash of the source code of the component”
+
+**Context**
+
+- BSI treats these as two separate fields.
+- SPDX provides generic checksum mechanisms (PackageChecksum, FileChecksum) but does not distinguish intent.
+- It is unclear how tooling should reliably differentiate between hashes of deployable artifacts and hashes of source code.
+
+**Clarification requested**
+
+- What SPDX fields should be used for:
+  - Hash of a deployable artifact
+  - Hash of the corresponding source code
+
+- Is PackageChecksum acceptable for both cases when context differs?
+
+### 7. SBOM Author and Component Creator in CycloneDX
+
+**Question**
+
+- In BSI v2.0.1 examples, SBOM author/creator information appears to be derived from `metadata.manufacturer`.
+Can `metadata.supplier` or `metadata.authors` also be used to satisfy the SBOM Author requirement?
+- Similarly, for component creator / component supplier, which CycloneDX fields are considered acceptable?
+
+**Context**
+
+- CycloneDX defines SBOM authors explicitly via `metadata.authors`.
+- BSI examples appear to rely on `metadata.manufacturer`.
+- It is unclear whether these fields are:
+  - equivalent
+  - ordered by preference
+  - or intended as fallbacks
+
+**Clarification requested**
+
+- For SBOM author:
+  - Can `metadata.authors`, `metadata.supplier`, and `metadata.manufacturer` all be accepted?
+  - Is there a preferred or primary field?
+
+- For component creator:
+  - Should `component.supplier`, `component.manufacturer`, or `component.authors` be used?
