@@ -69,6 +69,10 @@
         {
           "algorithm": "SHA256",
           "checksumValue": "a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456"
+        },
+        {
+          "algorithm": "SHA512",
+          "checksumValue": "1a2b3c4d5e6f7890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890"
         }
       ],
       "externalRefs": [
@@ -104,6 +108,10 @@
         {
           "algorithm": "SHA1",
           "checksumValue": "da39a3ee5e6b4b0d3255bfef95601890afd80709"
+        },
+        {
+          "algorithm": "SHA512",
+          "checksumValue": "9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9f"
         }
       ],
       "externalRefs": [
