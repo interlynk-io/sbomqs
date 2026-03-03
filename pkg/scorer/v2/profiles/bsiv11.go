@@ -308,14 +308,6 @@ func BSIV11CompVersion(doc sbom.Document) catalog.ProfFeatScore {
 // - components[].authors[].email
 // - components[].manufacturer.email / .url / .contact.email
 // - components[].supplier.email / .url / .contact.email
-//
-// What Function Says:
-// - Iterates over all declared components.
-// - For each component, checks Authors, Manufacturer, then Supplier.
-// - Counts components with valid creator contact.
-// - Returns full score if all components are valid.
-// - Returns proportional score if partially valid.
-// - Returns zero if only invalid or missing.
 func BSIV11CompCreator(doc sbom.Document) catalog.ProfFeatScore {
 
 	comps := doc.Components()
@@ -463,13 +455,6 @@ func BSIV11CompCreator(doc sbom.Document) catalog.ProfFeatScore {
 // CycloneDX:
 // - components[].licenses[].license.id
 // - components[].licenses[].license.expression
-//
-// What This Function says:
-// - Iterates over all declared components.
-// - Accepts licence from Concluded OR Declared fields.
-// - Requires at least one valid licence per component.
-// - Rejects NONE or NOASSERTION.
-// - Aggregates SBOM-level score.
 func BSIV11CompLicenses(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
 	total := len(comps)
@@ -798,7 +783,7 @@ func BSIV11CompDependencies(doc sbom.Document) catalog.ProfFeatScore {
 // CycloneDX:
 // - serialNumber+version
 //
-// NOTE: It's a Optional field.
+// NOTE: It's an Additional field (BSI §5.3): conditional mandatory — MUST be provided if data exists.
 func BSIV11SBOMURI(doc sbom.Document) catalog.ProfFeatScore {
 
 	uri := strings.TrimSpace(doc.Spec().GetURI())
@@ -842,7 +827,7 @@ BSI Official Definition::
   - VSC
   - source-distribution
 
-NOTE: It's a Optional field.
+NOTE: It's an Additional field (BSI §5.3): conditional mandatory — MUST be provided if data exists.
 */
 func BSIV11CompSourceURI(doc sbom.Document) catalog.ProfFeatScore {
 
@@ -853,29 +838,29 @@ func BSIV11CompSourceURI(doc sbom.Document) catalog.ProfFeatScore {
 		return catalog.ProfFeatScore{
 			Score:  0.0,
 			Desc:   "No components found.",
-			Ignore: false,
+			Ignore: true,
 		}
 	}
 
-	valid := 0
+	withData := 0
 
 	for _, c := range comps {
 
-		hasValid := false
+		hasData := false
 
 		sourceURL := strings.TrimSpace(c.GetSourceCodeURL())
 		if sourceURL != "" {
 			if isValidURL(sourceURL) {
-				hasValid = true
+				hasData = true
 			}
 		}
 
-		if hasValid {
-			valid++
+		if hasData {
+			withData++
 		}
 	}
 
-	if valid == 0 {
+	if withData == 0 {
 		return catalog.ProfFeatScore{
 			Score:  0.0,
 			Desc:   "No components declare source code URI (additional field).",
@@ -883,7 +868,7 @@ func BSIV11CompSourceURI(doc sbom.Document) catalog.ProfFeatScore {
 		}
 	}
 
-	if valid == total {
+	if withData == total {
 		return catalog.ProfFeatScore{
 			Score:  10.0,
 			Desc:   "Source code URI declared for all components.",
@@ -892,8 +877,8 @@ func BSIV11CompSourceURI(doc sbom.Document) catalog.ProfFeatScore {
 	}
 
 	return catalog.ProfFeatScore{
-		Score:  float64(valid) / float64(total) * 10.0,
-		Desc:   fmt.Sprintf("%d/%d components declare source code URI.", valid, total),
+		Score:  float64(withData) / float64(total) * 10.0,
+		Desc:   fmt.Sprintf("%d/%d components declare source code URI.", withData, total),
 		Ignore: false,
 	}
 }
@@ -914,7 +899,7 @@ BSI Official Definition:
   - distribution
   - distribution-intake
 
-NOTE: It's a Optional field.
+NOTE: It's an Additional field (BSI §5.3): conditional mandatory — MUST be provided if data exists.
 */
 func BSIV11CompExecutableURI(doc sbom.Document) catalog.ProfFeatScore {
 
@@ -922,27 +907,28 @@ func BSIV11CompExecutableURI(doc sbom.Document) catalog.ProfFeatScore {
 	total := len(comps)
 
 	if total == 0 {
-		return catalog.ProfFeatScore{Score: 0.0, Desc: "No components found.", Ignore: false}
+		// Additional field: prerequisite condition (components exist) is not met.
+		return catalog.ProfFeatScore{Score: 0.0, Desc: "no components found.", Ignore: true}
 	}
 
-	valid := 0
+	withData := 0
 
 	for _, c := range comps {
-		hasValid := false
+		hasData := false
 
 		downloadURL := strings.TrimSpace(c.GetDownloadLocationURL())
 		if downloadURL != "" {
 			if isValidURL(downloadURL) {
-				hasValid = true
+				hasData = true
 			}
 		}
 
-		if hasValid {
-			valid++
+		if hasData {
+			withData++
 		}
 	}
 
-	if valid == 0 {
+	if withData == 0 {
 		return catalog.ProfFeatScore{
 			Score:  0.0,
 			Desc:   "No components declare executable URI (additional field).",
@@ -950,7 +936,7 @@ func BSIV11CompExecutableURI(doc sbom.Document) catalog.ProfFeatScore {
 		}
 	}
 
-	if valid == total {
+	if withData == total {
 		return catalog.ProfFeatScore{
 			Score:  10.0,
 			Desc:   "Executable URI declared for all components.",
@@ -959,8 +945,8 @@ func BSIV11CompExecutableURI(doc sbom.Document) catalog.ProfFeatScore {
 	}
 
 	return catalog.ProfFeatScore{
-		Score:  float64(valid) / float64(total) * 10.0,
-		Desc:   fmt.Sprintf("%d/%d components declare executable URI.", valid, total),
+		Score:  float64(withData) / float64(total) * 10.0,
+		Desc:   fmt.Sprintf("%d/%d components declare executable URI.", withData, total),
 		Ignore: false,
 	}
 }
@@ -977,7 +963,7 @@ BSI Official Definition::
   - VSC
   - source-distribution
 
-NOTE: It's a Optional field.
+NOTE: It's an Additional field (BSI §5.3): conditional mandatory — MUST be provided if data exists.
 */
 func BSIV11CompSourceHash(doc sbom.Document) catalog.ProfFeatScore {
 
@@ -985,26 +971,21 @@ func BSIV11CompSourceHash(doc sbom.Document) catalog.ProfFeatScore {
 	total := len(comps)
 
 	if total == 0 {
-		return catalog.ProfFeatScore{Score: 0.0, Desc: "No components found.", Ignore: false}
+		// Additional field (v1.1) / Optional field (v2.0): prerequisite condition not met.
+		return catalog.ProfFeatScore{Score: 0.0, Desc: "no components found.", Ignore: true}
 	}
 
-	valid := 0
+	withData := 0
 
 	for _, c := range comps {
 
-		hasHash := false
-
-		sourceCodeHas := strings.TrimSpace(c.SourceCodeHash())
-		if sourceCodeHas != "" {
-			hasHash = true
-		}
-
-		if hasHash {
-			valid++
+		sourceCodeHash := strings.TrimSpace(c.SourceCodeHash())
+		if sourceCodeHash != "" {
+			withData++
 		}
 	}
 
-	if valid == 0 {
+	if withData == 0 {
 		return catalog.ProfFeatScore{
 			Score:  0.0,
 			Desc:   "No components declare source hash (additional field).",
@@ -1012,7 +993,7 @@ func BSIV11CompSourceHash(doc sbom.Document) catalog.ProfFeatScore {
 		}
 	}
 
-	if valid == total {
+	if withData == total {
 		return catalog.ProfFeatScore{
 			Score:  10.0,
 			Desc:   "source hash declared for all components.",
@@ -1021,8 +1002,8 @@ func BSIV11CompSourceHash(doc sbom.Document) catalog.ProfFeatScore {
 	}
 
 	return catalog.ProfFeatScore{
-		Score:  float64(valid) / float64(total) * 10.0,
-		Desc:   fmt.Sprintf("%d/%d components declare source SHA-256 hash.", valid, total),
+		Score:  float64(withData) / float64(total) * 10.0,
+		Desc:   fmt.Sprintf("%d/%d components declare source SHA-256 hash.", withData, total),
 		Ignore: false,
 	}
 }
@@ -1039,7 +1020,7 @@ func BSIV11CompSourceHash(doc sbom.Document) catalog.ProfFeatScore {
   - PURL
   - CPE
 
-NOTE: It's a Optional field.
+NOTE: It's an Additional field (BSI §5.3): conditional mandatory — MUST be provided if data exists.
 */
 func BSIV11CompOtherIdentifiers(doc sbom.Document) catalog.ProfFeatScore {
 
@@ -1047,14 +1028,15 @@ func BSIV11CompOtherIdentifiers(doc sbom.Document) catalog.ProfFeatScore {
 	total := len(comps)
 
 	if total == 0 {
+		// Additional field: prerequisite condition (components exist) is not met.
 		return catalog.ProfFeatScore{
 			Score:  0.0,
-			Desc:   "No components found.",
-			Ignore: false,
+			Desc:   "no components found.",
+			Ignore: true,
 		}
 	}
 
-	valid := 0
+	withData := 0
 
 	for _, comp := range comps {
 
@@ -1068,7 +1050,7 @@ func BSIV11CompOtherIdentifiers(doc sbom.Document) catalog.ProfFeatScore {
 			}
 		}
 
-		// Check CPEs (only if not already valid)
+		// Check CPEs (only if not already found)
 		if !hasIdentifier {
 			for _, cpe := range comp.GetCpes() {
 				if strings.TrimSpace(string(cpe)) != "" {
@@ -1079,19 +1061,19 @@ func BSIV11CompOtherIdentifiers(doc sbom.Document) catalog.ProfFeatScore {
 		}
 
 		if hasIdentifier {
-			valid++
+			withData++
 		}
 	}
 
-	if valid == 0 {
+	if withData == 0 {
 		return catalog.ProfFeatScore{
 			Score:  0.0,
-			Desc:   "No components declare additional unique identifiers (optional field).",
+			Desc:   "No components declare additional unique identifiers (additional field).",
 			Ignore: true,
 		}
 	}
 
-	if valid == total {
+	if withData == total {
 		return catalog.ProfFeatScore{
 			Score:  10.0,
 			Desc:   "Unique identifiers declared for all components.",
@@ -1100,8 +1082,8 @@ func BSIV11CompOtherIdentifiers(doc sbom.Document) catalog.ProfFeatScore {
 	}
 
 	return catalog.ProfFeatScore{
-		Score:  float64(valid) / float64(total) * 10.0,
-		Desc:   fmt.Sprintf("%d/%d components declare unique identifiers.", valid, total),
+		Score:  float64(withData) / float64(total) * 10.0,
+		Desc:   fmt.Sprintf("%d/%d components declare unique identifiers.", withData, total),
 		Ignore: false,
 	}
 }
