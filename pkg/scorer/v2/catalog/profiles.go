@@ -28,11 +28,15 @@ type ProfSpec struct {
 }
 
 // ProfFeatSpec represents a feature specification within a compliance profile.
-// Profile features define specific requirements that an SBOM must meet,
-// with some features being required (must pass) and others being optional.
+// Profile features define specific requirements that an SBOM must meet.
+// Features are classified into three tiers following BSI TR-03183-2:
+//   - Required (Required:true): MUST always be present (§5.2)
+//   - Additional (Additional:true): MUST be present IF the data exists (§5.3 — conditional mandatory)
+//   - Optional (both false): MAY be present (§5.4 — truly optional, never affects score)
 type ProfFeatSpec struct {
 	Name        string
 	Required    bool
+	Additional  bool
 	Description string
 	Key         string
 	Evaluate    ProfFeatEval
