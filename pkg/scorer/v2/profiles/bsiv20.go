@@ -127,7 +127,95 @@ to also include components *contained* in a component (statically linked, embedd
 The DEPENDS_ON + CONTAINS relationship types cover both.
 */
 func BSIV20CompDependencies(doc sbom.Document) catalog.ProfFeatScore {
-	return BSIV11CompDependencies(doc)
+	primary := doc.PrimaryComp()
+	if !primary.IsPresent() {
+		return catalog.ProfFeatScore{
+			Score:  0.0,
+			Desc:   "Primary component is missing.",
+			Ignore: false,
+		}
+	}
+
+	rels := doc.GetRelationships()
+	if len(rels) == 0 {
+		return catalog.ProfFeatScore{
+			Score:  0.0,
+			Desc:   "Dependency information is missing.",
+			Ignore: false,
+		}
+	}
+
+	// Build component map
+	componentMap := make(map[string]sbom.GetComponent)
+	for _, c := range doc.Components() {
+		componentMap[c.GetID()] = c
+	}
+	componentMap[primary.GetID()] = primary.Component()
+
+	// 1. Validate all relationships reference valid components
+	for _, r := range rels {
+		// SPDXRef-DOCUMENT is not a component but valid as a DESCRIBES source
+		if r.GetType() == "DESCRIBES" {
+			continue
+		}
+		if _, ok := componentMap[r.GetFrom()]; !ok {
+			return catalog.ProfFeatScore{
+				Score:  0.0,
+				Desc:   "Dependency source references undefined component.",
+				Ignore: false,
+			}
+		}
+		if _, ok := componentMap[r.GetTo()]; !ok {
+			return catalog.ProfFeatScore{
+				Score:  0.0,
+				Desc:   "Dependency target references undefined component.",
+				Ignore: false,
+			}
+		}
+	}
+
+	// 2. Ensure primary declares dependencies
+	outgoing := doc.GetOutgoingRelations(primary.GetID())
+	if len(outgoing) == 0 {
+		return catalog.ProfFeatScore{
+			Score:  0.0,
+			Desc:   "Primary component does not declare its dependencies.",
+			Ignore: false,
+		}
+	}
+
+	// 3. Recursive traversal — v2.0 follows both DEPENDS_ON and CONTAINS
+	visited := make(map[string]bool)
+	var dfs func(string)
+	dfs = func(id string) {
+		if visited[id] {
+			return
+		}
+		visited[id] = true
+		for _, rel := range doc.GetOutgoingRelations(id) {
+			if rel.GetType() == "DEPENDS_ON" || rel.GetType() == "CONTAINS" {
+				dfs(rel.GetTo())
+			}
+		}
+	}
+	dfs(primary.GetID())
+
+	// 4. Ensure no orphan components
+	for id := range componentMap {
+		if !visited[id] {
+			return catalog.ProfFeatScore{
+				Score:  5.0,
+				Desc:   "Some components are not reachable from the primary component.",
+				Ignore: false,
+			}
+		}
+	}
+
+	return catalog.ProfFeatScore{
+		Score:  10.0,
+		Desc:   "Dependencies are recursively declared and structurally complete.",
+		Ignore: false,
+	}
 }
 
 /*
@@ -171,37 +259,48 @@ SPDX: PackageChecksum with algorithm SHA512
 CDX:  components[].hashes[].alg = "SHA-512"
 */
 func BSIV20CompDeployableHash(doc sbom.Document) catalog.ProfFeatScore {
-	primary := doc.PrimaryComp()
-	if primary == nil {
+	comps := doc.Components()
+	total := len(comps)
+
+	if total == 0 {
 		return catalog.ProfFeatScore{
 			Score:  0.0,
-			Desc:   "primary deployable component is missing.",
-			Ignore: true,
+			Desc:   "no components found in SBOM.",
+			Ignore: false,
 		}
 	}
 
-	for _, comp := range doc.Components() {
-		if comp.GetID() != primary.GetID() {
-			continue
-		}
-
+	withData := 0
+	for _, comp := range comps {
 		for _, checksum := range comp.GetChecksums() {
 			algo := common.NormalizeAlgoName(checksum.GetAlgo())
 			value := strings.TrimSpace(checksum.GetContent())
-
 			if algo == "SHA512" && value != "" {
-				return catalog.ProfFeatScore{
-					Score:  10.0,
-					Desc:   "primary deployable component declares a valid SHA-512 hash.",
-					Ignore: false,
-				}
+				withData++
+				break
 			}
 		}
 	}
 
+	if withData == total {
+		return catalog.ProfFeatScore{
+			Score:  10.0,
+			Desc:   "SHA-512 hash declared for all components.",
+			Ignore: false,
+		}
+	}
+
+	if withData == 0 {
+		return catalog.ProfFeatScore{
+			Score:  0.0,
+			Desc:   "no components declare a SHA-512 deployable hash.",
+			Ignore: false,
+		}
+	}
+
 	return catalog.ProfFeatScore{
-		Score:  0.0,
-		Desc:   "primary deployable component must declare a SHA-512 hash.",
+		Score:  float64(withData) / float64(total) * 10.0,
+		Desc:   fmt.Sprintf("%d/%d components declare a SHA-512 deployable hash.", withData, total),
 		Ignore: false,
 	}
 }
@@ -365,9 +464,10 @@ func BSIV20CompConcludedLicenses(doc sbom.Document) catalog.ProfFeatScore {
 	total := len(comps)
 
 	if total == 0 {
+		// Additional field: prerequisite condition (components exist) is not met.
 		return catalog.ProfFeatScore{
 			Score:  0.0,
-			Desc:   "No components found in SBOM.",
+			Desc:   "no components found in SBOM.",
 			Ignore: true,
 		}
 	}
@@ -398,7 +498,7 @@ func BSIV20CompConcludedLicenses(doc sbom.Document) catalog.ProfFeatScore {
 		return catalog.ProfFeatScore{
 			Score:  10.0,
 			Desc:   "concluded licence declared for all components",
-			Ignore: true,
+			Ignore: false,
 		}
 	}
 
@@ -451,9 +551,10 @@ func BSIV20CompDeclaredLicenses(doc sbom.Document) catalog.ProfFeatScore {
 	total := len(comps)
 
 	if total == 0 {
+		// Optional field: prerequisite condition (components exist) is not met.
 		return catalog.ProfFeatScore{
 			Score:  0.0,
-			Desc:   "No components found in SBOM.",
+			Desc:   "no components found in SBOM.",
 			Ignore: true,
 		}
 	}
@@ -484,7 +585,7 @@ func BSIV20CompDeclaredLicenses(doc sbom.Document) catalog.ProfFeatScore {
 		return catalog.ProfFeatScore{
 			Score:  10.0,
 			Desc:   "declared licence declared for all components",
-			Ignore: true,
+			Ignore: false,
 		}
 	}
 
@@ -525,7 +626,45 @@ SPDX: PackageVerificationCode (closest available, SHA-1-based)
 CDX:  externalReferences[].hashes[] on vcs or source-distribution references
 */
 func BSIV20CompSourceHash(doc sbom.Document) catalog.ProfFeatScore {
-	return BSIV11CompSourceHash(doc)
+	comps := doc.Components()
+	total := len(comps)
+
+	if total == 0 {
+		return catalog.ProfFeatScore{
+			Score:  0.0,
+			Desc:   "no components found in SBOM.",
+			Ignore: true,
+		}
+	}
+
+	withData := 0
+	for _, c := range comps {
+		if strings.TrimSpace(c.SourceCodeHash()) != "" {
+			withData++
+		}
+	}
+
+	if withData == 0 {
+		return catalog.ProfFeatScore{
+			Score:  0.0,
+			Desc:   "no components declare source hash (optional field).",
+			Ignore: true,
+		}
+	}
+
+	if withData == total {
+		return catalog.ProfFeatScore{
+			Score:  10.0,
+			Desc:   "source hash declared for all components.",
+			Ignore: false,
+		}
+	}
+
+	return catalog.ProfFeatScore{
+		Score:  float64(withData) / float64(total) * 10.0,
+		Desc:   fmt.Sprintf("%d/%d components declare source hash.", withData, total),
+		Ignore: false,
+	}
 }
 
 // // =========================================================
