@@ -114,6 +114,7 @@ echo "SBOM Quality Score: $SHARE_URL" >> compliance-report.md
 echo "" >> compliance-report.md
 
 # Add compliance checks
+# BSI v2.1 compliance (latest)
 sbomqs compliance --bsi-v2 $SBOM --basic >> compliance-report.md
 ```
 

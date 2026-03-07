@@ -9,7 +9,7 @@ This reference document describes all quality checks performed by sbomqs, organi
 - **Semantic**: Correctness and validity of SBOM field meanings
 - **Quality**: Data completeness and accuracy metrics
 - **Sharing**: Distribution and consumption readiness
-- **BSI**: German BSI TR-03183-2 compliance checks
+- **BSI**: German BSI TR-03183-2 compliance checks (v1.1, v2.0, v2.1)
 
 ## Scoring Methodology
 
