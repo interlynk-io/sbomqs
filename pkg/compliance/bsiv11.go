@@ -106,6 +106,15 @@ const (
 
 	// Security identifiers
 	SBOM_SIGNATURE
+
+	// BSI v2.1 specific component identifiers
+	COMP_FILENAME
+	COMP_EXECUTABLE
+	COMP_ARCHIVE
+	COMP_STRUCTURED
+	COMP_EFFECTIVE_LICENSE
+	COMP_DEPLOYABLE_HASH
+	COMP_SECURITY_TXT_URL
 )
 
 func bsiResult(ctx context.Context, doc sbom.Document, fileName string, outFormat string, colorOutput bool) {

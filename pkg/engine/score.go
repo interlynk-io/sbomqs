@@ -64,8 +64,10 @@ type Params struct {
 	ConfigPath string
 
 	Ntia  bool
-	Bsi   bool
-	BsiV2 bool
+	Bsi    bool
+	BsiV1  bool
+	BsiV2  bool
+	BsiV21 bool
 	Oct   bool
 	Fsct  bool
 
