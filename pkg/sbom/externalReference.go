@@ -22,12 +22,15 @@ type GetExternalReference interface {
 	GetRefType() string
 	// GetRefLocator returns the locator/URL of the external reference
 	GetRefLocator() string
+	// GetRefHashes returns the cryptographic hashes associated with the external reference
+	GetRefHashes() []GetChecksum
 }
 
 // ExternalReference represents a concrete implementation of external reference information
 type ExternalReference struct {
 	RefType    string
 	RefLocator string
+	RefHashes  []GetChecksum
 }
 
 // GetRefType returns the type of the external reference (e.g., website, vcs, etc.)
@@ -38,4 +41,9 @@ func (e ExternalReference) GetRefType() string {
 // GetRefLocator returns the locator/URL of the external reference
 func (e ExternalReference) GetRefLocator() string {
 	return e.RefLocator
+}
+
+// GetRefHashes returns the cryptographic hashes associated with the external reference
+func (e ExternalReference) GetRefHashes() []GetChecksum {
+	return e.RefHashes
 }

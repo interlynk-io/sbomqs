@@ -134,6 +134,32 @@ var BSIV20KeyToEvaluatingFunction = map[string]catalog.ProfFeatEval{
 	"comp_associated_license": profiles.BSICompWithAssociatedLicenses,
 }
 
+var BSIV21KeyToEvaluatingFunction = map[string]catalog.ProfFeatEval{
+	"sbom_spec_version": profiles.BSIV21SpecVersion,
+	"sbom_creator":      profiles.BSIV11SBOMCreator,
+	"sbom_timestamp":    profiles.BSIV11SBOMCreationTimestamp,
+	"sbom_uri":          profiles.BSIV21SBOMURI,
+
+	"comp_creator":              profiles.BSIV11CompCreator,
+	"comp_name":                 profiles.BSIV11CompName,
+	"comp_version":              profiles.BSIV11CompVersion,
+	"comp_filename":             profiles.BSIV21CompFilename,
+	"comp_depth":                profiles.BSICompWithDependencies,
+	"comp_distribution_license": profiles.BSIV21CompDistributionLicence,
+	"comp_hash":                 profiles.BSIV21CompDeployableHash,
+	"comp_executable_prop":      profiles.BSIV21CompExecutableProperty,
+	"comp_archive_prop":         profiles.BSIV21CompArchiveProperty,
+	"comp_structured_prop":      profiles.BSIV21CompStructuredProperty,
+	"comp_source_code_url":      profiles.BSIV21CompSourceCodeURI,
+	"comp_download_url":         profiles.BSIV21CompDownloadURI,
+	"comp_other_identifiers":    profiles.BSIV21CompOtherIdentifiers,
+	"comp_original_licenses":    profiles.BSIV21CompOriginalLicences,
+
+	"comp_effective_license": profiles.BSIV21CompEffectiveLicence,
+	"comp_source_hash":       profiles.BSIV21CompSourceHash,
+	"comp_security_txt_url":  profiles.BSIV21CompSecurityTxtURL,
+}
+
 var OCTV11KeyToEvaluatingFunction = map[string]catalog.ProfFeatEval{
 	"sbom_spec":              profiles.OCTV11SBOMSpec,
 	"sbom_spec_version":      profiles.OCTV11SBOMSpecVersion,
@@ -242,6 +268,7 @@ const (
 	ProfileNTIA2025  catalog.ProfileKey = "ntia-2025"
 	ProfileBSI11     catalog.ProfileKey = "bsi-v1.1"
 	ProfileBSI20     catalog.ProfileKey = "bsi-v2.0"
+	ProfileBSI21     catalog.ProfileKey = "bsi-v2.1"
 	ProfileOCTV11    catalog.ProfileKey = "oct-v1.1"
 	ProfileInterlynk catalog.ProfileKey = "interlynk"
 	ProfileFSCT      catalog.ProfileKey = "fsct"
@@ -274,13 +301,16 @@ var profileAliases = map[string]catalog.ProfileKey{
 	"ntia2025":              ProfileNTIA2025,
 	"NTIA2025":              ProfileNTIA2025,
 	"fsct":                  ProfileFSCT,
-	"BSI":                   ProfileBSI20,
-	"bsi":                   ProfileBSI20,
+	"BSI":                   ProfileBSI21,
+	"bsi":                   ProfileBSI21,
 	"BSI-V1.1":              ProfileBSI11,
 	"bsi-v1.1":              ProfileBSI11,
 	"bsi-v1_1":              ProfileBSI11,
 	"BSI-V2.0":              ProfileBSI20,
 	"bsi-v2.0":              ProfileBSI20,
+	"BSI-V2.1":              ProfileBSI21,
+	"bsi-v2.1":              ProfileBSI21,
+	"bsi-v2_1":              ProfileBSI21,
 	"OCT-V1.1":              ProfileOCTV11,
 	"oct-v1.1":              ProfileOCTV11,
 	"OpenChain-Telco-v1.1":  ProfileOCTV11,
@@ -549,13 +579,16 @@ func filterProfiles(ctx context.Context, profiles []string) ([]catalog.ProfSpec,
 			finalProfiles = append(finalProfiles, profileFSCTSpec)
 
 		case "bsi":
-			finalProfiles = append(finalProfiles, profileBSI11Spec)
+			finalProfiles = append(finalProfiles, profileBSI21Spec)
 
 		case string(ProfileBSI11):
 			finalProfiles = append(finalProfiles, profileBSI11Spec)
 
 		case string(ProfileBSI20):
 			finalProfiles = append(finalProfiles, profileBSI20Spec)
+
+		case string(ProfileBSI21):
+			finalProfiles = append(finalProfiles, profileBSI21Spec)
 
 		case string(ProfileOCTV11):
 			finalProfiles = append(finalProfiles, profileOCTV11Spec)
@@ -874,6 +907,40 @@ var profileBSI20Spec = catalog.ProfSpec{
 	},
 }
 
+var profileBSI21Spec = catalog.ProfSpec{
+	Key:         ProfileBSI21,
+	Name:        "BSI TR-03183-2 v2.1",
+	Description: "BSI TR-03183-2 v2.1.0 Profile",
+	Features: []catalog.ProfFeatSpec{
+		// Required (SHALL) SBOM fields
+		{Key: "sbom_spec_version", Name: "Spec Version", Required: true, Description: "CDX >= 1.6 or SPDX >= 3.0.1", Evaluate: profiles.BSIV21SpecVersion},
+		{Key: "sbom_creator", Name: "Creator Info", Required: true, Description: "Contact email/URL", Evaluate: profiles.BSIV11SBOMCreator},
+		{Key: "sbom_timestamp", Name: "Creation Time", Required: true, Description: "Valid timestamp (ISO-8601)", Evaluate: profiles.BSIV11SBOMCreationTimestamp},
+		{Key: "sbom_uri", Name: "SBOM-URI", Required: true, Description: "Unique SBOM identifier", Evaluate: profiles.BSIV21SBOMURI},
+
+		// Required (SHALL) Component fields
+		{Key: "comp_creator", Name: "Component Creator", Required: true, Description: "Creator email/URL for each component", Evaluate: profiles.BSIV11CompCreator},
+		{Key: "comp_name", Name: "Component Name", Required: true, Description: "All components named", Evaluate: profiles.BSIV11CompName},
+		{Key: "comp_version", Name: "Component Version", Required: true, Description: "Version for each component", Evaluate: profiles.BSIV11CompVersion},
+		{Key: "comp_filename", Name: "Component Filename", Required: true, Description: "Filename via bsi:component:filename property", Evaluate: profiles.BSIV21CompFilename},
+		{Key: "comp_depth", Name: "Component Dependencies", Required: true, Description: "Dependency relationships", Evaluate: profiles.BSICompWithDependencies},
+		{Key: "comp_distribution_license", Name: "Distribution Licence", Required: true, Description: "Concluded licence (acknowledgement=concluded)", Evaluate: profiles.BSIV21CompDistributionLicence},
+		{Key: "comp_hash", Name: "Deployable Hash", Required: true, Description: "Hash on externalReferences type=distribution", Evaluate: profiles.BSIV21CompDeployableHash},
+		{Key: "comp_executable_prop", Name: "Executable Property", Required: true, Description: "bsi:component:executable property", Evaluate: profiles.BSIV21CompExecutableProperty},
+		{Key: "comp_archive_prop", Name: "Archive Property", Required: true, Description: "bsi:component:archive property", Evaluate: profiles.BSIV21CompArchiveProperty},
+		{Key: "comp_structured_prop", Name: "Structured Property", Required: true, Description: "bsi:component:structured property", Evaluate: profiles.BSIV21CompStructuredProperty},
+		{Key: "comp_source_code_url", Name: "Source Code URI", Required: true, Description: "externalReferences type=source-distribution URL", Evaluate: profiles.BSIV21CompSourceCodeURI},
+		{Key: "comp_download_url", Name: "Deployable Form URI", Required: true, Description: "externalReferences type=distribution URL", Evaluate: profiles.BSIV21CompDownloadURI},
+		{Key: "comp_other_identifiers", Name: "Unique Identifiers", Required: true, Description: "CPE, SWID, or purl", Evaluate: profiles.BSIV21CompOtherIdentifiers},
+		{Key: "comp_original_licenses", Name: "Original Licences", Required: true, Description: "Declared licence (acknowledgement=declared)", Evaluate: profiles.BSIV21CompOriginalLicences},
+
+		// Optional (MAY) Component fields
+		{Key: "comp_effective_license", Name: "Effective Licence", Required: false, Description: "bsi:component:effectiveLicense property", Evaluate: profiles.BSIV21CompEffectiveLicence},
+		{Key: "comp_source_hash", Name: "Source Code Hash", Required: false, Description: "Hash on externalReferences type=source-distribution", Evaluate: profiles.BSIV21CompSourceHash},
+		{Key: "comp_security_txt_url", Name: "Security.txt URL", Required: false, Description: "externalReferences type=rfc-9116", Evaluate: profiles.BSIV21CompSecurityTxtURL},
+	},
+}
+
 var profileOCTV11Spec = catalog.ProfSpec{
 	Key:         ProfileOCTV11,
 	Name:        "OpenChain Telco v1.1",
@@ -912,6 +979,7 @@ var Profile = []catalog.ProfSpec{
 	profileNTIA2025Spec,
 	profileBSI11Spec,
 	profileBSI20Spec,
+	profileBSI21Spec,
 	profileOCTV11Spec,
 	profileInterlynkSpec,
 	profileFSCTSpec,

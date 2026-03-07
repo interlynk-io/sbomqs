@@ -88,8 +88,18 @@ type GetComponent interface {
 	GetPackageLicenseConcluded() string
 	// ExternalReferences returns external references associated with the component
 	ExternalReferences() []GetExternalReference
+	// GetPropertyValue returns the value of a component property by name, or empty string if not found
+	GetPropertyValue(name string) string
+	// GetProperties returns all component properties as key-value pairs
+	GetProperties() []ComponentProperty
 	// GetComposition returns the composition information for the specified component ID
 	// GetCompositions() []GetComposition
+}
+
+// ComponentProperty represents a key-value property on a component
+type ComponentProperty struct {
+	Name  string
+	Value string
 }
 
 // Component represents a concrete implementation of SBOM component information and metadata
@@ -125,6 +135,7 @@ type Component struct {
 	PackageLicenseConcluded string
 	PackageLicenseDeclared  string
 	ExternalRefs            []GetExternalReference
+	Props                   []ComponentProperty
 	// composition             map[string]string
 }
 
@@ -286,6 +297,21 @@ func (c Component) GetPackageLicenseDeclared() string {
 // ExternalReferences returns external references associated with the component
 func (c Component) ExternalReferences() []GetExternalReference {
 	return c.ExternalRefs
+}
+
+// GetPropertyValue returns the value of a component property by name, or empty string if not found
+func (c Component) GetPropertyValue(name string) string {
+	for _, p := range c.Props {
+		if p.Name == name {
+			return p.Value
+		}
+	}
+	return ""
+}
+
+// GetProperties returns all component properties as key-value pairs
+func (c Component) GetProperties() []ComponentProperty {
+	return c.Props
 }
 
 // // GetComposition returns the composition information for the specified component ID
