@@ -694,6 +694,35 @@ func copyC(cdxc *cydx.Component, c *CdxDoc) *Component {
 		}
 	}
 
+	// Populate external references with type, URL, and hashes
+	if cdxc.ExternalReferences != nil {
+		for _, er := range *cdxc.ExternalReferences {
+			ref := ExternalReference{
+				RefType:    string(er.Type),
+				RefLocator: er.URL,
+			}
+			if er.Hashes != nil {
+				for _, h := range *er.Hashes {
+					ref.RefHashes = append(ref.RefHashes, Checksum{
+						Alg:     string(h.Algorithm),
+						Content: h.Value,
+					})
+				}
+			}
+			nc.ExternalRefs = append(nc.ExternalRefs, ref)
+		}
+	}
+
+	// Populate component properties
+	if cdxc.Properties != nil {
+		for _, p := range *cdxc.Properties {
+			nc.Props = append(nc.Props, ComponentProperty{
+				Name:  p.Name,
+				Value: p.Value,
+			})
+		}
+	}
+
 	nc.ID = cdxc.BOMRef
 
 	// For CycloneDX 1.6+, licenses have an acknowledgement field to distinguish

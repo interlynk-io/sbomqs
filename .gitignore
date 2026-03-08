@@ -56,3 +56,6 @@ __debug_bin*
 
 # GoReleaser artifacts
 .goreleaser/
+
+# Microsite build output
+microsite/

@@ -41,7 +41,7 @@ sbomqs score [flags] <SBOM file(s)>
 - `--category, -c <category>`: Score only specific categories (comma-separated)
 - `--feature, -f <features>`: Score only specific features (comma-separated)
 - `--configpath <path>`: Use custom scoring configuration file
-- `--profile <profiles>`: Apply specific compliance profiles (comma-separated: 'ntia', 'bsi', 'oct', 'interlynk', 'bsi-v2.0')
+- `--profile <profiles>`: Apply specific compliance profiles (comma-separated: 'ntia', 'bsi', 'bsi-v1.1', 'bsi-v2.0', 'bsi-v2.1', 'oct', 'interlynk')
 - `--legacy, -e`: Use legacy scoring mode (prior to sbomqs version 2.0)
 
 ### Other Flags
@@ -81,8 +81,10 @@ These flags are deprecated but still available for backward compatibility:
 
 ### Available Profiles
 - `ntia`: NTIA minimum elements compliance
-- `bsi`: BSI TR-03183-2 compliance (uses latest version)
+- `bsi`: BSI TR-03183-2 compliance (uses latest version, currently v2.1)
+- `bsi-v1.1`: BSI TR-03183-2 v1.1 specific
 - `bsi-v2.0`: BSI TR-03183-2 v2.0 specific
+- `bsi-v2.1`: BSI TR-03183-2 v2.1 specific
 - `oct`: OpenChain Telco compliance
 - `interlynk`: Interlynk comprehensive quality profile
 
@@ -215,6 +217,9 @@ $ sbomqs score --profile ntia my-app.spdx.json
 # Multiple profiles
 $ sbomqs score --profile ntia,bsi,oct my-app.spdx.json
 
+# BSI v2.1 profile (latest)
+$ sbomqs score --profile bsi-v2.1 my-app.cdx.json
+
 # BSI v2.0 profile
 $ sbomqs score --profile bsi-v2.0 my-app.spdx.json
 ```
@@ -311,7 +316,10 @@ $ sbomqs score --profile ntia my-app.spdx.json
 # Multiple profiles
 $ sbomqs score --profile ntia,bsi,oct,interlynk my-app.spdx.json
 
-# BSI profile
+# BSI profile (defaults to latest v2.1)
+$ sbomqs score --profile bsi samples/app.cdx.json
+
+# BSI v2.0 profile
 $ sbomqs score --profile bsi-v2.0 samples/app.spdx.json
 ```
 

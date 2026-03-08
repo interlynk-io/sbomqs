@@ -44,7 +44,9 @@ func ComplianceRun(ctx context.Context, ep *Params) error {
 
 	log.Debug("Compliance configuration resolved",
 		zap.Bool("bsi", ep.Bsi),
+		zap.Bool("bsi_v1", ep.BsiV1),
 		zap.Bool("bsi_v2", ep.BsiV2),
+		zap.Bool("bsi_v21", ep.BsiV21),
 		zap.Bool("oct", ep.Oct),
 		zap.Bool("fsct", ep.Fsct),
 		zap.Bool("ntia", ep.Ntia),
@@ -62,10 +64,14 @@ func ComplianceRun(ctx context.Context, ep *Params) error {
 	var reportType string
 
 	switch {
-	case ep.Bsi:
+	case ep.BsiV1:
 		reportType = "BSI"
 	case ep.BsiV2:
 		reportType = "BSI-V2"
+	case ep.BsiV21:
+		reportType = "BSI-V21"
+	case ep.Bsi:
+		reportType = "BSI-V21"
 	case ep.Oct:
 		reportType = "OCT"
 	case ep.Fsct:
