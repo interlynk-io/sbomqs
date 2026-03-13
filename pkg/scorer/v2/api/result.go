@@ -124,16 +124,19 @@ func NewProfileResult(profile catalog.ProfSpec) ProfileResult {
 }
 
 // ProfileFeatureResult represents the evaluation outcome for a single feature within a profile.
-// Profile features define specific requirements that an SBOM must meet to comply
-// with a particular profile. Features can be required (must pass) or optional
-// (contribute to overall score but don't affect compliance).
+// Features are classified into three tiers:
+//   - Required (Required:true): always mandatory; affects score even when ignored (penalises)
+//   - Additional (Additional:true): mandatory when data exists; affects score only when not ignored
+//   - Optional (both false): truly optional; never affects score
 type ProfileFeatureResult struct {
-	Name     string
-	Key      string
-	Required bool
-	Score    float64
-	Passed   bool
-	Desc     string
+	Name       string
+	Key        string
+	Required   bool
+	Additional bool
+	Ignore     bool
+	Score      float64
+	Passed     bool
+	Desc       string
 }
 
 // NewProfFeatResult creates a new ProfileFeatureResult from a profile feature specification.
@@ -141,12 +144,14 @@ type ProfileFeatureResult struct {
 // for evaluation outcomes.
 func NewProfFeatResult(pFeat catalog.ProfFeatSpec) ProfileFeatureResult {
 	return ProfileFeatureResult{
-		Name:     pFeat.Name,
-		Key:      string(pFeat.Key),
-		Required: pFeat.Required,
-		Score:    0.0,
-		Passed:   false,
-		Desc:     "no evaluator bound",
+		Name:       pFeat.Name,
+		Key:        string(pFeat.Key),
+		Required:   pFeat.Required,
+		Additional: pFeat.Additional,
+		Ignore:     false,
+		Score:      0.0,
+		Passed:     false,
+		Desc:       "no evaluator bound",
 	}
 }
 

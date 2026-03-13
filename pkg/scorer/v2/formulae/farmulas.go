@@ -268,8 +268,15 @@ func ComputeInterlynkProfScore(result api.ProfileResult) float64 {
 
 	var total int
 	for _, res := range result.Items {
-		// Only include required fields in the score calculation
-		if res.Required {
+		// Required fields count only when the tool can evaluate them (!Ignore).
+		// Ignore=true on a Required field means a tool/format limitation — the SBOM
+		// itself may be fully compliant; we simply cannot verify it. Penalising the
+		// score for a tool gap misrepresents the SBOM's quality.
+		if res.Required && !res.Ignore {
+			total++
+			totalScore += res.Score
+		} else if res.Additional && !res.Ignore {
+			// Additional fields count only when the data exists (conditional mandatory).
 			total++
 			totalScore += res.Score
 		}

@@ -43,6 +43,7 @@ type Prof struct {
 type ProfFSpec struct {
 	Name        string
 	Required    bool
+	Additional  bool
 	Description string
 	Key         string
 }
@@ -72,6 +73,7 @@ func DefaultProfConfig() string {
 				Key:         pFeat.Key,
 				Description: pFeat.Description,
 				Required:    pFeat.Required,
+				Additional:  pFeat.Additional,
 			}
 
 			profile.Features = append(profile.Features, feature)
@@ -152,6 +154,7 @@ func similar(p Prof, eval map[string]catalog.ProfFeatEval) []catalog.ProfFeatSpe
 			Description: f.Description,
 			Key:         f.Key,
 			Required:    f.Required,
+			Additional:  f.Additional,
 			Evaluate:    eval[f.Key],
 		}
 		profSpec = append(profSpec, feat)
