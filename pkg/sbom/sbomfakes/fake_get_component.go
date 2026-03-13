@@ -174,6 +174,27 @@ type FakeGetComponent struct {
 	getPackageLicenseDeclaredReturnsOnCall map[int]struct {
 		result1 string
 	}
+	GetPropertiesStub        func() []sbom.ComponentProperty
+	getPropertiesMutex       sync.RWMutex
+	getPropertiesArgsForCall []struct {
+	}
+	getPropertiesReturns struct {
+		result1 []sbom.ComponentProperty
+	}
+	getPropertiesReturnsOnCall map[int]struct {
+		result1 []sbom.ComponentProperty
+	}
+	GetPropertyValueStub        func(string) string
+	getPropertyValueMutex       sync.RWMutex
+	getPropertyValueArgsForCall []struct {
+		arg1 string
+	}
+	getPropertyValueReturns struct {
+		result1 string
+	}
+	getPropertyValueReturnsOnCall map[int]struct {
+		result1 string
+	}
 	GetPurlsStub        func() []purl.PURL
 	getPurlsMutex       sync.RWMutex
 	getPurlsArgsForCall []struct {
@@ -1172,6 +1193,120 @@ func (fake *FakeGetComponent) GetPackageLicenseDeclaredReturnsOnCall(i int, resu
 		})
 	}
 	fake.getPackageLicenseDeclaredReturnsOnCall[i] = struct {
+		result1 string
+	}{result1}
+}
+
+func (fake *FakeGetComponent) GetProperties() []sbom.ComponentProperty {
+	fake.getPropertiesMutex.Lock()
+	ret, specificReturn := fake.getPropertiesReturnsOnCall[len(fake.getPropertiesArgsForCall)]
+	fake.getPropertiesArgsForCall = append(fake.getPropertiesArgsForCall, struct {
+	}{})
+	stub := fake.GetPropertiesStub
+	fakeReturns := fake.getPropertiesReturns
+	fake.recordInvocation("GetProperties", []interface{}{})
+	fake.getPropertiesMutex.Unlock()
+	if stub != nil {
+		return stub()
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeGetComponent) GetPropertiesCallCount() int {
+	fake.getPropertiesMutex.RLock()
+	defer fake.getPropertiesMutex.RUnlock()
+	return len(fake.getPropertiesArgsForCall)
+}
+
+func (fake *FakeGetComponent) GetPropertiesCalls(stub func() []sbom.ComponentProperty) {
+	fake.getPropertiesMutex.Lock()
+	defer fake.getPropertiesMutex.Unlock()
+	fake.GetPropertiesStub = stub
+}
+
+func (fake *FakeGetComponent) GetPropertiesReturns(result1 []sbom.ComponentProperty) {
+	fake.getPropertiesMutex.Lock()
+	defer fake.getPropertiesMutex.Unlock()
+	fake.GetPropertiesStub = nil
+	fake.getPropertiesReturns = struct {
+		result1 []sbom.ComponentProperty
+	}{result1}
+}
+
+func (fake *FakeGetComponent) GetPropertiesReturnsOnCall(i int, result1 []sbom.ComponentProperty) {
+	fake.getPropertiesMutex.Lock()
+	defer fake.getPropertiesMutex.Unlock()
+	fake.GetPropertiesStub = nil
+	if fake.getPropertiesReturnsOnCall == nil {
+		fake.getPropertiesReturnsOnCall = make(map[int]struct {
+			result1 []sbom.ComponentProperty
+		})
+	}
+	fake.getPropertiesReturnsOnCall[i] = struct {
+		result1 []sbom.ComponentProperty
+	}{result1}
+}
+
+func (fake *FakeGetComponent) GetPropertyValue(arg1 string) string {
+	fake.getPropertyValueMutex.Lock()
+	ret, specificReturn := fake.getPropertyValueReturnsOnCall[len(fake.getPropertyValueArgsForCall)]
+	fake.getPropertyValueArgsForCall = append(fake.getPropertyValueArgsForCall, struct {
+		arg1 string
+	}{arg1})
+	stub := fake.GetPropertyValueStub
+	fakeReturns := fake.getPropertyValueReturns
+	fake.recordInvocation("GetPropertyValue", []interface{}{arg1})
+	fake.getPropertyValueMutex.Unlock()
+	if stub != nil {
+		return stub(arg1)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeGetComponent) GetPropertyValueCallCount() int {
+	fake.getPropertyValueMutex.RLock()
+	defer fake.getPropertyValueMutex.RUnlock()
+	return len(fake.getPropertyValueArgsForCall)
+}
+
+func (fake *FakeGetComponent) GetPropertyValueCalls(stub func(string) string) {
+	fake.getPropertyValueMutex.Lock()
+	defer fake.getPropertyValueMutex.Unlock()
+	fake.GetPropertyValueStub = stub
+}
+
+func (fake *FakeGetComponent) GetPropertyValueArgsForCall(i int) string {
+	fake.getPropertyValueMutex.RLock()
+	defer fake.getPropertyValueMutex.RUnlock()
+	argsForCall := fake.getPropertyValueArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeGetComponent) GetPropertyValueReturns(result1 string) {
+	fake.getPropertyValueMutex.Lock()
+	defer fake.getPropertyValueMutex.Unlock()
+	fake.GetPropertyValueStub = nil
+	fake.getPropertyValueReturns = struct {
+		result1 string
+	}{result1}
+}
+
+func (fake *FakeGetComponent) GetPropertyValueReturnsOnCall(i int, result1 string) {
+	fake.getPropertyValueMutex.Lock()
+	defer fake.getPropertyValueMutex.Unlock()
+	fake.GetPropertyValueStub = nil
+	if fake.getPropertyValueReturnsOnCall == nil {
+		fake.getPropertyValueReturnsOnCall = make(map[int]struct {
+			result1 string
+		})
+	}
+	fake.getPropertyValueReturnsOnCall[i] = struct {
 		result1 string
 	}{result1}
 }

@@ -8,6 +8,16 @@ import (
 )
 
 type FakeGetExternalReference struct {
+	GetRefHashesStub        func() []sbom.GetChecksum
+	getRefHashesMutex       sync.RWMutex
+	getRefHashesArgsForCall []struct {
+	}
+	getRefHashesReturns struct {
+		result1 []sbom.GetChecksum
+	}
+	getRefHashesReturnsOnCall map[int]struct {
+		result1 []sbom.GetChecksum
+	}
 	GetRefLocatorStub        func() string
 	getRefLocatorMutex       sync.RWMutex
 	getRefLocatorArgsForCall []struct {
@@ -30,6 +40,59 @@ type FakeGetExternalReference struct {
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
+}
+
+func (fake *FakeGetExternalReference) GetRefHashes() []sbom.GetChecksum {
+	fake.getRefHashesMutex.Lock()
+	ret, specificReturn := fake.getRefHashesReturnsOnCall[len(fake.getRefHashesArgsForCall)]
+	fake.getRefHashesArgsForCall = append(fake.getRefHashesArgsForCall, struct {
+	}{})
+	stub := fake.GetRefHashesStub
+	fakeReturns := fake.getRefHashesReturns
+	fake.recordInvocation("GetRefHashes", []interface{}{})
+	fake.getRefHashesMutex.Unlock()
+	if stub != nil {
+		return stub()
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeGetExternalReference) GetRefHashesCallCount() int {
+	fake.getRefHashesMutex.RLock()
+	defer fake.getRefHashesMutex.RUnlock()
+	return len(fake.getRefHashesArgsForCall)
+}
+
+func (fake *FakeGetExternalReference) GetRefHashesCalls(stub func() []sbom.GetChecksum) {
+	fake.getRefHashesMutex.Lock()
+	defer fake.getRefHashesMutex.Unlock()
+	fake.GetRefHashesStub = stub
+}
+
+func (fake *FakeGetExternalReference) GetRefHashesReturns(result1 []sbom.GetChecksum) {
+	fake.getRefHashesMutex.Lock()
+	defer fake.getRefHashesMutex.Unlock()
+	fake.GetRefHashesStub = nil
+	fake.getRefHashesReturns = struct {
+		result1 []sbom.GetChecksum
+	}{result1}
+}
+
+func (fake *FakeGetExternalReference) GetRefHashesReturnsOnCall(i int, result1 []sbom.GetChecksum) {
+	fake.getRefHashesMutex.Lock()
+	defer fake.getRefHashesMutex.Unlock()
+	fake.GetRefHashesStub = nil
+	if fake.getRefHashesReturnsOnCall == nil {
+		fake.getRefHashesReturnsOnCall = make(map[int]struct {
+			result1 []sbom.GetChecksum
+		})
+	}
+	fake.getRefHashesReturnsOnCall[i] = struct {
+		result1 []sbom.GetChecksum
+	}{result1}
 }
 
 func (fake *FakeGetExternalReference) GetRefLocator() string {

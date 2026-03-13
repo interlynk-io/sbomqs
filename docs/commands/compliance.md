@@ -5,7 +5,8 @@ The `sbomqs compliance` command validates SBOMs against industry standards and r
 ## Overview
 
 The compliance command supports multiple standards:
-- **BSI TR-03183-2 v2.0.0**: German Federal Office for Information Security (latest)
+- **BSI TR-03183-2 v2.1.0**: German Federal Office for Information Security (latest)
+- **BSI TR-03183-2 v2.0.0**: German Federal Office for Information Security
 - **BSI TR-03183-2 v1.1**: German Federal Office for Information Security (legacy)
 - **FSCT v3**: Framing Software Component Transparency
 - **OpenChain Telco**: Telecommunications industry requirements
@@ -20,7 +21,7 @@ sbomqs compliance [flags] <SBOM file>
 ## Flags
 
 ### Standard Selection (One Required)
-- `--bsi-v2`: Check BSI TR-03183-2 v2.0.0 compliance
+- `--bsi-v2`: Check BSI TR-03183-2 v2.1.0 compliance (latest)
 - `--bsi`: Check BSI TR-03183-2 v1.1 compliance (legacy)
 - `--fsct`: Check FSCT v3 compliance
 - `--telco, -t`: Check OpenChain Telco compliance
@@ -38,14 +39,14 @@ sbomqs compliance [flags] <SBOM file>
 
 ## Compliance Standards
 
-### BSI TR-03183-2 v2.0.0
+### BSI TR-03183-2 v2.1.0
 
-The latest German cybersecurity standard for manufacturers and products.
+The latest German cybersecurity standard for manufacturers and products. Key changes from v2.0: CycloneDX minimum version 1.6+, SPDX v2 no longer allowed (requires v3.0.1+), previously "additional" fields promoted to SHALL, new fields for filename/executable/archive/structured properties.
 
 ```bash
 $ sbomqs compliance --bsi-v2 product.spdx.json
 
-BSI TR-03183-2 v2.0.0 Compliance Report
+BSI TR-03183-2 v2.1.0 Compliance Report
 =====================================
 File: product.spdx.json
 Total Score: 7.2/10
@@ -137,7 +138,7 @@ $ sbomqs compliance --bsi-v2 app.json --json
 
 ```json
 {
-  "report_name": "BSI TR-03183-2 v2.0.0 Compliance Report",
+  "report_name": "BSI TR-03183-2 v2.1.0 Compliance Report",
   "run": {
     "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
     "timestamp": "2024-01-15T14:30:00Z",

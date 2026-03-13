@@ -8,6 +8,46 @@ Our mapping of the various requirements to CycloneDX's and SPDX's SBOM format ta
 
 TR-03183-2 by the German Federal Office for Information Security (BSI) follows a transitional system: To comply with BSI TR-03183-2, SBOMs must be generated using its most recent version, though the previous version is still allowed for six months after a new version was published, and SBOMs remain compliant indefinitely when based on a version of TR-03183-2 valid at their delivery date.
 
+### [BSI TR-03183-2 v2.1.0](https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/Publications/TechGuidelines/TR03183/BSI-TR-03183-2.pdf)
+
+- Released: August 20th 2025
+- Contact: <TR03183@bsi.bund.de>
+
+Key changes from v2.0.0:
+- CycloneDX minimum version bumped from 1.5 to **1.6**
+- SPDX minimum version bumped from 2.2.1 to **3.0.1** (SPDX v2 no longer allowed)
+- Previously "Additional" fields are now **SHALL** (required): SBOM-URI, Source code URI, URI of deployable form, Other unique identifiers, Original licences
+- New data fields: Filename, Executable property, Archive property, Structured property, Effective licence, URL of security.txt
+- Digital signature removed from required (recommendation only)
+- Vulnerability info: SBOM **MUST NOT** contain it
+
+| TR-03183-2 Section | Data Field | Required | CycloneDX v1.6+ | SPDX v3.0.1 | SPDX v2 | Notes |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| 5.2.1 SBOM Fields | Creator of the SBOM | SHALL | `metadata.manufacturer[].url` XOR `metadata.manufacturer[].contact[].email` | `CreationInfo.createdBy` | N/A | |
+| | Timestamp | SHALL | `metadata.timestamp` | `CreationInfo.created` | N/A | |
+| | SBOM-URI | SHALL | `serialNumber` (BOM-Link: `urn:cdx:{serialNumber}/{version}`) | `Sbom.spdxId` | N/A | Promoted from additional in v2.0 |
+| 5.2.2 Component Fields | Component creator | SHALL | `components[].manufacturer[].url` XOR `components[].manufacturer[].contact[].email` | `Package.originatedBy` | N/A | |
+| | Component name | SHALL | `components[].name` | `Package.name` | N/A | |
+| | Component version | SHALL | `components[].version` | `Package.packageVersion` | N/A | |
+| | Filename | SHALL | `components[].properties[].name="bsi:component:filename"` | `File.name` | N/A | New in v2.1 |
+| | Dependencies | SHALL | `dependencies[]` + `compositions` | `Relationship.relationshipType=["contains" OR "dependsOn"]` | N/A | |
+| | Distribution licences | SHALL | `components[].licenses[].expression` + `acknowledgement="concluded"` | `Relationship.relationshipType="hasConcludedLicense"` | N/A | Requires CDX 1.6+ acknowledgement field |
+| | Hash of deployable component | SHALL | `components[].externalReferences[].hashes[]` with `type="distribution"` | `File.verifiedUsing` | N/A | Changed from component hash in v2.0 |
+| | Executable property | SHALL | `components[].properties[].name="bsi:component:executable"` | `File.additionalPurpose=["executable"]` | N/A | New in v2.1 |
+| | Archive property | SHALL | `components[].properties[].name="bsi:component:archive"` | `File.additionalPurpose=["archive"]` | N/A | New in v2.1 |
+| | Structured property | SHALL | `components[].properties[].name="bsi:component:structured"` | `File.additionalPurpose=["container" OR "firmware"]` | N/A | New in v2.1 |
+| | Source code URI | SHALL | `components[].externalReferences[].type="source-distribution"` | `SoftwareArtifact.externalRef.externalRefType="SourceArtifact"` | N/A | Promoted from additional in v2.0 |
+| | URI of the deployable form | SHALL | `components[].externalReferences[].type="distribution"` + `.url` | `File.externalRef.externalRefType="binaryArtifact"` | N/A | Promoted from additional in v2.0 |
+| | Other unique identifiers | SHALL | `components[].cpe` OR `components[].swid` OR `components[].purl` | `Package.externalIdentifiers` | N/A | Promoted from additional in v2.0 |
+| | Original licences | SHALL | `components[].licenses[].expression` + `acknowledgement="declared"` | `Relationship.relationshipType="hasDeclaredLicense"` | N/A | New in v2.1 (SHALL) |
+| 5.2.3 Optional Fields | Effective licence | MAY | `components[].properties[].name="bsi:component:effectiveLicense"` | `Relationship.relationshipType="other"` + `.comment="hasEffectiveLicense"` | N/A | New in v2.1 |
+| | Hash of source code | MAY | `components[].externalReferences[].hashes[]` with `type="source-distribution"` | `SoftwareArtifact.verifiedUsing` | N/A | |
+| | URL of the security.txt | MAY | `components[].externalReferences[].type="rfc-9116"` + `.url` | `Package.externalRef.externalRefType="securityOther"` | N/A | New in v2.1 |
+
+> **Note:** SPDX v2 SBOMs scored against BSI v2.1.0 receive a hard fail on the format version check. All individual field checks return N/A. Full SPDX v3 support is required for complete v2.1.0 compliance.
+
+---
+
 ### [BSI TR-03183-2 v2.0.0](https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/Publications/TechGuidelines/TR03183/BSI-TR-03183-2-2_0_0.pdf)
 
 - Released: September 20th 2024

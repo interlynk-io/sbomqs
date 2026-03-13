@@ -141,12 +141,12 @@ esac
 
 VERSION=$(sbomqs version --short | sed 's/v//')
 
-# Check for BSI v2 support (added in v0.1.0)
-if [ "$(printf '%s\n' "0.1.0" "$VERSION" | sort -V | head -n1)" = "0.1.0" ]; then
-    echo "BSI v2 compliance checking is available"
+# Check for BSI v2.1 support (added in v2.1.0)
+if [ "$(printf '%s\n' "2.1.0" "$VERSION" | sort -V | head -n1)" = "2.1.0" ]; then
+    echo "BSI v2.1 compliance checking is available"
     sbomqs compliance --bsi-v2 sbom.json
 else
-    echo "BSI v2 not supported in version $VERSION"
+    echo "BSI v2.1 not supported in version $VERSION"
     sbomqs compliance --bsi sbom.json  # Use v1 instead
 fi
 ```

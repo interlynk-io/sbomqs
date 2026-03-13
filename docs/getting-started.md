@@ -579,8 +579,8 @@ sbomqs list my-app.spdx.json --feature comp_with_supplier --missing
 # Check NTIA minimum elements
 sbomqs score my-app.spdx.json --category ntia
 
-# Check BSI compliance
-sbomqs compliance --bsi-v2 my-app.spdx.json
+# Check BSI compliance (latest v2.1)
+sbomqs compliance --bsi-v2 my-app.cdx.json
 
 # Check FSCT compliance  
 sbomqs compliance --fsct my-app.spdx.json

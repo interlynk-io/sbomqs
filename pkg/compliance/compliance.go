@@ -34,8 +34,10 @@ const (
 	// BSI_REPORT represents the German Federal Office for Information Security (BSI)
 	// SBOM compliance framework.
 	BSI_REPORT = "BSI"
-	// BSI_V2_REPORT represents version 2 of the BSI compliance framework.
+	// BSI_V2_REPORT represents version 2.0 of the BSI compliance framework.
 	BSI_V2_REPORT = "BSI-V2"
+	// BSI_V21_REPORT represents version 2.1 of the BSI compliance framework.
+	BSI_V21_REPORT = "BSI-V21"
 	// NTIA_REPORT represents the NTIA (National Telecommunications and Information
 	// Administration) minimum elements compliance framework.
 	NTIA_REPORT = "NTIA"
@@ -49,11 +51,12 @@ const (
 
 func validReportTypes() map[string]bool {
 	return map[string]bool{
-		BSI_REPORT:    true,
-		BSI_V2_REPORT: true,
-		NTIA_REPORT:   true,
-		OCT_TELCO:     true,
-		FSCT_V3:       true,
+		BSI_REPORT:     true,
+		BSI_V2_REPORT:  true,
+		BSI_V21_REPORT: true,
+		NTIA_REPORT:    true,
+		OCT_TELCO:      true,
+		FSCT_V3:        true,
 	}
 }
 
@@ -109,6 +112,10 @@ func ComplianceResult(ctx context.Context, doc sbom.Document, reportType, fileNa
 	case reportType == BSI_V2_REPORT:
 		log.Debug("Running BSI V2 compliance report")
 		bsiV2Result(ctx, doc, fileName, outFormat)
+
+	case reportType == BSI_V21_REPORT:
+		log.Debug("Running BSI V2.1 compliance report")
+		bsiV21Result(ctx, doc, fileName, outFormat)
 
 	case reportType == NTIA_REPORT:
 		log.Debug("Running NTIA compliance report")

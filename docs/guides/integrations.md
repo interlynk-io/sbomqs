@@ -137,7 +137,7 @@ o/p would be:
 ```bash
 Profile: NTIA Minimum Elements (2021)  Score: 7.50
 Profile: Framing Third Edition Compliance  Score: 5.48
-Profile: BSI TR-03183-2 v1.1  Score: 6.23
+Profile: BSI TR-03183-2 v2.1  Score: 6.23
 ```
 
 ## CI/CD Integrations
