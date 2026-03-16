@@ -36,7 +36,7 @@ In today's software landscape, understanding and managing your software supply c
 ## Key Features
 
 ✅ **Multi-Standard Support**: SPDX, CycloneDX  
-✅ **Compliance Validation**: BSI TR-03183-2 (v1.1 & v2.0), FSCT v3, OpenChain Telco, NTIA  
+✅ **Compliance Validation**: BSI TR-03183-2 (v2.1.0, v2.0 & v1.1), FSCT v3, OpenChain Telco, NTIA  
 ✅ **Quality Scoring**: 0-10 scale with detailed breakdowns  
 ✅ **Component Analysis**: List, filter, and analyze SBOM components  
 ✅ **Integration Ready**: Docker, CI/CD, Dependency-Track, GitHub Actions  
