@@ -23,6 +23,175 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+var cdxCompWithProperties = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "name": "acme-library",
+      "version": "1.0.0",
+      "properties": [
+        {
+          "name": "Foo",
+          "value": "Bar"
+        }
+      ]
+    }
+  ]
+}
+`)
+
+var cdxCompWithBSIFileProperties = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "name": "acme-library",
+      "version": "1.0.0",
+      "properties": [
+        {
+          "name": "bsi:component:filename",
+          "value": "Bar"
+        }
+      ]
+    }
+  ]
+}
+`)
+
+var cdxCompWithBSIExecutableFileProperties = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "name": "acme-library",
+      "version": "1.0.0",
+      "properties": [
+        {
+          "name": "bsi:component:executable",
+          "value": "Bar"
+        }
+      ]
+    }
+  ]
+}
+`)
+
+var cdxCompWithBSIArchiveFileProperties = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "name": "acme-library",
+      "version": "1.0.0",
+      "properties": [
+        {
+          "name": "bsi:component:archive",
+          "value": "Bar"
+        }
+      ]
+    }
+  ]
+}
+`)
+
+var cdxCompWithBSIStructuredFileProperties = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "name": "acme-library",
+      "version": "1.0.0",
+      "properties": [
+        {
+          "name": "bsi:component:structured",
+          "value": "Bar"
+        }
+      ]
+    }
+  ]
+}
+`)
+
+func TestBSIV20CompProperties(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("cdxCompWithProperties", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithProperties, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV20CompFilename(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "no components declare filename", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxCompWithBSIFileProperties", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithBSIFileProperties, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV20CompFilename(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "filename declared for all components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxCompWithBSIExecutableFileProperties", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithBSIExecutableFileProperties, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV20CompExecutableProperty(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "executable property declared for all components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxCompWithBSIArchiveFileProperties", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithBSIArchiveFileProperties, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV20CompArchiveProperty(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "archive property declared for all components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("cdxCompWithBSIStructuredFileProperties", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithBSIStructuredFileProperties, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV20CompStructuredProperty(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "structured property declared for all components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+}
+
 // SPDX: primary component with a SHA-512 checksum.
 // v2.0.0 requires SHA-512 for the deployable hash; this is the SPDX pass case.
 var spdxPrimaryCompWithSHA512Hash = []byte(`
@@ -249,6 +418,210 @@ var bsiv20CdxCompWithNoLicenses = []byte(`
 }
 `)
 
+// SPDX: one package with PackageFileName set (section 7.13).
+var spdxPkgWithFilename = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "test-sbom",
+  "dataLicense": "CC0-1.0",
+  "documentNamespace": "urn:uuid:bsiv20-spdx-pkgfilename-001",
+  "creationInfo": {
+    "creators": ["Tool: sbomqs"],
+    "created": "2026-01-01T00:00:00Z"
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-pkg1",
+      "name": "my-app",
+      "versionInfo": "1.0.0",
+      "downloadLocation": "https://example.com",
+      "packageFileName": "my-app-1.0.0.tar.gz"
+    }
+  ]
+}
+`)
+
+// SPDX: one package without PackageFileName.
+var spdxPkgWithoutFilename = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "test-sbom",
+  "dataLicense": "CC0-1.0",
+  "documentNamespace": "urn:uuid:bsiv20-spdx-nopkgfilename-001",
+  "creationInfo": {
+    "creators": ["Tool: sbomqs"],
+    "created": "2026-01-01T00:00:00Z"
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-pkg1",
+      "name": "my-app",
+      "versionInfo": "1.0.0",
+      "downloadLocation": "https://example.com"
+    }
+  ]
+}
+`)
+
+// SPDX: two packages — one with PackageFileName, one without — for partial score.
+var spdxTwoPkgsOneFilename = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "test-sbom",
+  "dataLicense": "CC0-1.0",
+  "documentNamespace": "urn:uuid:bsiv20-spdx-partialfilename-001",
+  "creationInfo": {
+    "creators": ["Tool: sbomqs"],
+    "created": "2026-01-01T00:00:00Z"
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-pkg1",
+      "name": "my-app",
+      "versionInfo": "1.0.0",
+      "downloadLocation": "https://example.com",
+      "packageFileName": "my-app-1.0.0.tar.gz"
+    },
+    {
+      "SPDXID": "SPDXRef-pkg2",
+      "name": "libfoo",
+      "versionInfo": "2.0.0",
+      "downloadLocation": "https://example.com/libfoo"
+    }
+  ]
+}
+`)
+
+// SPDX: package with PrimaryPackagePurpose = APPLICATION (executable).
+var spdxPkgWithApplicationPurpose = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "test-sbom",
+  "dataLicense": "CC0-1.0",
+  "documentNamespace": "urn:uuid:bsiv20-spdx-application-001",
+  "creationInfo": {
+    "creators": ["Tool: sbomqs"],
+    "created": "2026-01-01T00:00:00Z"
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-pkg1",
+      "name": "my-app",
+      "versionInfo": "1.0.0",
+      "downloadLocation": "https://example.com",
+      "primaryPackagePurpose": "APPLICATION"
+    }
+  ]
+}
+`)
+
+// SPDX: package with PrimaryPackagePurpose = ARCHIVE.
+var spdxPkgWithArchivePurpose = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "test-sbom",
+  "dataLicense": "CC0-1.0",
+  "documentNamespace": "urn:uuid:bsiv20-spdx-archive-001",
+  "creationInfo": {
+    "creators": ["Tool: sbomqs"],
+    "created": "2026-01-01T00:00:00Z"
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-pkg1",
+      "name": "my-archive",
+      "versionInfo": "1.0.0",
+      "downloadLocation": "https://example.com",
+      "primaryPackagePurpose": "ARCHIVE"
+    }
+  ]
+}
+`)
+
+// SPDX: package with PrimaryPackagePurpose = SOURCE (structured).
+var spdxPkgWithSourcePurpose = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "test-sbom",
+  "dataLicense": "CC0-1.0",
+  "documentNamespace": "urn:uuid:bsiv20-spdx-source-001",
+  "creationInfo": {
+    "creators": ["Tool: sbomqs"],
+    "created": "2026-01-01T00:00:00Z"
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-pkg1",
+      "name": "my-lib-src",
+      "versionInfo": "1.0.0",
+      "downloadLocation": "https://example.com",
+      "primaryPackagePurpose": "SOURCE"
+    }
+  ]
+}
+`)
+
+// SPDX: package with PrimaryPackagePurpose = LIBRARY (not executable/archive/structured).
+var spdxPkgWithLibraryPurpose = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "test-sbom",
+  "dataLicense": "CC0-1.0",
+  "documentNamespace": "urn:uuid:bsiv20-spdx-library-001",
+  "creationInfo": {
+    "creators": ["Tool: sbomqs"],
+    "created": "2026-01-01T00:00:00Z"
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-pkg1",
+      "name": "libfoo",
+      "versionInfo": "1.0.0",
+      "downloadLocation": "https://example.com",
+      "primaryPackagePurpose": "LIBRARY"
+    }
+  ]
+}
+`)
+
+// SPDX: two packages — one APPLICATION, one LIBRARY — partial executable score.
+var spdxTwoPkgsOneApplication = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "test-sbom",
+  "dataLicense": "CC0-1.0",
+  "documentNamespace": "urn:uuid:bsiv20-spdx-partial-exec-001",
+  "creationInfo": {
+    "creators": ["Tool: sbomqs"],
+    "created": "2026-01-01T00:00:00Z"
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-pkg1",
+      "name": "my-app",
+      "versionInfo": "1.0.0",
+      "downloadLocation": "https://example.com",
+      "primaryPackagePurpose": "APPLICATION"
+    },
+    {
+      "SPDXID": "SPDXRef-pkg2",
+      "name": "libfoo",
+      "versionInfo": "2.0.0",
+      "downloadLocation": "https://example.com/libfoo",
+      "primaryPackagePurpose": "LIBRARY"
+    }
+  ]
+}
+`)
+
 // ===========================================================================
 // TestBSIV20CompFilename
 // ===========================================================================
@@ -256,26 +629,64 @@ var bsiv20CdxCompWithNoLicenses = []byte(`
 func TestBSIV20CompFilename(t *testing.T) {
 	ctx := context.Background()
 
-	t.Run("cdxAlwaysIgnored", func(t *testing.T) {
+	// CDX: no components → score 0, not ignored (required field).
+	t.Run("cdxNoComponents", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthor, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := BSIV20CompFilename(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "component filename check not yet supported by the SBOM interface", got.Desc)
-		assert.True(t, got.Ignore)
+		assert.Equal(t, "no components found", got.Desc)
+		assert.False(t, got.Ignore)
 	})
 
-	t.Run("spdxAlwaysIgnored", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMPersonAuthor, sbom.Signature{})
+	// CDX: component has bsi:component:filename property set → score 10.
+	t.Run("cdxWithFilenameProperty", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithBSIFileProperties, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV20CompFilename(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "filename declared for all components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// SPDX: package has PackageFileName set → score 10.
+	t.Run("spdxPkgWithFilename", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxPkgWithFilename, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV20CompFilename(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "PackageFileName declared for all components.", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// SPDX: package has no PackageFileName → score 0.
+	t.Run("spdxPkgWithoutFilename", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxPkgWithoutFilename, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := BSIV20CompFilename(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "component filename check not yet supported by the SBOM interface", got.Desc)
-		assert.True(t, got.Ignore)
+		assert.Equal(t, "no components declare PackageFileName.", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// SPDX: 1 of 2 packages has PackageFileName → partial score.
+	t.Run("spdxTwoPkgsOneFilename", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxTwoPkgsOneFilename, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV20CompFilename(doc)
+
+		assert.InDelta(t, 5.0, got.Score, 1e-9)
+		assert.Equal(t, "1/2 components declare PackageFileName.", got.Desc)
+		assert.False(t, got.Ignore)
 	})
 }
 
@@ -587,26 +998,64 @@ func TestBSIV20CompDeployableHash(t *testing.T) {
 func TestBSIV20CompExecutableProperty(t *testing.T) {
 	ctx := context.Background()
 
-	t.Run("cdxAlwaysIgnored", func(t *testing.T) {
+	// CDX: no components → score 0, not ignored (required field).
+	t.Run("cdxNoComponents", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthor, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := BSIV20CompExecutableProperty(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "component executable property check not yet supported by the SBOM interface", got.Desc)
-		assert.True(t, got.Ignore)
+		assert.Equal(t, "no components found", got.Desc)
+		assert.False(t, got.Ignore)
 	})
 
-	t.Run("spdxAlwaysIgnored", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMPersonAuthor, sbom.Signature{})
+	// CDX: component has bsi:component:executable property set → score 10.
+	t.Run("cdxWithExecutableProperty", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithBSIExecutableFileProperties, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV20CompExecutableProperty(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "executable property declared for all components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// SPDX: PrimaryPackagePurpose = APPLICATION → score 10.
+	t.Run("spdxPkgWithApplicationPurpose", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxPkgWithApplicationPurpose, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV20CompExecutableProperty(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "executable property declared for all components.", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// SPDX: PrimaryPackagePurpose = LIBRARY → score 0 (not executable).
+	t.Run("spdxPkgWithNonExecutablePurpose", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxPkgWithLibraryPurpose, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := BSIV20CompExecutableProperty(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "component executable property check not yet supported by the SBOM interface", got.Desc)
-		assert.True(t, got.Ignore)
+		assert.Equal(t, "no components declare executable property via PrimaryPackagePurpose.", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// SPDX: 1 of 2 packages has APPLICATION purpose → partial score.
+	t.Run("spdxTwoPkgsOneApplication", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxTwoPkgsOneApplication, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV20CompExecutableProperty(doc)
+
+		assert.InDelta(t, 5.0, got.Score, 1e-9)
+		assert.Equal(t, "1/2 components declare executable property via PrimaryPackagePurpose.", got.Desc)
+		assert.False(t, got.Ignore)
 	})
 }
 
@@ -617,26 +1066,52 @@ func TestBSIV20CompExecutableProperty(t *testing.T) {
 func TestBSIV20CompArchiveProperty(t *testing.T) {
 	ctx := context.Background()
 
-	t.Run("cdxAlwaysIgnored", func(t *testing.T) {
+	// CDX: no components → score 0, not ignored (required field).
+	t.Run("cdxNoComponents", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthor, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := BSIV20CompArchiveProperty(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "component archive property check not yet supported by the SBOM interface", got.Desc)
-		assert.True(t, got.Ignore)
+		assert.Equal(t, "no components found", got.Desc)
+		assert.False(t, got.Ignore)
 	})
 
-	t.Run("spdxAlwaysIgnored", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMPersonAuthor, sbom.Signature{})
+	// CDX: component has bsi:component:archive property set → score 10.
+	t.Run("cdxWithArchiveProperty", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithBSIArchiveFileProperties, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV20CompArchiveProperty(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "archive property declared for all components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// SPDX: PrimaryPackagePurpose = ARCHIVE → score 10.
+	t.Run("spdxPkgWithArchivePurpose", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxPkgWithArchivePurpose, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV20CompArchiveProperty(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "archive property declared for all components.", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// SPDX: PrimaryPackagePurpose = LIBRARY → score 0 (not an archive).
+	t.Run("spdxPkgWithNonArchivePurpose", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxPkgWithLibraryPurpose, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := BSIV20CompArchiveProperty(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "component archive property check not yet supported by the SBOM interface", got.Desc)
-		assert.True(t, got.Ignore)
+		assert.Equal(t, "no components declare archive property via PrimaryPackagePurpose.", got.Desc)
+		assert.False(t, got.Ignore)
 	})
 }
 
@@ -647,26 +1122,52 @@ func TestBSIV20CompArchiveProperty(t *testing.T) {
 func TestBSIV20CompStructuredProperty(t *testing.T) {
 	ctx := context.Background()
 
-	t.Run("cdxAlwaysIgnored", func(t *testing.T) {
+	// CDX: no components → score 0, not ignored (required field).
+	t.Run("cdxNoComponents", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthor, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := BSIV20CompStructuredProperty(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "component structured property check not yet supported by the SBOM interface", got.Desc)
-		assert.True(t, got.Ignore)
+		assert.Equal(t, "no components found", got.Desc)
+		assert.False(t, got.Ignore)
 	})
 
-	t.Run("spdxAlwaysIgnored", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMPersonAuthor, sbom.Signature{})
+	// CDX: component has bsi:component:structured property set → score 10.
+	t.Run("cdxWithStructuredProperty", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithBSIStructuredFileProperties, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV20CompStructuredProperty(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "structured property declared for all components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// SPDX: PrimaryPackagePurpose = SOURCE → score 10.
+	t.Run("spdxPkgWithSourcePurpose", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxPkgWithSourcePurpose, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV20CompStructuredProperty(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "structured property declared for all components.", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// SPDX: PrimaryPackagePurpose = LIBRARY → score 0 (not structured source).
+	t.Run("spdxPkgWithNonStructuredPurpose", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxPkgWithLibraryPurpose, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := BSIV20CompStructuredProperty(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "component structured property check not yet supported by the SBOM interface", got.Desc)
-		assert.True(t, got.Ignore)
+		assert.Equal(t, "no components declare structured property via PrimaryPackagePurpose.", got.Desc)
+		assert.False(t, got.Ignore)
 	})
 }
 

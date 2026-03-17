@@ -81,7 +81,8 @@ func Test_SBOMSpec(t *testing.T) {
 
 func Test_SBOMSpecVersion(t *testing.T) {
 	t.Run("SupportedSPDXVersion", func(t *testing.T) {
-		doc := sbom.SpdxDoc{SpdxSpec: spdxDocSpec("SPDX-2.3", "json", "spdx")}
+		// The SPDX parser strips the "SPDX-" prefix, so internal version is "2.3".
+		doc := sbom.SpdxDoc{SpdxSpec: spdxDocSpec("2.3", "json", "spdx")}
 
 		got := SBOMSpecVersion(doc)
 

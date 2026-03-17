@@ -39,7 +39,7 @@ import (
 
 var (
 	spdxFileFormats    = []string{"json", "yaml", "rdf", "tag-value"}
-	spdxSpecVersions   = []string{"SPDX-2.1", "SPDX-2.2", "SPDX-2.3"}
+	spdxSpecVersions   = []string{"2.1", "2.2", "2.3"}
 	spdxPrimaryPurpose = []string{"application", "framework", "library", "container", "operating-system", "device", "firmware", "source", "archive", "file", "install", "other"}
 )
 
@@ -250,7 +250,12 @@ func (s *SpdxDoc) parseDoc() {
 func (s *SpdxDoc) parseSpec() {
 	sp := NewSpec()
 	sp.Format = string(s.format)
-	sp.Version = s.doc.SPDXVersion
+
+	if strings.Contains(s.doc.SPDXVersion, "SPDX-") {
+		sp.Version = strings.Trim(s.doc.SPDXVersion, "SPDX-")
+	} else {
+		sp.Version = s.doc.SPDXVersion
+	}
 
 	if s.doc.CreationInfo != nil {
 		for _, c := range s.doc.CreationInfo.Creators {
@@ -380,9 +385,11 @@ func (s *SpdxDoc) parseComps() {
 
 		nc.SourceCodeURL = sc.PackageSourceInfo
 		nc.DownloadLocation = sc.PackageDownloadLocation
+		nc.PackageFilename = sc.PackageFileName
 
 		s.Comps = append(s.Comps, nc)
 	}
+
 }
 
 func (s *SpdxDoc) parseAuthors() {

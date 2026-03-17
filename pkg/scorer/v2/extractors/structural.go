@@ -71,10 +71,13 @@ func SBOMSpecVersion(doc sbom.Document) catalog.ComprFeatScore {
 	supported := sbom.SupportedSBOMSpecVersions(spec)
 	for _, v := range supported {
 		if ver == v {
-			// Add "v" prefix only for numeric versions (CycloneDX: 1.4, 1.5)
-			// Skip for SPDX versions which are like "SPDX-2.3"
-			desc := ver
-			if !strings.HasPrefix(strings.ToUpper(ver), "SPDX") {
+			// Add "v" prefix for CycloneDX versions (e.g. "v1.6").
+			// For SPDX restore the "SPDX-" display prefix (e.g. "SPDX-2.3");
+			// the internal version has the prefix stripped by the parser.
+			var desc string
+			if strings.ToLower(spec) == string(sbom.SBOMSpecSPDX) {
+				desc = "SPDX-" + ver
+			} else {
 				desc = "v" + ver
 			}
 			return catalog.ComprFeatScore{

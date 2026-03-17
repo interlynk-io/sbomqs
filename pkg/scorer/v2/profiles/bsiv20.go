@@ -23,10 +23,55 @@ import (
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/common"
 )
 
+// BSIV20SpecVersion checks that the SBOM format meets BSI v2.0 minimum version requirements.
+// CycloneDX >= 1.5, SPDX >= 2.2.1
+func BSIV20SpecVersion(doc sbom.Document) catalog.ProfFeatScore {
+	spec := strings.TrimSpace(strings.ToLower(doc.Spec().GetSpecType()))
+	ver := strings.TrimSpace(doc.Spec().GetVersion())
+
+	if spec == "" || ver == "" {
+		return catalog.ProfFeatScore{
+			Score: 0.0,
+			Desc:  "SBOM spec type or version is missing",
+		}
+	}
+
+	switch spec {
+	case string(sbom.SBOMSpecCDX):
+		if isVersionAtLeast(ver, "1.5") {
+			return catalog.ProfFeatScore{
+				Score: 10.0,
+				Desc:  fmt.Sprintf("CycloneDX %s meets minimum version 1.5", ver),
+			}
+		}
+		return catalog.ProfFeatScore{
+			Score: 0.0,
+			Desc:  fmt.Sprintf("CycloneDX %s does not meet minimum version 1.5", ver),
+		}
+
+	case string(sbom.SBOMSpecSPDX):
+		if isVersionAtLeast(ver, "2.2") {
+			return catalog.ProfFeatScore{
+				Score: 10.0,
+				Desc:  fmt.Sprintf("SPDX-%s meets minimum version 2.2.1", ver),
+			}
+		}
+		return catalog.ProfFeatScore{
+			Score: 0.0,
+			Desc:  fmt.Sprintf("SPDX-%s does not meet minimum version 2.2.1", ver),
+		}
+	}
+
+	return catalog.ProfFeatScore{
+		Score: 0.0,
+		Desc:  fmt.Sprintf("unsupported spec type: %s", spec),
+	}
+}
+
 /*
 REQUIRED FIELD: BSIV20SBOMCreator
 
-BSI §5.2.1: same requirement as v1.1 with a clarification:
+BSI 5.2.1: same requirement as v1.1 with a clarification:
 URL examples are now "the creator's home page or the project's web page".
 
 Accepted contact sources:
@@ -41,7 +86,7 @@ func BSIV20SBOMCreator(doc sbom.Document) catalog.ProfFeatScore {
 /*
 REQUIRED FIELD: BSIV20SBOMCreationTimestamp
 
-BSI §5.2.1 same requirement as v1.1.
+BSI 5.2.1 same requirement as v1.1.
 RFC 3339 / ISO 8601 compliant timestamp.
 */
 func BSIV20SBOMCreationTimestamp(doc sbom.Document) catalog.ProfFeatScore {
@@ -51,7 +96,7 @@ func BSIV20SBOMCreationTimestamp(doc sbom.Document) catalog.ProfFeatScore {
 /*
 REQUIRED FIELD: BSIV20CompCreator
 
-BSI §5.2.2 same requirement as v1.1 with a clarification:
+BSI 5.2.2 same requirement as v1.1 with a clarification:
 URL examples are now "the creator's home page or the project's web page".
 
 Accepted contact sources per component:
@@ -66,7 +111,7 @@ func BSIV20CompCreator(doc sbom.Document) catalog.ProfFeatScore {
 /*
 REQUIRED FIELD: BSIV20CompName
 
-BSI §5.2.2 "Name assigned to the component by its creator.
+BSI 5.2.2 "Name assigned to the component by its creator.
 If no name is assigned this MUST be the actual filename."
 
 v2.0.0 adds a mandatory filename fallback (the check itself is the same:
@@ -83,7 +128,7 @@ func BSIV20CompName(doc sbom.Document) catalog.ProfFeatScore {
 /*
 REQUIRED FIELD: BSIV20CompVersion
 
-BSI §5.2.2 "Identifier used by the creator to specify changes in the component
+BSI 5.2.2 "Identifier used by the creator to specify changes in the component
 to a previously created version. [...] If no version is assigned this MUST be
 the creation date of the file expressed as full-date according to RFC 3339 section 5.6."
 
@@ -100,7 +145,7 @@ func BSIV20CompVersion(doc sbom.Document) catalog.ProfFeatScore {
 /*
 REQUIRED FIELD: BSIV20CompFilename
 
-BSI §5.2.2: "The actual filename of the component (i.e. not its path)."
+BSI 5.2.2: "The actual filename of the component (i.e. not its path)."
 
 NOTE: The sbom.GetComponent interface does not yet expose a dedicated filename
 field (PackageFileName / equivalent). This check returns N/A until the
@@ -111,9 +156,51 @@ SPDX: PackageFileName
 CDX:  no native field custom properties[bsi:filename]
 */
 func BSIV20CompFilename(doc sbom.Document) catalog.ProfFeatScore {
+	spec := strings.TrimSpace(strings.ToLower(doc.Spec().GetSpecType()))
+
+	if spec == "" {
+		return catalog.ProfFeatScore{
+			Score: 0.0,
+			Desc:  "SBOM spec is missing",
+		}
+	}
+
+	switch spec {
+	case string(sbom.SBOMSpecCDX):
+		return bsiPropertyCheck(doc, "bsi:component:filename", "filename")
+
+	case string(sbom.SBOMSpecSPDX):
+		// SPDX section 7.13: PackageFileName is the actual filename of the package.
+		comps := doc.Components()
+		total := len(comps)
+		if total == 0 {
+			return catalog.ProfFeatScore{Score: 0.0, Desc: "no components found in SBOM."}
+		}
+
+		withFilename := 0
+		for _, c := range comps {
+			if strings.TrimSpace(c.GetFilename()) != "" {
+				withFilename++
+			}
+		}
+
+		if withFilename == total {
+			return catalog.ProfFeatScore{Score: 10.0, Desc: "PackageFileName declared for all components."}
+		}
+
+		if withFilename == 0 {
+			return catalog.ProfFeatScore{Score: 0.0, Desc: "no components declare PackageFileName."}
+		}
+
+		return catalog.ProfFeatScore{
+			Score: float64(withFilename) / float64(total) * 10.0,
+			Desc:  fmt.Sprintf("%d/%d components declare PackageFileName.", withFilename, total),
+		}
+	}
+
 	return catalog.ProfFeatScore{
 		Score:  0.0,
-		Desc:   "component filename check not yet supported by the SBOM interface",
+		Desc:   "unknown SBOM spec type; cannot evaluate filename property.",
 		Ignore: true,
 	}
 }
@@ -121,7 +208,7 @@ func BSIV20CompFilename(doc sbom.Document) catalog.ProfFeatScore {
 /*
 REQUIRED FIELD: BSIV20CompDependencies
 
-BSI §5.2.2 same requirement as v1.1, but v2.0.0 explicitly extends "dependencies"
+BSI 5.2.2 same requirement as v1.1, but v2.0.0 explicitly extends "dependencies"
 to also include components *contained* in a component (statically linked, embedded).
 
 The DEPENDS_ON + CONTAINS relationship types cover both.
@@ -221,7 +308,7 @@ func BSIV20CompDependencies(doc sbom.Document) catalog.ProfFeatScore {
 /*
 REQUIRED FIELD: BSIV20CompAssociatedLicenses
 
-BSI §5.2.2 "Associated licence(s) of the component from the perspective of the SBOM creator."
+BSI 5.2.2 "Associated licence(s) of the component from the perspective of the SBOM creator."
 
 v2.0.0 introduces a three-tier licence model:
   - Associated licences (required)  what the licensee can use
@@ -243,7 +330,7 @@ func BSIV20CompAssociatedLicenses(doc sbom.Document) catalog.ProfFeatScore {
 /*
 REQUIRED FIELD: BSIV20CompDeployableHash
 
-BSI §5.2.2: "Cryptographically secure checksum (hash value) of the deployed/deployable
+BSI 5.2.2: "Cryptographically secure checksum (hash value) of the deployed/deployable
 component (i.e. as a file on a mass storage device) as SHA-512."
 
 KEY CHANGE vs v1.1:
@@ -308,7 +395,7 @@ func BSIV20CompDeployableHash(doc sbom.Document) catalog.ProfFeatScore {
 /*
 REQUIRED FIELD: BSIV20CompExecutableProperty
 
-BSI §5.2.2: "Describes whether the component is executable;
+BSI 5.2.2: "Describes whether the component is executable;
 possible values are 'executable' and 'non-executable'."
 
 NOTE: The sbom.GetComponent interface does not expose a dedicated
@@ -316,21 +403,39 @@ executable-property field. This check returns N/A until the interface
 is extended.
 
 SBOM Mappings:
-SPDX: no dedicated field: ExternalRef category OTHER
+SPDX: PrimaryPackagePurpose = APPLICATION (section 7.12)
 CDX:  no dedicated field: custom properties[bsi:executableProperty]
 */
 func BSIV20CompExecutableProperty(doc sbom.Document) catalog.ProfFeatScore {
+	spec := strings.TrimSpace(strings.ToLower(doc.Spec().GetSpecType()))
+
+	if spec == "" {
+		return catalog.ProfFeatScore{
+			Score: 0.0,
+			Desc:  "SBOM spec is missing",
+		}
+	}
+
+	switch spec {
+	case string(sbom.SBOMSpecCDX):
+		return bsiPropertyCheck(doc, "bsi:component:executable", "executable property")
+
+	case string(sbom.SBOMSpecSPDX):
+		// SPDX section 7.12: PrimaryPackagePurpose APPLICATION maps to executable.
+		return spdxPurposeCheck(doc, "APPLICATION", "executable property")
+	}
+
 	return catalog.ProfFeatScore{
 		Score:  0.0,
-		Desc:   "component executable property check not yet supported by the SBOM interface",
-		Ignore: true,
+		Desc:   "unknown SBOM spec type; cannot evaluate executable property.",
+		Ignore: false,
 	}
 }
 
 /*
 REQUIRED FIELD: BSIV20CompArchiveProperty
 
-BSI §5.2.2 "Describes whether the component is an archive;
+BSI 5.2.2 "Describes whether the component is an archive;
 possible values are 'archive' and 'no archive'."
 
 NOTE: The sbom.GetComponent interface does not expose a dedicated
@@ -338,21 +443,39 @@ archive-property field. This check returns N/A until the interface
 is extended.
 
 SBOM Mappings:
-SPDX: no dedicated field ExternalRef category OTHER
-CDX:  no dedicated field custom properties[bsi:archiveProperty]
+SPDX: PrimaryPackagePurpose = ARCHIVE (section 7.12)
+CDX:  no dedicated field: custom properties[bsi:archiveProperty]
 */
 func BSIV20CompArchiveProperty(doc sbom.Document) catalog.ProfFeatScore {
+	spec := strings.TrimSpace(strings.ToLower(doc.Spec().GetSpecType()))
+
+	if spec == "" {
+		return catalog.ProfFeatScore{
+			Score: 0.0,
+			Desc:  "SBOM spec is missing",
+		}
+	}
+
+	switch spec {
+	case string(sbom.SBOMSpecCDX):
+		return bsiPropertyCheck(doc, "bsi:component:archive", "archive property")
+
+	case string(sbom.SBOMSpecSPDX):
+		// SPDX section 7.12: PrimaryPackagePurpose ARCHIVE maps to archive.
+		return spdxPurposeCheck(doc, "ARCHIVE", "archive property")
+	}
+
 	return catalog.ProfFeatScore{
 		Score:  0.0,
-		Desc:   "component archive property check not yet supported by the SBOM interface",
-		Ignore: true,
+		Desc:   "unknown SBOM spec type; cannot evaluate archive property.",
+		Ignore: false,
 	}
 }
 
 /*
 REQUIRED FIELD: BSIV20CompStructuredProperty
 
-BSI §5.2.2 "Describes whether the component is a structured file;
+BSI 5.2.2 "Describes whether the component is a structured file;
 possible values are 'structured' and 'unstructured'.
 If a component contains both structured and unstructured parts the
 value 'structured' MUST be used."
@@ -362,26 +485,44 @@ structured-property field. This check returns N/A until the interface
 is extended.
 
 SBOM Mappings:
-SPDX: no dedicated field ExternalRef category OTHER
-CDX:  no dedicated field custom properties[bsi:structuredProperty]
+SPDX: PrimaryPackagePurpose = SOURCE (section 7.12)
+CDX:  no dedicated field: custom properties[bsi:structuredProperty]
 */
 func BSIV20CompStructuredProperty(doc sbom.Document) catalog.ProfFeatScore {
+	spec := strings.TrimSpace(strings.ToLower(doc.Spec().GetSpecType()))
+
+	if spec == "" {
+		return catalog.ProfFeatScore{
+			Score: 0.0,
+			Desc:  "SBOM spec is missing",
+		}
+	}
+
+	switch spec {
+	case string(sbom.SBOMSpecCDX):
+		return bsiPropertyCheck(doc, "bsi:component:structured", "structured property")
+
+	case string(sbom.SBOMSpecSPDX):
+		// SPDX section 7.12: PrimaryPackagePurpose SOURCE maps to structured.
+		return spdxPurposeCheck(doc, "SOURCE", "structured property")
+	}
+
 	return catalog.ProfFeatScore{
 		Score:  0.0,
-		Desc:   "component structured property check not yet supported by the SBOM interface",
-		Ignore: true,
+		Desc:   "unknown SBOM spec type; cannot evaluate structured property.",
+		Ignore: false,
 	}
 }
 
 // =========================================================
-// BSI TR-03183-2 v2.0.0 ADDITIONAL fields (§5.3)
+// BSI TR-03183-2 v2.0.0 ADDITIONAL fields (5.3)
 // Must be provided if they exist and prerequisites are met.
 // =========================================================
 
 /*
 ADDITIONAL FIELD: BSIV20SBOMURI
 
-BSI §5.3.1 "Uniform Resource Identifier (URI) of this SBOM."
+BSI 5.3.1 "Uniform Resource Identifier (URI) of this SBOM."
 Same requirement as v1.1.
 
 SBOM Mappings:
@@ -395,7 +536,7 @@ func BSIV20SBOMURI(doc sbom.Document) catalog.ProfFeatScore {
 /*
 ADDITIONAL FIELD: BSIV20CompSourceURI
 
-BSI §5.3.2: "URI of the source code of the component, e.g. the URL of the
+BSI 5.3.2: "URI of the source code of the component, e.g. the URL of the
 utilised source code version in its repository, or if a version cannot be
 specified the utilised source code repository itself."
 
@@ -412,7 +553,7 @@ func BSIV20CompSourceURI(doc sbom.Document) catalog.ProfFeatScore {
 /*
 ADDITIONAL FIELD: BSIV20CompDeployableURI
 
-BSI §5.3.2: "URI which points directly to the deployable (e.g. downloadable)
+BSI 5.3.2: "URI which points directly to the deployable (e.g. downloadable)
 form of the component."
 
 v2.0.0 renames "executable form" -> "deployable form" to align with the broader
@@ -429,7 +570,7 @@ func BSIV20CompDeployableURI(doc sbom.Document) catalog.ProfFeatScore {
 /*
 ADDITIONAL FIELD: BSIV20CompOtherIdentifiers
 
-BSI §5.3.2: "Other identifiers that can be used to identify the component
+BSI 5.3.2: "Other identifiers that can be used to identify the component
 or to look it up in relevant databases, such as CPE or Package URL (purl)."
 Same requirement as v1.1.
 
@@ -444,7 +585,7 @@ func BSIV20CompOtherIdentifiers(doc sbom.Document) catalog.ProfFeatScore {
 /*
 ADDITIONAL FIELD: BSIV20CompConcludedLicenses
 
-BSI §5.3.2: "The licence(s) that the licensee of the component has concluded
+BSI 5.3.2: "The licence(s) that the licensee of the component has concluded
 for this component."
 
 Concluded licences are determined by the licensee (the SBOM creator). They
@@ -526,14 +667,14 @@ func BSIV20CompConcludedLicenses(doc sbom.Document) catalog.ProfFeatScore {
 }
 
 // =========================================================
-// BSI TR-03183-2 v2.0.0 OPTIONAL fields (§5.4)
+// BSI TR-03183-2 v2.0.0 OPTIONAL fields (5.4)
 // MAY be provided if they exist and prerequisites are met.
 // =========================================================
 
 /*
 OPTIONAL FIELD: BSIV20CompDeclaredLicenses
 
-BSI §5.4.1: "The licence(s) that the licensor of the component has declared
+BSI 5.4.1: "The licence(s) that the licensor of the component has declared
 for this component."
 
 Declared licences are what the component's creator stated. They differ from
@@ -615,7 +756,7 @@ func BSIV20CompDeclaredLicenses(doc sbom.Document) catalog.ProfFeatScore {
 /*
 OPTIONAL FIELD: BSIV20CompSourceHash
 
-BSI §5.4.1: "Cryptographically secure checksum (hash value) of the component
+BSI 5.4.1: "Cryptographically secure checksum (hash value) of the component
 source code. The specific algorithm and method are not yet defined by BSI."
 
 v2.0.0 demotes this from "additional" to "optional" because the hash algorithm
@@ -667,110 +808,47 @@ func BSIV20CompSourceHash(doc sbom.Document) catalog.ProfFeatScore {
 	}
 }
 
-// // =========================================================
-// // BSI TR-03183-2 v2.0.0 Adapter stubs (legacy names)
-// // These delegate to common or v1.1 helpers and are kept for
-// // backward-compatibility with the existing registry entries.
-// // =========================================================
+// spdxPurposeCheck evaluates a BSI property for SPDX documents by checking whether
+// a package's PrimaryPackagePurpose matches the given purpose (case-insensitive).
+// A package with a matching purpose is counted as declaring the property.
+// Ignore is always false — these are required BSI fields.
+func spdxPurposeCheck(doc sbom.Document, purpose, fieldLabel string) catalog.ProfFeatScore {
+	comps := doc.Components()
+	total := len(comps)
 
-// // sbomWithBomLinksCheck
-// func BSISBOMWithBomLinks(doc sbom.Document) catalog.ProfFeatScore {
-// 	links := doc.Spec().GetExtDocRef()
-// 	if len(links) == 0 {
-// 		formulae.ScoreSBOMProfNA("no bom links found", true)
-// 	}
-// 	return formulae.ScoreSBOMProfFull("bom links", true)
-// }
+	if total == 0 {
+		return catalog.ProfFeatScore{
+			Score:  0.0,
+			Desc:   "no components found in SBOM.",
+			Ignore: false,
+		}
+	}
 
-// // BSISBOMWithVulnerabilities (BSI v2.0 note: MUST NOT contain vuln info)
-// func BSISBOMWithVulnerabilities(doc sbom.Document) catalog.ProfFeatScore {
-// 	return SBOMVulnerabilities(doc)
-// }
+	target := strings.ToUpper(purpose)
+	matched := 0
+	for _, c := range comps {
+		if strings.ToUpper(strings.TrimSpace(c.PrimaryPurpose())) == target {
+			matched++
+		}
+	}
 
-// // BSISBOMWithSignature
-// func BSISBOMWithSignature(doc sbom.Document) catalog.ProfFeatScore {
-// 	return SBOMSignature(doc)
-// }
-
-// // BSICompWithAssociatedLicenses: concluded for SPDX, effective for CDX components
-// func BSICompWithAssociatedLicenses(doc sbom.Document) catalog.ProfFeatScore {
-// 	return CompLicenses(doc)
-// }
-
-// // CompWithConcludedLicensesCheck (SPDX)
-// func CompWithConcludedLicensesCheck(doc sbom.Document) catalog.ProfFeatScore {
-// 	return CompConcludedLicenses(doc)
-// }
-
-// // CompWithDeclaredLicensesCheck
-// func CompWithDeclaredLicensesCheck(doc sbom.Document) catalog.ProfFeatScore {
-// 	return CompDeclaredLicenses(doc)
-// }
-
-// // BSICompWithLicenses checks Component License
-// func BSICompWithLicenses(doc sbom.Document) catalog.ProfFeatScore {
-// 	return CompLicenses(doc)
-// }
-
-// // BSICompWithHash checks Component Hash
-// func BSICompWithHash(doc sbom.Document) catalog.ProfFeatScore {
-// 	return CompHash(doc)
-// }
-
-// // BSICompWithSourceCodeURI checks Component Source URL
-// func BSICompWithSourceCodeURI(doc sbom.Document) catalog.ProfFeatScore {
-// 	return CompSourceCodeURL(doc)
-// }
-
-// // BSICompWithDownloadURI checks Component Download URL
-// func BSICompWithDownloadURI(doc sbom.Document) catalog.ProfFeatScore {
-// 	return CompDownloadCodeURL(doc)
-// }
-
-// // BSICompWithSourceCodeHash checks Component Source Hash
-// func BSICompWithSourceCodeHash(doc sbom.Document) catalog.ProfFeatScore {
-// 	return CompSourceCodeHash(doc)
-// }
-
-// // BSICompWithDependencies evaluates component-level dependency correctness
-// // for summary scoring, per BSI TR-03183.
-// func BSICompWithDependencies(doc sbom.Document) catalog.ProfFeatScore {
-// 	comps := doc.Components()
-// 	if len(comps) == 0 {
-// 		return formulae.ScoreProfNA(false)
-// 	}
-
-// 	withDeps := lo.Filter(comps, func(c sbom.GetComponent, _ int) bool {
-// 		deps := doc.GetDirectDependencies(
-// 			c.GetID(),
-// 			"DEPENDS_ON",
-// 			"CONTAINS",
-// 		)
-// 		return len(deps) > 0
-// 	})
-
-// 	if len(withDeps) == 0 {
-// 		return formulae.ScoreProfileCustomNA(false, "no components declare dependencies")
-// 	}
-
-// 	valid := lo.CountBy(withDeps, func(c sbom.GetComponent) bool {
-// 		deps := doc.GetDirectDependencies(
-// 			c.GetID(),
-// 			"DEPENDS_ON",
-// 			"CONTAINS",
-// 		)
-// 		return len(deps) > 0
-// 	})
-
-// 	return formulae.ScoreProfFull(valid, len(withDeps), false)
-// }
-
-// // BSISBOMNamespace checks URI/Namespace
-// func BSISBOMNamespace(doc sbom.Document) catalog.ProfFeatScore {
-// 	return SBOMNamespace(doc)
-// }
-
-// // =========================================================
-// // BSI TR-03183-2 v2.0.0 REQUIRED fields (§5.2)
-// // Named BSIV20* for unambiguous versioning.
-// // =========================================================
+	if matched == total {
+		return catalog.ProfFeatScore{
+			Score:  10.0,
+			Desc:   fmt.Sprintf("%s declared for all components.", fieldLabel),
+			Ignore: false,
+		}
+	}
+	if matched == 0 {
+		return catalog.ProfFeatScore{
+			Score:  0.0,
+			Desc:   fmt.Sprintf("no components declare %s via PrimaryPackagePurpose.", fieldLabel),
+			Ignore: false,
+		}
+	}
+	return catalog.ProfFeatScore{
+		Score:  float64(matched) / float64(total) * 10.0,
+		Desc:   fmt.Sprintf("%d/%d components declare %s via PrimaryPackagePurpose.", matched, total, fieldLabel),
+		Ignore: false,
+	}
+}

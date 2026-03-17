@@ -124,6 +124,16 @@ type FakeGetComponent struct {
 	getFileAnalyzedReturnsOnCall map[int]struct {
 		result1 bool
 	}
+	GetFilenameStub        func() string
+	getFilenameMutex       sync.RWMutex
+	getFilenameArgsForCall []struct {
+	}
+	getFilenameReturns struct {
+		result1 string
+	}
+	getFilenameReturnsOnCall map[int]struct {
+		result1 string
+	}
 	GetIDStub        func() string
 	getIDMutex       sync.RWMutex
 	getIDArgsForCall []struct {
@@ -929,6 +939,59 @@ func (fake *FakeGetComponent) GetFileAnalyzedReturnsOnCall(i int, result1 bool) 
 	}
 	fake.getFileAnalyzedReturnsOnCall[i] = struct {
 		result1 bool
+	}{result1}
+}
+
+func (fake *FakeGetComponent) GetFilename() string {
+	fake.getFilenameMutex.Lock()
+	ret, specificReturn := fake.getFilenameReturnsOnCall[len(fake.getFilenameArgsForCall)]
+	fake.getFilenameArgsForCall = append(fake.getFilenameArgsForCall, struct {
+	}{})
+	stub := fake.GetFilenameStub
+	fakeReturns := fake.getFilenameReturns
+	fake.recordInvocation("GetFilename", []interface{}{})
+	fake.getFilenameMutex.Unlock()
+	if stub != nil {
+		return stub()
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeGetComponent) GetFilenameCallCount() int {
+	fake.getFilenameMutex.RLock()
+	defer fake.getFilenameMutex.RUnlock()
+	return len(fake.getFilenameArgsForCall)
+}
+
+func (fake *FakeGetComponent) GetFilenameCalls(stub func() string) {
+	fake.getFilenameMutex.Lock()
+	defer fake.getFilenameMutex.Unlock()
+	fake.GetFilenameStub = stub
+}
+
+func (fake *FakeGetComponent) GetFilenameReturns(result1 string) {
+	fake.getFilenameMutex.Lock()
+	defer fake.getFilenameMutex.Unlock()
+	fake.GetFilenameStub = nil
+	fake.getFilenameReturns = struct {
+		result1 string
+	}{result1}
+}
+
+func (fake *FakeGetComponent) GetFilenameReturnsOnCall(i int, result1 string) {
+	fake.getFilenameMutex.Lock()
+	defer fake.getFilenameMutex.Unlock()
+	fake.GetFilenameStub = nil
+	if fake.getFilenameReturnsOnCall == nil {
+		fake.getFilenameReturnsOnCall = make(map[int]struct {
+			result1 string
+		})
+	}
+	fake.getFilenameReturnsOnCall[i] = struct {
+		result1 string
 	}{result1}
 }
 

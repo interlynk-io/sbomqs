@@ -92,6 +92,8 @@ type GetComponent interface {
 	GetPropertyValue(name string) string
 	// GetProperties returns all component properties as key-value pairs
 	GetProperties() []ComponentProperty
+	// GetFilename returns the filename of the component (PackageFileName in SPDX, bsi:component:filename in CDX)
+	GetFilename() string
 	// GetComposition returns the composition information for the specified component ID
 	// GetCompositions() []GetComposition
 }
@@ -136,6 +138,7 @@ type Component struct {
 	PackageLicenseDeclared  string
 	ExternalRefs            []GetExternalReference
 	Props                   []ComponentProperty
+	PackageFilename         string
 	// composition             map[string]string
 }
 
@@ -312,6 +315,12 @@ func (c Component) GetPropertyValue(name string) string {
 // GetProperties returns all component properties as key-value pairs
 func (c Component) GetProperties() []ComponentProperty {
 	return c.Props
+}
+
+// GetFilename returns the filename of the component.
+// For SPDX this is PackageFileName (section 7.13); for CDX it is the bsi:component:filename property.
+func (c Component) GetFilename() string {
+	return c.PackageFilename
 }
 
 // // GetComposition returns the composition information for the specified component ID

@@ -363,39 +363,38 @@ func Test_BSI20ProfileForStaticSBOMFiles(t *testing.T) {
 
 	base := filepath.Join("..", "..", "..", "testdata", "fixtures")
 
-	// BSI v2.0 has 12 Required (§5.2) + 5 Additional (§5.3) + 2 Optional (§5.4) fields.
+	// BSI v2.0 has 13 Required (§5.2) + 5 Additional (§5.3) + 2 Optional (§5.4) fields.
 	// Additional fields are conditional-mandatory: they count in the score only when data exists.
 	// Scores reflect the v2.0 implementation:
+	//   - sbom_spec_version is now a required field (CDX >= 1.5, SPDX >= 2.2)
 	//   - SHA-512 required for deployable hash
-	//   - 4 required fields are N/A (filename, executable/archive/structured property)
-	// Scores reflect Option B: Required fields with Ignore=true (tool limitation) are
-	// excluded from the InterlynkScore denominator. The 4 currently unevaluatable fields
-	// (comp_filename, comp_executable_property, comp_archive_property, comp_structured_property)
-	// are shown as "N/A (not evaluated)" in the reporter and do not penalise the score.
+	//   - comp_filename uses PackageFileName (SPDX) or bsi:component:filename property (CDX)
+	//   - comp_executable/archive/structured use PrimaryPackagePurpose (SPDX) or BSI properties (CDX)
+	//   - Most fixtures do not carry these BSI-specific fields so those checks score 0.
 	testCases := map[string]expectedProfileScore{
 		// SPDX test cases
-		filepath.Join(base, "spdx-perfect-score.json"):    {Score: 9.4, Grade: "A", Required: 7, Additional: 4, Optional: 1},
-		filepath.Join(base, "spdx-minimal.json"):          {Score: 3.3, Grade: "F", Required: 2, Additional: 1, Optional: 0},
-		filepath.Join(base, "spdx-no-version.json"):       {Score: 5.5, Grade: "D", Required: 3, Additional: 3, Optional: 1},
-		filepath.Join(base, "spdx-no-checksums.json"):     {Score: 6.4, Grade: "D", Required: 4, Additional: 3, Optional: 1},
-		filepath.Join(base, "spdx-weak-checksums.json"):   {Score: 6.4, Grade: "D", Required: 4, Additional: 3, Optional: 1},
-		filepath.Join(base, "spdx-no-dependencies.json"):  {Score: 6.4, Grade: "D", Required: 4, Additional: 3, Optional: 1},
-		filepath.Join(base, "spdx-invalid-licenses.json"): {Score: 5.8, Grade: "D", Required: 3, Additional: 2, Optional: 0},
-		filepath.Join(base, "spdx-no-authors.json"):       {Score: 6.4, Grade: "D", Required: 4, Additional: 3, Optional: 1},
-		filepath.Join(base, "spdx-no-timestamp.json"):     {Score: 5.5, Grade: "D", Required: 3, Additional: 3, Optional: 1},
-		filepath.Join(base, "spdx-old-version.json"):      {Score: 6.4, Grade: "D", Required: 4, Additional: 3, Optional: 1},
+		filepath.Join(base, "spdx-perfect-score.json"):    {Score: 7.5, Grade: "C", Required: 8, Additional: 4, Optional: 1},
+		filepath.Join(base, "spdx-minimal.json"):          {Score: 2.9, Grade: "F", Required: 3, Additional: 1, Optional: 0},
+		filepath.Join(base, "spdx-no-version.json"):       {Score: 4.4, Grade: "F", Required: 4, Additional: 3, Optional: 1},
+		filepath.Join(base, "spdx-no-checksums.json"):     {Score: 5.0, Grade: "D", Required: 5, Additional: 3, Optional: 1},
+		filepath.Join(base, "spdx-weak-checksums.json"):   {Score: 5.0, Grade: "D", Required: 5, Additional: 3, Optional: 1},
+		filepath.Join(base, "spdx-no-dependencies.json"):  {Score: 5.3, Grade: "D", Required: 5, Additional: 3, Optional: 1},
+		filepath.Join(base, "spdx-invalid-licenses.json"): {Score: 4.6, Grade: "F", Required: 4, Additional: 2, Optional: 0},
+		filepath.Join(base, "spdx-no-authors.json"):       {Score: 5.0, Grade: "D", Required: 5, Additional: 3, Optional: 1},
+		filepath.Join(base, "spdx-no-timestamp.json"):     {Score: 4.4, Grade: "F", Required: 4, Additional: 3, Optional: 1},
+		filepath.Join(base, "spdx-old-version.json"):      {Score: 5.0, Grade: "D", Required: 5, Additional: 3, Optional: 1},
 
 		// CycloneDX test cases
-		filepath.Join(base, "cdx-perfect-score.json"):    {Score: 9.2, Grade: "A", Required: 7, Additional: 3, Optional: 0},
-		filepath.Join(base, "cdx-minimal.json"):          {Score: 2.2, Grade: "F", Required: 1, Additional: 1, Optional: 0},
-		filepath.Join(base, "cdx-no-version.json"):       {Score: 5.0, Grade: "D", Required: 3, Additional: 2, Optional: 0},
-		filepath.Join(base, "cdx-no-checksums.json"):     {Score: 6.0, Grade: "D", Required: 4, Additional: 2, Optional: 0},
-		filepath.Join(base, "cdx-weak-checksums.json"):   {Score: 6.0, Grade: "D", Required: 4, Additional: 2, Optional: 0},
-		filepath.Join(base, "cdx-no-dependencies.json"):  {Score: 6.0, Grade: "D", Required: 4, Additional: 2, Optional: 0},
-		filepath.Join(base, "cdx-invalid-licenses.json"): {Score: 5.3, Grade: "D", Required: 3, Additional: 1, Optional: 0},
-		filepath.Join(base, "cdx-no-authors.json"):       {Score: 6.0, Grade: "D", Required: 4, Additional: 2, Optional: 0},
-		filepath.Join(base, "cdx-no-timestamp.json"):     {Score: 5.0, Grade: "D", Required: 3, Additional: 2, Optional: 0},
-		filepath.Join(base, "cdx-old-version.json"):      {Score: 6.0, Grade: "D", Required: 4, Additional: 2, Optional: 0},
+		filepath.Join(base, "cdx-perfect-score.json"):    {Score: 7.1, Grade: "C", Required: 8, Additional: 3, Optional: 0},
+		filepath.Join(base, "cdx-minimal.json"):          {Score: 2.1, Grade: "F", Required: 2, Additional: 1, Optional: 0},
+		filepath.Join(base, "cdx-no-version.json"):       {Score: 4.0, Grade: "F", Required: 4, Additional: 2, Optional: 0},
+		filepath.Join(base, "cdx-no-checksums.json"):     {Score: 4.7, Grade: "F", Required: 5, Additional: 2, Optional: 0},
+		filepath.Join(base, "cdx-weak-checksums.json"):   {Score: 4.7, Grade: "F", Required: 5, Additional: 2, Optional: 0},
+		filepath.Join(base, "cdx-no-dependencies.json"):  {Score: 4.7, Grade: "F", Required: 5, Additional: 2, Optional: 0},
+		filepath.Join(base, "cdx-invalid-licenses.json"): {Score: 4.2, Grade: "F", Required: 4, Additional: 1, Optional: 0},
+		filepath.Join(base, "cdx-no-authors.json"):       {Score: 4.7, Grade: "F", Required: 5, Additional: 2, Optional: 0},
+		filepath.Join(base, "cdx-no-timestamp.json"):     {Score: 4.0, Grade: "F", Required: 4, Additional: 2, Optional: 0},
+		filepath.Join(base, "cdx-old-version.json"):      {Score: 4.0, Grade: "F", Required: 4, Additional: 2, Optional: 0},
 	}
 
 	for path, want := range testCases {
