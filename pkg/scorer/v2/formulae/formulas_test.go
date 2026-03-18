@@ -21,6 +21,72 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestComputeInterlynkProfScore(t *testing.T) {
+	tests := []struct {
+		name     string
+		items    []api.ProfileFeatureResult
+		expected float64
+	}{
+		{
+			name: "all required evaluatable, full score",
+			items: []api.ProfileFeatureResult{
+				{Required: true, Ignore: false, Score: 10.0},
+				{Required: true, Ignore: false, Score: 10.0},
+			},
+			expected: 10.0,
+		},
+		{
+			name: "required tool-limitation (Ignore=true) excluded from score",
+			items: []api.ProfileFeatureResult{
+				{Required: true, Ignore: false, Score: 10.0},
+				{Required: true, Ignore: true, Score: 0.0}, // tool limitation — not counted
+			},
+			expected: 10.0, // only the evaluatable field counts
+		},
+		{
+			name: "required data-absent (Ignore=false) penalises score",
+			items: []api.ProfileFeatureResult{
+				{Required: true, Ignore: false, Score: 10.0},
+				{Required: true, Ignore: false, Score: 0.0}, // field missing — counts as fail
+			},
+			expected: 5.0,
+		},
+		{
+			name: "additional counts only when Ignore=false",
+			items: []api.ProfileFeatureResult{
+				{Required: true, Ignore: false, Score: 10.0},
+				{Additional: true, Ignore: false, Score: 10.0}, // data exists — counts
+				{Additional: true, Ignore: true, Score: 0.0},   // no data — skipped
+			},
+			expected: 10.0, // (10 + 10) / 2
+		},
+		{
+			name: "optional never counted",
+			items: []api.ProfileFeatureResult{
+				{Required: true, Ignore: false, Score: 10.0},
+				{Required: false, Additional: false, Ignore: false, Score: 0.0}, // optional — never counts
+			},
+			expected: 10.0,
+		},
+		{
+			name: "all fields tool-limitation or optional — returns 0",
+			items: []api.ProfileFeatureResult{
+				{Required: true, Ignore: true, Score: 0.0},
+				{Additional: true, Ignore: true, Score: 0.0},
+			},
+			expected: 0.0,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := api.ProfileResult{Items: tt.items}
+			got := ComputeInterlynkProfScore(result)
+			assert.InDelta(t, tt.expected, got, 1e-9, "unexpected score for %s", tt.name)
+		})
+	}
+}
+
 func TestToGrade_Boundaries(t *testing.T) {
 	tests := []struct {
 		interlynkScore float64

@@ -4766,7 +4766,7 @@ func TestBSIV11CompSourceURI(t *testing.T) {
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "No components found.", got.Desc)
-		assert.False(t, got.Ignore)
+		assert.True(t, got.Ignore)
 	})
 }
 
@@ -5000,8 +5000,8 @@ func TestBSIV11CompExecutableURI(t *testing.T) {
 		got := BSIV11CompExecutableURI(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "No components found.", got.Desc)
-		assert.False(t, got.Ignore)
+		assert.Equal(t, "no components found.", got.Desc)
+		assert.True(t, got.Ignore)
 	})
 }
 
@@ -5196,8 +5196,8 @@ func TestBSIV11CompSourceHash(t *testing.T) {
 		got := BSIV11CompSourceHash(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "No components found.", got.Desc)
-		assert.False(t, got.Ignore)
+		assert.Equal(t, "no components found.", got.Desc)
+		assert.True(t, got.Ignore)
 	})
 }
 
@@ -5343,7 +5343,7 @@ func TestBSIV11CompOtherIdentifiers(t *testing.T) {
 		got := BSIV11CompOtherIdentifiers(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "No components declare additional unique identifiers (optional field).", got.Desc)
+		assert.Equal(t, "No components declare additional unique identifiers (additional field).", got.Desc)
 		assert.True(t, got.Ignore)
 	})
 
@@ -5355,7 +5355,7 @@ func TestBSIV11CompOtherIdentifiers(t *testing.T) {
 		got := BSIV11CompOtherIdentifiers(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "No components declare additional unique identifiers (optional field).", got.Desc)
+		assert.Equal(t, "No components declare additional unique identifiers (additional field).", got.Desc)
 		assert.True(t, got.Ignore)
 	})
 
@@ -5367,8 +5367,8 @@ func TestBSIV11CompOtherIdentifiers(t *testing.T) {
 		got := BSIV11CompOtherIdentifiers(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "No components found.", got.Desc)
-		assert.False(t, got.Ignore)
+		assert.Equal(t, "no components found.", got.Desc)
+		assert.True(t, got.Ignore)
 	})
 
 	// 1 out of 2 components has a PURL

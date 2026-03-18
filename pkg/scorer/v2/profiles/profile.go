@@ -86,9 +86,17 @@ func evaluateEachProfile(ctx context.Context, doc sbom.Document, profile catalog
 		// evaluate feature
 		pFeatScore := spec.Evaluate(doc)
 
+		// Three-tier Passed logic:
+		//   Required: must pass (score >= 10.0); N/A counts as failure
+		//   Additional: must pass when data exists (!Ignore); N/A is fine
+		//   Optional: any score > 0 counts as present
 		if pFeatScore.Ignore {
+			// Required+Ignore → failure; Additional/Optional+Ignore → N/A (pass)
 			pFeatResult.Passed = !spec.Required
 		} else if spec.Required {
+			pFeatResult.Passed = (pFeatScore.Score >= 10.0)
+		} else if spec.Additional {
+			// Additional: data exists, so treat as conditional mandatory
 			pFeatResult.Passed = (pFeatScore.Score >= 10.0)
 		} else {
 			pFeatResult.Passed = (pFeatScore.Score > 0.0)
@@ -96,12 +104,15 @@ func evaluateEachProfile(ctx context.Context, doc sbom.Document, profile catalog
 
 		pFeatResult.Score = pFeatScore.Score
 		pFeatResult.Desc = pFeatScore.Desc
+		pFeatResult.Ignore = pFeatScore.Ignore
 
-		// proResult.Score += pFeatResult.Score
 		proResult.Items = append(proResult.Items, pFeatResult)
 
-		// Only count required fields for scoring
-		if !pFeatScore.Ignore && spec.Required {
+		// Required always counts; Additional counts when data exists (!Ignore)
+		if spec.Required && !pFeatScore.Ignore {
+			sumScore += pFeatScore.Score
+			countNonNA++
+		} else if spec.Additional && !pFeatScore.Ignore {
 			sumScore += pFeatScore.Score
 			countNonNA++
 		}

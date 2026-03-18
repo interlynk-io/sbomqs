@@ -109,29 +109,40 @@ var BSIV11KeyToEvaluatingFunction = map[string]catalog.ProfFeatEval{
 }
 
 var BSIV20KeyToEvaluatingFunction = map[string]catalog.ProfFeatEval{
-	"sbom_spec": profiles.SBOMAutomationSpec,
-	// "sbom_spec_version": profiles.BSISBOMSpecVersion,
-	// "sbom_build":        profiles.BSISBOMBuildLifecycle,
-	// "sbom_depth":        profiles.SBOMDepedencies,
-	"sbom_creator":   profiles.SBOMAuthors,
-	"sbom_timestamp": profiles.SBOMCreationTimestamp,
-	"sbom_uri":       profiles.BSISBOMNamespace,
+	// Required: SBOM level
+	"sbom_creator":   profiles.BSIV20SBOMCreator,
+	"sbom_timestamp": profiles.BSIV20SBOMCreationTimestamp,
+	"sbom_uri":       profiles.BSIV20SBOMURI,
 
-	"comp_name":    profiles.CompName,
-	"comp_version": profiles.CompVersion,
+	// Required: component level
+	"comp_creator":             profiles.BSIV20CompCreator,
+	"comp_name":                profiles.BSIV20CompName,
+	"comp_version":             profiles.BSIV20CompVersion,
+	"comp_filename":            profiles.BSIV20CompFilename,
+	"comp_depth":               profiles.BSIV20CompDependencies,
+	"comp_associated_license":  profiles.BSIV20CompAssociatedLicenses,
+	"comp_hash":                profiles.BSIV20CompDeployableHash,
+	"comp_executable_property": profiles.BSIV20CompExecutableProperty,
+	"comp_archive_property":    profiles.BSIV20CompArchiveProperty,
+	"comp_structured_property": profiles.BSIV20CompStructuredProperty,
 
-	"comp_license":         profiles.BSICompWithLicenses,
-	"comp_hash":            profiles.BSIV11CompExecutableHash,
-	"comp_source_code_url": profiles.BSICompWithSourceCodeURI,
-	"comp_download_url":    profiles.BSICompWithDownloadURI,
-	"comp_source_hash":     profiles.BSICompWithSourceCodeHash,
-	"comp_depth":           profiles.BSICompWithDependencies,
+	// Additional: SBOM level
+	// Additional: component level
+	"comp_source_code_url":   profiles.BSIV20CompSourceURI,
+	"comp_download_url":      profiles.BSIV20CompDeployableURI,
+	"comp_other_identifiers": profiles.BSIV20CompOtherIdentifiers,
+	"comp_concluded_license": profiles.BSIV20CompConcludedLicenses,
 
-	"sbom_signature":          profiles.BSISBOMWithSignature,
-	"sbom_bomlinks":           profiles.BSISBOMWithBomLinks,
-	"sbom_vulnerabilities":    profiles.BSISBOMWithVulnerabilities,
-	"comp_hash_sha256":        profiles.CompSHA256Plus,
-	"comp_associated_license": profiles.BSICompWithAssociatedLicenses,
+	// Optional: component level
+	"comp_declared_license": profiles.BSIV20CompDeclaredLicenses,
+	"comp_source_hash":      profiles.BSIV20CompSourceHash,
+
+	// // Optional: SBOM level
+	// "sbom_spec":            profiles.SBOMAutomationSpec,
+	// "sbom_signature":       profiles.BSISBOMWithSignature,
+	// "sbom_bomlinks":        profiles.BSISBOMWithBomLinks,
+	// "sbom_vulnerabilities": profiles.BSISBOMWithVulnerabilities,
+	// "comp_license":         profiles.BSICompWithLicenses,
 }
 
 var BSIV21KeyToEvaluatingFunction = map[string]catalog.ProfFeatEval{
@@ -144,7 +155,7 @@ var BSIV21KeyToEvaluatingFunction = map[string]catalog.ProfFeatEval{
 	"comp_name":                 profiles.BSIV11CompName,
 	"comp_version":              profiles.BSIV11CompVersion,
 	"comp_filename":             profiles.BSIV21CompFilename,
-	"comp_depth":                profiles.BSICompWithDependencies,
+	"comp_depth":                profiles.BSIV20CompDependencies,
 	"comp_distribution_license": profiles.BSIV21CompDistributionLicence,
 	"comp_hash":                 profiles.BSIV21CompDeployableHash,
 	"comp_executable_prop":      profiles.BSIV21CompExecutableProperty,
@@ -867,12 +878,12 @@ var profileBSI11Spec = catalog.ProfSpec{
 		{Key: "comp_license", Name: "Component License", Required: true, Description: "License information", Evaluate: profiles.BSIV11CompLicenses},
 		{Key: "comp_hash", Name: "Component Hash", Required: true, Description: "Checksums for components", Evaluate: profiles.BSIV11CompExecutableHash},
 
-		// Additional
-		{Key: "sbom_uri", Name: "URI/Namespace", Required: false, Description: "Unique SBOM identifier", Evaluate: profiles.BSIV11SBOMURI},
-		{Key: "comp_source_url", Name: "Component Source URL", Required: false, Description: "Source code repository", Evaluate: profiles.BSIV11CompSourceURI},
-		{Key: "comp_executable_url", Name: "Component Download URL", Required: false, Description: "Where to obtain component", Evaluate: profiles.BSIV11CompExecutableURI},
-		{Key: "comp_source_hash", Name: "Component Source Hash", Required: false, Description: "Hash of source code", Evaluate: profiles.BSIV11CompSourceHash},
-		{Key: "comp_unique_identifiers", Name: "Component Other Unique Identifiers", Required: false, Description: "Unique Identifiers of the component", Evaluate: profiles.BSIV11CompOtherIdentifiers},
+		// Additional (§5.3): conditional mandatory — MUST be present if data exists
+		{Key: "sbom_uri", Name: "URI/Namespace", Required: false, Additional: true, Description: "Unique SBOM identifier", Evaluate: profiles.BSIV11SBOMURI},
+		{Key: "comp_source_url", Name: "Component Source URL", Required: false, Additional: true, Description: "Source code repository", Evaluate: profiles.BSIV11CompSourceURI},
+		{Key: "comp_executable_url", Name: "Component Download URL", Required: false, Additional: true, Description: "Where to obtain component", Evaluate: profiles.BSIV11CompExecutableURI},
+		{Key: "comp_source_hash", Name: "Component Source Hash", Required: false, Additional: true, Description: "Hash of source code", Evaluate: profiles.BSIV11CompSourceHash},
+		{Key: "comp_unique_identifiers", Name: "Component Other Unique Identifiers", Required: false, Additional: true, Description: "Unique Identifiers of the component", Evaluate: profiles.BSIV11CompOtherIdentifiers},
 	},
 }
 
@@ -881,29 +892,40 @@ var profileBSI20Spec = catalog.ProfSpec{
 	Name:        "BSI TR-03183-2 v2.0",
 	Description: "BSI TR-03183-2 v2.0 Profile",
 	Features: []catalog.ProfFeatSpec{
-		{Key: "sbom_spec", Name: "SBOM Formats", Required: true, Description: "SPDX or CycloneDX", Evaluate: profiles.SBOMSpec},
-		// {Key: "sbom_spec_version", Name: "SBOM Spec Version", Required: true, Description: "Valid supported version", Evaluate: profiles.BSISBOMSpecVersion},
-		// {Key: "sbom_build", Name: "Build Information", Required: false, Description: "Build phase indication", Evaluate: profiles.BSISBOMBuildLifecycle},
-		// {Key: "sbom_depth", Name: "SBOM Depth", Required: true, Description: "Complete dependency tree", Evaluate: profiles.SBOMDepedencies},
-		{Key: "sbom_creator", Name: "Creator Info", Required: true, Description: "Contact email/URL", Evaluate: profiles.SBOMAuthors},
-		{Key: "sbom_timestamp", Name: "Creation Time", Required: true, Description: "Valid timestamp (ISO-8601)", Evaluate: profiles.SBOMCreationTimestamp},
-		{Key: "sbom_uri", Name: "URI/Namespace", Required: true, Description: "Unique SBOM identifier", Evaluate: profiles.BSISBOMNamespace},
+		// Required: SBOM level (5.2.1)
+		{Key: "sbom_spec_version", Name: "Spec Version", Required: true, Description: "CDX >= 1.5 or SPDX >= 2.2.1", Evaluate: profiles.BSIV20SpecVersion},
+		{Key: "sbom_creator", Name: "Creator Info", Required: true, Description: "Contact email or URL", Evaluate: profiles.BSIV20SBOMCreator},
+		{Key: "sbom_timestamp", Name: "Creation Time", Required: true, Description: "Valid RFC 3339 timestamp", Evaluate: profiles.BSIV20SBOMCreationTimestamp},
 
-		{Key: "comp_name", Name: "Component Name", Required: true, Description: "All components named", Evaluate: profiles.BSIV11CompName},
-		{Key: "comp_version", Name: "Component Version", Required: true, Description: "Version for each component", Evaluate: profiles.BSIV11CompVersion},
+		// Required: component level (5.2.2)
+		{Key: "comp_creator", Name: "Component Creator", Required: true, Description: "Creator email or URL per component", Evaluate: profiles.BSIV20CompCreator},
+		{Key: "comp_name", Name: "Component Name", Required: true, Description: "All components named (filename fallback)", Evaluate: profiles.BSIV20CompName},
+		{Key: "comp_version", Name: "Component Version", Required: true, Description: "Version or creation-date fallback", Evaluate: profiles.BSIV20CompVersion},
+		{Key: "comp_filename", Name: "Component Filename", Required: true, Description: "Actual filename of the component", Evaluate: profiles.BSIV20CompFilename},
+		{Key: "comp_depth", Name: "Component Dependencies", Required: true, Description: "Direct deps and contained components", Evaluate: profiles.BSIV20CompDependencies},
+		{Key: "comp_associated_license", Name: "Associated Licences", Required: true, Description: "Valid SPDX licence per component", Evaluate: profiles.BSIV20CompAssociatedLicenses},
+		{Key: "comp_hash", Name: "Deployable Hash (SHA-512)", Required: true, Description: "SHA-512 hash of deliverable component", Evaluate: profiles.BSIV20CompDeployableHash},
+		{Key: "comp_executable_property", Name: "Executable Property", Required: true, Description: "executable or non-executable", Evaluate: profiles.BSIV20CompExecutableProperty},
+		{Key: "comp_archive_property", Name: "Archive Property", Required: true, Description: "archive or no archive", Evaluate: profiles.BSIV20CompArchiveProperty},
+		{Key: "comp_structured_property", Name: "Structured Property", Required: true, Description: "structured or unstructured", Evaluate: profiles.BSIV20CompStructuredProperty},
 
-		{Key: "comp_license", Name: "Component License", Required: true, Description: "License information", Evaluate: profiles.BSICompWithLicenses},
-		{Key: "comp_hash", Name: "Component Hash", Required: true, Description: "Checksums for components", Evaluate: profiles.BSICompWithHash},
-		{Key: "comp_source_code_url", Name: "Component Source URL", Required: false, Description: "Source code repository", Evaluate: profiles.BSICompWithSourceCodeURI},
-		{Key: "comp_download_url", Name: "Component Download URL", Required: true, Description: "Where to obtain component", Evaluate: profiles.BSICompWithDownloadURI},
-		{Key: "comp_source_hash", Name: "Component Source Hash", Required: false, Description: "Hash of source code", Evaluate: profiles.BSICompWithSourceCodeHash},
-		{Key: "comp_depth", Name: "Component Dependencies", Required: true, Description: "Dependency relationships", Evaluate: profiles.BSICompWithDependencies},
+		// Additional (§5.3): SBOM level (5.3.1) — conditional mandatory
+		{Key: "sbom_uri", Name: "SBOM URI", Required: false, Additional: true, Description: "Unique SBOM document identifier", Evaluate: profiles.BSIV20SBOMURI},
 
-		{Key: "sbom_signature", Name: "Digital Signature", Required: true, Description: "Cryptographic signature verification", Evaluate: profiles.BSISBOMWithSignature},
-		{Key: "sbom_bomlinks", Name: "External References", Required: false, Description: "Links to other SBOMs", Evaluate: profiles.BSISBOMWithBomLinks},
-		{Key: "sbom_vulnerabilities", Name: "Vulnerability Info", Required: false, Description: "Known vulnerabilities (absence preferred)", Evaluate: profiles.BSISBOMWithVulnerabilities},
-		{Key: "comp_hash_sha256", Name: "SHA-256 Checksums", Required: true, Description: "SHA-256 or stronger required", Evaluate: profiles.CompSHA256Plus},
-		{Key: "comp_associated_license", Name: "License Validation", Required: true, Description: "Valid SPDX license identifiers", Evaluate: profiles.BSICompWithAssociatedLicenses},
+		// Additional (§5.3): component level (5.3.2) — conditional mandatory
+		{Key: "comp_source_code_url", Name: "Source Code URI", Required: false, Additional: true, Description: "Source code repository URL", Evaluate: profiles.BSIV20CompSourceURI},
+		{Key: "comp_download_url", Name: "Deployable URI", Required: false, Additional: true, Description: "Download URL for deliverable", Evaluate: profiles.BSIV20CompDeployableURI},
+		{Key: "comp_other_identifiers", Name: "Other Unique Identifiers", Required: false, Additional: true, Description: "CPE and/or PURL", Evaluate: profiles.BSIV20CompOtherIdentifiers},
+		{Key: "comp_concluded_license", Name: "Concluded/Orignal Licences", Required: false, Additional: true, Description: "Licensee-chosen licence per component", Evaluate: profiles.BSIV20CompConcludedLicenses},
+
+		// Optional (§5.4): component level (5.4.1) — truly optional, never affects score
+		{Key: "comp_declared_license", Name: "Declared Licences", Required: false, Additional: false, Description: "Licensor-declared licence per component", Evaluate: profiles.BSIV20CompDeclaredLicenses},
+		{Key: "comp_source_hash", Name: "Source Code Hash", Required: false, Additional: false, Description: "Hash of component source code", Evaluate: profiles.BSIV20CompSourceHash},
+
+		// // BSI v2.0 additional governance checks
+		// {Key: "sbom_signature", Name: "Digital Signature", Required: false, Description: "Cryptographic signature of SBOM", Evaluate: profiles.BSISBOMWithSignature},
+		// {Key: "sbom_bomlinks", Name: "BOM Links", Required: false, Description: "Links to external SBOMs", Evaluate: profiles.BSISBOMWithBomLinks},
+		// {Key: "sbom_vulnerabilities", Name: "Vulnerability Info", Required: false, Description: "Absence of vuln data (MUST NOT be present)", Evaluate: profiles.BSISBOMWithVulnerabilities},
 	},
 }
 
@@ -916,28 +938,32 @@ var profileBSI21Spec = catalog.ProfSpec{
 		{Key: "sbom_spec_version", Name: "Spec Version", Required: true, Description: "CDX >= 1.6 or SPDX >= 3.0.1", Evaluate: profiles.BSIV21SpecVersion},
 		{Key: "sbom_creator", Name: "Creator Info", Required: true, Description: "Contact email/URL", Evaluate: profiles.BSIV11SBOMCreator},
 		{Key: "sbom_timestamp", Name: "Creation Time", Required: true, Description: "Valid timestamp (ISO-8601)", Evaluate: profiles.BSIV11SBOMCreationTimestamp},
-		{Key: "sbom_uri", Name: "SBOM-URI", Required: true, Description: "Unique SBOM identifier", Evaluate: profiles.BSIV21SBOMURI},
 
 		// Required (SHALL) Component fields
-		{Key: "comp_creator", Name: "Component Creator", Required: true, Description: "Creator email/URL for each component", Evaluate: profiles.BSIV11CompCreator},
-		{Key: "comp_name", Name: "Component Name", Required: true, Description: "All components named", Evaluate: profiles.BSIV11CompName},
-		{Key: "comp_version", Name: "Component Version", Required: true, Description: "Version for each component", Evaluate: profiles.BSIV11CompVersion},
+		{Key: "comp_creator", Name: "Component Creator", Required: true, Description: "Creator email/URL for each component", Evaluate: profiles.BSIV20CompCreator},
+		{Key: "comp_name", Name: "Component Name", Required: true, Description: "All components named", Evaluate: profiles.BSIV20CompName},
+		{Key: "comp_version", Name: "Component Version", Required: true, Description: "Version for each component", Evaluate: profiles.BSIV20CompVersion},
 		{Key: "comp_filename", Name: "Component Filename", Required: true, Description: "Filename via bsi:component:filename property", Evaluate: profiles.BSIV21CompFilename},
-		{Key: "comp_depth", Name: "Component Dependencies", Required: true, Description: "Dependency relationships", Evaluate: profiles.BSICompWithDependencies},
+		{Key: "comp_depth", Name: "Component Dependencies", Required: true, Description: "Dependency relationships", Evaluate: profiles.BSIV20CompDependencies},
 		{Key: "comp_distribution_license", Name: "Distribution Licence", Required: true, Description: "Concluded licence (acknowledgement=concluded)", Evaluate: profiles.BSIV21CompDistributionLicence},
 		{Key: "comp_hash", Name: "Deployable Hash", Required: true, Description: "Hash on externalReferences type=distribution", Evaluate: profiles.BSIV21CompDeployableHash},
 		{Key: "comp_executable_prop", Name: "Executable Property", Required: true, Description: "bsi:component:executable property", Evaluate: profiles.BSIV21CompExecutableProperty},
 		{Key: "comp_archive_prop", Name: "Archive Property", Required: true, Description: "bsi:component:archive property", Evaluate: profiles.BSIV21CompArchiveProperty},
 		{Key: "comp_structured_prop", Name: "Structured Property", Required: true, Description: "bsi:component:structured property", Evaluate: profiles.BSIV21CompStructuredProperty},
-		{Key: "comp_source_code_url", Name: "Source Code URI", Required: true, Description: "externalReferences type=source-distribution URL", Evaluate: profiles.BSIV21CompSourceCodeURI},
-		{Key: "comp_download_url", Name: "Deployable Form URI", Required: true, Description: "externalReferences type=distribution URL", Evaluate: profiles.BSIV21CompDownloadURI},
-		{Key: "comp_other_identifiers", Name: "Unique Identifiers", Required: true, Description: "CPE, SWID, or purl", Evaluate: profiles.BSIV21CompOtherIdentifiers},
-		{Key: "comp_original_licenses", Name: "Original Licences", Required: true, Description: "Declared licence (acknowledgement=declared)", Evaluate: profiles.BSIV21CompOriginalLicences},
 
-		// Optional (MAY) Component fields
-		{Key: "comp_effective_license", Name: "Effective Licence", Required: false, Description: "bsi:component:effectiveLicense property", Evaluate: profiles.BSIV21CompEffectiveLicence},
-		{Key: "comp_source_hash", Name: "Source Code Hash", Required: false, Description: "Hash on externalReferences type=source-distribution", Evaluate: profiles.BSIV21CompSourceHash},
-		{Key: "comp_security_txt_url", Name: "Security.txt URL", Required: false, Description: "externalReferences type=rfc-9116", Evaluate: profiles.BSIV21CompSecurityTxtURL},
+		// Additional(§5.2): SBOM level
+		{Key: "sbom_uri", Name: "SBOM-URI", Required: false, Additional: true, Description: "Unique SBOM identifier", Evaluate: profiles.BSIV21SBOMURI},
+
+		// Additional(§5.2): Component level
+		{Key: "comp_source_code_url", Name: "Source Code URI", Required: false, Additional: true, Description: "externalReferences type=source-distribution URL", Evaluate: profiles.BSIV21CompSourceCodeURI},
+		{Key: "comp_download_url", Name: "Deployable Form URI", Required: false, Additional: true, Description: "externalReferences type=distribution URL", Evaluate: profiles.BSIV21CompDownloadURI},
+		{Key: "comp_other_identifiers", Name: "Unique Identifiers", Required: false, Additional: true, Description: "CPE, SWID, or purl", Evaluate: profiles.BSIV21CompOtherIdentifiers},
+		{Key: "comp_concluded_license", Name: "Concluded/Original Licences", Required: false, Additional: true, Description: "Declared licence (acknowledgement=declared)", Evaluate: profiles.BSIV21CompOriginalLicences},
+
+		// Optional(§5.4) (MAY) Component fields
+		{Key: "comp_effective_license", Name: "Effective Licence", Required: false, Additional: false, Description: "bsi:component:effectiveLicense property", Evaluate: profiles.BSIV21CompEffectiveLicence},
+		{Key: "comp_source_hash", Name: "Source Code Hash", Required: false, Additional: false, Description: "Hash on externalReferences type=source-distribution", Evaluate: profiles.BSIV21CompSourceHash},
+		{Key: "comp_security_txt_url", Name: "Security.txt URL", Required: false, Additional: false, Description: "externalReferences type=rfc-9116", Evaluate: profiles.BSIV21CompSecurityTxtURL},
 	},
 }
 

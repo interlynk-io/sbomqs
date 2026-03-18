@@ -37,7 +37,7 @@ func BSIV21SpecVersion(doc sbom.Document) catalog.ProfFeatScore {
 	}
 
 	switch spec {
-	case "cyclonedx":
+	case string(sbom.SBOMSpecCDX):
 		if isVersionAtLeast(ver, "1.6") {
 			return catalog.ProfFeatScore{
 				Score: 10.0,
@@ -49,7 +49,7 @@ func BSIV21SpecVersion(doc sbom.Document) catalog.ProfFeatScore {
 			Desc:  fmt.Sprintf("CycloneDX %s does not meet minimum version 1.6", ver),
 		}
 
-	case "spdx":
+	case string(sbom.SBOMSpecSPDX):
 		if isVersionAtLeast(ver, "3.0") {
 			return catalog.ProfFeatScore{
 				Score: 10.0,

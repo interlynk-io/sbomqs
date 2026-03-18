@@ -27,6 +27,7 @@ type proTable struct {
 	profilesDoc    [][]string
 	profilesHeader []string
 	messages       string
+	result         api.ProfileResult // the underlying result, for summary display
 }
 
 func (r *Reporter) detailedReport() {
@@ -96,14 +97,22 @@ func (r *Reporter) detailedReport() {
 				for _, pFeatResult := range proResult.Items {
 					var status string
 					if pFeatResult.Required {
-						status = fmt.Sprintf("%.1f/10.0", pFeatResult.Score)
+						if pFeatResult.Ignore {
+							// Tool/format limitation â cannot evaluate, not an SBOM deficiency.
+							status = "N/A (not evaluated)"
+						} else {
+							status = fmt.Sprintf("%.1f/10.0", pFeatResult.Score)
+						}
+					} else if pFeatResult.Additional {
+						// Additional fields: conditional mandatory per BSI §5.3 — MUST be present if data exists
+						status = fmt.Sprintf("%.1f/10.0 (additional)", pFeatResult.Score)
 					} else {
-						// Optional fields show score format but marked as optional
 						status = fmt.Sprintf("%.1f/10.0 (optional)", pFeatResult.Score)
 					}
 					l := []string{proResult.Name, pFeatResult.Key, status, pFeatResult.Desc}
 					prs.profilesDoc = append(prs.profilesDoc, l)
 				}
+				prs.result = proResult
 				pros = append(pros, prs)
 			}
 		}
@@ -129,37 +138,50 @@ func (r *Reporter) detailedReport() {
 				fmt.Println()
 				newTable(prs.profilesDoc, prs.profilesHeader, "")
 
-				// Add summary for NTIA and OCT profiles showing required vs optional fields
-				if r.Profiles != nil && len(r.Profiles.ProfResult) > 0 {
-					for _, proResult := range r.Profiles.ProfResult {
-						if proResult.Name == "NTIA Minimum Elements (2021)" || proResult.Name == "NTIA Minimum Elements (2025) - RFC" || proResult.Name == "OpenChain Telco v1.1" || proResult.Name == "Framing Third Edition Compliance" {
-							requiredCount, requiredCompliant := 0, 0
-							optionalCount, optionalPresent := 0, 0
+				// Summary: three-tier counting for all profiles
+				requiredCount, requiredCompliant, requiredNotEvaluated := 0, 0, 0
+				additionalCount, additionalCompliant := 0, 0
+				optionalCount, optionalPresent := 0, 0
 
-							for _, item := range proResult.Items {
-								if item.Required {
-									requiredCount++
-									if item.Score >= 10.0 {
-										requiredCompliant++
-									}
-								} else {
-									optionalCount++
-									if item.Score >= 10.0 {
-										optionalPresent++
-									}
-								}
+				for _, item := range prs.result.Items {
+					if item.Required {
+						if item.Ignore {
+							// Tool/format limitation â counted separately, not as failure.
+							requiredNotEvaluated++
+						} else {
+							requiredCount++
+							if item.Score >= 10.0 {
+								requiredCompliant++
 							}
-
-							if requiredCount > 0 || optionalCount > 0 {
-								fmt.Println()
-								fmt.Println("Summary:")
-								fmt.Printf("Required Fields : %d/%d compliant\n", requiredCompliant, requiredCount)
-								if optionalCount > 0 {
-									fmt.Printf("Optional Fields : %d/%d present\n", optionalPresent, optionalCount)
-								}
-							}
-							break
 						}
+					} else if item.Additional {
+						additionalCount++
+						if item.Score >= 10.0 {
+							additionalCompliant++
+						}
+					} else {
+						optionalCount++
+						if item.Score >= 10.0 {
+							optionalPresent++
+						}
+					}
+				}
+
+				if requiredCount > 0 || requiredNotEvaluated > 0 || additionalCount > 0 || optionalCount > 0 {
+					fmt.Println()
+					fmt.Println("Summary:")
+					if requiredCount > 0 || requiredNotEvaluated > 0 {
+						if requiredNotEvaluated > 0 {
+							fmt.Printf("Required Fields   : %d/%d compliant (%d not evaluated â tool limitation)\n", requiredCompliant, requiredCount, requiredNotEvaluated)
+						} else {
+							fmt.Printf("Required Fields   : %d/%d compliant\n", requiredCompliant, requiredCount)
+						}
+					}
+					if additionalCount > 0 {
+						fmt.Printf("Additional Fields : %d/%d compliant\n", additionalCompliant, additionalCount)
+					}
+					if optionalCount > 0 {
+						fmt.Printf("Optional Fields   : %d/%d present\n", optionalPresent, optionalCount)
 					}
 				}
 			}
