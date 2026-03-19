@@ -1,0 +1,14 @@
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "acme-app-sbom",
+  "dataLicense": "CC0-1.0",
+  "documentNamespace": "https://example.com/sbom/acme-app-1.0.0",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": [
+      "Organization: Acme, Inc. (contact@acme.example.com)"
+    ]
+  },
+  "packages": []
+}

@@ -1,0 +1,251 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {
+    "authors": [
+      {
+        "bom-ref": "author-1",
+        "name": "Samantha Wright",
+        "email": "samantha.wright@example.com"
+      }
+    ],
+    "manufacturer": {
+      "bom-ref": "manufacturer-1",
+      "name": "Acme, Inc.",
+      "url": [
+        "https://acme.example.com"
+      ],
+      "contact": [
+        {
+          "name": "Acme Professional Services",
+          "email": "professional.services@acme.example.com"
+        }
+      ]
+    },
+    "supplier": {
+      "name": "Acme Distribution",
+      "url": [
+        "https://dist.acme.example.com"
+      ],
+      "contact": [
+        {
+          "name": "Acme Distribution Team",
+          "email": "distribution@acme.example.com"
+        }
+      ]
+    },
+    "timestamp": "2025-01-01T00:00:00Z",
+    "component": {
+      "type": "application",
+      "bom-ref": "pkg:golang/github.com/acme/acme-app@2.0.0",
+      "name": "acme-app",
+      "version": "2.0.0",
+      "manufacturer": {
+        "name": "Acme, Inc.",
+        "contact": [
+          {
+            "name": "Acme Professional Services",
+            "email": "professional.services@acme.example.com"
+          }
+        ]
+      },
+      "supplier": {
+        "name": "Acme Distribution",
+        "contact": [
+          {
+            "name": "Acme Distribution Team",
+            "email": "distribution@acme.example.com"
+          }
+        ]
+      },
+      "purl": "pkg:golang/github.com/acme/acme-app@v2.0.0",
+      "cpe": "cpe:2.3:a:acme:acme-app:2.0.0:*:*:*:*:*:*:*",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0",
+            "acknowledgement": "concluded"
+          }
+        },
+        {
+          "license": {
+            "id": "Apache-2.0",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "url": "https://github.com/acme/acme-app",
+          "type": "vcs"
+        },
+        {
+          "url": "https://example.com/acme-app-2.0.0-source.tar.gz",
+          "type": "source-distribution",
+          "hashes": [
+            {
+              "alg": "SHA-256",
+              "content": "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+            }
+          ]
+        },
+        {
+          "url": "https://example.com/acme-app-2.0.0.tar.gz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-256",
+              "content": "abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890"
+            }
+          ]
+        },
+        {
+          "url": "https://acme.example.com/.well-known/security.txt",
+          "type": "rfc-9116"
+        }
+      ],
+      "properties": [
+        {
+          "name": "bsi:component:filename",
+          "value": "acme-app-2.0.0.tar.gz"
+        },
+        {
+          "name": "bsi:component:executable",
+          "value": "true"
+        },
+        {
+          "name": "bsi:component:archive",
+          "value": "false"
+        },
+        {
+          "name": "bsi:component:structured",
+          "value": "false"
+        },
+        {
+          "name": "bsi:component:effectiveLicense",
+          "value": "Apache-2.0"
+        }
+      ]
+    }
+  },
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "comp-1",
+      "name": "acme-library",
+      "version": "1.0.0",
+      "manufacturer": {
+        "name": "Acme, Inc.",
+        "contact": [
+          {
+            "name": "Acme Professional Services",
+            "email": "professional.services@acme.example.com"
+          }
+        ]
+      },
+      "supplier": {
+        "name": "Acme Distribution",
+        "contact": [
+          {
+            "name": "Acme Distribution Team",
+            "email": "distribution@acme.example.com"
+          }
+        ]
+      },
+      "purl": "pkg:golang/github.com/acme/acme-library@v1.0.0",
+      "cpe": "cpe:2.3:a:acme:acme-library:1.0.0:*:*:*:*:*:*:*",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0",
+            "acknowledgement": "concluded"
+          }
+        },
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "url": "https://github.com/acme/acme-library",
+          "type": "vcs"
+        },
+        {
+          "url": "https://example.com/acme-library-1.0.0-source.tar.gz",
+          "type": "source-distribution",
+          "hashes": [
+            {
+              "alg": "SHA-256",
+              "content": "aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899"
+            }
+          ]
+        },
+        {
+          "url": "https://example.com/acme-library-1.0.0.jar",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-256",
+              "content": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
+            }
+          ]
+        },
+        {
+          "url": "https://acme.example.com/.well-known/security.txt",
+          "type": "rfc-9116"
+        }
+      ],
+      "properties": [
+        {
+          "name": "bsi:component:filename",
+          "value": "acme-library-1.0.0.jar"
+        },
+        {
+          "name": "bsi:component:executable",
+          "value": "false"
+        },
+        {
+          "name": "bsi:component:archive",
+          "value": "false"
+        },
+        {
+          "name": "bsi:component:structured",
+          "value": "false"
+        },
+        {
+          "name": "bsi:component:effectiveLicense",
+          "value": "Apache-2.0"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "pkg:golang/github.com/acme/acme-app@2.0.0",
+      "dependsOn": [
+        "comp-1"
+      ]
+    },
+    {
+      "ref": "comp-1",
+      "dependsOn": []
+    }
+  ]
+}

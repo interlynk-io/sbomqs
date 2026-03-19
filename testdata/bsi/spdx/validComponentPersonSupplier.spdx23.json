@@ -1,0 +1,21 @@
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "acme-app-sbom",
+  "dataLicense": "CC0-1.0",
+  "documentNamespace": "https://example.com/sbom/acme-app-1.0.0",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": ["Tool: sbomqs-1.0.0"]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-acme-library",
+      "name": "acme-library",
+      "versionInfo": "1.0.0",
+      "downloadLocation": "https://example.com/acme-library-1.0.0.tar.gz",
+      "filesAnalyzed": false,
+      "supplier": "Person: Samantha Wright (samantha.wright@example.com)"
+    }
+  ]
+}
