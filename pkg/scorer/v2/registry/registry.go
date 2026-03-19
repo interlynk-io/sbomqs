@@ -958,7 +958,7 @@ var profileBSI21Spec = catalog.ProfSpec{
 		{Key: "comp_source_code_url", Name: "Source Code URI", Required: false, Additional: true, Description: "externalReferences type=source-distribution URL", Evaluate: profiles.BSIV21CompSourceCodeURI},
 		{Key: "comp_download_url", Name: "Deployable Form URI", Required: false, Additional: true, Description: "externalReferences type=distribution URL", Evaluate: profiles.BSIV21CompDownloadURI},
 		{Key: "comp_other_identifiers", Name: "Unique Identifiers", Required: false, Additional: true, Description: "CPE, SWID, or purl", Evaluate: profiles.BSIV21CompOtherIdentifiers},
-		{Key: "comp_concluded_license", Name: "Concluded/Original Licences", Required: false, Additional: true, Description: "Declared licence (acknowledgement=declared)", Evaluate: profiles.BSIV21CompOriginalLicences},
+		{Key: "comp_original_licenses", Name: "Declared/Original Licences", Required: false, Additional: true, Description: "Declared licence (acknowledgement=declared)", Evaluate: profiles.BSIV21CompOriginalLicences},
 
 		// Optional(§5.4) (MAY) Component fields
 		{Key: "comp_effective_license", Name: "Effective Licence", Required: false, Additional: false, Description: "bsi:component:effectiveLicense property", Evaluate: profiles.BSIV21CompEffectiveLicence},

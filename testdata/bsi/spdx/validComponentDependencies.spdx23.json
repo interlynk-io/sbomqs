@@ -1,0 +1,51 @@
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "acme-app-sbom",
+  "dataLicense": "CC0-1.0",
+  "documentNamespace": "https://example.com/sbom/acme-app-1.0.0",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": ["Tool: sbomqs-1.0.0"]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-acme-app",
+      "name": "acme-app",
+      "versionInfo": "1.0.0",
+      "downloadLocation": "https://example.com/acme-app-1.0.0.tar.gz",
+      "filesAnalyzed": false
+    },
+    {
+      "SPDXID": "SPDXRef-lib-a",
+      "name": "lib-a",
+      "versionInfo": "2.1.0",
+      "downloadLocation": "https://example.com/lib-a-2.1.0.tar.gz",
+      "filesAnalyzed": false
+    },
+    {
+      "SPDXID": "SPDXRef-lib-b",
+      "name": "lib-b",
+      "versionInfo": "3.4.5",
+      "downloadLocation": "https://example.com/lib-b-3.4.5.tar.gz",
+      "filesAnalyzed": false
+    }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relationshipType": "DESCRIBES",
+      "relatedSpdxElement": "SPDXRef-acme-app"
+    },
+    {
+      "spdxElementId": "SPDXRef-acme-app",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-lib-a"
+    },
+    {
+      "spdxElementId": "SPDXRef-acme-app",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-lib-b"
+    }
+  ]
+}

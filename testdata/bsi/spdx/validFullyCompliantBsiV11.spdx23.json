@@ -1,0 +1,84 @@
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "acme-app-sbom",
+  "dataLicense": "CC0-1.0",
+  "documentNamespace": "https://example.com/sbom/acme-app-2.0.0-abc123",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": [
+      "Organization: Acme, Inc. (contact@acme.example.com)",
+      "Tool: sbomqs-1.0.0"
+    ]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-acme-app",
+      "name": "acme-app",
+      "versionInfo": "2.0.0",
+      "downloadLocation": "https://example.com/acme-app-2.0.0.tar.gz",
+      "filesAnalyzed": false,
+      "supplier": "Organization: Acme, Inc. (contact@acme.example.com)",
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890"
+        }
+      ],
+      "sourceInfo": "https://github.com/acme/acme-app",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/acme/acme-app@v2.0.0"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:acme:acme-app:2.0.0:*:*:*:*:*:*:*"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-acme-library",
+      "name": "acme-library",
+      "versionInfo": "1.0.0",
+      "downloadLocation": "https://example.com/acme-library-1.0.0.tar.gz",
+      "filesAnalyzed": true,
+      "supplier": "Person: Samantha Wright (samantha.wright@example.com)",
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
+        }
+      ],
+      "packageVerificationCode": {
+        "packageVerificationCodeValue": "d6a770ba38583ed4bb4525bd96e50461655d2758"
+      },
+      "sourceInfo": "https://github.com/example/acme-library",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/example/acme-library@v1.0.0"
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relationshipType": "DESCRIBES",
+      "relatedSpdxElement": "SPDXRef-acme-app"
+    },
+    {
+      "spdxElementId": "SPDXRef-acme-app",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-acme-library"
+    }
+  ]
+}

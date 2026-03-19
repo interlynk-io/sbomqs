@@ -1,0 +1,45 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {
+    "authors": [
+      {
+        "bom-ref": "author-1",
+        "name": "Samantha Wright",
+        "email": "samantha.wright@example.com"
+      }
+    ],
+    "timestamp": "2025-01-01T00:00:00Z"
+  },
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "comp-1",
+      "name": "acme-library",
+      "version": "1.0.0"
+    }
+  ],
+  "vulnerabilities": [
+    {
+      "bom-ref": "vuln-1",
+      "id": "CVE-2021-44228",
+      "source": {
+        "name": "NVD",
+        "url": "https://nvd.nist.gov/vuln/detail/CVE-2021-44228"
+      },
+      "ratings": [
+        {
+          "source": {
+            "name": "NVD"
+          },
+          "score": 10.0,
+          "severity": "critical",
+          "method": "CVSSv31"
+        }
+      ],
+      "description": "Apache Log4j2 allows remote code execution"
+    }
+  ]
+}

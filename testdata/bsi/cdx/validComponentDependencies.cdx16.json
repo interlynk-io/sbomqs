@@ -1,0 +1,57 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {
+    "component": {
+      "type": "application",
+      "bom-ref": "pkg:golang/github.com/acme/acme-app@2.0.0",
+      "name": "acme-app",
+      "version": "2.0.0"
+    }
+  },
+  "components": [
+    {
+      "type": "application",
+      "bom-ref": "pkg:generic/my-app@1.0.0",
+      "name": "my-app",
+      "version": "1.0.0"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/lib-a@2.1.0",
+      "name": "lib-a",
+      "version": "2.1.0"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/lib-b@3.4.5",
+      "name": "lib-b",
+      "version": "3.4.5"
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "pkg:golang/github.com/acme/acme-app@2.0.0",
+      "dependsOn": [
+        "pkg:generic/my-app@1.0.0"
+      ]
+    },
+    {
+      "ref": "pkg:generic/my-app@1.0.0",
+      "dependsOn": [
+        "pkg:generic/lib-a@2.1.0",
+        "pkg:generic/lib-b@3.4.5"
+      ]
+    },
+    {
+      "ref": "pkg:generic/lib-a@2.1.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:generic/lib-b@3.4.5",
+      "dependsOn": []
+    }
+  ]
+}
