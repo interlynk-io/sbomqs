@@ -15,7 +15,7 @@
       "versionInfo": "1.0.0",
       "downloadLocation": "https://example.com/acme-library-1.0.0.tar.gz",
       "filesAnalyzed": false,
-      "supplier": "Organization: Acme, Inc. (https://acme.example.com)"
+      "supplier": "Organization: Acme, Inc. (contact@acme.example.com)"
     }
   ]
 }
