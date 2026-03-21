@@ -248,14 +248,14 @@ func BSIV20CompDependencies(doc sbom.Document) catalog.ProfFeatScore {
 		if _, ok := componentMap[r.GetFrom()]; !ok {
 			return catalog.ProfFeatScore{
 				Score:  0.0,
-				Desc:   "Dependency source references undefined component.",
+				Desc:   "Broken dependency: source ref points to undefined component.",
 				Ignore: false,
 			}
 		}
 		if _, ok := componentMap[r.GetTo()]; !ok {
 			return catalog.ProfFeatScore{
 				Score:  0.0,
-				Desc:   "Dependency target references undefined component.",
+				Desc:   "Broken dependency: target ref points to undefined component.",
 				Ignore: false,
 			}
 		}
@@ -288,13 +288,17 @@ func BSIV20CompDependencies(doc sbom.Document) catalog.ProfFeatScore {
 	dfs(primary.GetID())
 
 	// 4. Ensure no orphan components
+	orphanCount := 0
 	for id := range componentMap {
 		if !visited[id] {
-			return catalog.ProfFeatScore{
-				Score:  5.0,
-				Desc:   "Some components are not reachable from the primary component.",
-				Ignore: false,
-			}
+			orphanCount++
+		}
+	}
+	if orphanCount > 0 {
+		return catalog.ProfFeatScore{
+			Score:  5.0,
+			Desc:   fmt.Sprintf("Dependency graph incomplete: %d orphan component(s) found.", orphanCount),
+			Ignore: false,
 		}
 	}
 

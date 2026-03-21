@@ -2631,7 +2631,7 @@ func TestBSIV11CompDependencies(t *testing.T) {
 		got := BSIV11CompDependencies(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "Dependency source references undefined component.", got.Desc)
+		assert.Equal(t, "Broken dependency: source ref points to undefined component.", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2643,7 +2643,7 @@ func TestBSIV11CompDependencies(t *testing.T) {
 		got := BSIV11CompDependencies(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "Dependency source references undefined component.", got.Desc)
+		assert.Equal(t, "Broken dependency: source ref points to undefined component.", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2655,7 +2655,7 @@ func TestBSIV11CompDependencies(t *testing.T) {
 		got := BSIV11CompDependencies(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "Dependency target references undefined component.", got.Desc)
+		assert.Equal(t, "Broken dependency: target ref points to undefined component.", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2667,7 +2667,7 @@ func TestBSIV11CompDependencies(t *testing.T) {
 		got := BSIV11CompDependencies(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "Dependency target references undefined component.", got.Desc)
+		assert.Equal(t, "Broken dependency: target ref points to undefined component.", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2679,7 +2679,7 @@ func TestBSIV11CompDependencies(t *testing.T) {
 		got := BSIV11CompDependencies(doc)
 
 		assert.InDelta(t, 5.0, got.Score, 1e-9)
-		assert.Equal(t, "Some components are not reachable from the primary component.", got.Desc)
+		assert.Equal(t, "Dependency graph incomplete: 1 orphan component(s) found.", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2691,7 +2691,7 @@ func TestBSIV11CompDependencies(t *testing.T) {
 		got := BSIV11CompDependencies(doc)
 
 		assert.InDelta(t, 5.0, got.Score, 1e-9)
-		assert.Equal(t, "Some components are not reachable from the primary component.", got.Desc)
+		assert.Equal(t, "Dependency graph incomplete: 1 orphan component(s) found.", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
