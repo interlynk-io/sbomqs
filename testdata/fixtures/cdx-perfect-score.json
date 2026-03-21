@@ -55,7 +55,19 @@
       "supplier": {
         "name": "Test Corp",
         "url": ["https://testcorp.com"]
-      }
+      },
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://registry.example.com/test-application-1.0.0.tar.gz",
+          "hashes": [
+            {
+              "alg": "SHA-256",
+              "content": "d2ca1ac5e3c0efa0e3c2e8e92f3a7f3d3f9c8b8e7f6d5c4b3a2918273645362718"
+            }
+          ]
+        }
+      ]
     },
     "licenses": [
       {
@@ -98,6 +110,16 @@
         {
           "type": "vcs",
           "url": "https://github.com/awesome/library"
+        },
+        {
+          "type": "distribution",
+          "url": "https://registry.example.com/awesome-library-2.3.4.jar",
+          "hashes": [
+            {
+              "alg": "SHA-256",
+              "content": "a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456"
+            }
+          ]
         }
       ]
     },
@@ -137,6 +159,16 @@
         {
           "type": "vcs",
           "url": "https://github.com/utils/helper"
+        },
+        {
+          "type": "distribution",
+          "url": "https://registry.example.com/utility-helper-3.2.1.jar",
+          "hashes": [
+            {
+              "alg": "SHA-256",
+              "content": "fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210"
+            }
+          ]
         }
       ]
     }

@@ -20,7 +20,6 @@ import (
 
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/catalog"
-	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/common"
 )
 
 // BSIV20SpecVersion checks that the SBOM format meets BSI v2.0 minimum version requirements.
@@ -335,65 +334,51 @@ func BSIV20CompAssociatedLicenses(doc sbom.Document) catalog.ProfFeatScore {
 REQUIRED FIELD: BSIV20CompDeployableHash
 
 BSI 5.2.2: "Cryptographically secure checksum (hash value) of the deployed/deployable
-component (i.e. as a file on a mass storage device) as SHA-512."
-
-KEY CHANGE vs v1.1:
-  - v1.1 required SHA-256 of the "executable" component.
-  - v2.0.0 requires SHA-512 of the "deployable" component.
-  - "Deployable" broadens scope to executables, archives, and other delivered files.
-
-Accepted hash:
-  - SHA-512 ONLY.  SHA-256, SHA-1, MD5, and all other algorithms do NOT satisfy this.
+component (i.e. as a file on a mass storage device)."
 
 SBOM Mappings:
-SPDX: PackageChecksum with algorithm SHA512
-CDX:  components[].hashes[].alg = "SHA-512"
+  - CDX:  externalReferences[type=distribution or distribution-intake].hashes[]
+  - SPDX: PackageChecksum (component-level checksums)
 */
 func BSIV20CompDeployableHash(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
 	total := len(comps)
 
 	if total == 0 {
-		return catalog.ProfFeatScore{
-			Score:  0.0,
-			Desc:   "no components found in SBOM.",
-			Ignore: false,
-		}
+		return catalog.ProfFeatScore{Score: 0.0, Desc: "no components found"}
 	}
+
+	spec := strings.TrimSpace(strings.ToLower(doc.Spec().GetSpecType()))
 
 	withData := 0
-	for _, comp := range comps {
-		for _, checksum := range comp.GetChecksums() {
-			algo := common.NormalizeAlgoName(checksum.GetAlgo())
-			value := strings.TrimSpace(checksum.GetContent())
-			if algo == "SHA512" && value != "" {
-				withData++
-				break
+	for _, c := range comps {
+		switch spec {
+		case string(sbom.SBOMSpecCDX):
+			// CDX: hash must be on a distribution or distribution-intake external reference
+			for _, er := range c.ExternalReferences() {
+				t := er.GetRefType()
+				if t == "distribution" || t == "distribution-intake" {
+					for _, h := range er.GetRefHashes() {
+						if strings.TrimSpace(h.GetContent()) != "" {
+							withData++
+							goto nextComp
+						}
+					}
+				}
+			}
+		case string(sbom.SBOMSpecSPDX):
+			// SPDX: PackageChecksum directly on the package
+			for _, chk := range c.GetChecksums() {
+				if strings.TrimSpace(chk.GetContent()) != "" {
+					withData++
+					goto nextComp
+				}
 			}
 		}
+	nextComp:
 	}
 
-	if withData == total {
-		return catalog.ProfFeatScore{
-			Score:  10.0,
-			Desc:   "SHA-512 hash declared for all components.",
-			Ignore: false,
-		}
-	}
-
-	if withData == 0 {
-		return catalog.ProfFeatScore{
-			Score:  0.0,
-			Desc:   "no components declare a SHA-512 deployable hash.",
-			Ignore: false,
-		}
-	}
-
-	return catalog.ProfFeatScore{
-		Score:  float64(withData) / float64(total) * 10.0,
-		Desc:   fmt.Sprintf("%d/%d components declare a SHA-512 deployable hash.", withData, total),
-		Ignore: false,
-	}
+	return componentScore(withData, total, "deployable component hash")
 }
 
 /*
