@@ -822,32 +822,121 @@ func TestBSIV20CompAssociatedLicenses(t *testing.T) {
 // TestBSIV20CompDeployableHash
 // ===========================================================================
 
-// CDX: two components — one with SHA-512, one without — for partial score test.
-// No metadata.component so only the two entries in components[] are counted.
-var cdxTwoCompsOneSHA512 = []byte(`
+// CDX: one component with a distribution externalReference that has a SHA-256 hash.
+var cdxCompWithDistributionExtRefHash = []byte(`
 {
   "bomFormat": "CycloneDX",
   "specVersion": "1.6",
-  "serialNumber": "urn:uuid:bsiv20-cdx-twohash-001",
+  "serialNumber": "urn:uuid:bsiv20-cdx-dist-hash-001",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "comp-dist-1",
+      "name": "lib-with-dist-hash",
+      "version": "1.0.0",
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://example.com/lib-1.0.0.jar",
+          "hashes": [
+            {
+              "alg": "SHA-256",
+              "content": "a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+`)
+
+// CDX: one component with a distribution-intake externalReference that has a SHA-256 hash.
+var cdxCompWithDistributionIntakeExtRefHash = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:bsiv20-cdx-dist-intake-hash-001",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "comp-dist-intake-1",
+      "name": "lib-with-dist-intake-hash",
+      "version": "1.0.0",
+      "externalReferences": [
+        {
+          "type": "distribution-intake",
+          "url": "https://intake.example.com/lib-1.0.0.jar",
+          "hashes": [
+            {
+              "alg": "SHA-256",
+              "content": "b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef1234567a"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+`)
+
+// CDX: two components — only one has a distribution externalReference with a hash.
+var cdxTwoCompsOneWithDistributionExtRefHash = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:bsiv20-cdx-two-dist-001",
   "version": 1,
   "components": [
     {
       "type": "library",
       "bom-ref": "comp-a",
-      "name": "lib-with-hash",
+      "name": "lib-with-dist-hash",
       "version": "1.0.0",
-      "hashes": [
+      "externalReferences": [
         {
-          "alg": "SHA-512",
-          "content": "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e"
+          "type": "distribution",
+          "url": "https://example.com/lib-1.0.0.jar",
+          "hashes": [
+            {
+              "alg": "SHA-256",
+              "content": "a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456"
+            }
+          ]
         }
       ]
     },
     {
       "type": "library",
       "bom-ref": "comp-b",
-      "name": "lib-without-hash",
+      "name": "lib-without-dist-hash",
       "version": "2.0.0"
+    }
+  ]
+}
+`)
+
+// CDX: one component with a distribution externalReference but no hashes.
+var cdxCompWithDistributionExtRefNoHash = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:bsiv20-cdx-dist-nohash-001",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "comp-dist-nohash",
+      "name": "lib-dist-no-hash",
+      "version": "1.0.0",
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://example.com/lib-1.0.0.jar"
+        }
+      ]
     }
   ]
 }
@@ -856,129 +945,103 @@ var cdxTwoCompsOneSHA512 = []byte(`
 func TestBSIV20CompDeployableHash(t *testing.T) {
 	ctx := context.Background()
 
-	t.Run("cdxPrimaryCompWithSHA512HashOnly", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxPrimaryCompWithSHA512HashOnly, sbom.Signature{})
+	// CDX: distribution ext ref with hash → score 10.0
+	t.Run("cdxDistributionExtRefWithHash", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithDistributionExtRefHash, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := BSIV20CompDeployableHash(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "SHA-512 hash declared for all components.", got.Desc)
+		assert.Equal(t, "deployable component hash declared for all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
-	t.Run("spdxPrimaryCompWithSHA512Hash", func(t *testing.T) {
+	// CDX: distribution-intake ext ref with hash → score 10.0
+	t.Run("cdxDistributionIntakeExtRefWithHash", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithDistributionIntakeExtRefHash, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV20CompDeployableHash(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "deployable component hash declared for all components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// CDX: 1 of 2 components has distribution ext ref hash → partial score 5.0
+	t.Run("cdxTwoCompsOneWithDistributionExtRefHash", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxTwoCompsOneWithDistributionExtRefHash, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV20CompDeployableHash(doc)
+
+		assert.InDelta(t, 5.0, got.Score, 1e-9)
+		assert.Equal(t, "1/2 components declare deployable component hash", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// CDX: distribution ext ref present but no hash → score 0.0
+	t.Run("cdxDistributionExtRefNoHash", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithDistributionExtRefNoHash, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV20CompDeployableHash(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "no components declare deployable component hash", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// CDX: component-level SHA-512 hash only (no distribution ext ref) → score 0.0
+	t.Run("cdxComponentLevelHashOnlyNoExtRef", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxPrimaryCompWithSHA512HashOnly, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV20CompDeployableHash(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "no components declare deployable component hash", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// SPDX: PackageChecksum SHA-512 → score 10.0 (any checksum passes for SPDX)
+	t.Run("spdxWithSHA512Checksum", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxPrimaryCompWithSHA512Hash, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := BSIV20CompDeployableHash(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "SHA-512 hash declared for all components.", got.Desc)
+		assert.Equal(t, "deployable component hash declared for all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
-	t.Run("cdxPrimaryCompWithSHA256Hash", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxPrimaryCompWithSHA256Hash, sbom.Signature{})
-		require.NoError(t, err)
-
-		got := BSIV20CompDeployableHash(doc)
-
-		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "no components declare a SHA-512 deployable hash.", got.Desc)
-		assert.False(t, got.Ignore)
-	})
-
-	t.Run("spdxPrimaryCompWithSHA256Hash", func(t *testing.T) {
+	// SPDX: PackageChecksum SHA-256 → score 10.0 (any checksum passes for SPDX)
+	t.Run("spdxWithSHA256Checksum", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxPrimaryCompWithSHA256Hash, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := BSIV20CompDeployableHash(doc)
 
-		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "no components declare a SHA-512 deployable hash.", got.Desc)
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "deployable component hash declared for all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
-	t.Run("cdxPrimaryCompWithMD5HashOnly", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxPrimaryCompWithMD5HashOnly, sbom.Signature{})
-		require.NoError(t, err)
-
-		got := BSIV20CompDeployableHash(doc)
-
-		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "no components declare a SHA-512 deployable hash.", got.Desc)
-		assert.False(t, got.Ignore)
-	})
-
-	t.Run("cdxPrimaryCompWithSHA1HashOnly", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxPrimaryCompWithSHA1HashOnly, sbom.Signature{})
-		require.NoError(t, err)
-
-		got := BSIV20CompDeployableHash(doc)
-
-		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "no components declare a SHA-512 deployable hash.", got.Desc)
-		assert.False(t, got.Ignore)
-	})
-
-	t.Run("cdxPrimaryCompWithNoHash", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxPrimaryCompWithNoHash, sbom.Signature{})
-		require.NoError(t, err)
-
-		got := BSIV20CompDeployableHash(doc)
-
-		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "no components declare a SHA-512 deployable hash.", got.Desc)
-		assert.False(t, got.Ignore)
-	})
-
-	t.Run("spdxPrimaryCompWithNoHash", func(t *testing.T) {
+	// SPDX: no PackageChecksum → score 0.0
+	t.Run("spdxNoChecksum", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxPrimaryCompWithNoHash, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := BSIV20CompDeployableHash(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "no components declare a SHA-512 deployable hash.", got.Desc)
+		assert.Equal(t, "no components declare deployable component hash", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
-	t.Run("cdxPrimaryCompWithMultipleHashesIncludingSHA256", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxPrimaryCompWithMultipleHashesIncludingSHA256, sbom.Signature{})
-		require.NoError(t, err)
-
-		got := BSIV20CompDeployableHash(doc)
-
-		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "no components declare a SHA-512 deployable hash.", got.Desc)
-		assert.False(t, got.Ignore)
-	})
-
-	t.Run("spdxPrimaryCompWithMultipleHashesIncludingSHA256", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxPrimaryCompWithMultipleHashesIncludingSHA256, sbom.Signature{})
-		require.NoError(t, err)
-
-		got := BSIV20CompDeployableHash(doc)
-
-		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "no components declare a SHA-512 deployable hash.", got.Desc)
-		assert.False(t, got.Ignore)
-	})
-
-	// 1 of 2 components has SHA-512 — partial score
-	t.Run("cdxTwoCompsOneSHA512", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxTwoCompsOneSHA512, sbom.Signature{})
-		require.NoError(t, err)
-
-		got := BSIV20CompDeployableHash(doc)
-
-		assert.InDelta(t, 5.0, got.Score, 1e-9)
-		assert.Equal(t, "1/2 components declare a SHA-512 deployable hash.", got.Desc)
-		assert.False(t, got.Ignore)
-	})
-
-	// No components at all
+	// No components at all → score 0.0
 	t.Run("cdxNoComponents", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthor, sbom.Signature{})
 		require.NoError(t, err)
@@ -986,7 +1049,7 @@ func TestBSIV20CompDeployableHash(t *testing.T) {
 		got := BSIV20CompDeployableHash(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "no components found in SBOM.", got.Desc)
+		assert.Equal(t, "no components found", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 }

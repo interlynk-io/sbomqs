@@ -93,15 +93,15 @@ func BSIV21CompEffectiveLicence(doc sbom.Document) catalog.ProfFeatScore {
 	return bsiPropertyCheck(doc, "bsi:component:effectiveLicense", "effective licence")
 }
 
-// BSIV21CompDeployableHash checks that components have a hash on their distribution external reference.
-// BSI v2.1 maps this to externalReferences[].hashes[] with type="distribution".
+// BSIV21CompDeployableHash checks that components have a hash on their distribution or distribution-intake external reference.
+// BSI v2.1 maps this to externalReferences[].hashes[] with type="distribution" or "distribution-intake".
 func BSIV21CompDeployableHash(doc sbom.Document) catalog.ProfFeatScore {
-	return extRefHashCheck(doc, "distribution", "deployable component hash")
+	return extRefHashCheck(doc, "deployable component hash", "distribution", "distribution-intake")
 }
 
-// BSIV21CompSourceHash checks that components have a hash on their source-distribution external reference.
+// BSIV21CompSourceHash checks that components have a hash on their source-distribution or vcs external reference.
 func BSIV21CompSourceHash(doc sbom.Document) catalog.ProfFeatScore {
-	return extRefHashCheck(doc, "source-distribution", "source code hash")
+	return extRefHashCheck(doc, "source code hash", "source-distribution", "vcs")
 }
 
 // BSIV21CompDistributionLicence checks that components have concluded licences
@@ -175,17 +175,17 @@ func BSIV21CompOtherIdentifiers(doc sbom.Document) catalog.ProfFeatScore {
 
 // BSIV21CompSecurityTxtURL checks that components have an externalReference of type rfc-9116.
 func BSIV21CompSecurityTxtURL(doc sbom.Document) catalog.ProfFeatScore {
-	return extRefURLCheck(doc, "rfc-9116", "security.txt URL")
+	return extRefURLCheck(doc, "security.txt URL", "rfc-9116")
 }
 
-// BSIV21CompDownloadURI checks that components have an externalReference of type distribution with a URL.
+// BSIV21CompDownloadURI checks that components have an externalReference of type distribution or distribution-intake with a URL.
 func BSIV21CompDownloadURI(doc sbom.Document) catalog.ProfFeatScore {
-	return extRefURLCheck(doc, "distribution", "deployable form URI")
+	return extRefURLCheck(doc, "deployable form URI", "distribution", "distribution-intake")
 }
 
-// BSIV21CompSourceCodeURI checks that components have an externalReference of type source-distribution with a URL.
+// BSIV21CompSourceCodeURI checks that components have an externalReference of type source-distribution or vcs with a URL.
 func BSIV21CompSourceCodeURI(doc sbom.Document) catalog.ProfFeatScore {
-	return extRefURLCheck(doc, "source-distribution", "source code URI")
+	return extRefURLCheck(doc, "source code URI", "source-distribution", "vcs")
 }
 
 // BSIV21SBOMURI checks the SBOM-URI field (serialNumber for CDX, namespace for SPDX).
@@ -237,8 +237,8 @@ func bsiPropertyCheck(doc sbom.Document, propertyName, fieldLabel string) catalo
 	return componentScore(valid, total, fieldLabel)
 }
 
-// extRefURLCheck checks that components have an externalReference of a given type with a non-empty URL.
-func extRefURLCheck(doc sbom.Document, refType, fieldLabel string) catalog.ProfFeatScore {
+// extRefURLCheck checks that components have an externalReference of one of the given types with a non-empty URL.
+func extRefURLCheck(doc sbom.Document, fieldLabel string, refTypes ...string) catalog.ProfFeatScore {
 	comps := doc.Components()
 	total := len(comps)
 
@@ -248,8 +248,10 @@ func extRefURLCheck(doc sbom.Document, refType, fieldLabel string) catalog.ProfF
 
 	valid := lo.CountBy(comps, func(c sbom.GetComponent) bool {
 		for _, er := range c.ExternalReferences() {
-			if er.GetRefType() == refType && strings.TrimSpace(er.GetRefLocator()) != "" {
-				return true
+			for _, refType := range refTypes {
+				if er.GetRefType() == refType && strings.TrimSpace(er.GetRefLocator()) != "" {
+					return true
+				}
 			}
 		}
 		return false
@@ -258,8 +260,8 @@ func extRefURLCheck(doc sbom.Document, refType, fieldLabel string) catalog.ProfF
 	return componentScore(valid, total, fieldLabel)
 }
 
-// extRefHashCheck checks that components have an externalReference of a given type with at least one hash.
-func extRefHashCheck(doc sbom.Document, refType, fieldLabel string) catalog.ProfFeatScore {
+// extRefHashCheck checks that components have an externalReference of one of the given types with at least one hash.
+func extRefHashCheck(doc sbom.Document, fieldLabel string, refTypes ...string) catalog.ProfFeatScore {
 	comps := doc.Components()
 	total := len(comps)
 
@@ -269,10 +271,12 @@ func extRefHashCheck(doc sbom.Document, refType, fieldLabel string) catalog.Prof
 
 	valid := lo.CountBy(comps, func(c sbom.GetComponent) bool {
 		for _, er := range c.ExternalReferences() {
-			if er.GetRefType() == refType {
-				for _, h := range er.GetRefHashes() {
-					if strings.TrimSpace(h.GetContent()) != "" {
-						return true
+			for _, refType := range refTypes {
+				if er.GetRefType() == refType {
+					for _, h := range er.GetRefHashes() {
+						if strings.TrimSpace(h.GetContent()) != "" {
+							return true
+						}
 					}
 				}
 			}
