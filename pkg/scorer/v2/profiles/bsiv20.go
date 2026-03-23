@@ -20,6 +20,7 @@ import (
 
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/catalog"
+	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/common"
 )
 
 // BSIV20SpecVersion checks that the SBOM format meets BSI v2.0 minimum version requirements.
@@ -334,7 +335,10 @@ func BSIV20CompAssociatedLicenses(doc sbom.Document) catalog.ProfFeatScore {
 REQUIRED FIELD: BSIV20CompDeployableHash
 
 BSI 5.2.2: "Cryptographically secure checksum (hash value) of the deployed/deployable
-component (i.e. as a file on a mass storage device)."
+component (i.e. as a file on a mass storage device) as SHA-512; see also section 3.2.1"
+
+Accepted algorithm: SHA-512 ONLY.
+SHA-256, MD5, SHA-1, and other algorithms do NOT satisfy the BSI v2.0 requirement.
 
 SBOM Mappings:
   - CDX:  externalReferences[type=distribution or distribution-intake].hashes[]
@@ -359,7 +363,9 @@ func BSIV20CompDeployableHash(doc sbom.Document) catalog.ProfFeatScore {
 				t := er.GetRefType()
 				if t == "distribution" || t == "distribution-intake" {
 					for _, h := range er.GetRefHashes() {
-						if strings.TrimSpace(h.GetContent()) != "" {
+						algo := common.NormalizeAlgoName(h.GetAlgo())
+						value := strings.TrimSpace(h.GetContent())
+						if algo == "SHA512" && value != "" {
 							withData++
 							goto nextComp
 						}
@@ -369,7 +375,9 @@ func BSIV20CompDeployableHash(doc sbom.Document) catalog.ProfFeatScore {
 		case string(sbom.SBOMSpecSPDX):
 			// SPDX: PackageChecksum directly on the package
 			for _, chk := range c.GetChecksums() {
-				if strings.TrimSpace(chk.GetContent()) != "" {
+				algo := common.NormalizeAlgoName(chk.GetAlgo())
+				value := strings.TrimSpace(chk.GetContent())
+				if algo == "SHA512" && value != "" {
 					withData++
 					goto nextComp
 				}
