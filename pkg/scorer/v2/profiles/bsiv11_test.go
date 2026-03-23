@@ -3558,7 +3558,7 @@ func TestBSIV11CompLicense(t *testing.T) {
 
 // BSIV11CompExecutableHash test cases
 
-// CDX: primary component with a valid SHA-256 hash
+// CDX: primary component with a valid SHA-256 hash on a distribution external reference
 var cdxPrimaryCompWithSHA256Hash = []byte(`
 {
   "bomFormat": "CycloneDX",
@@ -3571,10 +3571,16 @@ var cdxPrimaryCompWithSHA256Hash = []byte(`
       "type": "application",
       "name": "my-app",
       "version": "1.0.0",
-      "hashes": [
+      "externalReferences": [
         {
-          "alg": "SHA-256",
-          "content": "aec070645fe53ee3b3763059376134f058cc337247c978616ddbb"
+          "type": "distribution",
+          "url": "https://example.com/my-app-1.0.0.tar.gz",
+          "hashes": [
+            {
+              "alg": "SHA-256",
+              "content": "aec070645fe53ee3b3763059376134f058cc337247c978616ddbb"
+            }
+          ]
         }
       ]
     }
@@ -3583,7 +3589,7 @@ var cdxPrimaryCompWithSHA256Hash = []byte(`
 }
 `)
 
-// CDX: primary component with MD5 hash only (not SHA-256)
+// CDX: primary component with MD5 hash only on distribution external reference (not SHA-256)
 var cdxPrimaryCompWithMD5HashOnly = []byte(`
 {
   "bomFormat": "CycloneDX",
@@ -3596,10 +3602,16 @@ var cdxPrimaryCompWithMD5HashOnly = []byte(`
       "type": "application",
       "name": "my-app",
       "version": "1.0.0",
-      "hashes": [
+      "externalReferences": [
         {
-          "alg": "MD5",
-          "content": "d41d8cd98f00b204e9800998ecf8427e"
+          "type": "distribution",
+          "url": "https://example.com/my-app-1.0.0.tar.gz",
+          "hashes": [
+            {
+              "alg": "MD5",
+              "content": "d41d8cd98f00b204e9800998ecf8427e"
+            }
+          ]
         }
       ]
     }
@@ -3608,7 +3620,7 @@ var cdxPrimaryCompWithMD5HashOnly = []byte(`
 }
 `)
 
-// CDX: primary component with SHA-1 hash only (not SHA-256)
+// CDX: primary component with SHA-1 hash only on distribution external reference (not SHA-256)
 var cdxPrimaryCompWithSHA1HashOnly = []byte(`
 {
   "bomFormat": "CycloneDX",
@@ -3621,10 +3633,16 @@ var cdxPrimaryCompWithSHA1HashOnly = []byte(`
       "type": "application",
       "name": "my-app",
       "version": "1.0.0",
-      "hashes": [
+      "externalReferences": [
         {
-          "alg": "SHA-1",
-          "content": "da39a3ee5e6b4b0d3255bfef95601890afd80709"
+          "type": "distribution",
+          "url": "https://example.com/my-app-1.0.0.tar.gz",
+          "hashes": [
+            {
+              "alg": "SHA-1",
+              "content": "da39a3ee5e6b4b0d3255bfef95601890afd80709"
+            }
+          ]
         }
       ]
     }
@@ -3633,7 +3651,7 @@ var cdxPrimaryCompWithSHA1HashOnly = []byte(`
 }
 `)
 
-// CDX: primary component with SHA-512 hash only (not SHA-256)
+// CDX: primary component with SHA-512 hash only on distribution external reference (not SHA-256)
 var cdxPrimaryCompWithSHA512HashOnly = []byte(`
 {
   "bomFormat": "CycloneDX",
@@ -3646,10 +3664,16 @@ var cdxPrimaryCompWithSHA512HashOnly = []byte(`
       "type": "application",
       "name": "my-app",
       "version": "1.0.0",
-      "hashes": [
+      "externalReferences": [
         {
-          "alg": "SHA-512",
-          "content": "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e"
+          "type": "distribution",
+          "url": "https://example.com/my-app-1.0.0.tar.gz",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e"
+            }
+          ]
         }
       ]
     }
@@ -3658,7 +3682,7 @@ var cdxPrimaryCompWithSHA512HashOnly = []byte(`
 }
 `)
 
-// CDX: primary component with SHA-256 present but empty hash value
+// CDX: primary component with SHA-256 present but empty hash value on distribution external reference
 var cdxPrimaryCompWithSHA256EmptyValue = []byte(`
 {
   "bomFormat": "CycloneDX",
@@ -3671,10 +3695,16 @@ var cdxPrimaryCompWithSHA256EmptyValue = []byte(`
       "type": "application",
       "name": "my-app",
       "version": "1.0.0",
-      "hashes": [
+      "externalReferences": [
         {
-          "alg": "SHA-256",
-          "content": ""
+          "type": "distribution",
+          "url": "https://example.com/my-app-1.0.0.tar.gz",
+          "hashes": [
+            {
+              "alg": "SHA-256",
+              "content": ""
+            }
+          ]
         }
       ]
     }
@@ -3702,7 +3732,7 @@ var cdxPrimaryCompWithNoHash = []byte(`
 }
 `)
 
-// CDX: primary component with multiple hashes including SHA-256
+// CDX: primary component with multiple hashes including SHA-256 on distribution external reference
 var cdxPrimaryCompWithMultipleHashesIncludingSHA256 = []byte(`
 {
   "bomFormat": "CycloneDX",
@@ -3715,18 +3745,24 @@ var cdxPrimaryCompWithMultipleHashesIncludingSHA256 = []byte(`
       "type": "application",
       "name": "my-app",
       "version": "1.0.0",
-      "hashes": [
+      "externalReferences": [
         {
-          "alg": "MD5",
-          "content": "d41d8cd98f00b204e9800998ecf8427e"
-        },
-        {
-          "alg": "SHA-1",
-          "content": "da39a3ee5e6b4b0d3255bfef95601890afd80709"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "aec070645fe53ee3b3763059376134f058cc337247c978616ddbb"
+          "type": "distribution",
+          "url": "https://example.com/my-app-1.0.0.tar.gz",
+          "hashes": [
+            {
+              "alg": "MD5",
+              "content": "d41d8cd98f00b204e9800998ecf8427e"
+            },
+            {
+              "alg": "SHA-1",
+              "content": "da39a3ee5e6b4b0d3255bfef95601890afd80709"
+            },
+            {
+              "alg": "SHA-256",
+              "content": "aec070645fe53ee3b3763059376134f058cc337247c978616ddbb"
+            }
+          ]
         }
       ]
     }
@@ -3953,185 +3989,281 @@ var spdxPrimaryCompWithSHA256EmptyValue = []byte(`
 }
 `)
 
+// CDX: two components — one with SHA-256 in distribution ext ref, one without any hash.
+var cdxTwoCompsOneWithSHA256Hash = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:hash-cdx-0008",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/lib-a@1.0.0",
+      "name": "lib-a",
+      "version": "1.0.0",
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://example.com/lib-a-1.0.0.tar.gz",
+          "hashes": [
+            {
+              "alg": "SHA-256",
+              "content": "aec070645fe53ee3b3763059376134f058cc337247c978616ddbb"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/lib-b@2.0.0",
+      "name": "lib-b",
+      "version": "2.0.0"
+    }
+  ]
+}
+`)
+
+// SPDX: two packages — one with SHA256 checksum, one without.
+var spdxTwoCompsOneWithSHA256Hash = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "my-app-sbom",
+  "dataLicense": "CC0-1.0",
+  "documentNamespace": "urn:uuid:hash-spdx-0007",
+  "creationInfo": {
+    "creators": ["Tool: sbomqs"],
+    "created": "2026-01-01T00:00:00Z"
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-lib-a",
+      "name": "lib-a",
+      "versionInfo": "1.0.0",
+      "downloadLocation": "https://example.com",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "aec070645fe53ee3b3763059376134f058cc337247c978616ddbb"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-lib-b",
+      "name": "lib-b",
+      "versionInfo": "2.0.0",
+      "downloadLocation": "https://example.com"
+    }
+  ]
+}
+`)
+
 func TestBSIV11CompExecutableHash(t *testing.T) {
 	ctx := context.Background()
 
-	// cdxPrimaryCompWithSHA256Hash
-	t.Run("cdxPrimaryCompWithSHA256Hash", func(t *testing.T) {
+	// CDX: all components have SHA-256 hash → score 10.0
+	t.Run("cdxAllCompsWithSHA256Hash", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxPrimaryCompWithSHA256Hash, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := BSIV11CompExecutableHash(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "primary executable declares a valid SHA-256 hash.", got.Desc)
+		assert.Equal(t, "executable component hash declared for all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
-	// spdxPrimaryCompWithSHA256Hash
-	t.Run("spdxPrimaryCompWithSHA256Hash", func(t *testing.T) {
+	// SPDX: all components have SHA-256 hash → score 10.0
+	t.Run("spdxAllCompsWithSHA256Hash", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxPrimaryCompWithSHA256Hash, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := BSIV11CompExecutableHash(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "primary executable declares a valid SHA-256 hash.", got.Desc)
+		assert.Equal(t, "executable component hash declared for all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
-	// cdxPrimaryCompWithMD5HashOnly
-	t.Run("cdxPrimaryCompWithMD5HashOnly", func(t *testing.T) {
+	// CDX: MD5 only in distribution ext ref → score 0.0 (SHA-256 required)
+	t.Run("cdxMD5HashOnly", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxPrimaryCompWithMD5HashOnly, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := BSIV11CompExecutableHash(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "primary executable component must declare a SHA-256 hash.", got.Desc)
+		assert.Equal(t, "no components declare executable component hash", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
-	// spdxPrimaryCompWithMD5HashOnly
-	t.Run("spdxPrimaryCompWithMD5HashOnly", func(t *testing.T) {
+	// SPDX: MD5 only → score 0.0 (SHA-256 required)
+	t.Run("spdxMD5HashOnly", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxPrimaryCompWithMD5HashOnly, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := BSIV11CompExecutableHash(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "primary executable component must declare a SHA-256 hash.", got.Desc)
+		assert.Equal(t, "no components declare executable component hash", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
-	// cdxPrimaryCompWithSHA1HashOnly
-	t.Run("cdxPrimaryCompWithSHA1HashOnly", func(t *testing.T) {
+	// CDX: SHA-1 only in distribution ext ref → score 0.0 (SHA-256 required)
+	t.Run("cdxSHA1HashOnly", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxPrimaryCompWithSHA1HashOnly, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := BSIV11CompExecutableHash(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "primary executable component must declare a SHA-256 hash.", got.Desc)
+		assert.Equal(t, "no components declare executable component hash", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
-	// spdxPrimaryCompWithSHA1HashOnly
-	t.Run("spdxPrimaryCompWithSHA1HashOnly", func(t *testing.T) {
+	// SPDX: SHA-1 only → score 0.0 (SHA-256 required)
+	t.Run("spdxSHA1HashOnly", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxPrimaryCompWithSHA1HashOnly, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := BSIV11CompExecutableHash(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "primary executable component must declare a SHA-256 hash.", got.Desc)
+		assert.Equal(t, "no components declare executable component hash", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
-	// cdxPrimaryCompWithSHA512HashOnly
-	t.Run("cdxPrimaryCompWithSHA512HashOnly", func(t *testing.T) {
+	// CDX: SHA-512 only in distribution ext ref → score 0.0 (SHA-256 required for v1.1)
+	t.Run("cdxSHA512HashOnly", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxPrimaryCompWithSHA512HashOnly, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := BSIV11CompExecutableHash(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "primary executable component must declare a SHA-256 hash.", got.Desc)
+		assert.Equal(t, "no components declare executable component hash", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
-	// cdxPrimaryCompWithSHA256EmptyValue
-	t.Run("cdxPrimaryCompWithSHA256EmptyValue", func(t *testing.T) {
+	// CDX: SHA-256 present but empty value → score 0.0
+	t.Run("cdxSHA256EmptyValue", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxPrimaryCompWithSHA256EmptyValue, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := BSIV11CompExecutableHash(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "primary executable component must declare a SHA-256 hash.", got.Desc)
+		assert.Equal(t, "no components declare executable component hash", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
-	// cdxPrimaryCompWithNoHash
-	t.Run("cdxPrimaryCompWithNoHash", func(t *testing.T) {
+	// CDX: no hashes at all → score 0.0
+	t.Run("cdxNoHash", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxPrimaryCompWithNoHash, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := BSIV11CompExecutableHash(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "primary executable component must declare a SHA-256 hash.", got.Desc)
+		assert.Equal(t, "no components declare executable component hash", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
-	// spdxPrimaryCompWithNoHash
-	t.Run("spdxPrimaryCompWithNoHash", func(t *testing.T) {
+	// SPDX: no checksums at all → score 0.0
+	t.Run("spdxNoHash", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxPrimaryCompWithNoHash, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := BSIV11CompExecutableHash(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "primary executable component must declare a SHA-256 hash.", got.Desc)
+		assert.Equal(t, "no components declare executable component hash", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
-	// cdxPrimaryCompWithMultipleHashesIncludingSHA256
-	t.Run("cdxPrimaryCompWithMultipleHashesIncludingSHA256", func(t *testing.T) {
+	// CDX: multiple hashes including SHA-256 in distribution ext ref → score 10.0
+	t.Run("cdxMultipleHashesIncludingSHA256", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxPrimaryCompWithMultipleHashesIncludingSHA256, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := BSIV11CompExecutableHash(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "primary executable declares a valid SHA-256 hash.", got.Desc)
+		assert.Equal(t, "executable component hash declared for all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
-	// spdxPrimaryCompWithMultipleHashesIncludingSHA256
-	t.Run("spdxPrimaryCompWithMultipleHashesIncludingSHA256", func(t *testing.T) {
+	// SPDX: multiple checksums including SHA256 → score 10.0
+	t.Run("spdxMultipleHashesIncludingSHA256", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxPrimaryCompWithMultipleHashesIncludingSHA256, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := BSIV11CompExecutableHash(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "primary executable declares a valid SHA-256 hash.", got.Desc)
+		assert.Equal(t, "executable component hash declared for all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
-	t.Run("cdxCompWithPrimaryCompMissing", func(t *testing.T) {
+	// CDX: component without hash in dist ext ref (no metadata component) → score 0.0
+	t.Run("cdxCompWithNoDistHash", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithPrimaryCompMissing, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := BSIV11CompExecutableHash(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "primary executable component must declare a SHA-256 hash.", got.Desc)
+		assert.Equal(t, "no components declare executable component hash", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
-	// spdxCompWithPrimaryCompMissing (reused from fsct_test.go — no DESCRIBES relationship)
-	t.Run("spdxCompWithPrimaryCompMissing", func(t *testing.T) {
+	// SPDX: component without checksum → score 0.0
+	t.Run("spdxCompWithNoChecksum", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWithPrimaryCompMissing, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := BSIV11CompExecutableHash(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "primary executable component must declare a SHA-256 hash.", got.Desc)
+		assert.Equal(t, "no components declare executable component hash", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
-	// spdxPrimaryCompWithSHA256EmptyValue
-	t.Run("spdxPrimaryCompWithSHA256EmptyValue", func(t *testing.T) {
+	// CDX: SHA-256 present but empty value → score 0.0
+	t.Run("spdxSHA256EmptyValue", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxPrimaryCompWithSHA256EmptyValue, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := BSIV11CompExecutableHash(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "primary executable component must declare a SHA-256 hash.", got.Desc)
+		assert.Equal(t, "no components declare executable component hash", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// CDX: 2 components, 1 has SHA-256 in dist ext ref → partial score 5.0
+	t.Run("cdxTwoCompsOneWithSHA256Hash", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxTwoCompsOneWithSHA256Hash, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompExecutableHash(doc)
+
+		assert.InDelta(t, 5.0, got.Score, 1e-9)
+		assert.Equal(t, "1/2 components declare executable component hash", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// SPDX: 2 packages, 1 has SHA256 → partial score 5.0
+	t.Run("spdxTwoCompsOneWithSHA256Hash", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxTwoCompsOneWithSHA256Hash, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompExecutableHash(doc)
+
+		assert.InDelta(t, 5.0, got.Score, 1e-9)
+		assert.Equal(t, "1/2 components declare executable component hash", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 }

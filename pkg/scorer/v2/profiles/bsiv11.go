@@ -566,9 +566,9 @@ func isAcceptableLicense(s licenses.License) bool {
 // for "Hash value of the executable component".
 //
 // BSI Official Definition:
-// - The SBOM must include a cryptographically secure checksum (hash value)
-// - of the executable component in its executable form (i.e., the final
-// - distributable artifact), specifically using SHA-256.
+// "Cryptographically secure checksum (hash value) of the component in its
+// executable form (i.e. as the single executable file on a mass storage
+// device) as SHA-256."
 //
 // Accepted Hash (BSI Requirement):
 // - SHA-256 ONLY
@@ -582,56 +582,59 @@ func isAcceptableLicense(s licenses.License) bool {
 // - Any other algorithm
 //
 // Even if cryptographically strong, algorithms other than SHA-256
-// do NOT satisfy the BSI requirement.
+// do NOT satisfy the BSI v1.1 requirement.
 //
 // Checksum Mapping:
 // SPDX:
 // - PackageChecksum with algorithm "SHA256"
 //
 // CycloneDX:
-// - metadata.component.hashes[].alg = "SHA-256"
-// - components[].hashes[].alg = "SHA-256"
+// - externalReferences[type=distribution or distribution-intake].hashes[].alg = "SHA-256"
 //
-// What This Function says:
-// - The primary (executable) component must exist.
-// - It must declare a SHA-256 checksum.
-// - The checksum value must be non-empty.
-// - Other algorithms do NOT satisfy the requirement.
+// Applies to ALL components (not just the primary component).
 func BSIV11CompExecutableHash(doc sbom.Document) catalog.ProfFeatScore {
+	comps := doc.Components()
+	total := len(comps)
 
-	primary := doc.PrimaryComp()
-	if primary == nil {
-		return catalog.ProfFeatScore{
-			Score:  0.0,
-			Desc:   "primary executable component is missing.",
-			Ignore: false,
-		}
+	if total == 0 {
+		return catalog.ProfFeatScore{Score: 0.0, Desc: "no components found"}
 	}
 
-	for _, comp := range doc.Components() {
-		if comp.GetID() != primary.GetID() {
-			continue
-		}
+	spec := strings.TrimSpace(strings.ToLower(doc.Spec().GetSpecType()))
 
-		for _, checksum := range comp.GetChecksums() {
-			algo := common.NormalizeAlgoName(checksum.GetAlgo())
-			value := strings.TrimSpace(checksum.GetContent())
-
-			if algo == "SHA256" && value != "" {
-				return catalog.ProfFeatScore{
-					Score:  10.0,
-					Desc:   "primary executable declares a valid SHA-256 hash.",
-					Ignore: false,
+	withData := 0
+	for _, c := range comps {
+		switch spec {
+		case string(sbom.SBOMSpecCDX):
+			// CDX: hash must be on a distribution or distribution-intake external reference
+			for _, er := range c.ExternalReferences() {
+				t := er.GetRefType()
+				if t == "distribution" || t == "distribution-intake" {
+					for _, h := range er.GetRefHashes() {
+						algo := common.NormalizeAlgoName(h.GetAlgo())
+						value := strings.TrimSpace(h.GetContent())
+						if algo == "SHA256" && value != "" {
+							withData++
+							goto nextComp
+						}
+					}
+				}
+			}
+		case string(sbom.SBOMSpecSPDX):
+			// SPDX: PackageChecksum directly on the package
+			for _, checksum := range c.GetChecksums() {
+				algo := common.NormalizeAlgoName(checksum.GetAlgo())
+				value := strings.TrimSpace(checksum.GetContent())
+				if algo == "SHA256" && value != "" {
+					withData++
+					goto nextComp
 				}
 			}
 		}
+	nextComp:
 	}
 
-	return catalog.ProfFeatScore{
-		Score:  0.0,
-		Desc:   "primary executable component must declare a SHA-256 hash.",
-		Ignore: false,
-	}
+	return componentScore(withData, total, "executable component hash")
 }
 
 // BSIV11CompDependencies validates the BSI TR-03183-2 requirement
