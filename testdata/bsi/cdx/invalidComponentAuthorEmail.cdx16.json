@@ -10,7 +10,8 @@
       "version": "9.1.1",
       "authors": [
         {
-          "name": "Anthony Edward Stark"
+          "name": "Anthony Edward Stark",
+          "email": "ironman"
         }
       ]
     }

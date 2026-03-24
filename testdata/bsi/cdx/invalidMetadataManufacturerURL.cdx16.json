@@ -1,0 +1,22 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {
+    "manufacture": {
+      "bom-ref": "manufacture-1",
+      "name": "Acme, Inc.",
+      "url": [
+        "not-a-valid-url"
+      ],
+      "contact": [
+        {
+          "bom-ref": "contact-1",
+          "name": "Acme Professional Services"
+        }
+      ]
+    }
+  },
+  "components": []
+}
