@@ -28,30 +28,47 @@ import (
 )
 
 var bsiSectionDetails = map[int]bsiSection{
-	SBOM_SPEC:               {Title: "SBOM formats", ID: "4", Required: true, DataField: "specification"},
-	SBOM_SPEC_VERSION:       {Title: "SBOM formats", ID: "4", Required: true, DataField: "specification version"},
-	SBOM_BUILD:              {Title: "Level of Detail", ID: "5.1", Required: true, DataField: "build process"},
-	SBOM_DEPTH:              {Title: "Level of Detail", ID: "5.1", Required: true, DataField: "depth"},
-	SBOM_CREATOR:            {Title: "Required sboms fields", ID: "5.2.1", Required: true, DataField: "creator of sbom"},
-	SBOM_TIMESTAMP:          {Title: "Required sboms fields", ID: "5.2.1", Required: true, DataField: "timestamp"},
-	SBOM_COMPONENTS:         {Title: "Required component fields", ID: "5.2.2", Required: true, DataField: "components"},
-	SBOM_URI:                {Title: "Additional sboms fields", ID: "5.3.1", Required: false, DataField: "SBOM-URI"},
-	COMP_CREATOR:            {Title: "Required components fields", ID: "5.2.2", Required: true, DataField: "component creator"},
-	COMP_NAME:               {Title: "Required components fields", ID: "5.2.2", Required: true, DataField: "component name"},
-	COMP_VERSION:            {Title: "Required components fields", ID: "5.2.2", Required: true, DataField: "component version"},
-	COMP_DEPTH:              {Title: "Required components fields", ID: "5.2.2", Required: true, DataField: "Dependencies on other components"},
-	COMP_LICENSE:            {Title: "Required components fields", ID: "5.2.2", Required: true, DataField: "License"},
-	COMP_ASSOCIATED_LICENSE: {Title: "Required components fields", ID: "5.2.2", Required: true, DataField: "associated license"},
-	COMP_HASH:               {Title: "Required components fields", ID: "5.2.2", Required: true, DataField: "Hash value of the executable component"},
-	COMP_SOURCE_CODE_URL:    {Title: "Additional components fields", ID: "5.3.2", Required: false, DataField: "Source code URI"},
-	COMP_DOWNLOAD_URL:       {Title: "Additional components fields", ID: "5.3.2", Required: false, DataField: "URI of the executable form of the component"},
-	COMP_SOURCE_HASH:        {Title: "Additional components fields", ID: "5.3.2", Required: false, DataField: "Hash value of the source code of the component"},
-	COMP_OTHER_UNIQ_IDS:     {Title: "Additional components fields", ID: "5.3.2", Required: false, DataField: "Other unique identifiers"},
-	COMP_CONCLUDED_LICENSE:  {Title: "Additional components fields", ID: "5.3.2", Required: false, DataField: "concluded license"},
-	COMP_DECLARED_LICENSE:   {Title: "Optional components fields", ID: "5.4.1", Required: false, DataField: "declared license"},
-	SBOM_VULNERABILITIES:    {Title: "Definition of SBOM", ID: "3.1", Required: true, DataField: "vuln"},
-	SBOM_SIGNATURE:          {Title: "Optional sboms fields", ID: "8.1.11", Required: false, DataField: "signature"},
-	SBOM_BOM_LINKS:          {Title: "Optional sboms fields", ID: "8.1.12", Required: false, DataField: "bomlinks"},
+	// §3 / §4 level fields
+	SBOM_SPEC:         {Title: "SBOM formats", ID: "4", Required: true, DataField: "specification"},
+	SBOM_SPEC_VERSION: {Title: "SBOM formats", ID: "4", Required: true, DataField: "specification version"},
+	SBOM_BUILD:        {Title: "Level of Detail", ID: "5.1", Required: true, DataField: "build process"},
+	SBOM_DEPTH:        {Title: "Level of Detail", ID: "5.1", Required: true, DataField: "depth"},
+	SBOM_VULNERABILITIES: {Title: "Definition of SBOM", ID: "3.1", Required: true, DataField: "vuln"},
+
+	// §5.2 Required SBOM fields
+	SBOM_CREATOR:    {Title: "Required SBOM fields", ID: "5.2.1", Required: true, DataField: "creator of SBOM"},
+	SBOM_TIMESTAMP:  {Title: "Required SBOM fields", ID: "5.2.1", Required: true, DataField: "timestamp"},
+	SBOM_COMPONENTS: {Title: "Required component fields", ID: "5.2.2", Required: true, DataField: "components"},
+
+	// §5.2 Required component fields
+	COMP_CREATOR:            {Title: "Required component fields", ID: "5.2.2", Required: true, DataField: "component creator"},
+	COMP_NAME:               {Title: "Required component fields", ID: "5.2.2", Required: true, DataField: "component name"},
+	COMP_VERSION:            {Title: "Required component fields", ID: "5.2.2", Required: true, DataField: "component version"},
+	COMP_DEPTH:              {Title: "Required component fields", ID: "5.2.2", Required: true, DataField: "dependencies on other components"},
+	COMP_LICENSE:            {Title: "Required component fields", ID: "5.2.2", Required: true, DataField: "license"},
+	COMP_ASSOCIATED_LICENSE: {Title: "Required component fields", ID: "5.2.2", Required: true, DataField: "associated license"},
+	COMP_HASH:               {Title: "Required component fields", ID: "5.2.2", Required: true, DataField: "hash value of executable component"},
+	// v2.0 required component fields
+	COMP_FILENAME:        {Title: "Required component fields", ID: "5.2.2", Required: true, DataField: "filename"},
+	COMP_EXECUTABLE:      {Title: "Required component fields", ID: "5.2.2", Required: true, DataField: "executable property"},
+	COMP_ARCHIVE:         {Title: "Required component fields", ID: "5.2.2", Required: true, DataField: "archive property"},
+	COMP_STRUCTURED:      {Title: "Required component fields", ID: "5.2.2", Required: true, DataField: "structured property"},
+	COMP_DEPLOYABLE_HASH: {Title: "Required component fields", ID: "5.2.2", Required: true, DataField: "hash value of deployable component"},
+
+	// §5.3 Additional SBOM fields (conditional mandatory)
+	SBOM_URI: {Title: "Additional SBOM fields", ID: "5.3.1", Required: false, DataField: "SBOM-URI"},
+
+	// §5.3 Additional component fields (conditional mandatory)
+	COMP_SOURCE_CODE_URL:   {Title: "Additional component fields", ID: "5.3.2", Required: false, DataField: "source code URI"},
+	COMP_DOWNLOAD_URL:      {Title: "Additional component fields", ID: "5.3.2", Required: false, DataField: "URI of deployable form"},
+	COMP_SOURCE_HASH:       {Title: "Additional component fields", ID: "5.3.2", Required: false, DataField: "hash value of source code"},
+	COMP_OTHER_UNIQ_IDS:    {Title: "Additional component fields", ID: "5.3.2", Required: false, DataField: "other unique identifiers"},
+	COMP_CONCLUDED_LICENSE: {Title: "Additional component fields", ID: "5.3.2", Required: false, DataField: "concluded license"},
+
+	// §5.4 Optional fields (never counted in score)
+	COMP_DECLARED_LICENSE: {Title: "Optional component fields", ID: "5.4.1", Required: false, DataField: "declared license"},
+	SBOM_SIGNATURE:        {Title: "Optional SBOM fields", ID: "5.4", Required: false, DataField: "signature"},
+	SBOM_BOM_LINKS:        {Title: "Optional SBOM fields", ID: "5.4", Required: false, DataField: "BOM links"},
 }
 
 type run struct {
@@ -66,10 +83,11 @@ type tool struct {
 	Vendor  string `json:"vendor"`
 }
 type Summary struct {
-	TotalScore         float64 `json:"total_score"`
-	MaxScore           float64 `json:"max_score"`
-	TotalRequiredScore float64 `json:"required_elements_score"`
-	TotalOptionalScore float64 `json:"optional_elements_score"`
+	TotalScore          float64 `json:"total_score"`
+	MaxScore            float64 `json:"max_score"`
+	TotalRequiredScore  float64 `json:"required_elements_score"`
+	TotalAdditionalScore float64 `json:"additional_elements_score"`
+	TotalOptionalScore  float64 `json:"optional_elements_score"`
 }
 type bsiSection struct {
 	Title         string  `json:"section_title"`
@@ -120,6 +138,7 @@ func bsiJSONReport(dtb *db.DB, fileName string) {
 	summary.MaxScore = 10.0
 	summary.TotalScore = score.totalScore()
 	summary.TotalRequiredScore = score.totalRequiredScore()
+	summary.TotalAdditionalScore = score.totalAdditionalScore()
 	summary.TotalOptionalScore = score.totalOptionalScore()
 
 	jr.Summary = summary
@@ -188,7 +207,7 @@ func bsiDetailedReport(dtb *db.DB, fileName string, colorOutput bool) {
 	score := bsiAggregateScore(dtb)
 
 	fmt.Printf("BSI TR-03183-2 v1.1 Compliance Report \n")
-	fmt.Printf("Compliance score by Interlynk Score:%0.1f RequiredScore:%0.1f OptionalScore:%0.1f for %s\n", score.totalScore(), score.totalRequiredScore(), score.totalOptionalScore(), fileName)
+	fmt.Printf("Compliance score by Interlynk Score:%0.1f RequiredScore:%0.1f AdditionalScore:%0.1f for %s\n", score.totalScore(), score.totalRequiredScore(), score.totalAdditionalScore(), fileName)
 	fmt.Printf("* indicates optional fields\n")
 	table.SetHeader([]string{"ElementId", "Section", "Datafield", "Element Result", "Score"})
 	table.SetRowLine(true)
@@ -225,5 +244,5 @@ func bsiDetailedReport(dtb *db.DB, fileName string, colorOutput bool) {
 func bsiBasicReport(dtb *db.DB, fileName string) {
 	score := bsiAggregateScore(dtb)
 	fmt.Printf("BSI TR-03183-2 v1.1 Compliance Report\n")
-	fmt.Printf("Score:%0.1f RequiredScore:%0.1f OptionalScore:%0.1f for %s\n", score.totalScore(), score.totalRequiredScore(), score.totalOptionalScore(), fileName)
+	fmt.Printf("Score:%0.1f RequiredScore:%0.1f AdditionalScore:%0.1f for %s\n", score.totalScore(), score.totalRequiredScore(), score.totalAdditionalScore(), fileName)
 }

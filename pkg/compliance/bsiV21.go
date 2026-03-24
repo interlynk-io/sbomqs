@@ -109,20 +109,21 @@ func bsiV21CdxVersionAtLeast(version string) bool {
 	return major == 1 && minor >= 6
 }
 
-// bsiV21SBOMURI checks for the SBOM-URI field. In v2.1 this is a SHALL (required) field.
+// bsiV21SBOMURI checks for the SBOM-URI field. In v2.1 this is an additional (§5.3) field.
+// CDX 1.6: serialNumber or metadata.component.bom-ref. SPDX 3.0 not implemented.
 func bsiV21SBOMURI(doc sbom.Document) *db.Record {
-	uri := strings.TrimSpace(doc.Spec().GetURI())
+	candidate := strings.TrimSpace(doc.Spec().GetURI())
 
-	if uri == "" {
-		return db.NewRecordStmt(SBOM_URI, "doc", "", 0.0, "")
+	if candidate == "" {
+		return db.NewRecordStmtAdditional(SBOM_URI, "doc", "", 0.0, true)
 	}
 
-	if !bsiIsValidURL(uri) && !strings.HasPrefix(uri, "urn:") {
-		return db.NewRecordStmt(SBOM_URI, "doc", uri, 0.0, "")
+	if !bsiIsValidURL(candidate) && !strings.HasPrefix(candidate, "urn:") {
+		return db.NewRecordStmtAdditional(SBOM_URI, "doc", candidate, 0.0, false)
 	}
 
-	result := strings.Join(breakLongString(uri, 80), "\n")
-	return db.NewRecordStmt(SBOM_URI, "doc", result, 10.0, "")
+	result := strings.Join(breakLongString(candidate, 80), "\n")
+	return db.NewRecordStmtAdditional(SBOM_URI, "doc", result, 10.0, false)
 }
 
 // bsiV21Vulnerabilities checks that the SBOM does NOT contain vulnerability info.
@@ -242,28 +243,30 @@ func bsiV21ComponentDistributionLicense(component sbom.GetComponent) *db.Record 
 	return db.NewRecordStmt(COMP_CONCLUDED_LICENSE, common.UniqueElementID(component), "compliant", 10.0, "")
 }
 
-// bsiV21ComponentOriginalLicenses checks for declared licenses (SHALL).
+// bsiV21ComponentOriginalLicenses checks for declared licenses (additional, §5.3).
 // BSI v2.1: Original licences require acknowledgement="declared".
 func bsiV21ComponentOriginalLicenses(component sbom.GetComponent) *db.Record {
 	licenses := component.DeclaredLicenses()
+	id := common.UniqueElementID(component)
 
 	if len(licenses) == 0 {
-		return db.NewRecordStmt(COMP_DECLARED_LICENSE, common.UniqueElementID(component), "not-compliant", 0.0, "")
+		return db.NewRecordStmtAdditional(COMP_DECLARED_LICENSE, id, "", 0.0, true)
 	}
 
 	if !common.AreLicensesValid(licenses) {
-		return db.NewRecordStmt(COMP_DECLARED_LICENSE, common.UniqueElementID(component), "non-compliant", 0.0, "")
+		return db.NewRecordStmtAdditional(COMP_DECLARED_LICENSE, id, "non-compliant", 0.0, false)
 	}
 
-	return db.NewRecordStmt(COMP_DECLARED_LICENSE, common.UniqueElementID(component), "compliant", 10.0, "")
+	return db.NewRecordStmtAdditional(COMP_DECLARED_LICENSE, id, "compliant", 10.0, false)
 }
 
-// bsiV21ComponentDeployableHash checks for hash via externalReferences with type="distribution" (SHALL).
+// bsiV21ComponentDeployableHash checks for hash via externalReferences with type="distribution" or "distribution-intake" (SHALL).
 func bsiV21ComponentDeployableHash(component sbom.GetComponent) *db.Record {
 	id := common.UniqueElementID(component)
 
 	for _, er := range component.ExternalReferences() {
-		if er.GetRefType() == "distribution" {
+		t := er.GetRefType()
+		if t == "distribution" || t == "distribution-intake" {
 			for _, h := range er.GetRefHashes() {
 				content := strings.TrimSpace(h.GetContent())
 				if content != "" {
@@ -277,51 +280,51 @@ func bsiV21ComponentDeployableHash(component sbom.GetComponent) *db.Record {
 	return db.NewRecordStmt(COMP_DEPLOYABLE_HASH, id, "", 0.0, "")
 }
 
-// bsiV21ComponentSourceCodeURL checks for source code URI via externalReferences type="source-distribution" (SHALL).
+// bsiV21ComponentSourceCodeURL checks for source code URI via externalReferences type="source-distribution" or "vcs" (additional, §5.3).
+// CDX 1.6: externalReferences[type=source-distribution|vcs].url
 func bsiV21ComponentSourceCodeURL(component sbom.GetComponent) *db.Record {
 	id := common.UniqueElementID(component)
 
 	for _, er := range component.ExternalReferences() {
-		if er.GetRefType() == "source-distribution" {
+		t := er.GetRefType()
+		if t == "source-distribution" || t == "vcs" {
 			locator := strings.TrimSpace(er.GetRefLocator())
-			if locator != "" && bsiIsValidURL(locator) {
-				return db.NewRecordStmt(COMP_SOURCE_CODE_URL, id, locator, 10.0, "")
+			if locator == "" {
+				continue
 			}
+			if bsiIsValidURL(locator) {
+				return db.NewRecordStmtAdditional(COMP_SOURCE_CODE_URL, id, locator, 10.0, false)
+			}
+			return db.NewRecordStmtAdditional(COMP_SOURCE_CODE_URL, id, locator, 0.0, false)
 		}
 	}
 
-	// Fallback: check existing source code URL field (for vcs type)
-	result := strings.TrimSpace(component.GetSourceCodeURL())
-	if result != "" && bsiIsValidURL(result) {
-		return db.NewRecordStmt(COMP_SOURCE_CODE_URL, id, result, 10.0, "")
-	}
-
-	return db.NewRecordStmt(COMP_SOURCE_CODE_URL, id, "", 0.0, "")
+	return db.NewRecordStmtAdditional(COMP_SOURCE_CODE_URL, id, "", 0.0, true)
 }
 
-// bsiV21ComponentDownloadURL checks for deployable URI via externalReferences type="distribution" (SHALL).
+// bsiV21ComponentDownloadURL checks for deployable URI via externalReferences type="distribution" or "distribution-intake" (additional, §5.3).
+// CDX 1.6: externalReferences[type=distribution|distribution-intake].url
 func bsiV21ComponentDownloadURL(component sbom.GetComponent) *db.Record {
 	id := common.UniqueElementID(component)
 
 	for _, er := range component.ExternalReferences() {
-		if er.GetRefType() == "distribution" {
+		t := er.GetRefType()
+		if t == "distribution" || t == "distribution-intake" {
 			locator := strings.TrimSpace(er.GetRefLocator())
-			if locator != "" && bsiIsValidURL(locator) {
-				return db.NewRecordStmt(COMP_DOWNLOAD_URL, id, locator, 10.0, "")
+			if locator == "" {
+				continue
 			}
+			if bsiIsValidURL(locator) {
+				return db.NewRecordStmtAdditional(COMP_DOWNLOAD_URL, id, locator, 10.0, false)
+			}
+			return db.NewRecordStmtAdditional(COMP_DOWNLOAD_URL, id, locator, 0.0, false)
 		}
 	}
 
-	// Fallback: check existing download location URL field
-	result := strings.TrimSpace(component.GetDownloadLocationURL())
-	if result != "" && bsiIsValidURL(result) {
-		return db.NewRecordStmt(COMP_DOWNLOAD_URL, id, result, 10.0, "")
-	}
-
-	return db.NewRecordStmt(COMP_DOWNLOAD_URL, id, "", 0.0, "")
+	return db.NewRecordStmtAdditional(COMP_DOWNLOAD_URL, id, "", 0.0, true)
 }
 
-// bsiV21ComponentOtherIdentifiers checks for CPE, SWID, or PURL (SHALL).
+// bsiV21ComponentOtherIdentifiers checks for CPE, SWID, or PURL (additional, §5.3).
 func bsiV21ComponentOtherIdentifiers(component sbom.GetComponent) *db.Record {
 	id := common.UniqueElementID(component)
 
@@ -329,7 +332,7 @@ func bsiV21ComponentOtherIdentifiers(component sbom.GetComponent) *db.Record {
 	for _, p := range component.GetPurls() {
 		v := strings.TrimSpace(string(p))
 		if v != "" {
-			return db.NewRecordStmt(COMP_OTHER_UNIQ_IDS, id, "purl: "+v, 10.0, "")
+			return db.NewRecordStmtAdditional(COMP_OTHER_UNIQ_IDS, id, "purl: "+v, 10.0, false)
 		}
 	}
 
@@ -337,18 +340,18 @@ func bsiV21ComponentOtherIdentifiers(component sbom.GetComponent) *db.Record {
 	for _, cpe := range component.GetCpes() {
 		v := strings.TrimSpace(string(cpe))
 		if v != "" {
-			return db.NewRecordStmt(COMP_OTHER_UNIQ_IDS, id, "cpe: "+v, 10.0, "")
+			return db.NewRecordStmtAdditional(COMP_OTHER_UNIQ_IDS, id, "cpe: "+v, 10.0, false)
 		}
 	}
 
 	// Check SWIDs
 	for _, s := range component.Swids() {
 		if s.GetTagID() != "" {
-			return db.NewRecordStmt(COMP_OTHER_UNIQ_IDS, id, "swid: "+s.GetTagID(), 10.0, "")
+			return db.NewRecordStmtAdditional(COMP_OTHER_UNIQ_IDS, id, "swid: "+s.GetTagID(), 10.0, false)
 		}
 	}
 
-	return db.NewRecordStmt(COMP_OTHER_UNIQ_IDS, id, "", 0.0, "")
+	return db.NewRecordStmtAdditional(COMP_OTHER_UNIQ_IDS, id, "", 0.0, true)
 }
 
 // bsiV21ComponentEffectiveLicense checks for the bsi:component:effectiveLicense property (MAY).
@@ -362,12 +365,13 @@ func bsiV21ComponentEffectiveLicense(component sbom.GetComponent) *db.Record {
 	return db.NewRecordStmtOptional(COMP_EFFECTIVE_LICENSE, common.UniqueElementID(component), "", 0.0)
 }
 
-// bsiV21ComponentSourceHash checks for hash via externalReferences type="source-distribution" (MAY).
+// bsiV21ComponentSourceHash checks for hash via externalReferences type="source-distribution" or "vcs" (MAY).
 func bsiV21ComponentSourceHash(component sbom.GetComponent) *db.Record {
 	id := common.UniqueElementID(component)
 
 	for _, er := range component.ExternalReferences() {
-		if er.GetRefType() == "source-distribution" {
+		t := er.GetRefType()
+		if t == "source-distribution" || t == "vcs" {
 			for _, h := range er.GetRefHashes() {
 				content := strings.TrimSpace(h.GetContent())
 				if content != "" {
@@ -396,5 +400,3 @@ func bsiV21ComponentSecurityTxtURL(component sbom.GetComponent) *db.Record {
 
 	return db.NewRecordStmtOptional(COMP_SECURITY_TXT_URL, id, "", 0.0)
 }
-
-

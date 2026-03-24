@@ -63,6 +63,7 @@ func bsiV21JSONReport(dtb *db.DB, fileName string) {
 	summary.MaxScore = 10.0
 	summary.TotalScore = score.totalScore()
 	summary.TotalRequiredScore = score.totalRequiredScore()
+	summary.TotalAdditionalScore = score.totalAdditionalScore()
 	summary.TotalOptionalScore = score.totalOptionalScore()
 
 	jr.Summary = summary
@@ -77,7 +78,7 @@ func bsiV21DetailedReport(dtb *db.DB, fileName string) {
 	score := bsiAggregateScore(dtb)
 
 	fmt.Printf("BSI TR-03183-2 v2.1.0 Compliance Report \n")
-	fmt.Printf("Compliance score by Interlynk Score:%0.1f RequiredScore:%0.1f OptionalScore:%0.1f for %s\n", score.totalScore(), score.totalRequiredScore(), score.totalOptionalScore(), fileName)
+	fmt.Printf("Compliance score by Interlynk Score:%0.1f RequiredScore:%0.1f AdditionalScore:%0.1f for %s\n", score.totalScore(), score.totalRequiredScore(), score.totalAdditionalScore(), fileName)
 	fmt.Printf("* indicates optional fields\n")
 	table.SetHeader([]string{"ElementId", "Section", "Datafield", "Element Result", "Score"})
 	table.SetRowLine(true)
@@ -98,7 +99,7 @@ func bsiV21DetailedReport(dtb *db.DB, fileName string) {
 func bsiV21BasicReport(dtb *db.DB, fileName string) {
 	score := bsiAggregateScore(dtb)
 	fmt.Printf("BSI TR-03183-2 v2.1.0 Compliance Report\n")
-	fmt.Printf("Score:%0.1f RequiredScore:%0.1f OptionalScore:%0.1f for %s\n", score.totalScore(), score.totalRequiredScore(), score.totalOptionalScore(), fileName)
+	fmt.Printf("Score:%0.1f RequiredScore:%0.1f AdditionalScore:%0.1f for %s\n", score.totalScore(), score.totalRequiredScore(), score.totalAdditionalScore(), fileName)
 }
 
 func constructV21Sections(dtb *db.DB) []bsiSection {

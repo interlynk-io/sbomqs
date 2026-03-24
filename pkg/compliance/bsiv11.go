@@ -226,16 +226,18 @@ func bsiv11SBOMTimestamp(doc sbom.Document) *db.Record {
 func bsiv11SBOMURI(doc sbom.Document) *db.Record {
 	uri := strings.TrimSpace(doc.Spec().GetURI())
 
+	// No URI → prerequisite not met → N/A (Additional, Ignore=true)
 	if uri == "" {
-		return db.NewRecordStmt(SBOM_URI, "doc", "", 0.0, "")
+		return db.NewRecordStmtAdditional(SBOM_URI, "doc", "", 0.0, true)
 	}
 
+	// URI present but invalid → prerequisite met, fails validation
 	if !bsiIsValidURL(uri) && !strings.HasPrefix(uri, "urn:") {
-		return db.NewRecordStmt(SBOM_URI, "doc", uri, 0.0, "")
+		return db.NewRecordStmtAdditional(SBOM_URI, "doc", uri, 0.0, false)
 	}
 
 	result := strings.Join(breakLongString(uri, 80), "\n")
-	return db.NewRecordStmt(SBOM_URI, "doc", result, 10.0, "")
+	return db.NewRecordStmtAdditional(SBOM_URI, "doc", result, 10.0, false)
 }
 
 func bsiComponents(doc sbom.Document) []*db.Record {
@@ -252,7 +254,7 @@ func bsiComponents(doc sbom.Document) []*db.Record {
 		records = append(records, bsiv11ComponentVersion(component))
 		records = append(records, bsiv11ComponentDependencies(doc, component))
 		records = append(records, bsiv11ComponentLicense(component))
-		records = append(records, bsiv11ComponentHash(component))
+		records = append(records, bsiv11ComponentExecutableHash(doc, component))
 
 		// Assitional fields
 		records = append(records, bsiv11ComponentSourceCodeURL(component))
@@ -454,85 +456,101 @@ func bsiv11ComponentLicense(component sbom.GetComponent) *db.Record {
 	return db.NewRecordStmt(COMP_LICENSE, common.UniqueElementID(component), result, score, "")
 }
 
-func bsiv11ComponentHash(component sbom.GetComponent) *db.Record {
+func bsiv11ComponentExecutableHash(doc sbom.Document, component sbom.GetComponent) *db.Record {
 	result := ""
 	score := 0.0
+	spec := strings.TrimSpace(strings.ToLower(doc.Spec().GetSpecType()))
 
-	for _, checksum := range component.GetChecksums() {
-		algo := strings.ToUpper(strings.ReplaceAll(checksum.GetAlgo(), "-", ""))
-		value := strings.TrimSpace(checksum.GetContent())
-
-		if algo == "SHA256" && value != "" {
-			result = "SHA-256: " + checksum.GetContent()
-			score = 10.0
-			break
+	switch spec {
+	case string(sbom.SBOMSpecCDX):
+		// CDX: hash must be on a distribution or distribution-intake external reference
+		for _, er := range component.ExternalReferences() {
+			t := er.GetRefType()
+			if t == "distribution" || t == "distribution-intake" {
+				for _, h := range er.GetRefHashes() {
+					algo := strings.ToUpper(strings.ReplaceAll(h.GetAlgo(), "-", ""))
+					value := strings.TrimSpace(h.GetContent())
+					if (algo == "SHA256" || algo == "SHA512") && value != "" {
+						result = h.GetAlgo() + ": " + value
+						score = 10.0
+						goto done
+					}
+				}
+			}
+		}
+	case string(sbom.SBOMSpecSPDX):
+		// SPDX: PackageChecksum directly on the package
+		for _, checksum := range component.GetChecksums() {
+			algo := strings.ToUpper(strings.ReplaceAll(checksum.GetAlgo(), "-", ""))
+			value := strings.TrimSpace(checksum.GetContent())
+			if (algo == "SHA256" || algo == "SHA512") && value != "" {
+				result = checksum.GetAlgo() + ": " + value
+				score = 10.0
+				goto done
+			}
 		}
 	}
-
+done:
 	return db.NewRecordStmt(COMP_HASH, common.UniqueElementID(component), result, score, "")
 }
 
 func bsiv11ComponentSourceCodeURL(component sbom.GetComponent) *db.Record {
+	id := common.UniqueElementID(component)
 	result := strings.TrimSpace(component.GetSourceCodeURL())
 
-	if result != "" {
-		if bsiIsValidURL(result) {
-			return db.NewRecordStmtOptional(COMP_SOURCE_CODE_URL, common.UniqueElementID(component), result, 10.0)
-		}
+	if result == "" {
+		// No data: prerequisite not met => N/A
+		return db.NewRecordStmtAdditional(COMP_SOURCE_CODE_URL, id, "", 0.0, true)
 	}
-
-	return db.NewRecordStmtOptional(COMP_SOURCE_CODE_URL, common.UniqueElementID(component), "", 0.0)
+	if bsiIsValidURL(result) {
+		return db.NewRecordStmtAdditional(COMP_SOURCE_CODE_URL, id, result, 10.0, false)
+	}
+	// Data present but invalid
+	return db.NewRecordStmtAdditional(COMP_SOURCE_CODE_URL, id, result, 0.0, false)
 }
 
 func bsiv11ComponentDownloadURL(component sbom.GetComponent) *db.Record {
+	id := common.UniqueElementID(component)
 	result := strings.TrimSpace(component.GetDownloadLocationURL())
 
-	if result != "" {
-		if bsiIsValidURL(result) {
-			return db.NewRecordStmtOptional(COMP_DOWNLOAD_URL, common.UniqueElementID(component), result, 10.0)
-		}
+	if result == "" {
+		return db.NewRecordStmtAdditional(COMP_DOWNLOAD_URL, id, "", 0.0, true)
 	}
-	return db.NewRecordStmtOptional(COMP_DOWNLOAD_URL, common.UniqueElementID(component), "", 0.0)
+	if bsiIsValidURL(result) {
+		return db.NewRecordStmtAdditional(COMP_DOWNLOAD_URL, id, result, 10.0, false)
+	}
+	return db.NewRecordStmtAdditional(COMP_DOWNLOAD_URL, id, result, 0.0, false)
 }
 
 func bsiv11ComponentSourceHash(component sbom.GetComponent) *db.Record {
+	id := common.UniqueElementID(component)
 	result := strings.TrimSpace(component.SourceCodeHash())
-	score := 0.0
 
-	if result != "" {
-		result = component.SourceCodeHash()
-		score = 10.0
+	if result == "" {
+		return db.NewRecordStmtAdditional(COMP_SOURCE_HASH, id, "", 0.0, true)
 	}
-
-	return db.NewRecordStmtOptional(COMP_SOURCE_HASH, common.UniqueElementID(component), result, score)
+	return db.NewRecordStmtAdditional(COMP_SOURCE_HASH, id, result, 10.0, false)
 }
 
 func bsiv11ComponentOtherUniqueIdentifiers(component sbom.GetComponent) *db.Record {
-
-	var result string
-	score := 0.0
+	id := common.UniqueElementID(component)
 
 	// Check PURLs
 	for _, p := range component.GetPurls() {
 		v := strings.TrimSpace(string(p))
 		if v != "" {
-			result = "purl: " + v
-			score = 10.0
-			break
+			return db.NewRecordStmtAdditional(COMP_OTHER_UNIQ_IDS, id, "purl: "+v, 10.0, false)
 		}
 	}
 
 	// Check CPEs (fallback)
-	if result == "" {
-		for _, cpe := range component.GetCpes() {
-			v := strings.TrimSpace(string(cpe))
-			if v != "" {
-				result = "cpe: " + v
-				score = 10.0
-				break
-			}
+	for _, cpe := range component.GetCpes() {
+		v := strings.TrimSpace(string(cpe))
+		if v != "" {
+			return db.NewRecordStmtAdditional(COMP_OTHER_UNIQ_IDS, id, "cpe: "+v, 10.0, false)
 		}
 	}
 
-	return db.NewRecordStmtOptional(COMP_OTHER_UNIQ_IDS, common.UniqueElementID(component), result, score)
+	// No identifiers → prerequisite not met → N/A
+	return db.NewRecordStmtAdditional(COMP_OTHER_UNIQ_IDS, id, "", 0.0, true)
 }

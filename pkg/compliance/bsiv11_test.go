@@ -1558,10 +1558,16 @@ var bsiCdxCompWithSHA256Hash = []byte(`
       "type": "library",
       "name": "hashed-lib",
       "version": "1.0.0",
-      "hashes": [
+      "externalReferences": [
         {
-          "alg": "SHA-256",
-          "content": "64440820e5d881ec20bc7b9937fdc9bd67d15ba4637b2e7959a8f31dd12c5b21"
+          "type": "distribution",
+          "url": "https://example.com/hashed-lib-1.0.0.tar.gz",
+          "hashes": [
+            {
+              "alg": "SHA-256",
+              "content": "64440820e5d881ec20bc7b9937fdc9bd67d15ba4637b2e7959a8f31dd12c5b21"
+            }
+          ]
         }
       ]
     }
@@ -1604,10 +1610,16 @@ var bsiCdxCompWithSHA1HashOnly = []byte(`
       "type": "library",
       "name": "sha1-lib",
       "version": "1.0.0",
-      "hashes": [
+      "externalReferences": [
         {
-          "alg": "SHA-1",
-          "content": "da39a3ee5e6b4b0d3255bfef95601890afd80709"
+          "type": "distribution",
+          "url": "https://example.com/sha1-lib-1.0.0.tar.gz",
+          "hashes": [
+            {
+              "alg": "SHA-1",
+              "content": "da39a3ee5e6b4b0d3255bfef95601890afd80709"
+            }
+          ]
         }
       ]
     }
@@ -1638,7 +1650,7 @@ func TestBSIComponentHash(t *testing.T) {
 		require.NoError(t, err)
 
 		for _, c := range doc.Components() {
-			got := bsiv11ComponentHash(c)
+			got := bsiv11ComponentExecutableHash(doc, c)
 
 			assert.InDelta(t, 10.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_HASH, got.CheckKey)
@@ -1652,12 +1664,12 @@ func TestBSIComponentHash(t *testing.T) {
 		require.NoError(t, err)
 
 		for _, c := range doc.Components() {
-			got := bsiv11ComponentHash(c)
+			got := bsiv11ComponentExecutableHash(doc, c)
 
 			assert.InDelta(t, 10.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_HASH, got.CheckKey)
 			assert.Equal(t, common.UniqueElementID(c), got.ID)
-			assert.Equal(t, "SHA-256: 64440820e5d881ec20bc7b9937fdc9bd67d15ba4637b2e7959a8f31dd12c5b21", got.CheckValue)
+			assert.Equal(t, "SHA256: 64440820e5d881ec20bc7b9937fdc9bd67d15ba4637b2e7959a8f31dd12c5b21", got.CheckValue)
 		}
 	})
 
@@ -1666,7 +1678,7 @@ func TestBSIComponentHash(t *testing.T) {
 		require.NoError(t, err)
 
 		for _, c := range doc.Components() {
-			got := bsiv11ComponentHash(c)
+			got := bsiv11ComponentExecutableHash(doc, c)
 
 			assert.InDelta(t, 0.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_HASH, got.CheckKey)
@@ -1680,7 +1692,7 @@ func TestBSIComponentHash(t *testing.T) {
 		require.NoError(t, err)
 
 		for _, c := range doc.Components() {
-			got := bsiv11ComponentHash(c)
+			got := bsiv11ComponentExecutableHash(doc, c)
 
 			assert.InDelta(t, 0.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_HASH, got.CheckKey)
