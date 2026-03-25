@@ -18,12 +18,11 @@ import "github.com/interlynk-io/sbomqs/v2/pkg/compliance/db"
 
 // bsiScoreResult accumulates per-element scores across three tiers:
 //
-//   - required:   §5.2 fields — always counted (Required=true, Ignore=false)
-//   - additional: §5.3 fields — counted only when data exists (!Ignore)
-//   - optional:   §5.4 fields — tracked for display but never counted in score
+//   - required:   §5.2 fields => always counted (Required=true, Ignore=false)
+//   - additional: §5.3 fields => counted only when data exists (!Ignore)
+//   - optional:   §5.4 fields => tracked for display but never counted in score
 type bsiScoreResult struct {
-	id string
-
+	id                string
 	requiredScore     float64
 	additionalScore   float64
 	optionalScore     float64
@@ -82,13 +81,14 @@ func bsiKeyIDScore(dtb *db.DB, key int, id string) *bsiScoreResult {
 		case r.Required && !r.Ignore:
 			res.requiredScore += r.Score
 			res.requiredRecords++
+
 		case r.Additional && !r.Ignore:
 			res.additionalScore += r.Score
 			res.additionalRecords++
+
 		case !r.Required && !r.Additional:
 			res.optionalScore += r.Score
 			res.optionalRecords++
-			// Required || Additional with Ignore=true → N/A, not counted
 		}
 	}
 	return res
@@ -107,9 +107,11 @@ func bsiIDScore(dtb *db.DB, id string) *bsiScoreResult {
 		case r.Required && !r.Ignore:
 			res.requiredScore += r.Score
 			res.requiredRecords++
+
 		case r.Additional && !r.Ignore:
 			res.additionalScore += r.Score
 			res.additionalRecords++
+
 		case !r.Required && !r.Additional:
 			res.optionalScore += r.Score
 			res.optionalRecords++

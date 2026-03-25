@@ -1703,10 +1703,10 @@ func TestBSIComponentHash(t *testing.T) {
 }
 
 //
-// Component Dependencies fixtures and tests
+// Document-level dependency graph fixtures and tests
 //
 
-// Leaf component: no outgoing DEPENDS_ON or CONTAINS relations
+// CDX: no metadata.component — primary will be missing
 var bsiCdxCompLeaf = []byte(`
 {
   "bomFormat": "CycloneDX",
@@ -1723,87 +1723,178 @@ var bsiCdxCompLeaf = []byte(`
 }
 `)
 
-// Component with resolvable dependency: both main-lib and dep-lib in components
-var bsiCdxCompWithResolvableDep = []byte(`
+// CDX: primary present but no dependencies section
+var bsiCdxDocPrimaryNoRels = []byte(`
 {
   "bomFormat": "CycloneDX",
   "specVersion": "1.6",
   "version": 1,
+  "metadata": {
+    "component": {
+      "type": "application",
+      "bom-ref": "primary",
+      "name": "my-app",
+      "version": "1.0.0"
+    }
+  },
   "components": [
     {
       "type": "library",
-      "bom-ref": "main-lib",
-      "name": "main-lib",
+      "bom-ref": "lib-a",
+      "name": "lib-a",
+      "version": "1.0.0"
+    }
+  ]
+}
+`)
+
+// CDX: primary present but does not declare any deps (another component does)
+var bsiCdxDocPrimaryNotDeclaringDeps = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "version": 1,
+  "metadata": {
+    "component": {
+      "type": "application",
+      "bom-ref": "primary",
+      "name": "my-app",
+      "version": "1.0.0"
+    }
+  },
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "lib-a",
+      "name": "lib-a",
       "version": "1.0.0"
     },
     {
       "type": "library",
-      "bom-ref": "dep-lib",
-      "name": "dep-lib",
+      "bom-ref": "lib-b",
+      "name": "lib-b",
       "version": "2.0.0"
     }
   ],
   "dependencies": [
     {
-      "ref": "main-lib",
-      "dependsOn": ["dep-lib"]
+      "ref": "lib-a",
+      "dependsOn": ["lib-b"]
     }
   ]
 }
 `)
 
-// Component with broken dependency: dep target not in components
-var bsiCdxCompWithBrokenDep = []byte(`
+// CDX: primary declares a dep to a non-existent component
+var bsiCdxDocBrokenDep = []byte(`
 {
   "bomFormat": "CycloneDX",
   "specVersion": "1.6",
   "version": 1,
+  "metadata": {
+    "component": {
+      "type": "application",
+      "bom-ref": "primary",
+      "name": "my-app",
+      "version": "1.0.0"
+    }
+  },
   "components": [
     {
       "type": "library",
-      "bom-ref": "main-lib",
-      "name": "main-lib",
+      "bom-ref": "lib-a",
+      "name": "lib-a",
       "version": "1.0.0"
     }
   ],
   "dependencies": [
     {
-      "ref": "main-lib",
-      "dependsOn": ["nonexistent-dep"]
+      "ref": "primary",
+      "dependsOn": ["nonexistent"]
     }
   ]
 }
 `)
 
-// Component with partial broken deps: one resolves, one doesn't
-var bsiCdxCompWithPartialBrokenDep = []byte(`
+// CDX: primary declares lib-a, but lib-b is orphaned (unreachable from primary)
+var bsiCdxDocOrphanComp = []byte(`
 {
   "bomFormat": "CycloneDX",
   "specVersion": "1.6",
   "version": 1,
+  "metadata": {
+    "component": {
+      "type": "application",
+      "bom-ref": "primary",
+      "name": "my-app",
+      "version": "1.0.0"
+    }
+  },
   "components": [
     {
       "type": "library",
-      "bom-ref": "main-lib",
-      "name": "main-lib",
+      "bom-ref": "lib-a",
+      "name": "lib-a",
       "version": "1.0.0"
     },
     {
       "type": "library",
-      "bom-ref": "dep-lib",
-      "name": "dep-lib",
+      "bom-ref": "orphan",
+      "name": "orphan",
+      "version": "1.0.0"
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "primary",
+      "dependsOn": ["lib-a"]
+    }
+  ]
+}
+`)
+
+// CDX: complete graph — primary -> lib-a -> lib-b (all reachable)
+var bsiCdxDocCompleteGraph = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "version": 1,
+  "metadata": {
+    "component": {
+      "type": "application",
+      "bom-ref": "primary",
+      "name": "my-app",
+      "version": "1.0.0"
+    }
+  },
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "lib-a",
+      "name": "lib-a",
+      "version": "1.0.0"
+    },
+    {
+      "type": "library",
+      "bom-ref": "lib-b",
+      "name": "lib-b",
       "version": "2.0.0"
     }
   ],
   "dependencies": [
     {
-      "ref": "main-lib",
-      "dependsOn": ["dep-lib", "ghost-lib"]
+      "ref": "primary",
+      "dependsOn": ["lib-a"]
+    },
+    {
+      "ref": "lib-a",
+      "dependsOn": ["lib-b"]
     }
   ]
 }
 `)
 
+// SPDX: no DESCRIBES relationship — primary will be missing
 var bsiSpdxCompLeaf = []byte(`
 {
   "spdxVersion": "SPDX-2.3",
@@ -1823,7 +1914,8 @@ var bsiSpdxCompLeaf = []byte(`
 }
 `)
 
-var bsiSpdxCompWithResolvableDep = []byte(`
+// SPDX: primary present (via DESCRIBES) but no other relationships
+var bsiSpdxDocPrimaryNoRels = []byte(`
 {
   "spdxVersion": "SPDX-2.3",
   "SPDXID": "SPDXRef-DOCUMENT",
@@ -1834,27 +1926,28 @@ var bsiSpdxCompWithResolvableDep = []byte(`
   },
   "packages": [
     {
-      "SPDXID": "SPDXRef-main",
-      "name": "main-lib",
+      "SPDXID": "SPDXRef-primary",
+      "name": "my-app",
       "versionInfo": "1.0.0"
     },
     {
-      "SPDXID": "SPDXRef-dep",
-      "name": "dep-lib",
-      "versionInfo": "2.0.0"
+      "SPDXID": "SPDXRef-lib-a",
+      "name": "lib-a",
+      "versionInfo": "1.0.0"
     }
   ],
   "relationships": [
     {
-      "spdxElementId": "SPDXRef-main",
-      "relationshipType": "DEPENDS_ON",
-      "relatedSpdxElement": "SPDXRef-dep"
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relationshipType": "DESCRIBES",
+      "relatedSpdxElement": "SPDXRef-primary"
     }
   ]
 }
 `)
 
-var bsiSpdxCompWithBrokenDep = []byte(`
+// SPDX: primary present but does not declare deps (another component does)
+var bsiSpdxDocPrimaryNotDeclaringDeps = []byte(`
 {
   "spdxVersion": "SPDX-2.3",
   "SPDXID": "SPDXRef-DOCUMENT",
@@ -1865,14 +1958,66 @@ var bsiSpdxCompWithBrokenDep = []byte(`
   },
   "packages": [
     {
-      "SPDXID": "SPDXRef-main",
-      "name": "main-lib",
+      "SPDXID": "SPDXRef-primary",
+      "name": "my-app",
+      "versionInfo": "1.0.0"
+    },
+    {
+      "SPDXID": "SPDXRef-lib-a",
+      "name": "lib-a",
+      "versionInfo": "1.0.0"
+    },
+    {
+      "SPDXID": "SPDXRef-lib-b",
+      "name": "lib-b",
+      "versionInfo": "2.0.0"
+    }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relationshipType": "DESCRIBES",
+      "relatedSpdxElement": "SPDXRef-primary"
+    },
+    {
+      "spdxElementId": "SPDXRef-lib-a",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-lib-b"
+    }
+  ]
+}
+`)
+
+// SPDX: primary declares a dep to a non-existent package
+var bsiSpdxDocBrokenDep = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "documentNamespace": "https://example.com/test",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": ["Tool: test"]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-primary",
+      "name": "my-app",
+      "versionInfo": "1.0.0"
+    },
+    {
+      "SPDXID": "SPDXRef-lib-a",
+      "name": "lib-a",
       "versionInfo": "1.0.0"
     }
   ],
   "relationships": [
     {
-      "spdxElementId": "SPDXRef-main",
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relationshipType": "DESCRIBES",
+      "relatedSpdxElement": "SPDXRef-primary"
+    },
+    {
+      "spdxElementId": "SPDXRef-primary",
       "relationshipType": "DEPENDS_ON",
       "relatedSpdxElement": "SPDXRef-nonexistent"
     }
@@ -1880,16 +2025,105 @@ var bsiSpdxCompWithBrokenDep = []byte(`
 }
 `)
 
+// SPDX: orphan component not reachable from primary
+var bsiSpdxDocOrphanComp = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "documentNamespace": "https://example.com/test",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": ["Tool: test"]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-primary",
+      "name": "my-app",
+      "versionInfo": "1.0.0"
+    },
+    {
+      "SPDXID": "SPDXRef-lib-a",
+      "name": "lib-a",
+      "versionInfo": "1.0.0"
+    },
+    {
+      "SPDXID": "SPDXRef-orphan",
+      "name": "orphan",
+      "versionInfo": "1.0.0"
+    }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relationshipType": "DESCRIBES",
+      "relatedSpdxElement": "SPDXRef-primary"
+    },
+    {
+      "spdxElementId": "SPDXRef-primary",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-lib-a"
+    }
+  ]
+}
+`)
+
+// SPDX: complete graph — primary -> lib-a -> lib-b
+var bsiSpdxDocCompleteGraph = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "documentNamespace": "https://example.com/test",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": ["Tool: test"]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-primary",
+      "name": "my-app",
+      "versionInfo": "1.0.0"
+    },
+    {
+      "SPDXID": "SPDXRef-lib-a",
+      "name": "lib-a",
+      "versionInfo": "1.0.0"
+    },
+    {
+      "SPDXID": "SPDXRef-lib-b",
+      "name": "lib-b",
+      "versionInfo": "2.0.0"
+    }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relationshipType": "DESCRIBES",
+      "relatedSpdxElement": "SPDXRef-primary"
+    },
+    {
+      "spdxElementId": "SPDXRef-primary",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-lib-a"
+    },
+    {
+      "spdxElementId": "SPDXRef-lib-a",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-lib-b"
+    }
+  ]
+}
+`)
+
+// TestBSIComponentDependencies tests the per-component direct dependency check (COMP_DEPTH).
+// Each component's declared deps must resolve to known SBOM components.
 func TestBSIComponentDependencies(t *testing.T) {
 	ctx := context.Background()
 
 	t.Run("cdxLeafComponent", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiCdxCompLeaf, sbom.Signature{})
 		require.NoError(t, err)
-
 		for _, c := range doc.Components() {
 			got := bsiv11ComponentDependencies(doc, c)
-
 			assert.InDelta(t, 10.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_DEPTH, got.CheckKey)
 			assert.Equal(t, common.UniqueElementID(c), got.ID)
@@ -1900,10 +2134,8 @@ func TestBSIComponentDependencies(t *testing.T) {
 	t.Run("spdxLeafComponent", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiSpdxCompLeaf, sbom.Signature{})
 		require.NoError(t, err)
-
 		for _, c := range doc.Components() {
 			got := bsiv11ComponentDependencies(doc, c)
-
 			assert.InDelta(t, 10.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_DEPTH, got.CheckKey)
 			assert.Equal(t, common.UniqueElementID(c), got.ID)
@@ -1911,81 +2143,155 @@ func TestBSIComponentDependencies(t *testing.T) {
 		}
 	})
 
-	t.Run("cdxCompWithResolvableDependency", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiCdxCompWithResolvableDep, sbom.Signature{})
+	t.Run("cdxResolvableDeps", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiCdxDocCompleteGraph, sbom.Signature{})
 		require.NoError(t, err)
-
-		for _, c := range doc.Components() {
-			if c.GetName() == "main-lib" {
-				got := bsiv11ComponentDependencies(doc, c)
-
-				assert.InDelta(t, 10.0, got.Score, 1e-9)
-				assert.Equal(t, COMP_DEPTH, got.CheckKey)
-				assert.Equal(t, common.UniqueElementID(c), got.ID)
-				assert.Equal(t, "(all dependencies resolved) dep-lib", got.CheckValue)
-			}
-		}
-	})
-
-	t.Run("spdxCompWithResolvableDependency", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiSpdxCompWithResolvableDep, sbom.Signature{})
-		require.NoError(t, err)
-
-		for _, c := range doc.Components() {
-			if c.GetName() == "main-lib" {
-				got := bsiv11ComponentDependencies(doc, c)
-
-				assert.InDelta(t, 10.0, got.Score, 1e-9)
-				assert.Equal(t, COMP_DEPTH, got.CheckKey)
-				assert.Equal(t, common.UniqueElementID(c), got.ID)
-				assert.Equal(t, "(all dependencies resolved) dep-lib", got.CheckValue)
-			}
-		}
-	})
-
-	t.Run("cdxCompWithBrokenDependency", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiCdxCompWithBrokenDep, sbom.Signature{})
-		require.NoError(t, err)
-
 		for _, c := range doc.Components() {
 			got := bsiv11ComponentDependencies(doc, c)
-
-			assert.InDelta(t, 0.0, got.Score, 1e-9)
+			assert.InDelta(t, 10.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_DEPTH, got.CheckKey)
-			assert.Equal(t, common.UniqueElementID(c), got.ID)
-			assert.Equal(t, "broken-dependencies (nonexistent-dep not found in SBOM)", got.CheckValue)
 		}
 	})
 
-	t.Run("spdxCompWithBrokenDependency", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiSpdxCompWithBrokenDep, sbom.Signature{})
+	t.Run("cdxBrokenDep", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiCdxDocBrokenDep, sbom.Signature{})
 		require.NoError(t, err)
-
+		// primary declares dep to nonexistent — components() does not include primary,
+		// so per-component records for components[] are all leaves (score=10).
+		// The broken dep is only caught at the SBOM_DEPTH level.
 		for _, c := range doc.Components() {
 			got := bsiv11ComponentDependencies(doc, c)
-
-			assert.InDelta(t, 0.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_DEPTH, got.CheckKey)
-			assert.Equal(t, common.UniqueElementID(c), got.ID)
-			assert.Equal(t, "broken-dependencies (nonexistent not found in SBOM)", got.CheckValue)
 		}
 	})
 
-	t.Run("cdxCompWithPartialBrokenDependency", func(t *testing.T) {
-		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiCdxCompWithPartialBrokenDep, sbom.Signature{})
+	t.Run("spdxResolvableDeps", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiSpdxDocCompleteGraph, sbom.Signature{})
 		require.NoError(t, err)
-
 		for _, c := range doc.Components() {
-			if c.GetName() == "main-lib" {
-				got := bsiv11ComponentDependencies(doc, c)
-
-				// Declared 2 deps, only 1 resolves -> broken
-				assert.InDelta(t, 0.0, got.Score, 1e-9)
-				assert.Equal(t, COMP_DEPTH, got.CheckKey)
-				assert.Equal(t, common.UniqueElementID(c), got.ID)
-				assert.Equal(t, "broken-dependencies (ghost-lib not found in SBOM)", got.CheckValue)
-			}
+			got := bsiv11ComponentDependencies(doc, c)
+			assert.InDelta(t, 10.0, got.Score, 1e-9)
+			assert.Equal(t, COMP_DEPTH, got.CheckKey)
 		}
+	})
+}
+
+// TestBSISBOMDepth tests the document-level dependency graph completeness check (SBOM_DEPTH).
+// This validates recursive closure, primary declaring deps, and orphan detection.
+func TestBSISBOMDepth(t *testing.T) {
+	ctx := context.Background()
+
+	// --- CDX scenarios ---
+
+	t.Run("cdxNoPrimaryComponent", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiCdxCompLeaf, sbom.Signature{})
+		require.NoError(t, err)
+		got := bsiv11SBOMDepth(doc)
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, SBOM_DEPTH, got.CheckKey)
+		assert.Equal(t, "doc", got.ID)
+		assert.Equal(t, "primary component missing", got.CheckValue)
+	})
+
+	t.Run("cdxNoRelationships", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiCdxDocPrimaryNoRels, sbom.Signature{})
+		require.NoError(t, err)
+		got := bsiv11SBOMDepth(doc)
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "doc", got.ID)
+		assert.Equal(t, "no relationships declared", got.CheckValue)
+	})
+
+	t.Run("cdxPrimaryNotDeclaringDeps", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiCdxDocPrimaryNotDeclaringDeps, sbom.Signature{})
+		require.NoError(t, err)
+		got := bsiv11SBOMDepth(doc)
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "doc", got.ID)
+		assert.Equal(t, "primary component does not declare its dependencies", got.CheckValue)
+	})
+
+	t.Run("cdxBrokenDependency", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiCdxDocBrokenDep, sbom.Signature{})
+		require.NoError(t, err)
+		got := bsiv11SBOMDepth(doc)
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "doc", got.ID)
+		assert.Contains(t, got.CheckValue, "broken-dependency")
+	})
+
+	t.Run("cdxOrphanComponent", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiCdxDocOrphanComp, sbom.Signature{})
+		require.NoError(t, err)
+		got := bsiv11SBOMDepth(doc)
+		assert.InDelta(t, 5.0, got.Score, 1e-9)
+		assert.Equal(t, "doc", got.ID)
+		assert.Contains(t, got.CheckValue, "orphan")
+	})
+
+	t.Run("cdxCompleteGraph", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiCdxDocCompleteGraph, sbom.Signature{})
+		require.NoError(t, err)
+		got := bsiv11SBOMDepth(doc)
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "doc", got.ID)
+		assert.Equal(t, "dependencies are recursively declared and structurally complete", got.CheckValue)
+	})
+
+	// --- SPDX scenarios ---
+
+	t.Run("spdxNoPrimaryComponent", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiSpdxCompLeaf, sbom.Signature{})
+		require.NoError(t, err)
+		got := bsiv11SBOMDepth(doc)
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "doc", got.ID)
+		assert.Equal(t, "primary component missing", got.CheckValue)
+	})
+
+	t.Run("spdxNoRelationships", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiSpdxDocPrimaryNoRels, sbom.Signature{})
+		require.NoError(t, err)
+		got := bsiv11SBOMDepth(doc)
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "doc", got.ID)
+		assert.Equal(t, "no relationships declared", got.CheckValue)
+	})
+
+	t.Run("spdxPrimaryNotDeclaringDeps", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiSpdxDocPrimaryNotDeclaringDeps, sbom.Signature{})
+		require.NoError(t, err)
+		got := bsiv11SBOMDepth(doc)
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "doc", got.ID)
+		assert.Equal(t, "primary component does not declare its dependencies", got.CheckValue)
+	})
+
+	t.Run("spdxBrokenDependency", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiSpdxDocBrokenDep, sbom.Signature{})
+		require.NoError(t, err)
+		got := bsiv11SBOMDepth(doc)
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "doc", got.ID)
+		assert.Contains(t, got.CheckValue, "broken-dependency")
+	})
+
+	t.Run("spdxOrphanComponent", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiSpdxDocOrphanComp, sbom.Signature{})
+		require.NoError(t, err)
+		got := bsiv11SBOMDepth(doc)
+		assert.InDelta(t, 5.0, got.Score, 1e-9)
+		assert.Equal(t, "doc", got.ID)
+		assert.Contains(t, got.CheckValue, "orphan")
+	})
+
+	t.Run("spdxCompleteGraph", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiSpdxDocCompleteGraph, sbom.Signature{})
+		require.NoError(t, err)
+		got := bsiv11SBOMDepth(doc)
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "doc", got.ID)
+		assert.Equal(t, "dependencies are recursively declared and structurally complete", got.CheckValue)
 	})
 }
 

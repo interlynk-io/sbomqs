@@ -27,7 +27,7 @@ var bsiV21SectionDetails = map[int]bsiSection{
 	SBOM_SPEC:              {Title: "SBOM formats", ID: "4", Required: true, DataField: "specification"},
 	SBOM_SPEC_VERSION:      {Title: "SBOM formats", ID: "4", Required: true, DataField: "specification version"},
 	SBOM_BUILD:             {Title: "Level of Detail", ID: "5.1", Required: true, DataField: "build process"},
-	SBOM_DEPTH:             {Title: "Level of Detail", ID: "5.1", Required: true, DataField: "depth"},
+	SBOM_DEPTH:             {Title: "Level of Detail", ID: "5.2.1", Required: true, DataField: "dependency graph completeness"},
 	SBOM_CREATOR:           {Title: "Required SBOM fields", ID: "5.2.1", Required: true, DataField: "creator of SBOM"},
 	SBOM_TIMESTAMP:         {Title: "Required SBOM fields", ID: "5.2.1", Required: true, DataField: "timestamp"},
 	SBOM_URI:               {Title: "Required SBOM fields", ID: "5.2.1", Required: true, DataField: "SBOM-URI"},
@@ -91,7 +91,7 @@ func bsiV21DetailedReport(dtb *db.DB, fileName string) {
 		if !section.Required {
 			sectionID += "*"
 		}
-		table.Append([]string{section.ElementID, sectionID, section.DataField, section.ElementResult, fmt.Sprintf("%0.1f", section.Score)})
+		table.Append([]string{section.ElementID, sectionID, section.DataField, wrapResult(section.ElementResult), fmt.Sprintf("%0.1f", section.Score)})
 	}
 	table.Render()
 }

@@ -44,6 +44,7 @@ func bsiV21Result(ctx context.Context, doc sbom.Document, fileName string, outFo
 	dtb.AddRecord(bsiBuildPhase(doc))
 	dtb.AddRecord(bsiv11SBOMCreator(doc))
 	dtb.AddRecord(bsiv11SBOMTimestamp(doc))
+	dtb.AddRecord(bsiV21SBOMDepth(doc))
 	dtb.AddRecord(bsiV21SBOMURI(doc))
 
 	// Component-level checks
@@ -161,7 +162,7 @@ func bsiV21Components(doc sbom.Document) []*db.Record {
 		records = append(records, bsiv11ComponentName(component))
 		records = append(records, bsiv11ComponentVersion(component))
 		records = append(records, bsiV21ComponentFilename(component))
-		records = append(records, bsiv11ComponentDependencies(doc, component))
+		records = append(records, bsiV21ComponentDependencies(doc, component))
 		records = append(records, bsiV21ComponentDistributionLicense(component))
 		records = append(records, bsiV21ComponentDeployableHash(component))
 		records = append(records, bsiV21ComponentExecutable(component))
@@ -399,4 +400,128 @@ func bsiV21ComponentSecurityTxtURL(component sbom.GetComponent) *db.Record {
 	}
 
 	return db.NewRecordStmtOptional(COMP_SECURITY_TXT_URL, id, "", 0.0)
+}
+
+// bsiV21ComponentDependencies checks that a component's direct dependencies are declared
+// and resolvable. BSI TR-03183-2 v2.1 §5.2.2 inherits v2.0 semantics: DEPENDS_ON + CONTAINS.
+//
+// Scoring (per component):
+//   0  — a declared dependency cannot be resolved to a component in the SBOM
+//  10  — all declared deps resolve, or component is a leaf (no deps)
+func bsiV21ComponentDependencies(doc sbom.Document, component sbom.GetComponent) *db.Record {
+	compID := component.GetID()
+
+	componentMap := make(map[string]sbom.GetComponent)
+	for _, c := range doc.Components() {
+		componentMap[c.GetID()] = c
+	}
+
+	var declared []string
+	for _, r := range doc.GetOutgoingRelations(compID) {
+		if strings.EqualFold(r.GetType(), "DEPENDS_ON") || strings.EqualFold(r.GetType(), "CONTAINS") {
+			declared = append(declared, r.GetTo())
+		}
+	}
+
+	if len(declared) == 0 {
+		return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), "no-dependencies (leaf element)", 10.0, "")
+	}
+
+	var names []string
+	for _, depID := range declared {
+		depComp, exists := componentMap[depID]
+		if !exists {
+			return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), "broken-dependencies ("+depID+" not found in SBOM)", 0.0, "")
+		}
+		if name := strings.TrimSpace(depComp.GetName()); name != "" {
+			names = append(names, name)
+		}
+	}
+
+	result := "(all dependencies resolved) " + strings.Join(names, ", ")
+	return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), result, 10.0, "")
+}
+
+// bsiV21SBOMDepth checks dependency graph completeness at the document level.
+// BSI TR-03183-2 v2.1 §5.1: same recursive requirements as v2.0, plus the completeness
+// of the dependency enumeration MUST be clearly indicated (§5.2.2 new requirement).
+//
+// Scoring (document-level, SBOM_DEPTH):
+//   0  — no relationships, broken relationships, or primary does not declare deps
+//   5  — graph declared but has orphan (unreachable) components
+//   5  — graph structurally complete but completeness indication missing
+//  10  — graph complete and completeness explicitly indicated
+func bsiV21SBOMDepth(doc sbom.Document) *db.Record {
+	primary := doc.PrimaryComp()
+	if !primary.IsPresent() {
+		return db.NewRecordStmt(SBOM_DEPTH, "doc", "primary component missing", 0.0, "")
+	}
+
+	rels := doc.GetRelationships()
+	if len(rels) == 0 {
+		return db.NewRecordStmt(SBOM_DEPTH, "doc", "no relationships declared", 0.0, "")
+	}
+
+	componentMap := make(map[string]sbom.GetComponent)
+	for _, c := range doc.Components() {
+		componentMap[c.GetID()] = c
+	}
+	componentMap[primary.GetID()] = primary.Component()
+
+	for _, r := range rels {
+		if strings.EqualFold(r.GetType(), "DESCRIBES") {
+			continue
+		}
+		if _, ok := componentMap[r.GetFrom()]; !ok {
+			return db.NewRecordStmt(SBOM_DEPTH, "doc", "broken-dependency: source ref "+r.GetFrom()+" not found", 0.0, "")
+		}
+		if _, ok := componentMap[r.GetTo()]; !ok {
+			return db.NewRecordStmt(SBOM_DEPTH, "doc", "broken-dependency: target ref "+r.GetTo()+" not found", 0.0, "")
+		}
+	}
+
+	if len(doc.GetOutgoingRelations(primary.GetID())) == 0 {
+		return db.NewRecordStmt(SBOM_DEPTH, "doc", "primary component does not declare its dependencies", 0.0, "")
+	}
+
+	visited := make(map[string]bool)
+	var dfs func(id string)
+	dfs = func(id string) {
+		if visited[id] {
+			return
+		}
+		visited[id] = true
+		for _, rel := range doc.GetOutgoingRelations(id) {
+			if strings.EqualFold(rel.GetType(), "DEPENDS_ON") || strings.EqualFold(rel.GetType(), "CONTAINS") {
+				dfs(rel.GetTo())
+			}
+		}
+	}
+	dfs(primary.GetID())
+
+	orphanCount := 0
+	for id := range componentMap {
+		if !visited[id] {
+			orphanCount++
+		}
+	}
+	if orphanCount > 0 {
+		return db.NewRecordStmt(SBOM_DEPTH, "doc", fmt.Sprintf("dependency graph incomplete: %d orphan component(s) found", orphanCount), 5.0, "")
+	}
+
+	// v2.1 §5.2.2: completeness of the enumeration MUST be clearly indicated
+	hasCompletenessIndication := false
+	for _, comp := range doc.Composition() {
+		scope := comp.Scope()
+		agg := comp.Aggregate()
+		if (scope == sbom.ScopeDependencies || scope == sbom.ScopeGlobal) && agg != sbom.AggregateMissing {
+			hasCompletenessIndication = true
+			break
+		}
+	}
+	if !hasCompletenessIndication {
+		return db.NewRecordStmt(SBOM_DEPTH, "doc", "dependency graph complete but completeness indication missing (BSI v2.1 §5.2.2 requires explicit indication)", 5.0, "")
+	}
+
+	return db.NewRecordStmt(SBOM_DEPTH, "doc", "dependencies recursively declared, structurally complete, and completeness indicated", 10.0, "")
 }

@@ -16,6 +16,7 @@ package compliance
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	pkgcommon "github.com/interlynk-io/sbomqs/v2/pkg/common"
@@ -44,6 +45,7 @@ func bsiV2Result(ctx context.Context, doc sbom.Document, fileName string, outFor
 	dtb.AddRecord(bsiBuildPhase(doc))
 	dtb.AddRecord(bsiv11SBOMCreator(doc))
 	dtb.AddRecord(bsiv11SBOMTimestamp(doc))
+	dtb.AddRecord(bsiV2SBOMDepth(doc))
 	dtb.AddRecord(bsiv11SBOMURI(doc))
 	dtb.AddRecords(bsiV2Components(doc))
 	// New SBOM fields
@@ -244,7 +246,7 @@ func bsiV2Components(doc sbom.Document) []*db.Record {
 		records = append(records, bsiv11ComponentName(component))
 		records = append(records, bsiv11ComponentVersion(component))
 		records = append(records, bsiV2ComponentFilename(doc, component))
-		records = append(records, bsiv11ComponentDependencies(doc, component))
+		records = append(records, bsiV2ComponentDependencies(doc, component))
 		records = append(records, bsiV2ComponentAssociatedLicense(doc, component))
 		records = append(records, bsiV2ComponentDeployableHash(doc, component))
 		records = append(records, bsiV2ComponentExecutable(doc, component))
@@ -453,4 +455,116 @@ func bsiV2ComponentDeclaredLicense(component sbom.GetComponent) *db.Record {
 	}
 
 	return db.NewRecordStmtOptional(COMP_DECLARED_LICENSE, id, "compliant", 10.0)
+}
+
+// bsiV2ComponentDependencies checks that a component's direct dependencies are declared
+// and resolvable. BSI TR-03183-2 v2.0 §5.2.2 extends the dependency definition to include
+// containment (DEPENDS_ON + CONTAINS: statically linked or embedded components).
+//
+// Scoring (per component):
+//
+//	 0  — a declared dependency cannot be resolved to a component in the SBOM
+//	10  — all declared deps resolve, or component is a leaf (no deps)
+func bsiV2ComponentDependencies(doc sbom.Document, component sbom.GetComponent) *db.Record {
+	compID := component.GetID()
+
+	componentMap := make(map[string]sbom.GetComponent)
+	for _, c := range doc.Components() {
+		componentMap[c.GetID()] = c
+	}
+
+	var declared []string
+	for _, r := range doc.GetOutgoingRelations(compID) {
+		if strings.EqualFold(r.GetType(), "DEPENDS_ON") || strings.EqualFold(r.GetType(), "CONTAINS") {
+			declared = append(declared, r.GetTo())
+		}
+	}
+
+	if len(declared) == 0 {
+		return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), "no-dependencies (leaf element)", 10.0, "")
+	}
+
+	var names []string
+	for _, depID := range declared {
+		depComp, exists := componentMap[depID]
+		if !exists {
+			return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), "broken-dependencies ("+depID+" not found in SBOM)", 0.0, "")
+		}
+		if name := strings.TrimSpace(depComp.GetName()); name != "" {
+			names = append(names, name)
+		}
+	}
+
+	result := "(all dependencies resolved) " + strings.Join(names, ", ")
+	return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), result, 10.0, "")
+}
+
+// bsiV2SBOMDepth checks dependency graph completeness at the document level.
+// BSI TR-03183-2 v2.0 §5.1: recursive dependency resolution MUST be performed;
+// v2.0 includes containment (DEPENDS_ON + CONTAINS) in the DFS traversal.
+//
+// Scoring (document-level, SBOM_DEPTH):
+//
+//	 0  — no relationships, broken relationships, or primary does not declare deps
+//	 5  — graph declared but has orphan (unreachable) components
+//	10  — graph is recursively complete with no orphans
+func bsiV2SBOMDepth(doc sbom.Document) *db.Record {
+	primary := doc.PrimaryComp()
+	if !primary.IsPresent() {
+		return db.NewRecordStmt(SBOM_DEPTH, "doc", "primary component missing", 0.0, "")
+	}
+
+	rels := doc.GetRelationships()
+	if len(rels) == 0 {
+		return db.NewRecordStmt(SBOM_DEPTH, "doc", "no relationships declared", 0.0, "")
+	}
+
+	componentMap := make(map[string]sbom.GetComponent)
+	for _, c := range doc.Components() {
+		componentMap[c.GetID()] = c
+	}
+	componentMap[primary.GetID()] = primary.Component()
+
+	for _, r := range rels {
+		if strings.EqualFold(r.GetType(), "DESCRIBES") {
+			continue
+		}
+		if _, ok := componentMap[r.GetFrom()]; !ok {
+			return db.NewRecordStmt(SBOM_DEPTH, "doc", "broken-dependency: source ref "+r.GetFrom()+" not found", 0.0, "")
+		}
+		if _, ok := componentMap[r.GetTo()]; !ok {
+			return db.NewRecordStmt(SBOM_DEPTH, "doc", "broken-dependency: target ref "+r.GetTo()+" not found", 0.0, "")
+		}
+	}
+
+	if len(doc.GetOutgoingRelations(primary.GetID())) == 0 {
+		return db.NewRecordStmt(SBOM_DEPTH, "doc", "primary component does not declare its dependencies", 0.0, "")
+	}
+
+	visited := make(map[string]bool)
+	var dfs func(id string)
+	dfs = func(id string) {
+		if visited[id] {
+			return
+		}
+		visited[id] = true
+		for _, rel := range doc.GetOutgoingRelations(id) {
+			if strings.EqualFold(rel.GetType(), "DEPENDS_ON") || strings.EqualFold(rel.GetType(), "CONTAINS") {
+				dfs(rel.GetTo())
+			}
+		}
+	}
+	dfs(primary.GetID())
+
+	orphanCount := 0
+	for id := range componentMap {
+		if !visited[id] {
+			orphanCount++
+		}
+	}
+	if orphanCount > 0 {
+		return db.NewRecordStmt(SBOM_DEPTH, "doc", fmt.Sprintf("dependency graph incomplete: %d orphan component(s) found", orphanCount), 5.0, "")
+	}
+
+	return db.NewRecordStmt(SBOM_DEPTH, "doc", "dependencies are recursively declared and structurally complete", 10.0, "")
 }

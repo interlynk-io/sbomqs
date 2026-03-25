@@ -16,6 +16,7 @@ package compliance
 
 import (
 	"context"
+	"fmt"
 	"net/mail"
 	"net/url"
 	"strings"
@@ -126,6 +127,7 @@ func bsiResult(ctx context.Context, doc sbom.Document, fileName string, outForma
 	// Required SBOM-level checks
 	dtb.AddRecord(bsiv11SBOMCreator(doc))
 	dtb.AddRecord(bsiv11SBOMTimestamp(doc))
+	dtb.AddRecord(bsiv11SBOMDepth(doc))
 
 	// Additional SBOM-level checks
 	dtb.AddRecord(bsiv11SBOMURI(doc))
@@ -226,12 +228,12 @@ func bsiv11SBOMTimestamp(doc sbom.Document) *db.Record {
 func bsiv11SBOMURI(doc sbom.Document) *db.Record {
 	uri := strings.TrimSpace(doc.Spec().GetURI())
 
-	// No URI → prerequisite not met → N/A (Additional, Ignore=true)
+	// No URI => prerequisite not met => N/A (Additional, Ignore=true)
 	if uri == "" {
 		return db.NewRecordStmtAdditional(SBOM_URI, "doc", "", 0.0, true)
 	}
 
-	// URI present but invalid → prerequisite met, fails validation
+	// URI present but invalid => prerequisite met, fails validation
 	if !bsiIsValidURL(uri) && !strings.HasPrefix(uri, "urn:") {
 		return db.NewRecordStmtAdditional(SBOM_URI, "doc", uri, 0.0, false)
 	}
@@ -256,7 +258,7 @@ func bsiComponents(doc sbom.Document) []*db.Record {
 		records = append(records, bsiv11ComponentLicense(component))
 		records = append(records, bsiv11ComponentExecutableHash(doc, component))
 
-		// Assitional fields
+		// Additional fields
 		records = append(records, bsiv11ComponentSourceCodeURL(component))
 		records = append(records, bsiv11ComponentDownloadURL(component))
 		records = append(records, bsiv11ComponentSourceHash(component))
@@ -331,6 +333,13 @@ func bsiv11ComponentVersion(component sbom.GetComponent) *db.Record {
 	return db.NewRecordStmt(COMP_VERSION, common.UniqueElementID(component), "", 0.0, "")
 }
 
+// bsiv11ComponentDependencies checks that a component's direct dependencies are declared
+// and resolvable. BSI TR-03183-2 v1.1 §5.2.2: each component must enumerate its direct
+// dependencies. v1.1 covers DEPENDS_ON relationships only.
+//
+// Scoring (per component):
+//   0  — a declared dependency cannot be resolved to a component in the SBOM
+//  10  — all declared deps resolve, or component is a leaf (no deps)
 func bsiv11ComponentDependencies(doc sbom.Document, component sbom.GetComponent) *db.Record {
 	compID := component.GetID()
 
@@ -341,34 +350,104 @@ func bsiv11ComponentDependencies(doc sbom.Document, component sbom.GetComponent)
 
 	var declared []string
 	for _, r := range doc.GetOutgoingRelations(compID) {
-		if strings.EqualFold(r.GetType(), "DEPENDS_ON") || strings.EqualFold(r.GetType(), "CONTAINS") {
+		if strings.EqualFold(r.GetType(), "DEPENDS_ON") {
 			declared = append(declared, r.GetTo())
 		}
 	}
 
-	// case:1 Leaf components
+	// Leaf component: no direct deps declared
 	if len(declared) == 0 {
 		return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), "no-dependencies (leaf element)", 10.0, "")
 	}
 
-	// case:2 validate each dependency
+	// Validate each declared dep resolves to a known component
 	var names []string
 	for _, depID := range declared {
 		depComp, exists := componentMap[depID]
 		if !exists {
 			return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), "broken-dependencies ("+depID+" not found in SBOM)", 0.0, "")
 		}
-
-		name := strings.TrimSpace(depComp.GetName())
-		if name != "" {
+		if name := strings.TrimSpace(depComp.GetName()); name != "" {
 			names = append(names, name)
 		}
 	}
 
-	// case:3 all declared dependencies resolved
 	result := "(all dependencies resolved) " + strings.Join(names, ", ")
-
 	return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), result, 10.0, "")
+}
+
+// bsiv11SBOMDepth checks dependency graph completeness at the document level.
+// BSI TR-03183-2 v1.1 §5.1: recursive dependency resolution MUST be performed at the
+// SBOM level; all components must be reachable from the primary component.
+//
+// Scoring (document-level, SBOM_DEPTH):
+//   0  — no relationships, broken relationships, or primary does not declare deps
+//   5  — graph declared but has orphan (unreachable) components
+//  10  — graph is recursively complete with no orphans
+func bsiv11SBOMDepth(doc sbom.Document) *db.Record {
+	primary := doc.PrimaryComp()
+	if !primary.IsPresent() {
+		return db.NewRecordStmt(SBOM_DEPTH, "doc", "primary component missing", 0.0, "")
+	}
+
+	rels := doc.GetRelationships()
+	if len(rels) == 0 {
+		return db.NewRecordStmt(SBOM_DEPTH, "doc", "no relationships declared", 0.0, "")
+	}
+
+	// Build component map (include primary)
+	componentMap := make(map[string]sbom.GetComponent)
+	for _, c := range doc.Components() {
+		componentMap[c.GetID()] = c
+	}
+	componentMap[primary.GetID()] = primary.Component()
+
+	// Validate all relationships reference defined components
+	for _, r := range rels {
+		if strings.EqualFold(r.GetType(), "DESCRIBES") {
+			continue
+		}
+		if _, ok := componentMap[r.GetFrom()]; !ok {
+			return db.NewRecordStmt(SBOM_DEPTH, "doc", "broken-dependency: source ref "+r.GetFrom()+" not found", 0.0, "")
+		}
+		if _, ok := componentMap[r.GetTo()]; !ok {
+			return db.NewRecordStmt(SBOM_DEPTH, "doc", "broken-dependency: target ref "+r.GetTo()+" not found", 0.0, "")
+		}
+	}
+
+	// Primary must declare its dependencies
+	if len(doc.GetOutgoingRelations(primary.GetID())) == 0 {
+		return db.NewRecordStmt(SBOM_DEPTH, "doc", "primary component does not declare its dependencies", 0.0, "")
+	}
+
+	// Recursive DFS from primary following DEPENDS_ON (v1.1 does not include CONTAINS)
+	visited := make(map[string]bool)
+	var dfs func(id string)
+	dfs = func(id string) {
+		if visited[id] {
+			return
+		}
+		visited[id] = true
+		for _, rel := range doc.GetOutgoingRelations(id) {
+			if strings.EqualFold(rel.GetType(), "DEPENDS_ON") {
+				dfs(rel.GetTo())
+			}
+		}
+	}
+	dfs(primary.GetID())
+
+	// Detect orphan components
+	orphanCount := 0
+	for id := range componentMap {
+		if !visited[id] {
+			orphanCount++
+		}
+	}
+	if orphanCount > 0 {
+		return db.NewRecordStmt(SBOM_DEPTH, "doc", fmt.Sprintf("dependency graph incomplete: %d orphan component(s) found", orphanCount), 5.0, "")
+	}
+
+	return db.NewRecordStmt(SBOM_DEPTH, "doc", "dependencies are recursively declared and structurally complete", 10.0, "")
 }
 
 func bsiv11ComponentLicense(component sbom.GetComponent) *db.Record {
@@ -551,6 +630,6 @@ func bsiv11ComponentOtherUniqueIdentifiers(component sbom.GetComponent) *db.Reco
 		}
 	}
 
-	// No identifiers → prerequisite not met → N/A
+	// No identifiers => prerequisite not met => N/A
 	return db.NewRecordStmtAdditional(COMP_OTHER_UNIQ_IDS, id, "", 0.0, true)
 }

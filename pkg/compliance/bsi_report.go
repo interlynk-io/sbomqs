@@ -18,6 +18,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -29,16 +30,16 @@ import (
 
 var bsiSectionDetails = map[int]bsiSection{
 	// §3 / §4 level fields
-	SBOM_SPEC:         {Title: "SBOM formats", ID: "4", Required: true, DataField: "specification"},
-	SBOM_SPEC_VERSION: {Title: "SBOM formats", ID: "4", Required: true, DataField: "specification version"},
-	SBOM_BUILD:        {Title: "Level of Detail", ID: "5.1", Required: true, DataField: "build process"},
-	SBOM_DEPTH:        {Title: "Level of Detail", ID: "5.1", Required: true, DataField: "depth"},
+	SBOM_SPEC:            {Title: "SBOM formats", ID: "4", Required: true, DataField: "specification"},
+	SBOM_SPEC_VERSION:    {Title: "SBOM formats", ID: "4", Required: true, DataField: "specification version"},
+	SBOM_BUILD:           {Title: "Level of Detail", ID: "5.1", Required: true, DataField: "build process"},
 	SBOM_VULNERABILITIES: {Title: "Definition of SBOM", ID: "3.1", Required: true, DataField: "vuln"},
 
 	// §5.2 Required SBOM fields
 	SBOM_CREATOR:    {Title: "Required SBOM fields", ID: "5.2.1", Required: true, DataField: "creator of SBOM"},
 	SBOM_TIMESTAMP:  {Title: "Required SBOM fields", ID: "5.2.1", Required: true, DataField: "timestamp"},
 	SBOM_COMPONENTS: {Title: "Required component fields", ID: "5.2.2", Required: true, DataField: "components"},
+	SBOM_DEPTH:      {Title: "Level of Detail", ID: "5.2.1", Required: true, DataField: "dependency graph completeness"},
 
 	// §5.2 Required component fields
 	COMP_CREATOR:            {Title: "Required component fields", ID: "5.2.2", Required: true, DataField: "component creator"},
@@ -83,11 +84,11 @@ type tool struct {
 	Vendor  string `json:"vendor"`
 }
 type Summary struct {
-	TotalScore          float64 `json:"total_score"`
-	MaxScore            float64 `json:"max_score"`
-	TotalRequiredScore  float64 `json:"required_elements_score"`
+	TotalScore           float64 `json:"total_score"`
+	MaxScore             float64 `json:"max_score"`
+	TotalRequiredScore   float64 `json:"required_elements_score"`
 	TotalAdditionalScore float64 `json:"additional_elements_score"`
-	TotalOptionalScore  float64 `json:"optional_elements_score"`
+	TotalOptionalScore   float64 `json:"optional_elements_score"`
 }
 type bsiSection struct {
 	Title         string  `json:"section_title"`
@@ -150,11 +151,11 @@ func bsiJSONReport(dtb *db.DB, fileName string) {
 
 func constructSections(dtb *db.DB) []bsiSection {
 	allIDs := dtb.GetAllIDs()
-	
+
 	// Estimate capacity based on the number of IDs and potential records per ID
 	estimatedCapacity := len(allIDs) * 5 // rough estimate
 	sections := make([]bsiSection, 0, estimatedCapacity)
-	
+
 	for _, id := range allIDs {
 		records := dtb.GetRecordsByID(id)
 
@@ -235,10 +236,34 @@ func bsiDetailedReport(dtb *db.DB, fileName string, colorOutput bool) {
 				section.Score,
 				columnWidth)
 		} else {
-			table.Append([]string{section.ElementID, sectionID, section.DataField, section.ElementResult, fmt.Sprintf("%0.1f", section.Score)})
+			table.Append([]string{section.ElementID, sectionID, section.DataField, wrapResult(section.ElementResult), fmt.Sprintf("%0.1f", section.Score)})
 		}
 	}
 	table.Render()
+}
+
+// wrapResult wraps text for table display at 60 chars.
+// It breaks at the last space before the limit (word-aware), so normal sentences
+// don't get split mid-word. For tokens with no spaces (e.g. hash hex values) it
+// force-breaks at 60 chars.
+func wrapResult(s string) string {
+	const maxWidth = 60
+	if len(s) <= maxWidth {
+		return s
+	}
+	var lines []string
+	for len(s) > maxWidth {
+		breakAt := strings.LastIndex(s[:maxWidth], " ")
+		if breakAt <= 0 {
+			breakAt = maxWidth
+		}
+		lines = append(lines, strings.TrimRight(s[:breakAt], " "))
+		s = strings.TrimLeft(s[breakAt:], " ")
+	}
+	if s != "" {
+		lines = append(lines, s)
+	}
+	return strings.Join(lines, "\n")
 }
 
 func bsiBasicReport(dtb *db.DB, fileName string) {

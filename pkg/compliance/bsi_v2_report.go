@@ -62,7 +62,7 @@ func bsiV2DetailedReport(dtb *db.DB, fileName string) {
 		if !section.Required {
 			sectionID += "*"
 		}
-		table.Append([]string{section.ElementID, sectionID, section.DataField, section.ElementResult, fmt.Sprintf("%0.1f", section.Score)})
+		table.Append([]string{section.ElementID, sectionID, section.DataField, wrapResult(section.ElementResult), fmt.Sprintf("%0.1f", section.Score)})
 	}
 	table.Render()
 }
