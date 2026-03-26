@@ -48,7 +48,8 @@ func bsiV20Result(ctx context.Context, doc sbom.Document, fileName string, outFo
 	dtb.AddRecord(bsiV20SBOMDepth(doc))
 	dtb.AddRecord(bsiV11SBOMURI(doc))
 	dtb.AddRecords(bsiV20Components(doc))
-	// New SBOM fields
+
+	// New SBOM fields(optional)
 	dtb.AddRecord(bsiV20SbomSignature(doc))
 	dtb.AddRecord(bsiV20SbomLinks(doc))
 
@@ -63,69 +64,6 @@ func bsiV20Result(ctx context.Context, doc sbom.Document, fileName string, outFo
 	if outFormat == pkgcommon.ReportDetailed {
 		bsiV20DetailedReport(dtb, fileName)
 	}
-}
-
-// bsiSpec returns the spec type of the SBOM document.
-// spec type can be either SPDX or CycloneDX.
-func bsiSpec(doc sbom.Document) *db.Record {
-	v := doc.Spec().GetSpecType()
-	vToLower := strings.Trim(strings.ToLower(v), " ")
-	result := ""
-	score := 0.0
-
-	if vToLower == string(sbom.SBOMSpecSPDX) {
-		result = v
-		score = 10.0
-	} else if vToLower == string(sbom.SBOMSpecCDX) {
-		result = v
-		score = 10.0
-	}
-	return db.NewRecordStmt(SBOM_SPEC, "doc", result, score, "")
-}
-
-func bsiSpecVersion(doc sbom.Document) *db.Record {
-	spec := doc.Spec().GetSpecType()
-	version := doc.Spec().GetVersion()
-
-	result := ""
-	score := 0.0
-
-	if spec == string(sbom.SBOMSpecSPDX) {
-		count := lo.Count(validBsiSpdxVersions, version)
-		validate := lo.Contains(validSpdxVersion, version)
-		if validate {
-			if count > 0 {
-				result = version
-				score = 10.0
-			} else {
-				result = version
-				score = 0.0
-			}
-		}
-	} else if spec == string(sbom.SBOMSpecCDX) {
-		count := lo.Count(validBsiCdxVersions, version)
-		if count > 0 {
-			result = version
-			score = 10.0
-		}
-	}
-
-	return db.NewRecordStmt(SBOM_SPEC_VERSION, "doc", result, score, "")
-}
-
-func bsiBuildPhase(doc sbom.Document) *db.Record {
-	lifecycles := doc.Lifecycles()
-	result := ""
-	score := 0.0
-
-	found := lo.Count(lifecycles, "build")
-
-	if found > 0 {
-		result = "build"
-		score = 10.0
-	}
-
-	return db.NewRecordStmt(SBOM_BUILD, "doc", result, score, "")
 }
 
 // bomlinks
@@ -242,6 +180,7 @@ func bsiV20Components(doc sbom.Document) []*db.Record {
 	}
 
 	for _, component := range doc.Components() {
+		// Required Component Data Fields (§5.2.2)
 		records = append(records, bsiV11ComponentCreator(component))
 		records = append(records, bsiV11ComponentName(component))
 		records = append(records, bsiV11ComponentVersion(component))
@@ -252,13 +191,16 @@ func bsiV20Components(doc sbom.Document) []*db.Record {
 		records = append(records, bsiV20ComponentExecutable(doc, component))
 		records = append(records, bsiV20ComponentArchive(doc, component))
 		records = append(records, bsiV20ComponentStructured(doc, component))
+
+		// Additional Component Data Fields (§5.3.2)
 		records = append(records, bsiV11ComponentSourceCodeURL(component))
 		records = append(records, bsiV11ComponentDownloadURL(component))
 		records = append(records, bsiV11ComponentOtherUniqueIdentifiers(component))
 		records = append(records, bsiV20ComponentConcludedLicense(component))
+
+		// Optional Component Data Fields (§5.4.1)
 		records = append(records, bsiV20ComponentDeclaredLicense(component))
 		records = append(records, bsiV21ComponentSourceHash(component))
-
 	}
 
 	records = append(records, db.NewRecordStmt(SBOM_COMPONENTS, "doc", "present", 10.0, ""))

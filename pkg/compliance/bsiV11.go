@@ -251,6 +251,7 @@ func bsiComponents(doc sbom.Document) []*db.Record {
 	}
 
 	for _, component := range doc.Components() {
+		// Required Component Data Fields (§5.2.2)
 		records = append(records, bsiV11ComponentCreator(component))
 		records = append(records, bsiV11ComponentName(component))
 		records = append(records, bsiV11ComponentVersion(component))
@@ -258,7 +259,7 @@ func bsiComponents(doc sbom.Document) []*db.Record {
 		records = append(records, bsiV11ComponentLicense(component))
 		records = append(records, bsiV11ComponentExecutableHash(doc, component))
 
-		// Additional fields
+		// Additional fields (§5.3.2) are scored only when data is present (Ignore=false)
 		records = append(records, bsiV11ComponentSourceCodeURL(component))
 		records = append(records, bsiV11ComponentDownloadURL(component))
 		records = append(records, bsiV11ComponentSourceHash(component))
@@ -338,8 +339,9 @@ func bsiV11ComponentVersion(component sbom.GetComponent) *db.Record {
 // dependencies. v1.1 covers DEPENDS_ON relationships only.
 //
 // Scoring (per component):
-//   0  — a declared dependency cannot be resolved to a component in the SBOM
-//  10  — all declared deps resolve, or component is a leaf (no deps)
+//
+//	 0  => a declared dependency cannot be resolved to a component in the SBOM
+//	10  => all declared deps resolve, or component is a leaf (no deps)
 func bsiV11ComponentDependencies(doc sbom.Document, component sbom.GetComponent) *db.Record {
 	compID := component.GetID()
 
@@ -381,9 +383,10 @@ func bsiV11ComponentDependencies(doc sbom.Document, component sbom.GetComponent)
 // SBOM level; all components must be reachable from the primary component.
 //
 // Scoring (document-level, SBOM_DEPTH):
-//   0  — no relationships, broken relationships, or primary does not declare deps
-//   5  — graph declared but has orphan (unreachable) components
-//  10  — graph is recursively complete with no orphans
+//
+//	 0  => no relationships, broken relationships, or primary does not declare deps
+//	 5  => graph declared but has orphan (unreachable) components
+//	10  => graph is recursively complete with no orphans
 func bsiV11SBOMDepth(doc sbom.Document) *db.Record {
 	primary := doc.PrimaryComp()
 	if !primary.IsPresent() {
