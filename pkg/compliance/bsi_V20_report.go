@@ -23,7 +23,7 @@ import (
 	"github.com/olekukonko/tablewriter"
 )
 
-func bsiV2JSONReport(dtb *db.DB, fileName string) {
+func bsiV20JSONReport(dtb *db.DB, fileName string) {
 	name := "BSI TR-03183-2 v2.0.0 Compliance Report"
 	revision := "TR-03183-2 (2.0.0)"
 	jr := newJSONReport(name, revision)
@@ -44,7 +44,7 @@ func bsiV2JSONReport(dtb *db.DB, fileName string) {
 	fmt.Println(string(o))
 }
 
-func bsiV2DetailedReport(dtb *db.DB, fileName string) {
+func bsiV20DetailedReport(dtb *db.DB, fileName string) {
 	table := tablewriter.NewWriter(os.Stdout)
 	score := bsiAggregateScore(dtb)
 
@@ -67,7 +67,7 @@ func bsiV2DetailedReport(dtb *db.DB, fileName string) {
 	table.Render()
 }
 
-func bsiV2BasicReport(dtb *db.DB, fileName string) {
+func bsiV20BasicReport(dtb *db.DB, fileName string) {
 	score := bsiAggregateScore(dtb)
 	fmt.Printf("BSI TR-03183-2 v2.0.0 Compliance Report\n")
 	fmt.Printf("Score:%0.1f RequiredScore:%0.1f AdditionalScore:%0.1f for %s\n", score.totalScore(), score.totalRequiredScore(), score.totalAdditionalScore(), fileName)
