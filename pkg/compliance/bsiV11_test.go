@@ -328,7 +328,7 @@ func TestBSISBOMCreator(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiCdxSBOMAuthor, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := bsiv11SBOMCreator(doc)
+		got := bsiV11SBOMCreator(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_CREATOR, got.CheckKey)
@@ -340,7 +340,7 @@ func TestBSISBOMCreator(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiSpdxSBOMPersonAuthor, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := bsiv11SBOMCreator(doc)
+		got := bsiV11SBOMCreator(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_CREATOR, got.CheckKey)
@@ -352,7 +352,7 @@ func TestBSISBOMCreator(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiSpdxSBOMOrganizationAuthor, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := bsiv11SBOMCreator(doc)
+		got := bsiV11SBOMCreator(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_CREATOR, got.CheckKey)
@@ -364,7 +364,7 @@ func TestBSISBOMCreator(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiCdxSBOMAuthorEmailOnly, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := bsiv11SBOMCreator(doc)
+		got := bsiV11SBOMCreator(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_CREATOR, got.CheckKey)
@@ -376,7 +376,7 @@ func TestBSISBOMCreator(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiCdxSBOMAuthorNameOnly, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := bsiv11SBOMCreator(doc)
+		got := bsiV11SBOMCreator(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_CREATOR, got.CheckKey)
@@ -388,7 +388,7 @@ func TestBSISBOMCreator(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiCdxSBOMAuthorInvalidEmail, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := bsiv11SBOMCreator(doc)
+		got := bsiV11SBOMCreator(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_CREATOR, got.CheckKey)
@@ -400,7 +400,7 @@ func TestBSISBOMCreator(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiCdxSBOMAuthorsAbsent, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := bsiv11SBOMCreator(doc)
+		got := bsiV11SBOMCreator(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_CREATOR, got.CheckKey)
@@ -412,7 +412,7 @@ func TestBSISBOMCreator(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiSpdxSBOMCreationInfoMissing, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := bsiv11SBOMCreator(doc)
+		got := bsiV11SBOMCreator(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_CREATOR, got.CheckKey)
@@ -424,7 +424,7 @@ func TestBSISBOMCreator(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiCdxSBOMManufacturer, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := bsiv11SBOMCreator(doc)
+		got := bsiV11SBOMCreator(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_CREATOR, got.CheckKey)
@@ -436,7 +436,7 @@ func TestBSISBOMCreator(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiCdxSBOMManufacturerURLOnly, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := bsiv11SBOMCreator(doc)
+		got := bsiV11SBOMCreator(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_CREATOR, got.CheckKey)
@@ -448,7 +448,7 @@ func TestBSISBOMCreator(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiCdxSBOMManufacturerContactEmailOnly, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := bsiv11SBOMCreator(doc)
+		got := bsiV11SBOMCreator(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_CREATOR, got.CheckKey)
@@ -460,7 +460,7 @@ func TestBSISBOMCreator(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiCdxSBOMManufacturerNameOnly, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := bsiv11SBOMCreator(doc)
+		got := bsiV11SBOMCreator(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_CREATOR, got.CheckKey)
@@ -472,7 +472,7 @@ func TestBSISBOMCreator(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiCdxSBOMSupplier, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := bsiv11SBOMCreator(doc)
+		got := bsiV11SBOMCreator(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_CREATOR, got.CheckKey)
@@ -484,7 +484,7 @@ func TestBSISBOMCreator(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiCdxSBOMSupplierURLOnly, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := bsiv11SBOMCreator(doc)
+		got := bsiV11SBOMCreator(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_CREATOR, got.CheckKey)
@@ -496,7 +496,7 @@ func TestBSISBOMCreator(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiCdxSBOMSupplierContactEmailOnly, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := bsiv11SBOMCreator(doc)
+		got := bsiV11SBOMCreator(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_CREATOR, got.CheckKey)
@@ -508,7 +508,7 @@ func TestBSISBOMCreator(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiCdxSBOMSupplierNameOnly, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := bsiv11SBOMCreator(doc)
+		got := bsiV11SBOMCreator(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_CREATOR, got.CheckKey)
@@ -565,7 +565,7 @@ func TestBSISBOMTimestamp(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiCdxSBOMWithTimestamp, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := bsiv11SBOMTimestamp(doc)
+		got := bsiV11SBOMTimestamp(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_TIMESTAMP, got.CheckKey)
@@ -577,7 +577,7 @@ func TestBSISBOMTimestamp(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiSpdxSBOMWithTimestamp, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := bsiv11SBOMTimestamp(doc)
+		got := bsiV11SBOMTimestamp(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_TIMESTAMP, got.CheckKey)
@@ -589,7 +589,7 @@ func TestBSISBOMTimestamp(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiCdxSBOMNoTimestamp, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := bsiv11SBOMTimestamp(doc)
+		got := bsiV11SBOMTimestamp(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_TIMESTAMP, got.CheckKey)
@@ -641,7 +641,7 @@ func TestBSISBOMURI(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiSpdxSBOMWithHTTPSNamespace, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := bsiv11SBOMURI(doc)
+		got := bsiV11SBOMURI(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_URI, got.CheckKey)
@@ -653,7 +653,7 @@ func TestBSISBOMURI(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiCdxSBOMWithURNSerial, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := bsiv11SBOMURI(doc)
+		got := bsiV11SBOMURI(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_URI, got.CheckKey)
@@ -665,7 +665,7 @@ func TestBSISBOMURI(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiCdxSBOMNoSerial, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := bsiv11SBOMURI(doc)
+		got := bsiV11SBOMURI(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_URI, got.CheckKey)
@@ -983,7 +983,7 @@ func TestBSIComponentCreator(t *testing.T) {
 		require.NoError(t, err)
 
 		for _, c := range doc.Components() {
-			got := bsiv11ComponentCreator(c)
+			got := bsiV11ComponentCreator(c)
 
 			assert.InDelta(t, 10.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_CREATOR, got.CheckKey)
@@ -997,7 +997,7 @@ func TestBSIComponentCreator(t *testing.T) {
 		require.NoError(t, err)
 
 		for _, c := range doc.Components() {
-			got := bsiv11ComponentCreator(c)
+			got := bsiV11ComponentCreator(c)
 
 			assert.InDelta(t, 10.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_CREATOR, got.CheckKey)
@@ -1011,7 +1011,7 @@ func TestBSIComponentCreator(t *testing.T) {
 		require.NoError(t, err)
 
 		for _, c := range doc.Components() {
-			got := bsiv11ComponentCreator(c)
+			got := bsiV11ComponentCreator(c)
 
 			assert.InDelta(t, 10.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_CREATOR, got.CheckKey)
@@ -1025,7 +1025,7 @@ func TestBSIComponentCreator(t *testing.T) {
 		require.NoError(t, err)
 
 		for _, c := range doc.Components() {
-			got := bsiv11ComponentCreator(c)
+			got := bsiV11ComponentCreator(c)
 
 			assert.InDelta(t, 0.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_CREATOR, got.CheckKey)
@@ -1039,7 +1039,7 @@ func TestBSIComponentCreator(t *testing.T) {
 		require.NoError(t, err)
 
 		for _, c := range doc.Components() {
-			got := bsiv11ComponentCreator(c)
+			got := bsiV11ComponentCreator(c)
 
 			assert.InDelta(t, 0.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_CREATOR, got.CheckKey)
@@ -1053,7 +1053,7 @@ func TestBSIComponentCreator(t *testing.T) {
 		require.NoError(t, err)
 
 		for _, c := range doc.Components() {
-			got := bsiv11ComponentCreator(c)
+			got := bsiV11ComponentCreator(c)
 
 			assert.InDelta(t, 10.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_CREATOR, got.CheckKey)
@@ -1067,7 +1067,7 @@ func TestBSIComponentCreator(t *testing.T) {
 		require.NoError(t, err)
 
 		for _, c := range doc.Components() {
-			got := bsiv11ComponentCreator(c)
+			got := bsiV11ComponentCreator(c)
 
 			assert.InDelta(t, 10.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_CREATOR, got.CheckKey)
@@ -1081,7 +1081,7 @@ func TestBSIComponentCreator(t *testing.T) {
 		require.NoError(t, err)
 
 		for _, c := range doc.Components() {
-			got := bsiv11ComponentCreator(c)
+			got := bsiV11ComponentCreator(c)
 
 			assert.InDelta(t, 10.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_CREATOR, got.CheckKey)
@@ -1095,7 +1095,7 @@ func TestBSIComponentCreator(t *testing.T) {
 		require.NoError(t, err)
 
 		for _, c := range doc.Components() {
-			got := bsiv11ComponentCreator(c)
+			got := bsiV11ComponentCreator(c)
 
 			assert.InDelta(t, 0.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_CREATOR, got.CheckKey)
@@ -1109,7 +1109,7 @@ func TestBSIComponentCreator(t *testing.T) {
 		require.NoError(t, err)
 
 		for _, c := range doc.Components() {
-			got := bsiv11ComponentCreator(c)
+			got := bsiV11ComponentCreator(c)
 
 			assert.InDelta(t, 10.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_CREATOR, got.CheckKey)
@@ -1123,7 +1123,7 @@ func TestBSIComponentCreator(t *testing.T) {
 		require.NoError(t, err)
 
 		for _, c := range doc.Components() {
-			got := bsiv11ComponentCreator(c)
+			got := bsiV11ComponentCreator(c)
 
 			assert.InDelta(t, 10.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_CREATOR, got.CheckKey)
@@ -1137,7 +1137,7 @@ func TestBSIComponentCreator(t *testing.T) {
 		require.NoError(t, err)
 
 		for _, c := range doc.Components() {
-			got := bsiv11ComponentCreator(c)
+			got := bsiV11ComponentCreator(c)
 
 			assert.InDelta(t, 10.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_CREATOR, got.CheckKey)
@@ -1151,7 +1151,7 @@ func TestBSIComponentCreator(t *testing.T) {
 		require.NoError(t, err)
 
 		for _, c := range doc.Components() {
-			got := bsiv11ComponentCreator(c)
+			got := bsiV11ComponentCreator(c)
 
 			assert.InDelta(t, 0.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_CREATOR, got.CheckKey)
@@ -1223,7 +1223,7 @@ func TestBSIComponentName(t *testing.T) {
 		require.NoError(t, err)
 
 		for _, c := range doc.Components() {
-			got := bsiv11ComponentName(c)
+			got := bsiV11ComponentName(c)
 
 			assert.InDelta(t, 10.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_NAME, got.CheckKey)
@@ -1237,7 +1237,7 @@ func TestBSIComponentName(t *testing.T) {
 		require.NoError(t, err)
 
 		for _, c := range doc.Components() {
-			got := bsiv11ComponentName(c)
+			got := bsiV11ComponentName(c)
 
 			assert.InDelta(t, 10.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_NAME, got.CheckKey)
@@ -1255,7 +1255,7 @@ func TestBSIComponentVersion(t *testing.T) {
 		require.NoError(t, err)
 
 		for _, c := range doc.Components() {
-			got := bsiv11ComponentVersion(c)
+			got := bsiV11ComponentVersion(c)
 
 			assert.InDelta(t, 10.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_VERSION, got.CheckKey)
@@ -1269,7 +1269,7 @@ func TestBSIComponentVersion(t *testing.T) {
 		require.NoError(t, err)
 
 		for _, c := range doc.Components() {
-			got := bsiv11ComponentVersion(c)
+			got := bsiV11ComponentVersion(c)
 
 			assert.InDelta(t, 10.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_VERSION, got.CheckKey)
@@ -1283,7 +1283,7 @@ func TestBSIComponentVersion(t *testing.T) {
 		require.NoError(t, err)
 
 		for _, c := range doc.Components() {
-			got := bsiv11ComponentVersion(c)
+			got := bsiV11ComponentVersion(c)
 
 			assert.InDelta(t, 0.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_VERSION, got.CheckKey)
@@ -1450,7 +1450,7 @@ func TestBSIComponentLicense(t *testing.T) {
 		require.NoError(t, err)
 
 		for _, c := range doc.Components() {
-			got := bsiv11ComponentLicense(c)
+			got := bsiV11ComponentLicense(c)
 
 			assert.InDelta(t, 10.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_LICENSE, got.CheckKey)
@@ -1464,7 +1464,7 @@ func TestBSIComponentLicense(t *testing.T) {
 		require.NoError(t, err)
 
 		for _, c := range doc.Components() {
-			got := bsiv11ComponentLicense(c)
+			got := bsiV11ComponentLicense(c)
 
 			assert.InDelta(t, 10.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_LICENSE, got.CheckKey)
@@ -1478,7 +1478,7 @@ func TestBSIComponentLicense(t *testing.T) {
 		require.NoError(t, err)
 
 		for _, c := range doc.Components() {
-			got := bsiv11ComponentLicense(c)
+			got := bsiV11ComponentLicense(c)
 
 			assert.InDelta(t, 10.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_LICENSE, got.CheckKey)
@@ -1492,7 +1492,7 @@ func TestBSIComponentLicense(t *testing.T) {
 		require.NoError(t, err)
 
 		for _, c := range doc.Components() {
-			got := bsiv11ComponentLicense(c)
+			got := bsiV11ComponentLicense(c)
 
 			assert.InDelta(t, 0.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_LICENSE, got.CheckKey)
@@ -1506,7 +1506,7 @@ func TestBSIComponentLicense(t *testing.T) {
 		require.NoError(t, err)
 
 		for _, c := range doc.Components() {
-			got := bsiv11ComponentLicense(c)
+			got := bsiV11ComponentLicense(c)
 
 			assert.InDelta(t, 0.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_LICENSE, got.CheckKey)
@@ -1520,7 +1520,7 @@ func TestBSIComponentLicense(t *testing.T) {
 		require.NoError(t, err)
 
 		for _, c := range doc.Components() {
-			got := bsiv11ComponentLicense(c)
+			got := bsiV11ComponentLicense(c)
 
 			assert.InDelta(t, 0.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_LICENSE, got.CheckKey)
@@ -1534,7 +1534,7 @@ func TestBSIComponentLicense(t *testing.T) {
 		require.NoError(t, err)
 
 		for _, c := range doc.Components() {
-			got := bsiv11ComponentLicense(c)
+			got := bsiV11ComponentLicense(c)
 
 			assert.InDelta(t, 0.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_LICENSE, got.CheckKey)
@@ -1650,7 +1650,7 @@ func TestBSIComponentHash(t *testing.T) {
 		require.NoError(t, err)
 
 		for _, c := range doc.Components() {
-			got := bsiv11ComponentExecutableHash(doc, c)
+			got := bsiV11ComponentExecutableHash(doc, c)
 
 			assert.InDelta(t, 10.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_HASH, got.CheckKey)
@@ -1664,7 +1664,7 @@ func TestBSIComponentHash(t *testing.T) {
 		require.NoError(t, err)
 
 		for _, c := range doc.Components() {
-			got := bsiv11ComponentExecutableHash(doc, c)
+			got := bsiV11ComponentExecutableHash(doc, c)
 
 			assert.InDelta(t, 10.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_HASH, got.CheckKey)
@@ -1678,7 +1678,7 @@ func TestBSIComponentHash(t *testing.T) {
 		require.NoError(t, err)
 
 		for _, c := range doc.Components() {
-			got := bsiv11ComponentExecutableHash(doc, c)
+			got := bsiV11ComponentExecutableHash(doc, c)
 
 			assert.InDelta(t, 0.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_HASH, got.CheckKey)
@@ -1692,7 +1692,7 @@ func TestBSIComponentHash(t *testing.T) {
 		require.NoError(t, err)
 
 		for _, c := range doc.Components() {
-			got := bsiv11ComponentExecutableHash(doc, c)
+			got := bsiV11ComponentExecutableHash(doc, c)
 
 			assert.InDelta(t, 0.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_HASH, got.CheckKey)
@@ -2123,7 +2123,7 @@ func TestBSIComponentDependencies(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiCdxCompLeaf, sbom.Signature{})
 		require.NoError(t, err)
 		for _, c := range doc.Components() {
-			got := bsiv11ComponentDependencies(doc, c)
+			got := bsiV11ComponentDependencies(doc, c)
 			assert.InDelta(t, 10.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_DEPTH, got.CheckKey)
 			assert.Equal(t, common.UniqueElementID(c), got.ID)
@@ -2135,7 +2135,7 @@ func TestBSIComponentDependencies(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiSpdxCompLeaf, sbom.Signature{})
 		require.NoError(t, err)
 		for _, c := range doc.Components() {
-			got := bsiv11ComponentDependencies(doc, c)
+			got := bsiV11ComponentDependencies(doc, c)
 			assert.InDelta(t, 10.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_DEPTH, got.CheckKey)
 			assert.Equal(t, common.UniqueElementID(c), got.ID)
@@ -2147,7 +2147,7 @@ func TestBSIComponentDependencies(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiCdxDocCompleteGraph, sbom.Signature{})
 		require.NoError(t, err)
 		for _, c := range doc.Components() {
-			got := bsiv11ComponentDependencies(doc, c)
+			got := bsiV11ComponentDependencies(doc, c)
 			assert.InDelta(t, 10.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_DEPTH, got.CheckKey)
 		}
@@ -2160,7 +2160,7 @@ func TestBSIComponentDependencies(t *testing.T) {
 		// so per-component records for components[] are all leaves (score=10).
 		// The broken dep is only caught at the SBOM_DEPTH level.
 		for _, c := range doc.Components() {
-			got := bsiv11ComponentDependencies(doc, c)
+			got := bsiV11ComponentDependencies(doc, c)
 			assert.Equal(t, COMP_DEPTH, got.CheckKey)
 		}
 	})
@@ -2169,7 +2169,7 @@ func TestBSIComponentDependencies(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiSpdxDocCompleteGraph, sbom.Signature{})
 		require.NoError(t, err)
 		for _, c := range doc.Components() {
-			got := bsiv11ComponentDependencies(doc, c)
+			got := bsiV11ComponentDependencies(doc, c)
 			assert.InDelta(t, 10.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_DEPTH, got.CheckKey)
 		}
@@ -2186,7 +2186,7 @@ func TestBSISBOMDepth(t *testing.T) {
 	t.Run("cdxNoPrimaryComponent", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiCdxCompLeaf, sbom.Signature{})
 		require.NoError(t, err)
-		got := bsiv11SBOMDepth(doc)
+		got := bsiV11SBOMDepth(doc)
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_DEPTH, got.CheckKey)
 		assert.Equal(t, "doc", got.ID)
@@ -2196,7 +2196,7 @@ func TestBSISBOMDepth(t *testing.T) {
 	t.Run("cdxNoRelationships", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiCdxDocPrimaryNoRels, sbom.Signature{})
 		require.NoError(t, err)
-		got := bsiv11SBOMDepth(doc)
+		got := bsiV11SBOMDepth(doc)
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "doc", got.ID)
 		assert.Equal(t, "no relationships declared", got.CheckValue)
@@ -2205,7 +2205,7 @@ func TestBSISBOMDepth(t *testing.T) {
 	t.Run("cdxPrimaryNotDeclaringDeps", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiCdxDocPrimaryNotDeclaringDeps, sbom.Signature{})
 		require.NoError(t, err)
-		got := bsiv11SBOMDepth(doc)
+		got := bsiV11SBOMDepth(doc)
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "doc", got.ID)
 		assert.Equal(t, "primary component does not declare its dependencies", got.CheckValue)
@@ -2214,7 +2214,7 @@ func TestBSISBOMDepth(t *testing.T) {
 	t.Run("cdxBrokenDependency", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiCdxDocBrokenDep, sbom.Signature{})
 		require.NoError(t, err)
-		got := bsiv11SBOMDepth(doc)
+		got := bsiV11SBOMDepth(doc)
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "doc", got.ID)
 		assert.Contains(t, got.CheckValue, "broken-dependency")
@@ -2223,7 +2223,7 @@ func TestBSISBOMDepth(t *testing.T) {
 	t.Run("cdxOrphanComponent", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiCdxDocOrphanComp, sbom.Signature{})
 		require.NoError(t, err)
-		got := bsiv11SBOMDepth(doc)
+		got := bsiV11SBOMDepth(doc)
 		assert.InDelta(t, 5.0, got.Score, 1e-9)
 		assert.Equal(t, "doc", got.ID)
 		assert.Contains(t, got.CheckValue, "orphan")
@@ -2232,7 +2232,7 @@ func TestBSISBOMDepth(t *testing.T) {
 	t.Run("cdxCompleteGraph", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiCdxDocCompleteGraph, sbom.Signature{})
 		require.NoError(t, err)
-		got := bsiv11SBOMDepth(doc)
+		got := bsiV11SBOMDepth(doc)
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "doc", got.ID)
 		assert.Equal(t, "dependencies are recursively declared and structurally complete", got.CheckValue)
@@ -2243,7 +2243,7 @@ func TestBSISBOMDepth(t *testing.T) {
 	t.Run("spdxNoPrimaryComponent", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiSpdxCompLeaf, sbom.Signature{})
 		require.NoError(t, err)
-		got := bsiv11SBOMDepth(doc)
+		got := bsiV11SBOMDepth(doc)
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "doc", got.ID)
 		assert.Equal(t, "primary component missing", got.CheckValue)
@@ -2252,7 +2252,7 @@ func TestBSISBOMDepth(t *testing.T) {
 	t.Run("spdxNoRelationships", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiSpdxDocPrimaryNoRels, sbom.Signature{})
 		require.NoError(t, err)
-		got := bsiv11SBOMDepth(doc)
+		got := bsiV11SBOMDepth(doc)
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "doc", got.ID)
 		assert.Equal(t, "no relationships declared", got.CheckValue)
@@ -2261,7 +2261,7 @@ func TestBSISBOMDepth(t *testing.T) {
 	t.Run("spdxPrimaryNotDeclaringDeps", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiSpdxDocPrimaryNotDeclaringDeps, sbom.Signature{})
 		require.NoError(t, err)
-		got := bsiv11SBOMDepth(doc)
+		got := bsiV11SBOMDepth(doc)
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "doc", got.ID)
 		assert.Equal(t, "primary component does not declare its dependencies", got.CheckValue)
@@ -2270,7 +2270,7 @@ func TestBSISBOMDepth(t *testing.T) {
 	t.Run("spdxBrokenDependency", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiSpdxDocBrokenDep, sbom.Signature{})
 		require.NoError(t, err)
-		got := bsiv11SBOMDepth(doc)
+		got := bsiV11SBOMDepth(doc)
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "doc", got.ID)
 		assert.Contains(t, got.CheckValue, "broken-dependency")
@@ -2279,7 +2279,7 @@ func TestBSISBOMDepth(t *testing.T) {
 	t.Run("spdxOrphanComponent", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiSpdxDocOrphanComp, sbom.Signature{})
 		require.NoError(t, err)
-		got := bsiv11SBOMDepth(doc)
+		got := bsiV11SBOMDepth(doc)
 		assert.InDelta(t, 5.0, got.Score, 1e-9)
 		assert.Equal(t, "doc", got.ID)
 		assert.Contains(t, got.CheckValue, "orphan")
@@ -2288,7 +2288,7 @@ func TestBSISBOMDepth(t *testing.T) {
 	t.Run("spdxCompleteGraph", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiSpdxDocCompleteGraph, sbom.Signature{})
 		require.NoError(t, err)
-		got := bsiv11SBOMDepth(doc)
+		got := bsiV11SBOMDepth(doc)
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "doc", got.ID)
 		assert.Equal(t, "dependencies are recursively declared and structurally complete", got.CheckValue)
@@ -2343,7 +2343,7 @@ func TestBSIComponentSourceCodeURL(t *testing.T) {
 		require.NoError(t, err)
 
 		for _, c := range doc.Components() {
-			got := bsiv11ComponentSourceCodeURL(c)
+			got := bsiV11ComponentSourceCodeURL(c)
 
 			assert.InDelta(t, 10.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_SOURCE_CODE_URL, got.CheckKey)
@@ -2357,7 +2357,7 @@ func TestBSIComponentSourceCodeURL(t *testing.T) {
 		require.NoError(t, err)
 
 		for _, c := range doc.Components() {
-			got := bsiv11ComponentSourceCodeURL(c)
+			got := bsiV11ComponentSourceCodeURL(c)
 
 			assert.InDelta(t, 0.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_SOURCE_CODE_URL, got.CheckKey)
@@ -2435,7 +2435,7 @@ func TestBSIComponentDownloadURL(t *testing.T) {
 		require.NoError(t, err)
 
 		for _, c := range doc.Components() {
-			got := bsiv11ComponentDownloadURL(c)
+			got := bsiV11ComponentDownloadURL(c)
 
 			assert.InDelta(t, 10.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_DOWNLOAD_URL, got.CheckKey)
@@ -2449,7 +2449,7 @@ func TestBSIComponentDownloadURL(t *testing.T) {
 		require.NoError(t, err)
 
 		for _, c := range doc.Components() {
-			got := bsiv11ComponentDownloadURL(c)
+			got := bsiV11ComponentDownloadURL(c)
 
 			assert.InDelta(t, 10.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_DOWNLOAD_URL, got.CheckKey)
@@ -2463,7 +2463,7 @@ func TestBSIComponentDownloadURL(t *testing.T) {
 		require.NoError(t, err)
 
 		for _, c := range doc.Components() {
-			got := bsiv11ComponentDownloadURL(c)
+			got := bsiV11ComponentDownloadURL(c)
 
 			assert.InDelta(t, 0.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_DOWNLOAD_URL, got.CheckKey)
@@ -2527,7 +2527,7 @@ func TestBSIComponentSourceHash(t *testing.T) {
 		require.NoError(t, err)
 
 		for _, c := range doc.Components() {
-			got := bsiv11ComponentSourceHash(c)
+			got := bsiV11ComponentSourceHash(c)
 
 			assert.InDelta(t, 10.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_SOURCE_HASH, got.CheckKey)
@@ -2541,7 +2541,7 @@ func TestBSIComponentSourceHash(t *testing.T) {
 		require.NoError(t, err)
 
 		for _, c := range doc.Components() {
-			got := bsiv11ComponentSourceHash(c)
+			got := bsiV11ComponentSourceHash(c)
 
 			assert.InDelta(t, 0.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_SOURCE_HASH, got.CheckKey)
@@ -2653,7 +2653,7 @@ func TestBSIComponentOtherUniqueIdentifiers(t *testing.T) {
 		require.NoError(t, err)
 
 		for _, c := range doc.Components() {
-			got := bsiv11ComponentOtherUniqueIdentifiers(c)
+			got := bsiV11ComponentOtherUniqueIdentifiers(c)
 
 			assert.InDelta(t, 10.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_OTHER_UNIQ_IDS, got.CheckKey)
@@ -2667,7 +2667,7 @@ func TestBSIComponentOtherUniqueIdentifiers(t *testing.T) {
 		require.NoError(t, err)
 
 		for _, c := range doc.Components() {
-			got := bsiv11ComponentOtherUniqueIdentifiers(c)
+			got := bsiV11ComponentOtherUniqueIdentifiers(c)
 
 			assert.InDelta(t, 10.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_OTHER_UNIQ_IDS, got.CheckKey)
@@ -2681,7 +2681,7 @@ func TestBSIComponentOtherUniqueIdentifiers(t *testing.T) {
 		require.NoError(t, err)
 
 		for _, c := range doc.Components() {
-			got := bsiv11ComponentOtherUniqueIdentifiers(c)
+			got := bsiV11ComponentOtherUniqueIdentifiers(c)
 
 			assert.InDelta(t, 10.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_OTHER_UNIQ_IDS, got.CheckKey)
@@ -2696,7 +2696,7 @@ func TestBSIComponentOtherUniqueIdentifiers(t *testing.T) {
 		require.NoError(t, err)
 
 		for _, c := range doc.Components() {
-			got := bsiv11ComponentOtherUniqueIdentifiers(c)
+			got := bsiV11ComponentOtherUniqueIdentifiers(c)
 
 			assert.InDelta(t, 0.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_OTHER_UNIQ_IDS, got.CheckKey)
@@ -2710,7 +2710,7 @@ func TestBSIComponentOtherUniqueIdentifiers(t *testing.T) {
 		require.NoError(t, err)
 
 		for _, c := range doc.Components() {
-			got := bsiv11ComponentOtherUniqueIdentifiers(c)
+			got := bsiV11ComponentOtherUniqueIdentifiers(c)
 
 			assert.InDelta(t, 10.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_OTHER_UNIQ_IDS, got.CheckKey)

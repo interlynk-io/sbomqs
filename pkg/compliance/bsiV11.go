@@ -125,12 +125,12 @@ func bsiResult(ctx context.Context, doc sbom.Document, fileName string, outForma
 	dtb := db.NewDB()
 
 	// Required SBOM-level checks
-	dtb.AddRecord(bsiv11SBOMCreator(doc))
-	dtb.AddRecord(bsiv11SBOMTimestamp(doc))
-	dtb.AddRecord(bsiv11SBOMDepth(doc))
+	dtb.AddRecord(bsiV11SBOMCreator(doc))
+	dtb.AddRecord(bsiV11SBOMTimestamp(doc))
+	dtb.AddRecord(bsiV11SBOMDepth(doc))
 
 	// Additional SBOM-level checks
-	dtb.AddRecord(bsiv11SBOMURI(doc))
+	dtb.AddRecord(bsiV11SBOMURI(doc))
 	dtb.AddRecords(bsiComponents(doc))
 
 	if outFormat == pkgcommon.FormatJSON {
@@ -167,7 +167,7 @@ func bsiIsValidURL(u string) bool {
 	return parsed.Scheme != "" && parsed.Host != ""
 }
 
-func bsiv11SBOMCreator(doc sbom.Document) *db.Record {
+func bsiV11SBOMCreator(doc sbom.Document) *db.Record {
 
 	// Authors: valid email only
 	for _, author := range doc.Authors() {
@@ -213,7 +213,7 @@ func bsiv11SBOMCreator(doc sbom.Document) *db.Record {
 	return db.NewRecordStmt(SBOM_CREATOR, "doc", "", 0.0, "")
 }
 
-func bsiv11SBOMTimestamp(doc sbom.Document) *db.Record {
+func bsiV11SBOMTimestamp(doc sbom.Document) *db.Record {
 	result, score := "", 0.0
 	result = strings.TrimSpace(doc.Spec().GetCreationTimestamp())
 
@@ -225,7 +225,7 @@ func bsiv11SBOMTimestamp(doc sbom.Document) *db.Record {
 	return db.NewRecordStmt(SBOM_TIMESTAMP, "doc", result, score, "")
 }
 
-func bsiv11SBOMURI(doc sbom.Document) *db.Record {
+func bsiV11SBOMURI(doc sbom.Document) *db.Record {
 	uri := strings.TrimSpace(doc.Spec().GetURI())
 
 	// No URI => prerequisite not met => N/A (Additional, Ignore=true)
@@ -251,18 +251,18 @@ func bsiComponents(doc sbom.Document) []*db.Record {
 	}
 
 	for _, component := range doc.Components() {
-		records = append(records, bsiv11ComponentCreator(component))
-		records = append(records, bsiv11ComponentName(component))
-		records = append(records, bsiv11ComponentVersion(component))
-		records = append(records, bsiv11ComponentDependencies(doc, component))
-		records = append(records, bsiv11ComponentLicense(component))
-		records = append(records, bsiv11ComponentExecutableHash(doc, component))
+		records = append(records, bsiV11ComponentCreator(component))
+		records = append(records, bsiV11ComponentName(component))
+		records = append(records, bsiV11ComponentVersion(component))
+		records = append(records, bsiV11ComponentDependencies(doc, component))
+		records = append(records, bsiV11ComponentLicense(component))
+		records = append(records, bsiV11ComponentExecutableHash(doc, component))
 
 		// Additional fields
-		records = append(records, bsiv11ComponentSourceCodeURL(component))
-		records = append(records, bsiv11ComponentDownloadURL(component))
-		records = append(records, bsiv11ComponentSourceHash(component))
-		records = append(records, bsiv11ComponentOtherUniqueIdentifiers(component))
+		records = append(records, bsiV11ComponentSourceCodeURL(component))
+		records = append(records, bsiV11ComponentDownloadURL(component))
+		records = append(records, bsiV11ComponentSourceHash(component))
+		records = append(records, bsiV11ComponentOtherUniqueIdentifiers(component))
 	}
 
 	records = append(records, db.NewRecordStmt(SBOM_COMPONENTS, "doc", "present", 10.0, ""))
@@ -270,7 +270,7 @@ func bsiComponents(doc sbom.Document) []*db.Record {
 	return records
 }
 
-func bsiv11ComponentCreator(component sbom.GetComponent) *db.Record {
+func bsiV11ComponentCreator(component sbom.GetComponent) *db.Record {
 	id := common.UniqueElementID(component)
 
 	// Authors: valid email only
@@ -313,7 +313,7 @@ func bsiv11ComponentCreator(component sbom.GetComponent) *db.Record {
 	return db.NewRecordStmt(COMP_CREATOR, id, "", 0.0, "")
 }
 
-func bsiv11ComponentName(component sbom.GetComponent) *db.Record {
+func bsiV11ComponentName(component sbom.GetComponent) *db.Record {
 	result := strings.TrimSpace(component.GetName())
 
 	if result != "" {
@@ -323,7 +323,7 @@ func bsiv11ComponentName(component sbom.GetComponent) *db.Record {
 	return db.NewRecordStmt(COMP_NAME, common.UniqueElementID(component), "", 0.0, "")
 }
 
-func bsiv11ComponentVersion(component sbom.GetComponent) *db.Record {
+func bsiV11ComponentVersion(component sbom.GetComponent) *db.Record {
 	result := strings.TrimSpace(component.GetVersion())
 
 	if result != "" {
@@ -333,14 +333,14 @@ func bsiv11ComponentVersion(component sbom.GetComponent) *db.Record {
 	return db.NewRecordStmt(COMP_VERSION, common.UniqueElementID(component), "", 0.0, "")
 }
 
-// bsiv11ComponentDependencies checks that a component's direct dependencies are declared
+// bsiV11ComponentDependencies checks that a component's direct dependencies are declared
 // and resolvable. BSI TR-03183-2 v1.1 §5.2.2: each component must enumerate its direct
 // dependencies. v1.1 covers DEPENDS_ON relationships only.
 //
 // Scoring (per component):
 //   0  — a declared dependency cannot be resolved to a component in the SBOM
 //  10  — all declared deps resolve, or component is a leaf (no deps)
-func bsiv11ComponentDependencies(doc sbom.Document, component sbom.GetComponent) *db.Record {
+func bsiV11ComponentDependencies(doc sbom.Document, component sbom.GetComponent) *db.Record {
 	compID := component.GetID()
 
 	componentMap := make(map[string]sbom.GetComponent)
@@ -376,7 +376,7 @@ func bsiv11ComponentDependencies(doc sbom.Document, component sbom.GetComponent)
 	return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), result, 10.0, "")
 }
 
-// bsiv11SBOMDepth checks dependency graph completeness at the document level.
+// bsiV11SBOMDepth checks dependency graph completeness at the document level.
 // BSI TR-03183-2 v1.1 §5.1: recursive dependency resolution MUST be performed at the
 // SBOM level; all components must be reachable from the primary component.
 //
@@ -384,7 +384,7 @@ func bsiv11ComponentDependencies(doc sbom.Document, component sbom.GetComponent)
 //   0  — no relationships, broken relationships, or primary does not declare deps
 //   5  — graph declared but has orphan (unreachable) components
 //  10  — graph is recursively complete with no orphans
-func bsiv11SBOMDepth(doc sbom.Document) *db.Record {
+func bsiV11SBOMDepth(doc sbom.Document) *db.Record {
 	primary := doc.PrimaryComp()
 	if !primary.IsPresent() {
 		return db.NewRecordStmt(SBOM_DEPTH, "doc", "primary component missing", 0.0, "")
@@ -450,7 +450,7 @@ func bsiv11SBOMDepth(doc sbom.Document) *db.Record {
 	return db.NewRecordStmt(SBOM_DEPTH, "doc", "dependencies are recursively declared and structurally complete", 10.0, "")
 }
 
-func bsiv11ComponentLicense(component sbom.GetComponent) *db.Record {
+func bsiV11ComponentLicense(component sbom.GetComponent) *db.Record {
 
 	score := 0.0
 	result := ""
@@ -535,7 +535,7 @@ func bsiv11ComponentLicense(component sbom.GetComponent) *db.Record {
 	return db.NewRecordStmt(COMP_LICENSE, common.UniqueElementID(component), result, score, "")
 }
 
-func bsiv11ComponentExecutableHash(doc sbom.Document, component sbom.GetComponent) *db.Record {
+func bsiV11ComponentExecutableHash(doc sbom.Document, component sbom.GetComponent) *db.Record {
 	result := ""
 	score := 0.0
 	spec := strings.TrimSpace(strings.ToLower(doc.Spec().GetSpecType()))
@@ -573,7 +573,7 @@ done:
 	return db.NewRecordStmt(COMP_HASH, common.UniqueElementID(component), result, score, "")
 }
 
-func bsiv11ComponentSourceCodeURL(component sbom.GetComponent) *db.Record {
+func bsiV11ComponentSourceCodeURL(component sbom.GetComponent) *db.Record {
 	id := common.UniqueElementID(component)
 	result := strings.TrimSpace(component.GetSourceCodeURL())
 
@@ -588,7 +588,7 @@ func bsiv11ComponentSourceCodeURL(component sbom.GetComponent) *db.Record {
 	return db.NewRecordStmtAdditional(COMP_SOURCE_CODE_URL, id, result, 0.0, false)
 }
 
-func bsiv11ComponentDownloadURL(component sbom.GetComponent) *db.Record {
+func bsiV11ComponentDownloadURL(component sbom.GetComponent) *db.Record {
 	id := common.UniqueElementID(component)
 	result := strings.TrimSpace(component.GetDownloadLocationURL())
 
@@ -601,7 +601,7 @@ func bsiv11ComponentDownloadURL(component sbom.GetComponent) *db.Record {
 	return db.NewRecordStmtAdditional(COMP_DOWNLOAD_URL, id, result, 0.0, false)
 }
 
-func bsiv11ComponentSourceHash(component sbom.GetComponent) *db.Record {
+func bsiV11ComponentSourceHash(component sbom.GetComponent) *db.Record {
 	id := common.UniqueElementID(component)
 	result := strings.TrimSpace(component.SourceCodeHash())
 
@@ -611,7 +611,7 @@ func bsiv11ComponentSourceHash(component sbom.GetComponent) *db.Record {
 	return db.NewRecordStmtAdditional(COMP_SOURCE_HASH, id, result, 10.0, false)
 }
 
-func bsiv11ComponentOtherUniqueIdentifiers(component sbom.GetComponent) *db.Record {
+func bsiV11ComponentOtherUniqueIdentifiers(component sbom.GetComponent) *db.Record {
 	id := common.UniqueElementID(component)
 
 	// Check PURLs

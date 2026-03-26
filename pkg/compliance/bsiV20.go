@@ -29,39 +29,39 @@ import (
 )
 
 var (
-	validBsiV2SpdxVersions = []string{"2.2", "2.3"}
-	validBsiV2CdxVersions  = []string{"1.5", "1.6"}
+	validBsiV20SpdxVersions = []string{"2.2", "2.3"}
+	validBsiV20CdxVersions  = []string{"1.5", "1.6"}
 )
 
-func bsiV2Result(ctx context.Context, doc sbom.Document, fileName string, outFormat string) {
+func bsiV20Result(ctx context.Context, doc sbom.Document, fileName string, outFormat string) {
 	log := logger.FromContext(ctx)
-	log.Debug("compliance.bsiV2Result()")
+	log.Debug("compliance.bsiV20Result()")
 
 	dtb := db.NewDB()
 
-	dtb.AddRecord(bsiV2Vulnerabilities(doc))
-	dtb.AddRecord(bsiSpec(doc))
-	dtb.AddRecord(bsiV2SpecVersion(doc))
-	dtb.AddRecord(bsiBuildPhase(doc))
-	dtb.AddRecord(bsiv11SBOMCreator(doc))
-	dtb.AddRecord(bsiv11SBOMTimestamp(doc))
-	dtb.AddRecord(bsiV2SBOMDepth(doc))
-	dtb.AddRecord(bsiv11SBOMURI(doc))
-	dtb.AddRecords(bsiV2Components(doc))
+	dtb.AddRecord(bsiV20Vulnerabilities(doc))
+	// dtb.AddRecord(bsiSpec(doc))
+	dtb.AddRecord(bsiV20SpecVersion(doc))
+	// dtb.AddRecord(bsiBuildPhase(doc))
+	dtb.AddRecord(bsiV11SBOMCreator(doc))
+	dtb.AddRecord(bsiV11SBOMTimestamp(doc))
+	dtb.AddRecord(bsiV20SBOMDepth(doc))
+	dtb.AddRecord(bsiV11SBOMURI(doc))
+	dtb.AddRecords(bsiV20Components(doc))
 	// New SBOM fields
-	dtb.AddRecord(bsiV2SbomSignature(doc))
-	dtb.AddRecord(bsiV2SbomLinks(doc))
+	dtb.AddRecord(bsiV20SbomSignature(doc))
+	dtb.AddRecord(bsiV20SbomLinks(doc))
 
 	if outFormat == pkgcommon.FormatJSON {
-		bsiV2JSONReport(dtb, fileName)
+		bsiV20JSONReport(dtb, fileName)
 	}
 
 	if outFormat == pkgcommon.ReportBasic {
-		bsiV2BasicReport(dtb, fileName)
+		bsiV20BasicReport(dtb, fileName)
 	}
 
 	if outFormat == pkgcommon.ReportDetailed {
-		bsiV2DetailedReport(dtb, fileName)
+		bsiV20DetailedReport(dtb, fileName)
 	}
 }
 
@@ -129,7 +129,7 @@ func bsiBuildPhase(doc sbom.Document) *db.Record {
 }
 
 // bomlinks
-func bsiV2SbomLinks(doc sbom.Document) *db.Record {
+func bsiV20SbomLinks(doc sbom.Document) *db.Record {
 	result, score := "", 0.0
 
 	bom := doc.Spec().GetExtDocRef()
@@ -143,7 +143,7 @@ func bsiV2SbomLinks(doc sbom.Document) *db.Record {
 	return db.NewRecordStmtOptional(SBOM_BOM_LINKS, "doc", result, score)
 }
 
-func bsiV2Vulnerabilities(doc sbom.Document) *db.Record {
+func bsiV20Vulnerabilities(doc sbom.Document) *db.Record {
 	result, score := "no-vulnerability", 10.0
 
 	vulns := doc.Vulnerabilities()
@@ -162,8 +162,8 @@ func bsiV2Vulnerabilities(doc sbom.Document) *db.Record {
 	return db.NewRecordStmt(SBOM_VULNERABILITIES, "doc", result, score, "")
 }
 
-// bsiV2SbomSignature
-func bsiV2SbomSignature(doc sbom.Document) *db.Record {
+// bsiV20SbomSignature
+func bsiV20SbomSignature(doc sbom.Document) *db.Record {
 	result, score := "", 0.0
 
 	if doc.Signature() != nil {
@@ -201,14 +201,14 @@ func bsiV2SbomSignature(doc sbom.Document) *db.Record {
 	return db.NewRecordStmtOptional(SBOM_SIGNATURE, "doc", result, score)
 }
 
-func bsiV2SpecVersion(doc sbom.Document) *db.Record {
+func bsiV20SpecVersion(doc sbom.Document) *db.Record {
 	spec := doc.Spec().GetSpecType()
 	version := doc.Spec().GetVersion()
 
 	result, score := "", 0.0
 
 	if spec == string(sbom.SBOMSpecSPDX) {
-		count := lo.Count(validBsiV2SpdxVersions, version)
+		count := lo.Count(validBsiV20SpdxVersions, version)
 		validate := lo.Contains(validSpdxVersion, version)
 		if validate {
 			if count > 0 {
@@ -220,7 +220,7 @@ func bsiV2SpecVersion(doc sbom.Document) *db.Record {
 			}
 		}
 	} else if spec == string(sbom.SBOMSpecCDX) {
-		count := lo.Count(validBsiV2CdxVersions, version)
+		count := lo.Count(validBsiV20CdxVersions, version)
 		if count > 0 {
 			result = version
 			score = 10.0
@@ -233,7 +233,7 @@ func bsiV2SpecVersion(doc sbom.Document) *db.Record {
 	return db.NewRecordStmt(SBOM_SPEC_VERSION, "doc", result, score, "")
 }
 
-func bsiV2Components(doc sbom.Document) []*db.Record {
+func bsiV20Components(doc sbom.Document) []*db.Record {
 	records := []*db.Record{}
 
 	if len(doc.Components()) == 0 {
@@ -242,22 +242,22 @@ func bsiV2Components(doc sbom.Document) []*db.Record {
 	}
 
 	for _, component := range doc.Components() {
-		records = append(records, bsiv11ComponentCreator(component))
-		records = append(records, bsiv11ComponentName(component))
-		records = append(records, bsiv11ComponentVersion(component))
-		records = append(records, bsiV2ComponentFilename(doc, component))
-		records = append(records, bsiV2ComponentDependencies(doc, component))
-		records = append(records, bsiV2ComponentAssociatedLicense(doc, component))
-		records = append(records, bsiV2ComponentDeployableHash(doc, component))
-		records = append(records, bsiV2ComponentExecutable(doc, component))
-		records = append(records, bsiV2ComponentArchive(doc, component))
-		records = append(records, bsiV2ComponentStructured(doc, component))
-		records = append(records, bsiv11ComponentSourceCodeURL(component))
-		records = append(records, bsiv11ComponentDownloadURL(component))
-		records = append(records, bsiv11ComponentOtherUniqueIdentifiers(component))
-		records = append(records, bsiV2ComponentConcludedLicense(component))
-		records = append(records, bsiV2ComponentDeclaredLicense(component))
-		records = append(records, bsiv11ComponentSourceHash(component))
+		records = append(records, bsiV11ComponentCreator(component))
+		records = append(records, bsiV11ComponentName(component))
+		records = append(records, bsiV11ComponentVersion(component))
+		records = append(records, bsiV20ComponentFilename(doc, component))
+		records = append(records, bsiV20ComponentDependencies(doc, component))
+		records = append(records, bsiV20ComponentAssociatedLicense(doc, component))
+		records = append(records, bsiV20ComponentDeployableHash(doc, component))
+		records = append(records, bsiV20ComponentExecutable(doc, component))
+		records = append(records, bsiV20ComponentArchive(doc, component))
+		records = append(records, bsiV20ComponentStructured(doc, component))
+		records = append(records, bsiV11ComponentSourceCodeURL(component))
+		records = append(records, bsiV11ComponentDownloadURL(component))
+		records = append(records, bsiV11ComponentOtherUniqueIdentifiers(component))
+		records = append(records, bsiV20ComponentConcludedLicense(component))
+		records = append(records, bsiV20ComponentDeclaredLicense(component))
+		records = append(records, bsiV21ComponentSourceHash(component))
 
 	}
 
@@ -266,11 +266,11 @@ func bsiV2Components(doc sbom.Document) []*db.Record {
 	return records
 }
 
-// bsiV2ComponentDeployableHash checks for SHA-512 hash on the deployable component.
-// BSI v2.0: Requires SHA-512 ONLY.
+// bsiV20ComponentDeployableHash checks for SHA-512 hash on the deployable component.
+// BSI V20.0: Requires SHA-512 ONLY.
 // SPDX: PackageChecksum with algo SHA-512.
 // CDX: externalReferences[type=distribution or distribution-intake].hashes[] with algo SHA-512.
-func bsiV2ComponentDeployableHash(doc sbom.Document, component sbom.GetComponent) *db.Record {
+func bsiV20ComponentDeployableHash(doc sbom.Document, component sbom.GetComponent) *db.Record {
 	result := ""
 	score := 0.0
 	spec := strings.TrimSpace(strings.ToLower(doc.Spec().GetSpecType()))
@@ -306,11 +306,11 @@ done:
 	return db.NewRecordStmt(COMP_DEPLOYABLE_HASH, common.UniqueElementID(component), result, score, "")
 }
 
-// bsiV2ComponentFilename checks for the component filename.
-// BSI v2.0: The actual filename of the component.
+// bsiV20ComponentFilename checks for the component filename.
+// BSI V20.0: The actual filename of the component.
 // SPDX: PackageFileName
 // CDX: custom property bsi:component:filename.
-func bsiV2ComponentFilename(doc sbom.Document, component sbom.GetComponent) *db.Record {
+func bsiV20ComponentFilename(doc sbom.Document, component sbom.GetComponent) *db.Record {
 	id := common.UniqueElementID(component)
 	spec := strings.TrimSpace(strings.ToLower(doc.Spec().GetSpecType()))
 
@@ -331,11 +331,11 @@ func bsiV2ComponentFilename(doc sbom.Document, component sbom.GetComponent) *db.
 	return db.NewRecordStmt(COMP_FILENAME, id, "", 0.0, "")
 }
 
-// bsiV2ComponentExecutable checks whether the component is executable.
-// BSI v2.0: Describes whether the component is executable.
+// bsiV20ComponentExecutable checks whether the component is executable.
+// BSI V20.0: Describes whether the component is executable.
 // SPDX: PrimaryPackagePurpose = APPLICATION.
 // CDX: custom property bsi:component:executable.
-func bsiV2ComponentExecutable(doc sbom.Document, component sbom.GetComponent) *db.Record {
+func bsiV20ComponentExecutable(doc sbom.Document, component sbom.GetComponent) *db.Record {
 	id := common.UniqueElementID(component)
 	spec := strings.TrimSpace(strings.ToLower(doc.Spec().GetSpecType()))
 
@@ -356,11 +356,11 @@ func bsiV2ComponentExecutable(doc sbom.Document, component sbom.GetComponent) *d
 	return db.NewRecordStmt(COMP_EXECUTABLE, id, "", 0.0, "")
 }
 
-// bsiV2ComponentArchive checks whether the component is an archive.
-// BSI v2.0: Describes whether the component is an archive.
+// bsiV20ComponentArchive checks whether the component is an archive.
+// BSI V20.0: Describes whether the component is an archive.
 // SPDX: PrimaryPackagePurpose = ARCHIVE .
 // CDX: custom property bsi:component:archive.
-func bsiV2ComponentArchive(doc sbom.Document, component sbom.GetComponent) *db.Record {
+func bsiV20ComponentArchive(doc sbom.Document, component sbom.GetComponent) *db.Record {
 	id := common.UniqueElementID(component)
 	spec := strings.TrimSpace(strings.ToLower(doc.Spec().GetSpecType()))
 
@@ -381,11 +381,11 @@ func bsiV2ComponentArchive(doc sbom.Document, component sbom.GetComponent) *db.R
 	return db.NewRecordStmt(COMP_ARCHIVE, id, "", 0.0, "")
 }
 
-// bsiV2ComponentStructured checks whether the component is structured data.
-// BSI v2.0: Describes whether the component is a structured file.
+// bsiV20ComponentStructured checks whether the component is structured data.
+// BSI V20.0: Describes whether the component is a structured file.
 // SPDX: PrimaryPackagePurpose = SOURCE
 // CDX: custom property bsi:component:structured.
-func bsiV2ComponentStructured(doc sbom.Document, component sbom.GetComponent) *db.Record {
+func bsiV20ComponentStructured(doc sbom.Document, component sbom.GetComponent) *db.Record {
 	id := common.UniqueElementID(component)
 	spec := strings.TrimSpace(strings.ToLower(doc.Spec().GetSpecType()))
 
@@ -406,7 +406,7 @@ func bsiV2ComponentStructured(doc sbom.Document, component sbom.GetComponent) *d
 	return db.NewRecordStmt(COMP_STRUCTURED, id, "", 0.0, "")
 }
 
-func bsiV2ComponentAssociatedLicense(doc sbom.Document, component sbom.GetComponent) *db.Record {
+func bsiV20ComponentAssociatedLicense(doc sbom.Document, component sbom.GetComponent) *db.Record {
 	spec := doc.Spec().GetSpecType()
 
 	var licenses []licenses.License
@@ -427,7 +427,7 @@ func bsiV2ComponentAssociatedLicense(doc sbom.Document, component sbom.GetCompon
 	return db.NewRecordStmt(COMP_ASSOCIATED_LICENSE, common.UniqueElementID(component), "compliant", 10.0, "")
 }
 
-func bsiV2ComponentConcludedLicense(component sbom.GetComponent) *db.Record {
+func bsiV20ComponentConcludedLicense(component sbom.GetComponent) *db.Record {
 	id := common.UniqueElementID(component)
 	licenses := component.ConcludedLicenses()
 
@@ -442,7 +442,7 @@ func bsiV2ComponentConcludedLicense(component sbom.GetComponent) *db.Record {
 	return db.NewRecordStmtAdditional(COMP_CONCLUDED_LICENSE, id, "compliant", 10.0, false)
 }
 
-func bsiV2ComponentDeclaredLicense(component sbom.GetComponent) *db.Record {
+func bsiV20ComponentDeclaredLicense(component sbom.GetComponent) *db.Record {
 	id := common.UniqueElementID(component)
 	licenses := component.DeclaredLicenses()
 
@@ -457,15 +457,15 @@ func bsiV2ComponentDeclaredLicense(component sbom.GetComponent) *db.Record {
 	return db.NewRecordStmtOptional(COMP_DECLARED_LICENSE, id, "compliant", 10.0)
 }
 
-// bsiV2ComponentDependencies checks that a component's direct dependencies are declared
-// and resolvable. BSI TR-03183-2 v2.0 §5.2.2 extends the dependency definition to include
+// bsiV20ComponentDependencies checks that a component's direct dependencies are declared
+// and resolvable. BSI TR-03183-2 V20.0 §5.2.2 extends the dependency definition to include
 // containment (DEPENDS_ON + CONTAINS: statically linked or embedded components).
 //
 // Scoring (per component):
 //
 //	 0  — a declared dependency cannot be resolved to a component in the SBOM
 //	10  — all declared deps resolve, or component is a leaf (no deps)
-func bsiV2ComponentDependencies(doc sbom.Document, component sbom.GetComponent) *db.Record {
+func bsiV20ComponentDependencies(doc sbom.Document, component sbom.GetComponent) *db.Record {
 	compID := component.GetID()
 
 	componentMap := make(map[string]sbom.GetComponent)
@@ -499,16 +499,16 @@ func bsiV2ComponentDependencies(doc sbom.Document, component sbom.GetComponent) 
 	return db.NewRecordStmt(COMP_DEPTH, common.UniqueElementID(component), result, 10.0, "")
 }
 
-// bsiV2SBOMDepth checks dependency graph completeness at the document level.
-// BSI TR-03183-2 v2.0 §5.1: recursive dependency resolution MUST be performed;
-// v2.0 includes containment (DEPENDS_ON + CONTAINS) in the DFS traversal.
+// bsiV20SBOMDepth checks dependency graph completeness at the document level.
+// BSI TR-03183-2 V20.0 §5.1: recursive dependency resolution MUST be performed;
+// V20.0 includes containment (DEPENDS_ON + CONTAINS) in the DFS traversal.
 //
 // Scoring (document-level, SBOM_DEPTH):
 //
 //	 0  — no relationships, broken relationships, or primary does not declare deps
 //	 5  — graph declared but has orphan (unreachable) components
 //	10  — graph is recursively complete with no orphans
-func bsiV2SBOMDepth(doc sbom.Document) *db.Record {
+func bsiV20SBOMDepth(doc sbom.Document) *db.Record {
 	primary := doc.PrimaryComp()
 	if !primary.IsPresent() {
 		return db.NewRecordStmt(SBOM_DEPTH, "doc", "primary component missing", 0.0, "")
