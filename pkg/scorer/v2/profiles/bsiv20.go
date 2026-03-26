@@ -764,45 +764,8 @@ SPDX: PackageVerificationCode (closest available, SHA-1-based)
 CDX:  externalReferences[].hashes[] on vcs or source-distribution references
 */
 func BSIV20CompSourceHash(doc sbom.Document) catalog.ProfFeatScore {
-	comps := doc.Components()
-	total := len(comps)
-
-	if total == 0 {
-		return catalog.ProfFeatScore{
-			Score:  0.0,
-			Desc:   "no components found in SBOM.",
-			Ignore: true,
-		}
-	}
-
-	withData := 0
-	for _, c := range comps {
-		if strings.TrimSpace(c.SourceCodeHash()) != "" {
-			withData++
-		}
-	}
-
-	if withData == 0 {
-		return catalog.ProfFeatScore{
-			Score:  0.0,
-			Desc:   "no components declare source hash (optional field).",
-			Ignore: true,
-		}
-	}
-
-	if withData == total {
-		return catalog.ProfFeatScore{
-			Score:  10.0,
-			Desc:   "source hash declared for all components.",
-			Ignore: false,
-		}
-	}
-
-	return catalog.ProfFeatScore{
-		Score:  float64(withData) / float64(total) * 10.0,
-		Desc:   fmt.Sprintf("%d/%d components declare source hash.", withData, total),
-		Ignore: false,
-	}
+	// BSI v2.0 aligns with v2.1: SHA-512 required. Source hash is optional — Ignore when absent.
+	return extRefHashCheck(doc, "source code hash", "SHA512", true, "source-distribution", "vcs")
 }
 
 // spdxPurposeCheck evaluates a BSI property for SPDX documents by checking whether

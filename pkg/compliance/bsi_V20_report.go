@@ -23,7 +23,7 @@ import (
 	"github.com/olekukonko/tablewriter"
 )
 
-func bsiV2JSONReport(dtb *db.DB, fileName string) {
+func bsiV20JSONReport(dtb *db.DB, fileName string) {
 	name := "BSI TR-03183-2 v2.0.0 Compliance Report"
 	revision := "TR-03183-2 (2.0.0)"
 	jr := newJSONReport(name, revision)
@@ -34,6 +34,7 @@ func bsiV2JSONReport(dtb *db.DB, fileName string) {
 	summary.MaxScore = 10.0
 	summary.TotalScore = score.totalScore()
 	summary.TotalRequiredScore = score.totalRequiredScore()
+	summary.TotalAdditionalScore = score.totalAdditionalScore()
 	summary.TotalOptionalScore = score.totalOptionalScore()
 
 	jr.Summary = summary
@@ -43,12 +44,12 @@ func bsiV2JSONReport(dtb *db.DB, fileName string) {
 	fmt.Println(string(o))
 }
 
-func bsiV2DetailedReport(dtb *db.DB, fileName string) {
+func bsiV20DetailedReport(dtb *db.DB, fileName string) {
 	table := tablewriter.NewWriter(os.Stdout)
 	score := bsiAggregateScore(dtb)
 
 	fmt.Printf("BSI TR-03183-2 v2.0.0 Compliance Report \n")
-	fmt.Printf("Compliance score by Interlynk Score:%0.1f RequiredScore:%0.1f OptionalScore:%0.1f for %s\n", score.totalScore(), score.totalRequiredScore(), score.totalOptionalScore(), fileName)
+	fmt.Printf("Compliance score by Interlynk Score:%0.1f RequiredScore:%0.1f AdditionalScore:%0.1f for %s\n", score.totalScore(), score.totalRequiredScore(), score.totalAdditionalScore(), fileName)
 	fmt.Printf("* indicates optional fields\n")
 	table.SetHeader([]string{"ElementId", "Section", "Datafield", "Element Result", "Score"})
 	table.SetRowLine(true)
@@ -61,13 +62,13 @@ func bsiV2DetailedReport(dtb *db.DB, fileName string) {
 		if !section.Required {
 			sectionID += "*"
 		}
-		table.Append([]string{section.ElementID, sectionID, section.DataField, section.ElementResult, fmt.Sprintf("%0.1f", section.Score)})
+		table.Append([]string{section.ElementID, sectionID, section.DataField, wrapResult(section.ElementResult), fmt.Sprintf("%0.1f", section.Score)})
 	}
 	table.Render()
 }
 
-func bsiV2BasicReport(dtb *db.DB, fileName string) {
+func bsiV20BasicReport(dtb *db.DB, fileName string) {
 	score := bsiAggregateScore(dtb)
 	fmt.Printf("BSI TR-03183-2 v2.0.0 Compliance Report\n")
-	fmt.Printf("Score:%0.1f RequiredScore:%0.1f OptionalScore:%0.1f for %s\n", score.totalScore(), score.totalRequiredScore(), score.totalOptionalScore(), fileName)
+	fmt.Printf("Score:%0.1f RequiredScore:%0.1f AdditionalScore:%0.1f for %s\n", score.totalScore(), score.totalRequiredScore(), score.totalAdditionalScore(), fileName)
 }

@@ -435,8 +435,8 @@ var cdx21CompWithSourceDistributionHash = []byte(`
           "url": "https://example.com/lib-1.0.0-sources.tar.gz",
           "hashes": [
             {
-              "alg": "SHA-256",
-              "content": "a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456"
+              "alg": "SHA-512",
+              "content": "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e"
             }
           ]
         }
@@ -465,8 +465,8 @@ var cdx21CompWithVCSHash = []byte(`
           "url": "https://github.com/example/lib",
           "hashes": [
             {
-              "alg": "SHA-256",
-              "content": "b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef1234567a"
+              "alg": "SHA-512",
+              "content": "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef12"
             }
           ]
         }
@@ -495,8 +495,8 @@ var cdx21TwoCompsSrcHashAndVCSHash = []byte(`
           "url": "https://example.com/lib-1.0.0-sources.tar.gz",
           "hashes": [
             {
-              "alg": "SHA-256",
-              "content": "a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456"
+              "alg": "SHA-512",
+              "content": "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e"
             }
           ]
         }
@@ -513,8 +513,8 @@ var cdx21TwoCompsSrcHashAndVCSHash = []byte(`
           "url": "https://github.com/example/lib2",
           "hashes": [
             {
-              "alg": "SHA-256",
-              "content": "c3d4e5f6789012345678901234567890abcdef1234567890abcdef1234567ab2"
+              "alg": "SHA-512",
+              "content": "abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890ab"
             }
           ]
         }
@@ -543,8 +543,8 @@ var cdx21TwoCompsOneWithSourceHash = []byte(`
           "url": "https://github.com/example/liba",
           "hashes": [
             {
-              "alg": "SHA-256",
-              "content": "a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456"
+              "alg": "SHA-512",
+              "content": "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e"
             }
           ]
         }
@@ -635,7 +635,7 @@ func TestBSIV21CompSourceHash(t *testing.T) {
 		assert.False(t, got.Ignore)
 	})
 
-	// source-distribution ext ref present but no hash → score 0.0
+	// source-distribution ext ref present but no hash → score 0.0, Ignore=true (optional field)
 	t.Run("sourceDistributionNoHash", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdx21CompWithSourceDistributionURLNoHash, sbom.Signature{})
 		require.NoError(t, err)
@@ -644,10 +644,10 @@ func TestBSIV21CompSourceHash(t *testing.T) {
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "no components declare source code hash", got.Desc)
-		assert.False(t, got.Ignore)
+		assert.True(t, got.Ignore)
 	})
 
-	// no ext refs at all → score 0.0
+	// no ext refs at all → score 0.0, Ignore=true (optional field)
 	t.Run("noExtRefs", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithProperties, sbom.Signature{})
 		require.NoError(t, err)
@@ -656,6 +656,6 @@ func TestBSIV21CompSourceHash(t *testing.T) {
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "no components declare source code hash", got.Desc)
-		assert.False(t, got.Ignore)
+		assert.True(t, got.Ignore)
 	})
 }

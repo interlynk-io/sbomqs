@@ -111,7 +111,7 @@ func ComplianceResult(ctx context.Context, doc sbom.Document, reportType, fileNa
 
 	case reportType == BSI_V2_REPORT:
 		log.Debug("Running BSI V2 compliance report")
-		bsiV2Result(ctx, doc, fileName, outFormat)
+		bsiV20Result(ctx, doc, fileName, outFormat)
 
 	case reportType == BSI_V21_REPORT:
 		log.Debug("Running BSI V2.1 compliance report")

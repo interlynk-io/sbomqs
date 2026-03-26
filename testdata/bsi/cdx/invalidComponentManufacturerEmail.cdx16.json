@@ -8,11 +8,15 @@
       "type": "application",
       "name": "Acme Application",
       "version": "9.1.1",
-      "authors": [
-        {
-          "name": "Anthony Edward Stark"
-        }
-      ]
+      "manufacturer": {
+        "name": "Acme, Inc.",
+        "contact": [
+          {
+            "name": "Acme Professional Services",
+            "email": "professional.services"
+          }
+        ]
+      }
     }
   ]
 }

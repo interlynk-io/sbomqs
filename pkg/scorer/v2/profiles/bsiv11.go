@@ -285,20 +285,6 @@ func BSIV11CompVersion(doc sbom.Document) catalog.ProfFeatScore {
 // - therefore contact information must be machine-readable and actionable, which is why email or URL is required.
 // - Name or phone alone is not sufficient, as they do not provide a standardized way to reach the responsible party.
 //
-// Accepted Fields (BSI Interpretation)
-// -----------------------------------------------------------------------------
-// For each component, at least ONE of the following must provide
-// a valid contact (email or URL):
-//
-// - Authors (email)
-// - Manufacturer (email or URL)
-// - Supplier (email or URL)
-//
-// Notes:
-// - Name or phone alone is NOT sufficient.
-// - Presence without valid email/URL is considered invalid.
-// - Only one valid contact per component is required.
-//
 // Component Creator Mapping:
 // SPDX:
 // - PackageOriginator  (preferred)
@@ -590,8 +576,6 @@ func isAcceptableLicense(s licenses.License) bool {
 //
 // CycloneDX:
 // - externalReferences[type=distribution or distribution-intake].hashes[].alg = "SHA-256"
-//
-// Applies to ALL components (not just the primary component).
 func BSIV11CompExecutableHash(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
 	total := len(comps)
@@ -607,6 +591,7 @@ func BSIV11CompExecutableHash(doc sbom.Document) catalog.ProfFeatScore {
 		switch spec {
 		case string(sbom.SBOMSpecCDX):
 			// CDX: hash must be on a distribution or distribution-intake external reference
+			// BSI v1.1 requires SHA-256 specifically; empty values are not accepted.
 			for _, er := range c.ExternalReferences() {
 				t := er.GetRefType()
 				if t == "distribution" || t == "distribution-intake" {
@@ -622,6 +607,7 @@ func BSIV11CompExecutableHash(doc sbom.Document) catalog.ProfFeatScore {
 			}
 		case string(sbom.SBOMSpecSPDX):
 			// SPDX: PackageChecksum directly on the package
+			// BSI v1.1 requires SHA-256 specifically; empty/whitespace values are not accepted.
 			for _, checksum := range c.GetChecksums() {
 				algo := common.NormalizeAlgoName(checksum.GetAlgo())
 				value := strings.TrimSpace(checksum.GetContent())
@@ -967,7 +953,7 @@ BSI Official Definition::
 
 - CycloneDX Acceptable:
   - externalReferences with hashes of  type:
-  - VSC
+  - VCS
   - source-distribution
 
 NOTE: It's an Additional field (BSI §5.3): conditional mandatory — MUST be provided if data exists.

@@ -18,6 +18,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/common"
+
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/catalog"
 	"github.com/samber/lo"
@@ -96,12 +98,14 @@ func BSIV21CompEffectiveLicence(doc sbom.Document) catalog.ProfFeatScore {
 // BSIV21CompDeployableHash checks that components have a hash on their distribution or distribution-intake external reference.
 // BSI v2.1 maps this to externalReferences[].hashes[] with type="distribution" or "distribution-intake".
 func BSIV21CompDeployableHash(doc sbom.Document) catalog.ProfFeatScore {
-	return extRefHashCheck(doc, "deployable component hash", "distribution", "distribution-intake")
+	// BSI v2.1 §5.2.2: deployable hash MUST be SHA-512.
+	return extRefHashCheck(doc, "deployable component hash", "SHA512", false, "distribution", "distribution-intake")
 }
 
-// BSIV21CompSourceHash checks that components have a hash on their source-distribution or vcs external reference.
+// BSIV21CompSourceHash checks that components have a SHA-512 hash on their source-distribution or vcs external reference.
+// Source hash is an optional field — absence does not penalise the score (Ignore=true when absent).
 func BSIV21CompSourceHash(doc sbom.Document) catalog.ProfFeatScore {
-	return extRefHashCheck(doc, "source code hash", "source-distribution", "vcs")
+	return extRefHashCheck(doc, "source code hash", "SHA512", true, "source-distribution", "vcs")
 }
 
 // BSIV21CompDistributionLicence checks that components have concluded licences
@@ -261,12 +265,16 @@ func extRefURLCheck(doc sbom.Document, fieldLabel string, refTypes ...string) ca
 }
 
 // extRefHashCheck checks that components have an externalReference of one of the given types with at least one hash.
-func extRefHashCheck(doc sbom.Document, fieldLabel string, refTypes ...string) catalog.ProfFeatScore {
+// extRefHashCheck counts components that have a non-empty hash on an external reference
+// of one of the given types. If requiredAlgo is non-empty (e.g. "SHA512"), only hashes
+// with that normalised algorithm name are counted.
+// ignoreWhenAbsent=true sets Ignore=true when no component provides the field (optional fields).
+func extRefHashCheck(doc sbom.Document, fieldLabel string, requiredAlgo string, ignoreWhenAbsent bool, refTypes ...string) catalog.ProfFeatScore {
 	comps := doc.Components()
 	total := len(comps)
 
 	if total == 0 {
-		return catalog.ProfFeatScore{Score: 0.0, Desc: "no components found"}
+		return catalog.ProfFeatScore{Score: 0.0, Desc: "no components found", Ignore: ignoreWhenAbsent}
 	}
 
 	valid := lo.CountBy(comps, func(c sbom.GetComponent) bool {
@@ -274,15 +282,31 @@ func extRefHashCheck(doc sbom.Document, fieldLabel string, refTypes ...string) c
 			for _, refType := range refTypes {
 				if er.GetRefType() == refType {
 					for _, h := range er.GetRefHashes() {
-						if strings.TrimSpace(h.GetContent()) != "" {
-							return true
+						content := strings.TrimSpace(h.GetContent())
+						if content == "" {
+							continue
 						}
+						if requiredAlgo != "" {
+							algo := common.NormalizeAlgoName(h.GetAlgo())
+							if algo != requiredAlgo {
+								continue
+							}
+						}
+						return true
 					}
 				}
 			}
 		}
 		return false
 	})
+
+	if valid == 0 {
+		return catalog.ProfFeatScore{
+			Score:  0.0,
+			Desc:   fmt.Sprintf("no components declare %s", fieldLabel),
+			Ignore: ignoreWhenAbsent,
+		}
+	}
 
 	return componentScore(valid, total, fieldLabel)
 }

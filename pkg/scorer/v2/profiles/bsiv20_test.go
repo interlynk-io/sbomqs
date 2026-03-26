@@ -1612,34 +1612,76 @@ func TestBSIV20CompDeclaredLicenses(t *testing.T) {
 // TestBSIV20CompSourceHash
 // ===========================================================================
 
+// cdxCompWithVCSAndSHA512 has a VCS ref + SHA-512 hash (v2.0 requires SHA-512).
+var cdxCompWithVCSAndSHA512 = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:bsiv20-cdx-src-sha512-001",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/lib@1.0.0",
+      "name": "lib",
+      "version": "1.0.0",
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/example/lib",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+`)
+
 func TestBSIV20CompSourceHash(t *testing.T) {
 	ctx := context.Background()
 
-	// cdxCompWithVCSAndSHA256 has a VCS ref + SHA-256 hash (reused from bsiv11 fixtures)
-	t.Run("cdxWithSourceHash", func(t *testing.T) {
+	// CDX component with VCS ref + SHA-512 hash → score 10.0
+	t.Run("cdxWithSHA512SourceHash", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithVCSAndSHA512, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV20CompSourceHash(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "source code hash declared for all components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// SHA-256 hash is not accepted for v2.0 → score 0.0
+	t.Run("cdxWithSHA256SourceHashRejected", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithVCSAndSHA256, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := BSIV20CompSourceHash(doc)
 
-		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "source hash declared for all components.", got.Desc)
-		assert.False(t, got.Ignore)
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "no components declare source code hash", got.Desc)
+		assert.True(t, got.Ignore)
 	})
 
-	// spdxCompWithVerificationCode has a PackageVerificationCode
-	t.Run("spdxWithVerificationCode", func(t *testing.T) {
+	// SPDX PackageVerificationCode is SHA-1, not SHA-512 → score 0.0 (not applicable)
+	t.Run("spdxVerificationCodeNotAccepted", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWithVerificationCode, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := BSIV20CompSourceHash(doc)
 
-		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "source hash declared for all components.", got.Desc)
-		assert.False(t, got.Ignore)
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "no components declare source code hash", got.Desc)
+		assert.True(t, got.Ignore)
 	})
 
-	// cdxCompPURLAbsent has a component with no source refs at all
+	// Component with no source refs → score 0.0, Ignore=true (optional field)
 	t.Run("cdxNoSourceHash", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompPURLAbsent, sbom.Signature{})
 		require.NoError(t, err)
@@ -1647,11 +1689,11 @@ func TestBSIV20CompSourceHash(t *testing.T) {
 		got := BSIV20CompSourceHash(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "no components declare source hash (optional field).", got.Desc)
+		assert.Equal(t, "no components declare source code hash", got.Desc)
 		assert.True(t, got.Ignore)
 	})
 
-	// cdxSBOMAuthor has no components at all
+	// No components at all → score 0.0, Ignore=true
 	t.Run("cdxNoComponents", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthor, sbom.Signature{})
 		require.NoError(t, err)
@@ -1659,7 +1701,7 @@ func TestBSIV20CompSourceHash(t *testing.T) {
 		got := BSIV20CompSourceHash(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "no components found in SBOM.", got.Desc)
+		assert.Equal(t, "no components found", got.Desc)
 		assert.True(t, got.Ignore)
 	})
 }

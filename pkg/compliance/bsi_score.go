@@ -16,47 +16,55 @@ package compliance
 
 import "github.com/interlynk-io/sbomqs/v2/pkg/compliance/db"
 
+// bsiScoreResult accumulates per-element scores across three tiers:
+//
+//   - required:   §5.2 fields => always counted (Required=true, Ignore=false)
+//   - additional: §5.3 fields => counted only when data exists (!Ignore)
+//   - optional:   §5.4 fields => tracked for display but never counted in score
 type bsiScoreResult struct {
-	id              string
-	requiredScore   float64
-	optionalScore   float64
-	requiredRecords int
-	optionalRecords int
+	id                string
+	requiredScore     float64
+	additionalScore   float64
+	optionalScore     float64
+	requiredRecords   int
+	additionalRecords int
+	optionalRecords   int
 }
 
 func newBsiScoreResult(id string) *bsiScoreResult {
 	return &bsiScoreResult{id: id}
 }
 
+// totalScore mirrors ComputeInterlynkProfScore:
+// (requiredScore + additionalScore) / (requiredRecords + additionalRecords)
+// Optional fields are excluded from the denominator entirely.
 func (r *bsiScoreResult) totalScore() float64 {
-	if r.requiredRecords == 0 && r.optionalRecords == 0 {
+	total := r.requiredRecords + r.additionalRecords
+	if total == 0 {
 		return 0.0
 	}
-
-	if r.requiredRecords != 0 && r.optionalRecords != 0 {
-		return (r.totalRequiredScore() + r.totalOptionalScore()) / 2
-	}
-
-	if r.requiredRecords == 0 && r.optionalRecords != 0 {
-		return r.totalOptionalScore()
-	}
-
-	return r.totalRequiredScore()
+	return (r.requiredScore + r.additionalScore) / float64(total)
 }
 
 func (r *bsiScoreResult) totalRequiredScore() float64 {
 	if r.requiredRecords == 0 {
 		return 0.0
 	}
-
 	return r.requiredScore / float64(r.requiredRecords)
 }
 
+func (r *bsiScoreResult) totalAdditionalScore() float64 {
+	if r.additionalRecords == 0 {
+		return 0.0
+	}
+	return r.additionalScore / float64(r.additionalRecords)
+}
+
+// totalOptionalScore is informational only — it is NOT part of totalScore().
 func (r *bsiScoreResult) totalOptionalScore() float64 {
 	if r.optionalRecords == 0 {
 		return 0.0
 	}
-
 	return r.optionalScore / float64(r.optionalRecords)
 }
 
@@ -67,29 +75,23 @@ func bsiKeyIDScore(dtb *db.DB, key int, id string) *bsiScoreResult {
 		return newBsiScoreResult(id)
 	}
 
-	requiredScore := 0.0
-	optionalScore := 0.0
-
-	requiredRecs := 0
-	optionalRecs := 0
-
+	res := newBsiScoreResult(id)
 	for _, r := range records {
-		if r.Required {
-			requiredScore += r.Score
-			requiredRecs++
-		} else {
-			optionalScore += r.Score
-			optionalRecs++
+		switch {
+		case r.Required && !r.Ignore:
+			res.requiredScore += r.Score
+			res.requiredRecords++
+
+		case r.Additional && !r.Ignore:
+			res.additionalScore += r.Score
+			res.additionalRecords++
+
+		case !r.Required && !r.Additional:
+			res.optionalScore += r.Score
+			res.optionalRecords++
 		}
 	}
-
-	return &bsiScoreResult{
-		id:              id,
-		requiredScore:   requiredScore,
-		optionalScore:   optionalScore,
-		requiredRecords: requiredRecs,
-		optionalRecords: optionalRecs,
-	}
+	return res
 }
 
 func bsiIDScore(dtb *db.DB, id string) *bsiScoreResult {
@@ -99,46 +101,37 @@ func bsiIDScore(dtb *db.DB, id string) *bsiScoreResult {
 		return newBsiScoreResult(id)
 	}
 
-	requiredScore := 0.0
-	optionalScore := 0.0
-
-	requiredRecs := 0
-	optionalRecs := 0
-
+	res := newBsiScoreResult(id)
 	for _, r := range records {
-		if r.Required {
-			requiredScore += r.Score
-			requiredRecs++
-		} else {
-			optionalScore += r.Score
-			optionalRecs++
+		switch {
+		case r.Required && !r.Ignore:
+			res.requiredScore += r.Score
+			res.requiredRecords++
+
+		case r.Additional && !r.Ignore:
+			res.additionalScore += r.Score
+			res.additionalRecords++
+
+		case !r.Required && !r.Additional:
+			res.optionalScore += r.Score
+			res.optionalRecords++
 		}
 	}
-
-	return &bsiScoreResult{
-		id:              id,
-		requiredScore:   requiredScore,
-		optionalScore:   optionalScore,
-		requiredRecords: requiredRecs,
-		optionalRecords: optionalRecs,
-	}
+	return res
 }
 
 func bsiAggregateScore(dtb *db.DB) *bsiScoreResult {
-	var finalResult bsiScoreResult
+	var final bsiScoreResult
 
-	ids := dtb.GetAllIDs()
-	results := make([]bsiScoreResult, 0, len(ids))
-	for _, id := range ids {
-		results = append(results, *bsiIDScore(dtb, id))
+	for _, id := range dtb.GetAllIDs() {
+		r := bsiIDScore(dtb, id)
+		final.requiredScore += r.requiredScore
+		final.additionalScore += r.additionalScore
+		final.optionalScore += r.optionalScore
+		final.requiredRecords += r.requiredRecords
+		final.additionalRecords += r.additionalRecords
+		final.optionalRecords += r.optionalRecords
 	}
 
-	for _, r := range results {
-		finalResult.requiredScore += r.requiredScore
-		finalResult.optionalScore += r.optionalScore
-		finalResult.requiredRecords += r.requiredRecords
-		finalResult.optionalRecords += r.optionalRecords
-	}
-
-	return &finalResult
+	return &final
 }

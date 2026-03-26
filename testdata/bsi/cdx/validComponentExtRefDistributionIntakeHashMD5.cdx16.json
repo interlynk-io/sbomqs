@@ -1,0 +1,28 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:hash-cdx-0002",
+  "version": 1,
+  "metadata": {
+    "component": {
+      "bom-ref": "pkg:generic/my-app@1.0.0",
+      "type": "application",
+      "name": "my-app",
+      "version": "1.0.0",
+      "externalReferences": [
+        {
+          "type": "distribution-intake",
+          "url": "https://example.com/my-app-1.0.0.tar.gz",
+          "hashes": [
+            {
+              "alg": "MD5",
+              "content": "d41d8cd98f00b204e9800998ecf8427e"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "components": []
+}
+
