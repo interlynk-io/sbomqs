@@ -591,13 +591,14 @@ func BSIV11CompExecutableHash(doc sbom.Document) catalog.ProfFeatScore {
 		switch spec {
 		case string(sbom.SBOMSpecCDX):
 			// CDX: hash must be on a distribution or distribution-intake external reference
+			// BSI v1.1 requires SHA-256 specifically; empty values are not accepted.
 			for _, er := range c.ExternalReferences() {
 				t := er.GetRefType()
 				if t == "distribution" || t == "distribution-intake" {
 					for _, h := range er.GetRefHashes() {
 						algo := common.NormalizeAlgoName(h.GetAlgo())
 						value := strings.TrimSpace(h.GetContent())
-						if algo == "SHA256" || algo == "SHA512" && value != "" {
+						if algo == "SHA256" && value != "" {
 							withData++
 							goto nextComp
 						}
@@ -606,10 +607,11 @@ func BSIV11CompExecutableHash(doc sbom.Document) catalog.ProfFeatScore {
 			}
 		case string(sbom.SBOMSpecSPDX):
 			// SPDX: PackageChecksum directly on the package
+			// BSI v1.1 requires SHA-256 specifically; empty/whitespace values are not accepted.
 			for _, checksum := range c.GetChecksums() {
 				algo := common.NormalizeAlgoName(checksum.GetAlgo())
 				value := strings.TrimSpace(checksum.GetContent())
-				if algo == "SHA256" || algo == "SHA512" && value != "" {
+				if algo == "SHA256" && value != "" {
 					withData++
 					goto nextComp
 				}
