@@ -32,21 +32,28 @@ Only officially released versions of these specifications MUST be used.
 v2.1.0 introduces three levels of component description (BSI §3.2, §5.1). Depending on its role in the SBOM, a component may be:
 
 ### Fully Described Component (§5.2)
+
 A component that is within scope and for which all applicable data fields from §5.2.2 must be provided.
 
 ### Logical Component (§3.2.2)
+
 An abstraction level that groups multiple physical components under one identity (e.g. to represent a product by name). Logical components MUST only address these data fields:
+
 - Component creator, Component name, Component version
 - Dependencies on other components
 - Distribution licences, Other unique identifiers, Original licences
 - Effective licence, URL of the **security.txt**
 
 ### Identified Component (§3.2.4)
+
 A component that must be present in the SBOM but does not need to be fully described. MUST address:
+
 - Component creator, Component name, Component version, Other unique identifiers
 
 ### Referenced Component (§3.2.5)
+
 A component whose full description lives in another BOM that this SBOM references. The referencing SBOM MUST copy:
+
 - Component creator, Component name, Component version
 
 ## Required Fields
@@ -57,7 +64,7 @@ BSI §5.2 defines two sets of mandatory fields: one for the SBOM document itself
 
 *(BSI §5.2.1, Table 2)*
 
-#### 1. Creator of the SBOM
+### 1. Creator of the SBOM
 
 **Official Definition:**
 > "Email address of the entity that created the SBOM. If no email address is available this MUST be a 'Uniform Resource Locator (URL)', e.g. the creator's home page or the project's web page."
@@ -82,7 +89,7 @@ BSI is built around the assumption that SBOMs must be processable by machines ac
   - [`metadata.manufacturer[].url`](https://cyclonedx.org/docs/1.6/json/#metadata_manufacture_url): URL of the manufacturer
   - XOR [`metadata.manufacturer[].contact[].email`](https://cyclonedx.org/docs/1.6/json/#metadata_manufacturer_contact_items_email): email in the manufacturer's contact list
 
-#### 2. Timestamp
+### 2. Timestamp
 
 **Official Definition:**
 > "Date and time of the SBOM data compilation according to the specification of the formats (see section 4). Note: It is recommended to only use timestamps in UTC ('Zulu' time)."
@@ -108,7 +115,7 @@ The timestamp ties the SBOM snapshot to a specific point in time. Since software
 
 > **Note:** For logical components only a subset of these fields applies (see §3.2.2 above). For components that comprise multiple sub-components in a manner that prevents the original sub-components from being determined, fields that are unavailable due to the assembly method (e.g. hash or filename) must be omitted.
 
-#### 3. Component creator
+### 3. Component creator
 
 **Official Definition:**
 > "Email address of the entity that created and, if applicable, maintains the respective component. If no email address is available this MUST be a 'Uniform Resource Locator (URL)', e.g. the creator's home page or the project's web page."
@@ -137,7 +144,7 @@ Same rationale as the SBOM creator: BSI requires a machine-actionable contact fo
 - CycloneDX v1.6 (other components):
   - [`components[].manufacturer[].url`](https://cyclonedx.org/docs/1.6/json/#components_items_manufacturer_url) XOR [`components[].manufacturer[].contact[].email`](https://cyclonedx.org/docs/1.6/json/#components_items_manufacturer_contact_items_email)
 
-#### 4. Component name
+### 4. Component name
 
 **Official Definition:**
 > "Name assigned to the component by the component creator. If no name is assigned this MUST be the actual filename."
@@ -163,10 +170,11 @@ The component name is the most fundamental identifier. Without it, an SBOM entry
 
 > **Note:** CycloneDX's `group` field is not required by BSI or the CycloneDX spec, but may be useful to distinguish equally-named components built by different projects (see BSI §8.2, Table 9 note).
 
-#### 5. Component version
+### 5. Component version
 
 **Official Definition:**
 > "Identifier used by the creator to specify changes in the component to a previously created version. The following points apply to determine a version in this order:
+> 
 > 1. Existing identifiers MUST NOT be changed for this purpose.
 > 2. Identifiers according to Semantic Versioning or alternatively Calendar Versioning SHOULD be used if one determines the versioning scheme; this is often the component creator.
 > 3. If no version is assigned this MUST be the modification date of the file expressed as date-time according to RFC 3339 section 5.6. To determine the creation time the file metadata MUST be consulted."
@@ -191,7 +199,7 @@ Vulnerability tracking is version-specific — a CVE may affect version `1.2.3` 
   - [`metadata.component.version`](https://cyclonedx.org/docs/1.6/json/#metadata_component_version) (primary component)
   - [`components[].version`](https://cyclonedx.org/docs/1.6/json/#components_items_version) (other components)
 
-#### 6. Filename of the component
+### 6. Filename of the component
 
 **Official Definition:**
 > "The actual filename of the component (i.e. not its file system path); see also section 3.2.1"
@@ -214,7 +222,7 @@ The filename is the physical identity of the component as it appears on disk. It
   - [`components[].properties`](https://cyclonedx.org/docs/1.6/json/#components_items_properties) with `name: "bsi:component:filename"` and `value: "..."` (other components)
   - Uses the [BSI CycloneDX property taxonomy](https://github.com/BSI-Bund/tr-03183-cyclonedx-property-taxonomy)
 
-#### 7. Dependencies on other components
+### 7. Dependencies on other components
 
 **Official Definition:**
 > "Enumeration of all components on which this component is directly dependent, according to requirements in section 5.1, or which this component contains according to requirements in section 3.2.1. Furthermore, the completeness of this enumeration MUST be clearly indicated."
@@ -240,7 +248,7 @@ Think of dependencies as a chain: if your software uses library A, then A must b
   - Components without any own `dependencies` MUST be declared as empty elements within the dependency graph (per CycloneDX v1.6 spec)
   - [`compositions[]`](https://cyclonedx.org/docs/1.6/json/#compositions) — `ref`, `aggregate: "complete"` XOR `"incomplete"` XOR `"unknown"`, `assemblies: [...]` OR `dependencies: [...]` — used to indicate completeness
 
-#### 8. Distribution licences
+### 8. Distribution licences
 
 **Official Definition:**
 > "Distribution licence(s) of the component under which it can be used by a licensee. For specifics see sections 6.1 and 8.1.13."
@@ -249,6 +257,7 @@ Think of dependencies as a chain: if your software uses library A, then A must b
 Distribution licences represent the licence under which a downstream party is permitted to use the component. BSI mandates standardized SPDX identifiers to ensure that licence information is machine-processable and interoperable across toolchains. Licence data is also security-relevant: certain licences restrict code modification, which may prevent patching a vulnerable component.
 
 > **Note on licence terminology (v2.1.0):** v2.1.0 distinguishes three licence categories:
+> 
 > - **Distribution licences** (required): the licence(s) under which a licensee of the SBOM can use the component — this replaces "Associated licences" from earlier versions
 > - **Original licences** (additional): the licence(s) assigned by the component's creator — this replaces what was called "Declared licences" in v2.0
 > - **Effective licence** (optional): the licence under which the SBOM creator uses the component — new in v2.1.0
@@ -271,7 +280,7 @@ Distribution licences represent the licence under which a downstream party is pe
   - [`metadata.component.licenses[].expression`](https://cyclonedx.org/docs/1.6/json/#metadata_component_licenses_items_oneOf_i1_expression) with `"acknowledgement": "concluded"` (primary component)
   - [`components[].licenses[].expression`](https://cyclonedx.org/docs/1.6/json/#components_items_licenses_items_oneOf_i1_expression) with `"acknowledgement": "concluded"` (other components)
 
-#### 9. Hash value of the deployable component
+### 9. Hash value of the deployable component
 
 **Official Definition:**
 > "Cryptographically secure checksum (hash value) of the deployed/deployable component (i.e. as a file on a mass storage device) as SHA-512; see also section 3.2.1"
@@ -295,7 +304,7 @@ A hash of the deployable artifact provides a tamper-evident fingerprint of the e
   - [`metadata.component.externalReferences[]`](https://cyclonedx.org/docs/1.6/json/#metadata_component_externalReferences_items_type) with `type: "distribution"`, `hashes[].alg: "SHA-512"`, `hashes[].content: "..."` (primary component)
   - [`components[].externalReferences[]`](https://cyclonedx.org/docs/1.6/json/#components_items_externalReferences_items_type) with `type: "distribution"`, `hashes[].alg: "SHA-512"`, `hashes[].content: "..."` (other components)
 
-#### 10. Executable property
+### 10. Executable property
 
 **Official Definition:**
 > "Describes whether the component is executable; possible values are 'executable' and 'non-executable'; see also Appendix, section 8.1.4"
@@ -318,7 +327,7 @@ Executables (compiled binaries, interpreted scripts, shared libraries) are the p
   - [`metadata.component.properties[]`](https://cyclonedx.org/docs/1.6/json/#metadata_component_properties) with `name: "bsi:component:executable"`, `value: "executable"` or `"non-executable"` (primary component)
   - [`components[].properties[]`](https://cyclonedx.org/docs/1.6/json/#components_items_properties) with `name: "bsi:component:executable"`, `value: "executable"` or `"non-executable"` (other components)
 
-#### 11. Archive property
+### 11. Archive property
 
 **Official Definition:**
 > "Describes whether the component is an archive; possible values are 'archive' and 'no archive'; see also Appendix, section 8.1.5"
@@ -339,7 +348,7 @@ An archive (a combination of multiple components, such as a `.zip`, `.tar`, or c
 - CycloneDX v1.6:
   - `properties[]` with `name: "bsi:component:archive"`, `value: "archive"` or `"no archive"`
 
-#### 12. Structured property
+### 12. Structured property
 
 **Official Definition:**
 > "Describes whether the component is a structured file, i.e. metadata of the contents is still present (see section 3.2.1); possible values are 'structured' and 'unstructured'; see also Appendix, section 8.1.6. If a component contains both structured and unstructured parts the value 'structured' MUST be used."
@@ -369,7 +378,7 @@ Additional fields MUST be provided *if they exist and their prerequisites are fu
 
 *(BSI §5.2.3, Table 4)*
 
-#### 13. SBOM-URI
+### 13. SBOM-URI
 
 **Official Definition:**
 > "Uniform Resource Identifier (URI)" of this SBOM
@@ -394,7 +403,7 @@ A URI uniquely identifies the SBOM document itself, independent of how or where 
 
 *(BSI §5.2.4, Table 5)*
 
-#### 14. Source code URI
+### 14. Source code URI
 
 **Official Definition:**
 > "Uniform Resource Identifier (URI)" of the source code of the component, e.g. the URL of the utilised source code version in its repository, or if a version cannot be specified the utilised source code repository itself."
@@ -416,7 +425,7 @@ Knowing where a component's source code lives enables downstream consumers to au
   - [`metadata.component.externalReferences[]`](https://cyclonedx.org/docs/1.6/json/#metadata_component_externalReferences_items_type) with `type: "source-distribution"`, `url: "..."` (primary component)
   - [`components[].externalReferences[]`](https://cyclonedx.org/docs/1.6/json/#components_items_externalReferences_items_type) with `type: "source-distribution"`, `url: "..."` (other components)
 
-#### 15. URI of the deployable form of the component
+### 15. URI of the deployable form of the component
 
 **Official Definition:**
 > "Uniform Resource Identifier (URI)", which points directly to the deployable (e.g. downloadable) form of the component."
@@ -439,7 +448,7 @@ This URI allows automated tools to retrieve the exact distributable artifact —
 
 > **Note (v2.1.0 vs v1.1):** The field was renamed from "URI of the executable form of the component" to "URI of the deployable form of the component".
 
-#### 16. Other unique identifiers
+### 16. Other unique identifiers
 
 **Official Definition:**
 > "Other identifiers that can be used to identify the component or to look it up in relevant databases, such as Common Platform Enumeration (CPE) or Package URL (purl)."
@@ -464,7 +473,7 @@ Standard identifiers like PURL and CPE enable automated cross-referencing agains
   - OR [`metadata.component.purl`](https://cyclonedx.org/docs/1.6/json/#metadata_component_purl)
   - Same pattern for [`components[]`](https://cyclonedx.org/docs/1.6/json/#components_items_cpe)
 
-#### 17. Original licences
+### 17. Original licences
 
 **Official Definition:**
 > "The licence(s) that have been assigned by the creator of the component. For specifics see sections 6.1 and 8.1.13."
@@ -490,7 +499,7 @@ Optional fields MAY be included if the data exists and the format supports it (B
 
 *(BSI §5.2.5, Table 6)*
 
-#### 18. Effective licence
+### 18. Effective licence
 
 **Official Definition:**
 > "The licence under which the component is used by the licensee that is the creator of the current SBOM. For specifics see sections 6.1 and 8.1.13."
@@ -508,7 +517,7 @@ When a component is available under multiple mutually exclusive licence choices 
 - CycloneDX v1.6:
   - `properties[]` with `name: "bsi:component:effectiveLicense"`, `value: "..."`
 
-#### 19. Hash value of the source code of the component
+### 19. Hash value of the source code of the component
 
 **Official Definition:**
 > "Cryptographically secure checksum (hash value) of the component source code. A specific algorithm how to create a hash value of multiple source files or a source code tree, and which hash algorithm is utilised for that has not yet been determined."
@@ -526,7 +535,7 @@ A hash of the source code allows independent verification that the source archiv
 - CycloneDX v1.6:
   - `externalReferences[]` with `type: "source-distribution"`, `hashes[].alg: "SHA-512"`, `hashes[].content: "..."`
 
-#### 20. URL of the security.txt
+### 20. URL of the security.txt
 
 **Official Definition:**
 > "Contains the 'Uniform Resource Locator (URL)' of the component creator's **security.txt**."
