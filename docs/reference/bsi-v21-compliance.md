@@ -86,8 +86,8 @@ BSI is built around the assumption that SBOMs must be processable by machines ac
   - The `Person`/`Organization` element carries an `externalIdentifiers` entry of type `email` (`"...@..."`) XOR type `urlScheme` (`"https://..."`)
 
 - CycloneDX v1.6:
-  - [`metadata.manufacturer[].url`](https://cyclonedx.org/docs/1.6/json/#metadata_manufacture_url): URL of the manufacturer
-  - XOR [`metadata.manufacturer[].contact[].email`](https://cyclonedx.org/docs/1.6/json/#metadata_manufacturer_contact_items_email): email in the manufacturer's contact list
+  - [`metadata.manufacturer[].url`](https://cyclonedx.org/docs/1.6/json/#metadata_tools_oneOf_i0_components_items_supplier_url): URL of the manufacturer
+  - XOR [`metadata.manufacturer[].contact[].email`](https://cyclonedx.org/docs/1.6/json/#metadata_tools_oneOf_i0_components_items_supplier_contact_items_email): email in the manufacturer's contact list
 
 ### 2. Timestamp
 
