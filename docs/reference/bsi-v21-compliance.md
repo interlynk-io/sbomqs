@@ -83,7 +83,7 @@ BSI is built around the assumption that SBOMs must be processable by machines ac
 
 - SPDX v3.0.1:
   - `CreationInfo.createdBy` references a `Person` or `Organization` element
-  - The `Person`/`Organization` element carries an `externalIdentifier` of type `email` (`"...@..."`) XOR type `urlScheme` (`"https://..."`)
+  - The `Person`/`Organization` element carries an `externalIdentifiers` entry of type `email` (`"...@..."`) XOR type `urlScheme` (`"https://..."`)
 
 - CycloneDX v1.6:
   - [`metadata.manufacturer[].url`](https://cyclonedx.org/docs/1.6/json/#metadata_manufacture_url): URL of the manufacturer
@@ -394,7 +394,7 @@ A URI uniquely identifies the SBOM document itself, independent of how or where 
 **SBOM Mappings:**
 
 - SPDX v3.0.1:
-  - `SpdxDocument.rootElement` points to a `software_Sbom` element whose `spdxId` serves as the SBOM URI; the `software_Package` element is linked with the same `spdxId`
+  - `SpdxDocument.rootElement` points to a `software_Sbom` element whose `spdxId` serves as the SBOM URI/identifier; the main `software_Package` representing the described software has its own distinct `spdxId` and is linked from the `software_Sbom` (for example, as a subject or via an SPDX relationship)
 
 - CycloneDX v1.6:
   - [`serialNumber`](https://cyclonedx.org/docs/1.6/json/#serialNumber): the unique serial number of the SBOM document
