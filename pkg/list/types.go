@@ -41,6 +41,7 @@ type Params struct {
 
 	// input control
 	Features []string
+	Profile  string // compliance profile for feature extraction, e.g. "bsiv21"
 
 	// output control
 	JSON     bool

@@ -26,6 +26,7 @@ func parseListParams(ep *Params) *list.Params {
 	return &list.Params{
 		Path:     ep.Path,
 		Features: ep.Features,
+		Profile:  ep.ListProfile,
 		JSON:     ep.JSON,
 		Basic:    ep.Basic,
 		Detailed: ep.Detailed,

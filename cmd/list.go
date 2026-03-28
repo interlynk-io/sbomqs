@@ -35,6 +35,7 @@ type userListCmd struct {
 	// Filter control
 	feature string
 	missing bool
+	profile string
 
 	// Output control
 	basic    bool
@@ -115,6 +116,9 @@ func parseListParams(cmd *cobra.Command, args []string) *userListCmd {
 	missing, _ := cmd.Flags().GetBool("missing")
 	uCmd.missing = missing
 
+	profile, _ := cmd.Flags().GetString("profile")
+	uCmd.profile = profile
+
 	// -- Output control --
 	basic, _ := cmd.Flags().GetBool("basic")
 	uCmd.basic = basic
@@ -140,15 +144,16 @@ func parseListParams(cmd *cobra.Command, args []string) *userListCmd {
 
 func fromListToEngineParams(uCmd *userListCmd) *engine.Params {
 	return &engine.Params{
-		Path:     []string{uCmd.path},
-		Features: []string{uCmd.feature},
-		Missing:  uCmd.missing,
-		Basic:    uCmd.basic,
-		JSON:     uCmd.json,
-		Detailed: uCmd.detailed,
-		Color:    uCmd.color,
-		Debug:    uCmd.debug,
-		Show:     uCmd.show,
+		Path:        []string{uCmd.path},
+		Features:    []string{uCmd.feature},
+		Missing:     uCmd.missing,
+		Basic:       uCmd.basic,
+		JSON:        uCmd.json,
+		Detailed:    uCmd.detailed,
+		Color:       uCmd.color,
+		Debug:       uCmd.debug,
+		Show:        uCmd.show,
+		ListProfile: uCmd.profile,
 	}
 }
 
@@ -160,6 +165,8 @@ func init() {
 	_ = listCmd.MarkFlagRequired("feature")
 
 	listCmd.Flags().BoolP("missing", "m", false, "List components or properties missing the specified feature")
+
+	listCmd.Flags().String("profile", "", "Compliance profile for feature extraction (e.g. bsiv21)")
 
 	// -- Output Control --
 	listCmd.Flags().BoolP("basic", "b", false, "Results in single-line format")
@@ -193,10 +200,50 @@ func init() {
 	}
 }
 
+// bsiV21FeatureKeys lists the feature keys supported by the bsiv21 profile.
+var bsiV21FeatureKeys = map[string]struct{}{
+	"sbom_spec_version":         {},
+	"sbom_creator":              {},
+	"sbom_timestamp":            {},
+	"sbom_uri":                  {},
+	"comp_creator":              {},
+	"comp_name":                 {},
+	"comp_version":              {},
+	"comp_filename":             {},
+	"comp_depth":                {},
+	"comp_distribution_license": {},
+	"comp_deployable_hash":      {},
+	"comp_executable_prop":      {},
+	"comp_archive_prop":         {},
+	"comp_structured_prop":      {},
+	"comp_source_code_url":      {},
+	"comp_download_url":         {},
+	"comp_other_identifiers":    {},
+	"comp_original_licenses":    {},
+	"comp_effective_license":    {},
+	"comp_source_hash":          {},
+	"comp_security_txt_url":     {},
+}
+
+// supportedProfiles lists the known profile values for --profile.
+var supportedProfiles = map[string]struct{}{
+	"bsiv21": {},
+}
+
 func validateparsedListCmd(uCmd *userListCmd) error {
 	// Check path
 	if len(uCmd.path) == 0 {
 		return errors.New("path is required")
+	}
+
+	// Validate profile if given
+	if uCmd.profile != "" {
+		if _, ok := supportedProfiles[uCmd.profile]; !ok {
+			return fmt.Errorf(
+				"profile %q is not supported. Supported profiles: bsiv21",
+				uCmd.profile,
+			)
+		}
 	}
 
 	// Validate feature
@@ -217,11 +264,22 @@ func validateparsedListCmd(uCmd *userListCmd) error {
 	cleaned := strings.TrimSpace(feature)
 	uCmd.feature = cleaned
 
-	if _, ok := featureLookup[cleaned]; !ok {
-		return fmt.Errorf(
-			"feature %q is not supported.\n\nRun \"sbomqs features\" to see supported features.",
-			cleaned,
-		)
+	// When a profile is given, validate against that profile's feature set.
+	// When no profile is given, validate against the generic feature registry.
+	if uCmd.profile == "bsiv21" {
+		if _, ok := bsiV21FeatureKeys[cleaned]; !ok {
+			return fmt.Errorf(
+				"feature %q is not supported for profile %q.\n\nSupported features: sbom_spec_version, sbom_creator, sbom_timestamp, sbom_uri, comp_creator, comp_name, comp_version, comp_filename, comp_depth, comp_distribution_license, comp_deployable_hash, comp_executable_prop, comp_archive_prop, comp_structured_prop, comp_source_code_url, comp_download_url, comp_other_identifiers, comp_original_licenses, comp_effective_license, comp_source_hash, comp_security_txt_url",
+				cleaned, uCmd.profile,
+			)
+		}
+	} else {
+		if _, ok := featureLookup[cleaned]; !ok {
+			return fmt.Errorf(
+				"feature %q is not supported.\n\nRun \"sbomqs features\" to see supported features.",
+				cleaned,
+			)
+		}
 	}
 
 	return nil
