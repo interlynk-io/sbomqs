@@ -19,8 +19,54 @@ import (
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
 )
 
+// ProfileBSIV20 is the profile key for BSI TR-03183-2 v2.0.
+const ProfileBSIV20 = "bsiv20"
+
 // ProfileBSIV21 is the profile key for BSI TR-03183-2 v2.1.
 const ProfileBSIV21 = "bsiv21"
+
+// bsiV20CompExtractors maps BSI v2.0 feature keys to per-component extractors.
+// Features identical in logic to v2.1 reuse the BSIV21* extractors directly.
+var bsiV20CompExtractors = map[string]extractors.CompExtractor{
+	// Required fields
+	"comp_creator":              extractors.BSIV21CompCreator,
+	"comp_name":                 extractors.BSIV21CompName,
+	"comp_version":              extractors.BSIV21CompVersion,
+	"comp_filename":             extractors.BSIV21CompFilename,
+	"comp_depth":                extractors.BSIV21CompDepth,
+	"comp_associated_license":   extractors.BSIV20CompAssociatedLicense,
+	"comp_deployable_hash":      extractors.BSIV21CompDeployableHash,
+	"comp_executable_property":  extractors.BSIV21CompExecutableProp,
+	"comp_archive_property":     extractors.BSIV21CompArchiveProp,
+	"comp_structured_property":  extractors.BSIV21CompStructuredProp,
+	// Additional fields
+	"comp_source_code_url":   extractors.BSIV21CompSourceCodeURL,
+	"comp_download_url":      extractors.BSIV21CompDownloadURL,
+	"comp_other_identifiers": extractors.BSIV20CompOtherIdentifiers,
+	"comp_concluded_license": extractors.BSIV20CompConcludedLicense,
+	// Optional fields
+	"comp_declared_license": extractors.BSIV20CompDeclaredLicense,
+	"comp_source_hash":      extractors.BSIV21CompSourceHash,
+}
+
+// bsiV20DocExtractors maps BSI v2.0 feature keys to SBOM-level extractors.
+var bsiV20DocExtractors = map[string]extractors.DocExtractor{
+	"sbom_creator":   extractors.BSIV21SBOMCreator,
+	"sbom_timestamp": extractors.BSIV21SBOMTimestamp,
+	"sbom_uri":       extractors.BSIV20SBOMURI,
+}
+
+// LookupBSIV20CompExtractor returns the BSI v2.0 per-component extractor for the given feature key.
+func LookupBSIV20CompExtractor(feature string) (extractors.CompExtractor, bool) {
+	e, ok := bsiV20CompExtractors[feature]
+	return e, ok
+}
+
+// LookupBSIV20DocExtractor returns the BSI v2.0 document-level extractor for the given feature key.
+func LookupBSIV20DocExtractor(feature string) (extractors.DocExtractor, bool) {
+	e, ok := bsiV20DocExtractors[feature]
+	return e, ok
+}
 
 // bsiV21CompExtractors maps BSI v2.1 feature keys to per-component extractors.
 var bsiV21CompExtractors = map[string]extractors.CompExtractor{
