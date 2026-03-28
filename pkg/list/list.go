@@ -358,6 +358,12 @@ func evaluateFeatureForDocument(ctx context.Context, doc sbom.Document, filePath
 // Falls back to the generic registry when no profile match is found.
 func evaluateFeaturePerComponent(feature, profile string, comp sbom.GetComponent, doc sbom.Document) (bool, string, error) {
 	// Profile-aware dispatch: try profile extractor first
+	if profile == ProfileNTIA {
+		if ext, ok := LookupNTIACompExtractor(feature); ok {
+			return ext(doc, comp)
+		}
+	}
+
 	if profile == ProfileBSIV11 {
 		if ext, ok := LookupBSIV11CompExtractor(feature); ok {
 			return ext(doc, comp)
@@ -394,6 +400,12 @@ func evaluateFeaturePerComponent(feature, profile string, comp sbom.GetComponent
 // Falls back to the generic registry when no profile match is found.
 func evaluateSBOMFeature(feature, profile string, doc sbom.Document) (bool, string, error) {
 	// Profile-aware dispatch: try profile extractor first
+	if profile == ProfileNTIA {
+		if ext, ok := LookupNTIADocExtractor(feature); ok {
+			return ext(doc)
+		}
+	}
+
 	if profile == ProfileBSIV11 {
 		if ext, ok := LookupBSIV11DocExtractor(feature); ok {
 			return ext(doc)

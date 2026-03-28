@@ -28,6 +28,36 @@ const ProfileBSIV20 = "bsiv20"
 // ProfileBSIV21 is the profile key for BSI TR-03183-2 v2.1.
 const ProfileBSIV21 = "bsiv21"
 
+// ProfileNTIA is the profile key for NTIA Minimum Elements (2021).
+const ProfileNTIA = "ntia"
+
+// ntiaCompExtractors maps NTIA 2021 feature keys to per-component extractors.
+var ntiaCompExtractors = map[string]extractors.CompExtractor{
+	"comp_supplier": extractors.NTIACompSupplier,
+	"comp_name":     extractors.BSIV21CompName,
+	"comp_version":  extractors.BSIV21CompVersion,
+	"comp_uniq_id":  extractors.BSIV20CompOtherIdentifiers, // PURLs + CPEs
+}
+
+// ntiaDocExtractors maps NTIA 2021 feature keys to SBOM-level extractors.
+var ntiaDocExtractors = map[string]extractors.DocExtractor{
+	"sbom_authors":        extractors.NTIASBOMAuthors,
+	"sbom_relationships":  extractors.NTIASBOMRelationships,
+	"sbom_timestamp":      extractors.BSIV21SBOMTimestamp,
+}
+
+// LookupNTIACompExtractor returns the NTIA per-component extractor for the given feature key.
+func LookupNTIACompExtractor(feature string) (extractors.CompExtractor, bool) {
+	e, ok := ntiaCompExtractors[feature]
+	return e, ok
+}
+
+// LookupNTIADocExtractor returns the NTIA document-level extractor for the given feature key.
+func LookupNTIADocExtractor(feature string) (extractors.DocExtractor, bool) {
+	e, ok := ntiaDocExtractors[feature]
+	return e, ok
+}
+
 // bsiV11CompExtractors maps BSI v1.1 feature keys to per-component extractors.
 // All features reuse existing BSIV21* or BSIV20* extractors since the list command
 // shows values rather than enforcing algorithm requirements.

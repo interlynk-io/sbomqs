@@ -200,6 +200,19 @@ func init() {
 	}
 }
 
+// ntiaFeatureKeys lists the feature keys supported by the ntia profile.
+var ntiaFeatureKeys = map[string]struct{}{
+	// SBOM-level
+	"sbom_authors":       {},
+	"sbom_relationships": {},
+	"sbom_timestamp":     {},
+	// Component-level
+	"comp_supplier": {},
+	"comp_name":     {},
+	"comp_version":  {},
+	"comp_uniq_id":  {},
+}
+
 // bsiV11FeatureKeys lists the feature keys supported by the bsiv11 profile.
 var bsiV11FeatureKeys = map[string]struct{}{
 	// SBOM-level
@@ -274,6 +287,7 @@ var bsiV21FeatureKeys = map[string]struct{}{
 
 // supportedProfiles lists the known profile values for --profile.
 var supportedProfiles = map[string]struct{}{
+	"ntia":   {},
 	"bsiv11": {},
 	"bsiv20": {},
 	"bsiv21": {},
@@ -289,7 +303,7 @@ func validateparsedListCmd(uCmd *userListCmd) error {
 	if uCmd.profile != "" {
 		if _, ok := supportedProfiles[uCmd.profile]; !ok {
 			return fmt.Errorf(
-				"profile %q is not supported. Supported profiles: bsiv11, bsiv20, bsiv21",
+				"profile %q is not supported. Supported profiles: ntia, bsiv11, bsiv20, bsiv21",
 				uCmd.profile,
 			)
 		}
@@ -315,7 +329,14 @@ func validateparsedListCmd(uCmd *userListCmd) error {
 
 	// When a profile is given, validate against that profile's feature set.
 	// When no profile is given, validate against the generic feature registry.
-	if uCmd.profile == "bsiv11" {
+	if uCmd.profile == "ntia" {
+		if _, ok := ntiaFeatureKeys[cleaned]; !ok {
+			return fmt.Errorf(
+				"feature %q is not supported for profile %q.\n\nSupported features: sbom_authors, sbom_relationships, sbom_timestamp, comp_supplier, comp_name, comp_version, comp_uniq_id",
+				cleaned, uCmd.profile,
+			)
+		}
+	} else if uCmd.profile == "bsiv11" {
 		if _, ok := bsiV11FeatureKeys[cleaned]; !ok {
 			return fmt.Errorf(
 				"feature %q is not supported for profile %q.\n\nSupported features: sbom_creator, sbom_timestamp, sbom_uri, comp_creator, comp_name, comp_version, comp_depth, comp_license, comp_hash, comp_unique_identifiers, comp_source_url, comp_executable_url, comp_source_hash",
