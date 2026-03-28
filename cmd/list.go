@@ -35,6 +35,7 @@ type userListCmd struct {
 	// Filter control
 	feature string
 	missing bool
+	profile string
 
 	// Output control
 	basic    bool
@@ -115,6 +116,9 @@ func parseListParams(cmd *cobra.Command, args []string) *userListCmd {
 	missing, _ := cmd.Flags().GetBool("missing")
 	uCmd.missing = missing
 
+	profile, _ := cmd.Flags().GetString("profile")
+	uCmd.profile = profile
+
 	// -- Output control --
 	basic, _ := cmd.Flags().GetBool("basic")
 	uCmd.basic = basic
@@ -140,15 +144,16 @@ func parseListParams(cmd *cobra.Command, args []string) *userListCmd {
 
 func fromListToEngineParams(uCmd *userListCmd) *engine.Params {
 	return &engine.Params{
-		Path:     []string{uCmd.path},
-		Features: []string{uCmd.feature},
-		Missing:  uCmd.missing,
-		Basic:    uCmd.basic,
-		JSON:     uCmd.json,
-		Detailed: uCmd.detailed,
-		Color:    uCmd.color,
-		Debug:    uCmd.debug,
-		Show:     uCmd.show,
+		Path:        []string{uCmd.path},
+		Features:    []string{uCmd.feature},
+		Missing:     uCmd.missing,
+		Basic:       uCmd.basic,
+		JSON:        uCmd.json,
+		Detailed:    uCmd.detailed,
+		Color:       uCmd.color,
+		Debug:       uCmd.debug,
+		Show:        uCmd.show,
+		ListProfile: uCmd.profile,
 	}
 }
 
@@ -160,6 +165,8 @@ func init() {
 	_ = listCmd.MarkFlagRequired("feature")
 
 	listCmd.Flags().BoolP("missing", "m", false, "List components or properties missing the specified feature")
+
+	listCmd.Flags().String("profile", "", "Compliance profile for feature extraction (e.g. bsiv21)")
 
 	// -- Output Control --
 	listCmd.Flags().BoolP("basic", "b", false, "Results in single-line format")
@@ -193,10 +200,171 @@ func init() {
 	}
 }
 
+// fsctFeatureKeys lists the feature keys supported by the fsct profile.
+var fsctFeatureKeys = map[string]struct{}{
+	// SBOM-level
+	"sbom_provenance":        {},
+	"sbom_primary_component": {},
+	"relationships_coverage": {},
+	// Component-level
+	"comp_identity":        {},
+	"supplier_attribution": {},
+	"comp_unique_id":       {},
+	"artifact_integrity":   {},
+	"license_coverage":     {},
+	"copyright_coverage":   {},
+}
+
+// ntiaFeatureKeys lists the feature keys supported by the ntia profile.
+var ntiaFeatureKeys = map[string]struct{}{
+	// SBOM-level
+	"sbom_authors":       {},
+	"sbom_relationships": {},
+	"sbom_timestamp":     {},
+	// Component-level
+	"comp_supplier": {},
+	"comp_name":     {},
+	"comp_version":  {},
+	"comp_uniq_id":  {},
+}
+
+// bsiV11FeatureKeys lists the feature keys supported by the bsiv11 profile.
+var bsiV11FeatureKeys = map[string]struct{}{
+	// SBOM-level
+	"sbom_creator":   {},
+	"sbom_timestamp": {},
+	"sbom_uri":       {},
+	// Required: component-level
+	"comp_creator": {},
+	"comp_name":    {},
+	"comp_version": {},
+	"comp_depth":   {},
+	"comp_license": {},
+	"comp_hash":    {},
+	// Additional: component-level
+	"comp_unique_identifiers": {},
+	"comp_source_url":         {},
+	"comp_executable_url":     {},
+	"comp_source_hash":        {},
+}
+
+// bsiV20FeatureKeys lists the feature keys supported by the bsiv20 profile.
+var bsiV20FeatureKeys = map[string]struct{}{
+	// SBOM-level
+	"sbom_creator":   {},
+	"sbom_timestamp": {},
+	"sbom_uri":       {},
+	// Required: component-level
+	"comp_creator":             {},
+	"comp_name":                {},
+	"comp_version":             {},
+	"comp_filename":            {},
+	"comp_depth":               {},
+	"comp_associated_license":  {},
+	"comp_deployable_hash":     {},
+	"comp_executable_property": {},
+	"comp_archive_property":    {},
+	"comp_structured_property": {},
+	// Additional: component-level
+	"comp_source_code_url":   {},
+	"comp_download_url":      {},
+	"comp_other_identifiers": {},
+	"comp_concluded_license": {},
+	// Optional: component-level
+	"comp_declared_license": {},
+	"comp_source_hash":      {},
+}
+
+// interlynkFeatureKeys lists the feature keys supported by the interlynk profile.
+var interlynkFeatureKeys = map[string]struct{}{
+	// Identification
+	"comp_name":     {},
+	"comp_version":  {},
+	"comp_local_id": {},
+	// Provenance
+	"sbom_timestamp": {},
+	"sbom_authors":   {},
+	"sbom_tool":      {},
+	"sbom_supplier":  {},
+	"sbom_namespace": {},
+	"sbom_lifecycle": {},
+	// Integrity
+	"comp_checksums": {},
+	"comp_sha256":    {},
+	"sbom_signature": {},
+	// Completeness
+	"comp_dependencies":      {},
+	"sbom_completeness":      {},
+	"sbom_primary_component": {},
+	"comp_source_code":       {},
+	"comp_supplier":          {},
+	"comp_purpose":           {},
+	// Licensing
+	"comp_licenses":               {},
+	"comp_valid_licenses":         {},
+	"comp_no_deprecated_licenses": {},
+	"comp_no_restrictive_licenses": {},
+	"comp_declared_licenses":      {},
+	"sbom_data_license":           {},
+	// Vulnerability
+	"comp_purl": {},
+	"comp_cpe":  {},
+	// Structural
+	"sbom_spec_declared": {},
+	"sbom_spec_version":  {},
+	"sbom_file_format":   {},
+	"sbom_schema_valid":  {},
+}
+
+// bsiV21FeatureKeys lists the feature keys supported by the bsiv21 profile.
+var bsiV21FeatureKeys = map[string]struct{}{
+	"sbom_spec_version":         {},
+	"sbom_creator":              {},
+	"sbom_timestamp":            {},
+	"sbom_uri":                  {},
+	"comp_creator":              {},
+	"comp_name":                 {},
+	"comp_version":              {},
+	"comp_filename":             {},
+	"comp_depth":                {},
+	"comp_distribution_license": {},
+	"comp_deployable_hash":      {},
+	"comp_executable_prop":      {},
+	"comp_archive_prop":         {},
+	"comp_structured_prop":      {},
+	"comp_source_code_url":      {},
+	"comp_download_url":         {},
+	"comp_other_identifiers":    {},
+	"comp_original_licenses":    {},
+	"comp_effective_license":    {},
+	"comp_source_hash":          {},
+	"comp_security_txt_url":     {},
+}
+
+// supportedProfiles lists the known profile values for --profile.
+var supportedProfiles = map[string]struct{}{
+	"fsct":      {},
+	"ntia":      {},
+	"bsiv11":    {},
+	"bsiv20":    {},
+	"bsiv21":    {},
+	"interlynk": {},
+}
+
 func validateparsedListCmd(uCmd *userListCmd) error {
 	// Check path
 	if len(uCmd.path) == 0 {
 		return errors.New("path is required")
+	}
+
+	// Validate profile if given
+	if uCmd.profile != "" {
+		if _, ok := supportedProfiles[uCmd.profile]; !ok {
+			return fmt.Errorf(
+				"profile %q is not supported. Supported profiles: fsct, ntia, bsiv11, bsiv20, bsiv21, interlynk",
+				uCmd.profile,
+			)
+		}
 	}
 
 	// Validate feature
@@ -217,11 +385,57 @@ func validateparsedListCmd(uCmd *userListCmd) error {
 	cleaned := strings.TrimSpace(feature)
 	uCmd.feature = cleaned
 
-	if _, ok := featureLookup[cleaned]; !ok {
-		return fmt.Errorf(
-			"feature %q is not supported.\n\nRun \"sbomqs features\" to see supported features.",
-			cleaned,
-		)
+	// When a profile is given, validate against that profile's feature set.
+	// When no profile is given, validate against the generic feature registry.
+	if uCmd.profile == "fsct" {
+		if _, ok := fsctFeatureKeys[cleaned]; !ok {
+			return fmt.Errorf(
+				"feature %q is not supported for profile %q.\n\nSupported features: sbom_provenance, sbom_primary_component, relationships_coverage, comp_identity, supplier_attribution, comp_unique_id, artifact_integrity, license_coverage, copyright_coverage",
+				cleaned, uCmd.profile,
+			)
+		}
+	} else if uCmd.profile == "ntia" {
+		if _, ok := ntiaFeatureKeys[cleaned]; !ok {
+			return fmt.Errorf(
+				"feature %q is not supported for profile %q.\n\nSupported features: sbom_authors, sbom_relationships, sbom_timestamp, comp_supplier, comp_name, comp_version, comp_uniq_id",
+				cleaned, uCmd.profile,
+			)
+		}
+	} else if uCmd.profile == "bsiv11" {
+		if _, ok := bsiV11FeatureKeys[cleaned]; !ok {
+			return fmt.Errorf(
+				"feature %q is not supported for profile %q.\n\nSupported features: sbom_creator, sbom_timestamp, sbom_uri, comp_creator, comp_name, comp_version, comp_depth, comp_license, comp_hash, comp_unique_identifiers, comp_source_url, comp_executable_url, comp_source_hash",
+				cleaned, uCmd.profile,
+			)
+		}
+	} else if uCmd.profile == "bsiv20" {
+		if _, ok := bsiV20FeatureKeys[cleaned]; !ok {
+			return fmt.Errorf(
+				"feature %q is not supported for profile %q.\n\nSupported features: sbom_creator, sbom_timestamp, sbom_uri, comp_creator, comp_name, comp_version, comp_filename, comp_depth, comp_associated_license, comp_deployable_hash, comp_executable_property, comp_archive_property, comp_structured_property, comp_source_code_url, comp_download_url, comp_other_identifiers, comp_concluded_license, comp_declared_license, comp_source_hash",
+				cleaned, uCmd.profile,
+			)
+		}
+	} else if uCmd.profile == "bsiv21" {
+		if _, ok := bsiV21FeatureKeys[cleaned]; !ok {
+			return fmt.Errorf(
+				"feature %q is not supported for profile %q.\n\nSupported features: sbom_spec_version, sbom_creator, sbom_timestamp, sbom_uri, comp_creator, comp_name, comp_version, comp_filename, comp_depth, comp_distribution_license, comp_deployable_hash, comp_executable_prop, comp_archive_prop, comp_structured_prop, comp_source_code_url, comp_download_url, comp_other_identifiers, comp_original_licenses, comp_effective_license, comp_source_hash, comp_security_txt_url",
+				cleaned, uCmd.profile,
+			)
+		}
+	} else if uCmd.profile == "interlynk" {
+		if _, ok := interlynkFeatureKeys[cleaned]; !ok {
+			return fmt.Errorf(
+				"feature %q is not supported for profile %q.\n\nSupported features: comp_name, comp_version, comp_local_id, sbom_timestamp, sbom_authors, sbom_tool, sbom_supplier, sbom_namespace, sbom_lifecycle, comp_checksums, comp_sha256, sbom_signature, comp_dependencies, sbom_completeness, sbom_primary_component, comp_source_code, comp_supplier, comp_purpose, comp_licenses, comp_valid_licenses, comp_no_deprecated_licenses, comp_no_restrictive_licenses, comp_declared_licenses, sbom_data_license, comp_purl, comp_cpe, sbom_spec_declared, sbom_spec_version, sbom_file_format, sbom_schema_valid",
+				cleaned, uCmd.profile,
+			)
+		}
+	} else {
+		if _, ok := featureLookup[cleaned]; !ok {
+			return fmt.Errorf(
+				"feature %q is not supported.\n\nRun \"sbomqs features\" to see supported features.",
+				cleaned,
+			)
+		}
 	}
 
 	return nil

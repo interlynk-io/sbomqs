@@ -74,8 +74,9 @@ type Params struct {
 	Color bool
 	Blob  string
 
-	Legacy   bool
-	Profiles []string
+	Legacy      bool
+	Profiles    []string
+	ListProfile string // profile for the list command, e.g. "bsiv21"
 }
 
 func Run(ctx context.Context, ep *Params) error {

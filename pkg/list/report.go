@@ -19,7 +19,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/fatih/color"
@@ -90,7 +89,7 @@ func (r *Report) basicReport() {
 		if result.Missing {
 			presence = "missing"
 		}
-		if strings.HasPrefix(result.Feature, "comp_") {
+		if result.IsComponentFeature {
 			fmt.Printf("\n%s: %s (%s): %d/%d components\n", result.FilePath, result.Feature, presence, len(result.Components), result.TotalComponents)
 		} else {
 			fmt.Printf("\n%s: %s (%s): %s\n", result.FilePath, result.Feature, presence, result.DocumentProperty.Value)
@@ -111,7 +110,7 @@ func (r *Report) detailedReport() {
 
 		// Initialize tablewriter
 		table := tablewriter.NewWriter(os.Stdout)
-		if strings.HasPrefix(result.Feature, "comp_") {
+		if result.IsComponentFeature {
 
 			if show {
 				table.SetHeader([]string{"Feature", "Component Name", "Version", "Value"})
@@ -229,7 +228,7 @@ func (r *Report) jsonReport() {
 			Errors:  result.Errors,
 		}
 
-		if strings.HasPrefix(result.Feature, "comp_") {
+		if result.IsComponentFeature {
 			// Component-based feature
 			f.TotalComponents = result.TotalComponents
 			for _, comp := range result.Components {
