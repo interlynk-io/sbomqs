@@ -19,11 +19,51 @@ import (
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
 )
 
+// ProfileBSIV11 is the profile key for BSI TR-03183-2 v1.1.
+const ProfileBSIV11 = "bsiv11"
+
 // ProfileBSIV20 is the profile key for BSI TR-03183-2 v2.0.
 const ProfileBSIV20 = "bsiv20"
 
 // ProfileBSIV21 is the profile key for BSI TR-03183-2 v2.1.
 const ProfileBSIV21 = "bsiv21"
+
+// bsiV11CompExtractors maps BSI v1.1 feature keys to per-component extractors.
+// All features reuse existing BSIV21* or BSIV20* extractors since the list command
+// shows values rather than enforcing algorithm requirements.
+var bsiV11CompExtractors = map[string]extractors.CompExtractor{
+	// Required fields
+	"comp_creator": extractors.BSIV21CompCreator,
+	"comp_name":    extractors.BSIV21CompName,
+	"comp_version": extractors.BSIV21CompVersion,
+	"comp_depth":   extractors.BSIV21CompDepth,
+	"comp_license": extractors.BSIV20CompAssociatedLicense, // concluded preferred, declared fallback
+	"comp_hash":    extractors.BSIV21CompDeployableHash,    // distribution extrefs; list shows any hash
+	// Additional fields
+	"comp_unique_identifiers": extractors.BSIV20CompOtherIdentifiers, // PURLs + CPEs (same as v2.0; SWIDs added in v2.1)
+	"comp_source_url":         extractors.BSIV21CompSourceCodeURL,
+	"comp_executable_url":     extractors.BSIV21CompDownloadURL,
+	"comp_source_hash":        extractors.BSIV21CompSourceHash,
+}
+
+// bsiV11DocExtractors maps BSI v1.1 feature keys to SBOM-level extractors.
+var bsiV11DocExtractors = map[string]extractors.DocExtractor{
+	"sbom_creator":   extractors.BSIV21SBOMCreator,
+	"sbom_timestamp": extractors.BSIV21SBOMTimestamp,
+	"sbom_uri":       extractors.BSIV20SBOMURI, // GetURI() only (no GetNamespace() fallback)
+}
+
+// LookupBSIV11CompExtractor returns the BSI v1.1 per-component extractor for the given feature key.
+func LookupBSIV11CompExtractor(feature string) (extractors.CompExtractor, bool) {
+	e, ok := bsiV11CompExtractors[feature]
+	return e, ok
+}
+
+// LookupBSIV11DocExtractor returns the BSI v1.1 document-level extractor for the given feature key.
+func LookupBSIV11DocExtractor(feature string) (extractors.DocExtractor, bool) {
+	e, ok := bsiV11DocExtractors[feature]
+	return e, ok
+}
 
 // bsiV20CompExtractors maps BSI v2.0 feature keys to per-component extractors.
 // Features identical in logic to v2.1 reuse the BSIV21* extractors directly.

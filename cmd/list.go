@@ -200,6 +200,26 @@ func init() {
 	}
 }
 
+// bsiV11FeatureKeys lists the feature keys supported by the bsiv11 profile.
+var bsiV11FeatureKeys = map[string]struct{}{
+	// SBOM-level
+	"sbom_creator":   {},
+	"sbom_timestamp": {},
+	"sbom_uri":       {},
+	// Required: component-level
+	"comp_creator": {},
+	"comp_name":    {},
+	"comp_version": {},
+	"comp_depth":   {},
+	"comp_license": {},
+	"comp_hash":    {},
+	// Additional: component-level
+	"comp_unique_identifiers": {},
+	"comp_source_url":         {},
+	"comp_executable_url":     {},
+	"comp_source_hash":        {},
+}
+
 // bsiV20FeatureKeys lists the feature keys supported by the bsiv20 profile.
 var bsiV20FeatureKeys = map[string]struct{}{
 	// SBOM-level
@@ -207,16 +227,16 @@ var bsiV20FeatureKeys = map[string]struct{}{
 	"sbom_timestamp": {},
 	"sbom_uri":       {},
 	// Required: component-level
-	"comp_creator":              {},
-	"comp_name":                 {},
-	"comp_version":              {},
-	"comp_filename":             {},
-	"comp_depth":                {},
-	"comp_associated_license":   {},
-	"comp_deployable_hash":      {},
-	"comp_executable_property":  {},
-	"comp_archive_property":     {},
-	"comp_structured_property":  {},
+	"comp_creator":             {},
+	"comp_name":                {},
+	"comp_version":             {},
+	"comp_filename":            {},
+	"comp_depth":               {},
+	"comp_associated_license":  {},
+	"comp_deployable_hash":     {},
+	"comp_executable_property": {},
+	"comp_archive_property":    {},
+	"comp_structured_property": {},
 	// Additional: component-level
 	"comp_source_code_url":   {},
 	"comp_download_url":      {},
@@ -254,6 +274,7 @@ var bsiV21FeatureKeys = map[string]struct{}{
 
 // supportedProfiles lists the known profile values for --profile.
 var supportedProfiles = map[string]struct{}{
+	"bsiv11": {},
 	"bsiv20": {},
 	"bsiv21": {},
 }
@@ -268,7 +289,7 @@ func validateparsedListCmd(uCmd *userListCmd) error {
 	if uCmd.profile != "" {
 		if _, ok := supportedProfiles[uCmd.profile]; !ok {
 			return fmt.Errorf(
-				"profile %q is not supported. Supported profiles: bsiv20, bsiv21",
+				"profile %q is not supported. Supported profiles: bsiv11, bsiv20, bsiv21",
 				uCmd.profile,
 			)
 		}
@@ -294,7 +315,14 @@ func validateparsedListCmd(uCmd *userListCmd) error {
 
 	// When a profile is given, validate against that profile's feature set.
 	// When no profile is given, validate against the generic feature registry.
-	if uCmd.profile == "bsiv20" {
+	if uCmd.profile == "bsiv11" {
+		if _, ok := bsiV11FeatureKeys[cleaned]; !ok {
+			return fmt.Errorf(
+				"feature %q is not supported for profile %q.\n\nSupported features: sbom_creator, sbom_timestamp, sbom_uri, comp_creator, comp_name, comp_version, comp_depth, comp_license, comp_hash, comp_unique_identifiers, comp_source_url, comp_executable_url, comp_source_hash",
+				cleaned, uCmd.profile,
+			)
+		}
+	} else if uCmd.profile == "bsiv20" {
 		if _, ok := bsiV20FeatureKeys[cleaned]; !ok {
 			return fmt.Errorf(
 				"feature %q is not supported for profile %q.\n\nSupported features: sbom_creator, sbom_timestamp, sbom_uri, comp_creator, comp_name, comp_version, comp_filename, comp_depth, comp_associated_license, comp_deployable_hash, comp_executable_property, comp_archive_property, comp_structured_property, comp_source_code_url, comp_download_url, comp_other_identifiers, comp_concluded_license, comp_declared_license, comp_source_hash",
