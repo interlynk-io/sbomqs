@@ -418,6 +418,12 @@ func evaluateFeaturePerComponent(feature, profile string, comp sbom.GetComponent
 		}
 	}
 
+	if profile == ProfileInterlynk {
+		if ext, ok := LookupInterlynkCompExtractor(feature); ok {
+			return ext(doc, comp)
+		}
+	}
+
 	// Generic fallback: resolve aliases then look up registry
 	if f, ok := compFeatureAliases[feature]; ok {
 		feature = f
@@ -462,6 +468,12 @@ func evaluateSBOMFeature(feature, profile string, doc sbom.Document) (bool, stri
 
 	if profile == ProfileBSIV21 {
 		if ext, ok := LookupBSIV21DocExtractor(feature); ok {
+			return ext(doc)
+		}
+	}
+
+	if profile == ProfileInterlynk {
+		if ext, ok := LookupInterlynkDocExtractor(feature); ok {
 			return ext(doc)
 		}
 	}

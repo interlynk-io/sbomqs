@@ -31,6 +31,9 @@ const ProfileBSIV21 = "bsiv21"
 // ProfileFSCT is the profile key for FSCT Framing 3rd Edition.
 const ProfileFSCT = "fsct"
 
+// ProfileInterlynk is the profile key for the Interlynk scoring profile.
+const ProfileInterlynk = "interlynk"
+
 // fsctCompExtractors maps FSCT feature keys to per-component extractors.
 // Features without the standard comp_/sbom_ prefix are routed via profile-aware dispatch.
 var fsctCompExtractors = map[string]extractors.CompExtractor{
@@ -340,4 +343,64 @@ var sbomFeatureRegistry = map[string]sbomFeatureEval{
 	"sbom_comment":                  evaluateSBOMComment,
 	"sbom_supplier":                 evaluateSBOMSupplier,
 	"sbom_completeness_declared":    evaluateSBOMCompleteness,
+}
+
+// interlynkCompExtractors maps Interlynk feature keys to per-component extractors.
+var interlynkCompExtractors = map[string]extractors.CompExtractor{
+	// Identification
+	"comp_name":     extractors.BSIV21CompName,
+	"comp_version":  extractors.BSIV21CompVersion,
+	"comp_local_id": extractors.InterlynkCompLocalID,
+	// Integrity
+	"comp_checksums": extractors.InterlynkCompChecksums,
+	"comp_sha256":    extractors.InterlynkCompSHA256,
+	// Completeness
+	"comp_dependencies":    extractors.InterlynkCompDependencies,
+	"comp_source_code":     extractors.InterlynkCompSourceCode,
+	"comp_supplier":        extractors.InterlynkCompSupplier,
+	"comp_purpose":         extractors.InterlynkCompPurpose,
+	// Licensing
+	"comp_licenses":               extractors.InterlynkCompLicenses,
+	"comp_valid_licenses":         extractors.InterlynkCompValidLicenses,
+	"comp_no_deprecated_licenses": extractors.InterlynkCompNoDeprecatedLicenses,
+	"comp_no_restrictive_licenses": extractors.InterlynkCompNoRestrictiveLicenses,
+	"comp_declared_licenses":      extractors.InterlynkCompDeclaredLicenses,
+	// Vulnerability
+	"comp_purl": extractors.InterlynkCompPURL,
+	"comp_cpe":  extractors.InterlynkCompCPE,
+}
+
+// interlynkDocExtractors maps Interlynk feature keys to SBOM-level extractors.
+var interlynkDocExtractors = map[string]extractors.DocExtractor{
+	// Provenance
+	"sbom_timestamp": extractors.BSIV21SBOMTimestamp,
+	"sbom_authors":   extractors.InterlynkSBOMAuthors,
+	"sbom_tool":      extractors.InterlynkSBOMTool,
+	"sbom_supplier":  extractors.InterlynkSBOMSupplier,
+	"sbom_namespace": extractors.InterlynkSBOMNamespace,
+	"sbom_lifecycle": extractors.InterlynkSBOMLifecycle,
+	// Integrity
+	"sbom_signature": extractors.InterlynkSBOMSignature,
+	// Completeness
+	"sbom_completeness":      extractors.InterlynkSBOMCompleteness,
+	"sbom_primary_component": extractors.InterlynkSBOMPrimaryComponent,
+	// Licensing
+	"sbom_data_license": extractors.InterlynkSBOMDataLicense,
+	// Structural
+	"sbom_spec_declared": extractors.InterlynkSBOMSpecDeclared,
+	"sbom_spec_version":  extractors.InterlynkSBOMSpecVersion,
+	"sbom_file_format":   extractors.InterlynkSBOMFileFormat,
+	"sbom_schema_valid":  extractors.InterlynkSBOMSchemaValid,
+}
+
+// LookupInterlynkCompExtractor returns the Interlynk per-component extractor for the given feature key.
+func LookupInterlynkCompExtractor(feature string) (extractors.CompExtractor, bool) {
+	e, ok := interlynkCompExtractors[feature]
+	return e, ok
+}
+
+// LookupInterlynkDocExtractor returns the Interlynk document-level extractor for the given feature key.
+func LookupInterlynkDocExtractor(feature string) (extractors.DocExtractor, bool) {
+	e, ok := interlynkDocExtractors[feature]
+	return e, ok
 }
