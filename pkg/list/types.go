@@ -15,13 +15,14 @@
 package list
 
 type Result struct {
-	FilePath         string
-	Feature          string
-	Missing          bool
-	TotalComponents  int
-	Components       []ComponentResult // For component-based features
-	DocumentProperty DocumentResult    // For SBOM-based features
-	Errors           []string
+	FilePath            string
+	Feature             string
+	Missing             bool
+	IsComponentFeature  bool            // true when evaluated per-component; false for SBOM-level
+	TotalComponents     int
+	Components          []ComponentResult // For component-based features
+	DocumentProperty    DocumentResult    // For SBOM-based features
+	Errors              []string
 }
 
 type ComponentResult struct {

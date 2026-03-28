@@ -28,6 +28,39 @@ const ProfileBSIV20 = "bsiv20"
 // ProfileBSIV21 is the profile key for BSI TR-03183-2 v2.1.
 const ProfileBSIV21 = "bsiv21"
 
+// ProfileFSCT is the profile key for FSCT Framing 3rd Edition.
+const ProfileFSCT = "fsct"
+
+// fsctCompExtractors maps FSCT feature keys to per-component extractors.
+// Features without the standard comp_/sbom_ prefix are routed via profile-aware dispatch.
+var fsctCompExtractors = map[string]extractors.CompExtractor{
+	"comp_identity":        extractors.FSCTCompIdentity,
+	"supplier_attribution": extractors.FSCTCompSupplier,
+	"comp_unique_id":       extractors.FSCTCompUniqID,
+	"artifact_integrity":   extractors.FSCTCompHash,
+	"license_coverage":     extractors.FSCTCompLicense,
+	"copyright_coverage":   extractors.FSCTCompCopyright,
+}
+
+// fsctDocExtractors maps FSCT feature keys to SBOM-level extractors.
+var fsctDocExtractors = map[string]extractors.DocExtractor{
+	"sbom_provenance":        extractors.FSCTSBOMProvenance,
+	"sbom_primary_component": extractors.FSCTSBOMPrimaryComponent,
+	"relationships_coverage": extractors.FSCTSBOMRelationships,
+}
+
+// LookupFSCTCompExtractor returns the FSCT per-component extractor for the given feature key.
+func LookupFSCTCompExtractor(feature string) (extractors.CompExtractor, bool) {
+	e, ok := fsctCompExtractors[feature]
+	return e, ok
+}
+
+// LookupFSCTDocExtractor returns the FSCT document-level extractor for the given feature key.
+func LookupFSCTDocExtractor(feature string) (extractors.DocExtractor, bool) {
+	e, ok := fsctDocExtractors[feature]
+	return e, ok
+}
+
 // ProfileNTIA is the profile key for NTIA Minimum Elements (2021).
 const ProfileNTIA = "ntia"
 

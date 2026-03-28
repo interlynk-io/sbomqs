@@ -267,6 +267,17 @@ func evaluateFeature(ctx context.Context, missing bool, profile string, doc sbom
 		return evaluateFeatureForDocument(ctx, doc, filePath, feature, profile, missing)
 
 	default:
+		// Profile-specific features may not follow the comp_/sbom_ naming convention
+		// (e.g. FSCT uses supplier_attribution, artifact_integrity, etc.).
+		// Check the profile registry to determine the correct routing.
+		if profile != "" {
+			if _, ok := profileCompFeatureLookup(feature, profile); ok {
+				return evaluateFeatureForComponent(ctx, doc, filePath, feature, profile, missing)
+			}
+			if _, ok := profileDocFeatureLookup(feature, profile); ok {
+				return evaluateFeatureForDocument(ctx, doc, filePath, feature, profile, missing)
+			}
+		}
 		msg := fmt.Sprintf("feature %s must start with 'comp_' or 'sbom_'", feature)
 		return nil, fmt.Errorf("%s", msg)
 	}
@@ -277,9 +288,10 @@ func evaluateFeatureForComponent(ctx context.Context, doc sbom.Document, filePat
 	log := logger.FromContext(ctx)
 
 	result := &Result{
-		FilePath: filePath,
-		Feature:  feature,
-		Missing:  missing,
+		FilePath:           filePath,
+		Feature:            feature,
+		Missing:            missing,
+		IsComponentFeature: true,
 	}
 
 	result.Components = []ComponentResult{}
@@ -356,8 +368,32 @@ func evaluateFeatureForDocument(ctx context.Context, doc sbom.Document, filePath
 // evaluateFeaturePerComponent evaluates a component-based feature for a single component.
 // When a profile is specified, the profile-specific extractor takes precedence.
 // Falls back to the generic registry when no profile match is found.
+// profileCompFeatureLookup checks if a feature is a known comp-level extractor for the given profile.
+func profileCompFeatureLookup(feature, profile string) (interface{}, bool) {
+	switch profile {
+	case ProfileFSCT:
+		return LookupFSCTCompExtractor(feature)
+	}
+	return nil, false
+}
+
+// profileDocFeatureLookup checks if a feature is a known doc-level extractor for the given profile.
+func profileDocFeatureLookup(feature, profile string) (interface{}, bool) {
+	switch profile {
+	case ProfileFSCT:
+		return LookupFSCTDocExtractor(feature)
+	}
+	return nil, false
+}
+
 func evaluateFeaturePerComponent(feature, profile string, comp sbom.GetComponent, doc sbom.Document) (bool, string, error) {
 	// Profile-aware dispatch: try profile extractor first
+	if profile == ProfileFSCT {
+		if ext, ok := LookupFSCTCompExtractor(feature); ok {
+			return ext(doc, comp)
+		}
+	}
+
 	if profile == ProfileNTIA {
 		if ext, ok := LookupNTIACompExtractor(feature); ok {
 			return ext(doc, comp)
@@ -400,6 +436,12 @@ func evaluateFeaturePerComponent(feature, profile string, comp sbom.GetComponent
 // Falls back to the generic registry when no profile match is found.
 func evaluateSBOMFeature(feature, profile string, doc sbom.Document) (bool, string, error) {
 	// Profile-aware dispatch: try profile extractor first
+	if profile == ProfileFSCT {
+		if ext, ok := LookupFSCTDocExtractor(feature); ok {
+			return ext(doc)
+		}
+	}
+
 	if profile == ProfileNTIA {
 		if ext, ok := LookupNTIADocExtractor(feature); ok {
 			return ext(doc)

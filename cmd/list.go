@@ -200,6 +200,21 @@ func init() {
 	}
 }
 
+// fsctFeatureKeys lists the feature keys supported by the fsct profile.
+var fsctFeatureKeys = map[string]struct{}{
+	// SBOM-level
+	"sbom_provenance":        {},
+	"sbom_primary_component": {},
+	"relationships_coverage": {},
+	// Component-level
+	"comp_identity":        {},
+	"supplier_attribution": {},
+	"comp_unique_id":       {},
+	"artifact_integrity":   {},
+	"license_coverage":     {},
+	"copyright_coverage":   {},
+}
+
 // ntiaFeatureKeys lists the feature keys supported by the ntia profile.
 var ntiaFeatureKeys = map[string]struct{}{
 	// SBOM-level
@@ -287,6 +302,7 @@ var bsiV21FeatureKeys = map[string]struct{}{
 
 // supportedProfiles lists the known profile values for --profile.
 var supportedProfiles = map[string]struct{}{
+	"fsct":   {},
 	"ntia":   {},
 	"bsiv11": {},
 	"bsiv20": {},
@@ -303,7 +319,7 @@ func validateparsedListCmd(uCmd *userListCmd) error {
 	if uCmd.profile != "" {
 		if _, ok := supportedProfiles[uCmd.profile]; !ok {
 			return fmt.Errorf(
-				"profile %q is not supported. Supported profiles: ntia, bsiv11, bsiv20, bsiv21",
+				"profile %q is not supported. Supported profiles: fsct, ntia, bsiv11, bsiv20, bsiv21",
 				uCmd.profile,
 			)
 		}
@@ -329,7 +345,14 @@ func validateparsedListCmd(uCmd *userListCmd) error {
 
 	// When a profile is given, validate against that profile's feature set.
 	// When no profile is given, validate against the generic feature registry.
-	if uCmd.profile == "ntia" {
+	if uCmd.profile == "fsct" {
+		if _, ok := fsctFeatureKeys[cleaned]; !ok {
+			return fmt.Errorf(
+				"feature %q is not supported for profile %q.\n\nSupported features: sbom_provenance, sbom_primary_component, relationships_coverage, comp_identity, supplier_attribution, comp_unique_id, artifact_integrity, license_coverage, copyright_coverage",
+				cleaned, uCmd.profile,
+			)
+		}
+	} else if uCmd.profile == "ntia" {
 		if _, ok := ntiaFeatureKeys[cleaned]; !ok {
 			return fmt.Errorf(
 				"feature %q is not supported for profile %q.\n\nSupported features: sbom_authors, sbom_relationships, sbom_timestamp, comp_supplier, comp_name, comp_version, comp_uniq_id",
