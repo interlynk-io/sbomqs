@@ -300,12 +300,12 @@ var interlynkFeatureKeys = map[string]struct{}{
 	"comp_supplier":          {},
 	"comp_purpose":           {},
 	// Licensing
-	"comp_licenses":               {},
-	"comp_valid_licenses":         {},
-	"comp_no_deprecated_licenses": {},
+	"comp_licenses":                {},
+	"comp_valid_licenses":          {},
+	"comp_no_deprecated_licenses":  {},
 	"comp_no_restrictive_licenses": {},
-	"comp_declared_licenses":      {},
-	"sbom_data_license":           {},
+	"comp_declared_licenses":       {},
+	"sbom_data_license":            {},
 	// Vulnerability
 	"comp_purl": {},
 	"comp_cpe":  {},
@@ -387,49 +387,50 @@ func validateparsedListCmd(uCmd *userListCmd) error {
 
 	// When a profile is given, validate against that profile's feature set.
 	// When no profile is given, validate against the generic feature registry.
-	if uCmd.profile == "fsct" {
+	switch uCmd.profile {
+	case "fsct":
 		if _, ok := fsctFeatureKeys[cleaned]; !ok {
 			return fmt.Errorf(
 				"feature %q is not supported for profile %q.\n\nSupported features: sbom_provenance, sbom_primary_component, relationships_coverage, comp_identity, supplier_attribution, comp_unique_id, artifact_integrity, license_coverage, copyright_coverage",
 				cleaned, uCmd.profile,
 			)
 		}
-	} else if uCmd.profile == "ntia" {
+	case "ntia":
 		if _, ok := ntiaFeatureKeys[cleaned]; !ok {
 			return fmt.Errorf(
 				"feature %q is not supported for profile %q.\n\nSupported features: sbom_authors, sbom_relationships, sbom_timestamp, comp_supplier, comp_name, comp_version, comp_uniq_id",
 				cleaned, uCmd.profile,
 			)
 		}
-	} else if uCmd.profile == "bsiv11" {
+	case "bsiv11":
 		if _, ok := bsiV11FeatureKeys[cleaned]; !ok {
 			return fmt.Errorf(
 				"feature %q is not supported for profile %q.\n\nSupported features: sbom_creator, sbom_timestamp, sbom_uri, comp_creator, comp_name, comp_version, comp_depth, comp_license, comp_hash, comp_unique_identifiers, comp_source_url, comp_executable_url, comp_source_hash",
 				cleaned, uCmd.profile,
 			)
 		}
-	} else if uCmd.profile == "bsiv20" {
+	case "bsiv20":
 		if _, ok := bsiV20FeatureKeys[cleaned]; !ok {
 			return fmt.Errorf(
 				"feature %q is not supported for profile %q.\n\nSupported features: sbom_creator, sbom_timestamp, sbom_uri, comp_creator, comp_name, comp_version, comp_filename, comp_depth, comp_associated_license, comp_deployable_hash, comp_executable_property, comp_archive_property, comp_structured_property, comp_source_code_url, comp_download_url, comp_other_identifiers, comp_concluded_license, comp_declared_license, comp_source_hash",
 				cleaned, uCmd.profile,
 			)
 		}
-	} else if uCmd.profile == "bsiv21" {
+	case "bsiv21":
 		if _, ok := bsiV21FeatureKeys[cleaned]; !ok {
 			return fmt.Errorf(
 				"feature %q is not supported for profile %q.\n\nSupported features: sbom_spec_version, sbom_creator, sbom_timestamp, sbom_uri, comp_creator, comp_name, comp_version, comp_filename, comp_depth, comp_distribution_license, comp_deployable_hash, comp_executable_prop, comp_archive_prop, comp_structured_prop, comp_source_code_url, comp_download_url, comp_other_identifiers, comp_original_licenses, comp_effective_license, comp_source_hash, comp_security_txt_url",
 				cleaned, uCmd.profile,
 			)
 		}
-	} else if uCmd.profile == "interlynk" {
+	case "interlynk":
 		if _, ok := interlynkFeatureKeys[cleaned]; !ok {
 			return fmt.Errorf(
 				"feature %q is not supported for profile %q.\n\nSupported features: comp_name, comp_version, comp_local_id, sbom_timestamp, sbom_authors, sbom_tool, sbom_supplier, sbom_namespace, sbom_lifecycle, comp_checksums, comp_sha256, sbom_signature, comp_dependencies, sbom_completeness, sbom_primary_component, comp_source_code, comp_supplier, comp_purpose, comp_licenses, comp_valid_licenses, comp_no_deprecated_licenses, comp_no_restrictive_licenses, comp_declared_licenses, sbom_data_license, comp_purl, comp_cpe, sbom_spec_declared, sbom_spec_version, sbom_file_format, sbom_schema_valid",
 				cleaned, uCmd.profile,
 			)
 		}
-	} else {
+	default:
 		if _, ok := featureLookup[cleaned]; !ok {
 			return fmt.Errorf(
 				"feature %q is not supported.\n\nRun \"sbomqs features\" to see supported features.",
