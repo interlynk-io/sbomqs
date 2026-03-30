@@ -19,6 +19,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/formulae"
 	"sigs.k8s.io/release-utils/version"
 )
 
@@ -150,9 +151,10 @@ func (r *Reporter) jsonReport() (string, error) {
 
 		// Handle profile results if present
 		if r.Profiles != nil {
-			// profiles-only mode: include per-profile feature details
+			// profiles-only mode: include per-profile feature details and compute avg score
 			// both mode (comprehensive + profiles): summary only, no features
 			profilesOnly := r.Comprehensive == nil
+			var totalScore float64
 			for _, pr := range r.Profiles.ProfResult {
 				pj := &profileJSON{
 					Profile: pr.Name,
@@ -173,14 +175,15 @@ func (r *Reporter) jsonReport() (string, error) {
 						}
 						pj.Features = append(pj.Features, pf)
 					}
+					totalScore += pr.InterlynkScore
 				}
 				f.Profiles = append(f.Profiles, pj)
 			}
 
-			// If no comprehensive score, use aggregate of profile scores for top-level
-			if r.Comprehensive == nil && len(r.Profiles.ProfResult) > 0 {
-				f.InterlynkScore = r.Profiles.ProfResult[0].InterlynkScore
-				f.Grade = r.Profiles.ProfResult[0].Grade
+			if profilesOnly && len(r.Profiles.ProfResult) > 0 {
+				avgScore := totalScore / float64(len(r.Profiles.ProfResult))
+				f.InterlynkScore = avgScore
+				f.Grade = formulae.ToGrade(avgScore)
 			}
 		}
 
