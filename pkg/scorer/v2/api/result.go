@@ -79,6 +79,7 @@ type CategoryResult struct {
 	Name     string
 	Weight   float64 // category weight
 	Score    float64
+	Grade    string
 	Features []FeatureResult
 }
 

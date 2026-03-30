@@ -24,7 +24,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// SBOM Creator fixtures (reused from bsiv11_test.go pattern)
+// SBOM Creator fixtures (reused from bsiV11_test.go pattern)
 
 var bsiCdxSBOMAuthor = []byte(`
 {

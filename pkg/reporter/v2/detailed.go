@@ -19,7 +19,6 @@ import (
 	"os"
 
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/api"
-	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/formulae"
 	"github.com/olekukonko/tablewriter"
 )
 
@@ -44,6 +43,8 @@ func (r *Reporter) detailedReport() {
 		profHeader := []string{}
 
 		if r.Comprehensive != nil && r.Profiles != nil {
+			fmt.Println("Comprehenssive & Profiles")
+
 			fmt.Printf("SBOM Quality Score: %0.1f/10.0\t Grade: %s\tComponents: %d \t EngineVersion: %s\tFile: %s\n\n", r.Comprehensive.InterlynkScore, r.Comprehensive.Grade, r.Meta.NumComponents, EngineVersion, r.Meta.Filename)
 
 			profHeader = []string{"PROFILE", "SCORE", "GRADE"}
@@ -72,6 +73,7 @@ func (r *Reporter) detailedReport() {
 			}
 
 		} else if r.Comprehensive != nil {
+			fmt.Println("Comprehenssive")
 
 			fmt.Printf("SBOM Quality Score: %0.1f/10.0\t Grade: %s\tComponents: %d \t EngineVersion: %s\tFile: %s\n", r.Comprehensive.InterlynkScore, r.Comprehensive.Grade, r.Meta.NumComponents, EngineVersion, r.Meta.Filename)
 
@@ -88,6 +90,8 @@ func (r *Reporter) detailedReport() {
 				}
 			}
 		} else if r.Profiles != nil {
+			fmt.Println("Profiles")
+
 			for _, proResult := range r.Profiles.ProfResult {
 				var prs proTable
 
@@ -253,8 +257,7 @@ func buildCategorySummary(catResults []api.CategoryResult, totalCatWeight float6
 		}
 		weight := fmt.Sprintf("%.1f%%", (cat.Weight/totalCatWeight)*100)
 		score := fmt.Sprintf("%.1f/10.0", cat.Score)
-		grade := formulae.ToGrade(cat.Score)
-		rows = append(rows, []string{cat.Name, weight, score, grade})
+		rows = append(rows, []string{cat.Name, weight, score, cat.Grade})
 	}
 
 	return rows, header
