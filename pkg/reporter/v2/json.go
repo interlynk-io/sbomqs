@@ -23,14 +23,6 @@ import (
 	"sigs.k8s.io/release-utils/version"
 )
 
-// type compr struct {
-// 	Category string  `json:"category"`
-// 	Feature  string  `json:"feature"`
-// 	Score    float64 `json:"score"`
-// 	Desc     string  `json:"description"`
-// 	Ignored  bool    `json:"ignored"`
-// }
-
 type comprJSON struct {
 	Category string        `json:"category"`
 	Score    float64       `json:"score"`

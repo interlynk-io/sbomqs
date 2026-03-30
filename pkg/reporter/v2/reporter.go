@@ -51,6 +51,6 @@ func (r *Reporter) Report() {
 		r.detailedReport()
 
 	default:
-		fmt.Print("Unknow Report type")
+		fmt.Printf("Unknown report type %q. Supported values: %q, %q, %q\n", r.ReportType, REPORT_BASIC, REPORT_JSON, REPORT_DETAILED)
 	}
 }
