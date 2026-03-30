@@ -70,6 +70,7 @@ func evaluateEachCategory(ctx context.Context, doc sbom.Document, category catal
 	}
 
 	catResult.Score = formulae.ComputeCategoryScore(catResult.Features)
+	catResult.Grade = formulae.ToGrade(catResult.Score)
 
 	log.Debug("Category evaluation completed",
 		zap.String("category", category.Name),
