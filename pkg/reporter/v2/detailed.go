@@ -43,8 +43,6 @@ func (r *Reporter) detailedReport() {
 		profHeader := []string{}
 
 		if r.Comprehensive != nil && r.Profiles != nil {
-			fmt.Println("Comprehenssive & Profiles")
-
 			fmt.Printf("SBOM Quality Score: %0.1f/10.0\t Grade: %s\tComponents: %d \t EngineVersion: %s\tFile: %s\n\n", r.Comprehensive.InterlynkScore, r.Comprehensive.Grade, r.Meta.NumComponents, EngineVersion, r.Meta.Filename)
 
 			profHeader = []string{"PROFILE", "SCORE", "GRADE"}
@@ -73,8 +71,6 @@ func (r *Reporter) detailedReport() {
 			}
 
 		} else if r.Comprehensive != nil {
-			fmt.Println("Comprehenssive")
-
 			fmt.Printf("SBOM Quality Score: %0.1f/10.0\t Grade: %s\tComponents: %d \t EngineVersion: %s\tFile: %s\n", r.Comprehensive.InterlynkScore, r.Comprehensive.Grade, r.Meta.NumComponents, EngineVersion, r.Meta.Filename)
 
 			totalCatWeight := calculateTotalCategoryWeight(r.Comprehensive.CatResult)
@@ -90,8 +86,6 @@ func (r *Reporter) detailedReport() {
 				}
 			}
 		} else if r.Profiles != nil {
-			fmt.Println("Profiles")
-
 			for _, proResult := range r.Profiles.ProfResult {
 				var prs proTable
 
