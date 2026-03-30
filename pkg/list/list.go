@@ -162,7 +162,7 @@ func collectResultsForSBOMs(ctx context.Context, ep *Params, filePaths []string)
 	var results []*Result
 
 	for _, filePath := range filePaths {
-		fileResults, err := collectResultsForSBOM(ctx, ep, filePath)
+		result, err := collectResultsForSBOM(ctx, ep, filePath)
 		if err != nil {
 			log.Warn("Skipping SBOM file due to error",
 				zap.String("file", filePath),
@@ -170,7 +170,7 @@ func collectResultsForSBOMs(ctx context.Context, ep *Params, filePaths []string)
 			)
 			continue
 		}
-		results = append(results, fileResults...)
+		results = append(results, result...)
 	}
 
 	return results, nil
@@ -197,7 +197,7 @@ func collectResultsForSBOM(ctx context.Context, ep *Params, filePath string) ([]
 			zap.String("file", filePath),
 		)
 
-		res, err := evaluateFeature(ctx, ep.Missing, doc, filePath, feature)
+		res, err := evaluateFeature(ctx, ep.Missing, ep.Profile, doc, filePath, feature)
 		if err != nil {
 			log.Warn("Feature evaluation failed",
 				zap.String("feature", feature),
@@ -244,7 +244,7 @@ func parseSBOMDocument(ctx context.Context, filePath string) (sbom.Document, err
 }
 
 // evaluateFeature processes a single feature for an SBOM document and returns a ListResult
-func evaluateFeature(ctx context.Context, missing bool, doc sbom.Document, filePath, feature string) (*Result, error) {
+func evaluateFeature(ctx context.Context, missing bool, profile string, doc sbom.Document, filePath, feature string) (*Result, error) {
 	log := logger.FromContext(ctx)
 	feature = strings.TrimSpace(feature)
 
@@ -255,31 +255,43 @@ func evaluateFeature(ctx context.Context, missing bool, doc sbom.Document, fileP
 
 	log.Debug("Evaluating feature for SBOM",
 		zap.String("feature", feature),
+		zap.String("profile", profile),
 		zap.String("file", filePath),
 	)
 
 	switch {
-
 	case strings.HasPrefix(feature, "comp_"):
-		return evaluateFeatureForComponent(ctx, doc, filePath, feature, missing)
+		return evaluateFeatureForComponent(ctx, doc, filePath, feature, profile, missing)
 
 	case strings.HasPrefix(feature, "sbom_"):
-		return evaluateFeatureForDocument(ctx, doc, filePath, feature, missing)
+		return evaluateFeatureForDocument(ctx, doc, filePath, feature, profile, missing)
 
 	default:
+		// Profile-specific features may not follow the comp_/sbom_ naming convention
+		// (e.g. FSCT uses supplier_attribution, artifact_integrity, etc.).
+		// Check the profile registry to determine the correct routing.
+		if profile != "" {
+			if _, ok := profileCompFeatureLookup(feature, profile); ok {
+				return evaluateFeatureForComponent(ctx, doc, filePath, feature, profile, missing)
+			}
+			if _, ok := profileDocFeatureLookup(feature, profile); ok {
+				return evaluateFeatureForDocument(ctx, doc, filePath, feature, profile, missing)
+			}
+		}
 		msg := fmt.Sprintf("feature %s must start with 'comp_' or 'sbom_'", feature)
 		return nil, fmt.Errorf("%s", msg)
 	}
 }
 
 // evaluateFeatureForComponent evaluates a component-based feature across all components.
-func evaluateFeatureForComponent(ctx context.Context, doc sbom.Document, filePath, feature string, missing bool) (*Result, error) {
+func evaluateFeatureForComponent(ctx context.Context, doc sbom.Document, filePath, feature, profile string, missing bool) (*Result, error) {
 	log := logger.FromContext(ctx)
 
 	result := &Result{
-		FilePath: filePath,
-		Feature:  feature,
-		Missing:  missing,
+		FilePath:           filePath,
+		Feature:            feature,
+		Missing:            missing,
+		IsComponentFeature: true,
 	}
 
 	result.Components = []ComponentResult{}
@@ -288,7 +300,7 @@ func evaluateFeatureForComponent(ctx context.Context, doc sbom.Document, filePat
 	for _, comp := range doc.Components() {
 		log.Debug("evaluating feature for component", zap.String("feature", result.Feature), zap.String("comp", comp.GetName()))
 
-		hasFeature, value, err := evaluateFeaturePerComponent(result.Feature, comp, doc)
+		hasFeature, value, err := evaluateFeaturePerComponent(result.Feature, profile, comp, doc)
 		if err != nil {
 			log.Debug("Component feature evaluation failed",
 				zap.String("feature", feature),
@@ -315,7 +327,7 @@ func evaluateFeatureForComponent(ctx context.Context, doc sbom.Document, filePat
 }
 
 // evaluateFeatureForDocument evaluates an SBOM-based feature for the SBOM document.
-func evaluateFeatureForDocument(ctx context.Context, doc sbom.Document, filePath, feature string, missing bool) (*Result, error) {
+func evaluateFeatureForDocument(ctx context.Context, doc sbom.Document, filePath, feature, profile string, missing bool) (*Result, error) {
 	log := logger.FromContext(ctx)
 
 	result := &Result{
@@ -325,7 +337,7 @@ func evaluateFeatureForDocument(ctx context.Context, doc sbom.Document, filePath
 	}
 
 	// SBOM-based feature
-	hasFeature, value, err := evaluateSBOMFeature(result.Feature, doc)
+	hasFeature, value, err := evaluateSBOMFeature(result.Feature, profile, doc)
 	if err != nil {
 		log.Debug("SBOM feature evaluation failed",
 			zap.String("feature", feature),
@@ -353,9 +365,66 @@ func evaluateFeatureForDocument(ctx context.Context, doc sbom.Document, filePath
 	return result, nil
 }
 
-// evaluateFeaturePerComponent evaluates a component-based feature for a single component
-func evaluateFeaturePerComponent(feature string, comp sbom.GetComponent, doc sbom.Document) (bool, string, error) {
-	// resolve aliases
+// evaluateFeaturePerComponent evaluates a component-based feature for a single component.
+// When a profile is specified, the profile-specific extractor takes precedence.
+// Falls back to the generic registry when no profile match is found.
+// profileCompFeatureLookup checks if a feature is a known comp-level extractor for the given profile.
+func profileCompFeatureLookup(feature, profile string) (interface{}, bool) {
+	switch profile {
+	case ProfileFSCT:
+		return LookupFSCTCompExtractor(feature)
+	}
+	return nil, false
+}
+
+// profileDocFeatureLookup checks if a feature is a known doc-level extractor for the given profile.
+func profileDocFeatureLookup(feature, profile string) (interface{}, bool) {
+	switch profile {
+	case ProfileFSCT:
+		return LookupFSCTDocExtractor(feature)
+	}
+	return nil, false
+}
+
+func evaluateFeaturePerComponent(feature, profile string, comp sbom.GetComponent, doc sbom.Document) (bool, string, error) {
+	// Profile-aware dispatch: try profile extractor first
+	if profile == ProfileFSCT {
+		if ext, ok := LookupFSCTCompExtractor(feature); ok {
+			return ext(doc, comp)
+		}
+	}
+
+	if profile == ProfileNTIA {
+		if ext, ok := LookupNTIACompExtractor(feature); ok {
+			return ext(doc, comp)
+		}
+	}
+
+	if profile == ProfileBSIV11 {
+		if ext, ok := LookupBSIV11CompExtractor(feature); ok {
+			return ext(doc, comp)
+		}
+	}
+
+	if profile == ProfileBSIV20 {
+		if ext, ok := LookupBSIV20CompExtractor(feature); ok {
+			return ext(doc, comp)
+		}
+	}
+
+	if profile == ProfileBSIV21 {
+		if ext, ok := LookupBSIV21CompExtractor(feature); ok {
+			return ext(doc, comp)
+		}
+	}
+
+	if profile == ProfileInterlynk {
+		if ext, ok := LookupInterlynkCompExtractor(feature); ok {
+			return ext(doc, comp)
+		}
+	}
+
+	// Generic fallback: resolve aliases then look up registry
 	if f, ok := compFeatureAliases[feature]; ok {
 		feature = f
 	}
@@ -368,9 +437,48 @@ func evaluateFeaturePerComponent(feature string, comp sbom.GetComponent, doc sbo
 	return eval(comp, doc)
 }
 
-// evaluateSBOMFeature evaluates an SBOM-based feature for the document
-func evaluateSBOMFeature(feature string, doc sbom.Document) (bool, string, error) {
-	// resolve alias
+// evaluateSBOMFeature evaluates an SBOM-based feature for the document.
+// When a profile is specified, the profile-specific extractor takes precedence.
+// Falls back to the generic registry when no profile match is found.
+func evaluateSBOMFeature(feature, profile string, doc sbom.Document) (bool, string, error) {
+	// Profile-aware dispatch: try profile extractor first
+	if profile == ProfileFSCT {
+		if ext, ok := LookupFSCTDocExtractor(feature); ok {
+			return ext(doc)
+		}
+	}
+
+	if profile == ProfileNTIA {
+		if ext, ok := LookupNTIADocExtractor(feature); ok {
+			return ext(doc)
+		}
+	}
+
+	if profile == ProfileBSIV11 {
+		if ext, ok := LookupBSIV11DocExtractor(feature); ok {
+			return ext(doc)
+		}
+	}
+
+	if profile == ProfileBSIV20 {
+		if ext, ok := LookupBSIV20DocExtractor(feature); ok {
+			return ext(doc)
+		}
+	}
+
+	if profile == ProfileBSIV21 {
+		if ext, ok := LookupBSIV21DocExtractor(feature); ok {
+			return ext(doc)
+		}
+	}
+
+	if profile == ProfileInterlynk {
+		if ext, ok := LookupInterlynkDocExtractor(feature); ok {
+			return ext(doc)
+		}
+	}
+
+	// Generic fallback: resolve alias then look up registry
 	if f, ok := sbomFeatureAliases[feature]; ok {
 		feature = f
 	}
