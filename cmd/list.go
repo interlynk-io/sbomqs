@@ -166,7 +166,7 @@ func init() {
 
 	listCmd.Flags().BoolP("missing", "m", false, "List components or properties missing the specified feature")
 
-	listCmd.Flags().String("profile", "", "Compliance profile for feature extraction (e.g. bsiv21)")
+	listCmd.Flags().String("profile", "", "Compliance profile for feature extraction (e.g. bsiv21, bsiv11, bsiv20, fsct, ntia, interlynk). When specified, only features relevant to the profile will be considered. Run 'sbomqs features --profile <profile>' to see supported features for each profile.")
 
 	// -- Output Control --
 	listCmd.Flags().BoolP("basic", "b", false, "Results in single-line format")
