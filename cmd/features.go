@@ -18,7 +18,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"sort"
 
 	"github.com/spf13/cobra"
 )
@@ -26,7 +25,7 @@ import (
 var featuresCmd = &cobra.Command{
 	Use:   "features",
 	Short: "List supported sbomqs features",
-	Long:  "Displays all supported features grouped by category.",
+	Long:  "Displays all supported features grouped by profile section.",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		jsonOutput, _ := cmd.Flags().GetBool("json")
 
@@ -46,49 +45,33 @@ func init() {
 }
 
 func printFeaturesHuman() {
-	grouped := make(map[string][]Feature)
-
-	for _, f := range FeatureRegistry {
-		grouped[f.Category] = append(grouped[f.Category], f)
+	total := 0
+	for _, s := range ProfileSections {
+		total += len(s.Features)
 	}
 
-	// Sort categories
-	var categories []string
-	for cat := range grouped {
-		categories = append(categories, cat)
-	}
-	sort.Strings(categories)
+	fmt.Printf("Supported Features (%d total across %d sections):\n\n", total, len(ProfileSections))
 
-	total := len(FeatureRegistry)
-	fmt.Printf("Supported Features (%d total):\n\n", total)
-
-	for _, cat := range categories {
-		features := grouped[cat]
-
-		// Sort features inside category
-		sort.Slice(features, func(i, j int) bool {
-			return features[i].Name < features[j].Name
-		})
-
-		fmt.Printf("%s:\n", cat)
-		for _, f := range features {
-			fmt.Printf("  - %-30s %s\n", f.Name, f.Description)
+	for _, section := range ProfileSections {
+		fmt.Printf("%s:\n", section.Name)
+		for _, f := range section.Features {
+			fmt.Printf("  - %-35s %s\n", f.Name, f.Description)
 		}
 		fmt.Println()
 	}
 }
 
 func printFeaturesJSON() error {
-	grouped := make(map[string][]Feature)
-
-	for _, f := range FeatureRegistry {
-		grouped[f.Category] = append(grouped[f.Category], f)
+	type jsonSection struct {
+		Name     string           `json:"name"`
+		Features []ProfileFeature `json:"features"`
 	}
 
-	// Optional: sort features per category for stable output
-	for _, features := range grouped {
-		sort.Slice(features, func(i, j int) bool {
-			return features[i].Name < features[j].Name
+	sections := make([]jsonSection, 0, len(ProfileSections))
+	for _, s := range ProfileSections {
+		sections = append(sections, jsonSection{
+			Name:     s.Name,
+			Features: s.Features,
 		})
 	}
 
@@ -96,7 +79,6 @@ func printFeaturesJSON() error {
 	enc.SetIndent("", "  ")
 
 	return enc.Encode(map[string]interface{}{
-		"total":      len(FeatureRegistry),
-		"categories": grouped,
+		"sections": sections,
 	})
 }

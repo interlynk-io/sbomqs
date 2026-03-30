@@ -235,9 +235,15 @@ var compFeatureRegistry = map[string]compFeatureEval{
 	"comp_with_name":                 compOnly(evaluateCompWithName),
 	"comp_with_version":              compOnly(evaluateCompWithVersion),
 	"comp_with_supplier":             compOnly(evaluateCompWithSupplier),
-	"comp_with_uniq_ids":             compOnly(evaluateCompWithUniqID),
+	"comp_with_uniq_ids":             docAndComp(extractors.GenericCompUniqIDs),
 	"comp_with_local_id":             docAndComp(evaluateCompWithLocalID),
 	"comp_valid_licenses":            compOnly(evaluateCompWithValidLicenses),
+	// generic (profile-independent) extractors
+	"comp_all_licenses":      docAndComp(extractors.GenericCompAllLicenses),
+	"comp_external_refs":     docAndComp(extractors.GenericCompExternalRefs),
+	"comp_generic_depth":     docAndComp(extractors.GenericCompDepth),
+	"comp_generic_supplier":  docAndComp(extractors.GenericCompSupplier),
+	"comp_author":            docAndComp(extractors.GenericCompAuthor),
 	"comp_with_checksums_sha256":     compOnly(evaluateCompWithSHA256Checksums),
 	"comp_with_source_code_uri":      docAndComp(evaluateCompWithSourceCodeURI),
 	"comp_with_source_code_hash":     docAndComp(evaluateCompWithSourceCodeHash),
@@ -267,8 +273,8 @@ var compFeatureAliases = map[string]string{
 	"comp_version":                 "comp_with_version",
 	"pack_version":                 "comp_with_version",
 	"comp_with_local_ids":          "comp_with_local_id",
-	"comp_supplier":                "comp_with_supplier",
-	"comp_license":                 "comp_valid_licenses",
+	"comp_supplier":                "comp_generic_supplier",
+	"comp_license":                 "comp_all_licenses",
 	"comp_uniq_id":                 "comp_with_uniq_ids",
 	"comp_unique_identifiers":      "comp_with_uniq_ids",
 	"comp_with_uniq_id":            "comp_with_uniq_ids",
@@ -283,7 +289,7 @@ var compFeatureAliases = map[string]string{
 	"pack_license_dec":             "comp_with_declared_license",
 	"pack_license_con":             "comp_with_concluded_license",
 	"comp_dependencies":            "comp_with_dependencies",
-	"comp_depth":                   "comp_with_dependencies",
+	"comp_depth":                   "comp_generic_depth",
 	"comp_no_deprecated_licenses":  "comp_with_deprecated_licenses",
 	"comp_no_restrictive_licenses": "comp_with_deprecated_licenses",
 	"comp_with_purpose":            "comp_with_primary_purpose",
@@ -300,6 +306,8 @@ var compFeatureAliases = map[string]string{
 type sbomFeatureEval func(sbom.Document) (bool, string, error)
 
 var sbomFeatureAliases = map[string]string{
+	"comp_primary_comp":      "sbom_primary_comp",
+	"comp_with_primary_comp": "sbom_primary_comp",
 	"sbom_timestamp":         "sbom_creation_timestamp",
 	"sbom_creator":           "sbom_authors",
 	"sbom_data_license":      "sbom_license",
@@ -343,6 +351,7 @@ var sbomFeatureRegistry = map[string]sbomFeatureEval{
 	"sbom_comment":                  evaluateSBOMComment,
 	"sbom_supplier":                 evaluateSBOMSupplier,
 	"sbom_completeness_declared":    evaluateSBOMCompleteness,
+	"sbom_primary_comp":             extractors.GenericSBOMPrimaryComp,
 }
 
 // interlynkCompExtractors maps Interlynk feature keys to per-component extractors.
