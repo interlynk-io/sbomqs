@@ -178,7 +178,13 @@ func LookupExpression(expression string, customLicenses []License) []License {
 	} else {
 		// Normal path: semantic parsing
 		// spdxexp replaces "+" operator
-		extLicenses, err = spdxexp.ExtractLicenses(expression)
+		//
+		// Complex license expressions with many AND/OR operators can cause
+		// the SPDX expression parser to hang due to exponential parsing
+		// complexity (e.g., kernel-headers license strings).
+		// Split top-level AND clauses and parse each independently to
+		// avoid the pathological behavior.
+		extLicenses, err = extractLicensesSafe(expression)
 		if err != nil {
 			return []License{CreateCustomLicense(expression, expression)}
 		}
@@ -213,6 +219,71 @@ func LookupExpression(expression string, customLicenses []License) []License {
 	}
 
 	return licenses
+}
+
+// maxDirectExtractOperators is the threshold above which we split the
+// expression at top-level AND boundaries before feeding sub-expressions
+// to spdxexp.ExtractLicenses. The go-spdx parser exhibits exponential
+// behaviour on large compound expressions.
+const maxDirectExtractOperators = 20
+
+// extractLicensesSafe wraps spdxexp.ExtractLicenses with a guard against
+// pathologically complex expressions. When the expression contains more
+// than maxDirectExtractOperators boolean operators, it is split at top-level
+// AND boundaries and each clause is parsed individually.
+func extractLicensesSafe(expression string) ([]string, error) {
+	if strings.Count(expression, " AND ")+strings.Count(expression, " OR ") <= maxDirectExtractOperators {
+		return spdxexp.ExtractLicenses(expression)
+	}
+
+	// Split at top-level AND boundaries (outside parentheses).
+	clauses := splitTopLevelAND(expression)
+
+	seen := map[string]bool{}
+	var all []string
+	for _, clause := range clauses {
+		lics, err := spdxexp.ExtractLicenses(strings.TrimSpace(clause))
+		if err != nil {
+			// Treat unparseable clauses as custom licenses.
+			clause = strings.TrimSpace(clause)
+			if !seen[clause] {
+				all = append(all, clause)
+				seen[clause] = true
+			}
+			continue
+		}
+		for _, l := range lics {
+			if !seen[l] {
+				all = append(all, l)
+				seen[l] = true
+			}
+		}
+	}
+	return all, nil
+}
+
+// splitTopLevelAND splits an SPDX expression at top-level " AND " tokens,
+// i.e. those not inside parentheses.
+func splitTopLevelAND(expr string) []string {
+	var parts []string
+	depth := 0
+	start := 0
+	for i := 0; i < len(expr); i++ {
+		switch expr[i] {
+		case '(':
+			depth++
+		case ')':
+			depth--
+		case ' ':
+			if depth == 0 && i+5 <= len(expr) && expr[i:i+5] == " AND " {
+				parts = append(parts, expr[start:i])
+				start = i + 5
+				i += 4 // skip past " AND "
+			}
+		}
+	}
+	parts = append(parts, expr[start:])
+	return parts
 }
 
 func CreateCustomLicense(id, name string) License {

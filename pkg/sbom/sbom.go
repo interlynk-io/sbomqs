@@ -72,8 +72,9 @@ type spdxbasic struct {
 }
 
 type cdxbasic struct {
-	XMLNS     string `json:"-" xml:"xmlns,attr"`
-	BOMFormat string `json:"bomFormat" xml:"-"`
+	XMLNS       string `json:"-" xml:"xmlns,attr"`
+	BOMFormat   string `json:"bomFormat" xml:"-"`
+	SpecVersion string `json:"specVersion" xml:"version,attr"`
 }
 
 // SupportedSBOMSpecs returns a list of all supported SBOM specification formats
@@ -145,7 +146,7 @@ func detectSbomFormat(f io.ReadSeeker) (SpecFormat, FileFormat, FormatVersion, e
 	var cdx cdxbasic
 	if err := json.NewDecoder(f).Decode(&cdx); err == nil {
 		if cdx.BOMFormat == "CycloneDX" {
-			return SBOMSpecCDX, FileFormatJSON, "", nil
+			return SBOMSpecCDX, FileFormatJSON, FormatVersion(cdx.SpecVersion), nil
 		}
 	}
 
@@ -156,7 +157,7 @@ func detectSbomFormat(f io.ReadSeeker) (SpecFormat, FileFormat, FormatVersion, e
 
 	if err := xml.NewDecoder(f).Decode(&cdx); err == nil {
 		if strings.HasPrefix(cdx.XMLNS, "http://cyclonedx.org") {
-			return SBOMSpecCDX, FileFormatXML, "", nil
+			return SBOMSpecCDX, FileFormatXML, FormatVersion(cdx.SpecVersion), nil
 		}
 	}
 	_, err = f.Seek(0, io.SeekStart)
