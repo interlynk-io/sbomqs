@@ -65,6 +65,11 @@ func loadSchema(schemaURL string) (*jsonschema.Schema, error) {
 		return nil, fmt.Errorf("unknown schema")
 	}
 
+	// Only compile schemas that are in the registry to avoid HTTP fetches
+	if _, ok := schemaRegistry[schemaURL]; !ok {
+		return nil, fmt.Errorf("unsupported schema: %s", schemaURL)
+	}
+
 	c := jsonschema.NewCompiler()
 
 	if err := preloadSchemas(c); err != nil {
