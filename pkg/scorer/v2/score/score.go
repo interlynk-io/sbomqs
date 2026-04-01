@@ -212,10 +212,13 @@ func SBOMEvaluation(ctx context.Context, catal *catalog.Catalog, cfg config.Conf
 	log.Debug("Selecting SBOM evaluation strategy")
 
 	// Build the evaluation input. ComponentQuality is populated only when an
-	// Interlynk URL is configured and the API call succeeds. On failure we log
-	// a warning and continue: Component Quality features return N/A for this doc.
+	// Interlynk URL is configured, the API call succeeds, AND the catalog
+	// actually includes the Component Quality category. Without all three
+	// conditions the API call would be a no-op: profiles-only evaluation never
+	// reads input.ComponentQuality, and a category-filtered run that excludes
+	// compinfo has no extractors that consume it.
 	input := catalog.EvalInput{Doc: doc}
-	if cfg.InterlynkURL != "" {
+	if cfg.InterlynkURL != "" && isCompQualityPresent(catal) {
 		client := interlynkapi.NewClient(cfg.InterlynkURL, cfg.InterlynkAPIKey)
 		qResult, err := client.FetchComponentQuality(ctx, doc.Components())
 		if err != nil {
@@ -286,4 +289,18 @@ func evaluateBoth(ctx context.Context, catal *catalog.Catalog, input catalog.Eva
 	result.Comprehensive = &comprResult
 
 	return *result, nil
+}
+
+// isCompQualityPresent reports whether the catalog's comprehensive
+// categories include the Component Quality category. The API call is
+// skipped when this returns false: profiles-only evaluation never reads
+// input.ComponentQuality, and category-filtered runs that exclude compinfo
+// have no extractors that consume it.
+func isCompQualityPresent(catal *catalog.Catalog) bool {
+	for _, cat := range catal.ComprCategories {
+		if cat.Key == registry.CatComponentQualityInfoSpec.Key {
+			return true
+		}
+	}
+	return false
 }
