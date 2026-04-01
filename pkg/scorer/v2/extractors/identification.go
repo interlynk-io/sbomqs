@@ -18,6 +18,7 @@
 package extractors
 
 import (
+	"context"
 	"strings"
 
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
@@ -27,7 +28,8 @@ import (
 )
 
 // CompWithName: percentage of components that have a non-empty name.
-func CompWithName(doc sbom.Document) catalog.ComprFeatScore {
+func CompWithName(_ context.Context, input catalog.EvalInput) catalog.ComprFeatScore {
+	doc := input.Doc
 	comps := doc.Components()
 	if len(comps) == 0 {
 		return formulae.ScoreCompNA()
@@ -41,7 +43,8 @@ func CompWithName(doc sbom.Document) catalog.ComprFeatScore {
 }
 
 // CompWithVersion: percentage of components that have a non-empty version.
-func CompWithVersion(doc sbom.Document) catalog.ComprFeatScore {
+func CompWithVersion(_ context.Context, input catalog.EvalInput) catalog.ComprFeatScore {
+	doc := input.Doc
 	comps := doc.Components()
 	if len(comps) == 0 {
 		return formulae.ScoreCompNA()
@@ -56,7 +59,8 @@ func CompWithVersion(doc sbom.Document) catalog.ComprFeatScore {
 
 // CompWithUniqLocalIDs: percentage of components whose local ID is present and unique within the SBOM.
 // such as bom-ref, spdxid
-func CompWithUniqLocalIDs(doc sbom.Document) catalog.ComprFeatScore {
+func CompWithUniqLocalIDs(_ context.Context, input catalog.EvalInput) catalog.ComprFeatScore {
+	doc := input.Doc
 	comps := doc.Components()
 	if len(comps) == 0 {
 		return formulae.ScoreCompNA()
