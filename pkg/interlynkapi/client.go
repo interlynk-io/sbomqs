@@ -127,56 +127,34 @@ func (c *Client) post(ctx context.Context, comps []ComponentPayload) (*DoctorRes
 	return nil, fmt.Errorf("rate limited after %d retries", maxRetries)
 }
 
-// FetchComponentQuality maps the document's components to API payloads, sends
-// them in batches, and merges the results into a ComponentQualityResult.
-// On error it returns nil and the caller should treat Component Quality as N/A.
+// batchResult pairs a DoctorResponse with the batch's starting offset in the
+// original payload slice. The offset is needed later to convert a finding's
+// batch-local Index back into a globally consistent component index.
+type batchResult struct {
+	offset   int
+	response *DoctorResponse
+}
+
+// FetchComponentQuality is the top-level entry point for component quality scoring.
+// It orchestrates three sequential steps:
+//  1. Build API payloads from SBOM components.
+//  2. Send those payloads to the Interlynk API in batches.
+//  3. Merge all batch responses into a single result.
 func (c *Client) FetchComponentQuality(ctx context.Context, comps []sbom.GetComponent) (*ComponentQualityResult, error) {
 	log := logger.FromContext(ctx)
 
 	if len(comps) == 0 {
-		return &ComponentQualityResult{
-			FindingsByCompIndex: map[int][]Finding{},
-		}, nil
+		return &ComponentQualityResult{FindingsByCompIndex: map[int][]Finding{}}, nil
 	}
 
-	payloads := make([]ComponentPayload, len(comps))
-	for i, comp := range comps {
-		payloads[i] = mapComponent(comp)
+	payloads := buildPayloads(comps)
+
+	batchsResult, err := c.sendInBatches(ctx, payloads)
+	if err != nil {
+		return nil, err
 	}
 
-	size := c.batchSize()
-	result := &ComponentQualityResult{
-		FindingsByCompIndex: make(map[int][]Finding),
-		TotalComponents:     len(comps),
-	}
-
-	for start := 0; start < len(payloads); start += size {
-		end := start + size
-		if end > len(payloads) {
-			end = len(payloads)
-		}
-		batch := payloads[start:end]
-
-		log.Debug("Sending component quality batch",
-			zap.Int("batch_start", start),
-			zap.Int("batch_end", end),
-			zap.Int("batch_size", len(batch)),
-		)
-
-		dr, err := c.post(ctx, batch)
-		if err != nil {
-			return nil, fmt.Errorf("batch [%d:%d]: %w", start, end, err)
-		}
-
-		// Adjust Finding.Index by batch offset so indices are globally consistent.
-		for _, f := range dr.Findings {
-			globalIdx := start + f.Index
-			result.FindingsByCompIndex[globalIdx] = append(result.FindingsByCompIndex[globalIdx], f)
-		}
-		if dr.Tier != "" {
-			result.Tier = dr.Tier
-		}
-	}
+	result := mergeFindings(batchsResult, len(comps))
 
 	log.Info("Component quality API call complete",
 		zap.Int("components", len(comps)),
@@ -185,6 +163,60 @@ func (c *Client) FetchComponentQuality(ctx context.Context, comps []sbom.GetComp
 	)
 
 	return result, nil
+}
+
+// sendInBatches slices payloads into chunks of batchSize and calls post for
+// each chunk. It returns one batchResult per chunk, each carrying the chunk's
+// starting offset so that findings can later be re-indexed globally.
+func (c *Client) sendInBatches(ctx context.Context, payloads []ComponentPayload) ([]batchResult, error) {
+	log := logger.FromContext(ctx)
+	size := c.batchSize()
+	var batchesResult []batchResult
+
+	for start := 0; start < len(payloads); start += size {
+		end := start + size
+		if end > len(payloads) {
+			end = len(payloads)
+		}
+		chunk := payloads[start:end]
+
+		log.Debug("Sending component quality batch",
+			zap.Int("batch_start", start),
+			zap.Int("batch_end", end),
+			zap.Int("batch_size", len(chunk)),
+		)
+
+		dr, err := c.post(ctx, chunk)
+		if err != nil {
+			return nil, fmt.Errorf("batch [%d:%d]: %w", start, end, err)
+		}
+
+		batchesResult = append(batchesResult, batchResult{offset: start, response: dr})
+	}
+
+	return batchesResult, nil
+}
+
+// mergeFindings stitches all batch responses into a single ComponentQualityResult.
+// Each finding's batch-local Index is shifted by the batch's offset to produce
+// a globally consistent component index that matches the original component slice.
+func mergeFindings(batches []batchResult, totalComponents int) *ComponentQualityResult {
+	result := &ComponentQualityResult{
+		FindingsByCompIndex: make(map[int][]Finding),
+		TotalComponents:     totalComponents,
+	}
+
+	for _, b := range batches {
+		for _, f := range b.response.Findings {
+			globalIdx := b.offset + f.Index
+			result.FindingsByCompIndex[globalIdx] = append(result.FindingsByCompIndex[globalIdx], f)
+		}
+		if b.response.Tier != "" {
+			result.Tier = b.response.Tier
+		}
+	}
+
+	return result
 }
 
 // parseRetryAfter parses the Retry-After header value (seconds integer or HTTP date).

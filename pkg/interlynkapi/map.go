@@ -20,7 +20,17 @@ import (
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
 )
 
-// mapComponent converts an sbom.GetComponent to the API payload format.
+// buildPayloads converts all SBOM components into the slice of ComponentPayload
+// that the API expects. Each component is mapped independently via mapComponent.
+func buildPayloads(comps []sbom.GetComponent) []ComponentPayload {
+	payloads := make([]ComponentPayload, len(comps))
+	for i, comp := range comps {
+		payloads[i] = mapComponent(comp)
+	}
+	return payloads
+}
+
+// mapComponent converts a single sbom.GetComponent to the API payload format.
 // Only the first PURL and first license are sent; CPEs are sent as strings.
 func mapComponent(c sbom.GetComponent) ComponentPayload {
 	p := ComponentPayload{
