@@ -18,6 +18,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -26,14 +27,33 @@ var featuresCmd = &cobra.Command{
 	Use:   "features",
 	Short: "List supported sbomqs features",
 	Long:  "Displays all supported features grouped by profile section.",
+	Example: `  # Show all features across all profiles
+  sbomqs features
+
+  # Show features for a specific profile
+  sbomqs features --profile bsi        # latest BSI (bsiv21)
+  sbomqs features --profile bsiv21
+  sbomqs features --profile ntia
+  sbomqs features --profile interlynk
+
+  # JSON output
+  sbomqs features --json
+  sbomqs features --profile fsct --json`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		jsonOutput, _ := cmd.Flags().GetBool("json")
+		profile, _ := cmd.Flags().GetString("profile")
+		profile = normalizeProfile(strings.TrimSpace(strings.ToLower(profile)))
 
-		if jsonOutput {
-			return printFeaturesJSON()
+		sections, err := resolveSections(profile)
+		if err != nil {
+			return err
 		}
 
-		printFeaturesHuman()
+		if jsonOutput {
+			return printFeaturesJSON(sections)
+		}
+
+		printFeaturesHuman(sections, profile)
 		return nil
 	},
 }
@@ -42,17 +62,48 @@ func init() {
 	rootCmd.AddCommand(featuresCmd)
 
 	featuresCmd.Flags().BoolP("json", "j", false, "Output in JSON format")
+	featuresCmd.Flags().String("profile", "", "Show features for a specific profile (bsi, bsiv11, bsiv20, bsiv21, ntia, fsct, interlynk). 'bsi' is an alias for bsiv21.")
 }
 
-func printFeaturesHuman() {
-	total := 0
+// resolveSections returns the ProfileSections to display.
+// When profile is empty, all sections are returned.
+// When profile is set, only the matching section is returned.
+func resolveSections(profile string) ([]ProfileSection, error) {
+	if profile == "" {
+		return ProfileSections, nil
+	}
+
+	if _, ok := supportedProfiles[profile]; !ok {
+		return nil, fmt.Errorf(
+			"profile %q is not supported. Supported profiles: bsi (=bsiv21), bsiv11, bsiv20, bsiv21, fsct, ntia, interlynk",
+			profile,
+		)
+	}
+
+	sectionName := profileSectionName[profile]
 	for _, s := range ProfileSections {
+		if s.Name == sectionName {
+			return []ProfileSection{s}, nil
+		}
+	}
+
+	// Should never happen if profileSectionName and ProfileSections are in sync.
+	return nil, fmt.Errorf("internal: no section found for profile %q", profile)
+}
+
+func printFeaturesHuman(sections []ProfileSection, profile string) {
+	total := 0
+	for _, s := range sections {
 		total += len(s.Features)
 	}
 
-	fmt.Printf("Supported Features (%d total across %d sections):\n\n", total, len(ProfileSections))
+	if profile != "" {
+		fmt.Printf("Features for profile %q (%d features):\n\n", profile, total)
+	} else {
+		fmt.Printf("Supported Features (%d total across %d sections):\n\n", total, len(sections))
+	}
 
-	for _, section := range ProfileSections {
+	for _, section := range sections {
 		fmt.Printf("%s:\n", section.Name)
 		for _, f := range section.Features {
 			fmt.Printf("  - %-35s %s\n", f.Name, f.Description)
@@ -61,15 +112,15 @@ func printFeaturesHuman() {
 	}
 }
 
-func printFeaturesJSON() error {
+func printFeaturesJSON(sections []ProfileSection) error {
 	type jsonSection struct {
 		Name     string           `json:"name"`
 		Features []ProfileFeature `json:"features"`
 	}
 
-	sections := make([]jsonSection, 0, len(ProfileSections))
-	for _, s := range ProfileSections {
-		sections = append(sections, jsonSection{
+	out := make([]jsonSection, 0, len(sections))
+	for _, s := range sections {
+		out = append(out, jsonSection{
 			Name:     s.Name,
 			Features: s.Features,
 		})
@@ -79,6 +130,6 @@ func printFeaturesJSON() error {
 	enc.SetIndent("", "  ")
 
 	return enc.Encode(map[string]interface{}{
-		"sections": sections,
+		"sections": out,
 	})
 }
