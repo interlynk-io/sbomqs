@@ -1,6 +1,6 @@
 # `sbomqs list` Command
 
-The `sbomqs list` command lets you inspect the actual field values of components or SBOM metadata for a specific feature. It is primarily used to identify which components have a field present (or missing) — for example, which components have no supplier, or what license expressions are declared.
+The `sbomqs list` command lets you inspect the actual field values of components or SBOM metadata for a specific feature. It is primarily used to identify which components have a field present (or missing), for example, which components have no supplier, or what license expressions are declared.
 
 Unlike `score`, which gives you a numeric grade, `list` shows you the raw values so you can act on them directly.
 
@@ -15,7 +15,7 @@ sbomqs list --feature <feature> [flags] <sbom-file>
 | Flag | Short | Default | Description |
 |------|-------|---------|-------------|
 | `--feature` | | _(required)_ | Feature to inspect. Run `sbomqs features` to see all supported features. |
-| `--profile` | | | Compliance profile to use for feature extraction (`bsiv11`, `bsiv20`, `bsiv21`, `ntia`, `fsct`, `interlynk`). When set, only features defined for that profile are accepted. |
+| `--profile` | | | Compliance profile to use for feature extraction (`bsi`, `bsiv11`, `bsiv20`, `bsiv21`, `ntia`, `fsct`, `interlynk`). `bsi` is an alias for the latest version (`bsiv21`). When set, only features defined for that profile are accepted. |
 | `--missing` | `-m` | false | Show only components or properties that do NOT have the feature. |
 | `--show` | `-s` | false | Show the actual field value alongside the presence indicator. |
 | `--basic` | `-b` | false | Output results in single-line format. |
@@ -33,6 +33,7 @@ Use the `features` subcommand to browse all available features, organized by pro
 sbomqs features
 
 # List features for a specific profile
+sbomqs features --profile bsi        # latest BSI (bsiv21)
 sbomqs features --profile bsiv21
 sbomqs features --profile ntia
 sbomqs features --profile interlynk
@@ -49,18 +50,18 @@ Without `--profile`, the command uses the generic feature registry. These featur
 | Feature | Description |
 |---------|-------------|
 | `sbom_authors` | SBOM authors/creators |
-| `sbom_timestamp` | SBOM creation timestamp |
-| `sbom_tool` | Tool that generated the SBOM (name + version) |
+| `sbom_creation_timestamp` | SBOM creation timestamp |
+| `sbom_creator_and_version` | Tool that generated the SBOM (name + version) |
 | `sbom_spec` | SBOM specification type (cyclonedx / spdx) |
 | `sbom_spec_version` | SBOM specification version |
-| `sbom_file_format` | SBOM file format (json / xml / tag-value) |
+| `sbom_spec_file_format` | SBOM file format (json / xml / tag-value) |
 | `sbom_uri` | SBOM unique URI or namespace |
 | `sbom_primary_comp` | Primary component name and version |
 | `sbom_schema_valid` | Whether the SBOM validates against its schema |
 | `sbom_dependencies` | SBOM-level dependency graph summary |
 | `sbom_organization` | SBOM organization metadata |
 | `sbom_build` | SBOM build / lifecycle metadata |
-| `sbom_with_vuln` | Whether the SBOM contains vulnerability entries |
+| `sbom_vuln` | Whether the SBOM contains vulnerability entries |
 
 **Component-level generic features:**
 
@@ -71,22 +72,24 @@ Without `--profile`, the command uses the generic feature registry. These featur
 | `comp_supplier` | Component supplier or manufacturer (with fallback) |
 | `comp_author` | Component authors (name, email) |
 | `comp_external_refs` | All external references as "type: locator" |
-| `comp_license` | All licenses: concluded and declared, labeled by type |
+| `comp_all_licenses` | All licenses: concluded and declared, labeled by type |
 | `comp_depth` | Direct dependency names, or "leaf component" if none |
-| `comp_with_uniq_ids` | All unique identifiers: PURL, CPE, SWHID, SWID, OmniBOR |
+| `comp_uniq_ids` | All unique identifiers: PURL, CPE, SWHID, SWID, OmniBOR |
 | `comp_purl` | Component PURL |
 | `comp_cpe` | Component CPE |
-| `comp_hash` | Component checksum value |
-| `comp_purpose` | Component purpose / type |
-| `comp_with_source_code_uri` | Component source code URI |
-| `comp_with_executable_uri` | Component executable / download URI |
-| `comp_source_hash` | Source code hash |
+| `comp_checksums` | Component checksum value |
+| `comp_primary_purpose` | Component purpose / type |
+| `comp_source_code_uri` | Component source code URI |
+| `comp_executable_uri` | Component executable / download URI |
+| `comp_source_code_hash` | Source code hash |
 
 ---
 
 ### Profile mode (`--profile <profile>`)
 
 When `--profile` is specified, feature extraction follows the rules of that compliance standard. Each profile has its own feature keys that reflect the field names and semantics of the underlying spec.
+
+> **Tip:** `--profile bsi` is an alias for `--profile bsiv21` (the latest BSI TR-03183-2 version).
 
 #### BSI TR-03183-2 v1.1 (`--profile bsiv11`) — 13 features
 
@@ -106,7 +109,7 @@ When `--profile` is specified, feature extraction follows the rules of that comp
 | `comp_executable_url` | Component | Executable / download URL |
 | `comp_source_hash` | Component | Source code hash |
 
-#### BSI TR-03183-2 v2.0 (`--profile bsiv20`) — 16 features
+#### BSI TR-03183-2 v2.0 (`--profile bsiv20`) — 19 features
 
 | Feature | Level | Tier | Description |
 |---------|-------|------|-------------|
@@ -130,11 +133,11 @@ When `--profile` is specified, feature extraction follows the rules of that comp
 | `comp_declared_license` | Component | Optional | Declared licence |
 | `comp_source_hash` | Component | Optional | Source code hash |
 
-#### BSI TR-03183-2 v2.1 (`--profile bsiv21`) — 21 features
+#### BSI TR-03183-2 v2.1 (`--profile bsiv21` or `--profile bsi`) — 21 features
 
 | Feature | Level | Tier | Description |
 |---------|-------|------|-------------|
-| `sbom_spec_version` | SBOM | Required | Spec version (CycloneDX ≥ 1.6 / SPDX ≥ 3.0.1) |
+| `sbom_spec_version` | SBOM | Required | Spec version (CycloneDX >= 1.6 / SPDX >= 3.0.1) |
 | `sbom_creator` | SBOM | Required | SBOM creator contact |
 | `sbom_timestamp` | SBOM | Required | SBOM creation timestamp |
 | `sbom_uri` | SBOM | Additional | SBOM URI |
@@ -224,76 +227,79 @@ When `--profile` is specified, feature extraction follows the rules of that comp
 ### List components with their suppliers (generic, detailed)
 
 ```bash
-sbomqs list --feature comp_supplier samples/photon.spdx.json
+sbomqs list --feature comp_supplier my-app.spdx.json
 ```
 
 ### Find components missing suppliers
 
 ```bash
-sbomqs list --feature comp_supplier --missing samples/photon.spdx.json
+sbomqs list --feature comp_supplier --missing my-app.spdx.json
 ```
 
 ### Show actual supplier values
 
 ```bash
-sbomqs list --feature comp_supplier --show samples/photon.spdx.json
+sbomqs list --feature comp_supplier --show my-app.spdx.json
 ```
 
 ### Show all license values per component
 
 ```bash
-sbomqs list --feature comp_license --show samples/photon.spdx.json
+sbomqs list --feature comp_all_licenses --show my-app.spdx.json
 ```
 
 ### List all external references per component
 
 ```bash
-sbomqs list --feature comp_external_refs --show samples/photon.spdx.json
+sbomqs list --feature comp_external_refs --show my-app.spdx.json
 ```
 
 ### Show unique identifiers (PURL, CPE, SWHID, SWID)
 
 ```bash
-sbomqs list --feature comp_with_uniq_ids --show samples/photon.spdx.json
+sbomqs list --feature comp_uniq_ids --show my-app.spdx.json
 ```
 
-### Inspect a BSI v2.1 field
+### Inspect a BSI v2.1 field (using `bsi` alias)
 
 ```bash
 # Show deployable hash for all components
-sbomqs list --profile bsiv21 --feature comp_deployable_hash --show samples/app.cdx.json
+sbomqs list --profile bsi --feature comp_deployable_hash --show my-app.cdx.json
 
 # Find components missing the distribution licence
-sbomqs list --profile bsiv21 --feature comp_distribution_license --missing samples/app.cdx.json
+sbomqs list --profile bsi --feature comp_distribution_license --missing my-app.cdx.json
+
+# Same using explicit version
+sbomqs list --profile bsiv21 --feature comp_deployable_hash --show my-app.cdx.json
 ```
 
 ### NTIA compliance field inspection
 
 ```bash
 # Find components without a unique identifier
-sbomqs list --profile ntia --feature comp_uniq_id --missing samples/app.spdx.json
+sbomqs list --profile ntia --feature comp_uniq_id --missing my-app.spdx.json
 ```
 
 ### Interlynk profile field inspection
 
 ```bash
 # Show all component PURLs
-sbomqs list --profile interlynk --feature comp_purl --show samples/app.cdx.json
+sbomqs list --profile interlynk --feature comp_purl --show my-app.cdx.json
 
 # Find components missing declared licenses
-sbomqs list --profile interlynk --feature comp_declared_licenses --missing samples/app.cdx.json
+sbomqs list --profile interlynk --feature comp_declared_licenses --missing my-app.cdx.json
 ```
 
 ### JSON output
 
 ```bash
-sbomqs list --feature comp_supplier --json samples/photon.spdx.json
+sbomqs list --feature comp_supplier --json my-app.spdx.json
 ```
 
 ### Basic (single-line) output
 
 ```bash
-sbomqs list --feature comp_supplier --basic samples/photon.spdx.json
+sbomqs list --feature comp_supplier --basic my-app.spdx.json
 ```
 
 ---
@@ -301,8 +307,10 @@ sbomqs list --feature comp_supplier --basic samples/photon.spdx.json
 ## Notes
 
 - `--feature` accepts a single feature name. Use `sbomqs features` or `sbomqs features --profile <profile>` to discover valid names.
+- `--profile bsi` is an alias for `--profile bsiv21` (the latest BSI TR-03183-2 version).
 - When `--profile` is given, only feature keys defined for that profile are accepted. Using a generic key with a profile (or vice versa) will return a validation error listing the supported features.
 - The `--missing` flag inverts the output — useful for finding gaps before remediation.
 - The `--show` flag adds the actual field value to the output, not just presence/absence.
 - FSCT feature keys (`supplier_attribution`, `artifact_integrity`, etc.) do not follow the `comp_`/`sbom_` prefix convention — they are routed correctly when `--profile fsct` is used.
 - Some Interlynk profile features are CycloneDX-only: `sbom_supplier`, `sbom_lifecycle`, `sbom_signature`, `sbom_completeness`. On SPDX documents these return "not supported in SPDX".
+- Old feature names containing `_with_` (e.g. `comp_with_supplier`, `sbom_with_vuln`) are still accepted as backwards-compatible aliases and route to their canonical equivalents.
