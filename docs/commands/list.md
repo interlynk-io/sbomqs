@@ -1,193 +1,308 @@
 # `sbomqs list` Command
 
-The `sbomqs list` command allows users to list components or SBOM fileds based on a specified feature, making it easier to identify which components or properties(SBOM metadata) meet (or fail to meet) certain criteria. This command is particularly useful for pinpointing missing fields in SBOM components (e.g., suppliers, licenses) or verifying SBOM metadata (e.g., authors, creation timestamp).
+The `sbomqs list` command lets you inspect the actual field values of components or SBOM metadata for a specific feature. It is primarily used to identify which components have a field present (or missing) — for example, which components have no supplier, or what license expressions are declared.
+
+Unlike `score`, which gives you a numeric grade, `list` shows you the raw values so you can act on them directly.
 
 ## Usage
 
 ```bash
-sbomqs list [flags] <SBOM file>
+sbomqs list --feature <feature> [flags] <sbom-file>
 ```
 
-### Autocompletion for `--feature` Flag
+## Flags
 
-- **For Bash**:
+| Flag | Short | Default | Description |
+|------|-------|---------|-------------|
+| `--feature` | | _(required)_ | Feature to inspect. Run `sbomqs features` to see all supported features. |
+| `--profile` | | | Compliance profile to use for feature extraction (`bsiv11`, `bsiv20`, `bsiv21`, `ntia`, `fsct`, `interlynk`). When set, only features defined for that profile are accepted. |
+| `--missing` | `-m` | false | Show only components or properties that do NOT have the feature. |
+| `--show` | `-s` | false | Show the actual field value alongside the presence indicator. |
+| `--basic` | `-b` | false | Output results in single-line format. |
+| `--detailed` | `-d` | true | Output results in table format (default). |
+| `--json` | `-j` | false | Output results in JSON format. |
+| `--color` | `-l` | false | Enable colored output. |
+| `--debug` | `-D` | false | Enable debug logging. |
 
-  ```bash
-  sbomqs completion bash > sbomqs_completion.sh
-  ```
+## Discovering Supported Features
 
-- **For Zsh**:
-
-  ```bash
-  sbomqs completion zsh > sbomqs_completion.sh
-  ```
-
-This creates a file (`sbomqs_completion.sh`) with the completion logic.
-
-To enable autocompletion, source the script in your shell session:
-
-- **Temporary (Current Session)**:
-
-  ```bash
-  source sbomqs_completion.sh
-  ```
-
-- **Permanent (All Sessions)**:
-
-  - Move the script to a directory in your shell’s path:
-
-    ```bash
-    mv sbomqs_completion.sh ~/.zsh/  # For Zsh, or ~/.bash/ for Bash
-    ```
-
-  - Add it to your shell configuration:
-    - **Bash**: Edit `~/.bashrc` or `~/.bash_profile`:
-  
-      ```bash
-      echo "source ~/.bash/sbomqs_completion.sh" >> ~/.bashrc
-      source ~/.bashrc
-      ```
-
-    - **Zsh**: Edit `~/.zshrc`:
-
-      ```bash
-      echo "source ~/.zsh/sbomqs_completion.sh" >> ~/.zshrc
-      source ~/.zshrc
-      ```
-
-For Zsh, ensure completion is initialized by adding `autoload -Uz compinit && compinit` to `~/.zshrc` if not already present.
-
-Run the following command and press `<Tab>`:
+Use the `features` subcommand to browse all available features, organized by profile section:
 
 ```bash
-sbomqs list --feature=<Tab>
+# List all features across all profiles
+sbomqs features
+
+# List features for a specific profile
+sbomqs features --profile bsiv21
+sbomqs features --profile ntia
+sbomqs features --profile interlynk
 ```
 
-### Flags
+## Profile Mode vs Generic Mode
 
-- `--features, -f <feature>`: Specifies the feature to list (required). See supported features below.
-- `--missing, -m`: Lists components or properties that do not have the specified feature (default: false).
-- `--basic, -b`: Outputs results in a single-line format (default: false).
-- `--detailed, -d`: Outputs results in a detailed table format (default: true).
-- `--json, -j`: Outputs results in JSON format (default: false).
-- `--color, -l`: Enables colored output for the detailed format (default: false).
-- `--debug, -D`: Enables debug logging (default: false).
+### Generic mode (no `--profile`)
 
-### Supported Features
+Without `--profile`, the command uses the generic feature registry. These features work across all SBOM formats and compliance contexts.
 
-The list command supports the following features, categorized into **component-based** (`comp_`) and **SBOM-based** (`sbom_`) features:
+**SBOM-level generic features:**
 
-### Supported Component features (canonical + aliases): "comp_"
+| Feature | Description |
+|---------|-------------|
+| `sbom_authors` | SBOM authors/creators |
+| `sbom_timestamp` | SBOM creation timestamp |
+| `sbom_tool` | Tool that generated the SBOM (name + version) |
+| `sbom_spec` | SBOM specification type (cyclonedx / spdx) |
+| `sbom_spec_version` | SBOM specification version |
+| `sbom_file_format` | SBOM file format (json / xml / tag-value) |
+| `sbom_uri` | SBOM unique URI or namespace |
+| `sbom_primary_comp` | Primary component name and version |
+| `sbom_schema_valid` | Whether the SBOM validates against its schema |
+| `sbom_dependencies` | SBOM-level dependency graph summary |
+| `sbom_organization` | SBOM organization metadata |
+| `sbom_build` | SBOM build / lifecycle metadata |
+| `sbom_with_vuln` | Whether the SBOM contains vulnerability entries |
 
-| Canonical Feature | Aliases | Description |
-|-------------------|---------|-------------|
-| comp_with_name | comp_name | Component has a name. |
-| comp_with_version | comp_version | Component has a version. |
-| comp_with_supplier | comp_supplier | Component has a supplier. |
-| comp_with_uniq_ids | — | Component has one or more unique IDs. |
-| comp_valid_licenses | comp_license | Component has valid/normalized licenses. |
-| comp_with_licenses | comp_with_valid_licenses | Component has license expressions. |
-| comp_with_any_vuln_lookup_id | — | Has at least one vuln lookup ID. |
-| comp_with_multi_vuln_lookup_id | — | Has multiple vuln lookup IDs. |
-| comp_with_deprecated_licenses | comp_no_deprecated_licenses | Deprecated licenses present. |
-| comp_with_restrictive_licenses | comp_no_restrictive_licenses | Restrictive licenses present. |
-| comp_with_primary_purpose | comp_with_purpose<br>comp_purpose | Purpose / type is set. |
-| comp_with_checksums | comp_hash | Component has checksums. |
-| comp_with_checksums_sha256 | — | Contains SHA-256 checksum. |
-| comp_with_sha256 | comp_hash_sha256 | SHA-256 hash found. |
-| comp_with_source_code_uri | comp_with_source_code<br>comp_source_code_uri | Has source code URI. |
-| comp_with_source_code_hash | comp_source_hash | Has source code hash. |
-| comp_with_executable_uri | — | Has executable URI. |
-| comp_with_associated_license | comp_associated_license | Has associated license. |
-| comp_with_concluded_license | — | Has concluded license. |
-| comp_with_declared_license | comp_with_declared_licenses | Has declared license(s). |
-| comp_with_dependencies | comp_dependencies<br>comp_depth | Has dependencies. |
-| comp_with_purl | comp_purl | Has PURL. |
-| comp_with_cpe | comp_cpe | Has CPE. |
+**Component-level generic features:**
 
-### Supported SBOM features (canonical + aliases): "sbom_"
+| Feature | Description |
+|---------|-------------|
+| `comp_name` | Component name |
+| `comp_version` | Component version |
+| `comp_supplier` | Component supplier or manufacturer (with fallback) |
+| `comp_author` | Component authors (name, email) |
+| `comp_external_refs` | All external references as "type: locator" |
+| `comp_license` | All licenses: concluded and declared, labeled by type |
+| `comp_depth` | Direct dependency names, or "leaf component" if none |
+| `comp_with_uniq_ids` | All unique identifiers: PURL, CPE, SWHID, SWID, OmniBOR |
+| `comp_purl` | Component PURL |
+| `comp_cpe` | Component CPE |
+| `comp_hash` | Component checksum value |
+| `comp_purpose` | Component purpose / type |
+| `comp_with_source_code_uri` | Component source code URI |
+| `comp_with_executable_uri` | Component executable / download URI |
+| `comp_source_hash` | Source code hash |
 
-| Canonical Feature | Aliases | Description |
-|-------------------|---------|-------------|
-| sbom_creation_timestamp | sbom_timestamp | SBOM has a creation timestamp. |
-| sbom_authors | sbom_creator | SBOM has authors/creators. |
-| sbom_with_creator_and_version | sbom_tool | Includes creator + version. |
-| sbom_with_primary_component | sbom_primary_component | Has primary component. |
-| sbom_dependencies | sbom_depth | Dependency relationships available. |
-| sbom_sharable | — | Sharable license information. |
-| sbom_parsable | — | SBOM is syntactically parsable. |
-| sbom_spec | sbom_spec_declared<br>sbom_name | Declared SBOM spec. |
-| sbom_file_format | sbom_spec_file_format<br>sbom_machine_format | File/machine format (JSON/XML/etc). |
-| sbom_spec_version | — | Declared spec version. |
-| spec_with_version_compliant | — | Spec + version are compliant. |
-| sbom_with_uri | sbom_uri | Has URI. |
-| sbom_with_vuln | sbom_vulnerabilities | Has vulnerability information. |
-| sbom_build_process | sbom_build | Build process metadata. |
-| sbom_with_bomlinks | sbom_bomlinks | BOM-Link references present. |
-| sbom_spdxid | — | Document-level SPDXID present. |
-| sbom_organization | — | Producing/owning organization given. |
-| sbom_schema_valid | — | Schema validation is successful. |
+---
+
+### Profile mode (`--profile <profile>`)
+
+When `--profile` is specified, feature extraction follows the rules of that compliance standard. Each profile has its own feature keys that reflect the field names and semantics of the underlying spec.
+
+#### BSI TR-03183-2 v1.1 (`--profile bsiv11`) — 13 features
+
+| Feature | Level | Description |
+|---------|-------|-------------|
+| `sbom_creator` | SBOM | SBOM creator contact (email or URL) |
+| `sbom_timestamp` | SBOM | SBOM creation timestamp |
+| `sbom_uri` | SBOM | SBOM URI |
+| `comp_creator` | Component | Component creator contact |
+| `comp_name` | Component | Component name |
+| `comp_version` | Component | Component version |
+| `comp_depth` | Component | Dependency relationships |
+| `comp_license` | Component | License (concluded preferred, declared fallback) |
+| `comp_hash` | Component | Component hash (any algorithm) |
+| `comp_unique_identifiers` | Component | Unique identifiers (PURL, CPE) |
+| `comp_source_url` | Component | Source code URL |
+| `comp_executable_url` | Component | Executable / download URL |
+| `comp_source_hash` | Component | Source code hash |
+
+#### BSI TR-03183-2 v2.0 (`--profile bsiv20`) — 16 features
+
+| Feature | Level | Tier | Description |
+|---------|-------|------|-------------|
+| `sbom_creator` | SBOM | Required | SBOM creator contact |
+| `sbom_timestamp` | SBOM | Required | SBOM creation timestamp |
+| `sbom_uri` | SBOM | Required | SBOM URI |
+| `comp_creator` | Component | Required | Component creator contact |
+| `comp_name` | Component | Required | Component name |
+| `comp_version` | Component | Required | Component version |
+| `comp_filename` | Component | Required | Filename of the component |
+| `comp_depth` | Component | Required | Dependency relationships |
+| `comp_associated_license` | Component | Required | Distribution licence |
+| `comp_deployable_hash` | Component | Required | Hash of the deployable component |
+| `comp_executable_property` | Component | Required | Executable property flag |
+| `comp_archive_property` | Component | Required | Archive property flag |
+| `comp_structured_property` | Component | Required | Structured property flag |
+| `comp_source_code_url` | Component | Additional | Source code URL |
+| `comp_download_url` | Component | Additional | Deployable download URL |
+| `comp_other_identifiers` | Component | Additional | Other unique identifiers |
+| `comp_concluded_license` | Component | Additional | Concluded licence |
+| `comp_declared_license` | Component | Optional | Declared licence |
+| `comp_source_hash` | Component | Optional | Source code hash |
+
+#### BSI TR-03183-2 v2.1 (`--profile bsiv21`) — 21 features
+
+| Feature | Level | Tier | Description |
+|---------|-------|------|-------------|
+| `sbom_spec_version` | SBOM | Required | Spec version (CycloneDX ≥ 1.6 / SPDX ≥ 3.0.1) |
+| `sbom_creator` | SBOM | Required | SBOM creator contact |
+| `sbom_timestamp` | SBOM | Required | SBOM creation timestamp |
+| `sbom_uri` | SBOM | Additional | SBOM URI |
+| `comp_creator` | Component | Required | Component creator contact |
+| `comp_name` | Component | Required | Component name |
+| `comp_version` | Component | Required | Component version |
+| `comp_filename` | Component | Required | Filename of the component |
+| `comp_depth` | Component | Required | Dependency relationships |
+| `comp_distribution_license` | Component | Required | Distribution licence |
+| `comp_deployable_hash` | Component | Required | SHA-512 hash of the deployable |
+| `comp_executable_prop` | Component | Required | Executable property flag |
+| `comp_archive_prop` | Component | Required | Archive property flag |
+| `comp_structured_prop` | Component | Required | Structured property flag |
+| `comp_source_code_url` | Component | Additional | Source code URL |
+| `comp_download_url` | Component | Additional | Deployable download URL |
+| `comp_other_identifiers` | Component | Additional | Other unique identifiers |
+| `comp_original_licenses` | Component | Additional | Original (declared) licences |
+| `comp_effective_license` | Component | Optional | Effective licence |
+| `comp_source_hash` | Component | Optional | Source code hash |
+| `comp_security_txt_url` | Component | Optional | security.txt URL |
+
+#### NTIA 2021 (`--profile ntia`) — 7 features
+
+| Feature | Level | Description |
+|---------|-------|-------------|
+| `sbom_authors` | SBOM | SBOM authors / suppliers |
+| `sbom_relationships` | SBOM | Dependency relationship coverage |
+| `sbom_timestamp` | SBOM | SBOM creation timestamp |
+| `comp_supplier` | Component | Component supplier |
+| `comp_name` | Component | Component name |
+| `comp_version` | Component | Component version |
+| `comp_uniq_id` | Component | Unique identifier (PURL or CPE) |
+
+#### FSCT (`--profile fsct`) — 9 features
+
+| Feature | Level | Description |
+|---------|-------|-------------|
+| `sbom_provenance` | SBOM | SBOM authorship / provenance |
+| `sbom_primary_component` | SBOM | Primary component declared |
+| `relationships_coverage` | SBOM | Completeness of dependency relationships |
+| `comp_identity` | Component | Component identifiable by name + version |
+| `supplier_attribution` | Component | Supplier attribution present |
+| `comp_unique_id` | Component | Unique identifier (PURL or CPE) |
+| `artifact_integrity` | Component | Checksum / hash present |
+| `license_coverage` | Component | License information present |
+| `copyright_coverage` | Component | Copyright information present |
+
+#### Interlynk (`--profile interlynk`) — 29 features
+
+| Feature | Level | Section | Description |
+|---------|-------|---------|-------------|
+| `comp_name` | Component | Identification | Component name |
+| `comp_version` | Component | Identification | Component version |
+| `comp_local_id` | Component | Identification | Local unique identifier |
+| `sbom_timestamp` | SBOM | Provenance | SBOM creation timestamp |
+| `sbom_authors` | SBOM | Provenance | SBOM authors |
+| `sbom_tool` | SBOM | Provenance | Tool that generated the SBOM |
+| `sbom_supplier` | SBOM | Provenance | SBOM supplier (CycloneDX only) |
+| `sbom_namespace` | SBOM | Provenance | SBOM namespace / URI |
+| `sbom_lifecycle` | SBOM | Provenance | Lifecycle phase (CycloneDX only) |
+| `comp_checksums` | Component | Integrity | Component has checksums |
+| `comp_sha256` | Component | Integrity | SHA-256 checksum present |
+| `sbom_signature` | SBOM | Integrity | SBOM digital signature (CycloneDX only) |
+| `comp_dependencies` | Component | Completeness | Dependency declarations |
+| `sbom_completeness` | SBOM | Completeness | Dependency completeness (SPDX only) |
+| `sbom_primary_component` | SBOM | Completeness | Primary component declared |
+| `comp_source_code` | Component | Completeness | Source code reference |
+| `comp_supplier` | Component | Completeness | Component supplier |
+| `comp_purpose` | Component | Completeness | Component purpose / type |
+| `comp_licenses` | Component | Licensing | License expressions |
+| `comp_valid_licenses` | Component | Licensing | Valid SPDX license identifiers |
+| `comp_no_deprecated_licenses` | Component | Licensing | No deprecated licenses |
+| `comp_no_restrictive_licenses` | Component | Licensing | No restrictive licenses |
+| `comp_declared_licenses` | Component | Licensing | Declared (original) licenses |
+| `sbom_data_license` | SBOM | Licensing | SBOM data license |
+| `comp_purl` | Component | Vulnerability | Component PURL |
+| `comp_cpe` | Component | Vulnerability | Component CPE |
+| `sbom_spec_declared` | SBOM | Structural | SBOM spec declared |
+| `sbom_spec_version` | SBOM | Structural | SBOM spec version |
+| `sbom_file_format` | SBOM | Structural | SBOM file format |
+| `sbom_schema_valid` | SBOM | Structural | Schema validation |
+
+---
 
 ## Examples
 
-### 1. List Components with Suppliers (Basic Format)
+### List components with their suppliers (generic, detailed)
 
 ```bash
-$ sbomqs list --features comp_with_supplier --basic samples/photon.spdx.json
-
-samples/photon.spdx.json:	 comp_with_supplier 	(present):	 0/39 components
+sbomqs list --feature comp_supplier samples/photon.spdx.json
 ```
 
-### 2. List Components Missing Suppliers (Detailed Format)
+### Find components missing suppliers
 
 ```bash
-$ sbomqs list --features comp_with_supplier --missing samples/photon.spdx.json
-
-File: samples/photon.spdx.json
-Feature: comp_with_supplier (missing)
-+----------------------------+-----------------+-----------------+
-| Feature                    | Component Name  | Version         |
-+----------------------------+-----------------+-----------------+
-| comp_with_supplier (39/39) | abc             | v1              |
-|                            | abe             | v2              |
-|                            | abf             | v3              |
-|                            | abg             | v4              |
-|                            | abh             | v5              |
-|                            | abi             | v6              |
-|                            | abz             | v26             |
-+----------------------------+-----------------+-----------------+
+sbomqs list --feature comp_supplier --missing samples/photon.spdx.json
 ```
 
-### 3. List SBOM Authors (JSON Format)
+### Show actual supplier values
 
 ```bash
-$ sbomqs list --features sbom_authors --json samples/photon.spdx.json
-
-{
-  "run_id": "8af142e2-822f-4005-9612-42ddeb9394bf",
-  "timestamp": "2025-04-03T10:00:00Z",
-  "creation_info": {
-    "name": "sbomqs",
-    "version": "v1.0.0",
-    "vendor": "Interlynk (support@interlynk.io)"
-  },
-  "files": [
-    {
-      "file_name": "samples/photon.spdx.json",
-      "feature": "sbom_authors",
-      "missing": false,
-      "document_property": {
-        "property": "Authors",
-        "value": "John Doe",
-        "present": true
-      },
-      "errors": []
-    }
-  ]
-}
+sbomqs list --feature comp_supplier --show samples/photon.spdx.json
 ```
+
+### Show all license values per component
+
+```bash
+sbomqs list --feature comp_license --show samples/photon.spdx.json
+```
+
+### List all external references per component
+
+```bash
+sbomqs list --feature comp_external_refs --show samples/photon.spdx.json
+```
+
+### Show unique identifiers (PURL, CPE, SWHID, SWID)
+
+```bash
+sbomqs list --feature comp_with_uniq_ids --show samples/photon.spdx.json
+```
+
+### Inspect a BSI v2.1 field
+
+```bash
+# Show deployable hash for all components
+sbomqs list --profile bsiv21 --feature comp_deployable_hash --show samples/app.cdx.json
+
+# Find components missing the distribution licence
+sbomqs list --profile bsiv21 --feature comp_distribution_license --missing samples/app.cdx.json
+```
+
+### NTIA compliance field inspection
+
+```bash
+# Find components without a unique identifier
+sbomqs list --profile ntia --feature comp_uniq_id --missing samples/app.spdx.json
+```
+
+### Interlynk profile field inspection
+
+```bash
+# Show all component PURLs
+sbomqs list --profile interlynk --feature comp_purl --show samples/app.cdx.json
+
+# Find components missing declared licenses
+sbomqs list --profile interlynk --feature comp_declared_licenses --missing samples/app.cdx.json
+```
+
+### JSON output
+
+```bash
+sbomqs list --feature comp_supplier --json samples/photon.spdx.json
+```
+
+### Basic (single-line) output
+
+```bash
+sbomqs list --feature comp_supplier --basic samples/photon.spdx.json
+```
+
+---
 
 ## Notes
 
-- The `--missing` flag is particularly useful for identifying gaps in your SBOM, such as components missing suppliers or licenses, helping you improve compliance and quality.
-- The `list` command supports the same input sources as the score command: local files, directories, and GitHub URLs.
+- `--feature` accepts a single feature name. Use `sbomqs features` or `sbomqs features --profile <profile>` to discover valid names.
+- When `--profile` is given, only feature keys defined for that profile are accepted. Using a generic key with a profile (or vice versa) will return a validation error listing the supported features.
+- The `--missing` flag inverts the output — useful for finding gaps before remediation.
+- The `--show` flag adds the actual field value to the output, not just presence/absence.
+- FSCT feature keys (`supplier_attribution`, `artifact_integrity`, etc.) do not follow the `comp_`/`sbom_` prefix convention — they are routed correctly when `--profile fsct` is used.
+- Some Interlynk profile features are CycloneDX-only: `sbom_supplier`, `sbom_lifecycle`, `sbom_signature`, `sbom_completeness`. On SPDX documents these return "not supported in SPDX".
