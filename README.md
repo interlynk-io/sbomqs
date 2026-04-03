@@ -9,6 +9,10 @@
 
 > "sbomqs is listed as a relevant tool in the SBOM ecosystem" - [SBOM Generation White Paper, 2025](https://github.com/SBOM-Community/SBOM-Generation)
 
+## Interlynk Free Tier — Full SBOM Compliance, Zero Friction
+
+Get started with SBOM compliance in under two minutes — no credit card, no time limit. Interlynk's free plan includes a guided setup where you pick your compliance standard (CRA/EU, FDA Cybersecurity, NTIA, or Telecom), upload your SBOM, and instantly see your compliance score with actionable gaps highlighted. You get compliance scoring against one standard, up to 5 products with 5 versions each, unlimited users, built-in vulnerability detection, API access for CI/CD integration, weekly compliance digests, and ShareLynk — a public link to share your compliance posture with customers and partners. Everything beyond the free tier is visible with a clear upgrade path, and you can start a 15-day Enterprise trial anytime to unlock unlimited products, SBOM automation, RBAC, analytics, license management, and workflow integrations. [**Get Started Free →**](https://app.interlynk.io)
+
 ## Quick Start
 
 ```bash
@@ -156,15 +160,6 @@ For more examples, refer here: <https://github.com/interlynk-io/sbomqs/blob/main
 - **Financial Services**: Support DORA and PCI DSS software transparency requirements
 - **Telecommunications**: Ensure critical infrastructure security with OpenChain Telco
 - **Enterprise Software**: Manage supply chain risk with comprehensive quality metrics
-
-## SBOM Platform - Free Community Tier 
-
-Our SBOM Automation Platform has a free community tier that provides a comprehensive solution to manage SBOMs (Software Bill of Materials) effortlessly. From centralized SBOM storage, built-in SBOM editor, vulnerability mapping and assessment, all while ensuring compliance and enhancing software supply chain security using integrated SBOM quality scores. The community tier is ideal for small teams. Learn more [here](https://www.interlynk.io/community-tier) or [Sign up](https://app.interlynk.io/auth)
-
-## SBOM Card
-
-[![SBOMCard](https://api.interlynk.io/api/v1/badges.svg?type=hcard&project_group_id=7f52093e-3d78-49cb-aeb1-6c977de9442e
-)](https://app.interlynk.io/customer/products?id=7f52093e-3d78-49cb-aeb1-6c977de9442e&signed_url_params=eyJfcmFpbHMiOnsibWVzc2FnZSI6IklqUmhPRGRoTjJNNExXSXpZekl0TkdVeE9TMDVNRGxoTFRKbFpHRmlPR1ZoWldReVl5ST0iLCJleHAiOm51bGwsInB1ciI6InNoYXJlX2x5bmsvc2hhcmVfbHluayJ9fQ==--daf6585ecf8013a0b2713a5cebb28c140d29eed904b15c84c0566b9ddd334e71)
 
 ## Contributions
 
