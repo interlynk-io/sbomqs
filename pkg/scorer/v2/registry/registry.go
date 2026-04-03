@@ -536,7 +536,7 @@ func filterCategories(ctx context.Context, categories []string) []catalog.ComprC
 		case "structural":
 			finalCats = append(finalCats, CatStructuralSpec)
 
-		case "compinfo":
+		case "compinfo", "cinfo":
 			finalCats = append(finalCats, CatComponentQualityInfoSpec)
 
 		default:

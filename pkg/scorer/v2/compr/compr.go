@@ -21,14 +21,13 @@ import (
 	"context"
 
 	"github.com/interlynk-io/sbomqs/v2/pkg/logger"
-	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/api"
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/catalog"
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/formulae"
 	"go.uber.org/zap"
 )
 
-func Evaluate(ctx context.Context, catal *catalog.Catalog, doc sbom.Document) api.ComprehensiveResult {
+func Evaluate(ctx context.Context, catal *catalog.Catalog, input catalog.EvalInput) api.ComprehensiveResult {
 	log := logger.FromContext(ctx)
 
 	log.Info("Starting comprehensive SBOM evaluation",
@@ -39,7 +38,7 @@ func Evaluate(ctx context.Context, catal *catalog.Catalog, doc sbom.Document) ap
 	results.CatResult = make([]api.CategoryResult, 0, len(catal.ComprCategories))
 
 	for _, category := range catal.ComprCategories {
-		catResult := evaluateEachCategory(ctx, doc, category)
+		catResult := evaluateEachCategory(ctx, input, category)
 		results.CatResult = append(results.CatResult, catResult)
 	}
 
@@ -53,7 +52,7 @@ func Evaluate(ctx context.Context, catal *catalog.Catalog, doc sbom.Document) ap
 	return results
 }
 
-func evaluateEachCategory(ctx context.Context, doc sbom.Document, category catalog.ComprCatSpec) api.CategoryResult {
+func evaluateEachCategory(ctx context.Context, input catalog.EvalInput, category catalog.ComprCatSpec) api.CategoryResult {
 	log := logger.FromContext(ctx)
 
 	log.Debug("Evaluating category",
@@ -66,7 +65,7 @@ func evaluateEachCategory(ctx context.Context, doc sbom.Document, category catal
 	catResult.Features = make([]api.FeatureResult, 0, len(category.Features))
 
 	for _, featSpec := range category.Features {
-		catResult.Features = append(catResult.Features, evaluateFeature(doc, featSpec))
+		catResult.Features = append(catResult.Features, evaluateFeature(ctx, input, featSpec))
 	}
 
 	catResult.Score = formulae.ComputeCategoryScore(catResult.Features)
@@ -81,12 +80,10 @@ func evaluateEachCategory(ctx context.Context, doc sbom.Document, category catal
 	return catResult
 }
 
-func evaluateFeature(doc sbom.Document, comprFeat catalog.ComprFeatSpec) api.FeatureResult {
-
+func evaluateFeature(ctx context.Context, input catalog.EvalInput, comprFeat catalog.ComprFeatSpec) api.FeatureResult {
 	comprFeatResult := api.NewComprFeatResult(comprFeat)
 
-	// evaluate feature
-	res := comprFeat.Evaluate(doc)
+	res := comprFeat.Evaluate(ctx, input)
 
 	comprFeatResult.Score = res.Score
 	comprFeatResult.Desc = res.Desc

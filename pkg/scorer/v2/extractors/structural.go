@@ -18,6 +18,7 @@
 package extractors
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -27,7 +28,8 @@ import (
 )
 
 // SBOMWithSpec check for SBOM spec
-func SBOMWithSpec(doc sbom.Document) catalog.ComprFeatScore {
+func SBOMWithSpec(_ context.Context, input catalog.EvalInput) catalog.ComprFeatScore {
+	doc := input.Doc
 	spec := strings.TrimSpace(strings.ToLower(doc.Spec().GetSpecType()))
 
 	if spec == "" {
@@ -56,7 +58,8 @@ func SBOMWithSpec(doc sbom.Document) catalog.ComprFeatScore {
 }
 
 // SBOMSpecVersion: version supported for this spec?
-func SBOMSpecVersion(doc sbom.Document) catalog.ComprFeatScore {
+func SBOMSpecVersion(_ context.Context, input catalog.EvalInput) catalog.ComprFeatScore {
+	doc := input.Doc
 	spec := strings.TrimSpace(strings.ToLower(doc.Spec().GetSpecType()))
 	ver := strings.TrimSpace(doc.Spec().GetVersion())
 
@@ -96,7 +99,8 @@ func SBOMSpecVersion(doc sbom.Document) catalog.ComprFeatScore {
 }
 
 // SBOMFileFormat: file format supported for this spec?
-func SBOMFileFormat(doc sbom.Document) catalog.ComprFeatScore {
+func SBOMFileFormat(_ context.Context, input catalog.EvalInput) catalog.ComprFeatScore {
+	doc := input.Doc
 	spec := strings.TrimSpace(strings.ToLower(doc.Spec().GetSpecType()))
 	format := strings.TrimSpace(strings.ToLower(doc.Spec().FileFormat()))
 
@@ -127,7 +131,8 @@ func SBOMFileFormat(doc sbom.Document) catalog.ComprFeatScore {
 }
 
 // SBOMSchemaValid: validate document against official schema for its spec/version.
-func SBOMSchemaValid(doc sbom.Document) catalog.ComprFeatScore {
+func SBOMSchemaValid(_ context.Context, input catalog.EvalInput) catalog.ComprFeatScore {
+	doc := input.Doc
 	if doc.SchemaValidation() {
 		return catalog.ComprFeatScore{
 			Score:  formulae.BooleanScore(true),

@@ -24,6 +24,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/interlynk-io/sbomqs/v2/pkg/interlynkapi"
 	"github.com/interlynk-io/sbomqs/v2/pkg/logger"
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/api"
@@ -210,9 +211,29 @@ func SBOMEvaluation(ctx context.Context, catal *catalog.Catalog, cfg config.Conf
 	log := logger.FromContext(ctx)
 	log.Debug("Selecting SBOM evaluation strategy")
 
+	// Build the evaluation input. ComponentQuality is populated only when an
+	// Interlynk URL is configured, the API call succeeds, AND the catalog
+	// actually includes the Component Quality category. Without all three
+	// conditions the API call would be a no-op: profiles-only evaluation never
+	// reads input.ComponentQuality, and a category-filtered run that excludes
+	// compinfo has no extractors that consume it.
+	input := catalog.EvalInput{Doc: doc}
+	if cfg.InterlynkURL != "" && isCompQualityPresent(catal) {
+		client := interlynkapi.NewClient(cfg.InterlynkURL, cfg.InterlynkAPIKey)
+		qResult, err := client.FetchComponentQuality(ctx, doc.Components())
+		if err != nil {
+			log.Warn("Component quality API call failed; continuing without component quality scores",
+				zap.String("url", cfg.InterlynkURL),
+				zap.Error(err),
+			)
+		} else {
+			input.ComponentQuality = qResult
+		}
+	}
+
 	if catal.Profiles != nil && catal.ComprCategories != nil {
 		log.Debug("Running comprehensive and profile evaluation")
-		return evaluateBoth(ctx, catal, doc)
+		return evaluateBoth(ctx, catal, input)
 
 	} else if catal.Profiles != nil {
 		log.Debug("Running profile-based evaluation")
@@ -220,7 +241,7 @@ func SBOMEvaluation(ctx context.Context, catal *catalog.Catalog, cfg config.Conf
 	}
 
 	log.Debug("Running comprehensive evaluation")
-	return evaluateComprehensive(ctx, catal, doc)
+	return evaluateComprehensive(ctx, catal, input)
 }
 
 // evaluateProfiles computes profile-based results for the given SBOM document.
@@ -241,33 +262,45 @@ func evaluateProfiles(ctx context.Context, catal *catalog.Catalog, doc sbom.Docu
 	return *result, nil
 }
 
-func evaluateComprehensive(ctx context.Context, catal *catalog.Catalog, doc sbom.Document) (api.Result, error) {
-	// Comprehensive Scoring
+func evaluateComprehensive(ctx context.Context, catal *catalog.Catalog, input catalog.EvalInput) (api.Result, error) {
 	log := logger.FromContext(ctx)
 	log.Debug("Evaluating comprehensive scoring",
 		zap.Int("total_categories", len(catal.ComprCategories)),
 	)
 
-	result := api.NewResult(doc)
+	result := api.NewResult(input.Doc)
 
-	comprResult := compr.Evaluate(ctx, catal, doc)
+	comprResult := compr.Evaluate(ctx, catal, input)
 	result.Comprehensive = &comprResult
 
 	return *result, nil
 }
 
-func evaluateBoth(ctx context.Context, catal *catalog.Catalog, doc sbom.Document) (api.Result, error) {
-	// Comprehensive Scoring
+func evaluateBoth(ctx context.Context, catal *catalog.Catalog, input catalog.EvalInput) (api.Result, error) {
 	log := logger.FromContext(ctx)
 	log.Debug("Evaluating comprehensive and profile scoring")
 
-	result := api.NewResult(doc)
+	result := api.NewResult(input.Doc)
 
-	profResults := profiles.Evaluate(ctx, catal, doc)
+	profResults := profiles.Evaluate(ctx, catal, input.Doc)
 	result.Profiles = &profResults
 
-	comprResult := compr.Evaluate(ctx, catal, doc)
+	comprResult := compr.Evaluate(ctx, catal, input)
 	result.Comprehensive = &comprResult
 
 	return *result, nil
+}
+
+// isCompQualityPresent reports whether the catalog's comprehensive
+// categories include the Component Quality category. The API call is
+// skipped when this returns false: profiles-only evaluation never reads
+// input.ComponentQuality, and category-filtered runs that exclude compinfo
+// have no extractors that consume it.
+func isCompQualityPresent(catal *catalog.Catalog) bool {
+	for _, cat := range catal.ComprCategories {
+		if cat.Key == registry.CatComponentQualityInfoSpec.Key {
+			return true
+		}
+	}
+	return false
 }

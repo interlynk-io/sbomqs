@@ -19,6 +19,7 @@
 package extractors
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"time"
@@ -32,7 +33,8 @@ import (
 
 // SBOMCreationTime: document has a valid ISO-8601 timestamp (RFC3339/RFC3339Nano).
 // `Created` for SPDX and `metadata.timestamp` for CDX
-func SBOMCreationTimestamp(doc sbom.Document) catalog.ComprFeatScore {
+func SBOMCreationTimestamp(_ context.Context, input catalog.EvalInput) catalog.ComprFeatScore {
+	doc := input.Doc
 	ts := strings.TrimSpace(doc.Spec().GetCreationTimestamp())
 	if ts == "" {
 		return catalog.ComprFeatScore{
@@ -62,7 +64,8 @@ func SBOMCreationTimestamp(doc sbom.Document) catalog.ComprFeatScore {
 
 // SBOMAuthor represents an legal entity created an SBOM.
 // SPDX: Creator.(Person/Organization); CDX: metadata.(authors/author)
-func SBOMAuthors(doc sbom.Document) catalog.ComprFeatScore {
+func SBOMAuthors(_ context.Context, input catalog.EvalInput) catalog.ComprFeatScore {
+	doc := input.Doc
 	if commonV2.IsSBOMAuthorEntity(doc) {
 		return catalog.ComprFeatScore{
 			Score:  formulae.BooleanScore(true),
@@ -80,7 +83,8 @@ func SBOMAuthors(doc sbom.Document) catalog.ComprFeatScore {
 
 // SBOMCreationTool: tool name AND version(represents complete tool) present for at least one tool.
 // SPDX: Creator.Tool; CDX: metadata.tools/tool
-func SBOMCreationTool(doc sbom.Document) catalog.ComprFeatScore {
+func SBOMCreationTool(_ context.Context, input catalog.EvalInput) catalog.ComprFeatScore {
+	doc := input.Doc
 	tools := doc.Tools()
 	if len(tools) == 0 {
 		return catalog.ComprFeatScore{
@@ -142,7 +146,8 @@ func SBOMCreationTool(doc sbom.Document) catalog.ComprFeatScore {
 // SBOMSupplier: CDX-only (supplier/manufacturer in metadata).
 // SPDX has no doc-level supplier,  N/A for SPDX.
 // For CDX: missing supplier is a FAIL (score 0, Ignore=false).
-func SBOMSupplier(doc sbom.Document) catalog.ComprFeatScore {
+func SBOMSupplier(_ context.Context, input catalog.EvalInput) catalog.ComprFeatScore {
+	doc := input.Doc
 	spec := doc.Spec().GetSpecType()
 
 	switch spec {
@@ -186,7 +191,8 @@ func SBOMSupplier(doc sbom.Document) catalog.ComprFeatScore {
 
 // SBOMNamespace: required for both specs.
 // SPDX: document namespace; CDX: serialNumber/version.
-func SBOMNamespace(doc sbom.Document) catalog.ComprFeatScore {
+func SBOMNamespace(_ context.Context, input catalog.EvalInput) catalog.ComprFeatScore {
+	doc := input.Doc
 	spec := doc.Spec().GetSpecType()
 
 	switch spec {
@@ -231,7 +237,8 @@ func SBOMNamespace(doc sbom.Document) catalog.ComprFeatScore {
 }
 
 // SBOMLifeCycle: CDX-only (metadata.lifecycles/phase). N/A for SPDX.
-func SBOMLifeCycle(doc sbom.Document) catalog.ComprFeatScore {
+func SBOMLifeCycle(_ context.Context, input catalog.EvalInput) catalog.ComprFeatScore {
+	doc := input.Doc
 	spec := doc.Spec().GetSpecType()
 
 	switch spec {
