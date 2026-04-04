@@ -111,6 +111,15 @@ sbomqs list my-app.spdx.json --feature comp_with_version --missing
 
 # Components without suppliers
 sbomqs list my-app.spdx.json --feature comp_with_supplier --missing
+
+# Show actual supplier values for all components
+sbomqs list my-app.spdx.json --feature comp_supplier --show
+
+# Inspect a compliance profile field (e.g. BSI v2.1 deployable hash)
+sbomqs list --profile bsiv21 --feature comp_deployable_hash --missing my-app.cdx.json
+
+# Browse all features supported by a profile
+sbomqs features --profile ntia
 ```
 
 ### Share Results

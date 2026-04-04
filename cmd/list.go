@@ -23,6 +23,7 @@ import (
 	"strings"
 
 	"github.com/interlynk-io/sbomqs/v2/pkg/engine"
+	"github.com/interlynk-io/sbomqs/v2/pkg/list"
 	"github.com/interlynk-io/sbomqs/v2/pkg/logger"
 	"github.com/spf13/cobra"
 )
@@ -54,21 +55,36 @@ var listCmd = &cobra.Command{
 	Use:          "list",
 	Short:        "List components or SBOM properties based on feature",
 	SilenceUsage: true,
-	Example: `  sbomqs list --feature <feature> --option <path-to-sbom-file>
+	Example: `  sbomqs list --feature <feature> [flags] <path-to-sbom-file>
 
-  # List all components with suppliers
-  sbomqs list --feature comp_with_supplier samples/sbomqs-spdx-syft.json
+  # Show all components with a supplier
+  sbomqs list --feature comp_supplier my-app.spdx.json
 
-  # List all components missing suppliers
-  sbomqs list --feature comp_with_supplier --missing samples/sbomqs-spdx-syft.json
+  # Show components missing a supplier
+  sbomqs list --feature comp_supplier --missing my-app.spdx.json
 
-  # List all components with valid licenses
-  sbomqs list --feature comp_valid_licenses samples/sbomqs-spdx-syft.json
+  # Show the actual supplier value for every component
+  sbomqs list --feature comp_supplier --show my-app.spdx.json
 
-  # List all components with invalid licenses
-  sbomqs list --feature comp_valid_licenses --missing samples/sbomqs-spdx-syft.json
+  # Show components missing a version
+  sbomqs list --feature comp_version --missing my-app.spdx.json
 
-  Supporter features are listed here: https://github.com/interlynk-io/sbomqs/v2/blob/main/docs/commands/list.md#supported-features
+  # Show components with valid licenses
+  sbomqs list --feature comp_valid_licenses my-app.spdx.json
+
+  # Show components with invalid/missing licenses
+  sbomqs list --feature comp_valid_licenses --missing my-app.spdx.json
+
+  # Use a compliance profile (bsi = latest BSI v2.1)
+  sbomqs list --profile bsi --feature comp_name my-app.cdx.json
+  sbomqs list --profile ntia --feature comp_supplier --missing my-app.spdx.json
+  sbomqs list --profile bsiv21 --feature comp_deployable_hash --missing my-app.cdx.json
+
+  # Browse features supported by a profile
+  sbomqs features --profile bsi
+  sbomqs features --profile ntia
+
+  All supported features: https://github.com/interlynk-io/sbomqs/blob/main/docs/commands/list.md#supported-features
 `,
 
 	Args: func(cmd *cobra.Command, args []string) error {
@@ -117,7 +133,7 @@ func parseListParams(cmd *cobra.Command, args []string) *userListCmd {
 	uCmd.missing = missing
 
 	profile, _ := cmd.Flags().GetString("profile")
-	uCmd.profile = profile
+	uCmd.profile = normalizeProfile(profile)
 
 	// -- Output control --
 	basic, _ := cmd.Flags().GetBool("basic")
@@ -166,7 +182,7 @@ func init() {
 
 	listCmd.Flags().BoolP("missing", "m", false, "List components or properties missing the specified feature")
 
-	listCmd.Flags().String("profile", "", "Compliance profile for feature extraction (e.g. bsiv21, bsiv11, bsiv20, fsct, ntia, interlynk). When specified, only features relevant to the profile will be considered. Run 'sbomqs features --profile <profile>' to see supported features for each profile.")
+	listCmd.Flags().String("profile", "", "Compliance profile for feature extraction (e.g. bsi, bsiv21, bsiv11, bsiv20, fsct, ntia, interlynk). 'bsi' is an alias for the latest BSI version (bsiv21). Run 'sbomqs features --profile <profile>' to see supported features for each profile.")
 
 	// -- Output Control --
 	listCmd.Flags().BoolP("basic", "b", false, "Results in single-line format")
@@ -254,6 +270,7 @@ var bsiV20FeatureKeys = map[string]struct{}{
 	"sbom_creator":   {},
 	"sbom_timestamp": {},
 	"sbom_uri":       {},
+
 	// Required: component-level
 	"comp_creator":             {},
 	"comp_name":                {},
@@ -265,11 +282,13 @@ var bsiV20FeatureKeys = map[string]struct{}{
 	"comp_executable_property": {},
 	"comp_archive_property":    {},
 	"comp_structured_property": {},
+
 	// Additional: component-level
 	"comp_source_code_url":   {},
 	"comp_download_url":      {},
 	"comp_other_identifiers": {},
 	"comp_concluded_license": {},
+
 	// Optional: component-level
 	"comp_declared_license": {},
 	"comp_source_hash":      {},
@@ -281,6 +300,7 @@ var interlynkFeatureKeys = map[string]struct{}{
 	"comp_name":     {},
 	"comp_version":  {},
 	"comp_local_id": {},
+
 	// Provenance
 	"sbom_timestamp": {},
 	"sbom_authors":   {},
@@ -288,10 +308,12 @@ var interlynkFeatureKeys = map[string]struct{}{
 	"sbom_supplier":  {},
 	"sbom_namespace": {},
 	"sbom_lifecycle": {},
+
 	// Integrity
 	"comp_checksums": {},
 	"comp_sha256":    {},
 	"sbom_signature": {},
+
 	// Completeness
 	"comp_dependencies":      {},
 	"sbom_completeness":      {},
@@ -299,6 +321,7 @@ var interlynkFeatureKeys = map[string]struct{}{
 	"comp_source_code":       {},
 	"comp_supplier":          {},
 	"comp_purpose":           {},
+
 	// Licensing
 	"comp_licenses":                {},
 	"comp_valid_licenses":          {},
@@ -306,9 +329,11 @@ var interlynkFeatureKeys = map[string]struct{}{
 	"comp_no_restrictive_licenses": {},
 	"comp_declared_licenses":       {},
 	"sbom_data_license":            {},
+
 	// Vulnerability
 	"comp_purl": {},
 	"comp_cpe":  {},
+
 	// Structural
 	"sbom_spec_declared": {},
 	"sbom_spec_version":  {},
@@ -318,10 +343,15 @@ var interlynkFeatureKeys = map[string]struct{}{
 
 // bsiV21FeatureKeys lists the feature keys supported by the bsiv21 profile.
 var bsiV21FeatureKeys = map[string]struct{}{
-	"sbom_spec_version":         {},
-	"sbom_creator":              {},
-	"sbom_timestamp":            {},
-	"sbom_uri":                  {},
+	// Required: sbom-level
+	"sbom_spec_version": {},
+	"sbom_creator":      {},
+	"sbom_timestamp":    {},
+
+	// Additional: sbom-level
+	"sbom_uri": {},
+
+	// Required: component-level
 	"comp_creator":              {},
 	"comp_name":                 {},
 	"comp_version":              {},
@@ -332,13 +362,28 @@ var bsiV21FeatureKeys = map[string]struct{}{
 	"comp_executable_prop":      {},
 	"comp_archive_prop":         {},
 	"comp_structured_prop":      {},
-	"comp_source_code_url":      {},
-	"comp_download_url":         {},
-	"comp_other_identifiers":    {},
-	"comp_original_licenses":    {},
-	"comp_effective_license":    {},
-	"comp_source_hash":          {},
-	"comp_security_txt_url":     {},
+
+	// Additional: component-level
+	"comp_source_code_url":   {},
+	"comp_download_url":      {},
+	"comp_other_identifiers": {},
+	"comp_original_licenses": {},
+
+	// Optional: component-level
+	"comp_effective_license": {},
+	"comp_source_hash":       {},
+	"comp_security_txt_url":  {},
+}
+
+// normalizeProfile resolves profile aliases to their canonical names.
+// "bsi" is an alias for "bsiv21" (the latest BSI version).
+func normalizeProfile(profile string) string {
+	switch strings.ToLower(strings.TrimSpace(profile)) {
+	case "bsi":
+		return "bsiv21"
+	default:
+		return profile
+	}
 }
 
 // supportedProfiles lists the known profile values for --profile.
@@ -351,6 +396,17 @@ var supportedProfiles = map[string]struct{}{
 	"interlynk": {},
 }
 
+// profileSectionName maps a --profile value to the display section name used
+// in ProfileSections. Used by the features command to filter by profile.
+var profileSectionName = map[string]string{
+	"bsiv11":    "BSI TR-03183-2 v1.1 (--profile bsiv11)",
+	"bsiv20":    "BSI TR-03183-2 v2.0 (--profile bsiv20)",
+	"bsiv21":    "BSI TR-03183-2 v2.1 (--profile bsiv21)",
+	"ntia":      "NTIA Minimum Elements (--profile ntia)",
+	"fsct":      "FSCT Framing 3rd Edition (--profile fsct)",
+	"interlynk": "Interlynk (--profile interlynk)",
+}
+
 func validateparsedListCmd(uCmd *userListCmd) error {
 	// Check path
 	if len(uCmd.path) == 0 {
@@ -361,7 +417,7 @@ func validateparsedListCmd(uCmd *userListCmd) error {
 	if uCmd.profile != "" {
 		if _, ok := supportedProfiles[uCmd.profile]; !ok {
 			return fmt.Errorf(
-				"profile %q is not supported. Supported profiles: fsct, ntia, bsiv11, bsiv20, bsiv21, interlynk",
+				"profile %q is not supported. Supported profiles: bsi (=bsiv21), bsiv11, bsiv20, bsiv21, fsct, ntia, interlynk",
 				uCmd.profile,
 			)
 		}
@@ -431,10 +487,14 @@ func validateparsedListCmd(uCmd *userListCmd) error {
 			)
 		}
 	default:
-		if _, ok := featureLookup[cleaned]; !ok {
+		if _, ok := featureLookup[cleaned]; !ok && !list.IsKnownFeature(cleaned) {
+			names := make([]string, 0, len(FeatureRegistry))
+			for _, f := range FeatureRegistry {
+				names = append(names, f.Name)
+			}
 			return fmt.Errorf(
-				"feature %q is not supported.\n\nRun \"sbomqs features\" to see supported features.",
-				cleaned,
+				"feature %q is not supported.\n\nSupported features: %s",
+				cleaned, strings.Join(names, ", "),
 			)
 		}
 	}
@@ -451,108 +511,74 @@ type Feature struct {
 var FeatureRegistry = []Feature{
 
 	// == SBOM: Metadata & Structure ==
-
-	{Name: "sbom_name", Category: "SBOM", Description: "Validate SBOM name field"},
-	{Name: "sbom_creator", Category: "SBOM", Description: "Validate SBOM creator information"},
-	{Name: "sbom_authors", Category: "SBOM", Description: "Validate SBOM authors field"},
-	{Name: "sbom_creation_timestamp", Category: "SBOM", Description: "Validate SBOM creation timestamp"},
-	{Name: "sbom_timestamp", Category: "SBOM", Description: "Validate SBOM timestamp field"},
-	{Name: "sbom_tool", Category: "SBOM", Description: "Validate SBOM tool metadata"},
-	{Name: "sbom_organization", Category: "SBOM", Description: "Validate SBOM organization metadata"},
-	{Name: "sbom_spdxid", Category: "SBOM", Description: "Validate SPDX ID presence"},
-	{Name: "sbom_schema_valid", Category: "SBOM", Description: "Validate SBOM against schema"},
-	{Name: "sbom_parsable", Category: "SBOM", Description: "Ensure SBOM can be parsed successfully"},
-	{Name: "sbom_machine_format", Category: "SBOM", Description: "Validate machine-readable SBOM format"},
-	{Name: "sbom_sharable", Category: "SBOM", Description: "Validate SBOM sharability compliance"},
+	{Name: "sbom_authors", Category: "SBOM", Description: "SBOM authors / creators"},
+	{Name: "sbom_creation_timestamp", Category: "SBOM", Description: "SBOM creation timestamp"},
+	{Name: "sbom_tool", Category: "SBOM", Description: "Tool that generated the SBOM (name + version)"},
+	{Name: "sbom_organization", Category: "SBOM", Description: "SBOM producing organization"},
+	{Name: "sbom_spdxid", Category: "SBOM", Description: "Document-level SPDX ID"},
+	{Name: "sbom_schema_valid", Category: "SBOM", Description: "SBOM validates against its schema"},
+	{Name: "sbom_parsable", Category: "SBOM", Description: "SBOM is syntactically parsable"},
+	{Name: "sbom_sharable", Category: "SBOM", Description: "SBOM has a sharable data license"},
 
 	// == SBOM: Specification & Format ==
-	{Name: "sbom_spec", Category: "SBOM", Description: "Ensure SBOM specification is declared"},
-	{Name: "sbom_spec_declared", Category: "SBOM", Description: "Validate SBOM specification declaration"},
-	{Name: "sbom_spec_version", Category: "SBOM", Description: "Validate SBOM specification version"},
-	{Name: "spec_with_version_compliant", Category: "SBOM", Description: "Validate SBOM spec version compliance"},
-	{Name: "sbom_spec_file_format", Category: "SBOM", Description: "Validate SBOM specification file format"},
-	{Name: "sbom_file_format", Category: "SBOM", Description: "Validate SBOM file format"},
+	{Name: "sbom_spec", Category: "SBOM", Description: "SBOM specification type (cyclonedx / spdx)"},
+	{Name: "sbom_spec_version", Category: "SBOM", Description: "SBOM specification version"},
+	{Name: "sbom_spec_file_format", Category: "SBOM", Description: "SBOM file format (json / xml / tag-value)"},
+	{Name: "spec_version_compliant", Category: "SBOM", Description: "Spec + version are compliant"},
 
 	// == SBOM: Structure & Relationships ==
-	{Name: "sbom_dependencies", Category: "SBOM", Description: "Validate SBOM dependency graph"},
-	{Name: "sbom_depth", Category: "SBOM", Description: "Validate SBOM dependency depth"},
-	{Name: "sbom_primary_comp", Category: "SBOM", Description: "Show primary component name and version"},
-	{Name: "sbom_with_primary_component", Category: "SBOM", Description: "Validate SBOM has a primary component"},
-	{Name: "sbom_primary_component", Category: "SBOM", Description: "Validate primary component details"},
-	{Name: "sbom_with_uri", Category: "SBOM", Description: "Validate SBOM contains URI reference"},
-	{Name: "sbom_uri", Category: "SBOM", Description: "Validate SBOM URI field"},
-	{Name: "sbom_build", Category: "SBOM", Description: "Validate SBOM build metadata"},
-	{Name: "sbom_build_process", Category: "SBOM", Description: "Validate SBOM build process information"},
-	{Name: "sbom_with_bomlinks", Category: "SBOM", Description: "Validate presence of BOM links"},
-	{Name: "sbom_bomlinks", Category: "SBOM", Description: "Validate SBOM BOM links section"},
+	{Name: "sbom_primary_comp", Category: "SBOM", Description: "Primary component name and version"},
+	{Name: "sbom_primary_component", Category: "SBOM", Description: "Primary component declared"},
+	{Name: "sbom_uri", Category: "SBOM", Description: "SBOM unique URI or namespace"},
+	{Name: "sbom_dependencies", Category: "SBOM", Description: "SBOM dependency graph"},
+	{Name: "sbom_build", Category: "SBOM", Description: "SBOM build / lifecycle metadata"},
+	{Name: "sbom_bomlinks", Category: "SBOM", Description: "BOM-Link references present"},
+	{Name: "sbom_supplier", Category: "SBOM", Description: "SBOM supplier (CycloneDX only)"},
 
 	// == SBOM: Security ==
-	{Name: "sbom_vulnerabilities", Category: "Security", Description: "Validate SBOM vulnerability section"},
-	{Name: "sbom_with_vuln", Category: "Security", Description: "Validate SBOM contains vulnerability entries"},
+	{Name: "sbom_vuln", Category: "Security", Description: "SBOM contains vulnerability entries"},
 
 	// == Component: Identity ==
-
-	{Name: "comp_name", Category: "Component", Description: "Show component name"},
-	{Name: "comp_with_name", Category: "Component", Description: "Ensure component has a name"},
-	{Name: "comp_version", Category: "Component", Description: "Show component version"},
-	{Name: "comp_with_version", Category: "Component", Description: "Ensure component has version"},
-	{Name: "comp_supplier", Category: "Component", Description: "Show component supplier or manufacturer"},
-	{Name: "comp_with_supplier", Category: "Component", Description: "Ensure component supplier exists"},
-	{Name: "comp_author", Category: "Component", Description: "Show component authors (name, email)"},
-	{Name: "comp_with_uniq_ids", Category: "Component", Description: "Show all unique identifiers (PURL, CPE, SWHID, SWID, OmniBOR)"},
-	{Name: "comp_with_local_id", Category: "Component", Description: "Show component local identifier"},
-	{Name: "comp_purl", Category: "Component", Description: "Show component PURL"},
-	{Name: "comp_with_purl", Category: "Component", Description: "Ensure component has PURL"},
-	{Name: "comp_cpe", Category: "Component", Description: "Show component CPE"},
-	{Name: "comp_with_cpe", Category: "Component", Description: "Ensure component has CPE"},
-	{Name: "comp_purpose", Category: "Component", Description: "Show component purpose field"},
-	{Name: "comp_with_purpose", Category: "Component", Description: "Ensure component purpose exists"},
-	{Name: "comp_with_primary_purpose", Category: "Component", Description: "Validate primary purpose designation"},
-	{Name: "comp_external_refs", Category: "Component", Description: "Show all external references (type: locator)"},
+	{Name: "comp_name", Category: "Component", Description: "Component name"},
+	{Name: "comp_version", Category: "Component", Description: "Component version"},
+	{Name: "comp_supplier", Category: "Component", Description: "Component supplier or manufacturer (with fallback)"},
+	{Name: "comp_author", Category: "Component", Description: "Component authors (name, email)"},
+	{Name: "comp_uniq_ids", Category: "Component", Description: "All unique identifiers: PURL, CPE, SWHID, SWID, OmniBOR"},
+	{Name: "comp_local_id", Category: "Component", Description: "Component local identifier"},
+	{Name: "comp_purl", Category: "Component", Description: "Component PURL"},
+	{Name: "comp_cpe", Category: "Component", Description: "Component CPE"},
+	{Name: "comp_primary_purpose", Category: "Component", Description: "Component primary purpose / type"},
+	{Name: "comp_external_refs", Category: "Component", Description: "All external references (type: locator)"},
 
 	// == Component: Structure & Relationships ==
-
-	{Name: "comp_dependencies", Category: "Component", Description: "Validate component dependencies"},
-	{Name: "comp_with_dependencies", Category: "Component", Description: "Ensure component dependency section exists"},
-	{Name: "comp_depth", Category: "Component", Description: "Show direct dependencies by name, or 'leaf component' if none"},
+	{Name: "comp_depth", Category: "Component", Description: "Direct dependency names, or 'leaf component' if none"},
+	{Name: "comp_dependencies", Category: "Component", Description: "Component dependency declarations"},
 
 	// == Component: Integrity & Checksums ==
-
-	{Name: "comp_hash", Category: "Component", Description: "Show component hash value"},
-	{Name: "comp_with_sha256", Category: "Component", Description: "Ensure component has SHA256 checksum"},
-	{Name: "comp_hash_sha256", Category: "Component", Description: "Show component SHA256 checksum"},
-	{Name: "comp_with_checksums", Category: "Component", Description: "Ensure component has checksums"},
-	{Name: "comp_with_checksums_sha256", Category: "Component", Description: "Ensure component has SHA256 checksum entry"},
-	{Name: "comp_with_strong_checksums", Category: "Component", Description: "Validate component uses strong checksums"},
-	{Name: "comp_with_weak_checksums", Category: "Component", Description: "Detect weak checksum algorithms"},
-	{Name: "comp_source_hash", Category: "Component", Description: "Show source code hash"},
-	{Name: "comp_with_source_code_hash", Category: "Component", Description: "Ensure source code hash exists"},
+	{Name: "comp_checksums", Category: "Component", Description: "Component has checksums"},
+	{Name: "comp_sha256", Category: "Component", Description: "Component has SHA-256 checksum"},
+	{Name: "comp_checksums_sha256", Category: "Component", Description: "Component has SHA-256 checksum entry"},
+	{Name: "comp_strong_checksums", Category: "Component", Description: "Component uses strong checksum algorithms"},
+	{Name: "comp_weak_checksums", Category: "Component", Description: "Component has weak checksum algorithms"},
+	{Name: "comp_source_code_hash", Category: "Component", Description: "Source code hash"},
 
 	// == Component: Source & Executable ==
-
-	{Name: "comp_with_source_code", Category: "Component", Description: "Ensure component references source code"},
-	{Name: "comp_with_source_code_uri", Category: "Component", Description: "Show source code URI"},
-	{Name: "comp_with_executable_uri", Category: "Component", Description: "Show executable URI"},
+	{Name: "comp_source_code_uri", Category: "Component", Description: "Component source code URI"},
+	{Name: "comp_executable_uri", Category: "Component", Description: "Component executable / download URI"},
 
 	// == License ==
-
-	{Name: "comp_license", Category: "License", Description: "Show all component licenses (concluded and declared)"},
-	{Name: "comp_with_licenses", Category: "License", Description: "Ensure component license section exists"},
-	{Name: "comp_valid_licenses", Category: "License", Description: "Validate license identifiers"},
-	{Name: "comp_with_valid_licenses", Category: "License", Description: "Ensure licenses are valid SPDX identifiers"},
-	{Name: "comp_with_declared_license", Category: "License", Description: "Validate declared license"},
-	{Name: "comp_with_concluded_license", Category: "License", Description: "Validate concluded license"},
-	{Name: "comp_associated_license", Category: "License", Description: "Validate associated license"},
-	{Name: "comp_with_associated_license", Category: "License", Description: "Ensure associated license exists"},
-	{Name: "comp_with_deprecated_licenses", Category: "License", Description: "Detect deprecated licenses"},
-	{Name: "comp_no_deprecated_licenses", Category: "License", Description: "Ensure no deprecated licenses are used"},
-	{Name: "comp_with_restrictive_licenses", Category: "License", Description: "Detect restrictive licenses"},
-	{Name: "comp_no_restrictive_licenses", Category: "License", Description: "Ensure no restrictive licenses are used"},
+	{Name: "comp_all_licenses", Category: "License", Description: "All licenses: concluded and declared, labeled by type"},
+	{Name: "comp_licenses", Category: "License", Description: "Component has license expressions"},
+	{Name: "comp_valid_licenses", Category: "License", Description: "Component licenses are valid SPDX identifiers"},
+	{Name: "comp_associated_license", Category: "License", Description: "Component associated license"},
+	{Name: "comp_concluded_license", Category: "License", Description: "Component concluded license"},
+	{Name: "comp_declared_license", Category: "License", Description: "Component declared license"},
+	{Name: "comp_deprecated_licenses", Category: "License", Description: "Component has deprecated licenses"},
+	{Name: "comp_restrictive_licenses", Category: "License", Description: "Component has restrictive licenses"},
 
 	// == Security — Vulnerabilities ==
-
-	{Name: "comp_with_any_vuln_lookup_id", Category: "Security", Description: "Ensure component has vulnerability lookup ID"},
-	{Name: "comp_with_multi_vuln_lookup_id", Category: "Security", Description: "Ensure component has multiple vulnerability lookup IDs"},
+	{Name: "comp_any_vuln_lookup_id", Category: "Security", Description: "Component has at least one vulnerability lookup ID"},
+	{Name: "comp_multi_vuln_lookup_id", Category: "Security", Description: "Component has multiple vulnerability lookup IDs"},
 }
 
 var featureLookup = make(map[string]Feature)
@@ -584,7 +610,7 @@ var ProfileSections = []ProfileSection{
 			// SBOM-level
 			{Name: "sbom_authors", Description: "SBOM authors"},
 			{Name: "sbom_timestamp", Description: "SBOM creation timestamp"},
-			{Name: "sbom_tool", Description: "Tool that generated the SBOM (name + version)"},
+			{Name: "sbom_creator_and_version", Description: "Tool that generated the SBOM (name + version)"},
 			{Name: "sbom_spec", Description: "SBOM specification type (cyclonedx / spdx)"},
 			{Name: "sbom_spec_version", Description: "SBOM specification version"},
 			{Name: "sbom_file_format", Description: "SBOM file format (json / xml / tag-value)"},
@@ -594,23 +620,23 @@ var ProfileSections = []ProfileSection{
 			{Name: "sbom_dependencies", Description: "SBOM-level dependency graph summary"},
 			{Name: "sbom_organization", Description: "SBOM organization metadata"},
 			{Name: "sbom_build", Description: "SBOM build / lifecycle metadata"},
-			{Name: "sbom_with_vuln", Description: "Whether the SBOM contains vulnerability entries"},
+			{Name: "sbom_vuln", Description: "Whether the SBOM contains vulnerability entries"},
 			// Component-level
 			{Name: "comp_name", Description: "Component name"},
 			{Name: "comp_version", Description: "Component version"},
 			{Name: "comp_supplier", Description: "Component supplier or manufacturer (fallback)"},
 			{Name: "comp_author", Description: "Component authors (name, email)"},
 			{Name: "comp_external_refs", Description: "All external references (type: locator)"},
-			{Name: "comp_license", Description: "All licenses: concluded and declared, labeled by type"},
+			{Name: "comp_all_licenses", Description: "All licenses: concluded and declared, labeled by type"},
 			{Name: "comp_depth", Description: "Direct dependencies by name, or 'leaf component' if none"},
-			{Name: "comp_with_uniq_ids", Description: "All unique identifiers: PURL, CPE, SWHID, SWID, OmniBOR"},
+			{Name: "comp_uniq_ids", Description: "All unique identifiers: PURL, CPE, SWHID, SWID, OmniBOR"},
 			{Name: "comp_purl", Description: "Component PURL"},
 			{Name: "comp_cpe", Description: "Component CPE"},
-			{Name: "comp_hash", Description: "Component checksum value"},
-			{Name: "comp_purpose", Description: "Component purpose / type"},
-			{Name: "comp_with_source_code_uri", Description: "Component source code URI"},
-			{Name: "comp_with_executable_uri", Description: "Component executable / download URI"},
-			{Name: "comp_source_hash", Description: "Source code hash"},
+			{Name: "comp_checksums", Description: "Component checksum value"},
+			{Name: "comp_primary_purpose", Description: "Component purpose / type"},
+			{Name: "comp_source_code_uri", Description: "Component source code URI"},
+			{Name: "comp_executable_uri", Description: "Component executable / download URI"},
+			{Name: "comp_source_code_hash", Description: "Source code hash"},
 		},
 	},
 	{
