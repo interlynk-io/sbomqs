@@ -127,6 +127,11 @@ func (c CdxDoc) Components() []GetComponent {
 	return c.Comps
 }
 
+// Files returns all files defined in the SBOM (SPDX-specific, empty for CycloneDX)
+func (c CdxDoc) Files() []GetComponent {
+	return nil
+}
+
 func (c CdxDoc) Authors() []GetAuthor {
 	return c.CdxAuthors
 }

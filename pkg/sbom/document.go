@@ -29,6 +29,9 @@ type Document interface {
 	// Components returns all components defined in the SBOM
 	Components() []GetComponent
 
+	// Files returns all files defined in the SBOM (SPDX-specific)
+	Files() []GetComponent
+
 	// Authors returns the authors of the SBOM
 	Authors() []GetAuthor
 

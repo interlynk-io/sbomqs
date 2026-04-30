@@ -669,6 +669,10 @@ func BSIV11CompDependencies(doc sbom.Document) catalog.ProfFeatScore {
 	for _, c := range doc.Components() {
 		componentMap[c.GetID()] = c
 	}
+	// Also include files (for SPDX) as they can be dependency targets
+	for _, f := range doc.Files() {
+		componentMap[f.GetID()] = f
+	}
 	componentMap[primary.GetID()] = primary.Component()
 
 	// 1. Validate all relationships reference valid components
@@ -724,7 +728,7 @@ func BSIV11CompDependencies(doc sbom.Document) catalog.ProfFeatScore {
 		visited[id] = true
 
 		for _, rel := range doc.GetOutgoingRelations(id) {
-			if rel.GetType() == "DEPENDS_ON" {
+			if rel.GetType() == "DEPENDS_ON" || rel.GetType() == "CONTAINS" {
 				dfs(rel.GetTo())
 			}
 		}
