@@ -83,6 +83,15 @@ func evaluateEachCategory(ctx context.Context, input catalog.EvalInput, category
 func evaluateFeature(ctx context.Context, input catalog.EvalInput, comprFeat catalog.ComprFeatSpec) api.FeatureResult {
 	comprFeatResult := api.NewComprFeatResult(comprFeat)
 
+	// Handle features without an Evaluate function (not yet implemented)
+	if comprFeat.Evaluate == nil {
+		comprFeatResult.Score = 0
+		comprFeatResult.Desc = "N/A"
+		comprFeatResult.Ignored = true
+		comprFeatResult.Name = comprFeat.Name
+		return comprFeatResult
+	}
+
 	res := comprFeat.Evaluate(ctx, input)
 
 	comprFeatResult.Score = res.Score

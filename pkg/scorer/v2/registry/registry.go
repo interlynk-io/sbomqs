@@ -722,14 +722,16 @@ var CatComponentQualityInfoSpec = catalog.ComprCatSpec{
 	Key:         "compinfo",
 	Name:        "Component Quality",
 	Weight:      10,
-	Description: "Real-time component risk assessment based on external threat intelligence. These metrics are informational only and do NOT affect the overall quality score",
+	Description: "Component identifier validation via Interlynk API. These metrics are informational only and do NOT affect the overall quality score",
 	Features: []catalog.ComprFeatSpec{
-		{Key: "comp_eol_eos", Name: "Component No Longer Maintained or Declared EOL", Weight: 0.10, Ignore: true, Evaluate: extractors.CompWithEOSOrEOL},
-		{Key: "comp_malicious", Name: "Component tagged as malicious in threat databases", Weight: 0.30, Ignore: true, Evaluate: extractors.CompWithMalicious},
-		{Key: "comp_vuln_sev_critical", Name: "Component with vulnerabilities in CISA's Known Exploited Vulns", Weight: 0.30, Ignore: true, Evaluate: extractors.CompWithVulnSeverityCritical},
-		{Key: "comp_kev", Name: "Component which are actively exploited", Weight: 0.30, Ignore: true, Evaluate: extractors.CompWithKev},
-		{Key: "comp_purl_valid", Name: "Component purl resolves to a package manager or repository", Weight: 0.30, Ignore: true, Evaluate: extractors.CompWithPurlValid},
-		{Key: "comp_cpe_valid", Name: "Component cpe is found in NVD CPE database", Weight: 0.30, Ignore: true, Evaluate: extractors.CompWithCpeValid},
+		// Features without Evaluate functions are not yet supported by the API
+		{Key: "comp_eol_eos", Name: "Component No Longer Maintained or Declared EOL", Description: "Not yet available", Weight: 0.10, Ignore: true, Evaluate: nil},
+		{Key: "comp_malicious", Name: "Component tagged as malicious in threat databases", Description: "Not yet available", Weight: 0.15, Ignore: true, Evaluate: nil},
+		{Key: "comp_vuln_sev_critical", Name: "Component with critical vulnerabilities", Description: "Not yet available", Weight: 0.15, Ignore: true, Evaluate: nil},
+		{Key: "comp_kev", Name: "Component which are actively exploited (CISA KEV)", Description: "Not yet available", Weight: 0.15, Ignore: true, Evaluate: nil},
+		// Working features
+		{Key: "comp_purl_valid", Name: "Component PURL Valid", Description: "PURL resolves to a package manager or repository", Weight: 0.225, Ignore: true, Evaluate: extractors.CompWithPurlValid},
+		{Key: "comp_cpe_valid", Name: "Component CPE Valid", Description: "CPE is found in NVD CPE database", Weight: 0.225, Ignore: true, Evaluate: extractors.CompWithCpeValid},
 	},
 }
 

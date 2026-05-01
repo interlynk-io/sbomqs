@@ -191,9 +191,9 @@ func (r *Reporter) detailedReport() {
 }
 
 func formatScore(feat api.FeatureResult) string {
-	if (feat.Key == "comp_eol_eos") || (feat.Key == "comp_malicious") || (feat.Key == "comp_vuln_sev_critical") || (feat.Key == "comp_kev") || (feat.Key == "comp_purl_valid") || (feat.Key == "comp_cpe_valid") || (feat.Key == "comp_epss_high") {
-		return "Coming Soon.."
-	}
+	// if (feat.Key == "comp_eol_eos") || (feat.Key == "comp_malicious") || (feat.Key == "comp_vuln_sev_critical") || (feat.Key == "comp_kev") || (feat.Key == "comp_purl_valid") || (feat.Key == "comp_cpe_valid") || (feat.Key == "comp_epss_high") {
+	// 	return "Coming Soon.."
+	// }
 	return fmt.Sprintf("%.1f/10.0", feat.Score)
 }
 

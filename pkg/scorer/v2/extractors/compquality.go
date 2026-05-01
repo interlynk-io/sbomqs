@@ -27,66 +27,6 @@ import (
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/formulae"
 )
 
-// CompWithEOSOrEOL: components no longer maintained or declared end-of-life.
-// Maps to findings with domain "lifecycle" or check_code prefix "EOL-"/"EOS-".
-func CompWithEOSOrEOL(_ context.Context, input catalog.EvalInput) catalog.ComprFeatScore {
-	if input.ComponentQuality == nil {
-		return formulae.ScoreCompNAA()
-	}
-	return scoreByFindings(input.ComponentQuality, func(f interlynkapi.Finding) bool {
-		return f.Domain == "lifecycle" ||
-			strings.HasPrefix(f.CheckCode, "EOL-") ||
-			strings.HasPrefix(f.CheckCode, "EOS-")
-	}, "components are maintained")
-}
-
-// CompWithMalicious: components tagged as malicious in threat databases.
-// Maps to findings with domain "malicious" or check_code prefix "MAL-".
-func CompWithMalicious(_ context.Context, input catalog.EvalInput) catalog.ComprFeatScore {
-	if input.ComponentQuality == nil {
-		return formulae.ScoreCompNAA()
-	}
-	return scoreByFindings(input.ComponentQuality, func(f interlynkapi.Finding) bool {
-		return f.Domain == "malicious" ||
-			strings.HasPrefix(f.CheckCode, "MAL-")
-	}, "components are not malicious")
-}
-
-// CompWithHighEPSS: components with Exploit Prediction Scoring System > 0.8.
-// Maps to findings with domain "epss" or check_code prefix "EPSS-".
-func CompWithHighEPSS(_ context.Context, input catalog.EvalInput) catalog.ComprFeatScore {
-	if input.ComponentQuality == nil {
-		return formulae.ScoreCompNAA()
-	}
-	return scoreByFindings(input.ComponentQuality, func(f interlynkapi.Finding) bool {
-		return f.Domain == "epss" ||
-			strings.HasPrefix(f.CheckCode, "EPSS-")
-	}, "components have low EPSS scores")
-}
-
-// CompWithVulnSeverityCritical: components with vulnerabilities in CISA's Known Exploited Vulns.
-// Maps to findings with severity "critical".
-func CompWithVulnSeverityCritical(_ context.Context, input catalog.EvalInput) catalog.ComprFeatScore {
-	if input.ComponentQuality == nil {
-		return formulae.ScoreCompNAA()
-	}
-	return scoreByFindings(input.ComponentQuality, func(f interlynkapi.Finding) bool {
-		return f.Severity == "critical"
-	}, "components have no critical vulnerabilities")
-}
-
-// CompWithKev: components which are actively exploited (CISA KEV).
-// Maps to findings with domain "kev" or check_code prefix "KEV-".
-func CompWithKev(_ context.Context, input catalog.EvalInput) catalog.ComprFeatScore {
-	if input.ComponentQuality == nil {
-		return formulae.ScoreCompNAA()
-	}
-	return scoreByFindings(input.ComponentQuality, func(f interlynkapi.Finding) bool {
-		return f.Domain == "kev" ||
-			strings.HasPrefix(f.CheckCode, "KEV-")
-	}, "components are not in CISA KEV")
-}
-
 // CompWithPurlValid: component purl resolves to a package manager or repository.
 // Maps to findings with check_code prefix "IDT-PURL-".
 func CompWithPurlValid(_ context.Context, input catalog.EvalInput) catalog.ComprFeatScore {
