@@ -241,16 +241,16 @@ func TestFetchComponentQuality_NoAuthHeader(t *testing.T) {
 // --- parseRetryAfter ---
 
 func TestParseRetryAfter_Seconds(t *testing.T) {
-	d := parseRetryAfter("30")
+	d := parseRetryAfter(context.Background(), "30")
 	assert.Equal(t, 30*second, d)
 }
 
 func TestParseRetryAfter_Empty(t *testing.T) {
-	d := parseRetryAfter("")
+	d := parseRetryAfter(context.Background(), "")
 	assert.Equal(t, defaultRetryWait, d)
 }
 
 func TestParseRetryAfter_Invalid(t *testing.T) {
-	d := parseRetryAfter("not-a-number")
+	d := parseRetryAfter(context.Background(), "not-a-number")
 	assert.Equal(t, defaultRetryWait, d)
 }

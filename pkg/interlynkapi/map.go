@@ -15,24 +15,53 @@
 package interlynkapi
 
 import (
+	"context"
 	"strings"
 
+	"github.com/interlynk-io/sbomqs/v2/pkg/logger"
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
+	"go.uber.org/zap"
 )
 
 // buildPayloads converts all SBOM components into the slice of ComponentPayload
 // that the API expects. Each component is mapped independently via mapComponent.
-func buildPayloads(comps []sbom.GetComponent) []ComponentPayload {
+func buildPayloads(ctx context.Context, comps []sbom.GetComponent) []ComponentPayload {
+	log := logger.FromContext(ctx)
+
+	log.Debug("Building API payloads from SBOM components",
+		zap.Int("component_count", len(comps)),
+	)
+
 	payloads := make([]ComponentPayload, len(comps))
+	purlCount := 0
+	cpeCount := 0
+	licenseCount := 0
+
 	for i, comp := range comps {
 		payloads[i] = mapComponent(comp)
+		if payloads[i].Purl != nil {
+			purlCount++
+		}
+		cpeCount += len(payloads[i].Cpes)
+		if payloads[i].License != nil {
+			licenseCount++
+		}
 	}
+
+	log.Debug("Completed building API payloads",
+		zap.Int("payload_count", len(payloads)),
+		zap.Int("with_purl", purlCount),
+		zap.Int("total_cpes", cpeCount),
+		zap.Int("with_license", licenseCount),
+	)
+
 	return payloads
 }
 
 // mapComponent converts a single sbom.GetComponent to the API payload format.
 // Only the first PURL and first license are sent; CPEs are sent as strings.
 func mapComponent(c sbom.GetComponent) ComponentPayload {
+
 	p := ComponentPayload{
 		Name:    strings.TrimSpace(c.GetName()),
 		Version: strings.TrimSpace(c.GetVersion()),
