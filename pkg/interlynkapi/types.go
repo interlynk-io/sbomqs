@@ -38,15 +38,17 @@ type ComponentRef struct {
 	Version string `json:"version"`
 }
 
-// Finding represents one issue detected for a component.
+// Finding represents one issue detected for a component or the SBOM itself.
 type Finding struct {
 	// Index is the zero-based position of the component in the batch request.
-	Index       int          `json:"index"`
+	// Null for SBOM-level findings (not tied to a specific component).
+	Index       *int         `json:"index"`
 	Component   ComponentRef `json:"component"`
 	CheckCode   string       `json:"check_code"`
 	Domain      string       `json:"domain"`
 	Severity    string       `json:"severity"` // Severity is one of: critical, high, medium, low
 	Message     string       `json:"message"`
+	Findings    interface{}  `json:"findings"` // Additional nested findings data (varies by check)
 	AutoFixable bool         `json:"auto_fixable"`
 }
 

@@ -121,21 +121,25 @@ func (c *Client) post(ctx context.Context, comps []ComponentPayload) (*DoctorRes
 		}
 
 		if resp.StatusCode == http.StatusTooManyRequests {
-			wait := parseRetryAfter(ctx, resp.Header.Get("Retry-After"))
+			waitTime := parseRetryAfterTime(ctx, resp.Header.Get("Retry-After"))
+
 			log.Warn("Component quality API rate limited (HTTP 429), will retry",
-				zap.Duration("wait_duration", wait),
+				zap.Duration("wait_duration", waitTime),
 				zap.Int("attempt", attempt+1),
 				zap.Int("max_retries", maxRetries),
 			)
+
 			resp.Body.Close()
 
 			select {
 			case <-ctx.Done():
 				log.Debug("Context cancelled during rate limit wait")
 				return nil, ctx.Err()
-			case <-time.After(wait):
+
+			case <-time.After(waitTime):
 				log.Debug("Retrying after rate limit wait")
 			}
+
 			continue
 		}
 
@@ -236,6 +240,7 @@ func (c *Client) FetchComponentQuality(ctx context.Context, comps []sbom.GetComp
 		zap.Int("batch_count", len(batchsResult)),
 		zap.Int("total_components", len(comps)),
 	)
+
 	result := mergeFindings(ctx, batchsResult, len(comps))
 
 	log.Info("Component quality assessment complete",
@@ -331,9 +336,16 @@ func mergeFindings(ctx context.Context, batches []batchResult, totalComponents i
 		)
 
 		for _, f := range b.response.Findings {
-			globalIdx := b.offset + f.Index
-			result.FindingsByCompIndex[globalIdx] = append(result.FindingsByCompIndex[globalIdx], f)
 			totalFindings++
+
+			// Handle SBOM-level findings (Index is nil)
+			if f.Index == nil {
+				// Skip adding to FindingsByCompIndex - SBOM-level findings aren't tied to components
+				continue
+			}
+
+			globalIdx := b.offset + *f.Index
+			result.FindingsByCompIndex[globalIdx] = append(result.FindingsByCompIndex[globalIdx], f)
 		}
 		if b.response.Tier != "" {
 			result.Tier = b.response.Tier
@@ -353,50 +365,62 @@ func mergeFindings(ctx context.Context, batches []batchResult, totalComponents i
 	return result
 }
 
-// parseRetryAfter parses the Retry-After header value (seconds integer or HTTP date).
+// parseRetryAfterTime parses the Retry-After header value (seconds integer or HTTP date).
 // Falls back to defaultRetryWait on parse failure.
-func parseRetryAfter(ctx context.Context, header string) time.Duration {
+func parseRetryAfterTime(ctx context.Context, header string) time.Duration {
 	log := logger.FromContext(ctx)
 
 	log.Debug("Parsing Retry-After header",
 		zap.String("header_value", header),
 	)
 
-	if header == "" {
+	newHeader := strings.TrimSpace(header)
+
+	// If the header is empty, use the default wait time.
+	if newHeader == "" {
 		log.Debug("Retry-After header empty, using default wait",
 			zap.Duration("default_wait", defaultRetryWait),
 		)
 		return defaultRetryWait
 	}
 
-	if secs, err := strconv.Atoi(strings.TrimSpace(header)); err == nil && secs >= 0 {
-		wait := time.Duration(secs) * time.Second
+	if secs, err := strconv.Atoi(newHeader); err == nil && secs >= 0 {
+
+		waitTime := time.Duration(secs) * time.Second
+
 		log.Debug("Parsed Retry-After as seconds",
 			zap.Int("seconds", secs),
-			zap.Duration("wait_duration", wait),
+			zap.Duration("wait_duration", waitTime),
 		)
-		return wait
+
+		return waitTime
 	}
 
-	if t, err := http.ParseTime(header); err == nil {
+	if t, err := http.ParseTime(newHeader); err == nil {
+
 		if d := time.Until(t); d > 0 {
+
 			log.Debug("Parsed Retry-After as HTTP date",
 				zap.Time("retry_time", t),
 				zap.Duration("wait_duration", d),
 			)
+
 			return d
 		}
+
 		log.Debug("Retry-After HTTP date is in the past, using default wait",
 			zap.Time("retry_time", t),
 			zap.Duration("default_wait", defaultRetryWait),
 		)
+
 		return defaultRetryWait
 	}
 
 	log.Debug("Failed to parse Retry-After header, using default wait",
-		zap.String("header_value", header),
+		zap.String("header_value", newHeader),
 		zap.Duration("default_wait", defaultRetryWait),
 	)
+
 	return defaultRetryWait
 }
 

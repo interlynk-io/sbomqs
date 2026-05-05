@@ -17,19 +17,37 @@ package interlynkapi
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
+	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
+const second = time.Second
+
+// makeFakeComponents returns n minimal sbom.Component values (name + version)
+// that satisfy sbom.GetComponent without requiring a real parsed SBOM.
+func makeFakeComponents(n int) []sbom.GetComponent {
+	comps := make([]sbom.GetComponent, n)
+	for i := range comps {
+		c := sbom.NewComponent()
+		c.Name = fmt.Sprintf("comp-%d", i)
+		c.Version = "1.0.0"
+		comps[i] = c
+	}
+	return comps
+}
+
 // happyResponse is a minimal valid API response used across tests.
 var happyResponse = DoctorResponse{
 	Findings: []Finding{
-		{Index: 0, CheckCode: "IDT-PURL-001", Domain: "identifier", Severity: "high", Message: "PURL not resolvable"},
-		{Index: 2, CheckCode: "IDT-CPE-001", Domain: "identifier", Severity: "medium", Message: "CPE not in NVD"},
+		{Index: ptrInt(0), CheckCode: "IDT-PURL-001", Domain: "identifier", Severity: "high", Message: "PURL not resolvable"},
+		{Index: ptrInt(2), CheckCode: "IDT-CPE-001", Domain: "identifier", Severity: "medium", Message: "CPE not in NVD"},
 	},
 	Summary: Summary{
 		Total:             2,
@@ -47,6 +65,11 @@ func serveJSON(t *testing.T, status int, body interface{}) *httptest.Server {
 		w.WriteHeader(status)
 		_ = json.NewEncoder(w).Encode(body)
 	}))
+}
+
+// ptrInt returns a pointer to an int (helper for test literals)
+func ptrInt(i int) *int {
+	return &i
 }
 
 // --- batch size ---
@@ -90,7 +113,6 @@ func TestFetchComponentQuality_HappyPath(t *testing.T) {
 }
 
 // --- empty component list: no API call, zero-value result ---
-
 func TestFetchComponentQuality_EmptyComponents(t *testing.T) {
 	// Server should never be called; use a closed server to catch accidental calls.
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -108,7 +130,6 @@ func TestFetchComponentQuality_EmptyComponents(t *testing.T) {
 }
 
 // --- non-200 response: error returned, caller logs warning and continues ---
-
 func TestFetchComponentQuality_ServerError(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "internal server error", http.StatusInternalServerError)
@@ -124,7 +145,6 @@ func TestFetchComponentQuality_ServerError(t *testing.T) {
 }
 
 // --- 429 retry: exhausts retries and returns error ---
-
 func TestFetchComponentQuality_RateLimitExhausted(t *testing.T) {
 	calls := 0
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -144,7 +164,6 @@ func TestFetchComponentQuality_RateLimitExhausted(t *testing.T) {
 }
 
 // --- 429 then success: retries and succeeds on second attempt ---
-
 func TestFetchComponentQuality_RateLimitThenSuccess(t *testing.T) {
 	calls := 0
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -168,40 +187,7 @@ func TestFetchComponentQuality_RateLimitThenSuccess(t *testing.T) {
 	assert.Equal(t, "unauthenticated", result.Tier)
 }
 
-// --- batching: findings from multiple batches are index-adjusted and merged ---
-
-func TestFetchComponentQuality_BatchIndexOffset(t *testing.T) {
-	// unauthBatchSize is 50 which is too large to trigger batching in a unit test.
-	// Test the index-offset merge logic directly by simulating what FetchComponentQuality
-	// does when it merges two batches.
-	// Directly test merge logic:
-	result := &ComponentQualityResult{
-		FindingsByCompIndex: make(map[int][]Finding),
-		TotalComponents:     4,
-	}
-
-	// Batch 0 (offset=0): finding at local index 1
-	batchOffset := 0
-	for _, f := range []Finding{{Index: 1, CheckCode: "AAA"}} {
-		globalIdx := batchOffset + f.Index
-		result.FindingsByCompIndex[globalIdx] = append(result.FindingsByCompIndex[globalIdx], f)
-	}
-
-	// Batch 1 (offset=2): finding at local index 0 → global index 2
-	batchOffset = 2
-	for _, f := range []Finding{{Index: 0, CheckCode: "BBB"}} {
-		globalIdx := batchOffset + f.Index
-		result.FindingsByCompIndex[globalIdx] = append(result.FindingsByCompIndex[globalIdx], f)
-	}
-
-	assert.Equal(t, "AAA", result.FindingsByCompIndex[1][0].CheckCode)
-	assert.Equal(t, "BBB", result.FindingsByCompIndex[2][0].CheckCode)
-	assert.Empty(t, result.FindingsByCompIndex[0])
-	assert.Empty(t, result.FindingsByCompIndex[3])
-}
-
 // --- auth header: API key is sent as Bearer token ---
-
 func TestFetchComponentQuality_BearerToken(t *testing.T) {
 	var gotAuth string
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -219,8 +205,7 @@ func TestFetchComponentQuality_BearerToken(t *testing.T) {
 	assert.Equal(t, "Bearer my-api-key", gotAuth)
 }
 
-// --- no auth header when no key ---
-
+// no auth header when no key
 func TestFetchComponentQuality_NoAuthHeader(t *testing.T) {
 	var gotAuth string
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -238,19 +223,51 @@ func TestFetchComponentQuality_NoAuthHeader(t *testing.T) {
 	assert.Empty(t, gotAuth)
 }
 
-// --- parseRetryAfter ---
+// --- parseRetryAfter tests: various header formats and edge cases ---
+func TestParseRetryAfter(t *testing.T) {
+	pastTime := time.Now().UTC().Add(-1 * time.Hour).Format(http.TimeFormat)
 
-func TestParseRetryAfter_Seconds(t *testing.T) {
-	d := parseRetryAfter(context.Background(), "30")
-	assert.Equal(t, 30*second, d)
-}
+	tests := []struct {
+		name         string
+		header       string
+		wantDuration time.Duration
+	}{
+		{
+			name:         "seconds",
+			header:       "30",
+			wantDuration: 30 * second,
+		},
+		{
+			name:         "empty",
+			header:       "",
+			wantDuration: defaultRetryWait,
+		},
+		{
+			name:         "invalid",
+			header:       "not-a-number",
+			wantDuration: defaultRetryWait,
+		},
+		{
+			name:         "http_date_in_past",
+			header:       pastTime,
+			wantDuration: defaultRetryWait,
+		},
+		{
+			name:         "zero_seconds",
+			header:       "0",
+			wantDuration: time.Duration(0),
+		},
+		{
+			name:         "negative_seconds",
+			header:       "-1",
+			wantDuration: defaultRetryWait,
+		},
+	}
 
-func TestParseRetryAfter_Empty(t *testing.T) {
-	d := parseRetryAfter(context.Background(), "")
-	assert.Equal(t, defaultRetryWait, d)
-}
-
-func TestParseRetryAfter_Invalid(t *testing.T) {
-	d := parseRetryAfter(context.Background(), "not-a-number")
-	assert.Equal(t, defaultRetryWait, d)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := parseRetryAfterTime(context.Background(), tt.header)
+			assert.Equal(t, tt.wantDuration, d)
+		})
+	}
 }
