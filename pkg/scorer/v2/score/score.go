@@ -211,24 +211,34 @@ func SBOMEvaluation(ctx context.Context, catal *catalog.Catalog, cfg config.Conf
 	log := logger.FromContext(ctx)
 	log.Debug("Selecting SBOM evaluation strategy")
 
-	// Build the evaluation input. ComponentQuality is populated only when an
-	// Interlynk URL is configured, the API call succeeds, AND the catalog
-	// actually includes the Component Quality category. Without all three
-	// conditions the API call would be a no-op: profiles-only evaluation never
-	// reads input.ComponentQuality, and a category-filtered run that excludes
-	// compinfo has no extractors that consume it.
+	log.Debug("Catalog configuration",
+		zap.Int("profiles", len(catal.Profiles)),
+		zap.Int("compr_categories", len(catal.ComprCategories)),
+	)
+
 	input := catalog.EvalInput{Doc: doc}
+
 	if cfg.InterlynkURL != "" && isCompQualityPresent(catal) {
+
 		client := interlynkapi.NewClient(cfg.InterlynkURL, cfg.InterlynkAPIKey)
+		log.Debug("Client for component quality API initialized",
+			zap.String("url", cfg.InterlynkURL),
+			zap.Bool("api_key_provided", cfg.InterlynkAPIKey != ""),
+		)
+
 		qResult, err := client.FetchComponentQuality(ctx, doc.Components())
+
 		if err != nil {
 			log.Warn("Component quality API call failed; continuing without component quality scores",
 				zap.String("url", cfg.InterlynkURL),
 				zap.Error(err),
 			)
-		} else {
-			input.ComponentQuality = qResult
 		}
+		input.ComponentQuality = qResult
+		log.Debug("Component quality results added to evaluation input",
+			zap.Int("components_checked", qResult.TotalComponents),
+			zap.String("tier", qResult.Tier),
+		)
 	}
 
 	if catal.Profiles != nil && catal.ComprCategories != nil {

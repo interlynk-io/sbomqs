@@ -27,47 +27,64 @@ import (
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/formulae"
 )
 
+// Check code prefixes returned by the Interlynk Component Quality API.
+// These prefixes identify finding categories in the API response.
+const (
+	PURLCode = "IDT-PURL-" // Identifier findings related to PURL resolution
+	CPECode  = "IDT-CPE-"  // Identifier findings related to CPE validation
+)
+
 // CompWithPurlValid: component purl resolves to a package manager or repository.
-// Maps to findings with check_code prefix "IDT-PURL-".
+// Maps to findings with check_code prefix CheckCodePrefixPURL.
 func CompWithPurlValid(_ context.Context, input catalog.EvalInput) catalog.ComprFeatScore {
 	if input.ComponentQuality == nil {
 		return formulae.ScoreCompNAA()
 	}
 	return scoreByFindings(input.ComponentQuality, func(f interlynkapi.Finding) bool {
-		return strings.HasPrefix(f.CheckCode, "IDT-PURL-")
+		return strings.HasPrefix(f.CheckCode, PURLCode)
 	}, "PURLs are valid")
 }
 
 // CompWithCpeValid: component CPE is found in NVD CPE database.
-// Maps to findings with check_code prefix "IDT-CPE-".
+// Maps to findings with check_code prefix CheckCodePrefixCPE.
 func CompWithCpeValid(_ context.Context, input catalog.EvalInput) catalog.ComprFeatScore {
 	if input.ComponentQuality == nil {
 		return formulae.ScoreCompNAA()
 	}
 	return scoreByFindings(input.ComponentQuality, func(f interlynkapi.Finding) bool {
-		return strings.HasPrefix(f.CheckCode, "IDT-CPE-")
+		return strings.HasPrefix(f.CheckCode, CPECode)
 	}, "CPEs are valid")
 }
 
-// scoreByFindings counts how many components have no matching findings.
-// Score = 10 * (passing / total). A component is "affected" if it has at
-// least one finding that the predicate matches.
+// scoreByFindings scores only components that have actual findings from the API.
+// Components with no findings at all are treated as N/A (unverified) rather than assumed passed.
+// Components with findings matching the predicate are marked as affected (failed).
+// Components with other findings but not matching the predicate are marked as passing.
 func scoreByFindings(r *interlynkapi.ComponentQualityResult, match func(interlynkapi.Finding) bool, label string) catalog.ComprFeatScore {
 	total := r.TotalComponents
 	if total == 0 {
 		return formulae.ScoreCompNA()
 	}
 
+	// Count only components that have at least one finding from the API (verified components)
+	verified := len(r.FindingsByCompIndex)
+	if verified == 0 {
+		// No components have any findings - nothing was verified
+		return formulae.ScoreCompNACustom("N/A (no component data)", true)
+	}
+
+	// Count how many verified components have a matching finding (affected/failed)
 	affected := 0
 	for _, findings := range r.FindingsByCompIndex {
 		for _, f := range findings {
 			if match(f) {
 				affected++
-				break // count each component at most once
+				break
 			}
 		}
 	}
 
-	passing := total - affected
-	return formulae.ScoreCompFull(passing, total, label, false)
+	// Passing = verified components that don't have this specific finding
+	passing := verified - affected
+	return formulae.ScoreCompFull(passing, verified, label, false)
 }
