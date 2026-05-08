@@ -173,6 +173,10 @@ func bsiV21SBOMDepth(doc sbom.Document) *db.Record {
 	for _, c := range doc.Components() {
 		componentMap[c.GetID()] = c
 	}
+	// Also include files (for SPDX) as they can be dependency targets
+	for _, f := range doc.Files() {
+		componentMap[f.GetID()] = f
+	}
 	componentMap[primary.GetID()] = primary.Component()
 
 	for _, r := range rels {
@@ -502,6 +506,10 @@ func bsiV21ComponentDependencies(doc sbom.Document, component sbom.GetComponent)
 	componentMap := make(map[string]sbom.GetComponent)
 	for _, c := range doc.Components() {
 		componentMap[c.GetID()] = c
+	}
+	// Also include files (for SPDX) as they can be dependency targets
+	for _, f := range doc.Files() {
+		componentMap[f.GetID()] = f
 	}
 
 	var declared []string

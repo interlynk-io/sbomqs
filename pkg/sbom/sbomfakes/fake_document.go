@@ -38,6 +38,16 @@ type FakeDocument struct {
 	compositionReturnsOnCall map[int]struct {
 		result1 []sbom.GetComposition
 	}
+	FilesStub        func() []sbom.GetComponent
+	filesMutex       sync.RWMutex
+	filesArgsForCall []struct {
+	}
+	filesReturns struct {
+		result1 []sbom.GetComponent
+	}
+	filesReturnsOnCall map[int]struct {
+		result1 []sbom.GetComponent
+	}
 	GetDirectDependenciesStub        func(string, ...string) []sbom.GetComponent
 	getDirectDependenciesMutex       sync.RWMutex
 	getDirectDependenciesArgsForCall []struct {
@@ -331,6 +341,59 @@ func (fake *FakeDocument) CompositionReturnsOnCall(i int, result1 []sbom.GetComp
 	}
 	fake.compositionReturnsOnCall[i] = struct {
 		result1 []sbom.GetComposition
+	}{result1}
+}
+
+func (fake *FakeDocument) Files() []sbom.GetComponent {
+	fake.filesMutex.Lock()
+	ret, specificReturn := fake.filesReturnsOnCall[len(fake.filesArgsForCall)]
+	fake.filesArgsForCall = append(fake.filesArgsForCall, struct {
+	}{})
+	stub := fake.FilesStub
+	fakeReturns := fake.filesReturns
+	fake.recordInvocation("Files", []interface{}{})
+	fake.filesMutex.Unlock()
+	if stub != nil {
+		return stub()
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeDocument) FilesCallCount() int {
+	fake.filesMutex.RLock()
+	defer fake.filesMutex.RUnlock()
+	return len(fake.filesArgsForCall)
+}
+
+func (fake *FakeDocument) FilesCalls(stub func() []sbom.GetComponent) {
+	fake.filesMutex.Lock()
+	defer fake.filesMutex.Unlock()
+	fake.FilesStub = stub
+}
+
+func (fake *FakeDocument) FilesReturns(result1 []sbom.GetComponent) {
+	fake.filesMutex.Lock()
+	defer fake.filesMutex.Unlock()
+	fake.FilesStub = nil
+	fake.filesReturns = struct {
+		result1 []sbom.GetComponent
+	}{result1}
+}
+
+func (fake *FakeDocument) FilesReturnsOnCall(i int, result1 []sbom.GetComponent) {
+	fake.filesMutex.Lock()
+	defer fake.filesMutex.Unlock()
+	fake.FilesStub = nil
+	if fake.filesReturnsOnCall == nil {
+		fake.filesReturnsOnCall = make(map[int]struct {
+			result1 []sbom.GetComponent
+		})
+	}
+	fake.filesReturnsOnCall[i] = struct {
+		result1 []sbom.GetComponent
 	}{result1}
 }
 

@@ -60,6 +60,7 @@ type SpdxDoc struct {
 	compositions     []GetComposition
 	Vuln             []GetVulnerabilities
 	rawContent       []byte // Store raw content for manual parsing
+	File             []GetComponent
 }
 
 func newSPDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat, version FormatVersion, _ Signature) (Document, error) {
@@ -122,6 +123,10 @@ func (s SpdxDoc) Spec() Spec {
 
 func (s SpdxDoc) Components() []GetComponent {
 	return s.Comps
+}
+
+func (s SpdxDoc) Files() []GetComponent {
+	return s.File
 }
 
 func (s SpdxDoc) Authors() []GetAuthor {
@@ -235,6 +240,7 @@ func (s *SpdxDoc) parse() {
 	s.parsePrimaryComponent()
 	s.parseRelationships()
 	s.parseComps()
+	s.parseFiles()
 }
 
 func (s *SpdxDoc) parseDoc() {
@@ -388,6 +394,96 @@ func (s *SpdxDoc) parseComps() {
 		nc.PackageFilename = sc.PackageFileName
 
 		s.Comps = append(s.Comps, nc)
+	}
+
+}
+
+// Files returns all files defined in the SBOM (SPDX-specific)
+func (s *SpdxDoc) parseFiles() {
+	s.File = []GetComponent{}
+
+	for _, sf := range s.doc.Files {
+		nc := NewComponent()
+
+		// Basic file information
+		nc.Name = sf.FileName
+		nc.Spdxid = string(sf.FileSPDXIdentifier)
+		nc.ID = string(sf.FileSPDXIdentifier)
+		nc.PackageFilename = sf.FileName
+
+		// File checksums (mandatory SHA1 + optional others)
+		if len(sf.Checksums) > 0 {
+			chks := make([]GetChecksum, 0, len(sf.Checksums))
+			for _, c := range sf.Checksums {
+				ck := Checksum{}
+				ck.Alg = string(c.Algorithm)
+				ck.Content = c.Value
+				chks = append(chks, ck)
+			}
+			nc.Checksums = chks
+		}
+
+		// File copyright text (mandatory field in SPDX)
+		nc.CopyRight = sf.FileCopyrightText
+
+		// File licenses
+		if sf.LicenseConcluded != "" {
+			nc.Licenses = licenses.LookupExpression(sf.LicenseConcluded, nil)
+			nc.ConcludedLicense = nc.Licenses
+		}
+
+		// Declared licenses from LicenseInfoInFiles
+		if len(sf.LicenseInfoInFiles) > 0 {
+			declaredLics := []licenses.License{}
+			for _, licExpr := range sf.LicenseInfoInFiles {
+				declaredLics = append(declaredLics, licenses.LookupExpression(licExpr, nil)...)
+			}
+			nc.DeclaredLicense = declaredLics
+		}
+
+		// File types (e.g., BINARY, SOURCE, etc.)
+		if len(sf.FileTypes) > 0 {
+			nc.Purpose = string(sf.FileTypes[0])
+		}
+
+		// File contributors as authors
+		if len(sf.FileContributors) > 0 {
+			authors := []GetAuthor{}
+			for _, contributor := range sf.FileContributors {
+				a := Author{}
+				entity := parseEntity(contributor)
+				if entity != nil {
+					a.Name = entity.name
+					a.Email = entity.email
+				} else {
+					a.Name = contributor
+				}
+				authors = append(authors, a)
+			}
+			nc.Athrs = authors
+		}
+
+		// Store additional file metadata as properties
+		props := []ComponentProperty{}
+		if sf.LicenseComments != "" {
+			props = append(props, ComponentProperty{Name: "licenseComments", Value: sf.LicenseComments})
+		}
+		if sf.FileComment != "" {
+			props = append(props, ComponentProperty{Name: "fileComment", Value: sf.FileComment})
+		}
+		if sf.FileNotice != "" {
+			props = append(props, ComponentProperty{Name: "fileNotice", Value: sf.FileNotice})
+		}
+		if len(sf.FileAttributionTexts) > 0 {
+			for i, attr := range sf.FileAttributionTexts {
+				props = append(props, ComponentProperty{Name: fmt.Sprintf("attributionText_%d", i), Value: attr})
+			}
+		}
+		if len(props) > 0 {
+			nc.Props = props
+		}
+
+		s.File = append(s.File, nc)
 	}
 
 }

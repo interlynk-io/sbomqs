@@ -349,10 +349,14 @@ func bsiV11ComponentDependencies(doc sbom.Document, component sbom.GetComponent)
 	for _, c := range doc.Components() {
 		componentMap[c.GetID()] = c
 	}
+	// Also include files (for SPDX) as they can be dependency targets
+	for _, f := range doc.Files() {
+		componentMap[f.GetID()] = f
+	}
 
 	var declared []string
 	for _, r := range doc.GetOutgoingRelations(compID) {
-		if strings.EqualFold(r.GetType(), "DEPENDS_ON") {
+		if strings.EqualFold(r.GetType(), "DEPENDS_ON") || strings.EqualFold(r.GetType(), "CONTAINS") {
 			declared = append(declared, r.GetTo())
 		}
 	}
@@ -398,10 +402,14 @@ func bsiV11SBOMDepth(doc sbom.Document) *db.Record {
 		return db.NewRecordStmt(SBOM_DEPTH, "doc", "no relationships declared", 0.0, "")
 	}
 
-	// Build component map (include primary)
+	// Build component map (include primary and files)
 	componentMap := make(map[string]sbom.GetComponent)
 	for _, c := range doc.Components() {
 		componentMap[c.GetID()] = c
+	}
+	// Also include files (for SPDX) as they can be dependency targets
+	for _, f := range doc.Files() {
+		componentMap[f.GetID()] = f
 	}
 	componentMap[primary.GetID()] = primary.Component()
 
@@ -423,7 +431,7 @@ func bsiV11SBOMDepth(doc sbom.Document) *db.Record {
 		return db.NewRecordStmt(SBOM_DEPTH, "doc", "primary component does not declare its dependencies", 0.0, "")
 	}
 
-	// Recursive DFS from primary following DEPENDS_ON (v1.1 does not include CONTAINS)
+	// Recursive DFS from primary following DEPENDS_ON or CONTAINS (BSI v1.1 §5.2.2)
 	visited := make(map[string]bool)
 	var dfs func(id string)
 	dfs = func(id string) {
@@ -432,7 +440,7 @@ func bsiV11SBOMDepth(doc sbom.Document) *db.Record {
 		}
 		visited[id] = true
 		for _, rel := range doc.GetOutgoingRelations(id) {
-			if strings.EqualFold(rel.GetType(), "DEPENDS_ON") {
+			if strings.EqualFold(rel.GetType(), "DEPENDS_ON") || strings.EqualFold(rel.GetType(), "CONTAINS") {
 				dfs(rel.GetTo())
 			}
 		}
