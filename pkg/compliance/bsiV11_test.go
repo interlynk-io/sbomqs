@@ -1469,7 +1469,8 @@ func TestBSIComponentLicense(t *testing.T) {
 			assert.InDelta(t, 10.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_LICENSE, got.CheckKey)
 			assert.Equal(t, common.UniqueElementID(c), got.ID)
-			assert.Equal(t, "Apache-2.0 (compliant)", got.CheckValue)
+			// License expression "Apache-2.0 OR MIT",  either license is valid
+			assert.Contains(t, []string{"Apache-2.0 (compliant)", "MIT (compliant)"}, got.CheckValue)
 		}
 	})
 

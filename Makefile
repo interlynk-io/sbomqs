@@ -96,7 +96,7 @@ lint: ## Run golangci-lint (requires golangci-lint installed)
 .PHONY: test
 test: generate ## Run all tests
 	@echo "Running tests..."
-	@go test -cover -race ./...
+	@go test -count=1 -cover -race ./...
 
 ##@ Building
 
@@ -176,11 +176,11 @@ ci: deps generate vet ## Run CI pipeline locally with test summary
 	@echo "Running CI pipeline..."
 	@set +e; \
 	echo "Unit tests:"; \
-	go test -cover -race -failfast -p 1 $$(go list ./... | grep -v integration_test) 2>&1 | grep -E "^(ok|FAIL|coverage:)" | sed 's/github.com\/interlynk-io\/sbomqs\/v2\///' ; \
+	go test -count=1 -cover -race -failfast -p 1 $$(go list ./... | grep -v integration_test) 2>&1 | grep -E "^(ok|FAIL|coverage:)" | sed 's/github.com\/interlynk-io\/sbomqs\/v2\///' ; \
 	UNIT_EXIT_CODE=$$?; \
 	echo ""; \
 	echo "Integration tests:"; \
-	go test -run "Test_ScoreForStaticSBOMFiles_Summary|Test_NTIAProfile|Test_NTIA2025Profile|Test_InterlynkProfile" ./pkg/scorer/v2/... 2>&1 | grep -E "(PASS|FAIL|ok|NTIA.*Profile:|Interlynk.*Profile:)" ; \
+	go test -count=1 -run "Test_ScoreForStaticSBOMFiles_Summary|Test_NTIAProfile|Test_NTIA2025Profile|Test_InterlynkProfile" ./pkg/scorer/v2/... 2>&1 | grep -E "(PASS|FAIL|ok|NTIA.*Profile:|Interlynk.*Profile:)" ; \
 	INTEGRATION_EXIT_CODE=$$?; \
 	echo ""; \
 	echo "=========================================="; \
