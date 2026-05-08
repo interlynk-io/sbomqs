@@ -56,4 +56,14 @@ type Config struct {
 	// When false (default), only files directly inside the specified directory are considered.
 	// When true, sub-directories are walked recursively and all nested files are considered.
 	Recursive bool
+
+	// InterlynkURL is the base URL of the Interlynk platform for Component Quality checks
+	// (e.g. "https://app.interlynk.io"). When empty (default), no API calls are made and
+	// Component Quality features return N/A.
+	InterlynkURL string
+
+	// InterlynkAPIKey is the Bearer token for the authenticated API tier.
+	// When empty, the unauthenticated tier is used (50-component batches, 6 basic checks).
+	// When set, the authenticated tier is used (5000-component batches, 10 checks).
+	InterlynkAPIKey string
 }

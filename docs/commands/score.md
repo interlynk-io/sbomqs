@@ -7,6 +7,7 @@ The `sbomqs score` command is the primary tool for evaluating SBOM quality. It p
 The score command analyzes your SBOM across multiple categories:
 
 ### Version 2.0 Categories (default)
+
 - **Identification**: Component identification and naming
 - **Provenance**: SBOM creation and authorship information
 - **Integrity**: Checksums and verification data
@@ -17,6 +18,7 @@ The score command analyzes your SBOM across multiple categories:
 - **Component Quality**: Component quality (API Key Required)
 
 ### Legacy Categories (with --legacy flag)
+
 - **NTIA Minimum Elements**: Compliance with NTIA's minimum requirements
 - **Structural**: Conformance to SBOM specification standards
 - **Semantic**: Correctness of SBOM field meanings
@@ -32,12 +34,14 @@ sbomqs score [flags] <SBOM file(s)>
 ## Flags
 
 ### Output Format Flags
+
 - `--basic, -b`: Output only the numeric score (default: false)
 - `--detailed, -d`: Show detailed breakdown by category and feature (default: true)
 - `--json, -j`: Output in JSON format for automation (default: false)
 - `--color, -l`: Output in colorful format
 
 ### Scoring Control Flags
+
 - `--category, -c <category>`: Score only specific categories (comma-separated)
 - `--feature, -f <features>`: Score only specific features (comma-separated)
 - `--configpath <path>`: Use custom scoring configuration file
@@ -45,10 +49,25 @@ sbomqs score [flags] <SBOM file(s)>
 - `--legacy, -e`: Use legacy scoring mode (prior to sbomqs version 2.0)
 
 ### Other Flags
+
 - `--debug, -D`: Enable debug logging
 
+### Component Quality API Flags
+
+- `--url <url>`: Interlynk API endpoint for component quality analysis (optional)
+- `--api-key <token>`: API key for authenticated access to the Interlynk API (optional)
+
+**Note:** The `--url` flag should point to the base URL only (e.g., `https://api.interlynk.io`). The client automatically appends `/api/v1/doctor/check`.
+
+#### Unauthenticated vs Authenticated Access
+
+- **Unauthenticated**: Limited to 50 components per batch, basic checks only
+- **Authenticated**: Up to 5000 components per batch, extended checks including EPSS, KEV, and malicious package detection
+
 ### Deprecated Flags
+
 These flags are deprecated but still available for backward compatibility:
+
 - `--filepath <path>`: Use positional argument instead
 - `--dirpath <path>`: Use positional argument instead
 - `--reportFormat <format>`: Use `--json`, `--detailed`, or `--basic` instead
@@ -62,6 +81,7 @@ These flags are deprecated but still available for backward compatibility:
 ### Available Categories
 
 #### Version 2.0 (default)
+
 - `identification`: Component identification quality
 - `provenance`: SBOM creation and authorship
 - `integrity`: Hash and checksum coverage
@@ -72,6 +92,7 @@ These flags are deprecated but still available for backward compatibility:
 - `component quality`: Component quality 
 
 #### Legacy Mode (--legacy flag)
+
 - `ntia` or `NTIA`: NTIA minimum elements
 - `structural`: Specification compliance
 - `semantic`: Field correctness  
@@ -80,6 +101,7 @@ These flags are deprecated but still available for backward compatibility:
 - `bsi-v1`: BSI TR-03183-2 v1.1 scoring
 
 ### Available Profiles
+
 - `ntia`: NTIA minimum elements compliance
 - `bsi`: BSI TR-03183-2 compliance (uses latest version, currently v2.1)
 - `bsi-v1.1`: BSI TR-03183-2 v1.1 specific
@@ -93,12 +115,14 @@ These flags are deprecated but still available for backward compatibility:
 ### Basic Usage
 
 #### Get a Quick Score
+
 ```bash
 $ sbomqs score my-app.spdx.json
 7.2 my-app.spdx.json
 ```
 
 #### Score Multiple Files
+
 ```bash
 $ sbomqs score *.json --basic
 6.5 app1.spdx.json
@@ -109,6 +133,7 @@ $ sbomqs score *.json --basic
 ### Detailed Analysis
 
 #### Full Breakdown
+
 ```bash
 ➜  sbomqs git:(feature/sbomqs-2.0-docs) ✗ ./build/sbomqs score samples/photon.spdx.json
 SBOM Quality Score: 4.1/10.0     Grade: F       Components: 38   EngineVersion: 1       File: samples/photon.spdx.json
@@ -207,9 +232,11 @@ Interlynk Detailed Score:
 
 Love to hear your feedback https://forms.gle/anFSspwrk7uSfD7Q6
 ```
+
 ### Category-Specific Scoring
 
 #### Profile-Based Scoring
+
 ```bash
 # NTIA Profile
 $ sbomqs score --profile ntia my-app.spdx.json
@@ -225,6 +252,7 @@ $ sbomqs score --profile bsi-v2.0 my-app.spdx.json
 ```
 
 #### Category-Specific Scoring
+
 ```bash
 # Version 2.0 categories
 $ sbomqs score --category identification,integrity my-app.spdx.json
@@ -234,6 +262,7 @@ $ sbomqs score --legacy --category ntia my-app.spdx.json
 ```
 
 #### Specific Feature Scoring
+
 ```bash
 # Score specific features
 $ sbomqs score --feature comp_with_name,comp_with_version my-app.spdx.json
@@ -285,6 +314,7 @@ fi
 ### Custom Configuration
 
 #### Generate Custom Profile
+
 ```bash
 # Generate configuration template
 $ sbomqs generate features > custom-profile.yaml
@@ -299,6 +329,7 @@ $ sbomqs score my-app.json --configpath custom-profile.yaml
 ### Directory Processing
 
 #### Score All SBOMs in Directory
+
 ```bash
 $ sbomqs score ./sboms/ --basic
 7.2 sboms/app1.json
@@ -309,6 +340,7 @@ $ sbomqs score ./sboms/ --basic
 ### Working with Profiles
 
 #### Apply Compliance Profiles
+
 ```bash
 # Single profile
 $ sbomqs score --profile ntia my-app.spdx.json
@@ -326,6 +358,7 @@ $ sbomqs score --profile bsi-v2.0 samples/app.spdx.json
 ### Version 2.0 vs Legacy Mode
 
 #### Version 2.0 Mode (Default)
+
 ```bash
 # Uses new comprehensive categories
 $ sbomqs score my-app.spdx.json
@@ -335,6 +368,7 @@ $ sbomqs score --category identification,integrity my-app.spdx.json
 ```
 
 #### Legacy Mode
+
 ```bash
 # Use pre-2.0 scoring system
 $ sbomqs score --legacy my-app.spdx.json
@@ -348,6 +382,7 @@ $ sbomqs score --legacy --category ntia my-app.spdx.json
 ### Score Ranges and Grades
 
 #### Numeric Scores (0-10)
+
 - **9-10**: Excellent - SBOM is high quality and compliant
 - **7-8.9**: Good - SBOM meets most requirements
 - **5-6.9**: Fair - SBOM has gaps that should be addressed
@@ -355,6 +390,7 @@ $ sbomqs score --legacy --category ntia my-app.spdx.json
 - **0-2.9**: Failing - SBOM is severely incomplete
 
 #### Letter Grades
+
 - **A**: 8.0-10.0 - Excellent quality
 - **B**: 6.0-7.9 - Good quality
 - **C**: 4.0-5.9 - Fair quality
@@ -364,19 +400,81 @@ $ sbomqs score --legacy --category ntia my-app.spdx.json
 ### Key Quality Indicators
 
 #### High Priority Issues
+
 - Missing component versions (affects vulnerability scanning)
 - No supplier information (supply chain transparency)
 - Invalid or missing licenses (legal compliance)
 - No creation timestamp (traceability)
 
 #### Medium Priority Issues
+
 - Missing checksums (integrity verification)
 - No CPE/PURL identifiers (vulnerability matching)
 - Incomplete relationships (dependency understanding)
 
+## Component Quality Analysis
+
+The Component Quality category requires access to the Interlynk API to analyze components for:
+
+- End-of-Life (EOL) and End-of-Support (EOS) status
+- Malicious package detection
+- Known Exploited Vulnerabilities (KEV)
+- Exploit Prediction Scoring System (EPSS)
+- PURL and CPE validity
+
+### API Endpoint Examples
+
+#### Local Development
+
+```bash
+# Using a local Interlynk instance
+sbomqs score my-app.spdx.json --url="http://localhost:3000" --api-key="your-local-api-key"
+```
+
+#### Production (Interlynk Platform)
+
+```bash
+# Using the Interlynk production API
+sbomqs score my-app.spdx.json --url="https://api.interlynk.io" --api-key="$INTERLYNK_SECURITY_TOKEN"
+```
+
+### Obtaining an API Token
+
+#### Local Development Token
+
+To obtain token locally:
+
+```bash
+API_KEY=$(RBENV_VERSION=3.4.9 bundle exec rails runner '
+  Rails.cache.clear
+  org = Organization.find_by!(name: "Interlynk")
+  user = User.find_by!(email: "ritesh.noronha@interlynk.io")
+  org_user = OrganizationUser.find_by!(user: user, organization: org)
+  print ApiKey.unexpiring_token(item: org_user, token_name: "sbomqs-local").raw_token
+')
+```
+
+#### Production Token
+
+- Login to <https://app.interlynk.io/>
+- Go to Profile --> Security Token --> Personal Token
+
+### Component Quality Scoring Without API
+
+Without the `--url` flag, Component Quality features will show as "N/A" in the output. This is useful when you don't need component-level security analysis.
+
+```bash
+# Score without component quality analysis
+sbomqs score my-app.spdx.json
+
+# Score with component quality analysis
+sbomqs score my-app.spdx.json --url="https://api.interlynk.io" --api-key="$INTERLYNK_SECURITY_TOKEN"
+```
+
 ## CI/CD Integration
 
 ### GitHub Actions Example
+
 ```yaml
 - name: Check SBOM Quality
   run: |
@@ -395,6 +493,7 @@ $ sbomqs score --legacy --category ntia my-app.spdx.json
 ```
 
 ### Jenkins Pipeline
+
 ```groovy
 stage('SBOM Quality Check') {
     steps {
@@ -417,6 +516,7 @@ stage('SBOM Quality Check') {
 ## Best Practices
 
 ### Regular Quality Checks
+
 ```bash
 # Add to pre-commit hooks
 #!/bin/bash
@@ -429,12 +529,15 @@ fi
 ```
 
 ### Incremental Improvement
+
 1. Start by checking NTIA compliance:
+
    ```bash
    sbomqs score --category ntia sbom.json
    ```
 
 2. Address missing critical fields:
+
    ```bash
    # List components missing versions
    sbomqs list sbom.json --feature comp_with_version --missing
@@ -444,6 +547,7 @@ fi
    ```
 
 3. Improve incrementally and re-score:
+
    ```bash
    sbomqs score sbom.json --detailed
    ```
@@ -453,19 +557,23 @@ fi
 ### Common Issues
 
 #### Low Scores
+
 If you're getting unexpectedly low scores:
+
 1. Check NTIA minimum elements first
 2. Ensure components have versions
 3. Verify license information is present
 4. Add supplier/manufacturer information
 
 #### Parsing Errors
+
 ```bash
 # Enable debug mode for more information
 sbomqs score problematic.json --debug
 ```
 
 #### Performance with Large SBOMs
+
 ```bash
 # Process in basic mode for faster results
 sbomqs score large-sbom.json --basic

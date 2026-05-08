@@ -19,6 +19,7 @@ import (
 	"testing"
 
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
+	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/catalog"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -280,7 +281,7 @@ func TestCompWithWeakChecksums1(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithMixValidChecksums, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithWeakChecksums(doc)
+		got := CompWithWeakChecksums(ctx, catalog.EvalInput{Doc: doc})
 		assert.InDelta(t, 10.0, got.Score, 0.0001)
 		assert.Equal(t, "complete", got.Desc)
 		assert.False(t, got.Ignore)
@@ -290,7 +291,7 @@ func TestCompWithWeakChecksums1(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWithMixValidChecksums, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithWeakChecksums(doc)
+		got := CompWithWeakChecksums(ctx, catalog.EvalInput{Doc: doc})
 		assert.InDelta(t, 10.0, got.Score, 0.0001)
 		assert.Equal(t, "complete", got.Desc)
 		assert.False(t, got.Ignore)
@@ -300,7 +301,7 @@ func TestCompWithWeakChecksums1(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithOnlyWeakValidChecksums, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithWeakChecksums(doc)
+		got := CompWithWeakChecksums(ctx, catalog.EvalInput{Doc: doc})
 		assert.InDelta(t, 0.0, got.Score, 0.0001)
 		assert.Equal(t, "upgrade 1 component to SHA-256+", got.Desc)
 		assert.False(t, got.Ignore)
@@ -310,7 +311,7 @@ func TestCompWithWeakChecksums1(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWithOnlyWeakValidChecksums, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithWeakChecksums(doc)
+		got := CompWithWeakChecksums(ctx, catalog.EvalInput{Doc: doc})
 		assert.InDelta(t, 0.0, got.Score, 0.0001)
 		assert.Equal(t, "upgrade 1 component to SHA-256+", got.Desc)
 		assert.False(t, got.Ignore)
@@ -320,7 +321,7 @@ func TestCompWithWeakChecksums1(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithOnlyStrongValidChecksums, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithWeakChecksums(doc)
+		got := CompWithWeakChecksums(ctx, catalog.EvalInput{Doc: doc})
 		assert.InDelta(t, 10.0, got.Score, 0.0001)
 		assert.Equal(t, "complete", got.Desc)
 		assert.False(t, got.Ignore)
@@ -330,7 +331,7 @@ func TestCompWithWeakChecksums1(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWithOnlyStrongValidChecksums, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithWeakChecksums(doc)
+		got := CompWithWeakChecksums(ctx, catalog.EvalInput{Doc: doc})
 		assert.InDelta(t, 10.0, got.Score, 0.0001)
 		assert.Equal(t, "complete", got.Desc)
 		assert.False(t, got.Ignore)
@@ -344,7 +345,7 @@ func TestCompWithStrongChecksums1(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithMixValidChecksums, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithStrongChecksums(doc)
+		got := CompWithStrongChecksums(ctx, catalog.EvalInput{Doc: doc})
 		assert.InDelta(t, 10.0, got.Score, 0.0001)
 		assert.Equal(t, "complete", got.Desc)
 		assert.False(t, got.Ignore)
@@ -354,7 +355,7 @@ func TestCompWithStrongChecksums1(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWithMixValidChecksums, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithStrongChecksums(doc)
+		got := CompWithStrongChecksums(ctx, catalog.EvalInput{Doc: doc})
 		assert.InDelta(t, 10.0, got.Score, 0.0001)
 		assert.Equal(t, "complete", got.Desc)
 		assert.False(t, got.Ignore)
@@ -364,7 +365,7 @@ func TestCompWithStrongChecksums1(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithOnlyWeakValidChecksums, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithStrongChecksums(doc)
+		got := CompWithStrongChecksums(ctx, catalog.EvalInput{Doc: doc})
 		assert.InDelta(t, 0.0, got.Score, 0.0001)
 		assert.Equal(t, "add to 1 component", got.Desc)
 		assert.False(t, got.Ignore)
@@ -374,7 +375,7 @@ func TestCompWithStrongChecksums1(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWithOnlyWeakValidChecksums, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithStrongChecksums(doc)
+		got := CompWithStrongChecksums(ctx, catalog.EvalInput{Doc: doc})
 		assert.InDelta(t, 0.0, got.Score, 0.0001)
 		assert.Equal(t, "add to 1 component", got.Desc)
 		assert.False(t, got.Ignore)
@@ -384,7 +385,7 @@ func TestCompWithStrongChecksums1(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithOnlyStrongValidChecksums, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithStrongChecksums(doc)
+		got := CompWithStrongChecksums(ctx, catalog.EvalInput{Doc: doc})
 		assert.InDelta(t, 10.0, got.Score, 0.0001)
 		assert.Equal(t, "complete", got.Desc)
 		assert.False(t, got.Ignore)
@@ -394,7 +395,7 @@ func TestCompWithStrongChecksums1(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWithOnlyStrongValidChecksums, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithStrongChecksums(doc)
+		got := CompWithStrongChecksums(ctx, catalog.EvalInput{Doc: doc})
 		assert.InDelta(t, 10.0, got.Score, 0.0001)
 		assert.Equal(t, "complete", got.Desc)
 		assert.False(t, got.Ignore)

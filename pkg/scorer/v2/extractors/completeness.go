@@ -21,6 +21,7 @@
 package extractors
 
 import (
+	"context"
 	"fmt"
 	"slices"
 	"strings"
@@ -43,7 +44,8 @@ func findComponentByID(doc sbom.Document, id string) (sbom.GetComponent, bool) {
 
 // comp_with_dependencies (component-level coverage)
 // SPDX: relationships (DEPENDS_ON); CDX: component.dependencies / bom.dependencies
-func CompWithDependencies(doc sbom.Document) catalog.ComprFeatScore {
+func CompWithDependencies(_ context.Context, input catalog.EvalInput) catalog.ComprFeatScore {
+	doc := input.Doc
 	comps := doc.Components()
 	if len(comps) == 0 {
 		return formulae.ScoreCompNA()
@@ -169,7 +171,8 @@ func CompWithDependencies(doc sbom.Document) catalog.ComprFeatScore {
 // - Full score if all relevant components declare dependency completeness.
 // - Partial score if some components declare completeness.
 // - N/A if no components declare dependencies.
-func CompWithDeclaredCompleteness(doc sbom.Document) catalog.ComprFeatScore {
+func CompWithDeclaredCompleteness(_ context.Context, input catalog.EvalInput) catalog.ComprFeatScore {
+	doc := input.Doc
 	comps := doc.Components()
 	if len(comps) == 0 {
 		return formulae.ScoreCompNA()
@@ -216,7 +219,8 @@ func CompWithDeclaredCompleteness(doc sbom.Document) catalog.ComprFeatScore {
 }
 
 // sbom_with_primary_comp: Single primary component defined
-func SBOMWithPrimaryComponent(doc sbom.Document) catalog.ComprFeatScore {
+func SBOMWithPrimaryComponent(_ context.Context, input catalog.EvalInput) catalog.ComprFeatScore {
+	doc := input.Doc
 	comps := doc.Components()
 
 	if !commonV2.HasSBOMPrimaryComponent(doc) {
@@ -235,7 +239,8 @@ func SBOMWithPrimaryComponent(doc sbom.Document) catalog.ComprFeatScore {
 }
 
 // comps_with_source_code: Valid VCS URL for CDX and no-determinsitic field in SPDX
-func CompWithSourceCode(doc sbom.Document) catalog.ComprFeatScore {
+func CompWithSourceCode(_ context.Context, input catalog.EvalInput) catalog.ComprFeatScore {
+	doc := input.Doc
 	comps := doc.Components()
 	if len(comps) == 0 {
 		return formulae.ScoreCompNA()
@@ -249,7 +254,8 @@ func CompWithSourceCode(doc sbom.Document) catalog.ComprFeatScore {
 }
 
 // comp_with_supplier
-func CompWithSupplier(doc sbom.Document) catalog.ComprFeatScore {
+func CompWithSupplier(_ context.Context, input catalog.EvalInput) catalog.ComprFeatScore {
+	doc := input.Doc
 	comps := doc.Components()
 	if len(comps) == 0 {
 		return formulae.ScoreCompNA()
@@ -263,7 +269,8 @@ func CompWithSupplier(doc sbom.Document) catalog.ComprFeatScore {
 }
 
 // comp_with_primary_purpose
-func CompWithPackagePurpose(doc sbom.Document) catalog.ComprFeatScore {
+func CompWithPackagePurpose(_ context.Context, input catalog.EvalInput) catalog.ComprFeatScore {
+	doc := input.Doc
 	comps := doc.Components()
 	if len(comps) == 0 {
 		return formulae.ScoreCompNA()
@@ -320,7 +327,8 @@ func componentWord(n int) string {
 }
 
 // sbom_with_declared_completeness
-func SBOMWithDeclaredCompleteness(doc sbom.Document) catalog.ComprFeatScore {
+func SBOMWithDeclaredCompleteness(_ context.Context, input catalog.EvalInput) catalog.ComprFeatScore {
+	doc := input.Doc
 	switch doc.Spec().GetSpecType() {
 
 	case string(sbom.SBOMSpecSPDX):

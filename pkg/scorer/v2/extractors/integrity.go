@@ -18,11 +18,11 @@
 package extractors
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
 	"github.com/interlynk-io/sbomqs/v2/pkg/compliance/common"
-	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/catalog"
 	commonV2 "github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/common"
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/formulae"
@@ -31,7 +31,8 @@ import (
 // CompWithStrongChecksums returns a score based on components having at least one strong checksum.
 // Strong checksums: SHA-224+, SHA-3, BLAKE, Streebog, post-quantum algorithms.
 // A component with at least one strong checksum gets full credit, even if it also has weak ones.
-func CompWithStrongChecksums(doc sbom.Document) catalog.ComprFeatScore {
+func CompWithStrongChecksums(_ context.Context, input catalog.EvalInput) catalog.ComprFeatScore {
+	doc := input.Doc
 	comps := doc.Components()
 	if len(comps) == 0 {
 		return formulae.ScoreCompNA()
@@ -51,7 +52,8 @@ func CompWithStrongChecksums(doc sbom.Document) catalog.ComprFeatScore {
 // Weak checksums: MD2-6, SHA-1, Adler-32.
 // This identifies components that have checksums but need to be upgraded to stronger algorithms.
 // Components with no checksums are NOT counted here (they're handled by comp_with_strong_checksums).
-func CompWithWeakChecksums(doc sbom.Document) catalog.ComprFeatScore {
+func CompWithWeakChecksums(_ context.Context, input catalog.EvalInput) catalog.ComprFeatScore {
+	doc := input.Doc
 	comps := doc.Components()
 	if len(comps) == 0 {
 		return formulae.ScoreCompNA()
@@ -111,7 +113,8 @@ var verifySignature = common.VerifySignature
 //	10 = signature present and verification succeeded
 //	 5 = signature present but verification failed
 //	 0 = no signature / incomplete bundle
-func SBOMSignature(doc sbom.Document) catalog.ComprFeatScore {
+func SBOMSignature(_ context.Context, input catalog.EvalInput) catalog.ComprFeatScore {
+	doc := input.Doc
 	// SPDX does not support signatures in its specification
 	if strings.ToLower(doc.Spec().GetSpecType()) == "spdx" {
 		return catalog.ComprFeatScore{

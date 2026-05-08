@@ -66,6 +66,10 @@ type userCmd struct {
 
 	// Old scoring
 	legacy bool
+
+	// Interlynk Component Quality API
+	interlynkURL    string
+	interlynkAPIKey string
 }
 
 // scoreCmd represents the score command for generating comprehensive quality scores for SBOM documents.
@@ -285,23 +289,29 @@ func toUserCmd(cmd *cobra.Command, args []string) *userCmd {
 	// recurssive
 	uCmd.recursive, _ = cmd.Flags().GetBool("recursive")
 
+	// Interlynk Component Quality API
+	uCmd.interlynkURL, _ = cmd.Flags().GetString("url")
+	uCmd.interlynkAPIKey, _ = cmd.Flags().GetString("api-key")
+
 	return uCmd
 }
 
 func toEngineParams(uCmd *userCmd) *engine.Params {
 	return &engine.Params{
-		Path:       uCmd.path,
-		Categories: uCmd.categories,
-		Features:   uCmd.features,
-		JSON:       uCmd.json,
-		Basic:      uCmd.basic,
-		Detailed:   uCmd.detailed,
-		Color:      uCmd.color,
-		Recursive:  uCmd.recursive,
-		Debug:      uCmd.debug,
-		ConfigPath: uCmd.configPath,
-		Legacy:     uCmd.legacy,
-		Profiles:   uCmd.profile,
+		Path:            uCmd.path,
+		Categories:      uCmd.categories,
+		Features:        uCmd.features,
+		JSON:            uCmd.json,
+		Basic:           uCmd.basic,
+		Detailed:        uCmd.detailed,
+		Color:           uCmd.color,
+		Recursive:       uCmd.recursive,
+		Debug:           uCmd.debug,
+		ConfigPath:      uCmd.configPath,
+		Legacy:          uCmd.legacy,
+		Profiles:        uCmd.profile,
+		InterlynkURL:    uCmd.interlynkURL,
+		InterlynkAPIKey: uCmd.interlynkAPIKey,
 	}
 }
 
@@ -417,4 +427,8 @@ func init() {
 
 	scoreCmd.Flags().StringSlice("profile", nil, "profiles to run ('ntia', 'ntia-2025', 'fsct', 'bsi', 'bsi-v1.1', 'bsi-v2.0', 'bsi-v2.1', 'oct-v1.1', 'interlynk')")
 	scoreCmd.Flags().BoolP("legacy", "e", false, "legacy, prior to sbomqs version 2.0")
+
+	// Interlynk Component Quality API
+	scoreCmd.Flags().StringP("url", "u", "", "Interlynk platform URL for component quality checks (e.g. https://app.interlynk.io)")
+	scoreCmd.Flags().StringP("api-key", "k", "", "Interlynk API key (enables authenticated tier: 5000-component batches, 10 checks)")
 }

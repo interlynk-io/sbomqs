@@ -12,42 +12,79 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Component Quality category extractors.
+// When the caller populates input.ComponentQuality (i.e. --url was provided and
+// the API call succeeded), these functions score each feature based on findings
+// returned by /api/v1/doctor/check. Without it they return N/A (informational).
 package extractors
 
 import (
-	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
+	"context"
+	"strings"
+
+	"github.com/interlynk-io/sbomqs/v2/pkg/interlynkapi"
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/catalog"
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/formulae"
 )
 
-// Components no longer maintained or declared end-of-life
-func CompWithEOSOrEOL(doc sbom.Document) catalog.ComprFeatScore {
-	return formulae.ScoreCompNAA()
+// Check code prefixes returned by the Interlynk Component Quality API.
+// These prefixes identify finding categories in the API response.
+const (
+	PURLCode = "IDT-PURL-" // Identifier findings related to PURL resolution
+	CPECode  = "IDT-CPE-"  // Identifier findings related to CPE validation
+)
+
+// CompWithPurlValid: component purl resolves to a package manager or repository.
+// Maps to findings with check_code prefix CheckCodePrefixPURL.
+func CompWithPurlValid(_ context.Context, input catalog.EvalInput) catalog.ComprFeatScore {
+	if input.ComponentQuality == nil {
+		return formulae.ScoreCompNAA()
+	}
+	return scoreByFindings(input.ComponentQuality, func(f interlynkapi.Finding) bool {
+		return strings.HasPrefix(f.CheckCode, PURLCode)
+	}, "PURLs are valid")
 }
 
-// Components tagged as malicious in threat databases
-func CompWithMalicious(doc sbom.Document) catalog.ComprFeatScore {
-	return formulae.ScoreCompNAA()
+// CompWithCpeValid: component CPE is found in NVD CPE database.
+// Maps to findings with check_code prefix CheckCodePrefixCPE.
+func CompWithCpeValid(_ context.Context, input catalog.EvalInput) catalog.ComprFeatScore {
+	if input.ComponentQuality == nil {
+		return formulae.ScoreCompNAA()
+	}
+	return scoreByFindings(input.ComponentQuality, func(f interlynkapi.Finding) bool {
+		return strings.HasPrefix(f.CheckCode, CPECode)
+	}, "CPEs are valid")
 }
 
-// Components with Exploit Prediction Scoring System > 0.8
-func CompWithHighEPSS(doc sbom.Document) catalog.ComprFeatScore {
-	return formulae.ScoreCompNAA()
-}
+// scoreByFindings scores only components that have actual findings from the API.
+// Components with no findings at all are treated as N/A (unverified) rather than assumed passed.
+// Components with findings matching the predicate are marked as affected (failed).
+// Components with other findings but not matching the predicate are marked as passing.
+func scoreByFindings(r *interlynkapi.ComponentQualityResult, match func(interlynkapi.Finding) bool, label string) catalog.ComprFeatScore {
+	total := r.TotalComponents
+	if total == 0 {
+		return formulae.ScoreCompNA()
+	}
 
-// Components with vulnerabilities in CISA's Known Exploited Vulns
-func CompWithVulnSeverityCritical(doc sbom.Document) catalog.ComprFeatScore {
-	return formulae.ScoreCompNAA()
-}
+	// Count only components that have at least one finding from the API (verified components)
+	verified := len(r.FindingsByCompIndex)
+	if verified == 0 {
+		// No components have any findings - nothing was verified
+		return formulae.ScoreCompNACustom("N/A (no component data)", true)
+	}
 
-func CompWithKev(doc sbom.Document) catalog.ComprFeatScore {
-	return formulae.ScoreCompNAA()
-}
+	// Count how many verified components have a matching finding (affected/failed)
+	affected := 0
+	for _, findings := range r.FindingsByCompIndex {
+		for _, f := range findings {
+			if match(f) {
+				affected++
+				break
+			}
+		}
+	}
 
-func CompWithPurlValid(doc sbom.Document) catalog.ComprFeatScore {
-	return formulae.ScoreCompNAA()
-}
-
-func CompWithCpeValid(doc sbom.Document) catalog.ComprFeatScore {
-	return formulae.ScoreCompNAA()
+	// Passing = verified components that don't have this specific finding
+	passing := verified - affected
+	return formulae.ScoreCompFull(passing, verified, label, false)
 }

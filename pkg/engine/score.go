@@ -77,6 +77,11 @@ type Params struct {
 	Legacy      bool
 	Profiles    []string
 	ListProfile string // profile for the list command, e.g. "bsiv21"
+
+	// InterlynkURL enables Component Quality API calls when set.
+	InterlynkURL string
+	// InterlynkAPIKey activates the authenticated tier (larger batches, more checks).
+	InterlynkAPIKey string
 }
 
 func Run(ctx context.Context, ep *Params) error {
@@ -114,11 +119,13 @@ func scored(ctx context.Context, ep *Params) ([]api.Result, error) {
 	)
 
 	cfg := config.Config{
-		Categories: ep.Categories,
-		Features:   ep.Features,
-		ConfigFile: ep.ConfigPath,
-		Profile:    ep.Profiles,
-		Recursive:  ep.Recursive,
+		Categories:      ep.Categories,
+		Features:        ep.Features,
+		ConfigFile:      ep.ConfigPath,
+		Profile:         ep.Profiles,
+		Recursive:       ep.Recursive,
+		InterlynkURL:    ep.InterlynkURL,
+		InterlynkAPIKey: ep.InterlynkAPIKey,
 	}
 
 	results, err := score.ScoreSBOM(ctx, cfg, ep.Path)

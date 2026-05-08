@@ -19,6 +19,7 @@ import (
 	"testing"
 
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
+	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/catalog"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -126,7 +127,7 @@ func TestCompWithName(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMComponentNameEmptyString, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithName(doc)
+		got := CompWithName(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add to 1 component", got.Desc)
@@ -137,7 +138,7 @@ func TestCompWithName(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMWithComponentNameEmptyString, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithName(doc)
+		got := CompWithName(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add to 1 component", got.Desc)
@@ -148,7 +149,7 @@ func TestCompWithName(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMWithNoComponents, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithName(doc)
+		got := CompWithName(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.Equal(t, 0.0, got.Score)
 		assert.True(t, got.Ignore)
@@ -159,7 +160,7 @@ func TestCompWithName(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMComponentWithMissingName, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithName(doc)
+		got := CompWithName(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add to 1 component", got.Desc)
@@ -170,7 +171,7 @@ func TestCompWithName(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMWithNoComponents, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithName(doc)
+		got := CompWithName(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.Equal(t, 0.0, got.Score)
 		assert.True(t, got.Ignore, "no components → N/A")
@@ -181,7 +182,7 @@ func TestCompWithName(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMWithComponentNameMissing, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithName(doc)
+		got := CompWithName(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add to 1 component", got.Desc)
@@ -308,7 +309,7 @@ func TestCompWithVersion(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMComponentWithNameVersion, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithVersion(doc)
+		got := CompWithVersion(ctx, catalog.EvalInput{Doc: doc})
 		assert.InDelta(t, 10.0, got.Score, 0.0001)
 		assert.Equal(t, "complete", got.Desc)
 		assert.False(t, got.Ignore)
@@ -318,7 +319,7 @@ func TestCompWithVersion(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMWithComponentNameVersion, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithVersion(doc)
+		got := CompWithVersion(ctx, catalog.EvalInput{Doc: doc})
 		assert.InDelta(t, 10.0, got.Score, 0.0001)
 		assert.Equal(t, "complete", got.Desc)
 		assert.False(t, got.Ignore)
@@ -328,7 +329,7 @@ func TestCompWithVersion(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMComponentWithNameAndEmptyStringVersion, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithVersion(doc)
+		got := CompWithVersion(ctx, catalog.EvalInput{Doc: doc})
 		assert.InDelta(t, 0.0, got.Score, 0.0001)
 		assert.Equal(t, "add to 1 component", got.Desc)
 		assert.False(t, got.Ignore)
@@ -338,7 +339,7 @@ func TestCompWithVersion(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMWithComponentsNameAndEmptyStringVersion, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithVersion(doc)
+		got := CompWithVersion(ctx, catalog.EvalInput{Doc: doc})
 		assert.InDelta(t, 0.0, got.Score, 0.0001)
 		assert.Equal(t, "add to 1 component", got.Desc)
 		assert.False(t, got.Ignore)
@@ -348,7 +349,7 @@ func TestCompWithVersion(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMComponentWithNameAndMissingVersion, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithVersion(doc)
+		got := CompWithVersion(ctx, catalog.EvalInput{Doc: doc})
 		assert.InDelta(t, 0.0, got.Score, 0.0001)
 		assert.Equal(t, "add to 1 component", got.Desc)
 		assert.False(t, got.Ignore)
@@ -358,7 +359,7 @@ func TestCompWithVersion(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMWithComponentsNameAndVersionMissing, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithVersion(doc)
+		got := CompWithVersion(ctx, catalog.EvalInput{Doc: doc})
 		assert.InDelta(t, 0.0, got.Score, 0.0001)
 		assert.Equal(t, "add to 1 component", got.Desc)
 		assert.False(t, got.Ignore)
@@ -368,7 +369,7 @@ func TestCompWithVersion(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMWithNoComponents, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithVersion(doc)
+		got := CompWithVersion(ctx, catalog.EvalInput{Doc: doc})
 		assert.InDelta(t, 0.0, got.Score, 0.0001)
 		assert.Equal(t, "N/A (no components)", got.Desc)
 		assert.True(t, got.Ignore)
@@ -379,7 +380,7 @@ func TestCompWithVersion(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMWithNoComponents, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithVersion(doc)
+		got := CompWithVersion(ctx, catalog.EvalInput{Doc: doc})
 		assert.InDelta(t, 0.0, got.Score, 0.0001)
 		assert.Equal(t, "N/A (no components)", got.Desc)
 		assert.True(t, got.Ignore)
@@ -469,7 +470,7 @@ func TestCompWithUniqLocalIDs(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMWithComponentNameVersion, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithUniqLocalIDs(doc)
+		got := CompWithUniqLocalIDs(ctx, catalog.EvalInput{Doc: doc})
 		assert.InDelta(t, 10.0, got.Score, 0.0001)
 		assert.Equal(t, "complete", got.Desc)
 		assert.False(t, got.Ignore)
@@ -479,7 +480,7 @@ func TestCompWithUniqLocalIDs(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMComponentWithNameVersionEmptyStringID, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithUniqLocalIDs(doc)
+		got := CompWithUniqLocalIDs(ctx, catalog.EvalInput{Doc: doc})
 		assert.InDelta(t, 0.0, got.Score, 0.0001)
 		assert.Equal(t, "add to 1 component", got.Desc)
 		assert.False(t, got.Ignore)
@@ -494,7 +495,7 @@ func TestCompWithUniqLocalIDs(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMComponentWithNameVersionAndMissingID, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithUniqLocalIDs(doc)
+		got := CompWithUniqLocalIDs(ctx, catalog.EvalInput{Doc: doc})
 		assert.InDelta(t, 0.0, got.Score, 0.0001)
 		assert.Equal(t, "add to 1 component", got.Desc)
 		assert.False(t, got.Ignore)
@@ -504,7 +505,7 @@ func TestCompWithUniqLocalIDs(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMWithComponentNameVersionAndMissingID, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithUniqLocalIDs(doc)
+		got := CompWithUniqLocalIDs(ctx, catalog.EvalInput{Doc: doc})
 		assert.InDelta(t, 0.0, got.Score, 0.0001)
 		assert.Equal(t, "add to 1 component", got.Desc)
 		assert.False(t, got.Ignore)
@@ -514,7 +515,7 @@ func TestCompWithUniqLocalIDs(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMWithNoComponents, sbom.Signature{})
 		require.NoError(t, err)
 
-		out := CompWithUniqLocalIDs(doc)
+		out := CompWithUniqLocalIDs(ctx, catalog.EvalInput{Doc: doc})
 		assert.InDelta(t, 0.0, out.Score, 0.0001)
 		assert.Equal(t, "N/A (no components)", out.Desc)
 		assert.True(t, out.Ignore)
@@ -524,7 +525,7 @@ func TestCompWithUniqLocalIDs(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMWithNoComponents, sbom.Signature{})
 		require.NoError(t, err)
 
-		out := CompWithUniqLocalIDs(doc)
+		out := CompWithUniqLocalIDs(ctx, catalog.EvalInput{Doc: doc})
 		assert.InDelta(t, 0.0, out.Score, 0.0001)
 		assert.Equal(t, "N/A (no components)", out.Desc)
 		assert.True(t, out.Ignore)

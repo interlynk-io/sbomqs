@@ -191,13 +191,14 @@ func (r *Reporter) detailedReport() {
 }
 
 func formatScore(feat api.FeatureResult) string {
-	if (feat.Key == "comp_eol_eos") || (feat.Key == "comp_malicious") || (feat.Key == "comp_vuln_sev_critical") || (feat.Key == "comp_kev") || (feat.Key == "comp_purl_valid") || (feat.Key == "comp_cpe_valid") || (feat.Key == "comp_epss_high") {
-		return "Coming Soon.."
-	}
+	// if (feat.Key == "comp_eol_eos") || (feat.Key == "comp_malicious") || (feat.Key == "comp_vuln_sev_critical") || (feat.Key == "comp_kev") || (feat.Key == "comp_purl_valid") || (feat.Key == "comp_cpe_valid") || (feat.Key == "comp_epss_high") {
+	// 	return "Coming Soon.."
+	// }
 	return fmt.Sprintf("%.1f/10.0", feat.Score)
 }
 
 // calculateTotalCategoryWeight calculates the sum of all category weights excluding compinfo
+// since compinfo does not contribute to the overall SBOM Quality Score
 func calculateTotalCategoryWeight(catResults []api.CategoryResult) float64 {
 	var total float64
 	for _, cat := range catResults {
@@ -217,7 +218,7 @@ var orFeatures = map[string]bool{
 
 // formatCategoryWithWeight formats category name with its weight percentage
 func formatCategoryWithWeight(catName string, catWeight, totalCatWeight float64, isCompInfo bool) string {
-	if isCompInfo {
+	if isCompInfo || totalCatWeight == 0 {
 		return catName
 	}
 	effectiveWeight := (catWeight / totalCatWeight) * 100
@@ -226,7 +227,7 @@ func formatCategoryWithWeight(catName string, catWeight, totalCatWeight float64,
 
 // formatFeatureWithWeight formats feature key with its effective weight percentage
 func formatFeatureWithWeight(featKey string, catWeight, featWeight, totalCatWeight float64, isCompInfo bool) string {
-	if isCompInfo {
+	if isCompInfo || totalCatWeight == 0 {
 		return featKey
 	}
 
@@ -246,10 +247,12 @@ func buildCategorySummary(catResults []api.CategoryResult, totalCatWeight float6
 	var rows [][]string
 
 	for _, cat := range catResults {
-		if cat.Key == "compinfo" {
-			continue // Skip component quality (informational only)
+		var weight string
+		if totalCatWeight > 0 {
+			weight = fmt.Sprintf("%.1f%%", (cat.Weight/totalCatWeight)*100)
+		} else {
+			weight = "N/A"
 		}
-		weight := fmt.Sprintf("%.1f%%", (cat.Weight/totalCatWeight)*100)
 		score := fmt.Sprintf("%.1f/10.0", cat.Score)
 		rows = append(rows, []string{cat.Name, weight, score, cat.Grade})
 	}

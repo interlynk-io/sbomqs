@@ -22,6 +22,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
+	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/catalog"
 )
 
 var cdxSBOMTimestampValid = []byte(`
@@ -139,7 +140,7 @@ func TestSBOMTimestamp(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMTimestampValid, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMCreationTimestamp(doc)
+		got := SBOMCreationTimestamp(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "complete", got.Desc)
@@ -150,7 +151,7 @@ func TestSBOMTimestamp(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMTimestampValid, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMCreationTimestamp(doc)
+		got := SBOMCreationTimestamp(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "complete", got.Desc)
@@ -161,7 +162,7 @@ func TestSBOMTimestamp(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMTimestampFormatInvalid, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMCreationTimestamp(doc)
+		got := SBOMCreationTimestamp(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "fix timestamp format", got.Desc)
@@ -172,7 +173,7 @@ func TestSBOMTimestamp(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMTimestampFormatInvalid, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMCreationTimestamp(doc)
+		got := SBOMCreationTimestamp(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "fix timestamp format", got.Desc)
@@ -183,7 +184,7 @@ func TestSBOMTimestamp(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMTimestampAbsent, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMCreationTimestamp(doc)
+		got := SBOMCreationTimestamp(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add timestamp", got.Desc)
@@ -194,7 +195,7 @@ func TestSBOMTimestamp(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMTimestampAbsent, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMCreationTimestamp(doc)
+		got := SBOMCreationTimestamp(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add timestamp", got.Desc)
@@ -205,7 +206,7 @@ func TestSBOMTimestamp(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMTimestampEmptyString, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMCreationTimestamp(doc)
+		got := SBOMCreationTimestamp(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add timestamp", got.Desc)
@@ -216,7 +217,7 @@ func TestSBOMTimestamp(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMTimestampEmptyString, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMCreationTimestamp(doc)
+		got := SBOMCreationTimestamp(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add timestamp", got.Desc)
@@ -595,7 +596,7 @@ func TestSBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthorsValid, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMAuthors(doc)
+		got := SBOMAuthors(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "complete", got.Desc)
@@ -606,7 +607,7 @@ func TestSBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorsValid, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMAuthors(doc)
+		got := SBOMAuthors(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "complete", got.Desc)
@@ -617,7 +618,7 @@ func TestSBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthorsAbsent, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMAuthors(doc)
+		got := SBOMAuthors(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add author", got.Desc)
@@ -628,7 +629,7 @@ func TestSBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMCreationInfoMissing, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMAuthors(doc)
+		got := SBOMAuthors(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add author", got.Desc)
@@ -639,7 +640,7 @@ func TestSBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMCreationInfoMissing, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMAuthors(doc)
+		got := SBOMAuthors(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add author", got.Desc)
@@ -650,7 +651,7 @@ func TestSBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthorsEmptyString, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMAuthors(doc)
+		got := SBOMAuthors(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add author", got.Desc)
@@ -661,7 +662,7 @@ func TestSBOMAuthor(t *testing.T) {
 		_, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorsEmptyString, sbom.Signature{})
 		require.Error(t, err)
 
-		// got := SBOMAuthors(doc)
+		// got := SBOMAuthors(ctx, catalog.EvalInput{Doc: doc})
 
 		// assert.InDelta(t, 0.0, got.Score, 1e-9)
 		// assert.Equal(t, "add author", got.Desc)
@@ -672,7 +673,7 @@ func TestSBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthorsEmptyArray, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMAuthors(doc)
+		got := SBOMAuthors(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add author", got.Desc)
@@ -683,7 +684,7 @@ func TestSBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorsEmptyArray, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMAuthors(doc)
+		got := SBOMAuthors(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add author", got.Desc)
@@ -694,7 +695,7 @@ func TestSBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthorsEmptyArrayObject, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMAuthors(doc)
+		got := SBOMAuthors(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add author", got.Desc)
@@ -705,7 +706,7 @@ func TestSBOMAuthor(t *testing.T) {
 		_, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthorsWrongType, sbom.Signature{})
 		require.Error(t, err)
 
-		// got := SBOMAuthors(doc)
+		// got := SBOMAuthors(ctx, catalog.EvalInput{Doc: doc})
 
 		// assert.InDelta(t, 0.0, got.Score, 1e-9)
 		// assert.Equal(t, "add author", got.Desc)
@@ -716,7 +717,7 @@ func TestSBOMAuthor(t *testing.T) {
 		_, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorsWrongType, sbom.Signature{})
 		require.Error(t, err)
 
-		// got := SBOMAuthors(doc)
+		// got := SBOMAuthors(ctx, catalog.EvalInput{Doc: doc})
 
 		// assert.InDelta(t, 0.0, got.Score, 1e-9)
 		// assert.Equal(t, "add author", got.Desc)
@@ -727,7 +728,7 @@ func TestSBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthorsMixed, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMAuthors(doc)
+		got := SBOMAuthors(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "complete", got.Desc)
@@ -739,7 +740,7 @@ func TestSBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthorsWithMinimalNameOnly, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMAuthors(doc)
+		got := SBOMAuthors(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "complete", got.Desc)
@@ -750,7 +751,7 @@ func TestSBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorsWithMinimalNameOnly, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMAuthors(doc)
+		got := SBOMAuthors(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "complete", got.Desc)
@@ -761,7 +762,7 @@ func TestSBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthorsWithMinimalEmailOnly, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMAuthors(doc)
+		got := SBOMAuthors(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "complete", got.Desc)
@@ -772,7 +773,7 @@ func TestSBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorsWithMinimalEmailOnly, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMAuthors(doc)
+		got := SBOMAuthors(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "complete", got.Desc)
@@ -783,7 +784,7 @@ func TestSBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthorsWithMinimalPhoneOnly, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMAuthors(doc)
+		got := SBOMAuthors(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "complete", got.Desc)
@@ -794,7 +795,7 @@ func TestSBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthorsWithALL, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMAuthors(doc)
+		got := SBOMAuthors(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "complete", got.Desc)
@@ -805,7 +806,7 @@ func TestSBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthorsWithALLMissing, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMAuthors(doc)
+		got := SBOMAuthors(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add author", got.Desc)
@@ -816,7 +817,7 @@ func TestSBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMAuthorsWithWhitespace, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMAuthors(doc)
+		got := SBOMAuthors(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add author", got.Desc)
@@ -827,7 +828,7 @@ func TestSBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorsWithWhitespace, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMAuthors(doc)
+		got := SBOMAuthors(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add author", got.Desc)
@@ -838,7 +839,7 @@ func TestSBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorsWithEmailWhitespace, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMAuthors(doc)
+		got := SBOMAuthors(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add author", got.Desc)
@@ -859,7 +860,7 @@ func TestSBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorsWithToolOnly, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMAuthors(doc)
+		got := SBOMAuthors(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add author", got.Desc)
@@ -870,7 +871,7 @@ func TestSBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorsWithOrganizationOnly, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMAuthors(doc)
+		got := SBOMAuthors(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "complete", got.Desc)
@@ -881,7 +882,7 @@ func TestSBOMAuthor(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorsWithOrganizationEmailOnly, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMAuthors(doc)
+		got := SBOMAuthors(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "complete", got.Desc)
@@ -1108,7 +1109,7 @@ func TestSBOMCreationTool(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMToolValid, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMCreationTool(doc)
+		got := SBOMCreationTool(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "complete", got.Desc)
@@ -1119,7 +1120,7 @@ func TestSBOMCreationTool(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMToolValid, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMCreationTool(doc)
+		got := SBOMCreationTool(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "complete", got.Desc)
@@ -1130,7 +1131,7 @@ func TestSBOMCreationTool(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMToolAbsent, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMCreationTool(doc)
+		got := SBOMCreationTool(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add tool", got.Desc)
@@ -1141,7 +1142,7 @@ func TestSBOMCreationTool(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMToolAbsent, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMCreationTool(doc)
+		got := SBOMCreationTool(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add tool", got.Desc)
@@ -1152,7 +1153,7 @@ func TestSBOMCreationTool(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMToolMissing, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMCreationTool(doc)
+		got := SBOMCreationTool(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add tool", got.Desc)
@@ -1163,7 +1164,7 @@ func TestSBOMCreationTool(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMToolMissing, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMCreationTool(doc)
+		got := SBOMCreationTool(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add tool", got.Desc)
@@ -1174,7 +1175,7 @@ func TestSBOMCreationTool(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMToolEmptyString, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMCreationTool(doc)
+		got := SBOMCreationTool(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add tool", got.Desc)
@@ -1185,7 +1186,7 @@ func TestSBOMCreationTool(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMToolEmptyString, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMCreationTool(doc)
+		got := SBOMCreationTool(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add tool", got.Desc)
@@ -1196,7 +1197,7 @@ func TestSBOMCreationTool(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMToolWithEmptyName, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMCreationTool(doc)
+		got := SBOMCreationTool(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add name to 1 tools", got.Desc)
@@ -1207,7 +1208,7 @@ func TestSBOMCreationTool(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMToolWithEmptyName, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMCreationTool(doc)
+		got := SBOMCreationTool(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add name to 1 tools", got.Desc)
@@ -1218,7 +1219,7 @@ func TestSBOMCreationTool(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMToolWithEmptyVersion, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMCreationTool(doc)
+		got := SBOMCreationTool(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 5.0, got.Score, 1e-9)
 		assert.Equal(t, "add version to 1 tools", got.Desc)
@@ -1229,7 +1230,7 @@ func TestSBOMCreationTool(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMToolWithEmptyVersion, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMCreationTool(doc)
+		got := SBOMCreationTool(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 5.0, got.Score, 1e-9)
 		assert.Equal(t, "add version to 1 tools", got.Desc)
@@ -1240,7 +1241,7 @@ func TestSBOMCreationTool(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMToolWrongType, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMCreationTool(doc)
+		got := SBOMCreationTool(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add tool", got.Desc)
@@ -1395,7 +1396,7 @@ func TestSBOMSupplier(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMSupplierValid, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMSupplier(doc)
+		got := SBOMSupplier(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "complete", got.Desc)
@@ -1406,7 +1407,7 @@ func TestSBOMSupplier(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMSupplierAbsent, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMSupplier(doc)
+		got := SBOMSupplier(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add supplier", got.Desc)
@@ -1417,7 +1418,7 @@ func TestSBOMSupplier(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMSupplierMissing, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMSupplier(doc)
+		got := SBOMSupplier(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add supplier", got.Desc)
@@ -1428,7 +1429,7 @@ func TestSBOMSupplier(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMSupplierEmptyNameString, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMSupplier(doc)
+		got := SBOMSupplier(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "complete", got.Desc)
@@ -1439,7 +1440,7 @@ func TestSBOMSupplier(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMSupplierOnlyName, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMSupplier(doc)
+		got := SBOMSupplier(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "complete", got.Desc)
@@ -1450,7 +1451,7 @@ func TestSBOMSupplier(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMSupplierOnlyURL, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMSupplier(doc)
+		got := SBOMSupplier(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "complete", got.Desc)
@@ -1461,7 +1462,7 @@ func TestSBOMSupplier(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMSupplierWhitespaceName, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMSupplier(doc)
+		got := SBOMSupplier(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add supplier", got.Desc)
@@ -1477,7 +1478,7 @@ func TestSBOMSupplier(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMGeneral, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMSupplier(doc)
+		got := SBOMSupplier(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "N/A (SPDX)", got.Desc)
@@ -1608,7 +1609,7 @@ func TestSBOMNamespace(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMSerialValid, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMNamespace(doc)
+		got := SBOMNamespace(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "complete", got.Desc)
@@ -1619,7 +1620,7 @@ func TestSBOMNamespace(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMNamespaceValid, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMNamespace(doc)
+		got := SBOMNamespace(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "complete", got.Desc)
@@ -1630,7 +1631,7 @@ func TestSBOMNamespace(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMSerialEmptyString, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMNamespace(doc)
+		got := SBOMNamespace(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add namespace", got.Desc)
@@ -1641,7 +1642,7 @@ func TestSBOMNamespace(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMNamespaceEmptyString, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMNamespace(doc)
+		got := SBOMNamespace(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add namespace", got.Desc)
@@ -1652,7 +1653,7 @@ func TestSBOMNamespace(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMSerialInvalid, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMNamespace(doc)
+		got := SBOMNamespace(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add namespace", got.Desc)
@@ -1664,7 +1665,7 @@ func TestSBOMNamespace(t *testing.T) {
 	// 	doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMNamespaceInvalid, sbom.Signature{})
 	// 	require.NoError(t, err)
 
-	// 	got := SBOMNamespace(doc)
+	// 	got := SBOMNamespace(ctx, catalog.EvalInput{Doc: doc})
 
 	// 	assert.InDelta(t, 0.0, got.Score, 1e-9)
 	// 	assert.Equal(t, "add namespace", got.Desc)
@@ -1675,7 +1676,7 @@ func TestSBOMNamespace(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMSerialMissing, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMNamespace(doc)
+		got := SBOMNamespace(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add namespace", got.Desc)
@@ -1686,7 +1687,7 @@ func TestSBOMNamespace(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMNamespaceMissing, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMNamespace(doc)
+		got := SBOMNamespace(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add namespace", got.Desc)
@@ -1697,7 +1698,7 @@ func TestSBOMNamespace(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMSerialWhitespace, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMNamespace(doc)
+		got := SBOMNamespace(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add namespace", got.Desc)
@@ -1897,7 +1898,7 @@ func TestSBOMLifeCycle(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMLifeCycleValid, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMLifeCycle(doc)
+		got := SBOMLifeCycle(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "complete", got.Desc)
@@ -1908,7 +1909,7 @@ func TestSBOMLifeCycle(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMLifeCycleTypePostBuildPhase, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMLifeCycle(doc)
+		got := SBOMLifeCycle(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "complete", got.Desc)
@@ -1919,7 +1920,7 @@ func TestSBOMLifeCycle(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMLifeCycleTypePITPhase, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMLifeCycle(doc)
+		got := SBOMLifeCycle(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add valid lifecycle", got.Desc)
@@ -1930,7 +1931,7 @@ func TestSBOMLifeCycle(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMLifeCycleUnknownPhase, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMLifeCycle(doc)
+		got := SBOMLifeCycle(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add valid lifecycle", got.Desc)
@@ -1941,7 +1942,7 @@ func TestSBOMLifeCycle(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMLifeCycleAbsent, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMLifeCycle(doc)
+		got := SBOMLifeCycle(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add lifecycle", got.Desc)
@@ -1952,7 +1953,7 @@ func TestSBOMLifeCycle(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMLifeCycleMissing, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMLifeCycle(doc)
+		got := SBOMLifeCycle(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add lifecycle", got.Desc)
@@ -1963,7 +1964,7 @@ func TestSBOMLifeCycle(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMLifeCycleEmptyString, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMLifeCycle(doc)
+		got := SBOMLifeCycle(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add valid lifecycle", got.Desc)
@@ -1984,7 +1985,7 @@ func TestSBOMLifeCycle(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMLifeCycleWhitespacePhase, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMLifeCycle(doc)
+		got := SBOMLifeCycle(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add valid lifecycle", got.Desc)
@@ -1995,7 +1996,7 @@ func TestSBOMLifeCycle(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMLifeCycleMixed, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMLifeCycle(doc)
+		got := SBOMLifeCycle(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "complete", got.Desc)

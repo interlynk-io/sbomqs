@@ -19,6 +19,7 @@ import (
 	"testing"
 
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
+	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/catalog"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -567,7 +568,7 @@ func TestCompWithLicenses(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompValidLicenseID, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithLicenses(doc)
+		got := CompWithLicenses(ctx, catalog.EvalInput{Doc: doc})
 		assert.InDelta(t, 10.0, got.Score, 0.0001)
 		assert.Equal(t, "complete", got.Desc)
 		assert.False(t, got.Ignore)
@@ -578,7 +579,7 @@ func TestCompWithLicenses(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompValidLicense, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithLicenses(doc)
+		got := CompWithLicenses(ctx, catalog.EvalInput{Doc: doc})
 		assert.InDelta(t, 10.0, got.Score, 0.0001)
 		assert.Equal(t, "complete", got.Desc)
 		assert.False(t, got.Ignore)
@@ -589,7 +590,7 @@ func TestCompWithLicenses(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompLicenseAbsent, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithLicenses(doc)
+		got := CompWithLicenses(ctx, catalog.EvalInput{Doc: doc})
 		assert.InDelta(t, 0.0, got.Score, 0.0001)
 		assert.Equal(t, "add to 1 component", got.Desc)
 		assert.False(t, got.Ignore)
@@ -600,7 +601,7 @@ func TestCompWithLicenses(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompLicenseAbsent, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithLicenses(doc)
+		got := CompWithLicenses(ctx, catalog.EvalInput{Doc: doc})
 		assert.InDelta(t, 0.0, got.Score, 0.0001)
 		assert.Equal(t, "add to 1 component", got.Desc)
 		assert.False(t, got.Ignore)
@@ -611,7 +612,7 @@ func TestCompWithLicenses(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompLicenseEmptyArray, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithLicenses(doc)
+		got := CompWithLicenses(ctx, catalog.EvalInput{Doc: doc})
 		assert.InDelta(t, 0.0, got.Score, 0.0001)
 		assert.Equal(t, "add to 1 component", got.Desc)
 		assert.False(t, got.Ignore)
@@ -628,7 +629,7 @@ func TestCompWithLicenses(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompLicenseIDEmptyString, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithLicenses(doc)
+		got := CompWithLicenses(ctx, catalog.EvalInput{Doc: doc})
 		assert.InDelta(t, 0.0, got.Score, 0.0001)
 		assert.Equal(t, "add to 1 component", got.Desc)
 		assert.False(t, got.Ignore)
@@ -639,7 +640,7 @@ func TestCompWithLicenses(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompEmptyString, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithLicenses(doc)
+		got := CompWithLicenses(ctx, catalog.EvalInput{Doc: doc})
 		assert.InDelta(t, 0.0, got.Score, 0.0001)
 		assert.Equal(t, "add to 1 component", got.Desc)
 		assert.False(t, got.Ignore)
@@ -650,7 +651,7 @@ func TestCompWithLicenses(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompLicenseNameEmpty, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithLicenses(doc)
+		got := CompWithLicenses(ctx, catalog.EvalInput{Doc: doc})
 		assert.InDelta(t, 0.0, got.Score, 0.0001)
 		assert.Equal(t, "add to 1 component", got.Desc)
 		assert.False(t, got.Ignore)
@@ -661,7 +662,7 @@ func TestCompWithLicenses(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompLicenseInvalidID, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithLicenses(doc)
+		got := CompWithLicenses(ctx, catalog.EvalInput{Doc: doc})
 		assert.InDelta(t, 0.0, got.Score, 0.0001)
 		assert.Equal(t, "add to 1 component", got.Desc)
 		assert.False(t, got.Ignore)
@@ -672,7 +673,7 @@ func TestCompWithLicenses(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompValidLicenseName, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithLicenses(doc)
+		got := CompWithLicenses(ctx, catalog.EvalInput{Doc: doc})
 		assert.InDelta(t, 10.0, got.Score, 0.0001)
 		assert.Equal(t, "complete", got.Desc)
 		assert.False(t, got.Ignore)
@@ -683,7 +684,7 @@ func TestCompWithLicenses(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompValidLicenseExpression, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithLicenses(doc)
+		got := CompWithLicenses(ctx, catalog.EvalInput{Doc: doc})
 		assert.InDelta(t, 10.0, got.Score, 0.0001)
 		assert.Equal(t, "complete", got.Desc)
 		assert.False(t, got.Ignore)
@@ -706,7 +707,7 @@ func TestCompWithLicenses(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWhiteSpaceString, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithLicenses(doc)
+		got := CompWithLicenses(ctx, catalog.EvalInput{Doc: doc})
 		assert.InDelta(t, 0.0, got.Score, 0.0001)
 		assert.Equal(t, "add to 1 component", got.Desc)
 		assert.False(t, got.Ignore)
@@ -717,7 +718,7 @@ func TestCompWithLicenses(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompLicenseNoassertion, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithLicenses(doc)
+		got := CompWithLicenses(ctx, catalog.EvalInput{Doc: doc})
 		assert.InDelta(t, 0.0, got.Score, 0.0001)
 		assert.Equal(t, "add to 1 component", got.Desc)
 		assert.False(t, got.Ignore)
@@ -728,7 +729,7 @@ func TestCompWithLicenses(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompLicenseNone, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithLicenses(doc)
+		got := CompWithLicenses(ctx, catalog.EvalInput{Doc: doc})
 		assert.InDelta(t, 0.0, got.Score, 0.0001)
 		assert.Equal(t, "add to 1 component", got.Desc)
 		assert.False(t, got.Ignore)
@@ -739,7 +740,7 @@ func TestCompWithLicenses(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompCustomLicense, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithLicenses(doc)
+		got := CompWithLicenses(ctx, catalog.EvalInput{Doc: doc})
 		assert.InDelta(t, 10.0, got.Score, 0.0001)
 		assert.Equal(t, "complete", got.Desc)
 		assert.False(t, got.Ignore)
@@ -753,7 +754,7 @@ func TestCompWithValidLicenses(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompValidLicenseID, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithValidLicenses(doc)
+		got := CompWithValidLicenses(ctx, catalog.EvalInput{Doc: doc})
 		assert.InDelta(t, 10.0, got.Score, 0.0001)
 		assert.Equal(t, "complete", got.Desc)
 		assert.False(t, got.Ignore)
@@ -764,7 +765,7 @@ func TestCompWithValidLicenses(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompValidLicense, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithValidLicenses(doc)
+		got := CompWithValidLicenses(ctx, catalog.EvalInput{Doc: doc})
 		assert.InDelta(t, 10.0, got.Score, 0.0001)
 		assert.Equal(t, "complete", got.Desc)
 		assert.False(t, got.Ignore)
@@ -775,7 +776,7 @@ func TestCompWithValidLicenses(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompLicenseInvalidID, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithValidLicenses(doc)
+		got := CompWithValidLicenses(ctx, catalog.EvalInput{Doc: doc})
 		assert.InDelta(t, 0.0, got.Score, 0.0001)
 		assert.Equal(t, "add to 1 component", got.Desc)
 		assert.False(t, got.Ignore)
@@ -786,7 +787,7 @@ func TestCompWithValidLicenses(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompValidLicenseExpression, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithValidLicenses(doc)
+		got := CompWithValidLicenses(ctx, catalog.EvalInput{Doc: doc})
 		assert.InDelta(t, 10.0, got.Score, 0.0001)
 		assert.Equal(t, "complete", got.Desc)
 		assert.False(t, got.Ignore)
@@ -797,7 +798,7 @@ func TestCompWithValidLicenses(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompLicenseNoassertion, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithValidLicenses(doc)
+		got := CompWithValidLicenses(ctx, catalog.EvalInput{Doc: doc})
 		assert.InDelta(t, 0.0, got.Score, 0.0001)
 		assert.Equal(t, "add to 1 component", got.Desc)
 		assert.False(t, got.Ignore)
@@ -808,7 +809,7 @@ func TestCompWithValidLicenses(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompLicenseNone, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithValidLicenses(doc)
+		got := CompWithValidLicenses(ctx, catalog.EvalInput{Doc: doc})
 		assert.InDelta(t, 0.0, got.Score, 0.0001)
 		assert.Equal(t, "add to 1 component", got.Desc)
 		assert.False(t, got.Ignore)
@@ -819,7 +820,7 @@ func TestCompWithValidLicenses(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompCustomLicense, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithValidLicenses(doc)
+		got := CompWithValidLicenses(ctx, catalog.EvalInput{Doc: doc})
 		assert.InDelta(t, 10.0, got.Score, 0.0001)
 		assert.Equal(t, "complete", got.Desc)
 		assert.False(t, got.Ignore)
@@ -833,7 +834,7 @@ func TestCompWithDeclaredLicenses(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompValidDeclaredLicenseID, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithDeclaredLicenses(doc)
+		got := CompWithDeclaredLicenses(ctx, catalog.EvalInput{Doc: doc})
 		assert.InDelta(t, 10.0, got.Score, 0.0001)
 		assert.Equal(t, "complete", got.Desc)
 		assert.False(t, got.Ignore)
@@ -844,7 +845,7 @@ func TestCompWithDeclaredLicenses(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompDeclaredExpression, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithDeclaredLicenses(doc)
+		got := CompWithDeclaredLicenses(ctx, catalog.EvalInput{Doc: doc})
 		assert.InDelta(t, 10.0, got.Score, 0.0001)
 		assert.Equal(t, "complete", got.Desc)
 		assert.False(t, got.Ignore)
@@ -855,7 +856,7 @@ func TestCompWithDeclaredLicenses(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompValidDeclaredLicense, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithDeclaredLicenses(doc)
+		got := CompWithDeclaredLicenses(ctx, catalog.EvalInput{Doc: doc})
 		assert.InDelta(t, 10.0, got.Score, 0.0001)
 		assert.Equal(t, "complete", got.Desc)
 		assert.False(t, got.Ignore)
@@ -869,7 +870,7 @@ func TestCompWithDeprecatedLicenses(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompDeprecatedLicenseID, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithDeprecatedLicenses(doc)
+		got := CompWithDeprecatedLicenses(ctx, catalog.EvalInput{Doc: doc})
 		assert.InDelta(t, 0.0, got.Score, 0.0001)
 		assert.Equal(t, "fix 1 component", got.Desc)
 		assert.False(t, got.Ignore)
@@ -880,7 +881,7 @@ func TestCompWithDeprecatedLicenses(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompDeprecatedLicense, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithDeprecatedLicenses(doc)
+		got := CompWithDeprecatedLicenses(ctx, catalog.EvalInput{Doc: doc})
 		assert.InDelta(t, 0.0, got.Score, 0.0001)
 		assert.Equal(t, "fix 1 component", got.Desc)
 		assert.False(t, got.Ignore)
@@ -894,7 +895,7 @@ func TestCompWithRestrictiveLicenses(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompRestrictiveLicenseID, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithRestrictiveLicenses(doc)
+		got := CompWithRestrictiveLicenses(ctx, catalog.EvalInput{Doc: doc})
 		assert.InDelta(t, 0.0, got.Score, 0.0001)
 		assert.Equal(t, "review 1 component", got.Desc)
 		assert.False(t, got.Ignore)
@@ -905,7 +906,7 @@ func TestCompWithRestrictiveLicenses(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompRestrictiveLicense, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithRestrictiveLicenses(doc)
+		got := CompWithRestrictiveLicenses(ctx, catalog.EvalInput{Doc: doc})
 		assert.InDelta(t, 0.0, got.Score, 0.0001)
 		assert.Equal(t, "review 1 component", got.Desc)
 		assert.False(t, got.Ignore)

@@ -19,6 +19,7 @@ import (
 	"testing"
 
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
+	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/catalog"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -166,7 +167,7 @@ func TestSBOMSpec(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMValidSpec, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMWithSpec(doc)
+		got := SBOMWithSpec(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "cyclonedx", got.Desc)
@@ -177,7 +178,7 @@ func TestSBOMSpec(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMValidSpec, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMWithSpec(doc)
+		got := SBOMWithSpec(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "spdx", got.Desc)
@@ -378,7 +379,7 @@ func TestSBOMSpecVersion(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMValidVersion, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMSpecVersion(doc)
+		got := SBOMSpecVersion(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "v1.6", got.Desc)
@@ -389,7 +390,7 @@ func TestSBOMSpecVersion(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMValidVersion, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMSpecVersion(doc)
+		got := SBOMSpecVersion(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "SPDX-2.3", got.Desc)
@@ -421,7 +422,7 @@ func TestSBOMSpecVersion(t *testing.T) {
 		_, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMMissingVersion, sbom.Signature{})
 		require.NoError(t, err)
 
-		// got := SBOMSpecVersion(doc)
+		// got := SBOMSpecVersion(ctx, catalog.EvalInput{Doc: doc})
 
 		// assert.InDelta(t, 10.0, got.Score, 1e-9)
 		// assert.Equal(t, "SPDX-2.3", got.Desc)
@@ -495,7 +496,7 @@ func TestSBOMFileFormat(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMValid, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMFileFormat(doc)
+		got := SBOMFileFormat(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "json", got.Desc)
@@ -506,7 +507,7 @@ func TestSBOMFileFormat(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMValid, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMFileFormat(doc)
+		got := SBOMFileFormat(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "json", got.Desc)

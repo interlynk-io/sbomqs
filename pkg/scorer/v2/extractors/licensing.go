@@ -19,6 +19,7 @@
 package extractors
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
@@ -29,7 +30,8 @@ import (
 )
 
 // CompWithLicenses check for concluded license
-func CompWithLicenses(doc sbom.Document) catalog.ComprFeatScore {
+func CompWithLicenses(_ context.Context, input catalog.EvalInput) catalog.ComprFeatScore {
+	doc := input.Doc
 	comps := doc.Components()
 	if len(comps) == 0 {
 		return formulae.ScoreCompNA()
@@ -43,7 +45,8 @@ func CompWithLicenses(doc sbom.Document) catalog.ComprFeatScore {
 }
 
 // CompWithValidLicenses validates concluded licenses
-func CompWithValidLicenses(doc sbom.Document) catalog.ComprFeatScore {
+func CompWithValidLicenses(_ context.Context, input catalog.EvalInput) catalog.ComprFeatScore {
+	doc := input.Doc
 	comps := doc.Components()
 	if len(comps) == 0 {
 		return formulae.ScoreCompNA()
@@ -57,7 +60,8 @@ func CompWithValidLicenses(doc sbom.Document) catalog.ComprFeatScore {
 }
 
 // CompWithDeclaredLicenses look for declared licenses
-func CompWithDeclaredLicenses(doc sbom.Document) catalog.ComprFeatScore {
+func CompWithDeclaredLicenses(_ context.Context, input catalog.EvalInput) catalog.ComprFeatScore {
+	doc := input.Doc
 	comps := doc.Components()
 	if len(comps) == 0 {
 		return formulae.ScoreCompNA()
@@ -71,7 +75,8 @@ func CompWithDeclaredLicenses(doc sbom.Document) catalog.ComprFeatScore {
 }
 
 // SBOMDataLicense check for SBOM license
-func SBOMDataLicense(doc sbom.Document) catalog.ComprFeatScore {
+func SBOMDataLicense(_ context.Context, input catalog.EvalInput) catalog.ComprFeatScore {
+	doc := input.Doc
 	specLicenses := doc.Spec().GetLicenses()
 
 	if len(specLicenses) == 0 {
@@ -97,7 +102,8 @@ func SBOMDataLicense(doc sbom.Document) catalog.ComprFeatScore {
 }
 
 // CompWithDeprecatedLicenses check for concluded license are not in the deprecated license list
-func CompWithDeprecatedLicenses(doc sbom.Document) catalog.ComprFeatScore {
+func CompWithDeprecatedLicenses(_ context.Context, input catalog.EvalInput) catalog.ComprFeatScore {
+	doc := input.Doc
 	comps := doc.Components()
 	if len(comps) == 0 {
 		return formulae.ScoreCompNA()
@@ -144,7 +150,8 @@ func CompWithDeprecatedLicenses(doc sbom.Document) catalog.ComprFeatScore {
 
 // CompWithRestrictiveLicenses check for concluded license are not
 // in the restrictive license list (GPL, etc)
-func CompWithRestrictiveLicenses(doc sbom.Document) catalog.ComprFeatScore {
+func CompWithRestrictiveLicenses(_ context.Context, input catalog.EvalInput) catalog.ComprFeatScore {
+	doc := input.Doc
 	comps := doc.Components()
 	if len(comps) == 0 {
 		return formulae.ScoreCompNA()

@@ -19,6 +19,7 @@ import (
 	"testing"
 
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
+	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/catalog"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -102,7 +103,7 @@ func TestSBOMWithDeclaredCompleteness(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMCompletenessDeclared, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMWithDeclaredCompleteness(doc)
+		got := SBOMWithDeclaredCompleteness(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "SBOM completeness declared", got.Desc)
@@ -113,7 +114,7 @@ func TestSBOMWithDeclaredCompleteness(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMCompletenessDeclaredIncomplete, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMWithDeclaredCompleteness(doc)
+		got := SBOMWithDeclaredCompleteness(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "SBOM completeness not declared", got.Desc)
@@ -124,7 +125,7 @@ func TestSBOMWithDeclaredCompleteness(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMCompletenessDeclaredUnknown, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMWithDeclaredCompleteness(doc)
+		got := SBOMWithDeclaredCompleteness(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "SBOM completeness not declared", got.Desc)
@@ -135,7 +136,7 @@ func TestSBOMWithDeclaredCompleteness(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMCompletenessDeclaredEmpty, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMWithDeclaredCompleteness(doc)
+		got := SBOMWithDeclaredCompleteness(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "SBOM completeness not declared", got.Desc)
@@ -146,7 +147,7 @@ func TestSBOMWithDeclaredCompleteness(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMCompletenessDeclaredMissingAggregate, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMWithDeclaredCompleteness(doc)
+		got := SBOMWithDeclaredCompleteness(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "SBOM completeness not declared", got.Desc)
@@ -157,7 +158,7 @@ func TestSBOMWithDeclaredCompleteness(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMExample, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMWithDeclaredCompleteness(doc)
+		got := SBOMWithDeclaredCompleteness(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "N/A (SPDX)", got.Desc)
@@ -551,7 +552,7 @@ func TestCompWithPackagePurpose(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithValidPackageType, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithPackagePurpose(doc)
+		got := CompWithPackagePurpose(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "complete", got.Desc)
@@ -562,7 +563,7 @@ func TestCompWithPackagePurpose(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWithValidPackagePurpose, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithPackagePurpose(doc)
+		got := CompWithPackagePurpose(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "complete", got.Desc)
@@ -573,7 +574,7 @@ func TestCompWithPackagePurpose(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithInValidPackageType, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithPackagePurpose(doc)
+		got := CompWithPackagePurpose(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "correct for 2 components", got.Desc)
@@ -584,7 +585,7 @@ func TestCompWithPackagePurpose(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWithInvalidPackagePurpose, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithPackagePurpose(doc)
+		got := CompWithPackagePurpose(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "correct for 1 component", got.Desc)
@@ -595,7 +596,7 @@ func TestCompWithPackagePurpose(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithTwoInValidAndOneMissingPackageType, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithPackagePurpose(doc)
+		got := CompWithPackagePurpose(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "correct for 2 components (others missing)", got.Desc)
@@ -606,7 +607,7 @@ func TestCompWithPackagePurpose(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWithOneInvalidAndOneMissingPackagePurpose, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithPackagePurpose(doc)
+		got := CompWithPackagePurpose(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "correct for 1 component (others missing)", got.Desc)
@@ -617,7 +618,7 @@ func TestCompWithPackagePurpose(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithAbsentPackageType, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithPackagePurpose(doc)
+		got := CompWithPackagePurpose(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add to 1 component", got.Desc)
@@ -628,7 +629,7 @@ func TestCompWithPackagePurpose(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWithAbsentPackagePurpose, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithPackagePurpose(doc)
+		got := CompWithPackagePurpose(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add to 1 component", got.Desc)
@@ -639,7 +640,7 @@ func TestCompWithPackagePurpose(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxTwoCompWithAbsentPackageType, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithPackagePurpose(doc)
+		got := CompWithPackagePurpose(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add to 2 components", got.Desc)
@@ -650,7 +651,7 @@ func TestCompWithPackagePurpose(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithOneAbsentPackageType, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithPackagePurpose(doc)
+		got := CompWithPackagePurpose(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 5.0, got.Score, 1e-9)
 		assert.Equal(t, "add to 1 component", got.Desc)
@@ -661,7 +662,7 @@ func TestCompWithPackagePurpose(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithEmptyStringPackageType, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithPackagePurpose(doc)
+		got := CompWithPackagePurpose(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add to 1 component", got.Desc)
@@ -672,7 +673,7 @@ func TestCompWithPackagePurpose(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWithEmptyPackagePurpose, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithPackagePurpose(doc)
+		got := CompWithPackagePurpose(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add to 1 component", got.Desc)
@@ -683,7 +684,7 @@ func TestCompWithPackagePurpose(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithWhitespacePackageType, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithPackagePurpose(doc)
+		got := CompWithPackagePurpose(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add to 1 component", got.Desc)
@@ -694,7 +695,7 @@ func TestCompWithPackagePurpose(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWithWhitspacePackagePurpose, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithPackagePurpose(doc)
+		got := CompWithPackagePurpose(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add to 1 component", got.Desc)
@@ -956,7 +957,7 @@ func TestCompWithSourceCode(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompValidSourceCode, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithSourceCode(doc)
+		got := CompWithSourceCode(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "complete", got.Desc)
@@ -967,7 +968,7 @@ func TestCompWithSourceCode(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompHaveNoDeterminsticFieldForSourceCode, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithSourceCode(doc)
+		got := CompWithSourceCode(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add to 1 component", got.Desc)
@@ -978,7 +979,7 @@ func TestCompWithSourceCode(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompSourceCodeAbsent, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithSourceCode(doc)
+		got := CompWithSourceCode(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add to 1 component", got.Desc)
@@ -989,7 +990,7 @@ func TestCompWithSourceCode(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompSourceCodeMissing, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithSourceCode(doc)
+		got := CompWithSourceCode(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add to 1 component", got.Desc)
@@ -1000,7 +1001,7 @@ func TestCompWithSourceCode(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompSourceCodeEmptyURLString, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithSourceCode(doc)
+		got := CompWithSourceCode(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add to 1 component", got.Desc)
@@ -1011,7 +1012,7 @@ func TestCompWithSourceCode(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompSourceCodeURLMissing, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithSourceCode(doc)
+		got := CompWithSourceCode(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add to 1 component", got.Desc)
@@ -1022,7 +1023,7 @@ func TestCompWithSourceCode(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompSourceCodeTypeMissing, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithSourceCode(doc)
+		got := CompWithSourceCode(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add to 1 component", got.Desc)
@@ -1033,7 +1034,7 @@ func TestCompWithSourceCode(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompSourceCodeValidWebsiteType, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithSourceCode(doc)
+		got := CompWithSourceCode(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add to 1 component", got.Desc)
@@ -1044,7 +1045,7 @@ func TestCompWithSourceCode(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompSourceCodeInValidType, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithSourceCode(doc)
+		got := CompWithSourceCode(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add to 1 component", got.Desc)
@@ -1055,7 +1056,7 @@ func TestCompWithSourceCode(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompSourceCodeEmptyArray, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithSourceCode(doc)
+		got := CompWithSourceCode(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add to 1 component", got.Desc)
@@ -1066,7 +1067,7 @@ func TestCompWithSourceCode(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompSourceCodeMixedRefs, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithSourceCode(doc)
+		got := CompWithSourceCode(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "complete", got.Desc)
@@ -1217,7 +1218,7 @@ func TestSBOMWithPrimaryComponent(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMPrimaryComponentValid, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMWithPrimaryComponent(doc)
+		got := SBOMWithPrimaryComponent(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "complete", got.Desc)
@@ -1228,7 +1229,7 @@ func TestSBOMWithPrimaryComponent(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMPrimaryComponentValid, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMWithPrimaryComponent(doc)
+		got := SBOMWithPrimaryComponent(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "complete", got.Desc)
@@ -1239,7 +1240,7 @@ func TestSBOMWithPrimaryComponent(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMPrimaryComponentAbsent, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMWithPrimaryComponent(doc)
+		got := SBOMWithPrimaryComponent(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add primary component", got.Desc)
@@ -1250,7 +1251,7 @@ func TestSBOMWithPrimaryComponent(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMPrimaryComponentAbsent, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMWithPrimaryComponent(doc)
+		got := SBOMWithPrimaryComponent(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add primary component", got.Desc)
@@ -1261,7 +1262,7 @@ func TestSBOMWithPrimaryComponent(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMPrimaryComponentMissing, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMWithPrimaryComponent(doc)
+		got := SBOMWithPrimaryComponent(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add primary component", got.Desc)
@@ -1273,7 +1274,7 @@ func TestSBOMWithPrimaryComponent(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMPrimaryComponentEmptyObject, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMWithPrimaryComponent(doc)
+		got := SBOMWithPrimaryComponent(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add primary component", got.Desc)
@@ -1284,7 +1285,7 @@ func TestSBOMWithPrimaryComponent(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMPrimaryComponentMissingName, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMWithPrimaryComponent(doc)
+		got := SBOMWithPrimaryComponent(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add primary component", got.Desc)
@@ -1295,7 +1296,7 @@ func TestSBOMWithPrimaryComponent(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMPrimaryComponentEmptyName, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := SBOMWithPrimaryComponent(doc)
+		got := SBOMWithPrimaryComponent(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add primary component", got.Desc)
@@ -1521,7 +1522,7 @@ func TestCompWithDependencies(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxDependencyAbsent, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithDependencies(doc)
+		got := CompWithDependencies(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "primary component not defined", got.Desc)
@@ -1532,7 +1533,7 @@ func TestCompWithDependencies(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxDependencyDeclaredComplete, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithDependencies(doc)
+		got := CompWithDependencies(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "dependency completeness declared for all relevant components", got.Desc)
@@ -1543,7 +1544,7 @@ func TestCompWithDependencies(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxComponentValidDependency, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithDependencies(doc)
+		got := CompWithDependencies(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "dependency completeness declared N/A (SPDX)", got.Desc)
@@ -1554,7 +1555,7 @@ func TestCompWithDependencies(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxDependencyDeclaredUnknown, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithDependencies(doc)
+		got := CompWithDependencies(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "primary component not defined", got.Desc)
@@ -1565,7 +1566,7 @@ func TestCompWithDependencies(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxDepsDeclaredIncomplete, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithDependencies(doc)
+		got := CompWithDependencies(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "primary component not defined", got.Desc)
@@ -1576,7 +1577,7 @@ func TestCompWithDependencies(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxDependencyDeclarationAbsent, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithDependencies(doc)
+		got := CompWithDependencies(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "primary component not defined", got.Desc)
@@ -1587,7 +1588,7 @@ func TestCompWithDependencies(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxTwoComponentsWithDependenciesDeclaredComplete, sbom.Signature{})
 		require.NoError(t, err)
 
-		got := CompWithDependencies(doc)
+		got := CompWithDependencies(ctx, catalog.EvalInput{Doc: doc})
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "dependency completeness declared for all relevant components", got.Desc)
