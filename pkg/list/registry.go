@@ -232,126 +232,158 @@ func docAndComp(fn func(sbom.Document, sbom.GetComponent) (bool, string, error))
 }
 
 var compFeatureRegistry = map[string]compFeatureEval{
-	"comp_with_name":                 compOnly(evaluateCompWithName),
-	"comp_with_version":              compOnly(evaluateCompWithVersion),
-	"comp_with_supplier":             compOnly(evaluateCompWithSupplier),
-	"comp_with_uniq_ids":             docAndComp(extractors.GenericCompUniqIDs),
-	"comp_with_local_id":             docAndComp(evaluateCompWithLocalID),
-	"comp_valid_licenses":            compOnly(evaluateCompWithValidLicenses),
-	// generic (profile-independent) extractors
-	"comp_all_licenses":      docAndComp(extractors.GenericCompAllLicenses),
-	"comp_external_refs":     docAndComp(extractors.GenericCompExternalRefs),
-	"comp_generic_depth":     docAndComp(extractors.GenericCompDepth),
-	"comp_generic_supplier":  docAndComp(extractors.GenericCompSupplier),
-	"comp_author":            docAndComp(extractors.GenericCompAuthor),
-	"comp_with_checksums_sha256":     compOnly(evaluateCompWithSHA256Checksums),
-	"comp_with_source_code_uri":      docAndComp(evaluateCompWithSourceCodeURI),
-	"comp_with_source_code_hash":     docAndComp(evaluateCompWithSourceCodeHash),
-	"comp_with_executable_uri":       compOnly(evaluateCompWithExecutableURI),
-	"comp_with_associated_license":   docAndComp(evaluateCompWithAssociatedLicense),
-	"comp_with_concluded_license":    compOnly(evaluateCompWithConcludedLicense),
-	"comp_with_declared_license":     compOnly(evaluateCompWithDeclaredLicense),
-	"comp_with_dependencies":         compOnly(evaluateCompWithDependencies),
-	"comp_with_any_vuln_lookup_id":   compOnly(evaluateCompWithAnyVulnLookupID),
-	"comp_with_deprecated_licenses":  compOnly(evaluateCompWithDeprecatedLicenses),
-	"comp_with_multi_vuln_lookup_id": compOnly(evaluateCompWithMultiVulnLookupID),
-	"comp_with_primary_purpose":      docAndComp(evaluateCompWithPrimaryPurpose),
-	"comp_with_restrictive_licenses": compOnly(evaluateCompWithRestrictedLicenses),
-	"comp_with_checksums":            compOnly(evaluateCompWithChecksums),
-	"comp_with_sha256":               compOnly(evaluateCompWithChecksums256),
-	"comp_with_licenses":             compOnly(evaluateCompWithLicenses),
-	"comp_with_purl":                 compOnly(evaluateCompWithPURL),
-	"comp_with_cpe":                  compOnly(evaluateCompWithCPE),
-	"comp_with_copyright":            compOnly(evaluateCompWithCopyright),
-	"comp_with_strong_checksums":     compOnly(evaluateCompWithStrongChecksums),
-	"comp_with_weak_checksums":       compOnly(evaluateCompWithWeakChecksums),
+	// Identity
+	"comp_name":    compOnly(evaluateCompWithName),
+	"comp_version": compOnly(evaluateCompWithVersion),
+	"comp_supplier": docAndComp(extractors.GenericCompSupplier),
+	"comp_uniq_ids": docAndComp(extractors.GenericCompUniqIDs),
+	"comp_local_id": docAndComp(evaluateCompWithLocalID),
+	"comp_author":   docAndComp(extractors.GenericCompAuthor),
+	"comp_purl":     compOnly(evaluateCompWithPURL),
+	"comp_cpe":      compOnly(evaluateCompWithCPE),
+	"comp_primary_purpose": docAndComp(evaluateCompWithPrimaryPurpose),
+	"comp_external_refs":   docAndComp(extractors.GenericCompExternalRefs),
+	// Relationships
+	"comp_depth":        docAndComp(extractors.GenericCompDepth),
+	"comp_dependencies": compOnly(evaluateCompWithDependencies),
+	// Integrity & checksums
+	"comp_checksums":         compOnly(evaluateCompWithChecksums),
+	"comp_sha256":            compOnly(evaluateCompWithChecksums256),
+	"comp_checksums_sha256":  compOnly(evaluateCompWithSHA256Checksums),
+	"comp_strong_checksums":  compOnly(evaluateCompWithStrongChecksums),
+	"comp_weak_checksums":    compOnly(evaluateCompWithWeakChecksums),
+	"comp_source_code_hash":  docAndComp(evaluateCompWithSourceCodeHash),
+	// Source & executable
+	"comp_source_code_uri": docAndComp(evaluateCompWithSourceCodeURI),
+	"comp_executable_uri":  compOnly(evaluateCompWithExecutableURI),
+	// Licensing
+	"comp_licenses":             compOnly(evaluateCompWithLicenses),
+	"comp_valid_licenses":       compOnly(evaluateCompWithValidLicenses),
+	"comp_all_licenses":         docAndComp(extractors.GenericCompAllLicenses),
+	"comp_associated_license":   docAndComp(evaluateCompWithAssociatedLicense),
+	"comp_concluded_license":    compOnly(evaluateCompWithConcludedLicense),
+	"comp_declared_license":     compOnly(evaluateCompWithDeclaredLicense),
+	"comp_deprecated_licenses":  compOnly(evaluateCompWithDeprecatedLicenses),
+	"comp_restrictive_licenses": compOnly(evaluateCompWithRestrictedLicenses),
+	// Security
+	"comp_any_vuln_lookup_id":   compOnly(evaluateCompWithAnyVulnLookupID),
+	"comp_multi_vuln_lookup_id": compOnly(evaluateCompWithMultiVulnLookupID),
+	"comp_copyright":            compOnly(evaluateCompWithCopyright),
 }
 
 var compFeatureAliases = map[string]string{
-	"comp_name":                    "comp_with_name",
-	"pack_name":                    "comp_with_name",
-	"comp_version":                 "comp_with_version",
-	"pack_version":                 "comp_with_version",
-	"comp_with_local_ids":          "comp_with_local_id",
-	"comp_supplier":                "comp_generic_supplier",
-	"comp_license":                 "comp_all_licenses",
-	"comp_uniq_id":                 "comp_with_uniq_ids",
-	"comp_unique_identifiers":      "comp_with_uniq_ids",
-	"comp_with_uniq_id":            "comp_with_uniq_ids",
-	"comp_with_source_code":        "comp_with_source_code_uri",
-	"comp_source_code_uri":         "comp_with_source_code_uri",
-	"comp_source_code_url":         "comp_with_source_code_uri",
-	"comp_download_url":            "comp_with_executable_uri",
-	"pack_download_url":            "comp_with_executable_uri",
-	"comp_source_hash":             "comp_with_source_code_hash",
-	"comp_associated_license":      "comp_with_associated_license",
-	"comp_with_declared_licenses":  "comp_with_declared_license",
-	"pack_license_dec":             "comp_with_declared_license",
-	"pack_license_con":             "comp_with_concluded_license",
-	"comp_dependencies":            "comp_with_dependencies",
-	"comp_depth":                   "comp_generic_depth",
-	"comp_no_deprecated_licenses":  "comp_with_deprecated_licenses",
-	"comp_no_restrictive_licenses": "comp_with_deprecated_licenses",
-	"comp_with_purpose":            "comp_with_primary_purpose",
-	"comp_purpose":                 "comp_with_primary_purpose",
-	"comp_hash":                    "comp_with_checksums",
-	"comp_hash_sha256":             "comp_with_sha256",
-	"comp_with_valid_licenses":     "comp_with_licenses",
-	"comp_purl":                    "comp_with_purl",
-	"comp_cpe":                     "comp_with_cpe",
-	"pack_copyright":               "comp_with_copyright",
-	"comp_copyright":               "comp_with_copyright",
+	// backwards compat: old comp_with_* → new canonical
+	"comp_with_name":                 "comp_name",
+	"pack_name":                      "comp_name",
+	"comp_with_version":              "comp_version",
+	"pack_version":                   "comp_version",
+	"comp_with_supplier":             "comp_supplier",
+	"comp_generic_supplier":          "comp_supplier",
+	"comp_with_uniq_ids":             "comp_uniq_ids",
+	"comp_uniq_id":                   "comp_uniq_ids",
+	"comp_unique_identifiers":        "comp_uniq_ids",
+	"comp_with_uniq_id":              "comp_uniq_ids",
+	"comp_with_local_id":             "comp_local_id",
+	"comp_with_local_ids":            "comp_local_id",
+	"comp_with_purl":                 "comp_purl",
+	"comp_with_cpe":                  "comp_cpe",
+	"comp_with_purpose":              "comp_primary_purpose",
+	"comp_purpose":                   "comp_primary_purpose",
+	"comp_with_primary_purpose":      "comp_primary_purpose",
+	"comp_generic_depth":             "comp_depth",
+	"comp_with_dependencies":         "comp_dependencies",
+	"comp_with_checksums":            "comp_checksums",
+	"comp_hash":                      "comp_checksums",
+	"comp_with_sha256":               "comp_sha256",
+	"comp_hash_sha256":               "comp_sha256",
+	"comp_with_checksums_sha256":     "comp_checksums_sha256",
+	"comp_with_strong_checksums":     "comp_strong_checksums",
+	"comp_with_weak_checksums":       "comp_weak_checksums",
+	"comp_with_source_code_hash":     "comp_source_code_hash",
+	"comp_source_hash":               "comp_source_code_hash",
+	"comp_with_source_code":          "comp_source_code_uri",
+	"comp_with_source_code_uri":      "comp_source_code_uri",
+	"comp_source_code_url":           "comp_source_code_uri",
+	"comp_with_executable_uri":       "comp_executable_uri",
+	"comp_download_url":              "comp_executable_uri",
+	"pack_download_url":              "comp_executable_uri",
+	"comp_with_licenses":             "comp_licenses",
+	"comp_with_valid_licenses":       "comp_valid_licenses",
+	"comp_license":                   "comp_all_licenses",
+	"comp_with_associated_license":   "comp_associated_license",
+	"comp_with_concluded_license":    "comp_concluded_license",
+	"pack_license_con":               "comp_concluded_license",
+	"comp_with_declared_license":     "comp_declared_license",
+	"comp_with_declared_licenses":    "comp_declared_license",
+	"pack_license_dec":               "comp_declared_license",
+	"comp_with_deprecated_licenses":  "comp_deprecated_licenses",
+	"comp_no_deprecated_licenses":    "comp_deprecated_licenses",
+	"comp_with_restrictive_licenses": "comp_restrictive_licenses",
+	"comp_no_restrictive_licenses":   "comp_restrictive_licenses",
+	"comp_with_any_vuln_lookup_id":   "comp_any_vuln_lookup_id",
+	"comp_with_multi_vuln_lookup_id": "comp_multi_vuln_lookup_id",
+	"comp_with_copyright":            "comp_copyright",
+	"pack_copyright":                 "comp_copyright",
 }
 
 type sbomFeatureEval func(sbom.Document) (bool, string, error)
 
 var sbomFeatureAliases = map[string]string{
-	"comp_primary_comp":      "sbom_primary_comp",
-	"comp_with_primary_comp": "sbom_primary_comp",
-	"sbom_timestamp":         "sbom_creation_timestamp",
-	"sbom_creator":           "sbom_authors",
-	"sbom_data_license":      "sbom_license",
-	"sbom_build_process":     "sbom_build",
-	"sbom_lifecycle":         "sbom_build",
-	"sbom_tool":              "sbom_with_creator_and_version",
-	"sbom_tool_version":      "sbom_with_creator_and_version",
-	"sbom_primary_component": "sbom_with_primary_component",
-	"sbom_depth":             "sbom_dependencies",
-	"sbom_spec_declared":     "sbom_spec",
-	"sbom_name":              "sbom_spec",
-	"sbom_file_format":       "sbom_spec_file_format",
-	"sbom_machine_format":    "sbom_spec_file_format",
-	"sbom_uri":               "sbom_with_uri",
-	"sbom_namespace":         "sbom_with_uri",
-	"sbom_vulnerabilities":   "sbom_with_vuln",
-	"sbom_bomlinks":          "sbom_with_bomlinks",
-	"sbom_with_comment":      "sbom_comment",
+	"comp_primary_comp":              "sbom_primary_comp",
+	"comp_with_primary_comp":         "sbom_primary_comp",
+	"sbom_timestamp":                 "sbom_creation_timestamp",
+	"sbom_creator":                   "sbom_authors",
+	"sbom_data_license":              "sbom_license",
+	"sbom_build_process":             "sbom_build",
+	"sbom_lifecycle":                 "sbom_build",
+	// sbom_tool → sbom_creator_and_version (renamed from sbom_with_creator_and_version)
+	"sbom_tool":                      "sbom_creator_and_version",
+	"sbom_tool_version":              "sbom_creator_and_version",
+	"sbom_with_creator_and_version":  "sbom_creator_and_version", // backwards compat
+	// sbom_primary_component is now canonical; keep sbom_with_ as compat alias
+	"sbom_with_primary_component":    "sbom_primary_component",   // backwards compat
+	"sbom_depth":                     "sbom_dependencies",
+	"sbom_spec_declared":             "sbom_spec",
+	"sbom_name":                      "sbom_spec",
+	"sbom_file_format":               "sbom_spec_file_format",
+	"sbom_machine_format":            "sbom_spec_file_format",
+	// sbom_uri is now canonical; keep sbom_with_uri as compat alias
+	"sbom_with_uri":                  "sbom_uri",                 // backwards compat
+	"sbom_namespace":                 "sbom_uri",
+	// sbom_vuln is now canonical
+	"sbom_vulnerabilities":           "sbom_vuln",
+	"sbom_with_vuln":                 "sbom_vuln",                // backwards compat
+	// sbom_bomlinks is now canonical
+	"sbom_with_bomlinks":             "sbom_bomlinks",            // backwards compat
+	"sbom_with_comment":              "sbom_comment",
+	// spec_version_compliant is now canonical
+	"spec_with_version_compliant":    "spec_version_compliant",   // backwards compat
 }
 
 var sbomFeatureRegistry = map[string]sbomFeatureEval{
-	"sbom_creation_timestamp":       evaluateSBOMTImestamp,
-	"sbom_authors":                  evaluateSBOMAuthors,
-	"sbom_build":                    evaluateSBOMBuildLifeCycle,
-	"sbom_with_creator_and_version": evaluateSBOMWithCreatorAndVersion,
-	"sbom_with_primary_component":   evaluateSBOMPrimaryComponent,
-	"sbom_dependencies":             evaluateSBOMDependencies,
-	"sbom_sharable":                 evaluateSBOMSharable,
-	"sbom_parsable":                 evaluateSBOMParsable,
-	"sbom_spec":                     evaluateSBOMSpec,
-	"sbom_spec_file_format":         evaluateSBOMMachineFormat,
-	"sbom_spec_version":             evaluateSBOMSpecVersion,
-	"spec_with_version_compliant":   evaluateSBOMSpecVersionCompliant,
-	"sbom_with_uri":                 evaluateSBOMWithURI,
-	"sbom_with_vuln":                evaluateSBOMWithVulnerability,
-	"sbom_with_bomlinks":            evaluateSBOMWithBomLinks,
-	"sbom_spdxid":                   evaluateSBOMSPDXID,
-	"sbom_organization":             evaluateSBOMOrganization,
-	"sbom_schema_valid":             evaluateSBOMSchema,
-	"sbom_license":                  evaluateSBOMLicense,
-	"sbom_comment":                  evaluateSBOMComment,
-	"sbom_supplier":                 evaluateSBOMSupplier,
-	"sbom_completeness_declared":    evaluateSBOMCompleteness,
-	"sbom_primary_comp":             extractors.GenericSBOMPrimaryComp,
+	"sbom_creation_timestamp":  evaluateSBOMTImestamp,
+	"sbom_authors":             evaluateSBOMAuthors,
+	"sbom_build":               evaluateSBOMBuildLifeCycle,
+	"sbom_creator_and_version": evaluateSBOMWithCreatorAndVersion, // was sbom_with_creator_and_version
+	"sbom_primary_component":   evaluateSBOMPrimaryComponent,      // was sbom_with_primary_component
+	"sbom_dependencies":        evaluateSBOMDependencies,
+	"sbom_sharable":            evaluateSBOMSharable,
+	"sbom_parsable":            evaluateSBOMParsable,
+	"sbom_spec":                evaluateSBOMSpec,
+	"sbom_spec_file_format":    evaluateSBOMMachineFormat,
+	"sbom_spec_version":        evaluateSBOMSpecVersion,
+	"spec_version_compliant":   evaluateSBOMSpecVersionCompliant,  // was spec_with_version_compliant
+	"sbom_uri":                 evaluateSBOMWithURI,               // was sbom_with_uri
+	"sbom_vuln":                evaluateSBOMWithVulnerability,     // was sbom_with_vuln
+	"sbom_bomlinks":            evaluateSBOMWithBomLinks,          // was sbom_with_bomlinks
+	"sbom_spdxid":              evaluateSBOMSPDXID,
+	"sbom_organization":        evaluateSBOMOrganization,
+	"sbom_schema_valid":        evaluateSBOMSchema,
+	"sbom_license":             evaluateSBOMLicense,
+	"sbom_comment":             evaluateSBOMComment,
+	"sbom_supplier":            evaluateSBOMSupplier,
+	"sbom_completeness_declared": evaluateSBOMCompleteness,
+	"sbom_primary_comp":        extractors.GenericSBOMPrimaryComp,
 }
 
 // interlynkCompExtractors maps Interlynk feature keys to per-component extractors.
@@ -400,6 +432,24 @@ var interlynkDocExtractors = map[string]extractors.DocExtractor{
 	"sbom_spec_version":  extractors.InterlynkSBOMSpecVersion,
 	"sbom_file_format":   extractors.InterlynkSBOMFileFormat,
 	"sbom_schema_valid":  extractors.InterlynkSBOMSchemaValid,
+}
+
+// IsKnownFeature reports whether key is a recognised generic feature name or alias.
+// This is used by the CLI to validate --feature values before dispatching.
+func IsKnownFeature(key string) bool {
+	if _, ok := compFeatureRegistry[key]; ok {
+		return true
+	}
+	if _, ok := compFeatureAliases[key]; ok {
+		return true
+	}
+	if _, ok := sbomFeatureRegistry[key]; ok {
+		return true
+	}
+	if _, ok := sbomFeatureAliases[key]; ok {
+		return true
+	}
+	return false
 }
 
 // LookupInterlynkCompExtractor returns the Interlynk per-component extractor for the given feature key.

@@ -524,10 +524,10 @@ func featureToPropertyName(feature string) string {
 	case "sbom_authors":
 		return "Authors"
 
-	case "sbom_with_creator_and_version":
+	case "sbom_creator_and_version":
 		return "Creator and Version"
 
-	case "sbom_with_primary_component":
+	case "sbom_primary_component":
 		return "Primary Component and Version"
 
 	case "sbom_dependencies":
