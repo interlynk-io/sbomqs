@@ -14,7 +14,7 @@ BSI §5.2 defines two sets of mandatory fields: one for the SBOM document itself
 
 *(BSI §5.2.1, Table 2)*
 
-#### 1. Creator of the SBOM
+### 1. Creator of the SBOM
 
 **Official Definition:**
 > "Email address of the entity that created the SBOM. If no email address is available this MUST be a 'Uniform Resource Locator (URL)'."
@@ -47,7 +47,7 @@ BSI is built around the assumption that SBOMs must be processable by machines ac
   - [`metadata.manufacturer.email`](https://cyclonedx.org/docs/1.7/json/#metadata_manufacturer_contact_items_email) OR [`metadata.manufacturer.url`](https://cyclonedx.org/docs/1.7/json/#metadata_manufacturer_url) OR [`metadata.manufacturer.contact[].email`](https://cyclonedx.org/docs/1.7/json/#metadata_manufacturer_contact_items_email)
   - [`metadata.supplier.email`](https://cyclonedx.org/docs/1.7/json/#metadata_supplier_contact_items_email) OR [`metadata.supplier.url`](https://cyclonedx.org/docs/1.7/json/#metadata_supplier_url) OR [`metadata.supplier.contact[].email`](https://cyclonedx.org/docs/1.7/json/#metadata_supplier_contact_items_email)
 
-#### 2. Timestamp
+### 2. Timestamp
 
 **Official Definition:**
 > "Date and time of the SBOM data compilation according to the specification of the formats (see chapter 4)"
@@ -71,7 +71,7 @@ The timestamp ties the SBOM snapshot to a specific point in time. Since software
 
 *(BSI §5.2.2, Table 3)*
 
-#### 3. Component creator
+### 3. Component creator
 
 **Official Definition:**
 > "Email address of the entity that created and, if applicable, maintains the respective software component. If no email address is available this MUST be a 'Uniform Resource Locator (URL)'."
@@ -105,7 +105,7 @@ Same rationale as the SBOM creator: BSI requires a machine-actionable contact fo
   - [`components[].manufacturer.email`](https://cyclonedx.org/docs/1.7/json/#components_items_manufacturer_contact_items_email) OR [`components[].manufacturer.url`](https://cyclonedx.org/docs/1.7/json/#components_items_manufacturer_url) OR [`components[].manufacturer.contact[].email`](https://cyclonedx.org/docs/1.7/json/#components_items_manufacturer_contact_items_email)
   - [`components[].supplier.email`](https://cyclonedx.org/docs/1.7/json/#components_items_supplier_contact_items_email) OR [`components[].supplier.url`](https://cyclonedx.org/docs/1.7/json/#components_items_supplier_url) OR [`components[].supplier.contact[].email`](https://cyclonedx.org/docs/1.7/json/#components_items_supplier_contact_items_email)
 
-#### 4. Component name
+### 4. Component name
 
 **Official Definition:**
 > "Name assigned to the software component by its creator"
@@ -125,7 +125,7 @@ The component name is the most fundamental identifier. Without it, an SBOM entry
 - CycloneDX:
   - [`components[].name`](https://cyclonedx.org/docs/1.7/json/#components_items_name)
 
-#### 5. Component version
+### 5. Component version
 
 **Official Definition:**
 > "Identifier used by the creator to specify changes in the software component to a previously created version. Identifiers according to Semantic Versioning or alternatively Calendar Versioning SHOULD be used if one determines the versioning scheme. Existing identifiers MUST NOT be changed for this purpose."
@@ -148,7 +148,7 @@ Vulnerability tracking is version-specific, a CVE may affect version `1.2.3` of 
 - CycloneDX:
   - [`components[].version`](https://cyclonedx.org/docs/1.7/json/#components_items_version)
 
-#### 6. Dependencies on other components
+### 6. Dependencies on other components
 
 **Official Definition:**
 > "Enumeration of all components on which this component is directly dependent, according to the requirements in section 5.1"
@@ -174,7 +174,7 @@ BSI §5.1 specifically requires a **"Delivery item SBOM"** minimum (see §6.2.4)
 - CycloneDX:
   - [`dependencies[]`](https://cyclonedx.org/docs/1.7/json/#dependencies) — `ref` (the component) and `dependsOn` (its direct dependencies)
 
-#### 7. Licence
+### 7. Licence
 
 **Official Definition:**
 > "Associated licence(s) of the component from the perspective of the SBOM creator."
@@ -208,7 +208,7 @@ Licence information serves two critical purposes: legal compliance (ensuring the
   - [`components[].licenses[].license.name`](https://cyclonedx.org/docs/1.7/json/#tab-pane_components_items_licenses_items_oneOf_i0_license_oneOf_i1) (name, if no SPDX ID available)
   - [`components[].licenses[].expression`](https://cyclonedx.org/docs/1.7/json/#components_items_licenses_items_oneOf_i1_expression) (SPDX expression)
 
-#### 8. Hash value of the executable component
+### 8. Hash value of the executable component
 
 **Official Definition:**
 > "Cryptographically secure checksum (hash value) of the component in its executable form (i.e. as the single executable file on a mass storage device) as SHA-256"
@@ -239,7 +239,7 @@ Additional fields MUST be provided *if they exist and their prerequisites are fu
 
 *(BSI §5.3.1, Table 4)*
 
-#### 9. SBOM-URI
+### 9. SBOM-URI
 
 **Official Definition:**
 > "Uniform Resource Identifier (URI)" of this SBOM
@@ -264,7 +264,7 @@ A URI uniquely identifies the SBOM document itself, independent of how or where 
 
 *(BSI §5.3.2, Table 5)*
 
-#### 10. Source code URI
+### 10. Source code URI
 
 **Official Definition:**
 > "Uniform Resource Identifier (URI)" of the source code of the component, e.g. the URL of the source code repository"
@@ -289,7 +289,7 @@ Knowing where a component's source code lives enables downstream consumers to au
 
 > **NOTE:** SPDX lacks a standardized field for source code URI. CycloneDX's `externalReferences` with type `vcs` is the clearest and most widely adopted mapping for this BSI requirement.
 
-#### 11. URI of the executable form of the component
+### 11. URI of the executable form of the component
 
 **Official Definition:**
 > "Uniform Resource Identifier (URI)", which points directly to the executable form of the component."
@@ -312,7 +312,7 @@ This URI allows automated tools to retrieve the exact distributable artifact —
     - `distribution` — direct download of the distributable artifact
     - `distribution-intake` — distribution intake endpoint
 
-#### 12. Hash value of the source code of the component
+### 12. Hash value of the source code of the component
 
 **Official Definition:**
 > "Cryptographically secure checksum (hash value) of the component source code as SHA-256"
@@ -334,7 +334,7 @@ A hash of the source code allows independent verification that the source archiv
 - CycloneDX:
   - [`components[].externalReferences[]`](https://cyclonedx.org/docs/1.7/json/#components_items_externalReferences_items_type) with type `vcs` or `source-distribution`, including associated `hashes[]` entries with `alg` = `SHA-256`
 
-#### 13. Other unique identifiers
+### 13. Other unique identifiers
 
 **Official Definition:**
 > "Other identifiers that can be used to identify the component or to look it up in relevant databases, such as Common Platform Enumeration (CPE) or Package URL (purl)."
