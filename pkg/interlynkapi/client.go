@@ -47,9 +47,18 @@ type Client struct {
 
 // NewClient constructs a new instance of Client.
 // apiKey may be empty for unauthenticated tier.
+// If baseURL includes the API path (/api/v1/doctor/check), it will be trimmed
+// to the base URL only, as the client appends the path internally.
 func NewClient(baseURL, apiKey string) *Client {
+	// Remove trailing slashes and the API endpoint path if present
+	cleanURL := strings.TrimRight(baseURL, "/")
+	cleanURL = strings.TrimSuffix(cleanURL, "/api/v1/doctor/check")
+	cleanURL = strings.TrimSuffix(cleanURL, "/api/v1/doctor")
+	cleanURL = strings.TrimSuffix(cleanURL, "/api/v1")
+	cleanURL = strings.TrimRight(cleanURL, "/")
+
 	return &Client{
-		baseURL: strings.TrimRight(baseURL, "/"),
+		baseURL: cleanURL,
 		apiKey:  apiKey,
 		httpClient: &http.Client{
 			Timeout: 30 * time.Second,

@@ -233,12 +233,13 @@ func SBOMEvaluation(ctx context.Context, catal *catalog.Catalog, cfg config.Conf
 				zap.String("url", cfg.InterlynkURL),
 				zap.Error(err),
 			)
+		} else {
+			input.ComponentQuality = qResult
+			log.Debug("Component quality results added to evaluation input",
+				zap.Int("components_checked", qResult.TotalComponents),
+				zap.String("tier", qResult.Tier),
+			)
 		}
-		input.ComponentQuality = qResult
-		log.Debug("Component quality results added to evaluation input",
-			zap.Int("components_checked", qResult.TotalComponents),
-			zap.String("tier", qResult.Tier),
-		)
 	}
 
 	if catal.Profiles != nil && catal.ComprCategories != nil {
