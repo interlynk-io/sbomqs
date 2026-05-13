@@ -700,8 +700,8 @@ var CatVulnerabilityAndTraceSpec = catalog.ComprCatSpec{
 	Description: "Ability to map components to vulnerability databases",
 	Weight:      10,
 	Features: []catalog.ComprFeatSpec{
-		{Key: "comp_with_purl", Name: "Component With PURL", Weight: 0.50, Ignore: false, Evaluate: extractors.CompWithPURL},
-		{Key: "comp_with_cpe", Name: "Component With CPE", Weight: 0.50, Ignore: false, Evaluate: extractors.CompWithCPE},
+		{Key: "comp_with_purl", Name: "Component With PURL", Weight: 0.50, Ignore: false, Evaluate: extractors.CompWithPURL, OrGroup: "vuln_id"},
+		{Key: "comp_with_cpe", Name: "Component With CPE", Weight: 0.50, Ignore: false, Evaluate: extractors.CompWithCPE, OrGroup: "vuln_id"},
 	},
 }
 

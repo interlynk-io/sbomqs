@@ -194,21 +194,53 @@ func ToGrade(score float64) string {
 		 ComputeCategoryScore calculates the category-level score using a weighted
 		 average of all non-ignored feature scores.
 
-		 category_score = Σ(score_i * (weight_i / totalFeatureWeight))
-	                    = (Σ(score_i * weight_i)) / totalFeatureWeight
+		 For ordinary features:
+		   category_score = Σ(score_i * (weight_i / totalFeatureWeight))
+
+		 For OR-group features (features sharing a non-empty OrGroup):
+		   Each group contributes as a single virtual feature whose score is
+		   max(score_i for i in group) and whose weight is Σ(weight_i for i in group).
+		   This reflects that any one identifier (PURL or CPE) fully satisfies the
+		   requirement - having only a PURL should not be penalised for lacking a CPE.
 
 		 Behavior:
-		  1. totalFeatureWeight = Sums the weights of all features where Ignored == false.
+		  1. Ignored features are excluded from both weight sums and score computation.
 		  2. If no valid weights remain, returns 0.
-		  3. Renormalizes each feature’s weight (weight_i / totalFeatureWeight).
+		  3. Renormalizes each feature/group weight by totalFeatureWeight.
 		  4. Computes the weighted average: Σ(score_i * normalizedWeight_i).
 */
 func ComputeCategoryScore(features []api.FeatureResult) float64 {
+	type orGroupInfo struct {
+		maxScore    float64
+		totalWeight float64
+	}
+	orGroups := map[string]*orGroupInfo{}
+
 	var totalFeatureWeight float64
+
+	// First pass: collect OR-group info and accumulate non-OR weights.
 	for _, feature := range features {
-		if !feature.Ignored {
+		if feature.Ignored {
+			continue
+		}
+		if feature.OrGroup != "" {
+			g, ok := orGroups[feature.OrGroup]
+			if !ok {
+				g = &orGroupInfo{}
+				orGroups[feature.OrGroup] = g
+			}
+			g.totalWeight += feature.Weight
+			if feature.Score > g.maxScore {
+				g.maxScore = feature.Score
+			}
+		} else {
 			totalFeatureWeight += feature.Weight
 		}
+	}
+
+	// Add each OR-group's combined weight once.
+	for _, g := range orGroups {
+		totalFeatureWeight += g.totalWeight
 	}
 
 	if totalFeatureWeight <= 0 {
@@ -217,16 +249,19 @@ func ComputeCategoryScore(features []api.FeatureResult) float64 {
 
 	var weightedScore float64
 
+	// Ordinary features.
 	for _, feature := range features {
-		if feature.Ignored {
+		if feature.Ignored || feature.OrGroup != "" {
 			continue
 		}
+		normalizedWeight_i := feature.Weight / totalFeatureWeight
+		weightedScore += feature.Score * normalizedWeight_i
+	}
 
-		score_i := feature.Score
-		weight_i := feature.Weight
-
-		normalizedWeight_i := weight_i / totalFeatureWeight
-		weightedScore += score_i * normalizedWeight_i
+	// OR groups: each group contributes once with max(score).
+	for _, g := range orGroups {
+		normalizedWeight := g.totalWeight / totalFeatureWeight
+		weightedScore += g.maxScore * normalizedWeight
 	}
 
 	return weightedScore

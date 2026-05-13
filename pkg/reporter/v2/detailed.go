@@ -59,7 +59,7 @@ func (r *Reporter) detailedReport() {
 				catNameWithWeight := formatCategoryWithWeight(cat.Name, cat.Weight, totalCatWeight, isCompInfo)
 				for _, feat := range cat.Features {
 					scoreStr := formatScore(feat)
-					featNameWithWeight := formatFeatureWithWeight(feat.Key, cat.Weight, feat.Weight, totalCatWeight, isCompInfo)
+					featNameWithWeight := formatFeatureWithWeight(feat.Key, feat.OrGroup, cat.Weight, feat.Weight, totalCatWeight, isCompInfo)
 					l := []string{catNameWithWeight, featNameWithWeight, scoreStr, feat.Desc}
 					outDoc = append(outDoc, l)
 				}
@@ -80,7 +80,7 @@ func (r *Reporter) detailedReport() {
 				catNameWithWeight := formatCategoryWithWeight(cat.Name, cat.Weight, totalCatWeight, isCompInfo)
 				for _, feat := range cat.Features {
 					scoreStr := formatScore(feat)
-					featNameWithWeight := formatFeatureWithWeight(feat.Key, cat.Weight, feat.Weight, totalCatWeight, isCompInfo)
+					featNameWithWeight := formatFeatureWithWeight(feat.Key, feat.OrGroup, cat.Weight, feat.Weight, totalCatWeight, isCompInfo)
 					l := []string{catNameWithWeight, featNameWithWeight, scoreStr, feat.Desc}
 					outDoc = append(outDoc, l)
 				}
@@ -210,12 +210,6 @@ func calculateTotalCategoryWeight(catResults []api.CategoryResult) float64 {
 	return total
 }
 
-// orFeatures defines features that are OR conditions (either one satisfies the requirement)
-var orFeatures = map[string]bool{
-	"comp_with_purl": true,
-	"comp_with_cpe":  true,
-}
-
 // formatCategoryWithWeight formats category name with its weight percentage
 func formatCategoryWithWeight(catName string, catWeight, totalCatWeight float64, isCompInfo bool) string {
 	if isCompInfo || totalCatWeight == 0 {
@@ -225,14 +219,16 @@ func formatCategoryWithWeight(catName string, catWeight, totalCatWeight float64,
 	return fmt.Sprintf("%s (%.1f%%)", catName, effectiveWeight)
 }
 
-// formatFeatureWithWeight formats feature key with its effective weight percentage
-func formatFeatureWithWeight(featKey string, catWeight, featWeight, totalCatWeight float64, isCompInfo bool) string {
+// formatFeatureWithWeight formats feature key with its effective weight percentage.
+// orGroup is non-empty when the feature belongs to an OR group (either one satisfies
+// the requirement); in that case the full category weight is shown with an OR label.
+func formatFeatureWithWeight(featKey, orGroup string, catWeight, featWeight, totalCatWeight float64, isCompInfo bool) string {
 	if isCompInfo || totalCatWeight == 0 {
 		return featKey
 	}
 
-	// For OR features, show the full category weight since either one satisfies the requirement
-	if orFeatures[featKey] {
+	// For OR features, show the full category weight since either one satisfies the requirement.
+	if orGroup != "" {
 		effectiveWeight := (catWeight / totalCatWeight) * 100
 		return fmt.Sprintf("%s (%.1f%% OR)", featKey, effectiveWeight)
 	}
