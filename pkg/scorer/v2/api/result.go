@@ -94,6 +94,9 @@ type FeatureResult struct {
 	Score   float64
 	Desc    string
 	Ignored bool
+	// OrGroup matches catalog.ComprFeatSpec.OrGroup: features sharing the same
+	// non-empty group are OR-peers and scored via max() rather than averaged.
+	OrGroup string
 }
 
 // ProfileResult represents the evaluation outcome for a single compliance profile.
@@ -161,10 +164,11 @@ func NewProfFeatResult(pFeat catalog.ProfFeatSpec) ProfileFeatureResult {
 // metadata and weight information.
 func NewComprFeatResult(comprFeat catalog.ComprFeatSpec) FeatureResult {
 	return FeatureResult{
-		Name:   comprFeat.Name,
-		Key:    string(comprFeat.Key),
-		Score:  0.0,
-		Weight: comprFeat.Weight,
+		Name:    comprFeat.Name,
+		Key:     string(comprFeat.Key),
+		Score:   0.0,
+		Weight:  comprFeat.Weight,
+		OrGroup: comprFeat.OrGroup,
 	}
 }
 

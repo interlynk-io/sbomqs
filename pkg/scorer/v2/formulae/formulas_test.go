@@ -237,6 +237,33 @@ func TestComputeCategoryScore(t *testing.T) {
 			},
 			expected: 1.0, // (1.0*3) / 3
 		},
+		{
+			name: "OR group: purl present, cpe absent -> max(10,0) = 10",
+			frs: []api.FeatureResult{
+				{Key: "comp_with_purl", Weight: 0.50, Score: 10.0, Ignored: false, OrGroup: "vuln_id"},
+				{Key: "comp_with_cpe", Weight: 0.50, Score: 0.0, Ignored: false, OrGroup: "vuln_id"},
+			},
+			// OR group: max(10,0)=10, combined weight=1.0, totalWeight=1.0 -> 10.0
+			expected: 10.0,
+		},
+		{
+			name: "OR group: both present -> max(10,10) = 10",
+			frs: []api.FeatureResult{
+				{Key: "comp_with_purl", Weight: 0.50, Score: 10.0, Ignored: false, OrGroup: "vuln_id"},
+				{Key: "comp_with_cpe", Weight: 0.50, Score: 10.0, Ignored: false, OrGroup: "vuln_id"},
+			},
+			expected: 10.0,
+		},
+		{
+			name: "OR group with other features: OR=10 (w=1.0), other=5 (w=0.5) -> (10*1.0+5*0.5)/1.5",
+			frs: []api.FeatureResult{
+				{Key: "comp_with_purl", Weight: 0.50, Score: 10.0, Ignored: false, OrGroup: "vuln_id"},
+				{Key: "comp_with_cpe", Weight: 0.50, Score: 0.0, Ignored: false, OrGroup: "vuln_id"},
+				{Key: "other_feat", Weight: 0.50, Score: 5.0, Ignored: false},
+			},
+			// totalWeight=1.5; OR group=(10*1.0)/1.5; other=(5*0.5)/1.5
+			expected: (10.0*1.0 + 5.0*0.5) / 1.5,
+		},
 	}
 
 	for _, tt := range tests {

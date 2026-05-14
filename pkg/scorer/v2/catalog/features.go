@@ -42,6 +42,10 @@ type ComprFeatSpec struct {
 	Key         string
 	Weight      float64
 	Evaluate    ComprFeatEval
+	// OrGroup groups mutually-substitutable features (e.g. purl vs cpe).
+	// When non-empty, ComputeCategoryScore uses max(score) across all members
+	// of the group instead of averaging them individually.
+	OrGroup string
 }
 
 // ComprFeatEval is the evaluation function type for a comprehensive feature.
