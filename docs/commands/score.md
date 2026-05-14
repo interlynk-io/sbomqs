@@ -52,12 +52,22 @@ sbomqs score [flags] <SBOM file(s)>
 
 - `--debug, -D`: Enable debug logging
 
-### Component Quality API Flags
+### Component Quality Analysis Flags
 
-- `--url <url>`: Interlynk API endpoint for component quality analysis (optional)
-- `--api-key <token>`: API key for authenticated access to the Interlynk API (optional)
+- `--enable-component-analysis`: Enable component quality analysis via Interlynk API (requires `--api-key` or `INTERLYNK_SECURITY_TOKEN` environment variable)
+- `--api-url <url>`: Interlynk API endpoint for component quality analysis (optional, default: `https://api.interlynk.io`)
+- `--api-key <token>`: API key for authenticated access to the Interlynk API (optional, can also use `INTERLYNK_SECURITY_TOKEN` environment variable)
 
-**Note:** The `--url` flag should point to the base URL only (e.g., `https://api.interlynk.io`). The client automatically appends `/api/v1/doctor/check`.
+**Note:** Component quality analysis is opt-in. You must provide `--enable-component-analysis` flag to enable it. The `--api-url` flag should point to the base URL only (e.g., `https://api.interlynk.io`). The client automatically appends `/api/v1/doctor/check`.
+
+**Backward Compatibility:** The `--url` flag is deprecated but still works as an alias for `--api-url`.
+
+#### Configuration Priority
+
+| Setting | Priority Order |
+|---------|---------------|
+| API URL | `--api-url` flag > `--url` flag (deprecated) > `INTERLYNK_API_URL` environment variable > default (`https://api.interlynk.io`) |
+| API Key | `--api-key` flag > `INTERLYNK_SECURITY_TOKEN` environment variable |
 
 #### Unauthenticated vs Authenticated Access
 
@@ -355,6 +365,35 @@ $ sbomqs score --profile bsi samples/app.cdx.json
 $ sbomqs score --profile bsi-v2.0 samples/app.spdx.json
 ```
 
+### Component Quality Analysis Examples
+
+#### Enable with Environment Variable
+
+```bash
+# Set Interlynk Security key via environment variable
+export INTERLYNK_SECURITY_TOKEN="your-api-key"
+
+# Enable component quality analysis
+$ sbomqs score --enable-component-analysis my-app.spdx.json
+```
+
+#### Enable with Command Line Flag
+
+```bash
+# Enable with explicit API key
+$ sbomqs score --enable-component-analysis --api-key "your-api-key" my-app.spdx.json
+
+# Enable with custom API URL
+$ sbomqs score --enable-component-analysis --api-url "https://api.interlynk.io" --api-key "your-api-key" my-app.spdx.json
+```
+
+#### Using Custom API Endpoint
+
+```bash
+# Using a local Interlynk instance
+$ sbomqs score --enable-component-analysis --api-url "http://localhost:3000" --api-key "your-local-key" my-app.spdx.json
+```
+
 ### Version 2.0 vs Legacy Mode
 
 #### Version 2.0 Mode (Default)
@@ -414,7 +453,7 @@ $ sbomqs score --legacy --category ntia my-app.spdx.json
 
 ## Component Quality Analysis
 
-The Component Quality category requires access to the Interlynk API to analyze components for:
+The Component Quality category analyzes components via the Interlynk API for:
 
 - End-of-Life (EOL) and End-of-Support (EOS) status
 - Malicious package detection
@@ -422,20 +461,35 @@ The Component Quality category requires access to the Interlynk API to analyze c
 - Exploit Prediction Scoring System (EPSS)
 - PURL and CPE validity
 
+**Important:** Component quality analysis is opt-in. You must explicitly enable it with the `--enable-component-analysis` flag and provide an API key.
+
 ### API Endpoint Examples
+
+#### Basic Usage with Environment Variable
+
+```bash
+# Set API key via environment variable
+export INTERLYNK_SECURITY_TOKEN="your-api-key"
+
+# Enable component quality analysis
+sbomqs score my-app.spdx.json --enable-component-analysis
+```
+
+#### Using Command Line Flags
+
+```bash
+# Enable with explicit API key
+sbomqs score my-app.spdx.json --enable-component-analysis --api-key "your-api-key"
+
+# Enable with custom API URL
+sbomqs score my-app.spdx.json --enable-component-analysis --api-url "https://api.interlynk.io" --api-key "your-api-key"
+```
 
 #### Local Development
 
 ```bash
 # Using a local Interlynk instance
-sbomqs score my-app.spdx.json --url="http://localhost:3000" --api-key="your-local-api-key"
-```
-
-#### Production (Interlynk Platform)
-
-```bash
-# Using the Interlynk production API
-sbomqs score my-app.spdx.json --url="https://api.interlynk.io" --api-key="$INTERLYNK_SECURITY_TOKEN"
+sbomqs score my-app.spdx.json --enable-component-analysis --api-url="http://localhost:3000" --api-key="your-local-api-key"
 ```
 
 ### Obtaining an API Token
@@ -461,14 +515,14 @@ API_KEY=$(RBENV_VERSION=3.4.9 bundle exec rails runner '
 
 ### Component Quality Scoring Without API
 
-Without the `--url` flag, Component Quality features will show as "N/A" in the output. This is useful when you don't need component-level security analysis.
+Without the `--enable-component-analysis` flag, Component Quality features will show as "N/A" or "Coming Soon" in the output. This is the default behavior when you don't need component-level security analysis.
 
 ```bash
-# Score without component quality analysis
+# Score without component quality analysis (default)
 sbomqs score my-app.spdx.json
 
-# Score with component quality analysis
-sbomqs score my-app.spdx.json --url="https://api.interlynk.io" --api-key="$INTERLYNK_SECURITY_TOKEN"
+# Score with component quality analysis enabled
+sbomqs score my-app.spdx.json --enable-component-analysis --api-key="$INTERLYNK_SECURITY_TOKEN"
 ```
 
 ## CI/CD Integration
