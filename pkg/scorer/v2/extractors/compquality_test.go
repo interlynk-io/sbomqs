@@ -59,7 +59,7 @@ func TestCompWithPurlValid_NoAPIResult(t *testing.T) {
 	doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxWithPurls, sbom.Signature{})
 	require.NoError(t, err)
 
-	// No ComponentQuality - simulates --url not provided or API call skipped
+	// No ComponentQuality - simulates --enable-component-analysis not provided or API call skipped
 	input := catalog.EvalInput{Doc: doc}
 	got := CompWithPurlValid(ctx, input)
 

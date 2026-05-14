@@ -63,13 +63,13 @@ type Params struct {
 
 	ConfigPath string
 
-	Ntia  bool
+	Ntia   bool
 	Bsi    bool
 	BsiV1  bool
 	BsiV2  bool
 	BsiV21 bool
-	Oct   bool
-	Fsct  bool
+	Oct    bool
+	Fsct   bool
 
 	Color bool
 	Blob  string
@@ -80,8 +80,12 @@ type Params struct {
 
 	// InterlynkURL enables Component Quality API calls when set.
 	InterlynkURL string
+
 	// InterlynkAPIKey activates the authenticated tier (larger batches, more checks).
 	InterlynkAPIKey string
+
+	// EnableComponentAnalysis explicitly opts in to component quality analysis.
+	EnableComponentAnalysis bool
 }
 
 func Run(ctx context.Context, ep *Params) error {
@@ -119,13 +123,14 @@ func scored(ctx context.Context, ep *Params) ([]api.Result, error) {
 	)
 
 	cfg := config.Config{
-		Categories:      ep.Categories,
-		Features:        ep.Features,
-		ConfigFile:      ep.ConfigPath,
-		Profile:         ep.Profiles,
-		Recursive:       ep.Recursive,
-		InterlynkURL:    ep.InterlynkURL,
-		InterlynkAPIKey: ep.InterlynkAPIKey,
+		Categories:              ep.Categories,
+		Features:                ep.Features,
+		ConfigFile:              ep.ConfigPath,
+		Profile:                 ep.Profiles,
+		Recursive:               ep.Recursive,
+		InterlynkURL:            ep.InterlynkURL,
+		InterlynkAPIKey:         ep.InterlynkAPIKey,
+		EnableComponentAnalysis: ep.EnableComponentAnalysis,
 	}
 
 	results, err := score.ScoreSBOM(ctx, cfg, ep.Path)

@@ -13,9 +13,9 @@
 // limitations under the License.
 
 // Package interlynkapi provides a client for the Interlynk Component Quality API.
-// When --url is provided to sbomqs score, components are extracted from the SBOM,
-// POSTed to `/api/v1/doctor/check` in batches, and the resulting findings populate
-// the Component Quality category instead of returning N/A.
+// When --enable-component-analysis is provided to sbomqs score, components are extracted
+// from the SBOM, POSTed to `/api/v1/doctor/check` in batches, and the resulting findings
+// populate the Component Quality category instead of returning N/A.
 package interlynkapi
 
 // ComponentPayload is one component in the API request body.

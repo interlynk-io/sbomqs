@@ -58,12 +58,15 @@ type Config struct {
 	Recursive bool
 
 	// InterlynkURL is the base URL of the Interlynk platform for Component Quality checks
-	// (e.g. "https://app.interlynk.io"). When empty (default), no API calls are made and
-	// Component Quality features return N/A.
+	// (e.g. "https://api.interlynk.io"). Can also be set via INTERLYNK_API_URL env var.
 	InterlynkURL string
 
 	// InterlynkAPIKey is the Bearer token for the authenticated API tier.
-	// When empty, the unauthenticated tier is used (50-component batches, 6 basic checks).
-	// When set, the authenticated tier is used (5000-component batches, 10 checks).
+	// Can also be set via INTERLYNK_SECURITY_TOKEN env var.
+	// Required when EnableComponentAnalysis is true.
 	InterlynkAPIKey string
+
+	// EnableComponentAnalysis explicitly opts in to component quality analysis.
+	// When true, the Component Quality category is included and API calls are made.
+	EnableComponentAnalysis bool
 }
