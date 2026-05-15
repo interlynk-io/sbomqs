@@ -43,7 +43,7 @@ import (
 )
 
 var (
-	cdxSpecVersions       = []string{"1.0", "1.1", "1.2", "1.3", "1.4", "1.5", "1.6"}
+	cdxSpecVersions       = []string{"1.0", "1.1", "1.2", "1.3", "1.4", "1.5", "1.6", "1.7"}
 	cdxFileFormats        = []string{"json", "xml"}
 	cdxPrimaryPurpose     = []string{"application", "framework", "library", "container", "operating-system", "device", "firmware", "file"}
 	CdxSupportedLifecycle = []string{"design", "pre-build", "build", "post-build", "operations", "discovery", "decommission"}
@@ -74,6 +74,7 @@ func newCDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat, _ Signat
 	var err error
 	log := logger.FromContext(ctx)
 	log.Debug("Constructing new instance of cdx")
+
 	// Read the content for manual parsing if needed
 	rawContent, err := io.ReadAll(f)
 	if err != nil {

@@ -41,8 +41,9 @@ func schemaPath(spec, version string) string {
 // schemaRegistry maps the schema identifiers to embedded schema file paths
 var schemaRegistry = map[string]string{
 	// Common schemas
-	"http://cyclonedx.org/schema/spdx.schema.json":     "schemas/cyclonedx/common/spdx.schema.json",
-	"http://cyclonedx.org/schema/jsf-0.82.schema.json": "schemas/cyclonedx/common/jsf-0.82.schema.json",
+	"http://cyclonedx.org/schema/spdx.schema.json":              "schemas/cyclonedx/common/spdx.schema.json",
+	"http://cyclonedx.org/schema/jsf-0.82.schema.json":          "schemas/cyclonedx/common/jsf-0.82.schema.json",
+	"http://cyclonedx.org/schema/cryptography-defs.schema.json": "schemas/cyclonedx/common/cryptography-defs.schema.json",
 
 	// Root schemas
 	"http://cyclonedx.org/schema/bom-1.2.schema.json": "schemas/cyclonedx/1.2/bom-1.2.schema.json",
