@@ -420,6 +420,7 @@ func InitializeCatalog(ctx context.Context, conf config.Config) (*catalog.Catalo
 	// Default -> use full comprehensive categories
 	log.Info("Catalog initialized with selected categories",
 		zap.Int("categories", len(catal.ComprCategories)),
+		zap.Bool("component_quality_enabled", conf.EnableComponentAnalysis),
 	)
 
 	return catal, nil

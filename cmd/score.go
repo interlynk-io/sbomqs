@@ -68,8 +68,9 @@ type userCmd struct {
 	legacy bool
 
 	// Interlynk Component Quality API
-	interlynkURL    string
-	interlynkAPIKey string
+	interlynkURL            string
+	interlynkAPIKey         string
+	enableComponentAnalysis bool
 }
 
 // scoreCmd represents the score command for generating comprehensive quality scores for SBOM documents.
@@ -103,6 +104,16 @@ var scoreCmd = &cobra.Command{
 
   # Recursively score all SBOMs under a directory
   sbomqs score --recursive testdata
+
+  # Enable component quality analysis with API key via flag
+  sbomqs score --enable-component-analysis --api-key "your-api-key" samples/sbomqs-spdx-syft.json
+
+  # Enable component quality analysis with API key via environment variable
+  export INTERLYNK_SECURITY_TOKEN="your-api-key"
+  sbomqs score --enable-component-analysis samples/sbomqs-spdx-syft.json
+
+  # Enable component quality analysis with custom API URL
+  sbomqs score --enable-component-analysis --api-url "https://api.interlynk.io" --api-key "your-api-key" samples/sbomqs-spdx-syft.json
 `,
 
 	Args: func(cmd *cobra.Command, args []string) error {
@@ -290,28 +301,49 @@ func toUserCmd(cmd *cobra.Command, args []string) *userCmd {
 	uCmd.recursive, _ = cmd.Flags().GetBool("recursive")
 
 	// Interlynk Component Quality API
-	uCmd.interlynkURL, _ = cmd.Flags().GetString("url")
-	uCmd.interlynkAPIKey, _ = cmd.Flags().GetString("api-key")
+	uCmd.enableComponentAnalysis, _ = cmd.Flags().GetBool("enable-component-analysis")
+
+	// API URL: --api-url flag > INTERLYNK_API_URL env var > default
+	apiURLFlag, _ := cmd.Flags().GetString("api-url")
+	if apiURLFlag != "" {
+		uCmd.interlynkURL = apiURLFlag
+	} else if urlFlag, _ := cmd.Flags().GetString("url"); urlFlag != "" {
+		// Backward compatibility: --url alias
+		uCmd.interlynkURL = urlFlag
+	} else if envURL := os.Getenv("INTERLYNK_API_URL"); envURL != "" {
+		uCmd.interlynkURL = envURL
+	} else {
+		uCmd.interlynkURL = "https://api.interlynk.io"
+	}
+
+	// API Key: --api-key flag > INTERLYNK_SECURITY_TOKEN env var
+	apiKeyFlag, _ := cmd.Flags().GetString("api-key")
+	if apiKeyFlag != "" {
+		uCmd.interlynkAPIKey = apiKeyFlag
+	} else if envToken := os.Getenv("INTERLYNK_SECURITY_TOKEN"); envToken != "" {
+		uCmd.interlynkAPIKey = envToken
+	}
 
 	return uCmd
 }
 
 func toEngineParams(uCmd *userCmd) *engine.Params {
 	return &engine.Params{
-		Path:            uCmd.path,
-		Categories:      uCmd.categories,
-		Features:        uCmd.features,
-		JSON:            uCmd.json,
-		Basic:           uCmd.basic,
-		Detailed:        uCmd.detailed,
-		Color:           uCmd.color,
-		Recursive:       uCmd.recursive,
-		Debug:           uCmd.debug,
-		ConfigPath:      uCmd.configPath,
-		Legacy:          uCmd.legacy,
-		Profiles:        uCmd.profile,
-		InterlynkURL:    uCmd.interlynkURL,
-		InterlynkAPIKey: uCmd.interlynkAPIKey,
+		Path:                    uCmd.path,
+		Categories:              uCmd.categories,
+		Features:                uCmd.features,
+		JSON:                    uCmd.json,
+		Basic:                   uCmd.basic,
+		Detailed:                uCmd.detailed,
+		Color:                   uCmd.color,
+		Recursive:               uCmd.recursive,
+		Debug:                   uCmd.debug,
+		ConfigPath:              uCmd.configPath,
+		Legacy:                  uCmd.legacy,
+		Profiles:                uCmd.profile,
+		InterlynkURL:            uCmd.interlynkURL,
+		InterlynkAPIKey:         uCmd.interlynkAPIKey,
+		EnableComponentAnalysis: uCmd.enableComponentAnalysis,
 	}
 }
 
@@ -361,6 +393,14 @@ func validateFlags(cmd *userCmd) error {
 			}
 		}
 	}
+
+	// Validate component analysis requirements
+	if cmd.enableComponentAnalysis {
+		if cmd.interlynkAPIKey == "" {
+			return fmt.Errorf("--enable-component-analysis requires an API key; provide it via --api-key flag or INTERLYNK_SECURITY_TOKEN environment variable")
+		}
+	}
+
 	return nil
 }
 
@@ -429,6 +469,14 @@ func init() {
 	scoreCmd.Flags().BoolP("legacy", "e", false, "legacy, prior to sbomqs version 2.0")
 
 	// Interlynk Component Quality API
-	scoreCmd.Flags().StringP("url", "u", "", "Interlynk platform URL for component quality checks (e.g. https://app.interlynk.io)")
-	scoreCmd.Flags().StringP("api-key", "k", "", "Interlynk API key (enables authenticated tier: 5000-component batches, 10 checks)")
+	scoreCmd.Flags().BoolP("enable-component-analysis", "", false, "enable component quality analysis via Interlynk API (requires --api-key or INTERLYNK_SECURITY_TOKEN)")
+	scoreCmd.Flags().StringP("api-url", "u", "", "Interlynk API URL for component quality analysis (default: https://api.interlynk.io, or INTERLYNK_API_URL env var)")
+	scoreCmd.Flags().StringP("url", "", "", "Interlynk API URL (deprecated: use --api-url)")
+	if err := scoreCmd.Flags().MarkHidden("url"); err != nil {
+		log.Fatalf("Failed to mark flag as hidden: %v", err)
+	}
+	if err := scoreCmd.Flags().MarkDeprecated("url", "use --api-url instead"); err != nil {
+		log.Fatalf("Failed to mark flag as deprecated: %v", err)
+	}
+	scoreCmd.Flags().StringP("api-key", "k", "", "Interlynk API key (or INTERLYNK_SECURITY_TOKEN env var)")
 }

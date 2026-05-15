@@ -218,8 +218,7 @@ func SBOMEvaluation(ctx context.Context, catal *catalog.Catalog, cfg config.Conf
 
 	input := catalog.EvalInput{Doc: doc}
 
-	if cfg.InterlynkURL != "" && isCompQualityPresent(catal) {
-
+	if cfg.EnableComponentAnalysis && isCompQualityPresent(catal) {
 		client := interlynkapi.NewClient(cfg.InterlynkURL, cfg.InterlynkAPIKey)
 		log.Debug("Client for component quality API initialized",
 			zap.String("url", cfg.InterlynkURL),

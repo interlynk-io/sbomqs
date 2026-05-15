@@ -13,9 +13,9 @@
 // limitations under the License.
 
 // Component Quality category extractors.
-// When the caller populates input.ComponentQuality (i.e. --url was provided and
-// the API call succeeded), these functions score each feature based on findings
-// returned by /api/v1/doctor/check. Without it they return N/A (informational).
+// When the caller populates input.ComponentQuality (i.e. --enable-component-analysis
+// was provided and the API call succeeded), these functions score each feature based
+// on findings returned by /api/v1/doctor/check. Without it they return N/A (informational).
 package extractors
 
 import (
