@@ -1,0 +1,453 @@
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.7.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.7",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2024-09-12T20:20:39+00:00",
+    "distributionConstraints": {
+      "tlp": "RED"
+    },
+    "lifecycles": [
+      {
+        "phase": "build"
+      },
+      {
+        "phase": "post-build"
+      },
+      {
+        "name": "platform-integration-testing",
+        "description": "Integration testing specific to the runtime platform"
+      }
+    ],
+    "licenses": [
+      {
+        "license": {
+          "id": "Apache-2.0"
+        }
+      },
+      {
+        "license": {
+          "name": "My License",
+          "text": {
+            "content": "My License Text"
+          }
+        }
+      }
+    ],
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "Awesome Vendor",
+          "name": "Awesome Tool",
+          "version": "9.1.2",
+          "hashes": [
+            {
+              "alg": "SHA-1",
+              "content": "25ed8e31b995bb927966616df2a42b979a2717f0"
+            },
+            {
+              "alg": "SHA-256",
+              "content": "a74f733635a19aefb1f73e5947cef59cd7440c6952ef0f03d09d974274cbd6df"
+            }
+          ]
+        }
+      ],
+      "services": [
+        {
+          "provider": {
+            "name": "Acme Org",
+            "url": [
+              "https://example.com"
+            ]
+          },
+          "group": "com.example",
+          "name": "Acme Signing Server",
+          "description": "Signs artifacts",
+          "endpoints": [
+            "https://example.com/sign",
+            "https://example.com/verify",
+            "https://example.com/tsa"
+          ]
+        }
+      ]
+    },
+    "authors": [
+      {
+        "name": "Samantha Wright",
+        "email": "samantha.wright@example.com",
+        "phone": "800-555-1212"
+      }
+    ],
+    "component": {
+      "type": "application",
+      "author": "Acme Super Heros",
+      "name": "Acme Application",
+      "version": "9.1.1",
+      "data": [],
+      "swid": {
+        "tagId": "swidgen-242eb18a-503e-ca37-393b-cf156ef09691_9.1.1",
+        "name": "Acme Application",
+        "version": "9.1.1",
+        "text": {
+          "contentType": "text/xml",
+          "encoding": "base64",
+          "content": "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiID8+CjxTb2Z0d2FyZUlkZW50aXR5IHhtbDpsYW5nPSJFTiIgbmFtZT0iQWNtZSBBcHBsaWNhdGlvbiIgdmVyc2lvbj0iOS4xLjEiIAogdmVyc2lvblNjaGVtZT0ibXVsdGlwYXJ0bnVtZXJpYyIgCiB0YWdJZD0ic3dpZGdlbi1iNTk1MWFjOS00MmMwLWYzODItM2YxZS1iYzdhMmE0NDk3Y2JfOS4xLjEiIAogeG1sbnM9Imh0dHA6Ly9zdGFuZGFyZHMuaXNvLm9yZy9pc28vMTk3NzAvLTIvMjAxNS9zY2hlbWEueHNkIj4gCiB4bWxuczp4c2k9Imh0dHA6Ly93d3cudzMub3JnLzIwMDEvWE1MU2NoZW1hLWluc3RhbmNlIiAKIHhzaTpzY2hlbWFMb2NhdGlvbj0iaHR0cDovL3N0YW5kYXJkcy5pc28ub3JnL2lzby8xOTc3MC8tMi8yMDE1LWN1cnJlbnQvc2NoZW1hLnhzZCBzY2hlbWEueHNkIiA+CiAgPE1ldGEgZ2VuZXJhdG9yPSJTV0lEIFRhZyBPbmxpbmUgR2VuZXJhdG9yIHYwLjEiIC8+IAogIDxFbnRpdHkgbmFtZT0iQWNtZSwgSW5jLiIgcmVnaWQ9ImV4YW1wbGUuY29tIiByb2xlPSJ0YWdDcmVhdG9yIiAvPiAKPC9Tb2Z0d2FyZUlkZW50aXR5Pg=="
+        }
+      }
+    },
+    "manufacturer": {
+      "name": "Acme, Inc.",
+      "url": [
+        "https://example.com"
+      ],
+      "contact": [
+        {
+          "name": "Acme Professional Services",
+          "email": "professional.services@example.com"
+        }
+      ]
+    },
+    "supplier": {
+      "name": "Acme, Inc.",
+      "url": [
+        "https://example.com"
+      ],
+      "contact": [
+        {
+          "name": "Acme Distribution",
+          "email": "distribution@example.com"
+        }
+      ]
+    }
+  },
+  "components": [
+    {
+      "bom-ref": "pkg:npm/acme/component@1.0.0",
+      "type": "library",
+      "publisher": "Acme Inc",
+      "group": "com.acme",
+      "name": "tomcat-catalina",
+      "version": "9.0.14",
+      "hashes": [
+        {
+          "alg": "MD5",
+          "content": "3942447fac867ae5cdb3229b658f4d48"
+        },
+        {
+          "alg": "SHA-1",
+          "content": "e6b1000b94e835ffd37f4c6dcbdad43f4b48a02a"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "f498a8ff2dd007e29c2074f5e4b01a9a01775c3ff3aeaf6906ea503bc5791b7b"
+        },
+        {
+          "alg": "SHA-512",
+          "content": "e8f33e424f3f4ed6db76a482fde1a5298970e442c531729119e37991884bdffab4f9426b7ee11fccd074eeda0634d71697d6f88a460dce0ac8d627a29f7d1282"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        },
+        {
+          "expression": "EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0"
+        },
+        {
+          "license": {
+            "name": "My Own License",
+            "text": {
+              "content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+            }
+          }
+        },
+        {
+          "expression": "LicenseRef-MIT-Style-2",
+          "expressionDetails": [
+            {
+              "licenseIdentifier": "LicenseRef-MIT-Style-2",
+              "url": "https://example.com/license"
+            }
+          ]
+        }
+      ],
+      "purl": "pkg:npm/acme/component@1.0.0",
+      "omniborId": [
+        "gitoid:blob:sha1:261eeb9e9f8b2b4b0d119366dda99c6fd7d35c64",
+        "gitoid:blob:sha256:9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
+      ],
+      "swhid": [
+        "swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2",
+        "swh:1:dir:d198bc9d7a6bcf6db04f476d29314f157507d505"
+      ],
+      "swid": {
+        "tagId": "swidgen-242eb18a-503e-ca37-393b-cf156ef09691_9.1.1",
+        "name": "Acme Application",
+        "version": "9.1.1"
+      },
+      "pedigree": {
+        "ancestors": [
+          {
+            "type": "library",
+            "publisher": "Acme Inc",
+            "group": "com.acme",
+            "name": "tomcat-catalina",
+            "version": "9.0.14"
+          },
+          {
+            "type": "library",
+            "publisher": "Acme Inc",
+            "group": "com.acme",
+            "name": "tomcat-catalina",
+            "version": "9.0.14"
+          }
+        ],
+        "commits": [
+          {
+            "uid": "7638417db6d59f3c431d3e1f261cc637155684cd",
+            "url": "https://location/to/7638417db6d59f3c431d3e1f261cc637155684cd",
+            "author": {
+              "timestamp": "2018-11-13T20:20:39+00:00",
+              "name": "me",
+              "email": "me@acme.org"
+            }
+          }
+        ]
+      },
+      "data": [
+        {
+          "type": "configuration",
+          "name": "app.ini",
+          "contents": {
+            "url": "https://example.com/cfg/1337/app.ini"
+          }
+        },
+        {
+          "type": "other",
+          "name": ".env",
+          "contents": {
+            "url": "https://example.com/cfg/1337/env"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "supplier": {
+        "name": "Example, Inc.",
+        "url": [
+          "https://example.com",
+          "https://example.net"
+        ],
+        "contact": [
+          {
+            "name": "Example Support AMER Distribution",
+            "email": "support@example.com",
+            "phone": "800-555-1212"
+          },
+          {
+            "name": "Example Support APAC",
+            "email": "support@apac.example.com"
+          }
+        ]
+      },
+      "author": "Example Super Heros",
+      "group": "org.example",
+      "name": "mylibrary",
+      "version": "1.0.0",
+      "swid": {
+        "tagId": "swidgen-242eb18a-503e-ca37-393b-cf156ef09691_9.1.1",
+        "name": "Acme Application",
+        "version": "9.1.1",
+        "text": {
+          "contentType": "text/xml",
+          "encoding": "base64",
+          "content": "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiID8+CjxTb2Z0d2FyZUlkZW50aXR5IHhtbDpsYW5nPSJFTiIgbmFtZT0iQWNtZSBBcHBsaWNhdGlvbiIgdmVyc2lvbj0iOS4xLjEiIAogdmVyc2lvblNjaGVtZT0ibXVsdGlwYXJ0bnVtZXJpYyIgCiB0YWdJZD0ic3dpZGdlbi1iNTk1MWFjOS00MmMwLWYzODItM2YxZS1iYzdhMmE0NDk3Y2JfOS4xLjEiIAogeG1sbnM9Imh0dHA6Ly9zdGFuZGFyZHMuaXNvLm9yZy9pc28vMTk3NzAvLTIvMjAxNS9zY2hlbWEueHNkIj4gCiB4bWxuczp4c2k9Imh0dHA6Ly93d3cudzMub3JnLzIwMDEvWE1MU2NoZW1hLWluc3RhbmNlIiAKIHhzaTpzY2hlbWFMb2NhdGlvbj0iaHR0cDovL3N0YW5kYXJkcy5pc28ub3JnL2lzby8xOTc3MC8tMi8yMDE1LWN1cnJlbnQvc2NoZW1hLnhzZCBzY2hlbWEueHNkIiA+CiAgPE1ldGEgZ2VuZXJhdG9yPSJTV0lEIFRhZyBPbmxpbmUgR2VuZXJhdG9yIHYwLjEiIC8+IAogIDxFbnRpdHkgbmFtZT0iQWNtZSwgSW5jLiIgcmVnaWQ9ImV4YW1wbGUuY29tIiByb2xlPSJ0YWdDcmVhdG9yIiAvPiAKPC9Tb2Z0d2FyZUlkZW50aXR5Pg=="
+        }
+      },
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared",
+            "url": "https://example.com/licenses/MIT"
+          }
+        },
+        {
+          "license": {
+            "id": "PostgreSQL",
+            "acknowledgement": "declared",
+            "url": "https://example.com/licenses/PostgreSQL"
+          }
+        },
+        {
+          "license": {
+            "name": "Apache Software License",
+            "acknowledgement": "declared",
+            "url": "https://example.com/licenses/Apache-2.0"
+          }
+        },
+        {
+          "expression": "(MIT AND PostgreSQL AND Apache-2.0)",
+          "acknowledgement": "concluded",
+          "expressionDetails": [
+            {
+              "licenseIdentifier": "MIT",
+              "url": "https://example.com/licenses/MIT"
+            },
+            {
+              "licenseIdentifier": "PostgreSQL",
+              "url": "https://example.com/licenses/PostgreSQL"
+            },
+            {
+              "licenseIdentifier": "Apache-2.0",
+              "url": "https://example.com/licenses/Apache-2.0"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "pkg:npm/acme/component@1.0.0",
+      "dependsOn": [
+        "pkg:npm/acme/component@1.0.0"
+      ]
+    }
+  ],
+  "services": [
+    {
+      "bom-ref": "service-1",
+      "name": "Data Analysis Service",
+      "patentAssertions": [
+        {
+          "bom-ref": "patent-assertion-3",
+          "assertionType": "exclusive-rights",
+          "asserter": {
+            "name": "Partner Company",
+            "contact": [
+              {
+                "name": "Sam Smith",
+                "phone": "800-555-1212"
+              }
+            ]
+          },
+          "patentRefs": ["patent-2"],
+          "notes": "Exclusive rights for machine learning integration."
+        }
+      ]
+    }
+  ],
+  "definitions": {
+    "patents": [
+      {
+        "bom-ref": "patent-1",
+        "patentNumber": "US1234567890",
+        "applicationNumber": "12345",
+        "jurisdiction": "US",
+        "publicationNumber": "US-12345",
+        "title": "Efficient Data Processing Algorithm",
+        "abstract": "A novel system and method for improving data processing efficiency.",
+        "filingDate": "2021-01-15",
+        "grantDate": "2022-06-01",
+        "patentExpirationDate": "2042-01-15",
+        "patentLegalStatus": "in-force",
+        "patentAssignee": [
+          {
+            "name": "Tech Innovators Inc.",
+            "url": ["https://techinnovators.com"]
+          }
+        ],
+        "externalReferences": [
+          {
+            "type": "patent",
+            "url": "https://uspto.gov/patent/US12345678B1",
+            "comment": "Official USPTO page for the patent."
+          }
+        ]
+      },
+      {
+        "bom-ref": "patent-2",
+        "patentNumber": "EU1234567890",
+        "applicationNumber": "12345",
+        "jurisdiction": "EU",
+        "priorityApplication": {
+          "applicationNumber": "US1234567890",
+          "jurisdiction": "US",
+          "filingDate": "2021-01-15"
+        },
+        "publicationNumber": "EU-12345",
+        "title": "Efficient Data Processing Algorithm",
+        "abstract": "A novel system and method for improving data processing efficiency.",
+        "filingDate": "2021-01-15",
+        "grantDate": "2022-06-01",
+        "patentExpirationDate": "2042-01-15",
+        "patentLegalStatus": "in-force",
+        "patentAssignee": [
+          {
+            "name": "Tech Innovators Inc.",
+            "url": ["https://techinnovators.com"]
+          }
+        ]
+      },
+      {
+        "bom-ref": "patent-3",
+        "patentNumber": "EP987654321A1",
+        "jurisdiction": "EP",
+        "title": "Data Processing Optimisation",
+        "abstract": "An optimised approach to data processing for scalable systems.",
+        "filingDate": "2021-02-10",
+        "grantDate": "2023-03-15",
+        "patentExpirationDate": "2043-02-10",
+        "patentLegalStatus": "in-force",
+        "patentAssignee": [
+          {
+            "name": "Jane Smith",
+            "email": "jane.smith@techinnovators.com"
+          }
+        ],
+        "externalReferences": [
+          {
+            "type": "patent",
+            "url": "https://euipo.europa.eu/ep987654321A1",
+            "comment": "Official EUIPO page for the patent."
+          }
+        ]
+      },
+      {
+        "bom-ref": "patent-family-1",
+        "familyId": "PF-2023001",
+        "priorityApplication": {
+          "applicationNumber": "12345",
+          "jurisdiction": "US",
+          "filingDate": "2021-01-15"
+        },
+        "members": [
+          "patent-1",
+          "patent-2"
+        ],
+        "externalReferences": [
+          {
+            "type": "patent-family",
+            "url": "https://uspto.gov/patent-family-5678",
+            "comment": "Official record of the patent family."
+          }
+        ]
+      }
+    ]
+  },
+  "signature": {
+    "algorithm": "ES256",
+    "certificatePath": [
+      "MIIB-TCCAVigAwIBAgIGAWFcc4YkMAwGCCqGSM49BAMEBQAwLTELMAkGA1UEBhMCRVUxHjAcBgNVBAMTFVRydXN0IE5ldHdvcmsgU3ViIENBMzAeFw0xODAxMDEwMDAwMDBaFw0yMjEyMzEyMzU5NTlaMDIxCzAJBgNVBAYTAkZSMQ0wCwYDVQQFEwQ0NTAxMRQwEgYDVQQDEwtleGFtcGxlLmNvbTBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABHHp7A83DBJIInj8-g1we3A7sBXprIQBUfdFDVUBQoPExq8rze6ewG0-eVcSF72J77gKiD0IHnzpwHaU7t6nVeajXTBbMAkGA1UdEwQCMAAwDgYDVR0PAQH_BAQDAgP4MB0GA1UdDgQWBBQQyJ9rXSIskoUuA946von62LoxqzAfBgNVHSMEGDAWgBTUWrS54qC2NgG3UK6rVAr0gbQ0MTAMBggqhkjOPQQDBAUAA4GMADCBiAJCAaWoVQ0r6jFjhO5e0WJTgyMmA8BhpO1t7gXQ6xoKGso9jCOYf9OG9BFfZoVmdIyfYiwkhy1ld27tiOJ5X4m6WasRAkIBpEkUDf8irbSZ1V7zXALaR2mJTjKQV_5jRHsiBQWA-5DxEa-x_zJVRz8tpp-jjT2tSCU82bwUOBLu6te1YIDpWCA",
+      "MIIDsTCCAZmgAwIBAgIBAzANBgkqhkiG9w0BAQ0FADAuMQswCQYDVQQGEwJVUzEfMB0GA1UEAxMWVHJ1c3QgTmV0d29yayBSb290IENBMTAeFw0xNjA3MTAxMDAwMDBaFw0yNTA3MTAwOTU5NTlaMC0xCzAJBgNVBAYTAkVVMR4wHAYDVQQDExVUcnVzdCBOZXR3b3JrIFN1YiBDQTMwgZswEAYHKoZIzj0CAQYFK4EEACMDgYYABAGJzPZsjniwyZeXrgrlQM3Y13r3znR8FSQpKbC2bplrOWySQJPGm-GFObe5Dk4t3Jrtk_Pbs8-3VW_4q5drL0YqYwBYNJPhqjbSM6SGHrc6wNdPZRw_WnJVa0ELXKICC73lkjskWPfE-cLpZ3sTq1ovEmoNjgaySVRUH1wFDdkqyReJaKNjMGEwDwYDVR0TAQH_BAUwAwEB_zAOBgNVHQ8BAf8EBAMCAQYwHQYDVR0OBBYEFNRatLnioLY2AbdQrqtUCvSBtDQxMB8GA1UdIwQYMBaAFEkmC1HDAh0fXehpiUhUGE868Hk2MA0GCSqGSIb3DQEBDQUAA4ICAQAs2KADYyGQCVy8tJZWakNtGdww4OumZpBuR66p_2xK7veRubQEhG-nJn7oVkJ4w5pEec3sYQEqtPbHyZcEKEYbOJ2cVf1nMH-DvFZ6ypQocGRp3WSWsTzL3SgqiWrQdPX1Y5dO6Hvx7p9ST9H2WgkxB-Q75Jov1gVF3bScAbxb7Mw7tf5z3Cvqmfo0Gatkgzz6-jDPrtUK7AAAOw3C0kHMbE3EnNarsfhBkUerE8QVmHIvz373mWt0SnguaHq0A9ZuSia_pF7bgfVRZi2ZzIzpu2O276sB2Yji9tcSn5l21jq63rXtvY_DLAi4kaLyf9sHT_tkH-gkTdkdkfQq8sA5ysRW21wPQbmjTIVwsfY4JjajVIUitjPbkUJqURpf2VD0JXdYQHS6KVPWqHWTlKPlsKbhw4ghuLqCMYda88L9rxWnSC5L8s0DJSuBBm-nq23NtHl5FbCzeXWcKRayIgimT-An1WIOeJP4F7-BctYLIooKoQzJZR1tOWvprUs22_xAivVBz7J_LmJyVlKesB2ic8qYdt7YVoCsWrnEUgoNoJPwLHeva8KPvd0gLXrwaMyTCCjeoemXFj6nCbbMHJeVffh6jYBAzlbcAEvTiZcdzrVVr54kOtWskyaeDnAcMXW4Of1vWdUJ2as5nyfletfTp4E6A9P2dZ5g7nMoL90yIw"
+    ],
+    "value": "m4pMbQQVV61TlP4Og7a75SeY8lh00LkkUDXZ4PIhXsR512MPRgZmusFYorJlYq9wM3P9n9gM3T8BTg9XdFdQkQ"
+  }
+}
