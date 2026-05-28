@@ -194,6 +194,57 @@ var OCTV11KeyToEvaluatingFunction = map[string]catalog.ProfFeatEval{
 	"comp_purl":              profiles.OCTV11CompPURL,
 }
 
+// ProfileSpecificFeatures maps profile keys to their feature keys for feature-level scoring
+var ProfileSpecificFeatures = map[string][]string{
+	"ntia": {
+		"comp_supplier", "comp_name", "comp_version", "comp_uniq_id",
+		"comp_dependencies", "sbom_relationships", "sbom_timestamp",
+	},
+	"ntia-2025": {
+		// Profile-specific keys (aliases)
+		"sbom_machine_format", "sbom_author", "software_producer",
+		"comp_name", "comp_version", "software_identifiers", "comp_hash",
+		"license", "sbom_dependencies", "comp_supplier", "tool_name",
+		"sbom_timestamp", "generation_context",
+	},
+	"bsi-v1.1": {
+		"sbom_creator", "sbom_timestamp", "comp_creator", "comp_name",
+		"comp_version", "comp_depth", "comp_license", "comp_hash",
+		"sbom_uri", "comp_source_url", "comp_executable_url", "comp_source_hash",
+		"comp_unique_identifiers",
+	},
+	"bsi-v2.0": {
+		// Profile-specific keys (aliases)
+		"sbom_creator", "sbom_timestamp", "sbom_uri", "comp_creator",
+		"comp_name", "comp_version", "comp_filename", "comp_depth",
+		"comp_associated_license", "comp_deployable_hash", "comp_executable_property",
+		"comp_archive_property", "comp_structured_property",
+	},
+	"bsi": {
+		// Profile-specific keys (aliases)
+		"sbom_spec_version", "sbom_creator", "sbom_timestamp", "sbom_uri",
+		"comp_creator", "comp_name", "comp_version", "comp_filename", "comp_depth",
+		"comp_distribution_license", "comp_deployable_hash", "comp_executable_prop",
+		"comp_archive_prop", "comp_structured_prop", "comp_source_code_url",
+		"comp_download_url", "comp_other_identifiers", "comp_original_licenses",
+		"comp_effective_license", "comp_source_hash", "comp_security_txt_url",
+	},
+	"oct-v1.1": {
+		// Profile-specific keys (aliases)
+		"sbom_spec", "sbom_spec_version", "sbom_data_license", "sbom_identifier",
+		"sbom_name", "sbom_namespace", "sbom_creator", "sbom_timestamp",
+		"sbom_creator_comment", "comp_name", "comp_identifier", "comp_version",
+		"comp_supplier", "comp_download_location", "comp_license_concluded",
+		"comp_license_declared", "comp_copyright", "sbom_relationships",
+	},
+	"fsct": {
+		// Profile-specific keys (aliases)
+		"sbom_provenance", "sbom_primary_component", "comp_identity",
+		"supplier_attribution", "comp_unique_id", "artifact_integrity",
+		"relationships_coverage", "license_coverage", "copyright_coverage",
+	},
+}
+
 var InterlynkKeyToEvaluatingFunction = map[string]catalog.ProfFeatEval{
 	"comp_name":     profiles.InterCompWithName,
 	"comp_version":  profiles.InterCompWithVersion,
@@ -234,6 +285,7 @@ var InterlynkKeyToEvaluatingFunction = map[string]catalog.ProfFeatEval{
 }
 
 var CompKeyToEvaluatingFunction = map[string]catalog.ComprFeatEval{
+	// Comprehensive feature keys
 	"comp_with_name":     extractors.CompWithName,
 	"comp_with_version":  extractors.CompWithVersion,
 	"comp_with_local_id": extractors.CompWithUniqLocalIDs,
@@ -263,14 +315,76 @@ var CompKeyToEvaluatingFunction = map[string]catalog.ComprFeatEval{
 	"comp_with_declared_licenses":  extractors.CompWithDeclaredLicenses,
 	"sbom_data_license":            extractors.SBOMDataLicense,
 
-	"comp_with_purl":           extractors.CompWithPURL,
-	"comp_with_cpe":            extractors.CompWithCPE,
-	"comp_with_purl_or_cpe":    extractors.CompWithPURLOrCPE,
+	"comp_with_purl":        extractors.CompWithPURL,
+	"comp_with_cpe":         extractors.CompWithCPE,
+	"comp_with_purl_or_cpe": extractors.CompWithPURLOrCPE,
 
-	"sbom_spec_declared": extractors.SBOMWithSpec,
-	"sbom_spec_version":  extractors.SBOMSpecVersion,
-	"sbom_file_format":   extractors.SBOMFileFormat,
-	"sbom_schema_valid":  extractors.SBOMSchemaValid,
+	"sbom_spec_declared":  extractors.SBOMWithSpec,
+	"sbom_spec_version":   extractors.SBOMSpecVersion,
+	"sbom_machine_format": extractors.SBOMWithSpec,
+	"sbom_author":         extractors.SBOMAuthors,
+	"software_producer":   extractors.SBOMSupplier,
+	"tool_name":           extractors.SBOMCreationTool,
+	"generation_context":  extractors.SBOMWithDeclaredCompleteness,
+	"sbom_file_format":    extractors.SBOMFileFormat,
+	"sbom_schema_valid":   extractors.SBOMSchemaValid,
+
+	// Profile-specific feature key aliases (NTIA, BSI, OCT, etc.)
+	"comp_name":                 extractors.CompWithName,
+	"comp_version":              extractors.CompWithVersion,
+	"comp_uniq_id":              extractors.CompWithUniqLocalIDs,
+	"comp_supplier":             extractors.CompWithSupplier,
+	"comp_dependencies":         extractors.CompWithDependencies,
+	"sbom_timestamp":            extractors.SBOMCreationTimestamp,
+	"sbom_relationships":        extractors.CompWithDependencies,
+	"sbom_creator":              extractors.SBOMAuthors,
+	"sbom_uri":                  extractors.SBOMNamespace,
+	"comp_creator":              extractors.SBOMSupplier,
+	"comp_hash":                 extractors.CompWithStrongChecksums,
+	"comp_license":              extractors.CompWithLicenses,
+	"comp_source_url":           extractors.CompWithSourceCode,
+	"comp_executable_url":       extractors.CompWithPackagePurpose,
+	"comp_source_hash":          extractors.CompWithStrongChecksums,
+	"comp_filename":             extractors.CompWithName,
+	"comp_associated_license":   extractors.CompWithLicenses,
+	"comp_deployable_hash":      extractors.CompWithStrongChecksums,
+	"comp_executable_property":  extractors.CompWithPackagePurpose,
+	"comp_archive_property":     extractors.CompWithPackagePurpose,
+	"comp_structured_property":  extractors.CompWithPackagePurpose,
+	"comp_distribution_license": extractors.CompWithLicenses,
+	"comp_executable_prop":      extractors.CompWithPackagePurpose,
+	"comp_archive_prop":         extractors.CompWithPackagePurpose,
+	"comp_structured_prop":      extractors.CompWithPackagePurpose,
+	"comp_download_url":         extractors.CompWithSourceCode,
+	"comp_source_code_url":      extractors.CompWithSourceCode,
+	"comp_other_identifiers":    extractors.CompWithUniqLocalIDs,
+	"comp_original_licenses":    extractors.CompWithLicenses,
+	"comp_effective_license":    extractors.CompWithLicenses,
+	"comp_security_txt_url":     extractors.SBOMNamespace,
+	"comp_identifier":           extractors.CompWithUniqLocalIDs,
+	"comp_download_location":    extractors.CompWithSourceCode,
+	"comp_license_concluded":    extractors.CompWithLicenses,
+	"comp_license_declared":     extractors.CompWithDeclaredLicenses,
+	"comp_copyright":            extractors.CompWithValidLicenses,
+	"comp_checksum":             extractors.CompWithStrongChecksums,
+	"comp_purl":                 extractors.CompWithPURL,
+	"sbom_identifier":           extractors.SBOMNamespace,
+	"sbom_name":                 extractors.SBOMWithSpec,
+	"sbom_creator_comment":      extractors.SBOMAuthors,
+	"sbom_provenance":           extractors.SBOMAuthors,
+	"comp_identity":             extractors.CompWithName,
+	"supplier_attribution":      extractors.CompWithSupplier,
+	"sbom_spec":                 extractors.SBOMWithSpec,
+	"license":                   extractors.CompWithLicenses,
+	"sbom_dependencies":         extractors.CompWithDependencies,
+	"comp_unique_id":            extractors.CompWithUniqLocalIDs,
+	"comp_unique_identifiers":   extractors.CompWithUniqLocalIDs,
+	"comp_depth":                extractors.CompWithDependencies,
+	"software_identifiers":      extractors.CompWithUniqLocalIDs,
+	"artifact_integrity":        extractors.CompWithStrongChecksums,
+	"relationships_coverage":    extractors.CompWithDependencies,
+	"license_coverage":          extractors.CompWithLicenses,
+	"copyright_coverage":        extractors.CompWithValidLicenses,
 }
 
 // ProfileKey lists all profiles
@@ -285,22 +399,6 @@ const (
 	ProfileInterlynk catalog.ProfileKey = "interlynk"
 	ProfileFSCT      catalog.ProfileKey = "fsct"
 )
-
-var categoryAlias = map[string]catalog.ComprCatKey{
-	"identification":                 CatIdentification,
-	"provenance":                     CatProvenance,
-	"integrity":                      CatIntegrity,
-	"completeness":                   CatCompleteness,
-	"licensing":                      CatLicensingAndCompliance,
-	"licensingandcompliance":         CatLicensingAndCompliance,
-	"licensing_and_compliance":       CatLicensingAndCompliance,
-	"vulnerability":                  CatVulnerabilityAndTrace,
-	"vulnerabilityandtraceability":   CatVulnerabilityAndTrace,
-	"vulnerability_and_traceability": CatVulnerabilityAndTrace,
-	"structural":                     CatStructural,
-	"componentquality(info)":         CatComponentQualityInfo,
-	"component_quality_info":         CatComponentQualityInfo,
-}
 
 var profileAliases = map[string]catalog.ProfileKey{
 	"ntia":                  ProfileNTIA,
@@ -371,6 +469,48 @@ func InitializeCatalog(ctx context.Context, conf config.Config) (*catalog.Catalo
 		return catal, nil
 	}
 
+	// Features provided inline (check first, takes precedence over profiles)
+	if len(conf.Features) > 0 {
+		log.Info("Initializing catalog using inline features",
+			zap.Int("requested", len(conf.Features)),
+			zap.Strings("features", conf.Features),
+		)
+
+		// Determine profile context
+		profileContext := "interlynk"
+		if len(conf.Profile) > 0 {
+			profileContext = conf.Profile[0]
+		}
+
+		features, err := filterFeatures(ctx, conf.Features, profileContext)
+		if err != nil {
+			log.Error("Failed to filter features",
+				zap.Error(err),
+			)
+			return nil, err
+		}
+
+		if len(features) > 0 {
+			// Create virtual category for feature-only scoring
+			virtualCategory := catalog.ComprCatSpec{
+				Key:         "feature_scoring",
+				Name:        "Feature Scoring",
+				Weight:      10,
+				Description: "Feature-level scoring",
+				Features:    features,
+			}
+			catal.ComprCategories = []catalog.ComprCatSpec{virtualCategory}
+			catal.ProfileContext = profileContext
+		}
+
+		log.Info("Catalog initialized with features",
+			zap.Int("features", len(features)),
+			zap.String("profile_context", profileContext),
+		)
+
+		return catal, nil
+	}
+
 	// Profiles provided command inline
 	if len(conf.Profile) > 0 {
 		log.Info("Initializing catalog using inline profiles",
@@ -390,14 +530,6 @@ func InitializeCatalog(ctx context.Context, conf config.Config) (*catalog.Catalo
 			zap.Int("profiles", len(catal.Profiles)),
 		)
 
-		return catal, nil
-	}
-
-	// Features provided inline
-	if len(conf.Features) > 0 {
-		log.Info("Catalog initialized with selected profiles",
-			zap.Int("profiles", len(catal.Profiles)),
-		)
 		return catal, nil
 	}
 
@@ -556,6 +688,155 @@ func filterCategories(ctx context.Context, categories []string) []catalog.ComprC
 		zap.Int("requested", len(categories)),
 	)
 	return finalCats
+}
+
+// filterFeatures filters and validates requested features against profile context
+func filterFeatures(ctx context.Context, features []string, profile string) ([]catalog.ComprFeatSpec, error) {
+	log := logger.FromContext(ctx)
+	log.Debug("Filtering requested features",
+		zap.Int("requested", len(features)),
+		zap.String("profile", profile),
+	)
+
+	var finalFeats []catalog.ComprFeatSpec
+	var unknownFeatures []string
+
+	// Normalize profile key (handle aliases like "bsi-v2.1" -> "bsi")
+	normalizedProfile := strings.ToLower(strings.TrimSpace(profile))
+	if alias, ok := profileAliases[normalizedProfile]; ok {
+		normalizedProfile = string(alias)
+	}
+	// Normalize profile keys to match ProfileSpecificFeatures keys
+	switch normalizedProfile {
+	case "bsi-v2.1":
+		normalizedProfile = "bsi"
+	}
+
+	// Build valid features map from comprehensive categories
+	validFeatures := make(map[string]catalog.ComprFeatSpec)
+	for _, cat := range comprehenssiveCategories {
+		for _, feat := range cat.Features {
+			validFeatures[feat.Key] = feat
+		}
+	}
+
+	// Validate each requested feature
+	for _, feat := range features {
+		if feat == "" {
+			continue
+		}
+
+		featureKey := strings.ToLower(strings.TrimSpace(feat))
+
+		// Check if feature is in requested profile (if not interlynk)
+		if normalizedProfile != "interlynk" {
+			profileFeatures, ok := ProfileSpecificFeatures[normalizedProfile]
+			if !ok {
+				return nil, fmt.Errorf("unknown profile: %s", profile)
+			}
+
+			foundInProfile := false
+			for _, k := range profileFeatures {
+				if k == featureKey {
+					foundInProfile = true
+					break
+				}
+			}
+			if !foundInProfile {
+				unknownFeatures = append(unknownFeatures, featureKey)
+				continue
+			}
+		}
+
+		// Check if feature exists in comprehensive categories OR has an evaluator
+		if featSpec, exists := validFeatures[featureKey]; exists {
+			// Get evaluator function from comprehensive features
+			if evalFn, ok := CompKeyToEvaluatingFunction[featureKey]; ok {
+				finalFeats = append(finalFeats, catalog.ComprFeatSpec{
+					Key:         featSpec.Key,
+					Name:        featSpec.Name,
+					Description: featSpec.Description,
+					Weight:      featSpec.Weight,
+					Evaluate:    evalFn,
+				})
+			}
+		} else if evalFn, ok := CompKeyToEvaluatingFunction[featureKey]; ok {
+			// Feature is a profile-specific key that has an evaluator
+			// Get metadata from profile spec if available
+			name := featureKey
+			description := ""
+
+			if normalizedProfile != "interlynk" {
+				if profFeat, found := getProfileFeatureInfo(normalizedProfile, featureKey); found {
+					name = profFeat.Name
+					description = profFeat.Description
+				}
+			}
+
+			finalFeats = append(finalFeats, catalog.ComprFeatSpec{
+				Key:         featureKey,
+				Name:        name,
+				Description: description,
+				Evaluate:    evalFn,
+			})
+		} else {
+			unknownFeatures = append(unknownFeatures, featureKey)
+		}
+	}
+
+	// Handle unknown features
+	if len(unknownFeatures) > 0 {
+		if normalizedProfile != "interlynk" {
+			// Find which profile the unknown feature belongs to
+			suggestedProfile := findFeatureProfile(unknownFeatures[0])
+			// Get supported features for the requested profile
+			supportedFeatures := ProfileSpecificFeatures[normalizedProfile]
+			return nil, fmt.Errorf("feature '%s' is not evaluated in %s profile (this feature belongs to: %s profile); supported features: %v",
+				unknownFeatures[0], getProfileDisplayName(normalizedProfile), suggestedProfile, supportedFeatures)
+		}
+		return nil, fmt.Errorf("unknown feature(s): %v", unknownFeatures)
+	}
+
+	log.Debug("Feature filtering completed",
+		zap.Int("selected", len(finalFeats)),
+	)
+	return finalFeats, nil
+}
+
+// findFeatureProfile finds which profile a feature belongs to
+func findFeatureProfile(feature string) string {
+	for profile, features := range ProfileSpecificFeatures {
+		for _, f := range features {
+			if f == feature {
+				return profile
+			}
+		}
+	}
+	return "interlynk"
+}
+
+// getProfileDisplayName returns human-readable profile name
+func getProfileDisplayName(profile string) string {
+	switch profile {
+	case "ntia":
+		return "NTIA Minimum Elements (2021)"
+	case "ntia-2025":
+		return "NTIA Minimum Elements (2025)"
+	case "bsi-v1.1":
+		return "BSI TR-03183-2 v1.1"
+	case "bsi-v2.0":
+		return "BSI TR-03183-2 v2.0"
+	case "bsi", "bsi-v2.1":
+		return "BSI TR-03183-2 v2.1"
+	case "oct-v1.1":
+		return "OpenChain Telco v1.1"
+	case "fsct":
+		return "Framing 3rd Edition"
+	case "interlynk":
+		return "Interlynk Comprehensive"
+	default:
+		return profile
+	}
 }
 
 // filterProfiles keeps only requested profile keys (preserving order).
@@ -1014,4 +1295,33 @@ var Profile = []catalog.ProfSpec{
 	profileOCTV11Spec,
 	profileInterlynkSpec,
 	profileFSCTSpec,
+}
+
+// ProfileSpecsMap provides easy access to profile specifications by key
+var ProfileSpecsMap = map[string]catalog.ProfSpec{
+	"ntia":      profileNTIASpec,
+	"ntia-2025": profileNTIA2025Spec,
+	"bsi-v1.1":  profileBSI11Spec,
+	"bsi-v2.0":  profileBSI20Spec,
+	"bsi-v2.1":  profileBSI21Spec,
+	"bsi":       profileBSI21Spec,
+	"oct-v1.1":  profileOCTV11Spec,
+	"fsct":      profileFSCTSpec,
+	"interlynk": profileInterlynkSpec,
+}
+
+// getProfileFeatureInfo looks up a feature in a profile spec and returns its metadata
+func getProfileFeatureInfo(profileKey string, featureKey string) (catalog.ProfFeatSpec, bool) {
+	profileSpec, ok := ProfileSpecsMap[profileKey]
+	if !ok {
+		return catalog.ProfFeatSpec{}, false
+	}
+
+	for _, feat := range profileSpec.Features {
+		if feat.Key == featureKey {
+			return feat, true
+		}
+	}
+
+	return catalog.ProfFeatSpec{}, false
 }

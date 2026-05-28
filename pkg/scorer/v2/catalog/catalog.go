@@ -61,8 +61,9 @@ type Catalog struct {
 	Profiles        []ProfSpec
 	ProfFeatures    []ProfFeatSpec
 
-	Order   []ComprCatSpec
-	Aliases Aliases
+	Order          []ComprCatSpec
+	Aliases        Aliases
+	ProfileContext string // Profile context for feature-only scoring
 }
 
 // HasFeature checks if a comprehensive feature with the given key exists in the catalog.

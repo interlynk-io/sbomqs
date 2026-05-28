@@ -279,6 +279,7 @@ func evaluateComprehensive(ctx context.Context, catal *catalog.Catalog, input ca
 	)
 
 	result := api.NewResult(input.Doc)
+	result.ProfileContext = catal.ProfileContext
 
 	comprResult := compr.Evaluate(ctx, catal, input)
 	result.Comprehensive = &comprResult
@@ -291,6 +292,7 @@ func evaluateBoth(ctx context.Context, catal *catalog.Catalog, input catalog.Eva
 	log.Debug("Evaluating comprehensive and profile scoring")
 
 	result := api.NewResult(input.Doc)
+	result.ProfileContext = catal.ProfileContext
 
 	profResults := profiles.Evaluate(ctx, catal, input.Doc)
 	result.Profiles = &profResults
