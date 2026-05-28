@@ -105,6 +105,22 @@ sbomqs compliance --fsct my-app.spdx.json
 sbomqs compliance --oct my-app.spdx.json
 ```
 
+### Score Specific Features
+
+```bash
+# Score comprehensive features (default profile)
+sbomqs score my-app.spdx.json --feature comp_with_name,comp_with_version
+
+# Score NTIA-specific features
+sbomqs score my-app.spdx.json --profile ntia --feature comp_name,comp_version,sbom_timestamp
+
+# Score BSI v2.1-specific features
+sbomqs score my-app.cdx.json --profile bsi --feature sbom_spec_version,sbom_creator,comp_name
+
+# Score with JSON output for automation
+sbomqs score my-app.spdx.json --profile ntia --feature comp_name --json
+```
+
 ### Find Missing Data
 
 ```bash

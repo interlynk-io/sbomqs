@@ -273,12 +273,85 @@ $ sbomqs score --legacy --category ntia my-app.spdx.json
 
 #### Specific Feature Scoring
 
-```bash
-# Score specific features
-$ sbomqs score --feature comp_with_name,comp_with_version my-app.spdx.json
+The `--feature` flag allows you to score specific features within a profile context. When used with `--profile`, only profile-specific features are available. When used without `--profile` (default Interlynk profile), comprehensive features are available.
 
-# Combine with categories
-$ sbomqs score --category identification --feature comp_with_identifiers my-app.spdx.json
+**Default Profile (Interlynk) - Comprehensive Features:**
+```bash
+# Score comprehensive features (no profile specified)
+$ sbomqs score --feature comp_with_name,comp_with_version my-app.spdx.json
+```
+
+**Profile-Specific Feature Scoring:**
+```bash
+# Score NTIA-specific features
+$ sbomqs score --profile ntia --feature comp_name,comp_version,sbom_timestamp my-app.spdx.json
+
+# Score BSI v2.1-specific features
+$ sbomqs score --profile bsi --feature sbom_spec_version,sbom_creator,comp_name my-app.cdx.json
+
+# Score multiple features with profile
+$ sbomqs score --profile ntia --feature comp_supplier,comp_name,comp_version,comp_uniq_id my-app.spdx.json
+```
+
+##### Profile-Specific Feature Reference
+
+Each profile has its own set of feature keys:
+
+| Profile | Feature Keys |
+|---------|-------------|
+| **ntia** | `comp_supplier`, `comp_name`, `comp_version`, `comp_uniq_id`, `comp_dependencies`, `sbom_relationships`, `sbom_timestamp` |
+| **ntia-2025** | `sbom_machine_format`, `sbom_author`, `software_producer`, `comp_name`, `comp_version`, `software_identifiers`, `comp_hash`, `license`, `sbom_dependencies`, `comp_supplier`, `tool_name`, `sbom_timestamp`, `generation_context` |
+| **bsi-v1.1** | `sbom_creator`, `sbom_timestamp`, `comp_creator`, `comp_name`, `comp_version`, `comp_depth`, `comp_license`, `comp_hash`, `sbom_uri`, `comp_source_url`, `comp_executable_url`, `comp_source_hash`, `comp_unique_identifiers` |
+| **bsi-v2.0** | `sbom_creator`, `sbom_timestamp`, `sbom_uri`, `comp_creator`, `comp_name`, `comp_version`, `comp_filename`, `comp_depth`, `comp_associated_license`, `comp_deployable_hash`, `comp_executable_property`, `comp_archive_property`, `comp_structured_property` |
+| **bsi** (v2.1) | `sbom_spec_version`, `sbom_creator`, `sbom_timestamp`, `sbom_uri`, `comp_creator`, `comp_name`, `comp_version`, `comp_filename`, `comp_depth`, `comp_distribution_license`, `comp_deployable_hash`, `comp_executable_prop`, `comp_archive_prop`, `comp_structured_prop`, `comp_source_code_url`, `comp_download_url`, `comp_other_identifiers`, `comp_original_licenses`, `comp_effective_license`, `comp_source_hash`, `comp_security_txt_url` |
+| **oct-v1.1** | `sbom_spec`, `sbom_spec_version`, `sbom_data_license`, `sbom_identifier`, `sbom_name`, `sbom_namespace`, `sbom_creator`, `sbom_timestamp`, `sbom_creator_comment`, `comp_name`, `comp_identifier`, `comp_version`, `comp_supplier`, `comp_download_location`, `comp_license_concluded`, `comp_license_declared`, `comp_copyright`, `sbom_relationships` |
+| **fsct** | `sbom_provenance`, `sbom_primary_component`, `comp_identity`, `supplier_attribution`, `comp_unique_id`, `artifact_integrity`, `relationships_coverage`, `license_coverage`, `copyright_coverage` |
+
+**Error Messages:**
+If you try to use a feature that doesn't belong to the specified profile, you'll get a helpful error message:
+```bash
+$ sbomqs score --profile ntia --feature sbom_spec_version my-app.spdx.json
+Error: feature 'sbom_spec_version' is not evaluated in NTIA Minimum Elements (2021) profile (this feature belongs to: bsi profile); supported features: [comp_supplier comp_name comp_version comp_uniq_id comp_dependencies sbom_relationships sbom_timestamp]
+```
+
+**Feature Scoring Output:**
+When using `--feature`, the output shows a Feature Quality Score with a breakdown table:
+```bash
+$ sbomqs score --profile ntia --feature comp_name,comp_version my-app.spdx.json
+Feature Quality Score: 9.9/10.0     Grade: A    Components: 38      EngineVersion: 7    File: my-app.spdx.json
+Profile Context: NTIA Minimum Elements (2021)
+
+Feature Breakdown:
++--------------+-----------+-------+--------------------+
+|   FEATURE    |   SCORE   | GRADE |        DESC        |
++--------------+-----------+-------+--------------------+
+| comp_name    | 10.0/10.0 | A     | complete           |
++--------------+-----------+-------+--------------------+
+| comp_version | 9.7/10.0  | A     | add to 1 component |
++--------------+-----------+-------+--------------------+
+
+Overall: 2/2 NTIA Minimum Elements (2021) requirements passed
+```
+
+**JSON Output for Feature Scoring:**
+```bash
+$ sbomqs score --profile ntia --feature comp_name --json my-app.spdx.json
+{
+  "run_id": "...",
+  "files": [{
+    "comprehenssive": [{
+      "category": "Feature Scoring",
+      "score": 10.0,
+      "grade": "A",
+      "features": [{
+        "key": "comp_name",
+        "score": 10.0,
+        "description": "complete",
+        "ignored": false
+      }]
+    }]
+  }]
+}
 ```
 
 ### Automation-Friendly Output
