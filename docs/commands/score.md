@@ -44,7 +44,7 @@ sbomqs score [flags] <SBOM file(s)>
 
 - `--category, -c <category>`: Score only specific categories (comma-separated)
 - `--feature, -f <features>`: Score only specific features (comma-separated)
-- `--configpath <path>`: Use custom scoring configuration file
+- `--configpath <path>`: Use custom scoring configuration file. See [Weightage Scoring Guide](../guides/weightage-scoring.md) for details on creating custom weight configurations.
 - `--profile <profiles>`: Apply specific compliance profiles (comma-separated: 'ntia', 'bsi', 'bsi-v1.1', 'bsi-v2.0', 'bsi-v2.1', 'oct', 'interlynk')
 - `--legacy, -e`: Use legacy scoring mode (prior to sbomqs version 2.0)
 
@@ -276,12 +276,14 @@ $ sbomqs score --legacy --category ntia my-app.spdx.json
 The `--feature` flag allows you to score specific features within a profile context. When used with `--profile`, only profile-specific features are available. When used without `--profile` (default Interlynk profile), comprehensive features are available.
 
 **Default Profile (Interlynk) - Comprehensive Features:**
+
 ```bash
 # Score comprehensive features (no profile specified)
 $ sbomqs score --feature comp_with_name,comp_with_version my-app.spdx.json
 ```
 
 **Profile-Specific Feature Scoring:**
+
 ```bash
 # Score NTIA-specific features
 $ sbomqs score --profile ntia --feature comp_name,comp_version,sbom_timestamp my-app.spdx.json
@@ -309,6 +311,7 @@ Each profile has its own set of feature keys:
 
 **Error Messages:**
 If you try to use a feature that doesn't belong to the specified profile, you'll get a helpful error message:
+
 ```bash
 $ sbomqs score --profile ntia --feature sbom_spec_version my-app.spdx.json
 Error: feature 'sbom_spec_version' is not evaluated in NTIA Minimum Elements (2021) profile (this feature belongs to: bsi profile); supported features: [comp_supplier comp_name comp_version comp_uniq_id comp_dependencies sbom_relationships sbom_timestamp]
@@ -316,6 +319,7 @@ Error: feature 'sbom_spec_version' is not evaluated in NTIA Minimum Elements (20
 
 **Feature Scoring Output:**
 When using `--feature`, the output shows a Feature Quality Score with a breakdown table:
+
 ```bash
 $ sbomqs score --profile ntia --feature comp_name,comp_version my-app.spdx.json
 Feature Quality Score: 9.9/10.0     Grade: A    Components: 38      EngineVersion: 7    File: my-app.spdx.json
@@ -334,6 +338,7 @@ Overall: 2/2 NTIA Minimum Elements (2021) requirements passed
 ```
 
 **JSON Output for Feature Scoring:**
+
 ```bash
 $ sbomqs score --profile ntia --feature comp_name --json my-app.spdx.json
 {
@@ -357,6 +362,7 @@ $ sbomqs score --profile ntia --feature comp_name --json my-app.spdx.json
 ### Automation-Friendly Output
 
 #### JSON Output for CI/CD
+
 ```bash
 ➜  sbomqs git:(feature/sbomqs-2.0-docs) ✗ ./build/sbomqs score -j samples/photon.spdx.json
 {
@@ -408,6 +414,8 @@ $ vim custom-profile.yaml
 # Use custom profile
 $ sbomqs score my-app.json --configpath custom-profile.yaml
 ```
+
+**For detailed information on customizing weights, see the [Weightage Scoring Guide](../guides/weightage-scoring.md).**
 
 ### Directory Processing
 

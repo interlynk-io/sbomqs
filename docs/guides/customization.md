@@ -41,6 +41,8 @@ Each compliance profile has its own set of feature keys. When using `--feature` 
 
 ## Creating Custom Profiles
 
+For comprehensive documentation on weightage-based scoring, including detailed examples and edge cases, see the **[Weightage Scoring Guide](weightage-scoring.md)**.
+
 ### Generate Base Configuration
 
 ```bash
