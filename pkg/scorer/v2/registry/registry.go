@@ -777,6 +777,7 @@ func filterFeatures(ctx context.Context, features []string, profile string) ([]c
 				Key:         featureKey,
 				Name:        name,
 				Description: description,
+				Weight:      1.0, // Default weight for profile-specific features
 				Evaluate:    evalFn,
 			})
 		} else {
