@@ -135,6 +135,16 @@ categories:
 - `sbom_file_format` - File format (JSON/XML)
 - `sbom_schema_valid` - Schema validation passed
 
+#### Component Quality
+- `comp_eol_eos` - Component No Longer Maintained or Declared EOL (weight: 0.10)
+- `comp_malicious` - Component tagged as malicious in threat databases (weight: 0.15)
+- `comp_vuln_sev_critical` - Component with critical vulnerabilities (weight: 0.15)
+- `comp_kev` - Component which are actively exploited (CISA KEV) (weight: 0.15)
+- `comp_purl_valid` - Component PURL Valid (weight: 0.225)
+- `comp_cpe_valid` - Component CPE Valid (weight: 0.225)
+
+**Note:** Component Quality features require API key and are informational only (do not affect overall score).
+
 ## Weightage Rules
 
 ### How Weights Work
