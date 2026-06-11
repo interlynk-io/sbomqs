@@ -49,6 +49,15 @@ func ReportJSON(ctx context.Context, results []PolicyResult) error {
 	return nil
 }
 
+// centerTitle centers a title string within a given width
+func centerTitle(title string, width int) string {
+	if width <= 0 || len(title) >= width {
+		return title
+	}
+	leftPad := (width - len(title)) / 2
+	return fmt.Sprintf("%s%s", strings.Repeat(" ", leftPad), title)
+}
+
 // ReportBasic writes results in a human-friendly basic format.
 func ReportBasic(ctx context.Context, results []PolicyResult) error {
 	log := logger.FromContext(ctx)
@@ -61,9 +70,9 @@ func ReportBasic(ctx context.Context, results []PolicyResult) error {
 	copy(sorted, results)
 	sort.Slice(sorted, func(i, j int) bool { return sorted[i].PolicyName < sorted[j].PolicyName })
 
-	_, _ = fmt.Fprintf(os.Stdout, "\n\033[36m \t\t\t BASIC POLICY REPORT\033[36m\n")
-	// === Summary Table ===
-	summary := tablewriter.NewWriter(os.Stdout)
+	// Render table to buffer first to calculate width
+	var buf strings.Builder
+	summary := tablewriter.NewWriter(&buf)
 	summary.SetHeader([]string{"POLICY", "TYPE", "ACTION", "RESULT", "COMPONENTS", "VIOLATIONS", "RULES APPLIED"})
 
 	for _, r := range sorted {
@@ -77,7 +86,25 @@ func ReportBasic(ctx context.Context, results []PolicyResult) error {
 			fmt.Sprintf("%d", r.TotalRules),
 		})
 	}
-	summary.Render() // prints the table
+	summary.Render()
+
+	// Calculate table width from rendered output
+	tableOutput := buf.String()
+	lines := strings.Split(tableOutput, "\n")
+	maxWidth := 0
+	for _, line := range lines {
+		if len(line) > maxWidth {
+			maxWidth = len(line)
+		}
+	}
+
+	// Print centered title
+	title := "BASIC POLICY REPORT"
+	centeredTitle := centerTitle(title, maxWidth)
+	_, _ = fmt.Fprintf(os.Stdout, "\n\033[36m%s\033[0m\n", centeredTitle)
+
+	// Print the table
+	_, _ = fmt.Fprint(os.Stdout, tableOutput)
 
 	log.Info("Basic policy report written")
 	return nil
@@ -95,26 +122,22 @@ func ReportTable(ctx context.Context, results []PolicyResult) error {
 	copy(sorted, results)
 	sort.Slice(sorted, func(i, j int) bool { return sorted[i].PolicyName < sorted[j].PolicyName })
 
-	_, _ = fmt.Fprintf(os.Stdout, "\n\033[1m DETAILED POLICY REPORT\033[0m\n")
+	// First pass: determine max width of per-policy detail tables
+	var detailTablesBuf strings.Builder
+	maxDetailWidth := 0
 
-	// Per-policy tables
 	for _, res := range sorted {
-		// Policy header
-		_, _ = fmt.Fprintf(os.Stdout, "\n\033[1mPolicy: %s (result=%s, violations=%d, total_checks=%d, components=%d, total_rules_applied=%d)\033[0m\n",
-			res.PolicyName, res.OverallResult, res.ViolationCnt, res.TotalChecks, res.TotalComponents, res.TotalRules)
-
 		// Prepare table writer per policy
 		maxColWidth := 36
-		tw := tablewriter.NewWriter(os.Stdout)
+		tw := tablewriter.NewWriter(&detailTablesBuf)
 		tw.SetAutoWrapText(true)
 		tw.SetReflowDuringAutoWrap(true)
 		tw.SetColWidth(maxColWidth)
 		tw.SetBorder(true)
 		tw.SetRowLine(false)
-
 		tw.SetHeader([]string{"COMPONENT", "FIELD", "ACTUAL", "REASON"})
 
-		// Build rows: default behaviour is to show failures only.
+		// Build rows
 		type row struct {
 			component string
 			field     string
@@ -124,7 +147,6 @@ func ReportTable(ctx context.Context, results []PolicyResult) error {
 		}
 		rows := []row{}
 
-		// Prefer modern `PolicyResults` if present
 		if len(res.RuleResults) > 0 {
 			for _, pr := range res.RuleResults {
 				actual := ""
@@ -143,19 +165,13 @@ func ReportTable(ctx context.Context, results []PolicyResult) error {
 			}
 		}
 
-		// If no failure rows to print:
-		// - But we have PolicyResults (means all checks passed) -> print pass rows
-		// - Else -> print "No violations"
 		if len(rows) == 0 {
 			if len(res.RuleResults) > 0 {
-				// populate rows with passing checks so we show non-violations
 				for _, pr := range res.RuleResults {
-					// include passes; if some fails existed they'd already be in rows above
 					actual := ""
 					if len(pr.ActualValues) > 0 {
 						actual = strings.Join(pr.ActualValues, ", ")
 					}
-					// For clarity put reason empty for passes
 					rows = append(rows, row{
 						component: pr.ComponentName,
 						field:     pr.DeclaredField,
@@ -167,7 +183,6 @@ func ReportTable(ctx context.Context, results []PolicyResult) error {
 			}
 		}
 
-		// Sort rows deterministically: by component name, then field
 		sort.Slice(rows, func(i, j int) bool {
 			if rows[i].component == rows[j].component {
 				return rows[i].field < rows[j].field
@@ -175,18 +190,132 @@ func ReportTable(ctx context.Context, results []PolicyResult) error {
 			return rows[i].component < rows[j].component
 		})
 
-		// Append to table writer
 		for _, rr := range rows {
-			// warp long column values into multiple lines
+			componentWrapped, actualWrapped := wrapLongCells(rr.component, rr.actual, maxColWidth)
+			tw.Append([]string{componentWrapped, rr.field, actualWrapped, rr.reason})
+		}
+		tw.Render()
+
+		// Check width after each table
+		lines := strings.Split(detailTablesBuf.String(), "\n")
+		for _, line := range lines {
+			if len(line) > maxDetailWidth {
+				maxDetailWidth = len(line)
+			}
+		}
+		detailTablesBuf.Reset()
+	}
+
+	// Calculate summary table width separately
+	var summaryBuf strings.Builder
+	sum := tablewriter.NewWriter(&summaryBuf)
+	sum.SetHeader([]string{"POLICY", "RESULT", "COMPONENTS", "VIOLATIONS", "RULES APPLIED"})
+	for _, r := range sorted {
+		sum.Append([]string{
+			r.PolicyName,
+			r.OverallResult,
+			fmt.Sprintf("%d", r.TotalComponents),
+			fmt.Sprintf("%d", r.ViolationCnt),
+			fmt.Sprintf("%d", r.TotalRules),
+		})
+	}
+	sum.Render()
+
+	summaryLines := strings.Split(summaryBuf.String(), "\n")
+	maxSummaryWidth := 0
+	for _, line := range summaryLines {
+		if len(line) > maxSummaryWidth {
+			maxSummaryWidth = len(line)
+		}
+	}
+
+	// Print centered main title over detail tables
+	mainTitle := "DETAILED POLICY REPORT"
+	centeredMainTitle := centerTitle(mainTitle, maxDetailWidth)
+	_, _ = fmt.Fprintf(os.Stdout, "\n\033[1m%s\033[0m\n", centeredMainTitle)
+
+	// Print all policy tables (actual output)
+	for _, res := range sorted {
+		// Policy header (bold)
+		_, _ = fmt.Fprintf(os.Stdout, "\n\033[1mPolicy: %s (result=%s, violations=%d, total_checks=%d, components=%d, total_rules_applied=%d)\033[0m\n",
+			res.PolicyName, res.OverallResult, res.ViolationCnt, res.TotalChecks, res.TotalComponents, res.TotalRules)
+
+		// Render individual policy table
+		maxColWidth := 36
+		tw := tablewriter.NewWriter(os.Stdout)
+		tw.SetAutoWrapText(true)
+		tw.SetReflowDuringAutoWrap(true)
+		tw.SetColWidth(maxColWidth)
+		tw.SetBorder(true)
+		tw.SetRowLine(false)
+		tw.SetHeader([]string{"COMPONENT", "FIELD", "ACTUAL", "REASON"})
+
+		type row struct {
+			component string
+			field     string
+			actual    string
+			result    string
+			reason    string
+		}
+		rows := []row{}
+
+		if len(res.RuleResults) > 0 {
+			for _, pr := range res.RuleResults {
+				actual := ""
+				if len(pr.ActualValues) > 0 {
+					actual = strings.Join(pr.ActualValues, ", ")
+				} else {
+					actual = "-"
+				}
+				rows = append(rows, row{
+					component: pr.ComponentName,
+					field:     pr.DeclaredField,
+					actual:    actual,
+					result:    pr.Result,
+					reason:    pr.Reason,
+				})
+			}
+		}
+
+		if len(rows) == 0 {
+			if len(res.RuleResults) > 0 {
+				for _, pr := range res.RuleResults {
+					actual := ""
+					if len(pr.ActualValues) > 0 {
+						actual = strings.Join(pr.ActualValues, ", ")
+					}
+					rows = append(rows, row{
+						component: pr.ComponentName,
+						field:     pr.DeclaredField,
+						actual:    actual,
+						result:    pr.Reason,
+						reason:    pr.Reason,
+					})
+				}
+			}
+		}
+
+		sort.Slice(rows, func(i, j int) bool {
+			if rows[i].component == rows[j].component {
+				return rows[i].field < rows[j].field
+			}
+			return rows[i].component < rows[j].component
+		})
+
+		for _, rr := range rows {
 			componentWrapped, actualWrapped := wrapLongCells(rr.component, rr.actual, maxColWidth)
 			tw.Append([]string{componentWrapped, rr.field, actualWrapped, rr.reason})
 		}
 		tw.Render()
 	}
 
-	_, _ = fmt.Fprintf(os.Stdout, "\n\033[1m\033[32m \t\t--- SUMMARY TABLE ---\033[1m\n")
+	// Print centered summary title (green and bold) over summary table
+	summaryTitle := "--- SUMMARY TABLE ---"
+	centeredSummaryTitle := centerTitle(summaryTitle, maxSummaryWidth)
+	_, _ = fmt.Fprintf(os.Stdout, "\n\033[1m\033[32m%s\033[0m\n", centeredSummaryTitle)
 
-	sum := tablewriter.NewWriter(os.Stdout)
+	// Render summary table
+	sum = tablewriter.NewWriter(os.Stdout)
 	sum.SetHeader([]string{"POLICY", "RESULT", "COMPONENTS", "VIOLATIONS", "RULES APPLIED"})
 	for _, r := range sorted {
 		sum.Append([]string{
