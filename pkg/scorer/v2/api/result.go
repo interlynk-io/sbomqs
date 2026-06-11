@@ -32,8 +32,9 @@ type Result struct {
 	// InterlynkScore float64
 	// Grade          string
 
-	Comprehensive *ComprehensiveResult
-	Profiles      *ProfilesResult
+	Comprehensive  *ComprehensiveResult
+	Profiles       *ProfilesResult
+	ProfileContext string // Profile context for feature-only scoring
 }
 
 // SBOMMeta represents common metadata extracted from an SBOM document.

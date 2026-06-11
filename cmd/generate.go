@@ -77,13 +77,25 @@ func init() {
 }
 
 func generateYaml(_ context.Context) error {
-	return os.WriteFile(featuresFileName, []byte(scorer.DefaultConfig()), 0o600)
+	if err := os.WriteFile(featuresFileName, []byte(scorer.DefaultConfig()), 0o600); err != nil {
+		return err
+	}
+	fmt.Printf("Configuration written to %s\n", featuresFileName)
+	return nil
 }
 
 func generateComprYaml(_ context.Context) error {
-	return os.WriteFile(comprFileName, []byte(registry.DefaultComprConfig()), 0o600)
+	if err := os.WriteFile(comprFileName, []byte(registry.DefaultComprConfig()), 0o600); err != nil {
+		return err
+	}
+	fmt.Printf("Configuration written to %s\n", comprFileName)
+	return nil
 }
 
 func generateProfYaml(_ context.Context) error {
-	return os.WriteFile(profFileName, []byte(registry.DefaultProfConfig()), 0o600)
+	if err := os.WriteFile(profFileName, []byte(registry.DefaultProfConfig()), 0o600); err != nil {
+		return err
+	}
+	fmt.Printf("Configuration written to %s\n", profFileName)
+	return nil
 }

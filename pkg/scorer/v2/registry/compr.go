@@ -15,6 +15,7 @@
 package registry
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"time"
@@ -97,6 +98,15 @@ func ReadComprConfigFile(path string) ([]catalog.ComprCatSpec, error) {
 	var cat []catalog.ComprCatSpec
 
 	for _, c := range cfg.Categories {
+		// Skip categories with zero weight - user has disabled them
+		if c.Weight == 0 {
+			continue
+		}
+
+		// Reject negative category weights
+		if c.Weight < 0 {
+			return nil, fmt.Errorf("invalid weight %.2f for category %q: weights must be non-negative", c.Weight, c.Name)
+		}
 
 		category := catalog.ComprCatSpec{
 			Name:        c.Name,
@@ -109,6 +119,11 @@ func ReadComprConfigFile(path string) ([]catalog.ComprCatSpec, error) {
 				continue
 			}
 
+			// Reject negative feature weights
+			if f.Weight < 0 {
+				return nil, fmt.Errorf("invalid weight %.2f for feature %q in category %q: weights must be non-negative", f.Weight, f.Name, c.Name)
+			}
+
 			feat := catalog.ComprFeatSpec{
 				Name:     f.Name,
 				Ignore:   f.Ignore,
@@ -119,6 +134,12 @@ func ReadComprConfigFile(path string) ([]catalog.ComprCatSpec, error) {
 
 			category.Features = append(category.Features, feat)
 		}
+
+		// Skip categories with no features (all features were ignored)
+		if len(category.Features) == 0 {
+			continue
+		}
+
 		cat = append(cat, category)
 
 	}

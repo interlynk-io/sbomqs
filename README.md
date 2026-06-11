@@ -66,6 +66,7 @@ In today's software landscape, understanding and managing your software supply c
 ### 🎯 Guides
 
 - **[Customization](docs/guides/customization.md)** - Create custom scoring profiles
+- **[Weightage Scoring](docs/guides/weightage-scoring.md)** - Customize scoring weights and categories
 - **[Integrations](docs/guides/integrations.md)** - CI/CD and tool integrations
 - **[Policy](docs/guides/policy.md)** - Policy enforcement and validation
 
@@ -90,7 +91,12 @@ sbomqs score my-app.spdx.json --category integrity
 
 # check specific profile 
 sbomqs score my-app.spdx.json --category NTIA-minimum-elements --profile ntia
+
+# Use custom weights configuration
+sbomqs score my-app.spdx.json --configpath my-weights.yaml
 ```
+
+See [Weightage Scoring Guide](docs/guides/weightage-scoring.md) for details on customizing scoring weights.
 
 ### Verify Compliance
 
@@ -103,6 +109,22 @@ sbomqs compliance --fsct my-app.spdx.json
 
 # OpenChain Telco
 sbomqs compliance --oct my-app.spdx.json
+```
+
+### Score Specific Features
+
+```bash
+# Score comprehensive features (default profile)
+sbomqs score my-app.spdx.json --feature comp_with_name,comp_with_version
+
+# Score NTIA-specific features
+sbomqs score my-app.spdx.json --profile ntia --feature comp_name,comp_version,sbom_timestamp
+
+# Score BSI v2.1-specific features
+sbomqs score my-app.cdx.json --profile bsi --feature sbom_spec_version,sbom_creator,comp_name
+
+# Score with JSON output for automation
+sbomqs score my-app.spdx.json --profile ntia --feature comp_name --json
 ```
 
 ### Find Missing Data

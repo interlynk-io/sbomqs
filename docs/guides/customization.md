@@ -13,6 +13,22 @@ SBOMQS uses a weighted scoring system across multiple categories:
 - **Features**: Individual scoring criteria
 - **Weights**: Importance multipliers (0.0-1.0)
 
+### Profile-Specific Feature Scoring
+
+Each compliance profile has its own set of feature keys. When using `--feature` with `--profile`, you must use the profile-specific feature keys:
+
+| Profile | Available Feature Keys |
+|---------|------------------------|
+| ntia | `comp_supplier`, `comp_name`, `comp_version`, `comp_uniq_id`, `comp_dependencies`, `sbom_relationships`, `sbom_timestamp` |
+| ntia-2025 | `sbom_machine_format`, `sbom_author`, `software_producer`, `comp_name`, `comp_version`, `software_identifiers`, `comp_hash`, `license`, `sbom_dependencies`, `comp_supplier`, `tool_name`, `sbom_timestamp`, `generation_context` |
+| bsi-v1.1 | `sbom_creator`, `sbom_timestamp`, `comp_creator`, `comp_name`, `comp_version`, `comp_depth`, `comp_license`, `comp_hash`, `sbom_uri`, `comp_source_url`, `comp_executable_url`, `comp_source_hash`, `comp_unique_identifiers` |
+| bsi-v2.0 | `sbom_creator`, `sbom_timestamp`, `sbom_uri`, `comp_creator`, `comp_name`, `comp_version`, `comp_filename`, `comp_depth`, `comp_associated_license`, `comp_deployable_hash`, `comp_executable_property`, `comp_archive_property`, `comp_structured_property` |
+| bsi (v2.1) | `sbom_spec_version`, `sbom_creator`, `sbom_timestamp`, `sbom_uri`, `comp_creator`, `comp_name`, `comp_version`, `comp_filename`, `comp_depth`, `comp_distribution_license`, `comp_deployable_hash`, `comp_executable_prop`, `comp_archive_prop`, `comp_structured_prop`, `comp_source_code_url`, `comp_download_url`, `comp_other_identifiers`, `comp_original_licenses`, `comp_effective_license`, `comp_source_hash`, `comp_security_txt_url` |
+| oct-v1.1 | `sbom_spec`, `sbom_spec_version`, `sbom_data_license`, `sbom_identifier`, `sbom_name`, `sbom_namespace`, `sbom_creator`, `sbom_timestamp`, `sbom_creator_comment`, `comp_name`, `comp_identifier`, `comp_version`, `comp_supplier`, `comp_download_location`, `comp_license_concluded`, `comp_license_declared`, `comp_copyright`, `sbom_relationships` |
+| fsct | `sbom_provenance`, `sbom_primary_component`, `comp_identity`, `supplier_attribution`, `comp_unique_id`, `artifact_integrity`, `relationships_coverage`, `license_coverage`, `copyright_coverage` |
+
+**Note:** Using a feature key that doesn't belong to the specified profile will result in an error message showing the supported features for that profile.
+
 ### Default Scoring Categories
 
 | Category | Default Weight | Focus |
@@ -24,6 +40,8 @@ SBOMQS uses a weighted scoring system across multiple categories:
 | Sharing | 0.7 | Distribution readiness |
 
 ## Creating Custom Profiles
+
+For comprehensive documentation on weightage-based scoring, including detailed examples and edge cases, see the **[Weightage Scoring Guide](weightage-scoring.md)**.
 
 ### Generate Base Configuration
 

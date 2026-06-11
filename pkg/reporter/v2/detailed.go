@@ -31,8 +31,18 @@ type proTable struct {
 
 func (r *Reporter) detailedReport() {
 	form := "https://forms.gle/anFSspwrk7uSfD7Q6"
+	hasNonFeatureResults := false
 
-	for _, r := range r.Results {
+	for _, res := range r.Results {
+		// Check for feature-only scoring mode
+		if res.ProfileContext != "" && res.Comprehensive != nil && len(res.Comprehensive.CatResult) > 0 && res.Comprehensive.CatResult[0].Key == "feature_scoring" {
+			r.renderFeatureScoreDetailed(res)
+			fmt.Println()
+			continue
+		}
+
+		hasNonFeatureResults = true
+
 		// buffers for table rows
 		outDoc := [][]string{}     // detailed comprehensive rows
 		profOutDoc := [][]string{} // profile summary rows
@@ -42,19 +52,19 @@ func (r *Reporter) detailedReport() {
 		header := []string{}
 		profHeader := []string{}
 
-		if r.Comprehensive != nil && r.Profiles != nil {
-			fmt.Printf("SBOM Quality Score: %0.1f/10.0\t Grade: %s\tComponents: %d \t EngineVersion: %s\tFile: %s\n\n", r.Comprehensive.InterlynkScore, r.Comprehensive.Grade, r.Meta.NumComponents, EngineVersion, r.Meta.Filename)
+		if res.Comprehensive != nil && res.Profiles != nil {
+			fmt.Printf("SBOM Quality Score: %0.1f/10.0\t Grade: %s\tComponents: %d \t EngineVersion: %s\tFile: %s\n\n", res.Comprehensive.InterlynkScore, res.Comprehensive.Grade, res.Meta.NumComponents, EngineVersion, res.Meta.Filename)
 
 			profHeader = []string{"PROFILE", "SCORE", "GRADE"}
 
-			for _, proResult := range r.Profiles.ProfResult {
+			for _, proResult := range res.Profiles.ProfResult {
 				l := []string{proResult.Name, fmt.Sprintf("%.1f/10.0", proResult.Score), proResult.Grade}
 				profOutDoc = append(profOutDoc, l)
 			}
 
-			totalCatWeight := calculateTotalCategoryWeight(r.Comprehensive.CatResult)
+			totalCatWeight := calculateTotalCategoryWeight(res.Comprehensive.CatResult)
 			header = []string{"CATEGORY", "FEATURE", "SCORE", "DESC"}
-			for _, cat := range r.Comprehensive.CatResult {
+			for _, cat := range res.Comprehensive.CatResult {
 				isCompInfo := cat.Key == "compinfo"
 				catNameWithWeight := formatCategoryWithWeight(cat.Name, cat.Weight, totalCatWeight, isCompInfo)
 				for _, feat := range cat.Features {
@@ -70,12 +80,12 @@ func (r *Reporter) detailedReport() {
 				}
 			}
 
-		} else if r.Comprehensive != nil {
-			fmt.Printf("SBOM Quality Score: %0.1f/10.0\t Grade: %s\tComponents: %d \t EngineVersion: %s\tFile: %s\n", r.Comprehensive.InterlynkScore, r.Comprehensive.Grade, r.Meta.NumComponents, EngineVersion, r.Meta.Filename)
+		} else if res.Comprehensive != nil {
+			fmt.Printf("SBOM Quality Score: %0.1f/10.0\t Grade: %s\tComponents: %d \t EngineVersion: %s\tFile: %s\n", res.Comprehensive.InterlynkScore, res.Comprehensive.Grade, res.Meta.NumComponents, EngineVersion, res.Meta.Filename)
 
-			totalCatWeight := calculateTotalCategoryWeight(r.Comprehensive.CatResult)
+			totalCatWeight := calculateTotalCategoryWeight(res.Comprehensive.CatResult)
 			header = []string{"CATEGORY", "FEATURE", "SCORE", "DESC"}
-			for _, cat := range r.Comprehensive.CatResult {
+			for _, cat := range res.Comprehensive.CatResult {
 				isCompInfo := cat.Key == "compinfo"
 				catNameWithWeight := formatCategoryWithWeight(cat.Name, cat.Weight, totalCatWeight, isCompInfo)
 				for _, feat := range cat.Features {
@@ -85,12 +95,12 @@ func (r *Reporter) detailedReport() {
 					outDoc = append(outDoc, l)
 				}
 			}
-		} else if r.Profiles != nil {
-			for _, proResult := range r.Profiles.ProfResult {
+		} else if res.Profiles != nil {
+			for _, proResult := range res.Profiles.ProfResult {
 				var prs proTable
 
 				prs.profilesHeader = []string{"PROFILE", "FEATURE", "STATUS", "DESC"}
-				prs.messages = fmt.Sprintf("SBOM Quality Score: %0.1f/10.0\t Grade: %s\tComponents: %d \t EngineVersion: %s\tFile: %s", proResult.InterlynkScore, proResult.Grade, r.Meta.NumComponents, EngineVersion, r.Meta.Filename)
+				prs.messages = fmt.Sprintf("SBOM Quality Score: %0.1f/10.0\t Grade: %s\tComponents: %d \t EngineVersion: %s\tFile: %s", proResult.InterlynkScore, proResult.Grade, res.Meta.NumComponents, EngineVersion, res.Meta.Filename)
 
 				for _, pFeatResult := range proResult.Items {
 					var status string
@@ -120,9 +130,9 @@ func (r *Reporter) detailedReport() {
 		}
 
 		// Show category summary table before detailed table
-		if r.Comprehensive != nil {
-			totalCatWeight := calculateTotalCategoryWeight(r.Comprehensive.CatResult)
-			catSummaryRows, catSummaryHeader := buildCategorySummary(r.Comprehensive.CatResult, totalCatWeight)
+		if res.Comprehensive != nil {
+			totalCatWeight := calculateTotalCategoryWeight(res.Comprehensive.CatResult)
+			catSummaryRows, catSummaryHeader := buildCategorySummary(res.Comprehensive.CatResult, totalCatWeight)
 			newTable(catSummaryRows, catSummaryHeader, "Category Breakdown:")
 		}
 
@@ -187,7 +197,9 @@ func (r *Reporter) detailedReport() {
 
 		fmt.Println()
 	}
-	fmt.Println("Love to hear your feedback", form)
+	if hasNonFeatureResults {
+		fmt.Println("Love to hear your feedback", form)
+	}
 }
 
 func formatScore(feat api.FeatureResult) string {
@@ -266,5 +278,54 @@ func newTable(doc [][]string, header []string, msg string) {
 		dt.AppendBulk(doc)
 		dt.Render()
 		fmt.Println()
+	}
+}
+
+// renderFeatureScoreDetailed outputs feature-level scoring results for detailed view
+func (r *Reporter) renderFeatureScoreDetailed(result api.Result) {
+	if result.Comprehensive == nil || len(result.Comprehensive.CatResult) == 0 {
+		return
+	}
+	catResult := result.Comprehensive.CatResult[0]
+	numComponents := result.Meta.NumComponents
+	fileName := result.Meta.Filename
+
+	// Header with Profile Context
+	fmt.Printf("Feature Quality Score: %.1f/10.0     Grade: %s    Components: %d      EngineVersion: %s    File: %s\n",
+		result.Comprehensive.InterlynkScore,
+		result.Comprehensive.Grade,
+		numComponents,
+		EngineVersion,
+		fileName)
+
+	// Show profile context
+	if result.ProfileContext != "" && result.ProfileContext != "interlynk" {
+		fmt.Printf("Profile Context: %s\n\n", getProfileDisplayName(result.ProfileContext))
+	} else {
+		fmt.Println()
+	}
+
+	// Feature Breakdown table using tablewriter
+	fmt.Println("Feature Breakdown:")
+	dt := tablewriter.NewWriter(os.Stdout)
+	dt.SetHeader([]string{"FEATURE", "SCORE", "GRADE", "DESC"})
+	dt.SetRowLine(true)
+
+	for _, feat := range catResult.Features {
+		grade := scoreToGrade(feat.Score)
+		dt.Append([]string{feat.Key, fmt.Sprintf("%.1f/10.0", feat.Score), grade, feat.Desc})
+	}
+	dt.Render()
+
+	// Overall summary for profile context
+	if result.ProfileContext != "" && result.ProfileContext != "interlynk" {
+		passed := 0
+		for _, feat := range catResult.Features {
+			if feat.Score >= 5.0 { // PASS threshold
+				passed++
+			}
+		}
+		total := len(catResult.Features)
+		fmt.Printf("\nOverall: %d/%d %s requirements passed\n", passed, total, getProfileDisplayName(result.ProfileContext))
 	}
 }

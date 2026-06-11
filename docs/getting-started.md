@@ -555,6 +555,7 @@ sbomqs score my-app.spdx.json --basic
 ### Understanding Your Score
 
 Scores range from 0-10:
+
 - **9-10**: Excellent quality
 - **7-8.9**: Good, minor improvements needed  
 - **5-6.9**: Fair, has gaps to address
@@ -582,8 +583,43 @@ sbomqs score my-app.spdx.json --category ntia
 # Check BSI compliance (latest v2.1)
 sbomqs compliance --bsi-v2 my-app.cdx.json
 
-# Check FSCT compliance  
+# Check FSCT compliance
 sbomqs compliance --fsct my-app.spdx.json
+```
+
+### Score Specific Features
+
+Score individual features within a profile context:
+
+```bash
+# Score NTIA-specific features
+sbomqs score my-app.spdx.json --profile ntia --feature comp_name,comp_version
+
+# Score BSI v2.1-specific features (21 features available)
+sbomqs score my-app.cdx.json --profile bsi --feature sbom_spec_version,sbom_creator,comp_name
+
+# Score multiple NTIA features
+sbomqs score my-app.spdx.json --profile ntia --feature comp_supplier,comp_name,comp_version,comp_uniq_id,comp_dependencies,sbom_relationships,sbom_timestamp
+
+# Score comprehensive features (default Interlynk profile)
+sbomqs score my-app.spdx.json --feature comp_with_name,comp_with_version
+```
+
+**Feature Scoring Output:**
+
+```bash
+Feature Quality Score: 9.9/10.0     Grade: A    Components: 38      EngineVersion: 7
+Profile Context: NTIA Minimum Elements (2021)
+
+Feature Breakdown:
++--------------+-----------+-------+--------------------+
+|   FEATURE    |   SCORE   | GRADE |        DESC        |
++--------------+-----------+-------+--------------------+
+| comp_name    | 10.0/10.0 | A     | complete           |
+| comp_version | 9.7/10.0  | A     | add to 1 component |
++--------------+-----------+-------+--------------------+
+
+Overall: 2/2 NTIA Minimum Elements (2021) requirements passed
 ```
 
 ### Share Your Results

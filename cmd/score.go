@@ -412,7 +412,7 @@ func init() {
 
 	// Filter Control
 	scoreCmd.Flags().StringP("category", "c", "", "filter by category (e.g. 'identification', 'provenance', 'integrity', 'completeness', 'licensing', 'vulnerability', 'structural', 'cinfo')")
-	scoreCmd.Flags().StringP("feature", "f", "", "filter by feature (e.g. 'sbom_authors',  'comp_with_name', 'sbom_creation_timestamp') ")
+	scoreCmd.Flags().StringP("feature", "f", "", "filter by feature (comma-separated). Features depend on profile: use 'sbom_authors,comp_with_name' for default (Interlynk) or profile-specific keys like 'comp_name,comp_version' with --profile)")
 
 	// Spec Control
 	scoreCmd.Flags().BoolP("spdx", "", false, "limit scoring to spdx sboms")
