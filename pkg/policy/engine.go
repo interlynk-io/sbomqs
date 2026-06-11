@@ -118,5 +118,15 @@ func Engine(ctx context.Context, policyConfig *Params, policies []Policy) error 
 	}
 	log.Info("Policy evaluation report generated")
 
+	// Check if any policy failed to determine exit code
+	for _, result := range policyResults {
+		if result.OverallResult == "fail" {
+			log.Info("Policy evaluation failed: one or more policies had violations with action=fail",
+				zap.String("failed_policy", result.PolicyName),
+			)
+			return fmt.Errorf("policy %s failed: %d violation(s) found", result.PolicyName, result.ViolationCnt)
+		}
+	}
+
 	return nil
 }
