@@ -18,6 +18,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/interlynk-io/sbomqs/v2/pkg/logger"
@@ -130,6 +131,10 @@ var policyCmd = &cobra.Command{
 
 		// proceed with policy engine
 		if err := policy.Engine(ctx, policyConfig, policies); err != nil {
+			if errors.Is(err, policy.ErrPolicyViolation) {
+				// Exit with code 1 without printing an error message
+				os.Exit(1)
+			}
 			return fmt.Errorf("policy engine failed: %w", err)
 		}
 

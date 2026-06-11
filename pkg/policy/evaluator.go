@@ -84,9 +84,21 @@ func EvaluatePolicyAgainstSBOMs(ctx context.Context, policy Policy, doc sbom.Doc
 			// example: `license`, `supplier`, `checksum`, `author`, etc
 			actualValues := fieldExtractor.RetrieveValues(comp, declaredField)
 
-			// default outcome/pass reason
+			// default outcome/pass reason based on policy type
 			result := "pass"
-			reason := "present"
+			var reason string
+
+			// Set default pass reason based on policy type
+			switch RULE_TYPE(policy.Type) {
+			case REQUIRED:
+				reason = "field present"
+			case WHITELIST:
+				reason = "value in whitelist"
+			case BLACKLIST:
+				reason = "not in blacklist"
+			default:
+				reason = "pass"
+			}
 
 			// required rule: presence check
 			if RULE_TYPE(policy.Type) == REQUIRED {
