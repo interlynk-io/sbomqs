@@ -16,7 +16,9 @@ package policy
 
 import (
 	"context"
+	"fmt"
 	"regexp"
+	"strings"
 
 	"github.com/interlynk-io/sbomqs/v2/pkg/logger"
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
@@ -82,9 +84,21 @@ func EvaluatePolicyAgainstSBOMs(ctx context.Context, policy Policy, doc sbom.Doc
 			// example: `license`, `supplier`, `checksum`, `author`, etc
 			actualValues := fieldExtractor.RetrieveValues(comp, declaredField)
 
-			// default outcome/pass reason
+			// default outcome/pass reason based on policy type
 			result := "pass"
-			reason := "present"
+			var reason string
+
+			// Set default pass reason based on policy type
+			switch RULE_TYPE(policy.Type) {
+			case REQUIRED:
+				reason = "field present"
+			case WHITELIST:
+				reason = "value in whitelist"
+			case BLACKLIST:
+				reason = "not in blacklist"
+			default:
+				reason = "pass"
+			}
 
 			// required rule: presence check
 			if RULE_TYPE(policy.Type) == REQUIRED {
@@ -96,18 +110,22 @@ func EvaluatePolicyAgainstSBOMs(ctx context.Context, policy Policy, doc sbom.Doc
 
 			} else {
 				// for whitelist/blacklist do matching
-				matched := anyMatch(actualValues, declaredValues, patterns)
-
 				switch RULE_TYPE(policy.Type) {
 				case WHITELIST:
-					if !matched {
+					// For whitelist: ALL actual values must be in the whitelist
+					// If ANY actual value is not in the whitelist, it's a violation
+					violations := findViolations(actualValues, declaredValues, patterns)
+					if len(violations) > 0 {
 						result = "fail"
-						reason = "value not in whitelist"
+						reason = fmt.Sprintf("value(s) not in whitelist: %s", strings.Join(violations, ", "))
 					}
 				case BLACKLIST:
-					if matched {
+					// For blacklist: NONE of the actual values should be in the blacklist
+					// If ANY actual value matches, it's a violation
+					violations := findMatches(actualValues, declaredValues, patterns)
+					if len(violations) > 0 {
 						result = "fail"
-						reason = "value in blacklist"
+						reason = fmt.Sprintf("value(s) in blacklist: %s", strings.Join(violations, ", "))
 					}
 				default:
 					// if unknown type, treat as pass (or change to fail depending on your policy)
@@ -201,4 +219,48 @@ func anyMatch(actualValues []string, declaredValues []string, regexPatterns []*r
 
 	// 3. Nothing matched
 	return false
+}
+
+// isValueAllowed checks if a single value is allowed by either exact match
+// or regex pattern match.
+func isValueAllowed(value string, allowedValues []string, patterns []*regexp.Regexp) bool {
+	// Check exact match
+	for _, allowed := range allowedValues {
+		if value == allowed {
+			return true
+		}
+	}
+
+	// Check regex patterns
+	for _, pattern := range patterns {
+		if pattern.MatchString(value) {
+			return true
+		}
+	}
+
+	return false
+}
+
+// findViolations returns all actual values that are NOT in the whitelist.
+// Used for whitelist policy evaluation - all values must be allowed.
+func findViolations(actualValues []string, allowedValues []string, patterns []*regexp.Regexp) []string {
+	var violations []string
+	for _, actual := range actualValues {
+		if !isValueAllowed(actual, allowedValues, patterns) {
+			violations = append(violations, actual)
+		}
+	}
+	return violations
+}
+
+// findMatches returns all actual values that ARE in the blacklist.
+// Used for blacklist policy evaluation - no values should match.
+func findMatches(actualValues []string, blockedValues []string, patterns []*regexp.Regexp) []string {
+	var matches []string
+	for _, actual := range actualValues {
+		if isValueAllowed(actual, blockedValues, patterns) {
+			matches = append(matches, actual)
+		}
+	}
+	return matches
 }

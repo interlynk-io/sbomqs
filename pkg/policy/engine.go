@@ -16,6 +16,7 @@ package policy
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -24,6 +25,10 @@ import (
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
 	"go.uber.org/zap"
 )
+
+// ErrPolicyViolation is returned when one or more policies failed (action=fail)
+// This is a sentinel error to distinguish policy failures from engine errors
+var ErrPolicyViolation = errors.New("policy violation detected")
 
 func Engine(ctx context.Context, policyConfig *Params, policies []Policy) error {
 	log := logger.FromContext(ctx)
@@ -118,5 +123,24 @@ func Engine(ctx context.Context, policyConfig *Params, policies []Policy) error 
 	}
 	log.Info("Policy evaluation report generated")
 
+	// Check if any policy failed to determine exit code
+	hasFailures := false
+	for _, result := range policyResults {
+		if result.OverallResult == "fail" {
+			hasFailures = true
+			break
+		}
+	}
+
+	if hasFailures {
+		log.Info("Policy evaluation completed with violations",
+			zap.Int("total_policies", len(policyResults)),
+		)
+		return ErrPolicyViolation
+	}
+
+	log.Info("Policy evaluation completed successfully",
+		zap.Int("total_policies", len(policyResults)),
+	)
 	return nil
 }
