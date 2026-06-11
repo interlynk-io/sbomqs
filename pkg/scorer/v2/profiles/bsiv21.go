@@ -92,7 +92,7 @@ func BSIV21CompStructuredProperty(doc sbom.Document) catalog.ProfFeatScore {
 
 // BSIV21CompEffectiveLicence checks that components have the bsi:component:effectiveLicense property set.
 func BSIV21CompEffectiveLicence(doc sbom.Document) catalog.ProfFeatScore {
-	return bsiPropertyCheck(doc, "bsi:component:effectiveLicense", "effective licence")
+	return bsiPropertyCheck(doc, "bsi:component:effectiveLicence", "effective licence")
 }
 
 // BSIV21CompDeployableHash checks that components have a hash on their distribution or distribution-intake external reference.
