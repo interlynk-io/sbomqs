@@ -659,3 +659,513 @@ func TestBSIV21CompSourceHash(t *testing.T) {
 		assert.True(t, got.Ignore)
 	})
 }
+
+//
+// TestBSIV21CompDistributionLicence (concluded licenses)
+//
+
+// CDX: one component with a license expression and acknowledgement=concluded
+var cdx21CompWithExpressionConcluded = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:bsiv21-cdx-expr-concluded-001",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "comp-expr-concluded",
+      "name": "lib-expression-concluded",
+      "version": "1.0.0",
+      "licenses": [
+        {
+          "expression": "MIT",
+          "acknowledgement": "concluded"
+        }
+      ]
+    }
+  ]
+}
+`)
+
+// CDX: one component with a license ID and acknowledgement=concluded
+var cdx21CompWithLicenseIDConcluded = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:bsiv21-cdx-id-concluded-001",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "comp-id-concluded",
+      "name": "lib-id-concluded",
+      "version": "1.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0",
+            "acknowledgement": "concluded"
+          }
+        }
+      ]
+    }
+  ]
+}
+`)
+
+// CDX: two components — one with expression concluded, one with ID concluded — both should pass
+var cdx21TwoCompsExpressionAndIDConcluded = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:bsiv21-cdx-both-concluded-001",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "comp-expr",
+      "name": "lib-expression",
+      "version": "1.0.0",
+      "licenses": [
+        {
+          "expression": "MIT",
+          "acknowledgement": "concluded"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "comp-id",
+      "name": "lib-id",
+      "version": "2.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0",
+            "acknowledgement": "concluded"
+          }
+        }
+      ]
+    }
+  ]
+}
+`)
+
+// CDX: one component with acknowledgement=declared (should NOT count as concluded)
+var cdx21CompWithDeclaredOnly = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:bsiv21-cdx-declared-only-001",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "comp-declared",
+      "name": "lib-declared",
+      "version": "1.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ]
+    }
+  ]
+}
+`)
+
+// CDX: two components — one with concluded, one with declared only — partial score
+var cdx21TwoCompsConcludedAndDeclared = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:bsiv21-cdx-mixed-ack-001",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "comp-concluded",
+      "name": "lib-concluded",
+      "version": "1.0.0",
+      "licenses": [
+        {
+          "expression": "MIT",
+          "acknowledgement": "concluded"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "comp-declared",
+      "name": "lib-declared",
+      "version": "2.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0",
+            "acknowledgement": "declared"
+          }
+        }
+      ]
+    }
+  ]
+}
+`)
+
+// CDX: license without acknowledgement (pre-1.6 style) — should NOT count as concluded
+var cdx21CompWithLicenseNoAcknowledgement = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:bsiv21-cdx-no-ack-001",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "comp-no-ack",
+      "name": "lib-no-acknowledgement",
+      "version": "1.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    }
+  ]
+}
+`)
+
+// CDX: custom license ref (not a valid SPDX ID) — should NOT pass
+var cdx21CompWithCustomLicenseRef = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:bsiv21-cdx-custom-ref-001",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "comp-custom",
+      "name": "lib-custom-license",
+      "version": "1.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "LicenseRef-Custom",
+            "acknowledgement": "concluded"
+          }
+        }
+      ]
+    }
+  ]
+}
+`)
+
+func TestBSIV21CompDistributionLicence(t *testing.T) {
+	ctx := context.Background()
+
+	// license expression with acknowledgement=concluded → score 10.0
+	t.Run("expressionConcluded", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdx21CompWithExpressionConcluded, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV21CompDistributionLicence(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "distribution licence (concluded) declared for all components", got.Desc)
+	})
+
+	// license ID with acknowledgement=concluded → score 10.0
+	t.Run("licenseIDConcluded", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdx21CompWithLicenseIDConcluded, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV21CompDistributionLicence(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "distribution licence (concluded) declared for all components", got.Desc)
+	})
+
+	// one comp with expression concluded, one with ID concluded → both pass → score 10.0
+	t.Run("bothExpressionAndIDConcluded", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdx21TwoCompsExpressionAndIDConcluded, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV21CompDistributionLicence(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "distribution licence (concluded) declared for all components", got.Desc)
+	})
+
+	// acknowledgement=declared only (no concluded) → score 0.0
+	t.Run("declaredOnlyNoConcluded", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdx21CompWithDeclaredOnly, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV21CompDistributionLicence(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "no components declare distribution licence (concluded)", got.Desc)
+	})
+
+	// 1 of 2 components has concluded license → partial score 5.0
+	t.Run("partialConcluded", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdx21TwoCompsConcludedAndDeclared, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV21CompDistributionLicence(doc)
+
+		assert.InDelta(t, 5.0, got.Score, 1e-9)
+		assert.Equal(t, "1/2 components declare distribution licence (concluded)", got.Desc)
+	})
+
+	// license without acknowledgement (pre-1.6 style) → score 0.0
+	t.Run("licenseNoAcknowledgement", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdx21CompWithLicenseNoAcknowledgement, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV21CompDistributionLicence(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "no components declare distribution licence (concluded)", got.Desc)
+	})
+
+	// custom license ref (LicenseRef-Custom) with acknowledgement=concluded → score 10.0
+	// LicenseRef-* is acceptable even if not a standard SPDX ID
+	t.Run("customLicenseRefConcluded", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdx21CompWithCustomLicenseRef, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV21CompDistributionLicence(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "distribution licence (concluded) declared for all components", got.Desc)
+	})
+
+	// no components → score 0.0
+	t.Run("noComponents", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, []byte(`{"bomFormat": "CycloneDX", "specVersion": "1.6", "serialNumber": "urn:uuid:test", "version": 1, "components": []}`), sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV21CompDistributionLicence(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "no components found", got.Desc)
+	})
+}
+
+//
+// TestBSIV21CompOriginalLicences (declared licenses)
+//
+
+// CDX: one component with a license expression and acknowledgement=declared
+var cdx21CompWithExpressionDeclared = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:bsiv21-cdx-expr-declared-001",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "comp-expr-declared",
+      "name": "lib-expression-declared",
+      "version": "1.0.0",
+      "licenses": [
+        {
+          "expression": "Apache-2.0",
+          "acknowledgement": "declared"
+        }
+      ]
+    }
+  ]
+}
+`)
+
+// CDX: one component with a license ID and acknowledgement=declared
+var cdx21CompWithLicenseIDDeclared = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:bsiv21-cdx-id-declared-001",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "comp-id-declared",
+      "name": "lib-id-declared",
+      "version": "1.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "GPL-2.0",
+            "acknowledgement": "declared"
+          }
+        }
+      ]
+    }
+  ]
+}
+`)
+
+// CDX: two components — one with expression declared, one with ID declared — both should pass
+var cdx21TwoCompsExpressionAndIDDeclared = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:bsiv21-cdx-both-declared-001",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "comp-expr",
+      "name": "lib-expression",
+      "version": "1.0.0",
+      "licenses": [
+        {
+          "expression": "Apache-2.0",
+          "acknowledgement": "declared"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "comp-id",
+      "name": "lib-id",
+      "version": "2.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause",
+            "acknowledgement": "declared"
+          }
+        }
+      ]
+    }
+  ]
+}
+`)
+
+// CDX: one component with acknowledgement=concluded (should NOT count as declared)
+var cdx21CompWithConcludedOnly = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:bsiv21-cdx-concluded-only-001",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "comp-concluded",
+      "name": "lib-concluded",
+      "version": "1.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "concluded"
+          }
+        }
+      ]
+    }
+  ]
+}
+`)
+
+func TestBSIV21CompOriginalLicences(t *testing.T) {
+	ctx := context.Background()
+
+	// license expression with acknowledgement=declared → score 10.0
+	t.Run("expressionDeclared", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdx21CompWithExpressionDeclared, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV21CompOriginalLicences(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "original licence (declared) declared for all components", got.Desc)
+	})
+
+	// license ID with acknowledgement=declared → score 10.0
+	t.Run("licenseIDDeclared", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdx21CompWithLicenseIDDeclared, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV21CompOriginalLicences(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "original licence (declared) declared for all components", got.Desc)
+	})
+
+	// one comp with expression declared, one with ID declared → both pass → score 10.0
+	t.Run("bothExpressionAndIDDeclared", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdx21TwoCompsExpressionAndIDDeclared, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV21CompOriginalLicences(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "original licence (declared) declared for all components", got.Desc)
+	})
+
+	// acknowledgement=concluded only (no declared) → score 0.0
+	t.Run("concludedOnlyNoDeclared", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdx21CompWithConcludedOnly, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV21CompOriginalLicences(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "no components declare original licence (declared)", got.Desc)
+	})
+
+	// 1 of 2 components has declared license → partial score 5.0
+	t.Run("partialDeclared", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdx21TwoCompsConcludedAndDeclared, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV21CompOriginalLicences(doc)
+
+		assert.InDelta(t, 5.0, got.Score, 1e-9)
+		assert.Equal(t, "1/2 components declare original licence (declared)", got.Desc)
+	})
+
+	// license without acknowledgement (CDX 1.6+ defaults to declared) → score 10.0
+	t.Run("licenseNoAcknowledgementDefaultsToDeclared", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdx21CompWithLicenseNoAcknowledgement, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV21CompOriginalLicences(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "original licence (declared) declared for all components", got.Desc)
+	})
+
+	// custom license ref (not a valid SPDX ID) → score 0.0
+	t.Run("customLicenseRefInvalid", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdx21CompWithCustomLicenseRef, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV21CompOriginalLicences(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "no components declare original licence (declared)", got.Desc)
+	})
+
+	// no components → score 0.0
+	t.Run("noComponents", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, []byte(`{"bomFormat": "CycloneDX", "specVersion": "1.6", "serialNumber": "urn:uuid:test", "version": 1, "components": []}`), sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV21CompOriginalLicences(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "no components found", got.Desc)
+	})
+}

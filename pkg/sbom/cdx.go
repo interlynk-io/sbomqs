@@ -849,8 +849,15 @@ func aggregateLicenses(clicenses cydx.Licenses, filter string) []licenses.Licens
 	}
 
 	for _, cl := range clicenses {
-		if filter == "" && cl.Expression != "" {
-			lics = append(lics, getLicenses(cl.Expression)...)
+		if cl.Expression != "" {
+			// In CycloneDX, acknowledgement applies to the license choice (expression or license)
+			ack := ""
+			if cl.Acknowledgement != nil {
+				ack = string(*cl.Acknowledgement)
+			}
+			if filter == "" || ack == filter {
+				lics = append(lics, getLicenses(cl.Expression)...)
+			}
 		} else if cl.License != nil {
 			if filter == "" || string(cl.License.Acknowledgement) == filter {
 				if cl.License.ID != "" {
