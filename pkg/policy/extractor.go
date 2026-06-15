@@ -75,6 +75,28 @@ func (extractor *Extractor) MapFieldWithFunction(ctx context.Context) {
 		return nilOrSlice(licenses)
 	}
 
+	// concluded_license: extract licenses with acknowledgement=concluded (CycloneDX 1.6+)
+	extractor.compGetters["concluded_license"] = func(c sbom.GetComponent) []string {
+		licenses := []string{}
+		for _, l := range c.ConcludedLicenses() {
+			if ln := l.ShortID(); ln != "" {
+				licenses = append(licenses, ln)
+			}
+		}
+		return nilOrSlice(licenses)
+	}
+
+	// declared_license: extract licenses with acknowledgement=declared (CycloneDX 1.6+)
+	extractor.compGetters["declared_license"] = func(c sbom.GetComponent) []string {
+		licenses := []string{}
+		for _, l := range c.DeclaredLicenses() {
+			if ln := l.ShortID(); ln != "" {
+				licenses = append(licenses, ln)
+			}
+		}
+		return nilOrSlice(licenses)
+	}
+
 	extractor.compGetters["purl"] = func(c sbom.GetComponent) []string {
 		purls := []string{}
 		for _, p := range c.GetPurls() {
