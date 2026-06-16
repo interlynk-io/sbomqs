@@ -33,6 +33,8 @@ const (
 	profFileName     = "profiles.yaml"
 )
 
+var generateFeaturesLegacy bool
+
 // generateCmd represents the generate command for creating configuration files.
 // It can generate YAML configs for features, comprehensive scoring, and profiles.
 var generateCmd = &cobra.Command{
@@ -50,6 +52,9 @@ var generateCmd = &cobra.Command{
 
   # Generate config file for features
   sbomqs generate features
+
+  # Generate legacy v1.x features config
+  sbomqs generate features --legacy
 `,
 
 	RunE: func(_ *cobra.Command, args []string) error {
@@ -58,7 +63,7 @@ var generateCmd = &cobra.Command{
 		if len(args) > 0 {
 			switch args[0] {
 			case features:
-				return generateYaml(ctx)
+				return generateYaml(ctx, generateFeaturesLegacy)
 			case comprehenssive:
 				return generateComprYaml(ctx)
 			case profiles:
@@ -74,10 +79,16 @@ var generateCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(generateCmd)
+	generateCmd.Flags().BoolVar(&generateFeaturesLegacy, "legacy", false, "generate legacy v1.x features configuration")
 }
 
-func generateYaml(_ context.Context) error {
-	if err := os.WriteFile(featuresFileName, []byte(scorer.DefaultConfig()), 0o600); err != nil {
+func generateYaml(_ context.Context, legacy bool) error {
+	featuresConfig := registry.DefaultComprConfig()
+	if legacy {
+		featuresConfig = scorer.DefaultConfig()
+	}
+
+	if err := os.WriteFile(featuresFileName, []byte(featuresConfig), 0o600); err != nil {
 		return err
 	}
 	fmt.Printf("Configuration written to %s\n", featuresFileName)
