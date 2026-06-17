@@ -1,0 +1,31 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:12345678-1234-1234-1234-123456789012",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2024-01-15T10:30:00Z",
+    "tools": {
+      "services": [{"vendor": "Test", "name": "test-generator", "version": "1.0.0"}]
+    },
+    "component": {"type": "application", "name": "test-app", "version": "1.0.0"}
+  },
+  "components": [
+    {
+      "type": "library",
+      "name": "proprietary-lib",
+      "version": "1.0.0",
+      "licenses": [{"license": {"name": "LicenseRef-ACME-Commercial"}}],
+      "purl": "pkg:maven/com.acme/proprietary@1.0.0",
+      "hashes": [{"alg": "SHA-256", "content": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}]
+    },
+    {
+      "type": "library",
+      "name": "mit-lib",
+      "version": "1.0.0",
+      "licenses": [{"license": {"id": "MIT"}}],
+      "purl": "pkg:maven/com.example/mit@1.0.0",
+      "hashes": [{"alg": "SHA-256", "content": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}]
+    }
+  ]
+}
