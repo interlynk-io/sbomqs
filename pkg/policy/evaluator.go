@@ -250,8 +250,16 @@ func EvaluatePolicyAgainstSBOMs(ctx context.Context, policy Policy, doc sbom.Doc
 		}
 	}
 
+	// Determine the level: "doc" if document-level rules exist, "comp" otherwise
+	if len(docRules) > 0 {
+		policyResult.Level = "doc"
+	} else {
+		policyResult.Level = "comp"
+	}
+
 	log.Info("Policy evaluation completed",
 		zap.String("policy", policy.Name),
+		zap.String("level", policyResult.Level),
 		zap.Int("checks", totalChecks),
 		zap.Int("violations", violationCount),
 		zap.String("result", policyResult.OverallResult),
