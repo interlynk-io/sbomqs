@@ -1,0 +1,58 @@
+# Enterprise: Approved Suppliers Policy
+#
+# Common Use Cases:
+# - Vendor management programs
+# - Supply chain security
+# - Procurement compliance
+# - Enterprise architecture standards
+
+policy:
+  - name: approved_component_suppliers
+    description: |
+      Only allows components from approved vendors.
+      Blocks components from unknown or unapproved sources.
+      Essential for supply chain governance.
+    type: whitelist
+    rules:
+      - field: supplier
+        values:
+          # Major open source foundations
+          - Apache Software Foundation
+          - Eclipse Foundation
+          - Linux Foundation
+          - Mozilla Foundation
+          - Python Software Foundation
+          - Node.js Foundation
+          # Major vendors
+          - Google LLC
+          - Microsoft Corporation
+          - Amazon Web Services
+          - Oracle Corporation
+          - Red Hat, Inc.
+          - VMware, Inc.
+          - IBM Corporation
+          - Salesforce.com, Inc.
+          # Specific maintainers
+          - Meta Platforms, Inc.
+          - Apple Inc.
+          - JetBrains s.r.o.
+          - MongoDB, Inc.
+          - Elastic N.V.
+          - HashiCorp
+          - Grafana Labs
+          - Kong Inc.
+        patterns:
+          # Allow internal/organization suppliers
+          - "ACME.*"
+          - ".*Internal.*"
+          - "Organization: ACME.*"
+    action: fail
+
+  - name: require_verified_supplier_info
+    description: |
+      All components must have supplier information.
+      Warns about components with missing supplier data.
+    type: required
+    rules:
+      - field: supplier
+    action: warn

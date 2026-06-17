@@ -1,0 +1,48 @@
+# Policy: Block Proprietary Licenses
+# Use Case: Ensure only standard open-source licenses are used
+# Description: Blocks custom LicenseRef-* and proprietary license identifiers
+# Author: sbomqs
+
+policy:
+  # Block proprietary/custom license identifiers
+  - name: no_proprietary_licenses
+    description: |
+      Blocks any proprietary or custom license identifiers.
+      Only SPDX standard license IDs are allowed.
+    type: blacklist
+    rules:
+      - field: license
+        patterns:
+          - "^LicenseRef-.*"           # Custom LicenseRef-* identifiers
+          - "(?i)proprietary"         # Case-insensitive "proprietary"
+          - "(?i)commercial"          # Case-insensitive "commercial"
+          - "(?i)all rights reserved"  # Traditional proprietary notice
+          - "(?i)internal use only"    # Internal/proprietary marker
+    action: fail
+    reason: "Proprietary licenses are not allowed. Only standard SPDX licenses permitted."
+
+  # Also block concluded proprietary licenses
+  - name: no_proprietary_concluded_licenses
+    description: Block proprietary licenses even when marked as concluded
+    type: blacklist
+    rules:
+      - field: concluded_license
+        patterns:
+          - "^LicenseRef-.*"
+          - "(?i)proprietary"
+          - "(?i)commercial"
+    action: fail
+    reason: "Proprietary concluded licenses are not allowed."
+
+  # Also block declared proprietary licenses
+  - name: no_proprietary_declared_licenses
+    description: Block proprietary licenses even when marked as declared
+    type: blacklist
+    rules:
+      - field: declared_license
+        patterns:
+          - "^LicenseRef-.*"
+          - "(?i)proprietary"
+          - "(?i)commercial"
+    action: fail
+    reason: "Proprietary declared licenses are not allowed."

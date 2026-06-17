@@ -1,0 +1,68 @@
+# Policy: Required Metadata Fields
+# Use Case: Ensure SBOMs have all basic required fields for completeness
+# Description: Validates that essential metadata fields are present for all components
+# Author: sbomqs
+
+policy:
+  # Require component names
+  - name: require_component_names
+    description: Every component must have a name
+    type: required
+    rules:
+      - field: name
+    action: fail
+    reason: "Component name is required."
+
+  # Require component versions
+  - name: require_component_versions
+    description: Every component must have a version
+    type: required
+    rules:
+      - field: version
+    action: fail
+    reason: "Component version is required for dependency management."
+
+  # Require license information
+  - name: require_license_info
+    description: Every component must have license information
+    type: required
+    rules:
+      - field: license
+    action: warn
+    reason: "License information is required for compliance."
+
+  # Require supplier information
+  - name: require_supplier_info
+    description: Every component must have supplier information
+    type: required
+    rules:
+      - field: supplier
+    action: warn
+    reason: "Supplier information helps track component provenance."
+
+  # Require SBOM-level metadata
+  - name: require_sbom_timestamp
+    description: SBOM must have a creation timestamp
+    type: required
+    rules:
+      - field: sbom_timestamp
+    action: warn
+    reason: "Timestamp helps determine SBOM freshness."
+
+  # Require SBOM author
+  - name: require_sbom_author
+    description: SBOM must have an author or creator
+    type: required
+    rules:
+      - field: sbom_author
+    action: warn
+    reason: "Author information is required for audit trails."
+
+  # Require component type
+  - name: require_component_type
+    description: Every component should have a type specified
+    type: required
+    rules:
+      - field: type
+    action: pass
+    reason: "Component type helps categorize dependencies."

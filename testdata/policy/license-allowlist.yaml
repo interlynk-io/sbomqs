@@ -1,0 +1,36 @@
+# License Allowlist Policy
+#
+# Common Use Cases:
+# - Commercial software development
+# - Products distributed to customers
+# - SaaS applications (permissive licenses only)
+# - Avoiding GPL/Copyleft contamination
+
+policy:
+  - name: approved_oss_licenses
+    description: |
+      Only permits OSI-approved permissive licenses.
+      Blocks copyleft (GPL, LGPL, AGPL) and proprietary licenses.
+      Suitable for commercial distribution.
+    type: whitelist
+    rules:
+      - field: license
+        values:
+          # Permissive licenses (safe for commercial use)
+          - MIT
+          - MIT-0
+          - Apache-2.0
+          - BSD-2-Clause
+          - BSD-3-Clause
+          - BSD-4-Clause
+          - ISC
+          - Unlicense
+          - 0BSD
+          - CC0-1.0
+          - Python-2.0
+          - Zlib
+          - JSON
+          # Microsoft licenses
+          - MS-PL
+          - MS-RL
+    action: fail

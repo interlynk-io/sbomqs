@@ -1,0 +1,53 @@
+# Policy: Required Identifiers
+# Use Case: Ensure components have machine-readable identifiers for vulnerability scanning
+# Description: Requires PURL or CPE for every component
+# Author: sbomqs
+
+policy:
+  # Require at least one identifier (PURL or CPE)
+  - name: require_package_identifiers
+    description: |
+      Every component must have either a PURL (Package URL) or CPE
+      (Common Platform Enumeration) identifier for vulnerability scanning.
+    type: required
+    rules:
+      - field: purl
+      - field: cpe
+    operator: OR  # Either PURL or CPE satisfies this
+    action: fail
+    reason: "PURL or CPE required for vulnerability identification."
+
+  # Prefer PURL over CPE
+  - name: prefer_purl_identifiers
+    description: |
+      PURLs are preferred over CPEs as they provide better
+      ecosystem specificity and are easier to resolve.
+    type: required
+    rules:
+      - field: purl
+    action: warn
+    reason: "PURL is preferred for modern dependency management."
+
+  # Require valid PURL format
+  - name: require_valid_purl_format
+    description: |
+      PURLs should follow the standard format:
+      pkg:type/namespace/name@version?qualifiers#subpath
+    type: whitelist
+    rules:
+      - field: purl
+        patterns:
+          - "^pkg:[a-z][a-z0-9_-]*/[^@]+@[^?]+"  # Standard PURL format
+    action: warn
+    reason: "PURL format should follow pkg:protocol/namespace/name@version"
+
+  # Require CPE for system components
+  - name: require_cpe_for_systems
+    description: |
+      System-level components should have CPE identifiers
+      for CVE vulnerability database lookup.
+    type: required
+    rules:
+      - field: cpe
+    action: pass
+    reason: "CPE enables CVE vulnerability database lookups."

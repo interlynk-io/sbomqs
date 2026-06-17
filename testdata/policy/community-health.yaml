@@ -1,0 +1,147 @@
+# Policy: Community Health
+# Use Case: Ensure open source projects have healthy metadata for community adoption
+# Description: Checks for documentation, contribution guidelines, and project health indicators
+# Author: sbomqs
+
+policy:
+  # Require license for open source projects
+  - name: require_osi_approved_license
+    description: |
+      Open source projects should use an OSI-approved license.
+      This enables legal use and contribution by the community.
+    type: whitelist
+    rules:
+      - field: license
+        values:
+          # Popular permissive licenses
+          - MIT
+          - Apache-2.0
+          - BSD-2-Clause
+          - BSD-3-Clause
+          - BSD-4-Clause
+          - ISC
+          # Copyleft licenses (also OSI approved)
+          - GPL-2.0
+          - GPL-2.0-only
+          - GPL-2.0-or-later
+          - GPL-3.0
+          - GPL-3.0-only
+          - GPL-3.0-or-later
+          - LGPL-2.1
+          - LGPL-3.0
+          - AGPL-3.0
+          # Other popular licenses
+          - MPL-2.0
+          - EPL-2.0
+          - CC0-1.0
+          - Unlicense
+    action: warn
+    reason: "Consider using an OSI-approved license for broader adoption."
+
+  # Block restricted licenses that hinder community use
+  - name: no_restricted_licenses
+    description: |
+      Licenses that restrict use, modification, or distribution
+      hinder community health and adoption.
+    type: blacklist
+    rules:
+      - field: license
+        patterns:
+          - "(?i)proprietary"
+          - "(?i)restricted"
+          - "(?i)confidential"
+          - "CC-BY-NC"                # Non-commercial restricts use
+          - "CC-BY-ND"                # No derivatives restricts modification
+          - "CC-BY-SA"                # ShareAlike can be compatibility issue
+          - "^LicenseRef-"
+    action: fail
+    reason: "Restricted licenses limit community participation and adoption."
+
+  # Require source code availability
+  - name: require_source_code_url
+    description: |
+      Open source projects must provide source code URLs
+      to enable study, modification, and distribution.
+    type: required
+    rules:
+      - field: downloadlocation
+    action: warn
+    reason: "Source code URL enables community contributions."
+
+  # Prefer common open source suppliers
+  - name: prefer_established_oss_suppliers
+    description: |
+      Components from established open source organizations
+      tend to have better long-term maintenance.
+    type: whitelist
+    rules:
+      - field: supplier
+        patterns:
+          - "(?i)apache software foundation"
+          - "(?i)eclipse foundation"
+          - "(?i)linux foundation"
+          - "(?i)mozilla foundation"
+          - "(?i)python software foundation"
+          - "(?i)openjs foundation"
+          - "(?i)gnu"
+          - "(?i)github[.]com"
+          - "(?i)gitlab[.]com"
+          - "(?i)npm"
+          - "(?i)pypi"
+          - "(?i)rubygems"
+    action: pass
+    reason: "Component from established open source community."
+
+  # Flag solo/unmaintained projects
+  - name: flag_potentially_unmaintained
+    description: |
+      Components that appear to be personal or unmaintained
+      may pose sustainability risks for community projects.
+    type: blacklist
+    rules:
+      - field: supplier
+        patterns:
+          - "(?i)unknown"
+          - "(?i)unmaintained"
+          - "(?i)personal"
+          - "^$"                       # Empty supplier
+    action: warn
+    reason: "Verify component is actively maintained by a community."
+
+  # Require standard versioning
+  - name: encourage_semantic_versioning
+    description: |
+      Semantic versioning helps the community understand
+      compatibility and upgrade paths.
+    type: whitelist
+    rules:
+      - field: version
+        patterns:
+          - "^[0-9]+[.][0-9]+[.][0-9]+$"     # Pure semver
+          - "^[0-9]+[.][0-9]+$"              # Major.minor
+          - "^[0-9]+[.][0-9]+[.][0-9]+-"     # Prerelease semver
+    action: pass
+    reason: "Version follows semantic versioning standard."
+
+  # Check for well-known open source components
+  - name: recognize_popular_oss_components
+    description: |
+      Recognize widely-used open source components that
+      demonstrate healthy community adoption.
+    type: whitelist
+    rules:
+      - field: name
+        patterns:
+          - "(?i)^react$"
+          - "(?i)^vue$"
+          - "(?i)^angular$"
+          - "(?i)^lodash"
+          - "(?i)^express$"
+          - "(?i)^spring"
+          - "(?i)^django$"
+          - "(?i)^flask$"
+          - "(?i)^rails$"
+          - "(?i)^bootstrap$"
+          - "(?i)^jquery"
+    action: pass
+    reason: "Widely-adopted open source component."

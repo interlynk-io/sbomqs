@@ -1,0 +1,66 @@
+# Industry: Finance Sector Compliance Policy
+#
+#
+# Regulatory Frameworks:
+# - PCI DSS (Payment Card Industry)
+# - SOX (Sarbanes-Oxley)
+# - GDPR (Data protection)
+# - Basel III (Risk management)
+
+policy:
+  - name: finance_strict_license_control
+    description: |
+      FINANCE: Only approved commercial-friendly licenses.
+      Extremely restrictive - blocks all copyleft and unusual licenses.
+    type: whitelist
+    rules:
+      - field: license
+        values:
+          # Only the safest permissive licenses
+          - MIT
+          - Apache-2.0
+          - BSD-3-Clause
+          - ISC
+          - BSD-2-Clause
+    action: fail
+
+  - name: finance_no_gpl_any_variant
+    description: |
+      FINANCE: Zero tolerance for GPL variants.
+      Legal risk too high for financial institutions.
+    type: blacklist
+    rules:
+      - field: license
+        patterns:
+          - "GPL"
+          - "LGPL"
+          - "AGPL"
+          - "MPL"
+          - "CDDL"
+          - "EPL"
+          - "CPL"
+          - "OSL"
+          - "EUPL"
+    action: fail
+
+  - name: finance_required_identifiers
+    description: |
+      FINANCE: All components must have PURL for vulnerability tracking.
+      Required for security audits and incident response.
+    type: required
+    rules:
+      - field: purl
+      - field: version
+      - field: checksum
+    action: fail
+
+  - name: finance_provenance_tracking
+    description: |
+      FINANCE: Complete audit trail required.
+      SOX and GDPR compliance.
+    type: required
+    rules:
+      - field: sbom_timestamp
+      - field: sbom_author
+      - field: supplier
+    action: warn
