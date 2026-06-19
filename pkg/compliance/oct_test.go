@@ -15,6 +15,7 @@
 package compliance
 
 import (
+	"context"
 	"testing"
 
 	"github.com/interlynk-io/sbomqs/v2/pkg/compliance/common"
@@ -93,6 +94,37 @@ type desired struct {
 	result string
 	key    int
 	id     string
+}
+
+var spdxSBOMWithDocumentName = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "oct-inline-sbom",
+  "documentNamespace": "https://example.com/sbom/oct-inline-sbom",
+  "dataLicense": "CC0-1.0",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": [
+      "Organization: Interlynk",
+      "Tool: sbomqs-test"
+    ]
+  },
+  "packages": []
+}
+`)
+
+func TestOctSbomNameInlineSPDXJSON(t *testing.T) {
+	doc, err := sbom.NewSBOMDocumentFromBytes(context.Background(), spdxSBOMWithDocumentName, sbom.Signature{})
+	assert.NilError(t, err)
+	assert.Assert(t, doc != nil)
+
+	actual := octSbomName(doc)
+
+	assert.Equal(t, 10.0, actual.Score)
+	assert.Equal(t, SBOM_NAME, actual.CheckKey)
+	assert.Equal(t, "SPDX Elements", actual.ID)
+	assert.Equal(t, "oct-inline-sbom", actual.CheckValue)
 }
 
 func TestOctSbomPass(t *testing.T) {
