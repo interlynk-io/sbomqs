@@ -11,6 +11,7 @@ The policy command:
 - Provides detailed violation reports with specific component and field information
 - Returns non-zero exit codes on policy failures for CI/CD integration
 - Works with both SPDX and CycloneDX formats
+- **Document-level policies** (`sbom_*` fields) are evaluated once per SBOM, not per-component
 
 ## Usage
 
@@ -84,13 +85,20 @@ The action defines the outcome when violations are found:
 
 ## Available Fields
 
-### Component-Level Fields
+Fields are evaluated at either the **component level** (checked for each component) or **document level** (checked once per SBOM). The `LEVEL` column in policy results indicates this:
+
+- **`comp`**: Component-level: checked for every component
+- **`doc`**: Document-level: checked once per SBOM
+
+### Component-Level Fields (`comp`)
 
 | Field | Description | Example Values |
 |-------|-------------|----------------|
 | `name` | Component name | `log4j-core`, `react` |
 | `version` | Component version | `2.14.1`, `18.2.0` |
 | `license` | License identifier(s) | `MIT`, `Apache-2.0` |
+| `concluded_license` | Concluded license (CycloneDX 1.6+) | `MIT`, `Apache-2.0` |
+| `declared_license` | Declared license (CycloneDX 1.6+) | `MIT`, `Apache-2.0` |
 | `supplier` | Component supplier | `Apache Software Foundation` |
 | `author` | Component author | `John Doe <john@example.com>` |
 | `purl` | Package URL | `pkg:maven/org.apache.logging.log4j/log4j-core@2.14.1` |
@@ -100,9 +108,9 @@ The action defines the outcome when violations are found:
 | `type` | Component type/purpose | `library`, `application` |
 | `downloadlocation` | Download URL | `https://example.com/pkg-1.0.jar` |
 
-### Document-Level Fields
+### Document-Level Fields (`doc`)
 
-Prefix with `sbom_` to check SBOM-level metadata:
+Prefix with `sbom_` to check SBOM-level metadata. These are evaluated **once per SBOM**, not per-component:
 
 | Field | Description | Example Values |
 |-------|-------------|----------------|
@@ -112,6 +120,8 @@ Prefix with `sbom_` to check SBOM-level metadata:
 | `sbom_tool` | SBOM generation tool | `syft`, `trivy` |
 | `sbom_lifecycle` | SBOM lifecycle phase | `build`, `deployed` |
 | `sbom_pc` | Primary component | `my-application:1.0.0` |
+
+> **Note:** Document-level policies show `-` in the `COMPONENTS` column since they don't apply to individual components.
 
 ## Policy File Format
 
@@ -229,11 +239,11 @@ Run:
 $ sbomqs policy -f approved-licenses.yaml my-app.spdx.json
 
                                      BASIC POLICY REPORT
-+-------------------+-----------+--------+--------+------------+------------+---------------+
-|      POLICY       |   TYPE    | ACTION | RESULT | COMPONENTS | VIOLATIONS | RULES APPLIED |
-+-------------------+-----------+--------+--------+------------+------------+---------------+
-| approved_licenses | whitelist | fail   | fail   |          3 |          1 |             1 |
-+-------------------+-----------+--------+--------+------------+------------+---------------+
++-------------------+-----------+--------+--------+-------+------------+------------+---------------+
+|      POLICY       |   TYPE    | ACTION | RESULT | LEVEL | COMPONENTS | VIOLATIONS | RULES APPLIED |
++-------------------+-----------+--------+--------+-------+------------+------------+---------------+
+| approved_licenses | whitelist | fail   | fail   | comp  |          3 |          1 |             1 |
++-------------------+-----------+--------+--------+-------+------------+------------+---------------+
 exit status 1
 ```
 
@@ -272,6 +282,7 @@ policy:
 ```
 
 <details>
+
 <summary><b>security-test.spdx.json</b></summary>
 
 ```json
@@ -345,7 +356,7 @@ $ sbomqs policy -f security-policy.yaml security-test.spdx.json -o table
 
                                  DETAILED POLICY REPORT
 
-Policy: banned_log4j_versions (result=fail, violations=2, total_checks=3, components=3, total_rules_applied=1)
+Policy: banned_log4j_versions (result=fail, level=comp, violations=2, total_checks=3, components=3, total_rules_applied=1)
 +-------------------+-------+-------------------+--------------------------------------+
 |     COMPONENT     | FIELD |      ACTUAL       |                REASON                |
 +-------------------+-------+-------------------+--------------------------------------+
@@ -355,7 +366,7 @@ Policy: banned_log4j_versions (result=fail, violations=2, total_checks=3, compon
 | safe-library      | name  | safe-library      | present                              |
 +-------------------+-------+-------------------+--------------------------------------+
 
-Policy: prohibited_licenses (result=fail, violations=1, total_checks=3, components=3, total_rules_applied=1)
+Policy: prohibited_licenses (result=fail, level=comp, violations=1, total_checks=3, components=3, total_rules_applied=1)
 +-------------------+---------+------------+--------------------------------+
 |     COMPONENT     |  FIELD  |   ACTUAL   |             REASON             |
 +-------------------+---------+------------+--------------------------------+
@@ -364,7 +375,7 @@ Policy: prohibited_licenses (result=fail, violations=1, total_checks=3, componen
 | safe-library      | license | MIT        | present                        |
 +-------------------+---------+------------+--------------------------------+
 
-Policy: required_security_fields (result=warn, violations=4, total_checks=6, components=3, total_rules_applied=2)
+Policy: required_security_fields (result=warn, level=comp, violations=4, total_checks=6, components=3, total_rules_applied=2)
 +-------------------+----------+-----------------+---------------+
 |     COMPONENT     |  FIELD   |     ACTUAL      |    REASON     |
 +-------------------+----------+-----------------+---------------+
@@ -377,13 +388,13 @@ Policy: required_security_fields (result=warn, violations=4, total_checks=6, com
 +-------------------+----------+-----------------+---------------+
 
                              --- SUMMARY TABLE ---
-+--------------------------+--------+------------+------------+---------------+
-|          POLICY          | RESULT | COMPONENTS | VIOLATIONS | RULES APPLIED |
-+--------------------------+--------+------------+------------+---------------+
-| banned_log4j_versions    | fail   |          3 |          2 |             1 |
-| prohibited_licenses      | fail   |          3 |          1 |             1 |
-| required_security_fields | warn   |          3 |          4 |             2 |
-+--------------------------+--------+------------+------------+---------------+
++--------------------------+--------+-------+------------+------------+---------------+
+|          POLICY          | RESULT | LEVEL | COMPONENTS | VIOLATIONS | RULES APPLIED |
++--------------------------+--------+-------+------------+------------+---------------+
+| banned_log4j_versions    | fail   | comp  |          3 |          2 |             1 |
+| prohibited_licenses      | fail   | comp  |          3 |          1 |             1 |
+| required_security_fields | warn   | comp  |          3 |          4 |             2 |
++--------------------------+--------+-------+------------+------------+---------------+
 exit status 1
 ```
 
@@ -445,6 +456,7 @@ policy:
 ```
 
 <details>
+
 <summary><b>incomplete.spdx.json</b></summary>
 
 ```json
@@ -534,11 +546,11 @@ $ sbomqs policy \
 
 
                                      BASIC POLICY REPORT
-+-------------------+-----------+--------+--------+------------+------------+---------------+
-|      POLICY       |   TYPE    | ACTION | RESULT | COMPONENTS | VIOLATIONS | RULES APPLIED |
-+-------------------+-----------+--------+--------+------------+------------+---------------+
-| approved_licenses | whitelist | fail   | fail   |          3 |          1 |             1 |
-+-------------------+-----------+--------+--------+------------+------------+---------------+
++-------------------+-----------+--------+--------+-------+------------+------------+---------------+
+|      POLICY       |   TYPE    | ACTION | RESULT | LEVEL | COMPONENTS | VIOLATIONS | RULES APPLIED |
++-------------------+-----------+--------+--------+-------+------------+------------+---------------+
+| approved_licenses | whitelist | fail   | fail   | comp  |          3 |          1 |             1 |
++-------------------+-----------+--------+--------+-------+------------+------------+---------------+
 exit status 1
 ```
 
@@ -624,6 +636,7 @@ policy:
 ```
 
 <details>
+
 <summary><b>comprehensive-test.cdx.json</b></summary>
 
 ```json
@@ -788,6 +801,7 @@ policy:
 ```
 
 <details>
+
 <summary><b>acme-test.spdx.json</b></summary>
 
 ```json
@@ -888,31 +902,32 @@ policy:
 
 ### Basic (Default)
 
-Summary table showing policy results:
+Summary table showing policy results. The `LEVEL` column indicates whether the policy is evaluated at the component level (`comp`) or document level (`doc`). Document-level policies show `-` in the `COMPONENTS` column since they apply to the entire SBOM:
 
 ```bash
 $ sbomqs policy -f policy.yaml sbom.json
 
                                      BASIC POLICY REPORT
-+--------------------+-----------+--------+--------+------------+------------+---------------+
-|       POLICY       |   TYPE    | ACTION | RESULT | COMPONENTS | VIOLATIONS | RULES APPLIED |
-+--------------------+-----------+--------+--------+------------+------------+---------------+
-| approved_suppliers | whitelist | fail   | fail   |          4 |          1 |             1 |
-| no_copyleft        | blacklist | fail   | fail   |          4 |          1 |             1 |
-+--------------------+-----------+--------+--------+------------+------------+---------------+
++--------------------+-----------+--------+--------+-------+------------+------------+---------------+
+|       POLICY       |   TYPE    | ACTION | RESULT | LEVEL | COMPONENTS | VIOLATIONS | RULES APPLIED |
++--------------------+-----------+--------+--------+-------+------------+------------+---------------+
+| approved_suppliers | whitelist | fail   | fail   | comp  |          4 |          1 |             1 |
+| no_copyleft        | blacklist | fail   | fail   | comp  |          4 |          1 |             1 |
+| sbom_has_author    | required  | warn   | pass   | doc   |          - |          0 |             1 |
++--------------------+-----------+--------+--------+-------+------------+------------+---------------+
 exit status 1
 ```
 
 ### Table (Detailed)
 
-Per-component, per-violation details:
+Per-component, per-violation details. Document-level policies show a single check result:
 
 ```bash
 $ sbomqs policy -f policy.yaml sbom.json -o table
 
                                         DETAILED POLICY REPORT
 
-Policy: approved_suppliers (result=fail, violations=1, total_checks=4, components=4, total_rules_applied=1)
+Policy: approved_suppliers (result=fail, level=comp, violations=1, total_checks=4, components=4, total_rules_applied=1)
 +----------------------+----------+----------------------------+--------------------------------------+
 |      COMPONENT       |  FIELD   |           ACTUAL           |                REASON                |
 +----------------------+----------+----------------------------+--------------------------------------+
@@ -923,7 +938,7 @@ Policy: approved_suppliers (result=fail, violations=1, total_checks=4, component
 | legacy-gpl-lib       | supplier | ACME Internal              | value in whitelist                   |
 +----------------------+----------+----------------------------+--------------------------------------+
 
-Policy: no_copyleft (result=fail, violations=1, total_checks=4, components=4, total_rules_applied=1)
+Policy: no_copyleft (result=fail, level=comp, violations=1, total_checks=4, components=4, total_rules_applied=1)
 +----------------------+---------+------------+--------------------------------+
 |      COMPONENT       |  FIELD  |   ACTUAL   |             REASON             |
 +----------------------+---------+------------+--------------------------------+
@@ -933,13 +948,21 @@ Policy: no_copyleft (result=fail, violations=1, total_checks=4, components=4, to
 | legacy-gpl-lib       | license | GPL-2.0    | value(s) in blacklist: GPL-2.0 |
 +----------------------+---------+------------+--------------------------------+
 
+Policy: sbom_has_timestamp (result=fail, level=doc, violations=1, total_checks=1, total_rules_applied=1)
++-----------+----------------+---------+---------------+
+| COMPONENT |     FIELD      | ACTUAL  |    REASON     |
++-----------+----------------+---------+---------------+
+| document  | sbom_timestamp | -       | missing field |
++-----------+----------------+---------+---------------+
+
                           --- SUMMARY TABLE ---
-+--------------------+--------+------------+------------+---------------+
-|       POLICY       | RESULT | COMPONENTS | VIOLATIONS | RULES APPLIED |
-+--------------------+--------+------------+------------+---------------+
-| approved_suppliers | fail   |          4 |          1 |             1 |
-| no_copyleft        | fail   |          4 |          1 |             1 |
-+--------------------+--------+------------+------------+---------------+
++--------------------+--------+-------+------------+------------+---------------+
+|       POLICY       | RESULT | LEVEL | COMPONENTS | VIOLATIONS | RULES APPLIED |
++--------------------+--------+-------+------------+------------+---------------+
+| approved_suppliers | fail   | comp  |          4 |          1 |             1 |
+| no_copyleft        | fail   | comp  |          4 |          1 |             1 |
+| sbom_has_timestamp | fail   | doc   |          - |          1 |             1 |
++--------------------+--------+-------+------------+------------+---------------+
 exit status 1
 
 ```
@@ -1164,6 +1187,79 @@ cat results.json | jq '.[] | {policy: .name, result: .overall_result, violations
 ```
 
 </details>
+
+## Sample Policies and Test SBOMs
+
+The repository includes comprehensive sample policies and test SBOMs for reference:
+
+### Sample Policies (`testdata/policy/`)
+
+| Category | Policy File | Description |
+|----------|-------------|-------------|
+| **License** | `license-allowlist.yaml` | Permissive OSS licenses only |
+| | `license-block-copyleft.yaml` | Blocks GPL variants |
+| | `license-block-proprietary.yaml` | Blocks custom licenses |
+| | `license-dual-check.yaml` | Requires both declared & concluded licenses |
+| **Security** | `security-ban-vulnerables.yaml` | Blocks known vulnerable packages |
+| | `security-required-fields.yaml` | Requires checksums, PURLs, versions |
+| | `security-no-snapshots.yaml` | Blocks SNAPSHOT versions |
+| | `security-verified-sources.yaml` | Requires source URLs and hashes |
+| **Metadata** | `metadata-required.yaml` | Basic metadata completeness |
+| | `metadata-provenance.yaml` | Author, supplier, timestamp |
+| | `metadata-identifiers.yaml` | PURL or CPE required |
+| **Enterprise** | `enterprise-approved-suppliers.yaml` | Vendor whitelist |
+| | `enterprise-complete-sbom.yaml` | Production-ready SBOM gate |
+| **Industry** | `industry-finance-compliance.yaml` | Finance sector requirements |
+| **Community** | `open-source-distribution.yaml` | OSS compliance checks |
+| | `community-health.yaml` | OSI-approved licenses |
+| **Advanced** | `advanced-comprehensive.yaml` | All checks combined |
+
+See `testdata/policy/README.md` for detailed documentation.
+
+### Test SBOMs (`testdata/sboms/`)
+
+Each policy has a corresponding `-violations.cdx.json` test file:
+
+```bash
+# Test license policies
+sbomqs policy -f testdata/policy/license-allowlist.yaml testdata/sboms/license-allowlist-violations.cdx.json
+
+# Test security policies
+sbomqs policy -f testdata/policy/security-ban-vulnerables.yaml testdata/sboms/security-ban-vulnerables-violations.cdx.json
+
+# Test comprehensive policy
+sbomqs policy -f testdata/policy/advanced-comprehensive.yaml testdata/sboms/advanced-comprehensive-violations.cdx.json
+```
+
+## License Field Behavior
+
+### Missing Licenses
+
+When a component has **no license information**, the policy check returns an **empty value** (not `NOASSERTION`). This means:
+
+- **Required field check** on `license` will fail (field is missing)
+- **Whitelist check** will fail (empty value is not in the whitelist)
+- **Blacklist check** will pass (empty value doesn't match any blacklist pattern)
+
+### CycloneDX License Expressions
+
+For CycloneDX 1.6+ SBOMs, license expressions with `acknowledgement: concluded` or `acknowledgement: declared` are supported:
+
+```yaml
+# Check concluded licenses
+policy:
+  - name: check-concluded-license
+    type: required
+    rules:
+      - field: concluded_license
+    action: fail
+
+  - name: check-declared-license
+    type: required
+    rules:
+      - field: declared_license
+    action: warn
+```
 
 ## CI/CD Integration
 
