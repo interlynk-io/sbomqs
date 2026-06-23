@@ -127,6 +127,19 @@ func TestOctSbomNameInlineSPDXJSON(t *testing.T) {
 	assert.Equal(t, "oct-inline-sbom", actual.CheckValue)
 }
 
+func TestOctSbomNamespaceInlineSPDXJSON(t *testing.T) {
+	doc, err := sbom.NewSBOMDocumentFromBytes(context.Background(), spdxSBOMWithDocumentName, sbom.Signature{})
+	assert.NilError(t, err)
+	assert.Assert(t, doc != nil)
+
+	actual := octSbomNamespace(doc)
+
+	assert.Equal(t, 10.0, actual.Score)
+	assert.Equal(t, SBOM_NAMESPACE, actual.CheckKey)
+	assert.Equal(t, "SPDX Elements", actual.ID)
+	assert.Equal(t, "https://example.com/sbom/oct-inline-sbom", actual.CheckValue)
+}
+
 func TestOctSbomPass(t *testing.T) {
 	doc := createDummyDocument()
 	testCases := []struct {
