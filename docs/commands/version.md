@@ -189,7 +189,7 @@ update_sbomqs() {
             brew upgrade sbomqs
         # Update via Go
         elif command -v go &> /dev/null; then
-            go install github.com/interlynk-io/sbomqs@latest
+            go install github.com/interlynk-io/sbomqs/v2@latest
         else
             echo "Please update sbomqs manually"
             return 1

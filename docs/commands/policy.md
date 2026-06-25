@@ -1219,7 +1219,7 @@ jobs:
           go-version: '1.21'
 
       - name: Install sbomqs
-        run: go install github.com/interlynk-io/sbomqs@latest
+        run: go install github.com/interlynk-io/sbomqs/v2@latest
 
       - name: Run Policy Check
         run: sbomqs policy -f policies/security.yaml sbom.json
