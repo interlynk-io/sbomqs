@@ -14,7 +14,7 @@ brew install sbomqs
 ### Linux/Windows (Go Install)
 
 ```bash
-go install github.com/interlynk-io/sbomqs@latest
+go install github.com/interlynk-io/sbomqs/v2@latest
 ```
 
 ### Docker
@@ -258,7 +258,7 @@ GOOS=windows GOARCH=amd64 go build -o sbomqs.exe
 
 ```bash
 # Install latest version
-go install github.com/interlynk-io/sbomqs@latest
+go install github.com/interlynk-io/sbomqs/v2@latest
 
 # Install specific version
 go install github.com/interlynk-io/sbomqs@v1.0.0
@@ -399,7 +399,7 @@ brew upgrade sbomqs
 ### Go Install
 
 ```bash
-go install github.com/interlynk-io/sbomqs@latest
+go install github.com/interlynk-io/sbomqs/v2@latest
 ```
 
 ### Docker
