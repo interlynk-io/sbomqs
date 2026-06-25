@@ -68,6 +68,33 @@ Each rule contains:
 - **Multiple rules in a policy** → combined with **AND** (all must pass)
 - **Multiple values/patterns in a rule** → combined with **OR** (any value passes)
 
+### `values` vs `patterns`
+
+Rules can match using either exact values or regex patterns:
+
+| Option | Matching | Best For | Examples |
+|--------|----------|----------|----------|
+| `values` | Exact string match | Specific known values | `MIT`, `Apache-2.0`, `log4j-2.17.1` |
+| `patterns` | Regular expressions | Groups, families, ranges | `^GPL-.*`, `.*-SNAPSHOT` |
+
+**Example - Using values (exact match):**
+```yaml
+rules:
+  - field: license
+    values: [MIT, Apache-2.0]  # Only these exact values
+```
+
+**Example - Using patterns (regex):**
+```yaml
+rules:
+  - field: license
+    patterns:
+      - "^GPL-.*"     # All GPL variants
+      - "^LGPL-.*"    # All LGPL variants
+```
+
+> **Tip:** Use `^` at the start of patterns to match from the beginning. `^GPL-.*` matches `GPL-2.0` but NOT `MIT OR GPL-2.0`.
+
 ## Policy Types
 
 The type defines **how rules are interpreted**:

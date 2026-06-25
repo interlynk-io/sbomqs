@@ -147,6 +147,71 @@ policy:
 - **Multiple values/patterns in a rule**: Combined with **OR** (any value passes)
 - **Multiple actual values**: For whitelist, ALL must match; for blacklist, NONE must match
 
+### `values` vs `patterns`
+
+Rules can use either (or both) `values` and `patterns`:
+
+| Option | Matching Type | Use Case | Example |
+|--------|--------------|----------|---------|
+| `values` | **Exact string match** | Specific versions, exact license IDs | `MIT`, `Apache-2.0`, `log4j-core-2.17.1` |
+| `patterns` | **Regular expression** | License families, version ranges, naming conventions | `GPL-.*`, `.*-SNAPSHOT`, `log4j-1\..*` |
+
+#### Using `values` (Exact Match)
+
+Use for precise matching when you know the exact values:
+
+```yaml
+rules:
+  - field: license
+    values:
+      - MIT
+      - Apache-2.0
+      - BSD-3-Clause
+```
+
+#### Using `patterns` (Regex Match)
+
+Use for matching **groups** or **families** of values:
+
+```yaml
+rules:
+  - field: license
+    patterns:
+      - "^GPL-.*"      # Any GPL variant (starts with "GPL-")
+      - "^LGPL-.*"     # Any LGPL variant
+      - "^AGPL-.*"     # Any AGPL variant
+```
+
+**Common Regex Patterns:**
+
+| Pattern | Matches | Example Values |
+|---------|---------|----------------|
+| `^GPL-.*` | GPL variants (start with "GPL-") | `GPL-2.0`, `GPL-3.0-only` |
+| `.*-SNAPSHOT` | Snapshot versions | `1.0.0-SNAPSHOT`, `2.1-SNAPSHOT` |
+| `log4j-1\..*` | Log4j 1.x versions | `log4j-1.2.17`, `log4j-1.2.19` |
+| `log4j-core-2\.1[0-6]\..*` | Log4j vulnerable (2.10-2.16) | `log4j-core-2.14.0` |
+| `^Apache-.*` | Apache licenses | `Apache-2.0`, `Apache-1.1` |
+
+> **Note:** The `^` anchor ensures the match is at the **start** of the string. Without it, `GPL-.*` would also match `MIT OR GPL-2.0`.
+
+#### Combining `values` and `patterns`
+
+You can use both together (combined with OR):
+
+```yaml
+rules:
+  - field: license
+    values:
+      - SSPL-1.0
+      - CC-BY-SA-4.0
+    patterns:
+      - "^GPL-.*"
+      - "^LGPL-.*"
+      - "^AGPL-.*"
+```
+
+This blocks: All GPL/LGPL/AGPL variants, plus SSPL-1.0 and CC-BY-SA-4.0.
+
 ## Examples
 
 ### From Policy File
