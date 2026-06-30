@@ -45,7 +45,8 @@ This reference document describes all quality checks performed by sbomqs, organi
 
 | Check ID | Description | Impact |
 |----------|-------------|---------|
-| `comp_valid_licenses` | Valid SPDX license identifiers | High |
+| `comp_valid_licenses` | Valid SPDX expression syntax (accepts LicenseRef-*) | High |
+| `comp_spdx_listed_license` | SPDX standard listed licenses only | High |
 | `comp_with_checksums` | Components have integrity checksums | Medium |
 | `comp_with_primary_purpose` | Component type/purpose specified | Low |
 | `sbom_with_primary_component` | Primary component identified | Medium |
@@ -77,7 +78,8 @@ Features that evaluate individual components:
 - `comp_with_version`: Component has a version
 - `comp_with_supplier`: Component has supplier information
 - `comp_with_uniq_ids`: Component has unique identifiers
-- `comp_valid_licenses`: Valid SPDX licenses
+- `comp_valid_licenses`: Valid SPDX expression syntax (accepts LicenseRef-*)
+- `comp_spdx_listed_license`: SPDX standard listed licenses only
 - `comp_with_any_vuln_lookup_id`: CPE or PURL present
 - `comp_with_deprecated_licenses`: Uses deprecated licenses
 - `comp_with_multi_vuln_lookup_id`: Both CPE and PURL present

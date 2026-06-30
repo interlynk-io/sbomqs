@@ -208,7 +208,8 @@ When `--profile` is specified, feature extraction follows the rules of that comp
 | `comp_supplier` | Component | Completeness | Component supplier |
 | `comp_purpose` | Component | Completeness | Component purpose / type |
 | `comp_licenses` | Component | Licensing | License expressions |
-| `comp_valid_licenses` | Component | Licensing | Valid SPDX license identifiers |
+| `comp_valid_licenses` | Component | Licensing | Valid SPDX expression syntax (accepts LicenseRef-*) |
+| `comp_spdx_listed_license` | Component | Licensing | SPDX standard listed licenses only |
 | `comp_no_deprecated_licenses` | Component | Licensing | No deprecated licenses |
 | `comp_no_restrictive_licenses` | Component | Licensing | No restrictive licenses |
 | `comp_declared_licenses` | Component | Licensing | Declared (original) licenses |
