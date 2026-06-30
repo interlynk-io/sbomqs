@@ -17,6 +17,7 @@ package profiles
 import (
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/catalog"
+	commonV2 "github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/common"
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/formulae"
 	"github.com/samber/lo"
 )
@@ -119,8 +120,34 @@ func InterCompWithLicenses(doc sbom.Document) catalog.ProfFeatScore {
 	return CompLicenses(doc)
 }
 
+// InterCompWithValidLicenses checks for valid SPDX syntax in concluded licenses.
+// Accepts: standard SPDX IDs, LicenseRef-* custom licenses, AND/OR compound expressions.
 func InterCompWithValidLicenses(doc sbom.Document) catalog.ProfFeatScore {
-	return CompLicenses(doc)
+	comps := doc.Components()
+	if len(comps) == 0 {
+		return formulae.ScoreProfNA(true)
+	}
+
+	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
+		return commonV2.ValidationCheckSPDXSyntax(c)
+	})
+
+	return formulae.ScoreProfFull(have, len(comps), false)
+}
+
+// InterCompWithSPDXListedLicenses checks for SPDX standard listed licenses.
+// Only accepts officially listed SPDX licenses. LicenseRef-* custom licenses are not valid.
+func InterCompWithSPDXListedLicenses(doc sbom.Document) catalog.ProfFeatScore {
+	comps := doc.Components()
+	if len(comps) == 0 {
+		return formulae.ScoreProfNA(true)
+	}
+
+	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
+		return commonV2.ValidationCheckSPDXListed(c)
+	})
+
+	return formulae.ScoreProfFull(have, len(comps), false)
 }
 
 func InterCompWithDeclaredLicenses(doc sbom.Document) catalog.ProfFeatScore {

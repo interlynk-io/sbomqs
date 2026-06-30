@@ -800,6 +800,158 @@ func Test_CycloneDXSignatureSupport(t *testing.T) {
 	fmt.Printf("CycloneDX Signature Tests: ✓ All %d test cases completed\n", len(testCases))
 }
 
+// Test_BSI21ProfileForStaticSBOMFiles tests BSI v2.1 profile
+func Test_BSI21ProfileForStaticSBOMFiles(t *testing.T) {
+	fmt.Println()
+	fmt.Println("==========================================")
+	fmt.Println("Running BSI-v2.1 Profile Integration Tests")
+	fmt.Println("==========================================")
+
+	base := filepath.Join("..", "..", "..", "testdata", "fixtures")
+
+	// BSI v2.1 specific test cases focusing on license acknowledgement features
+	testCases := map[string]expectedProfileScore{
+		// CycloneDX test cases for license acknowledgement
+		// CDX 1.6+ supports acknowledgement: concluded and declared
+		filepath.Join(base, "cdx-license-expression-concluded.cdx.json"): {
+			Score:      3.9,
+			Grade:      "F",
+			Required:   5,
+			Additional: 2,
+			Optional:   0,
+		},
+		filepath.Join(base, "cdx-license-expression-declared.cdx.json"): {
+			Score:      3.9,
+			Grade:      "F",
+			Required:   4,
+			Additional: 3,
+			Optional:   0,
+		},
+		filepath.Join(base, "cdx-license-mixed-acknowledgement.cdx.json"): {
+			Score:      3.9,
+			Grade:      "F",
+			Required:   4,
+			Additional: 2,
+			Optional:   0,
+		},
+	}
+
+	for path, want := range testCases {
+		filename := filepath.Base(path)
+		testName := "BSI21_" + filename
+
+		t.Run(testName, func(t *testing.T) {
+			t.Parallel()
+
+			cfg := config.Config{
+				Profile: []string{string(registry.ProfileBSI21)},
+			}
+			paths := []string{path}
+
+			ctx := context.Background()
+
+			results, err := score.ScoreSBOM(ctx, cfg, paths)
+			require.NoError(t, err)
+
+			for _, r := range results {
+				require.NotNil(t, r.Profiles, "Profile results should not be nil")
+				require.Len(t, r.Profiles.ProfResult, 1, "Should have exactly one profile result")
+
+				profResult := r.Profiles.ProfResult[0]
+				require.Equal(t, "BSI TR-03183-2 v2.1", profResult.Name)
+
+				gotRaw := profResult.InterlynkScore
+				gotRounded := math.Round(gotRaw*10) / 10
+
+				// Count required, additional, and optional fields separately.
+				requiredCompliant := 0
+				additionalCompliant := 0
+				optionalPresent := 0
+
+				for _, item := range profResult.Items {
+					if item.Required {
+						if item.Score >= 10.0 {
+							requiredCompliant++
+						}
+					} else if item.Additional {
+						if item.Score >= 10.0 {
+							additionalCompliant++
+						}
+					} else {
+						if item.Score >= 10.0 {
+							optionalPresent++
+						}
+					}
+				}
+
+				// Log the score for visibility
+				t.Logf("File: %s | Score: %.1f/10.0 | Grade: %s | Required: %d/10 | Additional: %d/7 | Optional: %d/2",
+					filename, gotRounded, profResult.Grade, requiredCompliant, additionalCompliant, optionalPresent)
+				t.Logf("  Expected: Score: %.1f | Grade: %s | Required: %d/10 | Additional: %d/7 | Optional: %d/2",
+					want.Score, want.Grade, want.Required, want.Additional, want.Optional)
+
+				// Verify that concluded_license and declared_license fields are present
+				hasConcludedLicense := false
+				hasDeclaredLicense := false
+				for _, item := range profResult.Items {
+					// BSI v2.1 uses comp_distribution_license for concluded (acknowledgement=concluded)
+					// and comp_original_licenses for declared (acknowledgement=declared)
+					if item.Key == "comp_distribution_license" && item.Score >= 10.0 {
+						hasConcludedLicense = true
+						t.Logf("  ✓ distribution_license (concluded) detected: score=%.1f", item.Score)
+					}
+					if item.Key == "comp_original_licenses" && item.Score >= 10.0 {
+						hasDeclaredLicense = true
+						t.Logf("  ✓ original_licenses (declared) detected: score=%.1f", item.Score)
+					}
+				}
+
+				// For concluded test file, verify concluded licenses are detected
+				if filename == "cdx-license-expression-concluded.cdx.json" {
+					require.True(t, hasConcludedLicense, "concluded_license should be detected for expression with acknowledgement: concluded")
+				}
+				// For declared test file, verify declared licenses are detected
+				if filename == "cdx-license-expression-declared.cdx.json" {
+					require.True(t, hasDeclaredLicense, "declared_license should be detected for expression with acknowledgement: declared")
+				}
+
+				if filename == "cdx-license-mixed-acknowledgement.cdx.json" {
+					for _, item := range profResult.Items {
+						if item.Key == "comp_distribution_license" {
+							t.Logf("  ✓ distribution_license (concluded) score: %.1f (expected partial since only 2/4 components)", item.Score)
+						}
+						if item.Key == "comp_original_licenses" {
+							t.Logf("  ✓ original_licenses (declared) score: %.1f (expected partial since only 2/4 components)", item.Score)
+						}
+					}
+				}
+
+				// compare BSI v2.1 score
+				require.InDelta(t, want.Score, gotRounded, 1e-9,
+					"BSI v2.1 score (rounded to 1 decimal) mismatch for %s", filename)
+
+				// compare grade
+				require.Equal(t, want.Grade, profResult.Grade,
+					"Grade mismatch for %s", filename)
+
+				// compare required fields count
+				require.Equal(t, want.Required, requiredCompliant,
+					"Required fields compliance count mismatch for %s", filename)
+
+				// compare additional fields compliance count
+				require.Equal(t, want.Additional, additionalCompliant,
+					"Additional fields compliance count mismatch for %s", filename)
+
+				// compare optional fields count
+				require.Equal(t, want.Optional, optionalPresent,
+					"Optional fields present count mismatch for %s", filename)
+			}
+		})
+	}
+
+	fmt.Printf("BSI v2.1 Profile: ✓ All %d test cases completed\n", len(testCases))
+}
+
 // Test_ProfileIntegrationSummary provides a summary of all profile integration tests
 func Test_ProfileIntegrationSummary(t *testing.T) {
 	fmt.Println()
@@ -810,9 +962,10 @@ func Test_ProfileIntegrationSummary(t *testing.T) {
 	fmt.Println("✓ Interlynk Profile: Active (20 test cases)")
 	fmt.Println("✓ OCT v1.1 Profile: Active (20 test cases)")
 	fmt.Println("✓ CycloneDX Signatures: Active (6 test cases)")
+	fmt.Println("✓ BSI v2.1 Profile: Active (3 test cases)")
 	fmt.Println("○ BSI v1.1 Profile: TODO (placeholder)")
 	fmt.Println("○ BSI v2.0 Profile: TODO (placeholder)")
 	fmt.Println("==========================================")
-	fmt.Println("Total Active Tests: 66")
+	fmt.Println("Total Active Tests: 69")
 	fmt.Println("==========================================")
 }

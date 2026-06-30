@@ -44,7 +44,8 @@ func CompWithLicenses(_ context.Context, input catalog.EvalInput) catalog.ComprF
 	return formulae.ScoreCompFull(have, len(comps), "licenses", false)
 }
 
-// CompWithValidLicenses validates concluded licenses
+// CompWithValidLicenses validates that concluded licenses have valid SPDX syntax.
+// Accepts: standard SPDX IDs, LicenseRef-* custom licenses, AND/OR compound expressions.
 func CompWithValidLicenses(_ context.Context, input catalog.EvalInput) catalog.ComprFeatScore {
 	doc := input.Doc
 	comps := doc.Components()
@@ -53,10 +54,26 @@ func CompWithValidLicenses(_ context.Context, input catalog.EvalInput) catalog.C
 	}
 
 	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
-		return commonV2.ValidationCheckConcludedLicenses(c)
+		return commonV2.ValidationCheckSPDXSyntax(c)
 	})
 
 	return formulae.ScoreCompFull(have, len(comps), "valid SPDX licenses", false)
+}
+
+// CompWithSPDXListedLicenses checks that concluded licenses are from the SPDX standard license list.
+// Only accepts officially listed SPDX licenses. LicenseRef-* and custom licenses are not valid.
+func CompWithSPDXListedLicenses(_ context.Context, input catalog.EvalInput) catalog.ComprFeatScore {
+	doc := input.Doc
+	comps := doc.Components()
+	if len(comps) == 0 {
+		return formulae.ScoreCompNA()
+	}
+
+	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
+		return commonV2.ValidationCheckSPDXListed(c)
+	})
+
+	return formulae.ScoreCompFull(have, len(comps), "SPDX listed licenses", false)
 }
 
 // CompWithDeclaredLicenses look for declared licenses
