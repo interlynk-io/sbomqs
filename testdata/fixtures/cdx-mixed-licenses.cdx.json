@@ -1,0 +1,82 @@
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.6.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:12345678-1234-1234-1234-123456789abf",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2026-06-26T00:00:00Z",
+    "tools": [
+      {
+        "name": "test-tool",
+        "version": "1.0.0"
+      }
+    ],
+    "component": {
+      "type": "application",
+      "name": "primary-component",
+      "version": "1.0.0",
+      "licenses": [
+        {
+          "expression": "LicenseRef-Company-Proprietary-1.0"
+        }
+      ]
+    }
+  },
+  "components": [
+    {
+      "bom-ref": "pkg:maven/com.example/standard-license@1.0.0",
+      "type": "library",
+      "name": "standard-license",
+      "version": "1.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "concluded"
+          }
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:maven/com.example/custom-license@1.0.0",
+      "type": "library",
+      "name": "custom-license",
+      "version": "1.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "LicenseRef-MyCompany-1.0",
+            "acknowledgement": "concluded"
+          }
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:maven/com.example/expression-license@1.0.0",
+      "type": "library",
+      "name": "expression-license",
+      "version": "1.0.0",
+      "licenses": [
+        {
+          "expression": "MIT AND LicenseRef-Custom-2.0",
+          "acknowledgement": "concluded"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:maven/com.example/name-only-license@1.0.0",
+      "type": "library",
+      "name": "name-only-license",
+      "version": "1.0.0",
+      "licenses": [
+        {
+          "license": {
+            "name": "Custom License Name",
+            "acknowledgement": "concluded"
+          }
+        }
+      ]
+    }
+  ]
+}

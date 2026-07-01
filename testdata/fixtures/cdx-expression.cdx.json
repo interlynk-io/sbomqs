@@ -1,0 +1,54 @@
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.6.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:12345678-1234-1234-1234-123456789abe",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2026-06-26T00:00:00Z",
+    "tools": [
+      {
+        "name": "test-tool",
+        "version": "1.0.0"
+      }
+    ]
+  },
+  "components": [
+    {
+      "bom-ref": "pkg:maven/com.example/component-with-and@1.0.0",
+      "type": "library",
+      "name": "component-with-and",
+      "version": "1.0.0",
+      "licenses": [
+        {
+          "expression": "MIT AND Apache-2.0",
+          "acknowledgement": "concluded"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:maven/com.example/component-with-or@1.0.0",
+      "type": "library",
+      "name": "component-with-or",
+      "version": "1.0.0",
+      "licenses": [
+        {
+          "expression": "BSD-3-Clause OR MIT",
+          "acknowledgement": "concluded"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:maven/com.example/component-with-complex@1.0.0",
+      "type": "library",
+      "name": "component-with-complex",
+      "version": "1.0.0",
+      "licenses": [
+        {
+          "expression": "(MIT OR Apache-2.0) AND LicenseRef-Custom-1.0",
+          "acknowledgement": "concluded"
+        }
+      ]
+    }
+  ]
+}
