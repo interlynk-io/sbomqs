@@ -22,6 +22,7 @@ package common
 import (
 	"strings"
 
+	"github.com/github/go-spdx/v2/spdxexp"
 	"github.com/knqyf263/go-cpe/naming"
 	purl "github.com/package-url/packageurl-go"
 
@@ -175,6 +176,49 @@ func AreLicensesValid(licenses []licenses.License) bool {
 	}
 
 	return spdx+aboutcode+custom == len(licenses)
+}
+
+// ValidationCheckSPDXSyntax validates that concluded licenses have valid SPDX syntax.
+// This accepts standard SPDX licenses, LicenseRef-* custom licenses, and compound expressions.
+// It uses the SPDX expression parser to validate syntax, not just check the license list.
+func ValidationCheckSPDXSyntax(c sbom.GetComponent) bool {
+	lics := c.ConcludedLicenses()
+	if len(lics) == 0 {
+		return false
+	}
+
+	for _, lic := range lics {
+		id := strings.TrimSpace(lic.ShortID())
+		if id == "" {
+			return false
+		}
+		// Validate using SPDX expression parser
+		// This accepts: standard SPDX IDs, LicenseRef-*, AND/OR expressions
+		_, err := spdxexp.ExtractLicenses(id)
+		if err != nil {
+			return false
+		}
+	}
+	return true
+}
+
+// ValidationCheckSPDXListed checks that concluded licenses are from the SPDX standard license list.
+// This only accepts licenses that are officially listed at spdx.org/licenses.
+// Custom LicenseRef-* identifiers are NOT considered valid by this check.
+func ValidationCheckSPDXListed(c sbom.GetComponent) bool {
+	lics := c.ConcludedLicenses()
+	if len(lics) == 0 {
+		return false
+	}
+
+	for _, license := range lics {
+		// Only accept SPDX-listed licenses (source == "spdx")
+		// LicenseRef-* and aboutcode licenses are not considered "listed"
+		if license.Source() != "spdx" {
+			return false
+		}
+	}
+	return true
 }
 
 func ComponentHasAnyConcluded(c sbom.GetComponent) bool {

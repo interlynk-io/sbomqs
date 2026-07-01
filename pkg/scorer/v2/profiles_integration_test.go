@@ -487,28 +487,28 @@ func Test_InterlynkProfileForStaticSBOMFiles(t *testing.T) {
 
 	testCases := map[string]expectedProfileScore{
 		// SPDX test cases
-		filepath.Join(base, "spdx-perfect-score.json"):    {Score: 8.5, Grade: "B"},
-		filepath.Join(base, "spdx-minimal.json"):          {Score: 3.3, Grade: "F"},
-		filepath.Join(base, "spdx-no-version.json"):       {Score: 5.0, Grade: "D"},
-		filepath.Join(base, "spdx-no-checksums.json"):     {Score: 6.3, Grade: "D"},
-		filepath.Join(base, "spdx-weak-checksums.json"):   {Score: 5.8, Grade: "D"},
-		filepath.Join(base, "spdx-no-dependencies.json"):  {Score: 7.1, Grade: "C"},
-		filepath.Join(base, "spdx-invalid-licenses.json"): {Score: 6.0, Grade: "D"},
-		filepath.Join(base, "spdx-no-authors.json"):       {Score: 4.6, Grade: "F"},
-		filepath.Join(base, "spdx-no-timestamp.json"):     {Score: 4.6, Grade: "F"},
-		filepath.Join(base, "spdx-old-version.json"):      {Score: 5.4, Grade: "D"},
+		filepath.Join(base, "spdx-perfect-score.json"):    {Score: 8.6, Grade: "B"},
+		filepath.Join(base, "spdx-minimal.json"):          {Score: 3.2, Grade: "F"},
+		filepath.Join(base, "spdx-no-version.json"):       {Score: 5.2, Grade: "D"},
+		filepath.Join(base, "spdx-no-checksums.json"):     {Score: 6.4, Grade: "D"},
+		filepath.Join(base, "spdx-weak-checksums.json"):   {Score: 6.0, Grade: "D"},
+		filepath.Join(base, "spdx-no-dependencies.json"):  {Score: 7.2, Grade: "C"},
+		filepath.Join(base, "spdx-invalid-licenses.json"): {Score: 5.9, Grade: "D"},
+		filepath.Join(base, "spdx-no-authors.json"):       {Score: 4.8, Grade: "F"},
+		filepath.Join(base, "spdx-no-timestamp.json"):     {Score: 4.8, Grade: "F"},
+		filepath.Join(base, "spdx-old-version.json"):      {Score: 5.6, Grade: "D"},
 
 		// CycloneDX test cases
-		filepath.Join(base, "cdx-perfect-score.json"):    {Score: 7.9, Grade: "C"},
-		filepath.Join(base, "cdx-minimal.json"):          {Score: 2.7, Grade: "F"},
-		filepath.Join(base, "cdx-no-version.json"):       {Score: 4.2, Grade: "F"},
-		filepath.Join(base, "cdx-no-checksums.json"):     {Score: 5.4, Grade: "D"},
-		filepath.Join(base, "cdx-weak-checksums.json"):   {Score: 5.0, Grade: "D"},
-		filepath.Join(base, "cdx-no-dependencies.json"):  {Score: 5.7, Grade: "D"},
+		filepath.Join(base, "cdx-perfect-score.json"):    {Score: 8.0, Grade: "C"},
+		filepath.Join(base, "cdx-minimal.json"):          {Score: 2.6, Grade: "F"},
+		filepath.Join(base, "cdx-no-version.json"):       {Score: 4.4, Grade: "F"},
+		filepath.Join(base, "cdx-no-checksums.json"):     {Score: 5.6, Grade: "D"},
+		filepath.Join(base, "cdx-weak-checksums.json"):   {Score: 5.2, Grade: "D"},
+		filepath.Join(base, "cdx-no-dependencies.json"):  {Score: 5.9, Grade: "D"},
 		filepath.Join(base, "cdx-invalid-licenses.json"): {Score: 5.1, Grade: "D"},
-		filepath.Join(base, "cdx-no-authors.json"):       {Score: 4.2, Grade: "F"},
-		filepath.Join(base, "cdx-no-timestamp.json"):     {Score: 4.2, Grade: "F"},
-		filepath.Join(base, "cdx-old-version.json"):      {Score: 3.8, Grade: "F"},
+		filepath.Join(base, "cdx-no-authors.json"):       {Score: 4.4, Grade: "F"},
+		filepath.Join(base, "cdx-no-timestamp.json"):     {Score: 4.4, Grade: "F"},
+		filepath.Join(base, "cdx-old-version.json"):      {Score: 4.1, Grade: "F"},
 	}
 
 	for path, want := range testCases {
@@ -807,12 +807,150 @@ func Test_ProfileIntegrationSummary(t *testing.T) {
 	fmt.Println("Profile Integration Tests Summary")
 	fmt.Println("==========================================")
 	fmt.Println("✓ NTIA-2025 Profile: Active (20 test cases)")
-	fmt.Println("✓ Interlynk Profile: Active (20 test cases)")
+	fmt.Println("✓ Interlynk Profile: Active (28 test cases)")
 	fmt.Println("✓ OCT v1.1 Profile: Active (20 test cases)")
 	fmt.Println("✓ CycloneDX Signatures: Active (6 test cases)")
+	fmt.Println("✓ BSI v2.1 Profile: Active (3 test cases)")
 	fmt.Println("○ BSI v1.1 Profile: TODO (placeholder)")
 	fmt.Println("○ BSI v2.0 Profile: TODO (placeholder)")
 	fmt.Println("==========================================")
-	fmt.Println("Total Active Tests: 66")
+	fmt.Println("Total Active Tests: 77")
 	fmt.Println("==========================================")
+}
+
+// Test_InterlynkProfileForLicensing tests Interlynk profile specifically for license features
+// comp_valid_licenses: Validates SPDX expression syntax (accepts LicenseRef-*)
+// comp_spdx_listed_license: Checks SPDX standard listed licenses only
+func Test_InterlynkProfileForLicensing(t *testing.T) {
+	fmt.Println()
+	fmt.Println("==========================================")
+	fmt.Println("Running Interlynk Profile Licensing Tests")
+	fmt.Println("==========================================")
+
+	base := filepath.Join("..", "..", "..", "testdata", "fixtures")
+
+	type licensingExpectedScores struct {
+		ValidLicensesScore float64 // comp_valid_licenses (SPDX syntax)
+		SPDXListedScore    float64 // comp_spdx_listed_license (SPDX listed)
+	}
+
+	testCases := map[string]licensingExpectedScores{
+		// SPDX test cases
+		// spdx-standard-license: MIT, Apache-2.0 - both features should pass
+		filepath.Join(base, "spdx-standard-license.json"): {
+			ValidLicensesScore: 10.0,
+			SPDXListedScore:    10.0,
+		},
+
+		// spdx-custom-license: LicenseRef-* - comp_valid_licenses should pass, comp_spdx_listed_license should fail
+		filepath.Join(base, "spdx-custom-license.json"): {
+			ValidLicensesScore: 10.0, // Valid SPDX syntax (LicenseRef-* is valid)
+			SPDXListedScore:    0.0,
+		},
+
+		// spdx-compound-expression: MIT AND Apache-2.0, BSD-3-Clause OR MIT, (MIT OR Apache-2.0) AND LicenseRef-Custom-1.0
+		// comp_valid_licenses: all pass (valid syntax)
+		// comp_spdx_listed_license: 2/3 pass (first two are fully SPDX listed, third has LicenseRef)
+		filepath.Join(base, "spdx-compound-expression.json"): {
+			ValidLicensesScore: 10.0,
+			SPDXListedScore:    6.67,
+		},
+
+		// spdx-mixed-licenses: MIT (valid, listed), LicenseRef (valid, not listed), NOASSERTION (invalid, not listed)
+		// comp_valid_licenses: MIT and LicenseRef pass, NOASSERTION fails
+		// comp_spdx_listed_license: only MIT passes
+		filepath.Join(base, "spdx-mixed-licenses.json"): {
+			ValidLicensesScore: 6.67,
+			SPDXListedScore:    3.33,
+		},
+
+		// CycloneDX test cases
+		// cdx-standard-license: MIT, Apache-2.0
+		filepath.Join(base, "cdx-standard-license.cdx.json"): {
+			ValidLicensesScore: 10.0,
+			SPDXListedScore:    10.0,
+		},
+
+		// cdx-custom-license: LicenseRef (valid, not listed), name-only "Proprietary License" (invalid, not listed)
+		filepath.Join(base, "cdx-custom-license.cdx.json"): {
+			ValidLicensesScore: 5.0,
+			SPDXListedScore:    0.0,
+		},
+
+		// cdx-expression: MIT AND Apache-2.0, BSD-3-Clause OR MIT, (MIT OR Apache-2.0) AND LicenseRef-Custom-1.0
+		// comp_valid_licenses: all pass (valid syntax)
+		// comp_spdx_listed_license: 2/3 pass (first two are fully SPDX listed)
+		filepath.Join(base, "cdx-expression.cdx.json"): {
+			ValidLicensesScore: 10.0,
+			SPDXListedScore:    6.67,
+		},
+
+		// comp_valid_licenses: LicenseRef, MIT, LicenseRef, MIT AND LicenseRef (partial), name-only
+		filepath.Join(base, "cdx-mixed-licenses.cdx.json"): {
+			ValidLicensesScore: 6.0,
+			SPDXListedScore:    2.0,
+		},
+	}
+
+	for path, want := range testCases {
+		filename := filepath.Base(path)
+		testName := "InterlynkLicensing_" + filename
+
+		t.Run(testName, func(t *testing.T) {
+			t.Parallel()
+
+			cfg := config.Config{
+				Profile: []string{string(registry.ProfileInterlynk)},
+			}
+			paths := []string{path}
+
+			ctx := context.Background()
+
+			results, err := score.ScoreSBOM(ctx, cfg, paths)
+			require.NoError(t, err)
+
+			for _, r := range results {
+				require.NotNil(t, r.Profiles, "Profile results should not be nil")
+				require.Len(t, r.Profiles.ProfResult, 1, "Should have exactly one profile result")
+
+				profResult := r.Profiles.ProfResult[0]
+				require.Equal(t, "Interlynk", profResult.Name)
+
+				// Find the license feature scores
+				var validLicensesScore, spdxListedScore float64
+				var foundValidLicenses, foundSPDXListed bool
+
+				for _, item := range profResult.Items {
+					switch item.Key {
+					case "comp_valid_licenses":
+						validLicensesScore = item.Score
+						foundValidLicenses = true
+					case "comp_spdx_listed_license":
+						spdxListedScore = item.Score
+						foundSPDXListed = true
+					}
+				}
+
+				require.True(t, foundValidLicenses, "comp_valid_licenses feature not found in profile results")
+				require.True(t, foundSPDXListed, "comp_spdx_listed_license feature not found in profile results")
+
+				// Log the scores for visibility
+				t.Logf("File: %s", filename)
+				t.Logf("  comp_valid_licenses:     got=%.1f, want=%.1f (SPDX syntax validation)",
+					validLicensesScore, want.ValidLicensesScore)
+				t.Logf("  comp_spdx_listed_license: got=%.1f, want=%.1f (SPDX listed validation)",
+					spdxListedScore, want.SPDXListedScore)
+
+				// Compare comp_valid_licenses score - use 0.1 tolerance for rounding
+				require.InDelta(t, want.ValidLicensesScore, validLicensesScore, 0.1,
+					"comp_valid_licenses score mismatch for %s. Expected valid SPDX syntax check to return %.1f, got %.1f", filename, want.ValidLicensesScore, validLicensesScore)
+
+				// Compare comp_spdx_listed_license score - use 0.1 tolerance for rounding
+				require.InDelta(t, want.SPDXListedScore, spdxListedScore, 0.1,
+					"comp_spdx_listed_license score mismatch for %s. Expected SPDX listed check to return %.1f, got %.1f", filename, want.SPDXListedScore, spdxListedScore)
+			}
+		})
+	}
+
+	fmt.Printf("Interlynk Profile Licensing: ✓ All %d test cases completed\n", len(testCases))
 }

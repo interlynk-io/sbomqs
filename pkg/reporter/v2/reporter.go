@@ -7,7 +7,7 @@ import (
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/api"
 )
 
-const EngineVersion = "7"
+const EngineVersion = "8"
 
 type ReportOutput string
 

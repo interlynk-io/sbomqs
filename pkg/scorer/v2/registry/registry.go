@@ -270,6 +270,7 @@ var InterlynkKeyToEvaluatingFunction = map[string]catalog.ProfFeatEval{
 
 	"comp_licenses":                profiles.InterCompWithLicenses,
 	"comp_valid_licenses":          profiles.InterCompWithValidLicenses,
+	"comp_spdx_listed_license":     profiles.InterCompWithSPDXListedLicenses,
 	"comp_no_deprecated_licenses":  profiles.InterCompWithNODeprecatedLicenses,
 	"comp_no_restrictive_licenses": profiles.InterCompWithNORestrictiveLicenses,
 	"comp_declared_licenses":       profiles.InterCompWithDeclaredLicenses,
@@ -971,6 +972,7 @@ var CatLicensingAndComplianceSpec = catalog.ComprCatSpec{
 	Features: []catalog.ComprFeatSpec{
 		{Key: "comp_with_licenses", Name: "Components With Licenses", Weight: 0.20, Ignore: false, Evaluate: extractors.CompWithLicenses},
 		{Key: "comp_with_valid_licenses", Name: "Component With Valid Licenses", Weight: 0.20, Ignore: false, Evaluate: extractors.CompWithValidLicenses},
+		{Key: "comp_spdx_listed_license", Name: "Component SPDX Listed License", Weight: 0.20, Ignore: false, Evaluate: extractors.CompWithSPDXListedLicenses},
 		{Key: "comp_no_deprecated_licenses", Name: "Component Without Deprecated Licenses", Weight: 0.15, Ignore: false, Evaluate: extractors.CompWithDeprecatedLicenses},
 		{Key: "comp_no_restrictive_licenses", Name: "Component Without Restrictive Licenses", Weight: 0.20, Ignore: false, Evaluate: extractors.CompWithRestrictiveLicenses},
 		{Key: "comp_with_declared_licenses", Name: "Component With Original Licenses", Weight: 0.15, Ignore: false, Evaluate: extractors.CompWithDeclaredLicenses},
@@ -1068,7 +1070,8 @@ var profileInterlynkSpec = catalog.ProfSpec{
 		{Key: "comp_purpose", Name: "Component Type", Description: "components with primary purpose", Required: true, Evaluate: profiles.InterCompWithPurpose},
 
 		{Key: "comp_licenses", Name: "Component License", Description: "components with licenses", Required: true, Evaluate: profiles.InterCompWithLicenses},
-		{Key: "comp_valid_licenses", Name: "Component Valid License", Description: "components with valid licenses", Required: true, Evaluate: profiles.InterCompWithValidLicenses},
+		{Key: "comp_valid_licenses", Name: "Component Valid License", Description: "components with valid SPDX expression syntax (accepts LicenseRef-*)", Required: true, Evaluate: profiles.InterCompWithValidLicenses},
+		{Key: "comp_spdx_listed_license", Name: "Component SPDX Listed License", Description: "components with SPDX standard listed licenses", Required: true, Evaluate: profiles.InterCompWithSPDXListedLicenses},
 		{Key: "comp_no_deprecated_licenses", Name: "Component With No Deprecated License", Description: "components without deprecated licenses", Required: true, Evaluate: profiles.InterCompWithNODeprecatedLicenses},
 		{Key: "comp_no_restrictive_licenses", Name: "Component With No Restrictive License", Description: "components without restrictive licenses", Required: true, Evaluate: profiles.InterCompWithNORestrictiveLicenses},
 		{Key: "comp_declared_licenses", Name: "Component Declared License", Description: "components with original licenses", Required: true, Evaluate: profiles.InterCompWithDeclaredLicenses},

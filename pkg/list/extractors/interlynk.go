@@ -45,12 +45,13 @@
 //     comp_purpose          → InterlynkCompPurpose
 //
 //   Licensing:
-//     comp_licenses              → InterlynkCompLicenses
-//     comp_valid_licenses        → InterlynkCompValidLicenses
-//     comp_no_deprecated_licenses → InterlynkCompNoDeprecatedLicenses
-//     comp_no_restrictive_licenses → InterlynkCompNoRestrictiveLicenses
-//     comp_declared_licenses     → InterlynkCompDeclaredLicenses
-//     sbom_data_license          → InterlynkSBOMDataLicense
+//     comp_licenses                 → InterlynkCompLicenses
+//     comp_valid_licenses           → InterlynkCompValidLicenses (valid SPDX syntax)
+//     comp_spdx_listed_license      → InterlynkCompSPDXListedLicense (SPDX standard list)
+//     comp_no_deprecated_licenses   → InterlynkCompNoDeprecatedLicenses
+//     comp_no_restrictive_licenses  → InterlynkCompNoRestrictiveLicenses
+//     comp_declared_licenses        → InterlynkCompDeclaredLicenses
+//     sbom_data_license             → InterlynkSBOMDataLicense
 //
 //   Vulnerability:
 //     comp_purl → InterlynkCompPURL
@@ -386,11 +387,75 @@ func InterlynkCompLicenses(_ sbom.Document, comp sbom.GetComponent) (bool, strin
 	return false, "missing", nil
 }
 
-// InterlynkCompValidLicenses reports concluded licenses, same as InterlynkCompLicenses.
-// Both InterCompWithLicenses and InterCompWithValidLicenses delegate to CompLicenses.
-// Mirrors: profiles.InterCompWithValidLicenses → profiles.CompLicenses
-func InterlynkCompValidLicenses(doc sbom.Document, comp sbom.GetComponent) (bool, string, error) {
-	return InterlynkCompLicenses(doc, comp)
+// InterlynkCompValidLicenses checks if the component's concluded licenses have valid SPDX syntax.
+// Accepts: standard SPDX IDs, LicenseRef-* custom licenses, AND/OR compound expressions.
+// Mirrors: profiles.InterCompWithValidLicenses
+func InterlynkCompValidLicenses(_ sbom.Document, comp sbom.GetComponent) (bool, string, error) {
+	lics := comp.ConcludedLicenses()
+	if len(lics) == 0 {
+		return false, "missing", nil
+	}
+
+	var valid []string
+	var invalid []string
+
+	for _, lic := range lics {
+		id := strings.TrimSpace(lic.ShortID())
+		if id == "" {
+			invalid = append(invalid, "empty")
+			continue
+		}
+		// Check if the license has valid SPDX syntax
+		if scorercommon.ValidationCheckSPDXSyntax(comp) {
+			valid = append(valid, id)
+		} else {
+			invalid = append(invalid, id)
+		}
+	}
+
+	if len(invalid) == 0 && len(valid) > 0 {
+		return true, strings.Join(valid, ", "), nil
+	}
+
+	if len(invalid) > 0 {
+		return false, fmt.Sprintf("invalid SPDX syntax: %s", strings.Join(invalid, ", ")), nil
+	}
+	return false, "missing", nil
+}
+
+// InterlynkCompSPDXListedLicense checks if the component's concluded licenses are from the SPDX standard list.
+// Only accepts officially listed SPDX licenses. LicenseRef-* custom licenses are not valid.
+// Mirrors: profiles.InterCompWithSPDXListedLicenses
+func InterlynkCompSPDXListedLicense(_ sbom.Document, comp sbom.GetComponent) (bool, string, error) {
+	lics := comp.ConcludedLicenses()
+	if len(lics) == 0 {
+		return false, "missing", nil
+	}
+
+	var listed []string
+	var notListed []string
+
+	for _, lic := range lics {
+		id := strings.TrimSpace(lic.ShortID())
+		if id == "" {
+			continue
+		}
+		// Check if license is from SPDX standard list (source == "spdx")
+		if lic.Source() == "spdx" {
+			listed = append(listed, id)
+		} else {
+			notListed = append(notListed, id)
+		}
+	}
+
+	if len(notListed) == 0 && len(listed) > 0 {
+		return true, strings.Join(listed, ", "), nil
+	}
+
+	if len(notListed) > 0 {
+		return false, fmt.Sprintf("not SPDX listed: %s", strings.Join(notListed, ", ")), nil
+	}
+	return false, "missing", nil
 }
 
 // InterlynkCompNoDeprecatedLicenses reports deprecated concluded licenses.

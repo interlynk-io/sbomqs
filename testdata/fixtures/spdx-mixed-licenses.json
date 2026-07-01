@@ -1,0 +1,47 @@
+{
+  "spdxVersion": "SPDX-2.3",
+  "dataLicense": "CC0-1.0",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "test-spdx-mixed",
+  "documentNamespace": "https://example.org/test/spdx-mixed",
+  "creationInfo": {
+    "created": "2026-06-26T00:00:00Z",
+    "creators": ["Tool: test"]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Package1",
+      "name": "component-with-standard-license",
+      "downloadLocation": "NOASSERTION",
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "SPDXID": "SPDXRef-Package2",
+      "name": "component-with-custom-license",
+      "downloadLocation": "NOASSERTION",
+      "licenseConcluded": "LicenseRef-MyCompany-1.0",
+      "licenseDeclared": "LicenseRef-MyCompany-1.0",
+      "copyrightText": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "SPDXID": "SPDXRef-Package3",
+      "name": "component-with-noassertion",
+      "downloadLocation": "NOASSERTION",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "filesAnalyzed": false
+    }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relatedSpdxElement": "SPDXRef-Package1",
+      "relationshipType": "DESCRIBES"
+    }
+  ]
+}

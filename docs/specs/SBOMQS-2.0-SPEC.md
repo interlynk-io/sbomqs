@@ -116,7 +116,8 @@ SBOM Quality Score: 8.9/10.0  Grade: B  Components: 247  samples/example.cdx.jso
 |                       | comp_with_purpose              | 9.0/10.0  | 222/247 have type              |
 +-----------------------+--------------------------------+-----------+--------------------------------+
 | Licensing             | comp_with_licenses             | 9.5/10.0  | 235/247 have licenses          |
-|                       | comp_with_valid_licenses       | 9.0/10.0  | 211/235 valid SPDX             |
+|                       | comp_with_valid_licenses       | 9.0/10.0  | 211/235 valid SPDX syntax      |
+|                       | comp_spdx_listed_license       | 8.0/10.0  | 180/235 SPDX listed            |
 |                       | comp_with_declared_licenses    | 8.0/10.0  | 188/235 have declared          |
 |                       | sbom_data_license              | 10.0/10.0 | CC0-1.0                        |
 |                       | comp_no_deprecated_licenses    | 10.0/10.0 | 0 deprecated                   |
@@ -575,7 +576,8 @@ $ sbomqs score --profile ntia,bsi-v2.0 samples/example.cdx.json
 | Feature                                   | SPDX 2.2/3       | CDX 1.4+                 | Validation Rules                                  | Weight |
 | :---------------------------------------- | ---------------- | ------------------------ | ------------------------------------------------- | :----- |
 | % components with licenses                | ConcludedLicense | component.licenses       | Non-NOASSERTION value                             | 0.20   |
-| % components with valid licenses          | ConcludedLicense | component.licenses       | SPDX/ScanCode DB validation                       | 0.20   |
+| % components with valid licenses          | ConcludedLicense | component.licenses       | Valid SPDX expression syntax (accepts LicenseRef-*)| 0.20   |
+| % components with SPDX listed licenses    | ConcludedLicense | component.licenses       | SPDX standard license list only                   | 0.20   |
 | % components with original licenses       | DeclaredLicense  | Declared acknowledgement | License declaration present                      | 0.15   |
 | Document data license                     | DataLicense      | metadata.licenses        | Valid SPDX data license                           | 0.10   |
 | % components without deprecated licenses  | ConcludedLicense | component.licenses       | Check against deprecated license list             | 0.15   |
@@ -662,7 +664,8 @@ Each profile evaluates specific features based on industry standards and regulat
 | External References | sbom_bom_links | No | Links to other SBOMs |
 | Vulnerability Info | sbom_vulnerabilities | No | Known vulnerabilities (absence preferred) |
 | SHA-256 Checksums | comp_hash_sha256 | Yes | SHA-256 or stronger required |
-| License Validation | comp_associated_license | Yes | Valid SPDX license identifiers |
+| License Validation | comp_valid_licenses | Yes | Valid SPDX expression syntax (accepts LicenseRef-*) |
+| SPDX Listed License | comp_spdx_listed_license | Yes | SPDX standard listed licenses only |
 
 ### OpenChain Telco (OCT)
 

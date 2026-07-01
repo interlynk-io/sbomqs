@@ -1,0 +1,47 @@
+{
+  "spdxVersion": "SPDX-2.3",
+  "dataLicense": "CC0-1.0",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "test-spdx-compound",
+  "documentNamespace": "https://example.org/test/spdx-compound",
+  "creationInfo": {
+    "created": "2026-06-26T00:00:00Z",
+    "creators": ["Tool: test"]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Package1",
+      "name": "component-with-and-expression",
+      "downloadLocation": "NOASSERTION",
+      "licenseConcluded": "MIT AND Apache-2.0",
+      "licenseDeclared": "MIT AND Apache-2.0",
+      "copyrightText": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "SPDXID": "SPDXRef-Package2",
+      "name": "component-with-or-expression",
+      "downloadLocation": "NOASSERTION",
+      "licenseConcluded": "BSD-3-Clause OR MIT",
+      "licenseDeclared": "BSD-3-Clause OR MIT",
+      "copyrightText": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "SPDXID": "SPDXRef-Package3",
+      "name": "component-with-complex-expression",
+      "downloadLocation": "NOASSERTION",
+      "licenseConcluded": "(MIT OR Apache-2.0) AND LicenseRef-Custom-1.0",
+      "licenseDeclared": "(MIT OR Apache-2.0) AND LicenseRef-Custom-1.0",
+      "copyrightText": "NOASSERTION",
+      "filesAnalyzed": false
+    }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relatedSpdxElement": "SPDXRef-Package1",
+      "relationshipType": "DESCRIBES"
+    }
+  ]
+}

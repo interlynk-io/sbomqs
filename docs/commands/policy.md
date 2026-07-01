@@ -163,7 +163,7 @@ policy:
 
 <details>
 
-<summary><b>`my-app.spdx.json`</b></summary>
+<summary><b>my-app.spdx.json</b></summary>
 
 ```json
 {
@@ -271,9 +271,9 @@ policy:
     action: warn
 ```
 
-
 <details>
-<summary><b>`security-test.spdx.json`</b></summary>
+<summary><b>security-test.spdx.json</b></summary>
+
 ```json
 {
   "spdxVersion": "SPDX-2.3",
@@ -335,6 +335,7 @@ policy:
   ]
 }
 ```
+
 </details>
 
 Run:

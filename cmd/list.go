@@ -69,11 +69,14 @@ var listCmd = &cobra.Command{
   # Show components missing a version
   sbomqs list --feature comp_version --missing my-app.spdx.json
 
-  # Show components with valid licenses
+  # Show components with SPDX-listed licenses (standard SPDX license list)
+  sbomqs list --feature comp_spdx_listed_license my-app.spdx.json
+
+  # Show components with valid SPDX syntax (accepts LicenseRef-*)
   sbomqs list --feature comp_valid_licenses my-app.spdx.json
 
   # Show components with invalid/missing licenses
-  sbomqs list --feature comp_valid_licenses --missing my-app.spdx.json
+  sbomqs list --feature comp_spdx_listed_license --missing my-app.spdx.json
 
   # Use a compliance profile (bsi = latest BSI v2.1)
   sbomqs list --profile bsi --feature comp_name my-app.cdx.json
@@ -325,6 +328,7 @@ var interlynkFeatureKeys = map[string]struct{}{
 	// Licensing
 	"comp_licenses":                {},
 	"comp_valid_licenses":          {},
+	"comp_spdx_listed_license":     {},
 	"comp_no_deprecated_licenses":  {},
 	"comp_no_restrictive_licenses": {},
 	"comp_declared_licenses":       {},
@@ -482,7 +486,7 @@ func validateparsedListCmd(uCmd *userListCmd) error {
 	case "interlynk":
 		if _, ok := interlynkFeatureKeys[cleaned]; !ok {
 			return fmt.Errorf(
-				"feature %q is not supported for profile %q.\n\nSupported features: comp_name, comp_version, comp_local_id, sbom_timestamp, sbom_authors, sbom_tool, sbom_supplier, sbom_namespace, sbom_lifecycle, comp_checksums, comp_sha256, sbom_signature, comp_dependencies, sbom_completeness, sbom_primary_component, comp_source_code, comp_supplier, comp_purpose, comp_licenses, comp_valid_licenses, comp_no_deprecated_licenses, comp_no_restrictive_licenses, comp_declared_licenses, sbom_data_license, comp_purl, comp_cpe, sbom_spec_declared, sbom_spec_version, sbom_file_format, sbom_schema_valid",
+				"feature %q is not supported for profile %q.\n\nSupported features: comp_name, comp_version, comp_local_id, sbom_timestamp, sbom_authors, sbom_tool, sbom_supplier, sbom_namespace, sbom_lifecycle, comp_checksums, comp_sha256, sbom_signature, comp_dependencies, sbom_completeness, comp_source_code, comp_supplier, comp_purpose, comp_licenses, comp_valid_licenses, comp_spdx_listed_license, comp_no_deprecated_licenses, comp_no_restrictive_licenses, comp_declared_licenses, sbom_data_license, comp_purl, comp_cpe, sbom_spec_declared, sbom_spec_version, sbom_file_format, sbom_schema_valid",
 				cleaned, uCmd.profile,
 			)
 		}
@@ -569,7 +573,8 @@ var FeatureRegistry = []Feature{
 	// == License ==
 	{Name: "comp_all_licenses", Category: "License", Description: "All licenses: concluded and declared, labeled by type"},
 	{Name: "comp_licenses", Category: "License", Description: "Component has license expressions"},
-	{Name: "comp_valid_licenses", Category: "License", Description: "Component licenses are valid SPDX identifiers"},
+	{Name: "comp_valid_licenses", Category: "License", Description: "Component has valid SPDX expression syntax (accepts LicenseRef-*)"},
+	{Name: "comp_spdx_listed_license", Category: "License", Description: "Component has SPDX standard listed licenses only"},
 	{Name: "comp_associated_license", Category: "License", Description: "Component associated license"},
 	{Name: "comp_concluded_license", Category: "License", Description: "Component concluded license"},
 	{Name: "comp_declared_license", Category: "License", Description: "Component declared license"},
@@ -761,7 +766,8 @@ var ProfileSections = []ProfileSection{
 			{Name: "comp_purpose", Description: "Component purpose / type"},
 			// Licensing
 			{Name: "comp_licenses", Description: "Component licenses (concluded)"},
-			{Name: "comp_valid_licenses", Description: "Component licenses are valid SPDX identifiers"},
+			{Name: "comp_valid_licenses", Description: "Component has valid SPDX expression syntax (accepts LicenseRef-*)"},
+			{Name: "comp_spdx_listed_license", Description: "Component has SPDX standard listed licenses only"},
 			{Name: "comp_no_deprecated_licenses", Description: "No deprecated licenses"},
 			{Name: "comp_no_restrictive_licenses", Description: "No restrictive licenses"},
 			{Name: "comp_declared_licenses", Description: "Component declared licenses"},

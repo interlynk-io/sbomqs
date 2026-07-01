@@ -39,54 +39,6 @@ func evaluateCompWithVersion(comp sbom.GetComponent) (bool, string, error) {
 	return false, "missing", nil
 }
 
-// evaluateCompWithSupplier evaluates if the component has a supplier
-func evaluateCompWithSupplier(comp sbom.GetComponent) (bool, string, error) {
-	name := comp.Suppliers().GetName()
-	email := comp.Suppliers().GetEmail()
-
-	switch {
-	case name != "" && email != "":
-		return true, name + ", " + email, nil
-
-	case name != "":
-		return true, name, nil
-
-	case email != "":
-		return true, email, nil
-
-	default:
-		return false, "missing", nil
-	}
-}
-
-// evaluateCompWithUniqID evaluates if the component has a unique ID
-func evaluateCompWithUniqID(comp sbom.GetComponent) (bool, string, error) {
-	var allPurls []string
-	for _, p := range comp.GetPurls() {
-		allPurls = append(allPurls, p.String())
-	}
-
-	var allCPEs []string
-	for _, c := range comp.GetCpes() {
-		allCPEs = append(allCPEs, c.String())
-	}
-
-	switch {
-	case len(allPurls) > 0 && len(allCPEs) > 0:
-		combined := append(allPurls, allCPEs...)
-		return true, strings.Join(combined, ", "), nil
-
-	case len(allPurls) > 0:
-		return true, strings.Join(allPurls, ", "), nil
-
-	case len(allCPEs) > 0:
-		return true, strings.Join(allCPEs, ", "), nil
-
-	default:
-		return false, "missing", nil
-	}
-}
-
 // evaluateCompWithLocalID evaluates if the component has a unique ID
 func evaluateCompWithLocalID(doc sbom.Document, comp sbom.GetComponent) (bool, string, error) {
 	spec := doc.Spec().GetSpecType()
@@ -176,24 +128,76 @@ func normalizeAlgoName(algo string) string {
 	return n
 }
 
-// evaluateCompWithValidLicenses evaluates if the component has valid licenses
+// evaluateCompWithValidLicenses evaluates if the component has valid SPDX syntax licenses.
+// Accepts: standard SPDX IDs, LicenseRef-* custom licenses, AND/OR expressions.
 func evaluateCompWithValidLicenses(comp sbom.GetComponent) (bool, string, error) {
-	licenses := comp.GetLicenses()
+	lics := comp.ConcludedLicenses()
+	if len(lics) == 0 {
+		return false, "missing", nil
+	}
+
+	var valid []string
+	var invalid []string
+
+	for _, lic := range lics {
+		id := strings.TrimSpace(lic.ShortID())
+		if id == "" {
+			invalid = append(invalid, "empty")
+			continue
+		}
+		// Check if the license has valid SPDX syntax
+		if lic.Source() == "spdx" || lic.Source() == "aboutcode" || (strings.HasPrefix(id, "LicenseRef-") && len(id) > len("LicenseRef-")) {
+			valid = append(valid, id)
+		} else {
+			invalid = append(invalid, id)
+		}
+	}
+
+	if len(invalid) == 0 && len(valid) > 0 {
+		return true, strings.Join(valid, ", "), nil
+	}
+
+	if len(invalid) > 0 {
+		return false, fmt.Sprintf("invalid SPDX syntax: %s", strings.Join(invalid, ", ")), nil
+	}
+	return false, "missing", nil
+}
+
+// evaluateCompWithSPDXListedLicense evaluates if the component has SPDX standard listed licenses.
+// Only accepts officially listed SPDX licenses. LicenseRef-* custom licenses are not valid.
+func evaluateCompWithSPDXListedLicense(comp sbom.GetComponent) (bool, string, error) {
+	licenses := comp.ConcludedLicenses()
 	if len(licenses) == 0 {
 		return false, "missing", nil
 	}
 
-	validLicenses := make([]string, 0, len(licenses))
+	listedLicenses := make([]string, 0, len(licenses))
+	notListed := make([]string, 0)
+
 	for _, l := range licenses {
-		if l != nil && l.Spdx() {
-			validLicenses = append(validLicenses, l.Name())
+		if l == nil {
+			continue
+		}
+		id := strings.TrimSpace(l.ShortID())
+		if id == "" {
+			continue
+		}
+		// Only accept SPDX-listed licenses (source == "spdx")
+		if l.Source() == "spdx" {
+			listedLicenses = append(listedLicenses, id)
+		} else {
+			notListed = append(notListed, id)
 		}
 	}
 
-	if len(validLicenses) == 0 {
+	if len(notListed) > 0 {
+		return false, fmt.Sprintf("not SPDX listed: %s", strings.Join(notListed, ", ")), nil
+	}
+
+	if len(listedLicenses) == 0 {
 		return false, "missing", nil
 	}
-	return true, strings.Join(validLicenses, ","), nil
+	return true, strings.Join(listedLicenses, ", "), nil
 }
 
 // evaluateCompWithAnyVulnLookupID evaluates if the component has any vulnerability lookup ID

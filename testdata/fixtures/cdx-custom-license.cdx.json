@@ -1,0 +1,46 @@
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.6.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:12345678-1234-1234-1234-123456789abd",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2026-06-26T00:00:00Z",
+    "tools": [
+      {
+        "name": "test-tool",
+        "version": "1.0.0"
+      }
+    ]
+  },
+  "components": [
+    {
+      "bom-ref": "pkg:maven/com.example/component-with-custom@1.0.0",
+      "type": "library",
+      "name": "component-with-custom",
+      "version": "1.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "LicenseRef-CONTACT-Software-General-1.0",
+            "acknowledgement": "concluded"
+          }
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:maven/com.example/component-with-proprietary@1.0.0",
+      "type": "library",
+      "name": "component-with-proprietary",
+      "version": "1.0.0",
+      "licenses": [
+        {
+          "license": {
+            "name": "Proprietary License",
+            "acknowledgement": "concluded"
+          }
+        }
+      ]
+    }
+  ]
+}
