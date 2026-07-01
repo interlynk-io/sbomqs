@@ -1,0 +1,38 @@
+# Dual License Check Policy
+#
+# Use Case: For high-compliance environments where both declared (author's stated)
+# and concluded (distributor's choice) licenses must be present.
+# This ensures license consistency and proper attribution.
+#
+# Requirements:
+# - CycloneDX 1.6+ SBOMs with acknowledgement field
+# - Both declared and concluded licenses should be present
+# - Ensures comprehensive license documentation
+
+policy:
+  - name: require_declared_and_concluded_licenses
+    description: |
+      Requires both declared (acknowledgement=declared) and
+      concluded (acknowledgement=concluded) licenses for all components.
+      Ensures complete license documentation for compliance.
+      Works only with CycloneDX 1.6+ SBOMs.
+    type: required
+    rules:
+      - field: declared_license
+      - field: concluded_license
+    action: warn
+
+  - name: check_concluded_licenses_valid
+    description: |
+      Verifies that concluded licenses are from the approved list.
+      This is the distributor's choice of license.
+    type: whitelist
+    rules:
+      - field: concluded_license
+        values:
+          - MIT
+          - Apache-2.0
+          - BSD-3-Clause
+          - ISC
+          - MPL-2.0
+    action: fail

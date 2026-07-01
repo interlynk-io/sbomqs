@@ -1,0 +1,63 @@
+# Policy: No Snapshot/Pre-release Versions
+# Use Case: Ensure only stable, released versions are used in production
+# Description: Blocks SNAPSHOT, RC, alpha, beta, and other pre-release versions
+# Author: sbomqs
+
+policy:
+  # Block SNAPSHOT versions (common in Java/Maven)
+  - name: no_snapshot_versions
+    description: |
+      Blocks SNAPSHOT versions which are development/unstable builds.
+      Only stable releases should be used in production.
+    type: blacklist
+    rules:
+      - field: version
+        patterns:
+          - ".*-SNAPSHOT$"          # Maven SNAPSHOT versions
+          - ".*-snapshot$"         # Lowercase snapshots
+    action: fail
+    reason: "SNAPSHOT versions are not allowed in production. Use stable releases only."
+
+  # Block release candidates
+  - name: no_release_candidates
+    description: Block RC (Release Candidate) versions
+    type: blacklist
+    rules:
+      - field: version
+        patterns:
+          - ".*-RC[0-9]+$"         # Release candidates (e.g., RC1, RC2)
+          - ".*-rc[0-9]+$"         # Lowercase rc
+          - ".*-CR[0-9]+$"         # Some projects use CR (Candidate Release)
+    action: warn
+    reason: "Release candidate versions should be reviewed before production use."
+
+  # Block alpha/beta/pre versions
+  - name: no_alpha_beta_versions
+    description: Block alpha, beta, and pre-release versions
+    type: blacklist
+    rules:
+      - field: version
+        patterns:
+          - ".*-alpha[0-9.]*$"     # Alpha releases
+          - ".*-Alpha[0-9.]*$"     # Capitalized Alpha
+          - ".*-beta[0-9.]*$"      # Beta releases
+          - ".*-Beta[0-9.]*$"      # Capitalized Beta
+          - ".*-pre[0-9.]*$"       # Pre-releases
+          - ".*-dev[0-9.]*$"       # Dev versions
+          - ".*-nightly[0-9.]*$"   # Nightly builds
+          - "^[0-9]+[.][0-9]+-"    # Any version with hyphen suffix (e.g., 1.0-preview)
+    action: warn
+    reason: "Pre-release versions (alpha, beta, dev) are discouraged in production."
+
+  # Require stable version format (optional, more strict)
+  - name: require_stable_version_format
+    description: Only allow clean semantic versioning (x.y.z)
+    type: whitelist
+    rules:
+      - field: version
+        patterns:
+          - "^[0-9]+[.][0-9]+[.][0-9]+$"     # Strict semver: 1.2.3
+          - "^[0-9]+[.][0-9]+$"              # Simple version: 1.2
+          - "^[0-9]+[.][0-9]+[.][0-9]+[+][a-zA-Z0-9]+$"  # With build metadata: 1.2.3+build123
+    action: pass
+    reason: "Version follows stable release format."

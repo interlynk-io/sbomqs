@@ -1,0 +1,51 @@
+# Block Copyleft Licenses Policy
+#
+# Common Use Cases:
+# - Proprietary software development
+# - Commercial products
+# - SaaS platforms (internal use only)
+# - Avoiding license contamination
+
+
+policy:
+  - name: block_copyleft_licenses
+    description: |
+      Blocks all GPL variants and other strong copyleft licenses.
+      These licenses require derivative works to be open-sourced.
+      Essential for proprietary software development.
+    type: blacklist
+    rules:
+      - field: license
+        values:
+          # GPL variants (strong copyleft)
+          - GPL-2.0
+          - GPL-2.0-only
+          - GPL-2.0-or-later
+          - GPL-3.0
+          - GPL-3.0-only
+          - GPL-3.0-or-later
+          # AGPL (network copyleft)
+          - AGPL-1.0
+          - AGPL-3.0
+          # LGPL (weak copyleft, but still problematic for some)
+          - LGPL-2.0
+          - LGPL-2.1
+          - LGPL-3.0
+          # Other copyleft
+          - MPL-1.1
+          - MPL-2.0
+          - CDDL-1.0
+          - CDDL-1.1
+          - EPL-1.0
+          - EPL-2.0
+          - MPL-2.0
+          - OSL-1.0
+          - OSL-2.0
+          - OSL-2.1
+          - OSL-3.0
+        patterns:
+          # Catch any GPL/LGPL/AGPL variants
+          - "^GPL-.*"
+          - "^LGPL-.*"
+          - "^AGPL-.*"
+    action: fail

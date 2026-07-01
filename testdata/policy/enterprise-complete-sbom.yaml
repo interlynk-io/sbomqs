@@ -1,0 +1,154 @@
+# Policy: Enterprise Complete SBOM
+# Description: Comprehensive check requiring all critical fields for enterprise use
+# Author: sbomqs
+
+policy:
+  # --- Component Identification ---
+
+  - name: require_component_name
+    description: Every component must be named
+    type: required
+    rules:
+      - field: name
+    action: fail
+    reason: "Component name is mandatory."
+
+  - name: require_component_version
+    description: Every component must have a version
+    type: required
+    rules:
+      - field: version
+    action: fail
+    reason: "Component version is mandatory for reproducibility."
+
+  - name: require_unique_identifiers
+    description: PURL or CPE required for vulnerability tracking
+    type: required
+    rules:
+      - field: purl
+      - field: cpe
+    operator: OR
+    action: fail
+    reason: "Unique identifier (PURL or CPE) is mandatory for security tracking."
+
+  # --- License Compliance ---
+
+  - name: require_license_information
+    description: License must be specified
+    type: required
+    rules:
+      - field: license
+    action: fail
+    reason: "License information is mandatory for legal compliance."
+
+  - name: no_high_risk_licenses
+    description: Block copyleft and proprietary licenses
+    type: blacklist
+    rules:
+      - field: license
+        patterns:
+          - "GPL-[0-9]"              # Any GPL version
+          - "LGPL-[0-9]"             # Any LGPL version
+          - "AGPL-[0-9]"             # Affero GPL
+          - "^LicenseRef-"            # Proprietary licenses
+          - "(?i)proprietary"
+          - "CC-BY-NC"                # Non-commercial Creative Commons
+          - "CC-BY-ND"                # No derivatives CC
+    action: fail
+    reason: "High-risk license detected - not permitted in enterprise distribution."
+
+  # --- Security Requirements ---
+
+  - name: require_checksum_verification
+    description: Checksum required for integrity
+    type: required
+    rules:
+      - field: checksum
+    action: fail
+    reason: "Checksum mandatory for supply chain integrity."
+
+  - name: require_verified_source
+    description: Download location must be specified
+    type: required
+    rules:
+      - field: downloadlocation
+    action: warn
+    reason: "Source URL required for source code verification."
+
+  # --- Provenance ---
+
+  - name: require_supplier_information
+    description: Supplier/author must be identified
+    type: required
+    rules:
+      - field: supplier
+    action: warn
+    reason: "Supplier information required for provenance tracking."
+
+  - name: require_author_information
+    description: Author must be identified
+    type: required
+    rules:
+      - field: author
+    action: pass
+    reason: "Author information helps with support contacts."
+
+  # --- SBOM Metadata ---
+
+  - name: require_sbom_timestamp
+    description: SBOM must have creation timestamp
+    type: required
+    rules:
+      - field: sbom_timestamp
+    action: warn
+    reason: "Timestamp required for SBOM freshness assessment."
+
+  - name: require_sbom_author
+    description: SBOM must have an author
+    type: required
+    rules:
+      - field: sbom_author
+    action: warn
+    reason: "SBOM author required for audit trails."
+
+  - name: require_sbom_tool
+    description: SBOM generation tool must be documented
+    type: required
+    rules:
+      - field: sbom_tool
+    action: pass
+    reason: "Tool information helps with SBOM regeneration."
+
+  # --- Component Quality ---
+
+  - name: no_end_of_life_components
+    description: Warn about EOL components
+    type: blacklist
+    rules:
+      - field: name
+        patterns:
+          - "(?i)log4j-1"            # Log4j 1.x is EOL
+          - "(?i)python-2"           # Python 2 is EOL
+          - "(?i)openssl-1[.]0"      # OpenSSL 1.0.x is EOL
+          - "(?i)angularjs"           # AngularJS (1.x) is EOL
+    action: warn
+    reason: "Component is end-of-life and may have unpatched vulnerabilities."
+
+  # --- Version Quality ---
+
+  - name: no_snapshot_releases
+    description: No development or snapshot versions
+    type: blacklist
+    rules:
+      - field: version
+        patterns:
+          - "-SNAPSHOT$"
+          - "-snapshot$"
+          - "-alpha"
+          - "-Alpha"
+          - "-beta"
+          - "-Beta"
+          - "-RC"
+          - "-rc"
+    action: fail
+    reason: "Only stable releases are permitted in enterprise environments."

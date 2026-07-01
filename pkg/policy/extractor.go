@@ -62,10 +62,6 @@ func (extractor *Extractor) MapFieldWithFunction(ctx context.Context) {
 
 	extractor.compGetters["license"] = func(c sbom.GetComponent) []string {
 		licenses := []string{}
-		if len(c.GetLicenses()) == 0 {
-			licenses = append(licenses, "NOASSERTION")
-		}
-
 		for _, l := range c.GetLicenses() {
 			// preferring ID instead of Name, coz, user prefer ID over names.
 			if ln := l.ShortID(); ln != "" {

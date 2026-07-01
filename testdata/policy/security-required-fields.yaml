@@ -1,0 +1,48 @@
+# Security: Required Fields Policy
+#
+# Use Case: Ensure all components have essential security metadata.
+# This enables vulnerability scanning, license compliance, and supply chain verification.
+#
+# Common Use Cases:
+# - SBOM completeness validation
+# - Supply chain security
+# - Vulnerability scanning preparation
+# - Compliance with security frameworks (NIST SSDF, etc.)
+#
+
+policy:
+  - name: require_version_for_all_components
+    description: |
+      All components must have version information.
+      Without versions, vulnerability scanning is impossible.
+    type: required
+    rules:
+      - field: version
+    action: fail
+
+  - name: require_checksums
+    description: |
+      All components must have checksums for integrity verification.
+      Prevents supply chain attacks through tampering.
+    type: required
+    rules:
+      - field: checksum
+    action: fail
+
+  - name: require_package_identifiers
+    description: |
+      Components must have PURL (Package URL) or CPE for vulnerability scanning.
+      These identifiers are required by security scanners.
+    type: required
+    rules:
+      - field: purl
+    action: warn
+
+  - name: require_licenses
+    description: |
+      All components must have license information.
+      Required for legal compliance and audit trails.
+    type: required
+    rules:
+      - field: license
+    action: warn

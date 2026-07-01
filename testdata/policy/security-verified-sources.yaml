@@ -1,0 +1,81 @@
+# Policy: Verified Sources
+# Use Case: Ensure all components come from verified, trusted sources
+# Description: Requires download URLs and checksums for reproducible builds
+# Author: sbomqs
+
+policy:
+  # Require download location for all components
+  - name: require_download_urls
+    description: |
+      Every component must have a download URL.
+      This ensures the source of the component can be verified.
+    type: required
+    rules:
+      - field: downloadlocation
+    action: fail
+    reason: "Download URL is required for source verification."
+
+  # Require checksums for integrity verification
+  - name: require_checksums
+    description: |
+      Requires cryptographic checksums for all components.
+      Supports SHA-256, SHA-512, SHA-1, and MD5.
+    type: required
+    rules:
+      - field: checksum
+    action: fail
+    reason: "Checksum required for integrity verification."
+
+  # Verify checksum algorithm is strong
+  - name: require_strong_hash_algorithm
+    description: |
+      Requires SHA-256 or SHA-512 for checksums.
+      MD5 and SHA-1 are considered weak for security purposes.
+    type: whitelist
+    rules:
+      - field: hashAlgorithm
+        values:
+          - SHA-256
+          - SHA-256
+          - SHA-512
+          - SHA-384
+    action: warn
+    reason: "Weak hash algorithm detected. Use SHA-256 or SHA-512."
+
+  # Verify source URL is from trusted domain
+  - name: trusted_source_domains
+    description: |
+      Ensures download URLs are from trusted domains.
+      Prevents components from unknown/unverified sources.
+    type: whitelist
+    rules:
+      - field: downloadlocation
+        patterns:
+          - "^https://repo[.]maven[.]apache[.]org/.*"      # Maven Central
+          - "^https://central[.]sonatype[.]com/.*"         # Sonatype Central
+          - "^https://registry[.]npmjs[.]com/.*"           # npm Registry
+          - "^https://pypi[.]org/.*"                       # PyPI
+          - "^https://rubygems[.]org/.*"                   # RubyGems
+          - "^https://crates[.]io/.*"                      # Rust Crates
+          - "^https://proxy[.]golang[.]org/.*"             # Go Proxy
+          - "^https://github[.]com/.*"                     # GitHub releases
+          - "^https://gitlab[.]com/.*"                     # GitLab releases
+          - "^https://downloads[.]apache[.]org/.*"         # Apache Downloads
+          - "^https://repo1[.]maven[.]org/.*"              # Maven Central (alt)
+    action: warn
+    reason: "Download URL is not from a known trusted repository."
+
+  # Block known bad sources
+  - name: block_untrusted_sources
+    description: |
+      Blocks components from known untrusted or suspicious sources.
+    type: blacklist
+    rules:
+      - field: downloadlocation
+        patterns:
+          - "^http://"               # Non-HTTPS URLs
+          - "(?i)[.]onion/"          # Dark web sources
+          - "(?i)torrent"            # Torrent sources
+          - "(?i)directdownload"     # Direct download sites
+    action: fail
+    reason: "Component source is not trusted or secure."
