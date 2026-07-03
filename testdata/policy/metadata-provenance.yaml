@@ -1,0 +1,45 @@
+# Metadata: Provenance and Traceability Policy
+#
+# Common Use Cases:
+# - Regulatory compliance (GDPR, HIPAA, SOX)
+# - Supply chain audits
+# - Security incident response
+# - Forensic analysis
+
+policy:
+  - name: sbom_provenance_info
+    description: |
+      SBOM must have creation timestamp and author information.
+      Required for audit trails and compliance.
+    type: required
+    rules:
+      - field: sbom_timestamp
+      - field: sbom_author
+    action: warn
+
+  - name: sbom_generation_tool
+    description: |
+      SBOM should document the tool used for generation.
+      Helps with reproducibility and trust.
+    type: required
+    rules:
+      - field: sbom_tool
+    action: warn
+
+  - name: component_supplier_info
+    description: |
+      All components should have supplier information.
+      Critical for supply chain transparency and vendor management.
+    type: required
+    rules:
+      - field: supplier
+    action: warn
+
+  - name: component_author_info
+    description: |
+      All components should have author information.
+      Helps with accountability and support contacts.
+    type: required
+    rules:
+      - field: author
+    action: pass

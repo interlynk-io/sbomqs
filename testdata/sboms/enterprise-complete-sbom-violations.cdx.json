@@ -1,0 +1,37 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:12345678-1234-1234-1234-123456789012",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2024-01-15T10:30:00Z",
+    "tools": {
+      "services": [{"vendor": "Test", "name": "test-generator", "version": "1.0.0"}]
+    },
+    "component": {"type": "application", "name": "test-app", "version": "1.0.0"}
+  },
+  "components": [
+    {
+      "type": "library",
+      "name": "gpl-violation",
+      "version": "1.0.0",
+      "licenses": [{"license": {"id": "GPL-3.0"}}],
+      "purl": "pkg:maven/com.example/gpl@1.0.0",
+      "hashes": [{"alg": "SHA-256", "content": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}]
+    },
+    {
+      "type": "library",
+      "name": "snapshot-violation",
+      "version": "1.0.0-SNAPSHOT",
+      "licenses": [{"license": {"id": "MIT"}}],
+      "purl": "pkg:maven/com.example/snapshot@1.0.0-SNAPSHOT",
+      "hashes": [{"alg": "SHA-256", "content": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}]
+    },
+    {
+      "type": "library",
+      "name": "missing-all",
+      "version": "1.0.0",
+      "licenses": [{"license": {"id": "MIT"}}]
+    }
+  ]
+}

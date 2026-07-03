@@ -31,7 +31,27 @@ policy:
     action: fail
 ```
 
-This policy ensures every component license is one of the approved or defined values. If not(or violates), the policy fails as per the defined action.
+This policy ensures every component license is one of the approved or defined values. If not (or violates), the policy fails as per the defined action.
+
+## Policy Levels
+
+Policies operate at two levels:
+
+- **Component Level (`comp`)**: Rules are evaluated for **each component** in the SBOM. The policy result depends on whether all components pass.
+- **Document Level (`doc`)**: Rules are evaluated **once per SBOM** for SBOM-level metadata. Fields starting with `sbom_` prefix are document-level.
+
+Example document-level policy:
+
+```yaml
+policy:
+  - name: sbom_has_author
+    type: required
+    rules:
+      - field: sbom_author
+    action: fail
+```
+
+This checks the SBOM document has an author field, not individual components.
 
 ## What is Rule?
 
@@ -47,6 +67,33 @@ Each rule contains:
 
 - **Multiple rules in a policy** → combined with **AND** (all must pass)
 - **Multiple values/patterns in a rule** → combined with **OR** (any value passes)
+
+### `values` vs `patterns`
+
+Rules can match using either exact values or regex patterns:
+
+| Option | Matching | Best For | Examples |
+|--------|----------|----------|----------|
+| `values` | Exact string match | Specific known values | `MIT`, `Apache-2.0`, `log4j-2.17.1` |
+| `patterns` | Regular expressions | Groups, families, ranges | `^GPL-.*`, `.*-SNAPSHOT` |
+
+**Example - Using values (exact match):**
+```yaml
+rules:
+  - field: license
+    values: [MIT, Apache-2.0]  # Only these exact values
+```
+
+**Example - Using patterns (regex):**
+```yaml
+rules:
+  - field: license
+    patterns:
+      - "^GPL-.*"     # All GPL variants
+      - "^LGPL-.*"    # All LGPL variants
+```
+
+> **Tip:** Use `^` at the start of patterns to match from the beginning. `^GPL-.*` matches `GPL-2.0` but NOT `MIT OR GPL-2.0`.
 
 ## Policy Types
 
@@ -168,27 +215,29 @@ policy:
 Output:
 
 ```bash
-$ sbomqs policy -f samples/policy/custom/custom-policies.yaml samples/policy/in-complete.spdx.sbom.json 
-+-------------------+-----------+--------+--------+---------+------------+----------------------+
-|      POLICY       |   TYPE    | ACTION | RESULT | CHECKED | VIOLATIONS |     GENERATED AT     |
-+-------------------+-----------+--------+--------+---------+------------+----------------------+
-| approved_licenses | whitelist | warn   | warn   |       6 |          6 | 2025-09-16T08:24:57Z |
-| banned_components | blacklist | fail   | fail   |       6 |          1 | 2025-09-16T08:24:57Z |
-| required_metadata | required  | fail   | pass   |       6 |          0 | 2025-09-16T08:24:57Z |
-+-------------------+-----------+--------+--------+---------+------------+----------------------+
+$ sbomqs policy -f samples/policy/custom/custom-policies.yaml samples/policy/in-complete.spdx.sbom.json
++-------------------+-----------+--------+--------+-------+---------+------------+----------------------+
+|      POLICY       |   TYPE    | ACTION | RESULT | LEVEL | CHECKED | VIOLATIONS |     GENERATED AT     |
++-------------------+-----------+--------+--------+-------+---------+------------+----------------------+
+| approved_licenses | whitelist | warn   | warn   | comp  |       6 |          6 | 2025-09-16T08:24:57Z |
+| banned_components | blacklist | fail   | fail   | comp  |       6 |          1 | 2025-09-16T08:24:57Z |
+| required_metadata | required  | fail   | pass   | comp  |       6 |          0 | 2025-09-16T08:24:57Z |
++-------------------+-----------+--------+--------+-------+---------+------------+----------------------+
 
 ```
 
 ```bash
-$ sbomqs policy -f samples/policy/custom/custom-policies.yaml samples/policy/complete-sbom.spdx.json   
-+-------------------+-----------+--------+--------+---------+------------+----------------------+
-|      POLICY       |   TYPE    | ACTION | RESULT | CHECKED | VIOLATIONS |     GENERATED AT     |
-+-------------------+-----------+--------+--------+---------+------------+----------------------+
-| approved_licenses | whitelist | warn   | pass   |       5 |          0 | 2025-09-16T08:25:05Z |
-| banned_components | blacklist | fail   | pass   |       5 |          0 | 2025-09-16T08:25:05Z |
-| required_metadata | required  | fail   | pass   |       5 |          0 | 2025-09-16T08:25:05Z |
-+-------------------+-----------+--------+--------+---------+------------+----------------------+
+$ sbomqs policy -f samples/policy/custom/custom-policies.yaml samples/policy/complete-sbom.spdx.json
++-------------------+-----------+--------+--------+-------+---------+------------+----------------------+
+|      POLICY       |   TYPE    | ACTION | RESULT | LEVEL | CHECKED | VIOLATIONS |     GENERATED AT     |
++-------------------+-----------+--------+--------+-------+---------+------------+----------------------+
+| approved_licenses | whitelist | warn   | pass   | comp  |       5 |          0 | 2025-09-16T08:25:05Z |
+| banned_components | blacklist | fail   | pass   | comp  |       5 |          0 | 2025-09-16T08:25:05Z |
+| required_metadata | required  | fail   | pass   | comp  |       5 |          0 | 2025-09-16T08:25:05Z |
++-------------------+-----------+--------+--------+-------+---------+------------+----------------------+
 ```
+
+The `LEVEL` column indicates whether the policy is evaluated at the **component** (`comp`) or **document** (`doc`) level.
 
 ## Applying Policies
 
@@ -200,13 +249,13 @@ Policies can be applied in two ways:
 ### 1. From a Policy File
 
 ```bash
-sbomqs policy -f samples/policy/custom/custom-policies.yaml samples/policy/complete-sbom.spdx.json 
+sbomqs policy -f samples/policy/custom/custom-policies.yaml samples/policy/complete-sbom.spdx.json
 ```
 
 ### 2. From CLI (Inline Rules)
 
 ```bash
-sbomqs apply \
+sbomqs policy \
   --name approved_licenses \
   --type whitelist \
   --rules "field=license,values=MIT,Apache-2.0" \
@@ -217,13 +266,15 @@ sbomqs apply \
 Example: 2
 
 ```bash
-sbomqs apply \
-  --name supplier_noassertion_rule \
-  --type blacklist \
-  --rules "field=supplier,values=NOASSERTION" \
+sbomqs policy \
+  --name supplier_required \
+  --type required \
+  --rules "field=supplier" \
   --action fail \
   samples/policy/in-complete-sbom.spdx.json
 ```
+
+> **Note:** Missing fields return an empty value, not `NOASSERTION`.
 
 ## sbomqs policy flowchart
 
@@ -270,3 +321,17 @@ Z2 --> AA
 Z3 --> AA
 AA --> AB[End]
 ```
+
+## Sample Policies
+
+The repository includes a comprehensive set of sample policies in `testdata/policy/`:
+
+- **License Policies**: Allowlists, blocklists, dual-license checks
+- **Security Policies**: Vulnerability bans, required fields, verified sources
+- **Metadata Policies**: Completeness, provenance, identifiers
+- **Enterprise Policies**: Approved suppliers, complete SBOM requirements
+- **Industry-Specific**: Finance compliance, open source distribution
+
+Each policy has corresponding test SBOMs in `testdata/sboms/` with `-violations.cdx.json` suffix.
+
+See `testdata/policy/README.md` for full documentation.

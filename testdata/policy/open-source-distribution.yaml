@@ -1,0 +1,76 @@
+# Open Source: Distribution-Ready Policy
+#
+# Common Use Cases:
+# - Publishing to Maven Central
+# - NPM registry publishing
+# - GitHub releases
+# - Linux Foundation projects
+# - Apache Foundation releases
+
+policy:
+  - name: oss_complete_metadata
+    description: |
+      OSS: Complete metadata for distribution.
+      Required by Maven Central, NPM, and other registries.
+    type: required
+    rules:
+      - field: name
+      - field: version
+      - field: license
+      - field: checksum
+      - field: purl
+    action: warn
+
+  - name: oss_approved_licenses
+    description: |
+      OSS: Only OSI-approved licenses for distribution.
+      Most registries require OSI-approved licenses.
+    type: whitelist
+    rules:
+      - field: license
+        values:
+          # OSI-approved licenses
+          - MIT
+          - MIT-0
+          - Apache-2.0
+          - BSD-2-Clause
+          - BSD-3-Clause
+          - BSD-4-Clause
+          - ISC
+          - Unlicense
+          - 0BSD
+          - CC0-1.0
+          - Python-2.0
+          - Zlib
+          - MPL-2.0
+          - EPL-2.0
+          - GPL-2.0
+          - GPL-3.0
+          - LGPL-2.1
+          - LGPL-3.0
+          - AGPL-3.0
+    action: warn
+
+  - name: oss_provenance_info
+    description: |
+      OSS: Timestamp and authorship for traceability.
+      Helps users verify SBOM freshness.
+    type: required
+    rules:
+      - field: sbom_timestamp
+      - field: sbom_author
+      - field: sbom_tool
+    action: pass
+
+  - name: oss_no_proprietary_licenses
+    description: |
+      OSS: Cannot distribute with proprietary licenses.
+    type: blacklist
+    rules:
+      - field: license
+        patterns:
+          - "LicenseRef-.*"
+          - "Proprietary"
+          - "Commercial"
+          - "Internal"
+    action: fail

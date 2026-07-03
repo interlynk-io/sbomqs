@@ -73,15 +73,21 @@ func ReportBasic(ctx context.Context, results []PolicyResult) error {
 	// Render table to buffer first to calculate width
 	var buf strings.Builder
 	summary := tablewriter.NewWriter(&buf)
-	summary.SetHeader([]string{"POLICY", "TYPE", "ACTION", "RESULT", "COMPONENTS", "VIOLATIONS", "RULES APPLIED"})
+	summary.SetHeader([]string{"POLICY", "TYPE", "ACTION", "RESULT", "LEVEL", "COMPONENTS", "VIOLATIONS", "RULES APPLIED"})
 
 	for _, r := range sorted {
+		// Show "-" for document-level policies in COMPONENTS column
+		componentsDisplay := fmt.Sprintf("%d", r.TotalComponents)
+		if r.Level == "doc" {
+			componentsDisplay = "-"
+		}
 		summary.Append([]string{
 			r.PolicyName,
 			r.PolicyType,
 			r.PolicyAction,
 			r.OverallResult,
-			fmt.Sprintf("%d", r.TotalComponents),
+			r.Level,
+			componentsDisplay,
 			fmt.Sprintf("%d", r.ViolationCnt),
 			fmt.Sprintf("%d", r.TotalRules),
 		})
@@ -316,12 +322,18 @@ func ReportTable(ctx context.Context, results []PolicyResult) error {
 
 	// Render summary table
 	sum = tablewriter.NewWriter(os.Stdout)
-	sum.SetHeader([]string{"POLICY", "RESULT", "COMPONENTS", "VIOLATIONS", "RULES APPLIED"})
+	sum.SetHeader([]string{"POLICY", "RESULT", "LEVEL", "COMPONENTS", "VIOLATIONS", "RULES APPLIED"})
 	for _, r := range sorted {
+		// Show "-" for document-level policies in COMPONENTS column
+		componentsDisplay := fmt.Sprintf("%d", r.TotalComponents)
+		if r.Level == "doc" {
+			componentsDisplay = "-"
+		}
 		sum.Append([]string{
 			r.PolicyName,
 			r.OverallResult,
-			fmt.Sprintf("%d", r.TotalComponents),
+			r.Level,
+			componentsDisplay,
 			fmt.Sprintf("%d", r.ViolationCnt),
 			fmt.Sprintf("%d", r.TotalRules),
 		})

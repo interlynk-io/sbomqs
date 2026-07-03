@@ -25,6 +25,7 @@ type PolicyResult struct {
 	TotalRules      int          `json:"total_rules,omitempty"`
 	TotalComponents int          `json:"total_components,omitempty"` // number of components scanned
 	ViolationCnt    int          `json:"violation_count,omitempty"`  // number of failed policy_results
+	Level           string       `json:"level,omitempty"`            // "doc" for document-level, "comp" for component-level
 }
 
 type RuleResult struct {

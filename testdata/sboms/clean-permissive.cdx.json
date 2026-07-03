@@ -1,0 +1,90 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:clean-permissive-001",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2024-01-15T10:30:00Z",
+    "tools": [
+      {
+        "vendor": "sbomqs",
+        "name": "test-generator",
+        "version": "1.0.0"
+      }
+    ],
+    "authors": [
+      {
+        "name": "Test Author",
+        "email": "test@example.com"
+      }
+    ]
+  },
+  "components": [
+    {
+      "type": "library",
+      "name": "mit-library",
+      "version": "1.0.0",
+      "purl": "pkg:npm/mit-library@1.0.0",
+      "supplier": {
+        "name": "MIT"
+      },
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "apache-library",
+      "version": "2.0.0",
+      "purl": "pkg:maven/org.apache/apache-library@2.0.0",
+      "supplier": {
+        "name": "Apache Software Foundation"
+      },
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef12"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "bsd-library",
+      "version": "1.5.0",
+      "purl": "pkg:npm/bsd-library@1.5.0",
+      "supplier": {
+        "name": "BSD Project"
+      },
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890ab"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:12345678-1234-1234-1234-123456789012",
+  "version": 1,
+  "metadata": {
+    "tools": {
+      "services": [{"vendor": "Test", "name": "test-generator", "version": "1.0.0"}]
+    },
+    "component": {"type": "application", "name": "test-app"}
+  },
+  "components": [
+    {
+      "type": "library",
+      "version": "1.0.0",
+      "licenses": [{"license": {"id": "MIT"}}]
+    },
+    {
+      "type": "library",
+      "name": "missing-version",
+      "licenses": [{"license": {"id": "MIT"}}]
+    },
+    {
+      "type": "library",
+      "name": "complete",
+      "version": "1.0.0",
+      "licenses": [{"license": {"id": "MIT"}}],
+      "supplier": {"name": "Test Supplier"}
+    }
+  ]
+}

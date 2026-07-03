@@ -1,0 +1,41 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:12345678-1234-1234-1234-123456789012",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2024-01-15T10:30:00Z",
+    "tools": {
+      "services": [{"vendor": "Test", "name": "test-generator", "version": "1.0.0"}]
+    },
+    "component": {"type": "application", "name": "test-app", "version": "1.0.0"}
+  },
+  "components": [
+    {
+      "type": "library",
+      "name": "log4j-core-2.14.1",
+      "version": "2.14.1",
+      "description": "Vulnerable Log4Shell version",
+      "licenses": [{"license": {"id": "Apache-2.0"}}],
+      "purl": "pkg:maven/org.apache.logging.log4j/log4j-core@2.14.1",
+      "hashes": [{"alg": "SHA-256", "content": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}]
+    },
+    {
+      "type": "library",
+      "name": "log4j-1.2.17",
+      "version": "1.2.17",
+      "description": "EOL Log4j 1.x",
+      "licenses": [{"license": {"id": "Apache-2.0"}}],
+      "purl": "pkg:maven/log4j/log4j@1.2.17",
+      "hashes": [{"alg": "SHA-256", "content": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}]
+    },
+    {
+      "type": "library",
+      "name": "safe-library",
+      "version": "1.0.0",
+      "licenses": [{"license": {"id": "MIT"}}],
+      "purl": "pkg:maven/com.example/safe@1.0.0",
+      "hashes": [{"alg": "SHA-256", "content": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}]
+    }
+  ]
+}

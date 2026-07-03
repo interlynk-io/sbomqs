@@ -1,0 +1,94 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:license-expr-ack-001",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2024-01-15T10:30:00Z",
+    "tools": [
+      {
+        "vendor": "sbomqs",
+        "name": "test-generator",
+        "version": "1.0.0"
+      }
+    ]
+  },
+  "components": [
+    {
+      "type": "library",
+      "name": "mit-expression-concluded",
+      "version": "1.0.0",
+      "purl": "pkg:npm/mit-expr@1.0.0",
+      "licenses": [
+        {
+          "expression": "MIT",
+          "acknowledgement": "concluded"
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "apache-id-concluded",
+      "version": "2.0.0",
+      "purl": "pkg:maven/org.apache/apache@2.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0",
+            "acknowledgement": "concluded"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef12"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "bsd-declared",
+      "version": "1.0.0",
+      "purl": "pkg:npm/bsd-declared@1.0.0",
+      "licenses": [
+        {
+          "expression": "BSD-3-Clause",
+          "acknowledgement": "declared"
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890ab"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "gpl-declared",
+      "version": "1.0.0",
+      "purl": "pkg:npm/gpl-declared@1.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "GPL-3.0",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "fedcba0987654321fedcba0987654321fedcba0987654321fedcba0987654321fedcba0987654321fedcba0987654321fedcba0987654321fedcba0987654321fe"
+        }
+      ]
+    }
+  ]
+}

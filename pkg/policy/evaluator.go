@@ -60,28 +60,108 @@ func EvaluatePolicyAgainstSBOMs(ctx context.Context, policy Policy, doc sbom.Doc
 	totalChecks := 0
 	policyResults := make([]RuleResult, 0, len(components)*len(compiledRules))
 
-	// evaluate components against list of all rules in a single policy
+	// Separate document-level fields (sbom_*) from component-level fields
+	var docRules, compRules []compiledRule
+	for _, cr := range compiledRules {
+		if strings.HasPrefix(cr.Rule.Field, "sbom_") {
+			docRules = append(docRules, cr)
+		} else {
+			compRules = append(compRules, cr)
+		}
+	}
+
+	log.Debug("Separated rules by level",
+		zap.Int("document_rules", len(docRules)),
+		zap.Int("component_rules", len(compRules)),
+	)
+
+	// Evaluate document-level rules ONCE per SBOM (not per component)
+	for _, compileRule := range docRules {
+		totalChecks++
+
+		declaredRule := compileRule.Rule
+		declaredField := declaredRule.Field
+		declaredValues := declaredRule.Values
+		patterns := compileRule.Patterns
+
+		// Retrieve document-level values (using nil component for document fields)
+		actualValues := fieldExtractor.RetrieveValues(nil, declaredField)
+
+		// default outcome/pass reason based on policy type
+		result := "pass"
+		var reason string
+
+		// Set default pass reason based on policy type
+		switch RULE_TYPE(policy.Type) {
+		case REQUIRED:
+			reason = "field present"
+		case WHITELIST:
+			reason = "value in whitelist"
+		case BLACKLIST:
+			reason = "not in blacklist"
+		default:
+			reason = "pass"
+		}
+
+		// required rule: presence check
+		if RULE_TYPE(policy.Type) == REQUIRED {
+			ok := fieldExtractor.HasField(nil, declaredField)
+			if !ok {
+				result = "fail"
+				reason = "missing field"
+			}
+
+		} else {
+			// for whitelist/blacklist do matching
+			switch RULE_TYPE(policy.Type) {
+			case WHITELIST:
+				// For whitelist: ALL actual values must be in the whitelist
+				violations := findViolations(actualValues, declaredValues, patterns)
+				if len(violations) > 0 {
+					result = "fail"
+					reason = fmt.Sprintf("value(s) not in whitelist: %s", strings.Join(violations, ", "))
+				}
+			case BLACKLIST:
+				// For blacklist: NONE of the actual values should be in the blacklist
+				violations := findMatches(actualValues, declaredValues, patterns)
+				if len(violations) > 0 {
+					result = "fail"
+					reason = fmt.Sprintf("value(s) in blacklist: %s", strings.Join(violations, ", "))
+				}
+			default:
+				// if unknown type, treat as pass
+			}
+		}
+
+		pr := RuleResult{
+			ComponentID:   "-", // Document-level, no component
+			ComponentName: "-",
+			DeclaredField: declaredField,
+			ActualValues:  actualValues,
+			Result:        result,
+			Reason:        reason,
+		}
+
+		policyResults = append(policyResults, pr)
+	}
+
+	// Evaluate component-level rules per component
 	for _, comp := range components {
 		var compID, compName string
 		if comp != nil {
 			compID = comp.GetID()
-		}
-		if comp != nil {
 			compName = comp.GetName()
 		}
 
-		// evaluate each component against list of all rules
-		for _, compileRule := range compiledRules {
+		for _, compileRule := range compRules {
 			totalChecks++
-			// evaluate rule
 
 			declaredRule := compileRule.Rule
 			declaredField := declaredRule.Field
 			declaredValues := declaredRule.Values
 			patterns := compileRule.Patterns
 
-			// retreive the actual values from component for that respective field
-			// example: `license`, `supplier`, `checksum`, `author`, etc
+			// Retrieve component-level values
 			actualValues := fieldExtractor.RetrieveValues(comp, declaredField)
 
 			// default outcome/pass reason based on policy type
@@ -113,7 +193,6 @@ func EvaluatePolicyAgainstSBOMs(ctx context.Context, policy Policy, doc sbom.Doc
 				switch RULE_TYPE(policy.Type) {
 				case WHITELIST:
 					// For whitelist: ALL actual values must be in the whitelist
-					// If ANY actual value is not in the whitelist, it's a violation
 					violations := findViolations(actualValues, declaredValues, patterns)
 					if len(violations) > 0 {
 						result = "fail"
@@ -121,20 +200,19 @@ func EvaluatePolicyAgainstSBOMs(ctx context.Context, policy Policy, doc sbom.Doc
 					}
 				case BLACKLIST:
 					// For blacklist: NONE of the actual values should be in the blacklist
-					// If ANY actual value matches, it's a violation
 					violations := findMatches(actualValues, declaredValues, patterns)
 					if len(violations) > 0 {
 						result = "fail"
 						reason = fmt.Sprintf("value(s) in blacklist: %s", strings.Join(violations, ", "))
 					}
 				default:
-					// if unknown type, treat as pass (or change to fail depending on your policy)
+					// if unknown type, treat as pass
 				}
 			}
 
 			pr := RuleResult{
 				ComponentID:   compID,
-				ComponentName: compName,
+				ComponentName:  compName,
 				DeclaredField: declaredField,
 				ActualValues:  actualValues,
 				Result:        result,
@@ -142,7 +220,6 @@ func EvaluatePolicyAgainstSBOMs(ctx context.Context, policy Policy, doc sbom.Doc
 			}
 
 			policyResults = append(policyResults, pr)
-
 		}
 	}
 
@@ -173,8 +250,16 @@ func EvaluatePolicyAgainstSBOMs(ctx context.Context, policy Policy, doc sbom.Doc
 		}
 	}
 
+	// Determine the level: "doc" if document-level rules exist, "comp" otherwise
+	if len(docRules) > 0 {
+		policyResult.Level = "doc"
+	} else {
+		policyResult.Level = "comp"
+	}
+
 	log.Info("Policy evaluation completed",
 		zap.String("policy", policy.Name),
+		zap.String("level", policyResult.Level),
 		zap.Int("checks", totalChecks),
 		zap.Int("violations", violationCount),
 		zap.String("result", policyResult.OverallResult),

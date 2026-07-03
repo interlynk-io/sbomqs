@@ -1,0 +1,70 @@
+# Security: Ban Vulnerable Components Policy
+#
+# Use Case: Prevent known vulnerable components from being used in production.
+# Checks component names and versions against known vulnerability patterns.
+#
+# Common Use Cases:
+# - Production deployment gates
+# - Security audits
+# - Preventing supply chain attacks
+# - Compliance with security standards
+#
+
+policy:
+  - name: ban_vulnerable_log4j
+    description: |
+      Blocks Log4j versions with known critical vulnerabilities.
+      Includes Log4Shell (CVE-2021-44228) and EOL versions.
+    type: blacklist
+    rules:
+      - field: name
+        patterns:
+          # Log4j 1.x - End of Life, multiple vulnerabilities
+          - "log4j-1\\..*"
+          - "log4j-core-1\\..*"
+          - "log4j-api-1\\..*"
+          # Log4Shell vulnerable versions (2.10-2.16)
+          - "log4j-core-2\\.1[0-6]\\..*"
+          - "log4j-api-2\\.1[0-6]\\..*"
+          # Early 2.x with other vulnerabilities
+          - "log4j-core-2\\.0\\..*"
+          - "log4j-core-2\\.[0-9]\\..*"
+    action: fail
+
+  - name: ban_vulnerable_components
+    description: |
+      Blocks other known vulnerable components.
+      Updated regularly based on security advisories.
+    type: blacklist
+    rules:
+      - field: name
+        patterns:
+          # Apache Commons Collections - Deserialization
+          - "commons-collections-3\\.2\\.1"
+          - "commons-collections4-4\\.0"
+          # Struts 2 - Multiple RCE vulnerabilities
+          - "struts2-core-2\\.3\\.[0-9]$"
+          - "struts2-core-2\\.5\\.[0-9]$"
+          # Spring Framework - vulnerable versions
+          - "spring-core-4\\.0\\..*"
+          - "spring-core-4\\.1\\..*"
+          # Jackson Databind - Multiple CVEs
+          - "jackson-databind-2\\.[0-8]\\..*"
+          # Fastjson - Deserialization vulnerabilities
+          - "fastjson-1\\.2\\.[0-5][0-9]$"
+    action: fail
+
+  - name: warn_snapshot_versions
+    description: |
+      Warns about SNAPSHOT/pre-release versions in production.
+      These are unstable and may contain unpatched vulnerabilities.
+    type: blacklist
+    rules:
+      - field: version
+        patterns:
+          - ".*-SNAPSHOT$"
+          - ".*-RC[0-9]+$"
+          - ".*-BETA[0-9]*$"
+          - ".*-ALPHA[0-9]*$"
+          - ".*-DEV$"
+    action: warn

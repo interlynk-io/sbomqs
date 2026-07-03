@@ -1,0 +1,118 @@
+# Advanced: Comprehensive Compliance Policy
+#
+# This policy combines:
+# - License compliance (whitelist + copyleft block)
+# - Security (vulnerability checks + required fields)
+# - Metadata (provenance + identifiers)
+# - Enterprise (approved suppliers)
+
+policy:
+  # ===== LICENSE COMPLIANCE =====
+  - name: allowed_licenses_only
+    description: |
+      CRITICAL: Only approved licenses allowed.
+      Blocks all GPL variants and proprietary licenses.
+    type: whitelist
+    rules:
+      - field: license
+        values:
+          - MIT
+          - MIT-0
+          - Apache-2.0
+          - BSD-2-Clause
+          - BSD-3-Clause
+          - BSD-4-Clause
+          - ISC
+          - Unlicense
+          - 0BSD
+          - CC0-1.0
+          - MPL-2.0
+          - EPL-2.0
+    action: fail
+
+  - name: no_strong_copyleft
+    description: |
+      CRITICAL: No GPL/AGPL/LGPL allowed.
+    type: blacklist
+    rules:
+      - field: license
+        patterns:
+          - "^GPL-.*"
+          - "^LGPL-.*"
+          - "^AGPL-.*"
+    action: fail
+
+  # ===== SECURITY =====
+  - name: no_vulnerable_log4j
+    description: |
+      CRITICAL: Blocks vulnerable Log4j versions.
+    type: blacklist
+    rules:
+      - field: name
+        patterns:
+          - "log4j-1\\..*"
+          - "log4j-core-2\\.1[0-6]\\..*"
+          - "log4j-core-2\\.0\\..*"
+    action: fail
+
+  - name: no_snapshot_in_production
+    description: |
+      WARNING: Pre-release versions in production.
+    type: blacklist
+    rules:
+      - field: version
+        patterns:
+          - ".*-SNAPSHOT$"
+          - ".*-RC[0-9]+$"
+          - ".*-BETA[0-9]*$"
+    action: warn
+
+  # ===== REQUIRED FIELDS =====
+  - name: require_version
+    description: |
+      CRITICAL: All components must have versions.
+    type: required
+    rules:
+      - field: version
+    action: fail
+
+  - name: require_checksums
+    description: |
+      CRITICAL: All components must have checksums.
+    type: required
+    rules:
+      - field: checksum
+    action: fail
+
+  - name: require_purl_for_scanning
+    description: |
+      WARNING: PURL needed for vulnerability scanning.
+    type: required
+    rules:
+      - field: purl
+    action: warn
+
+  - name: require_license
+    description: |
+      WARNING: License information required.
+    type: required
+    rules:
+      - field: license
+    action: warn
+
+  # ===== METADATA =====
+  - name: sbom_timestamp_required
+    description: |
+      CRITICAL: SBOM must have creation timestamp.
+    type: required
+    rules:
+      - field: sbom_timestamp
+    action: warn
+
+  - name: supplier_info_required
+    description: |
+      WARNING: Supplier information recommended.
+    type: required
+    rules:
+      - field: supplier
+    action: warn
