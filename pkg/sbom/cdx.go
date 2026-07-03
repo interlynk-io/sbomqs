@@ -966,17 +966,43 @@ func (c *CdxDoc) parseSupplier() {
 }
 
 func (c *CdxDoc) parseManufacturer() {
-	if c.doc.Metadata == nil || c.doc.Metadata.Manufacture == nil {
+	if c.doc.Metadata == nil {
 		return
 	}
 
-	manufacturer := Manufacturer{Name: c.doc.Metadata.Manufacture.Name}
+	// CycloneDX 1.6+ uses "manufacturer" (new field), while older versions use "manufacture" (deprecated)
+	// Priority: manufacturer (new) > manufacture (deprecated)
+	var entity *cydx.OrganizationalEntity
+	if c.doc.Metadata.Manufacturer != nil {
+		entity = c.doc.Metadata.Manufacturer
+		c.addToLogs("cdx doc using metadata.manufacturer (CDX 1.6+)")
+	} else if c.doc.Metadata.Manufacture != nil {
+		entity = c.doc.Metadata.Manufacture
+		c.addToLogs("cdx doc using deprecated metadata.manufacture")
+	}
 
-	if urls := lo.FromPtr(c.doc.Metadata.Manufacture.URL); len(urls) > 0 {
+	if entity == nil {
+		return
+	}
+
+	manufacturer := Manufacturer{Name: entity.Name}
+
+	// Extract contact info with priority: email > URL > contacts email
+	// Per BSI spec: "Valid email address (preferred)", "Valid URL (accepted only when no email address is available)"
+	if urls := lo.FromPtr(entity.URL); len(urls) > 0 {
 		manufacturer.URL = urls[0]
 	}
 
-	contacts := lo.FromPtr(c.doc.Metadata.Manufacture.Contact)
+	// Extract email from contacts
+	contacts := lo.FromPtr(entity.Contact)
+	for _, contact := range contacts {
+		if contact.Email != "" {
+			manufacturer.Email = contact.Email
+			break
+		}
+	}
+
+	// Store all contacts
 	if len(contacts) > 0 {
 		manufacturer.Contacts = make([]Contact, len(contacts))
 		for i, contact := range contacts {
@@ -1117,7 +1143,17 @@ func (c *CdxDoc) assignManufacturer(comp *cydx.Component) *Manufacturer {
 		manufacturer.URL = urls[0]
 	}
 
+	// Extract contact info with priority: email from contacts
+	// Per BSI spec: "Valid email address (preferred)", "Valid URL (accepted only when no email address is available)"
 	contacts := lo.FromPtr(comp.Manufacturer.Contact)
+	for _, contact := range contacts {
+		if contact.Email != "" {
+			manufacturer.Email = contact.Email
+			break
+		}
+	}
+
+	// Store all contacts
 	if len(contacts) > 0 {
 		manufacturer.Contacts = make([]Contact, len(contacts))
 		for i, contact := range contacts {

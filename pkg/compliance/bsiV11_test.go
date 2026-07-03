@@ -146,7 +146,34 @@ var bsiSpdxSBOMCreationInfoMissing = []byte(`
 }
 `)
 
-// Manufacturer fixtures (CDX uses "manufacture" for metadata-level)
+// Manufacturer fixtures (CDX uses "manufacture" for metadata-level in older versions,
+// and "manufacturer" in CDX 1.6+)
+var bsiCdxSBOMManufacturerNewField = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {
+    "manufacturer": {
+      "bom-ref": "manufacturer-1",
+      "name": "Acme, Inc.",
+      "url": [
+        "https://example.com"
+      ],
+      "contact": [
+        {
+          "bom-ref": "contact-1",
+          "name": "Acme Professional Services",
+          "email": "professional.services@example.com"
+        }
+      ]
+    }
+  },
+  "components": []
+}
+`)
+
 var bsiCdxSBOMManufacturer = []byte(`
 {
   "bomFormat": "CycloneDX",
@@ -420,6 +447,19 @@ func TestBSISBOMCreator(t *testing.T) {
 		assert.Equal(t, "", got.CheckValue)
 	})
 
+	t.Run("cdxSBOMWithNewManufacturerField", func(t *testing.T) {
+		// Tests CDX 1.6+ "manufacturer" field (with 'r') instead of deprecated "manufacture"
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiCdxSBOMManufacturerNewField, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := bsiV11SBOMCreator(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, SBOM_CREATOR, got.CheckKey)
+		assert.Equal(t, "doc", got.ID)
+		assert.Equal(t, "professional.services@example.com (manufacturer)", got.CheckValue)
+	})
+
 	t.Run("cdxSBOMWithManufacturerContactEmail", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiCdxSBOMManufacturer, sbom.Signature{})
 		require.NoError(t, err)
@@ -429,7 +469,8 @@ func TestBSISBOMCreator(t *testing.T) {
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_CREATOR, got.CheckKey)
 		assert.Equal(t, "doc", got.ID)
-		assert.Equal(t, "https://example.com (manufacturer)", got.CheckValue)
+		// Email is preferred over URL per BSI spec; extracted from contact
+		assert.Equal(t, "professional.services@example.com (manufacturer)", got.CheckValue)
 	})
 
 	t.Run("cdxSBOMWithManufacturerURLOnly", func(t *testing.T) {
@@ -453,7 +494,8 @@ func TestBSISBOMCreator(t *testing.T) {
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_CREATOR, got.CheckKey)
 		assert.Equal(t, "doc", got.ID)
-		assert.Equal(t, "professional.services@gmail.com (manufacturer contact)", got.CheckValue)
+		// Email extracted from contact is now set as manufacturer email, per BSI spec preference
+		assert.Equal(t, "professional.services@gmail.com (manufacturer)", got.CheckValue)
 	})
 
 	t.Run("cdxSBOMWithManufacturerNameOnly", func(t *testing.T) {
@@ -1058,7 +1100,8 @@ func TestBSIComponentCreator(t *testing.T) {
 			assert.InDelta(t, 10.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_CREATOR, got.CheckKey)
 			assert.Equal(t, common.UniqueElementID(c), got.ID)
-			assert.Equal(t, "https://example.com (manufacturer)", got.CheckValue)
+			// Email is preferred over URL per BSI spec; extracted from contact
+			assert.Equal(t, "professional.services@example.com (manufacturer)", got.CheckValue)
 		}
 	})
 
@@ -1086,7 +1129,8 @@ func TestBSIComponentCreator(t *testing.T) {
 			assert.InDelta(t, 10.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_CREATOR, got.CheckKey)
 			assert.Equal(t, common.UniqueElementID(c), got.ID)
-			assert.Equal(t, "professional.services@example.com (manufacturer contact)", got.CheckValue)
+			// Email extracted from contact is now set as manufacturer email, per BSI spec preference
+			assert.Equal(t, "professional.services@example.com (manufacturer)", got.CheckValue)
 		}
 	})
 
