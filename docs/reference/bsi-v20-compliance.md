@@ -44,8 +44,8 @@ BSI is built around the assumption that SBOMs must be processable by machines ac
 
 - CycloneDX:
   - [`metadata.authors[].email`](https://cyclonedx.org/docs/1.7/json/#metadata_authors_items_email)
-  - [`metadata.manufacturer.email`](https://cyclonedx.org/docs/1.7/json/#metadata_manufacturer_contact_items_email) OR [`metadata.manufacturer.url`](https://cyclonedx.org/docs/1.7/json/#metadata_manufacturer_url) OR [`metadata.manufacturer.contact[].email`](https://cyclonedx.org/docs/1.7/json/#metadata_manufacturer_contact_items_email)
-  - [`metadata.supplier.email`](https://cyclonedx.org/docs/1.7/json/#metadata_supplier_contact_items_email) OR [`metadata.supplier.url`](https://cyclonedx.org/docs/1.7/json/#metadata_supplier_url) OR [`metadata.supplier.contact[].email`](https://cyclonedx.org/docs/1.7/json/#metadata_supplier_contact_items_email)
+  - [`metadata.manufacturer.contact[].email`](https://cyclonedx.org/docs/1.7/json/#metadata_manufacturer_contact_items_email) OR [`metadata.manufacturer.url`](https://cyclonedx.org/docs/1.7/json/#metadata_manufacturer_url)
+  - [`metadata.supplier.contact[].email`](https://cyclonedx.org/docs/1.7/json/#metadata_supplier_contact_items_email) OR [`metadata.supplier.url`](https://cyclonedx.org/docs/1.7/json/#metadata_supplier_url)
 
 ### 2. Timestamp
 
@@ -102,8 +102,8 @@ Same rationale as the SBOM creator: BSI requires a machine-actionable contact fo
 
 - CycloneDX:
   - [`components[].authors[].email`](https://cyclonedx.org/docs/1.7/json/#components_items_authors_items_email)
-  - [`components[].manufacturer.email`](https://cyclonedx.org/docs/1.7/json/#components_items_manufacturer_contact_items_email) OR [`components[].manufacturer.url`](https://cyclonedx.org/docs/1.7/json/#components_items_manufacturer_url) OR [`components[].manufacturer.contact[].email`](https://cyclonedx.org/docs/1.7/json/#components_items_manufacturer_contact_items_email)
-  - [`components[].supplier.email`](https://cyclonedx.org/docs/1.7/json/#components_items_supplier_contact_items_email) OR [`components[].supplier.url`](https://cyclonedx.org/docs/1.7/json/#components_items_supplier_url) OR [`components[].supplier.contact[].email`](https://cyclonedx.org/docs/1.7/json/#components_items_supplier_contact_items_email)
+  - [`components[].manufacturer.contact[].email`](https://cyclonedx.org/docs/1.7/json/#components_items_manufacturer_contact_items_email) OR [`components[].manufacturer.url`](https://cyclonedx.org/docs/1.7/json/#components_items_manufacturer_url)
+  - [`components[].supplier.contact[].email`](https://cyclonedx.org/docs/1.7/json/#components_items_supplier_contact_items_email) OR [`components[].supplier.url`](https://cyclonedx.org/docs/1.7/json/#components_items_supplier_url)
 
 ### 4. Component name
 
