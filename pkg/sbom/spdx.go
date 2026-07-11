@@ -248,8 +248,10 @@ func (s *SpdxDoc) parseDoc() {
 		s.addToLogs("cdx doc is not parsable")
 		return
 	}
-	if comment := s.doc.CreationInfo.CreatorComment; comment != "" {
-		s.Lifecycle = comment
+	if s.doc.CreationInfo != nil {
+		if comment := s.doc.CreationInfo.CreatorComment; comment != "" {
+			s.Lifecycle = comment
+		}
 	}
 }
 
@@ -274,7 +276,6 @@ func (s *SpdxDoc) parseSpec() {
 	}
 
 	sp.Spdxid = string(s.doc.SPDXIdentifier)
-	sp.Comment = s.doc.CreationInfo.CreatorComment
 
 	sp.SpecType = string(SBOMSpecSPDX)
 	sp.Name = s.doc.DocumentName
