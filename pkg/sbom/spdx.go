@@ -245,7 +245,7 @@ func (s *SpdxDoc) parse() {
 
 func (s *SpdxDoc) parseDoc() {
 	if s.doc == nil {
-		s.addToLogs("cdx doc is not parsable")
+		s.addToLogs("spdx doc is not parsable")
 		return
 	}
 	if comment := s.doc.CreationInfo.CreatorComment; comment != "" {

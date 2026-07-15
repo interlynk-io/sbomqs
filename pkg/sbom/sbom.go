@@ -71,6 +71,11 @@ type spdxbasic struct {
 	Version string `json:"spdxVersion" yaml:"spdxVersion"`
 }
 
+// spdx3Basic is used to detect SPDX 3.0 JSON-LD format
+type spdx3Basic struct {
+	Context interface{} `json:"@context"` // Can be string or array
+}
+
 type cdxbasic struct {
 	XMLNS       string `json:"-" xml:"xmlns,attr"`
 	BOMFormat   string `json:"bomFormat" xml:"-"`
@@ -131,6 +136,26 @@ func detectSbomFormat(f io.ReadSeeker) (SpecFormat, FileFormat, FormatVersion, e
 		log.Fatalf("Failed to seek: %v", err)
 	}
 
+	// Check for SPDX 3.0 first
+	// JSON-LD format with @context
+	var s3 spdx3Basic
+	if err := json.NewDecoder(f).Decode(&s3); err == nil {
+		contextStr := extractContextString(s3.Context)
+		if strings.Contains(contextStr, "spdx.org/rdf/3.0") {
+			// Extract version from context URL like "https://spdx.org/rdf/3.0.1/spdx-context.jsonld"
+			version := "3.0"
+			if strings.Contains(contextStr, "3.0.1") {
+				version = "3.0.1"
+			}
+			return SBOMSpecSPDX, FileFormatJSON, FormatVersion("SPDX-" + version), nil
+		}
+	}
+
+	_, err = f.Seek(0, io.SeekStart)
+	if err != nil {
+		log.Printf("Failed to seek: %v", err)
+	}
+
 	var s spdxbasic
 	if err := json.NewDecoder(f).Decode(&s); err == nil {
 		if strings.HasPrefix(s.ID, "SPDX") {
@@ -186,6 +211,33 @@ func detectSbomFormat(f io.ReadSeeker) (SpecFormat, FileFormat, FormatVersion, e
 	return SBOMSpecUnknown, FileFormatUnknown, "", nil
 }
 
+// isSpdx3Version checks if the version string indicates SPDX 3.x
+func isSpdx3Version(version string) bool {
+	// Handle formats like "SPDX-3.0", "SPDX-3.0.1", "3.0", "3.0.1"
+	v := strings.ToLower(version)
+	v = strings.TrimPrefix(v, "spdx-")
+	return strings.HasPrefix(v, "3.")
+}
+
+// extractContextString extracts the context string from SPDX 3.0 JSON-LD
+func extractContextString(context interface{}) string {
+	if context == nil {
+		return ""
+	}
+
+	switch v := context.(type) {
+	case string:
+		return v
+	case []interface{}:
+		if len(v) > 0 {
+			if s, ok := v[0].(string); ok {
+				return s
+			}
+		}
+	}
+	return ""
+}
+
 // NewSBOMDocument creates a new SBOM document from the provided reader, automatically detecting the format and specification
 func NewSBOMDocument(ctx context.Context, f io.ReadSeeker, sig Signature) (Document, error) {
 	log := logger.FromContext(ctx)
@@ -213,7 +265,12 @@ func NewSBOMDocument(ctx context.Context, f io.ReadSeeker, sig Signature) (Docum
 			zap.String("format", string(format)),
 			zap.String("version", string(version)),
 		)
-		doc, err = newSPDXDoc(ctx, f, format, version, sig)
+
+		if isSpdx3Version(string(version)) {
+			doc, err = newSPDX3Doc(ctx, f, format, version, sig)
+		} else {
+			doc, err = newSPDXDoc(ctx, f, format, version, sig)
+		}
 
 	case SBOMSpecCDX:
 		log.Debug("Initializing CycloneDX document parser",
@@ -285,7 +342,11 @@ func NewSBOMDocumentFromBytes(ctx context.Context, b []byte, sig Signature) (Doc
 			zap.String("format", string(format)),
 			zap.String("version", string(version)),
 		)
-		doc, err = newSPDXDoc(ctx, r, format, version, sig)
+		if isSpdx3Version(string(version)) {
+			doc, err = newSPDX3Doc(ctx, r, format, version, sig)
+		} else {
+			doc, err = newSPDXDoc(ctx, r, format, version, sig)
+		}
 
 	case SBOMSpecCDX:
 		log.Debug("Initializing CycloneDX document parser",
