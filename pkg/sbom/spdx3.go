@@ -533,15 +533,48 @@ func (s *Spdx3Doc) licenses(pkg *parse.PackageInfo) []licenses.License {
 
 func (s *Spdx3Doc) declaredLicenses(pkg *parse.PackageInfo) []licenses.License {
 	lics := []licenses.License{}
+
+	// First check direct LicenseInfo field
 	if pkg.LicenseInfo != nil && pkg.LicenseInfo.Declared != "" {
 		lics = append(lics, licenses.LookupExpression(pkg.LicenseInfo.Declared, nil)...)
 	}
+
+	// Also check SPDX 3.0 license relationships
+	if s.doc != nil {
+		for _, rel := range s.doc.DeclaredLicenseFor(pkg.SpdxID) {
+			for _, to := range rel.To {
+				// Resolve the license reference
+				if resolved := s.doc.ResolveLicenseRef(to); resolved != "" && resolved != "NOASSERTION" {
+					lics = append(lics, licenses.LookupExpression(resolved, nil)...)
+				}
+			}
+		}
+	}
+
 	return lics
 }
 
 func (s *Spdx3Doc) concludedLicenses(pkg *parse.PackageInfo) []licenses.License {
-	// Same as licenses() - concluded license
-	return s.licenses(pkg)
+	lics := []licenses.License{}
+
+	// First check direct LicenseInfo field
+	if pkg.LicenseInfo != nil && pkg.LicenseInfo.Concluded != "" {
+		lics = append(lics, licenses.LookupExpression(pkg.LicenseInfo.Concluded, nil)...)
+	}
+
+	// Also check SPDX 3.0 license relationships
+	if s.doc != nil {
+		for _, rel := range s.doc.ConcludedLicenseFor(pkg.SpdxID) {
+			for _, to := range rel.To {
+				// Resolve the license reference
+				if resolved := s.doc.ResolveLicenseRef(to); resolved != "" && resolved != "NOASSERTION" {
+					lics = append(lics, licenses.LookupExpression(resolved, nil)...)
+				}
+			}
+		}
+	}
+
+	return lics
 }
 
 func (s *Spdx3Doc) parseFiles() {

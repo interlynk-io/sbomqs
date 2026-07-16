@@ -1,0 +1,37 @@
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "No Timestamp Test",
+      "creationInfo": "_:creationinfo",
+      "element": ["SPDXRef-Package-Root"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "createdBy": ["_:tool1"],
+      "createdUsing": ["_:tool1"]
+    },
+    {
+      "type": "Tool",
+      "@id": "_:tool1",
+      "name": "no-timestamp-generator"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package-Root",
+      "name": "no-timestamp-app",
+      "software_packageVersion": "1.0.0"
+    },
+    {
+      "type": "Relationship",
+      "spdxId": "SPDXRef-Relationship-1",
+      "from": "SPDXRef-DOCUMENT",
+      "to": ["SPDXRef-Package-Root"],
+      "relationshipType": "describes"
+    }
+  ]
+}

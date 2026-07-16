@@ -1,0 +1,37 @@
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "No Authors Test",
+      "creationInfo": "_:creationinfo",
+      "element": ["SPDXRef-Package-Root"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdUsing": ["_:tool1"]
+    },
+    {
+      "type": "Tool",
+      "@id": "_:tool1",
+      "name": "no-authors-generator"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package-Root",
+      "name": "no-authors-app",
+      "software_packageVersion": "1.0.0"
+    },
+    {
+      "type": "Relationship",
+      "spdxId": "SPDXRef-Relationship-1",
+      "from": "SPDXRef-DOCUMENT",
+      "to": ["SPDXRef-Package-Root"],
+      "relationshipType": "describes"
+    }
+  ]
+}
