@@ -141,13 +141,19 @@ func detectSbomFormat(f io.ReadSeeker) (SpecFormat, FileFormat, FormatVersion, e
 	var s3 spdx3Basic
 	if err := json.NewDecoder(f).Decode(&s3); err == nil {
 		contextStr := extractContextString(s3.Context)
+
 		if strings.Contains(contextStr, "spdx.org/rdf/3.0") {
-			// Extract version from context URL like "https://spdx.org/rdf/3.0.1/spdx-context.jsonld"
-			version := "3.0"
+
+			version := ""
 			if strings.Contains(contextStr, "3.0.1") {
 				version = "3.0.1"
+			} else if strings.Contains(contextStr, "/3.0/") || strings.HasSuffix(contextStr, "/3.0") {
+				version = "3.0"
 			}
-			return SBOMSpecSPDX, FileFormatJSON, FormatVersion("SPDX-" + version), nil
+
+			if version != "" {
+				return SBOMSpecSPDX, FileFormatJSON, FormatVersion("SPDX-" + version), nil
+			}
 		}
 	}
 
@@ -211,15 +217,18 @@ func detectSbomFormat(f io.ReadSeeker) (SpecFormat, FileFormat, FormatVersion, e
 	return SBOMSpecUnknown, FileFormatUnknown, "", nil
 }
 
-// isSpdx3Version checks if the version string indicates SPDX 3.x
+// isSpdx3Version checks if the version string indicates a supported SPDX 3.x version
 func isSpdx3Version(version string) bool {
 	// Handle formats like "SPDX-3.0", "SPDX-3.0.1", "3.0", "3.0.1"
 	v := strings.ToLower(version)
 	v = strings.TrimPrefix(v, "spdx-")
-	return strings.HasPrefix(v, "3.")
+
+	// Only support SPDX 3.0.x versions (3.0, 3.0.1, etc.)
+	return strings.HasPrefix(v, "3.0")
 }
 
-// extractContextString extracts the context string from SPDX 3.0 JSON-LD
+// extractContextString extracts the SPDX context string from SPDX 3.0 JSON-LD
+// It scans all contexts in the array and returns the first SPDX context found
 func extractContextString(context interface{}) string {
 	if context == nil {
 		return ""
@@ -229,8 +238,9 @@ func extractContextString(context interface{}) string {
 	case string:
 		return v
 	case []interface{}:
-		if len(v) > 0 {
-			if s, ok := v[0].(string); ok {
+		// Scan all contexts and return the first SPDX context
+		for _, item := range v {
+			if s, ok := item.(string); ok && strings.Contains(s, "spdx.org/rdf/3.0") {
 				return s
 			}
 		}
