@@ -1,6 +1,6 @@
 module github.com/interlynk-io/sbomqs/v2
 
-go 1.25.0
+go 1.25.5
 
 require (
 	github.com/CycloneDX/cyclonedx-go v0.11.0
@@ -30,8 +30,10 @@ require (
 	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/mattn/go-colorable v0.1.15 // indirect
 	github.com/mattn/go-isatty v0.0.22 // indirect
+	github.com/piprate/json-gold v0.7.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/pquerna/cachecontrol v0.2.0 // indirect
 	github.com/tidwall/gjson v1.19.0 // indirect
 	github.com/tidwall/match v1.2.0 // indirect
 	github.com/tidwall/pretty v1.2.1 // indirect
@@ -58,5 +60,3 @@ require (
 	gotest.tools v2.2.0+incompatible
 	sigs.k8s.io/yaml v1.6.0 // indirect
 )
-
-replace github.com/interlynk-io/spdx-zen => /home/linuzz/go/src/github.com/interlynk-io/spdx-zen
