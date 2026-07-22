@@ -183,13 +183,15 @@ func BSIV21CompSecurityTxtURL(doc sbom.Document) catalog.ProfFeatScore {
 }
 
 // BSIV21CompDownloadURI checks that components have an externalReference of type distribution or distribution-intake with a URL.
+// For SPDX 3.0, also checks software_downloadLocation field.
 func BSIV21CompDownloadURI(doc sbom.Document) catalog.ProfFeatScore {
-	return extRefURLCheck(doc, "deployable form URI", "distribution", "distribution-intake")
+	return extRefOrFieldURLCheck(doc, "deployable form URI", "GetDownloadLocationURL", "distribution", "distribution-intake")
 }
 
 // BSIV21CompSourceCodeURI checks that components have an externalReference of type source-distribution or vcs with a URL.
+// For SPDX 3.0, also checks software_sourceInfo field via GetSourceCodeURL().
 func BSIV21CompSourceCodeURI(doc sbom.Document) catalog.ProfFeatScore {
-	return extRefURLCheck(doc, "source code URI", "source-distribution", "vcs")
+	return extRefOrFieldURLCheck(doc, "source code URI", "GetSourceCodeURL", "source-distribution", "vcs")
 }
 
 // BSIV21SBOMURI checks the SBOM-URI field (serialNumber for CDX, namespace for SPDX).
@@ -258,6 +260,45 @@ func extRefURLCheck(doc sbom.Document, fieldLabel string, refTypes ...string) ca
 				}
 			}
 		}
+		return false
+	})
+
+	return componentScore(valid, total, fieldLabel)
+}
+
+// extRefOrFieldURLCheck checks that components have either:
+// 1. An externalReference of one of the given types with a non-empty URL (CDX, SPDX 2.x), OR
+// 2. A non-empty value from the specified field getter method (SPDX 3.0 sourceInfo/downloadLocation)
+func extRefOrFieldURLCheck(doc sbom.Document, fieldLabel string, fieldGetter string, refTypes ...string) catalog.ProfFeatScore {
+	comps := doc.Components()
+	total := len(comps)
+
+	if total == 0 {
+		return catalog.ProfFeatScore{Score: 0.0, Desc: "no components found"}
+	}
+
+	valid := lo.CountBy(comps, func(c sbom.GetComponent) bool {
+		// First check external references (CDX, SPDX 2.x style)
+		for _, er := range c.ExternalReferences() {
+			for _, refType := range refTypes {
+				if er.GetRefType() == refType && strings.TrimSpace(er.GetRefLocator()) != "" {
+					return true
+				}
+			}
+		}
+
+		// Then check SPDX 3.0 style fields
+		switch fieldGetter {
+		case "GetSourceCodeURL":
+			if strings.TrimSpace(c.GetSourceCodeURL()) != "" {
+				return true
+			}
+		case "GetDownloadLocationURL":
+			if strings.TrimSpace(c.GetDownloadLocationURL()) != "" {
+				return true
+			}
+		}
+
 		return false
 	})
 
