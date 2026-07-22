@@ -165,6 +165,162 @@ var cdx21CompWithDistributionOnlyURL = []byte(`
 }
 `)
 
+// SPDX 3.0: one component with software_sourceInfo (git URL) — score 10.0
+var spdx3CompWithSourceInfo = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "BSI v2.1 Test",
+      "creationInfo": "_:creationinfo",
+      "element": ["SPDXRef-Package"],
+      "profileConformance": ["core", "software"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:author"]
+    },
+    {
+      "type": "Person",
+      "@id": "_:author",
+      "name": "Test Author"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package",
+      "name": "lib-with-source",
+      "software_packageVersion": "1.0.0",
+      "software_sourceInfo": "https://github.com/example/lib"
+    }
+  ]
+}
+`)
+
+// SPDX 3.0: two components with software_sourceInfo — score 10.0
+var spdx3TwoCompsWithSourceInfo = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "BSI v2.1 Test",
+      "creationInfo": "_:creationinfo",
+      "element": ["SPDXRef-Package1", "SPDXRef-Package2"],
+      "profileConformance": ["core", "software"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:author"]
+    },
+    {
+      "type": "Person",
+      "@id": "_:author",
+      "name": "Test Author"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package1",
+      "name": "lib-with-source-1",
+      "software_packageVersion": "1.0.0",
+      "software_sourceInfo": "https://github.com/example/lib1"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package2",
+      "name": "lib-with-source-2",
+      "software_packageVersion": "2.0.0",
+      "software_sourceInfo": "https://github.com/example/lib2"
+    }
+  ]
+}
+`)
+
+// SPDX 3.0: two components — only one has software_sourceInfo — partial score
+var spdx3TwoCompsOneWithSourceInfo = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "BSI v2.1 Test",
+      "creationInfo": "_:creationinfo",
+      "element": ["SPDXRef-Package1", "SPDXRef-Package2"],
+      "profileConformance": ["core", "software"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:author"]
+    },
+    {
+      "type": "Person",
+      "@id": "_:author",
+      "name": "Test Author"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package1",
+      "name": "lib-with-source",
+      "software_packageVersion": "1.0.0",
+      "software_sourceInfo": "https://github.com/example/lib1"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package2",
+      "name": "lib-without-source",
+      "software_packageVersion": "2.0.0"
+    }
+  ]
+}
+`)
+
+// SPDX 3.0: one component without software_sourceInfo — score 0
+var spdx3CompWithoutSourceInfo = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "BSI v2.1 Test",
+      "creationInfo": "_:creationinfo",
+      "element": ["SPDXRef-Package"],
+      "profileConformance": ["core", "software"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:author"]
+    },
+    {
+      "type": "Person",
+      "@id": "_:author",
+      "name": "Test Author"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package",
+      "name": "lib-without-source",
+      "software_packageVersion": "1.0.0"
+    }
+  ]
+}
+`)
+
 func TestBSIV21CompSourceCodeURI(t *testing.T) {
 	ctx := context.Background()
 
@@ -240,6 +396,54 @@ func TestBSIV21CompSourceCodeURI(t *testing.T) {
 		assert.Equal(t, "no components declare source code URI", got.Desc)
 		assert.False(t, got.Ignore)
 	})
+
+	// SPDX 3.0: software_sourceInfo with URL → score 10.0
+	t.Run("spdx3SourceInfoURL", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3CompWithSourceInfo, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV21CompSourceCodeURI(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "source code URI declared for all components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// SPDX 3.0: two components with software_sourceInfo → score 10.0
+	t.Run("spdx3BothSourceInfo", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3TwoCompsWithSourceInfo, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV21CompSourceCodeURI(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "source code URI declared for all components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// SPDX 3.0: 1 of 2 components has software_sourceInfo → partial score 5.0
+	t.Run("spdx3PartialSourceInfo", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3TwoCompsOneWithSourceInfo, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV21CompSourceCodeURI(doc)
+
+		assert.InDelta(t, 5.0, got.Score, 1e-9)
+		assert.Equal(t, "1/2 components declare source code URI", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// SPDX 3.0: no software_sourceInfo → score 0.0
+	t.Run("spdx3NoSourceInfo", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3CompWithoutSourceInfo, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV21CompSourceCodeURI(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "no components declare source code URI", got.Desc)
+		assert.False(t, got.Ignore)
+	})
 }
 
 //
@@ -307,6 +511,43 @@ var cdx21TwoCompsDistAndDistIntake = []byte(`
 `)
 
 // CDX: two components — only one has distribution or distribution-intake URL — partial score.
+
+// SPDX 3.0: one component with software_downloadLocation — score 10.0
+var spdx3CompWithDownloadLocation = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "BSI v2.1 Test",
+      "creationInfo": "_:creationinfo",
+      "element": ["SPDXRef-Package"],
+      "profileConformance": ["core", "software"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:author"]
+    },
+    {
+      "type": "Person",
+      "@id": "_:author",
+      "name": "Test Author"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package",
+      "name": "lib-with-download",
+      "software_packageVersion": "1.0.0",
+      "software_downloadLocation": "https://example.com/lib-1.0.0.jar"
+    }
+  ]
+}
+`)
+
 var cdx21TwoCompsOneWithDeployableURL = []byte(`
 {
   "bomFormat": "CycloneDX",
@@ -408,6 +649,18 @@ func TestBSIV21CompDownloadURI(t *testing.T) {
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "no components declare deployable form URI", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// SPDX 3.0: software_downloadLocation with URL → score 10.0
+	t.Run("spdx3DownloadLocationURL", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3CompWithDownloadLocation, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV21CompDownloadURI(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "deployable form URI declared for all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 }
@@ -867,6 +1120,202 @@ var cdx21CompWithCustomLicenseRef = []byte(`
 }
 `)
 
+// SPDX 3.0: one component with hasConcludedLicense relationship (MIT) — score 10.0
+var spdx3CompWithConcludedLicense = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "BSI v2.1 Test",
+      "creationInfo": "_:creationinfo",
+      "element": ["SPDXRef-Package", "SPDXRef-License-MIT"],
+      "profileConformance": ["core", "software", "licensing"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:author"]
+    },
+    {
+      "type": "Person",
+      "@id": "_:author",
+      "name": "Test Author"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package",
+      "name": "lib-with-concluded-license",
+      "software_packageVersion": "1.0.0"
+    },
+    {
+      "type": "License",
+      "spdxId": "SPDXRef-License-MIT",
+      "name": "MIT"
+    },
+    {
+      "type": "Relationship",
+      "from": "SPDXRef-Package",
+      "to": ["SPDXRef-License-MIT"],
+      "relationshipType": "hasConcludedLicense"
+    }
+  ]
+}
+`)
+
+// SPDX 3.0: two components with hasConcludedLicense — score 10.0
+var spdx3TwoCompsWithConcludedLicense = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "BSI v2.1 Test",
+      "creationInfo": "_:creationinfo",
+      "element": ["SPDXRef-Package1", "SPDXRef-Package2", "SPDXRef-License-MIT", "SPDXRef-License-Apache"],
+      "profileConformance": ["core", "software", "licensing"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:author"]
+    },
+    {
+      "type": "Person",
+      "@id": "_:author",
+      "name": "Test Author"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package1",
+      "name": "lib-with-mit",
+      "software_packageVersion": "1.0.0"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package2",
+      "name": "lib-with-apache",
+      "software_packageVersion": "2.0.0"
+    },
+    {
+      "type": "License",
+      "spdxId": "SPDXRef-License-MIT",
+      "name": "MIT"
+    },
+    {
+      "type": "License",
+      "spdxId": "SPDXRef-License-Apache",
+      "name": "Apache-2.0"
+    },
+    {
+      "type": "Relationship",
+      "from": "SPDXRef-Package1",
+      "to": ["SPDXRef-License-MIT"],
+      "relationshipType": "hasConcludedLicense"
+    },
+    {
+      "type": "Relationship",
+      "from": "SPDXRef-Package2",
+      "to": ["SPDXRef-License-Apache"],
+      "relationshipType": "hasConcludedLicense"
+    }
+  ]
+}
+`)
+
+// SPDX 3.0: two components — only one has hasConcludedLicense — partial score
+var spdx3TwoCompsOneWithConcludedLicense = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "BSI v2.1 Test",
+      "creationInfo": "_:creationinfo",
+      "element": ["SPDXRef-Package1", "SPDXRef-Package2", "SPDXRef-License-MIT"],
+      "profileConformance": ["core", "software", "licensing"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:author"]
+    },
+    {
+      "type": "Person",
+      "@id": "_:author",
+      "name": "Test Author"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package1",
+      "name": "lib-with-mit",
+      "software_packageVersion": "1.0.0"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package2",
+      "name": "lib-without-license",
+      "software_packageVersion": "2.0.0"
+    },
+    {
+      "type": "License",
+      "spdxId": "SPDXRef-License-MIT",
+      "name": "MIT"
+    },
+    {
+      "type": "Relationship",
+      "from": "SPDXRef-Package1",
+      "to": ["SPDXRef-License-MIT"],
+      "relationshipType": "hasConcludedLicense"
+    }
+  ]
+}
+`)
+
+// SPDX 3.0: one component without hasConcludedLicense — score 0
+var spdx3CompWithoutConcludedLicense = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "BSI v2.1 Test",
+      "creationInfo": "_:creationinfo",
+      "element": ["SPDXRef-Package"],
+      "profileConformance": ["core", "software"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:author"]
+    },
+    {
+      "type": "Person",
+      "@id": "_:author",
+      "name": "Test Author"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package",
+      "name": "lib-without-concluded-license",
+      "software_packageVersion": "1.0.0"
+    }
+  ]
+}
+`)
+
 func TestBSIV21CompDistributionLicence(t *testing.T) {
 	ctx := context.Background()
 
@@ -957,6 +1406,50 @@ func TestBSIV21CompDistributionLicence(t *testing.T) {
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "no components found", got.Desc)
+	})
+
+	// SPDX 3.0: hasConcludedLicense relationship (MIT) → score 10.0
+	t.Run("spdx3ConcludedLicenseMIT", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3CompWithConcludedLicense, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV21CompDistributionLicence(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "distribution licence (concluded) declared for all components", got.Desc)
+	})
+
+	// SPDX 3.0: two components with hasConcludedLicense → score 10.0
+	t.Run("spdx3BothConcludedLicense", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3TwoCompsWithConcludedLicense, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV21CompDistributionLicence(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "distribution licence (concluded) declared for all components", got.Desc)
+	})
+
+	// SPDX 3.0: 1 of 2 components has hasConcludedLicense → partial score 5.0
+	t.Run("spdx3PartialConcludedLicense", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3TwoCompsOneWithConcludedLicense, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV21CompDistributionLicence(doc)
+
+		assert.InDelta(t, 5.0, got.Score, 1e-9)
+		assert.Equal(t, "1/2 components declare distribution licence (concluded)", got.Desc)
+	})
+
+	// SPDX 3.0: no hasConcludedLicense → score 0.0
+	t.Run("spdx3NoConcludedLicense", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3CompWithoutConcludedLicense, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV21CompDistributionLicence(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "no components declare distribution licence (concluded)", got.Desc)
 	})
 }
 
@@ -1078,6 +1571,202 @@ var cdx21CompWithConcludedOnly = []byte(`
 }
 `)
 
+// SPDX 3.0: one component with hasDeclaredLicense relationship (Apache-2.0) — score 10.0
+var spdx3CompWithDeclaredLicense = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "BSI v2.1 Test",
+      "creationInfo": "_:creationinfo",
+      "element": ["SPDXRef-Package", "SPDXRef-License-Apache"],
+      "profileConformance": ["core", "software", "licensing"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:author"]
+    },
+    {
+      "type": "Person",
+      "@id": "_:author",
+      "name": "Test Author"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package",
+      "name": "lib-with-declared-license",
+      "software_packageVersion": "1.0.0"
+    },
+    {
+      "type": "License",
+      "spdxId": "SPDXRef-License-Apache",
+      "name": "Apache-2.0"
+    },
+    {
+      "type": "Relationship",
+      "from": "SPDXRef-Package",
+      "to": ["SPDXRef-License-Apache"],
+      "relationshipType": "hasDeclaredLicense"
+    }
+  ]
+}
+`)
+
+// SPDX 3.0: two components with hasDeclaredLicense — score 10.0
+var spdx3TwoCompsWithDeclaredLicense = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "BSI v2.1 Test",
+      "creationInfo": "_:creationinfo",
+      "element": ["SPDXRef-Package1", "SPDXRef-Package2", "SPDXRef-License-Apache", "SPDXRef-License-BSD"],
+      "profileConformance": ["core", "software", "licensing"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:author"]
+    },
+    {
+      "type": "Person",
+      "@id": "_:author",
+      "name": "Test Author"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package1",
+      "name": "lib-with-apache",
+      "software_packageVersion": "1.0.0"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package2",
+      "name": "lib-with-bsd",
+      "software_packageVersion": "2.0.0"
+    },
+    {
+      "type": "License",
+      "spdxId": "SPDXRef-License-Apache",
+      "name": "Apache-2.0"
+    },
+    {
+      "type": "License",
+      "spdxId": "SPDXRef-License-BSD",
+      "name": "BSD-3-Clause"
+    },
+    {
+      "type": "Relationship",
+      "from": "SPDXRef-Package1",
+      "to": ["SPDXRef-License-Apache"],
+      "relationshipType": "hasDeclaredLicense"
+    },
+    {
+      "type": "Relationship",
+      "from": "SPDXRef-Package2",
+      "to": ["SPDXRef-License-BSD"],
+      "relationshipType": "hasDeclaredLicense"
+    }
+  ]
+}
+`)
+
+// SPDX 3.0: two components — only one has hasDeclaredLicense — partial score
+var spdx3TwoCompsOneWithDeclaredLicense = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "BSI v2.1 Test",
+      "creationInfo": "_:creationinfo",
+      "element": ["SPDXRef-Package1", "SPDXRef-Package2", "SPDXRef-License-Apache"],
+      "profileConformance": ["core", "software", "licensing"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:author"]
+    },
+    {
+      "type": "Person",
+      "@id": "_:author",
+      "name": "Test Author"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package1",
+      "name": "lib-with-apache",
+      "software_packageVersion": "1.0.0"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package2",
+      "name": "lib-without-declared",
+      "software_packageVersion": "2.0.0"
+    },
+    {
+      "type": "License",
+      "spdxId": "SPDXRef-License-Apache",
+      "name": "Apache-2.0"
+    },
+    {
+      "type": "Relationship",
+      "from": "SPDXRef-Package1",
+      "to": ["SPDXRef-License-Apache"],
+      "relationshipType": "hasDeclaredLicense"
+    }
+  ]
+}
+`)
+
+// SPDX 3.0: one component without hasDeclaredLicense — score 0
+var spdx3CompWithoutDeclaredLicense = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "BSI v2.1 Test",
+      "creationInfo": "_:creationinfo",
+      "element": ["SPDXRef-Package"],
+      "profileConformance": ["core", "software"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:author"]
+    },
+    {
+      "type": "Person",
+      "@id": "_:author",
+      "name": "Test Author"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package",
+      "name": "lib-without-declared-license",
+      "software_packageVersion": "1.0.0"
+    }
+  ]
+}
+`)
+
 func TestBSIV21CompOriginalLicences(t *testing.T) {
 	ctx := context.Background()
 
@@ -1167,5 +1856,49 @@ func TestBSIV21CompOriginalLicences(t *testing.T) {
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "no components found", got.Desc)
+	})
+
+	// SPDX 3.0: hasDeclaredLicense relationship (Apache-2.0) → score 10.0
+	t.Run("spdx3DeclaredLicenseApache", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3CompWithDeclaredLicense, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV21CompOriginalLicences(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "original licence (declared) declared for all components", got.Desc)
+	})
+
+	// SPDX 3.0: two components with hasDeclaredLicense → score 10.0
+	t.Run("spdx3BothDeclaredLicense", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3TwoCompsWithDeclaredLicense, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV21CompOriginalLicences(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "original licence (declared) declared for all components", got.Desc)
+	})
+
+	// SPDX 3.0: 1 of 2 components has hasDeclaredLicense → partial score 5.0
+	t.Run("spdx3PartialDeclaredLicense", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3TwoCompsOneWithDeclaredLicense, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV21CompOriginalLicences(doc)
+
+		assert.InDelta(t, 5.0, got.Score, 1e-9)
+		assert.Equal(t, "1/2 components declare original licence (declared)", got.Desc)
+	})
+
+	// SPDX 3.0: no hasDeclaredLicense → score 0.0
+	t.Run("spdx3NoDeclaredLicense", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3CompWithoutDeclaredLicense, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV21CompOriginalLicences(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "no components declare original licence (declared)", got.Desc)
 	})
 }
