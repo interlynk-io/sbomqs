@@ -72,6 +72,53 @@ var spdxCompSupplierAsPersonWithNameAndEmail = []byte(`
 }
 `)
 
+// SPDX 3.0 - Component Supplier with Person name and email
+var spdx3CompSupplierWithPersonNameAndEmail = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Test",
+      "creationInfo": "_:creationinfo",
+      "element": ["SPDXRef-Package"],
+      "profileConformance": ["core", "software"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:author"]
+    },
+    {
+      "type": "Person",
+      "@id": "_:author",
+      "name": "Test Author"
+    },
+    {
+      "type": "Person",
+      "@id": "_:supplier1",
+      "name": "Samantha Wright",
+      "externalIdentifier": [
+        {
+          "externalIdentifierType": "email",
+          "identifier": "john.doe@example.com"
+        }
+      ]
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package",
+      "name": "my-application",
+      "software_packageVersion": "1.0.0",
+      "suppliedBy": "_:supplier1"
+    }
+  ]
+}
+`)
+
 var spdxCompSupplierAsOrganizationWithNameAndEmail = []byte(`
 {
   "spdxVersion": "SPDX-2.3",
@@ -88,6 +135,53 @@ var spdxCompSupplierAsOrganizationWithNameAndEmail = []byte(`
       "versionInfo": "1.0",
       "supplier": "Organization: Samantha Wright (samantha.wright@example.com)",
       "homepage" : "http://ftp.gnu.org/gnu/glibc"
+    }
+  ]
+}
+`)
+
+// SPDX 3.0 - Component Supplier with Organization name and email
+var spdx3CompSupplierWithOrganizationNameAndEmail = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Test",
+      "creationInfo": "_:creationinfo",
+      "element": ["SPDXRef-Package"],
+      "profileConformance": ["core", "software"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:author"]
+    },
+    {
+      "type": "Person",
+      "@id": "_:author",
+      "name": "Test Author"
+    },
+    {
+      "type": "Organization",
+      "@id": "_:supplier1",
+      "name": "Example Organization Inc",
+      "externalIdentifier": [
+        {
+          "externalIdentifierType": "email",
+          "identifier": "contact@example.com"
+        }
+      ]
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package",
+      "name": "my-application",
+      "software_packageVersion": "1.0.0",
+      "suppliedBy": "_:supplier1"
     }
   ]
 }
@@ -136,6 +230,52 @@ var spdxCompSupplierWithPersonEmail = []byte(`
 }
 `)
 
+// SPDX 3.0 - Component Supplier with Person name and email
+var spdx3CompSupplierWithPersonEmail = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Test",
+      "creationInfo": "_:creationinfo",
+      "element": ["SPDXRef-Package"],
+      "profileConformance": ["core", "software"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:author"]
+    },
+    {
+      "type": "Person",
+      "@id": "_:author",
+      "name": "Test Author"
+    },
+    {
+      "type": "Person",
+      "@id": "_:supplier1",
+      "externalIdentifier": [
+        {
+          "externalIdentifierType": "email",
+          "identifier": "john.doe@example.com"
+        }
+      ]
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package",
+      "name": "my-application",
+      "software_packageVersion": "1.0.0",
+      "suppliedBy": "_:supplier1"
+    }
+  ]
+}
+`)
+
 var spdxCompSupplierWithOrganizationEmail = []byte(`
 {
   "spdxVersion": "SPDX-2.3",
@@ -157,6 +297,51 @@ var spdxCompSupplierWithOrganizationEmail = []byte(`
 }
 `)
 
+// SPDX 3.0 - Component Supplier with Organization name and email
+var spdx3CompSupplierWithOrganizationEmail = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Test",
+      "creationInfo": "_:creationinfo",
+      "element": ["SPDXRef-Package"],
+      "profileConformance": ["core", "software"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:author"]
+    },
+    {
+      "type": "Person",
+      "@id": "_:author",
+      "name": "Test Author"
+    },
+    {
+      "type": "Organization",
+      "@id": "_:supplier1",
+      "externalIdentifier": [
+        {
+          "externalIdentifierType": "email",
+          "identifier": "contact@example.com"
+        }
+      ]
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package",
+      "name": "my-application",
+      "software_packageVersion": "1.0.0",
+      "suppliedBy": "_:supplier1"
+    }
+  ]
+}
+`)
 var cdxCompSupplierWithNameAndEmail = []byte(`
 {
   "bomFormat": "CycloneDX",
@@ -222,6 +407,47 @@ var spdxCompSupplierWithPersonName = []byte(`
 }
 `)
 
+// SPDX 3.0 - Component Supplier with Person name
+var spdx3CompSupplierWithPersonName = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Test",
+      "creationInfo": "_:creationinfo",
+      "element": ["SPDXRef-Package"],
+      "profileConformance": ["core", "software"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:author"]
+    },
+    {
+      "type": "Person",
+      "@id": "_:author",
+      "name": "Test Author"
+    },
+    {
+      "type": "Person",
+      "@id": "_:supplier1",
+      "name": "Samantha Wright"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package",
+      "name": "my-application",
+      "software_packageVersion": "1.0.0",
+      "suppliedBy": "_:supplier1"
+    }
+  ]
+}
+`)
+
 var spdxCompSupplierWithOrganizationName = []byte(`
 {
   "spdxVersion": "SPDX-2.3",
@@ -238,6 +464,47 @@ var spdxCompSupplierWithOrganizationName = []byte(`
       "versionInfo": "3.0",
       "supplier": "Organization: Samantha Wright",
       "homepage" : "http://ftp.gnu.org/gnu/glibc"
+    }
+  ]
+}
+`)
+
+// SPDX 3.0 - Component Supplier with Organization name
+var spdx3CompSupplierWithOrganizationName = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Test",
+      "creationInfo": "_:creationinfo",
+      "element": ["SPDXRef-Package"],
+      "profileConformance": ["core", "software"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:author"]
+    },
+    {
+      "type": "Person",
+      "@id": "_:author",
+      "name": "Test Author"
+    },
+    {
+      "type": "Organization",
+      "@id": "_:supplier1",
+      "name": "Example Organization Inc"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package",
+      "name": "my-application",
+      "software_packageVersion": "1.0.0",
+      "suppliedBy": "_:supplier1"
     }
   ]
 }
@@ -279,6 +546,41 @@ var spdxCompSupplierAbsent = []byte(`
 }
 `)
 
+// SPDX 3.0 - Component Supplier absent
+var spdx3CompSupplierAbsent = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Test",
+      "creationInfo": "_:creationinfo",
+      "element": ["SPDXRef-Package"],
+      "profileConformance": ["core", "software"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:author"]
+    },
+    {
+      "type": "Person",
+      "@id": "_:author",
+      "name": "Test Author"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package",
+      "name": "my-application",
+      "software_packageVersion": "1.0.0"
+    }
+  ]
+}
+`)
+
 var cdxCompSupplierWithEmptyName = []byte(`
 {
   "bomFormat": "CycloneDX",
@@ -314,6 +616,47 @@ var spdxCompSupplierWithPersonNameEmpty = []byte(`
       "versionInfo": "3.0",
       "supplier": "Person:  ( )",
       "homepage" : "http://ftp.gnu.org/gnu/glibc"
+    }
+  ]
+}
+`)
+
+// SPDX 3.0 - Component Supplier with Person name empty
+var spdx3CompSupplierWithPersonNameEmpty = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Test",
+      "creationInfo": "_:creationinfo",
+      "element": ["SPDXRef-Package"],
+      "profileConformance": ["core", "software"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:author"]
+    },
+    {
+      "type": "Person",
+      "@id": "_:author",
+      "name": "Test Author"
+    },
+    {
+      "type": "Person",
+      "@id": "_:supplier1",
+      "name": " "
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package",
+      "name": "my-application",
+      "software_packageVersion": "1.0.0",
+      "suppliedBy": "_:supplier1"
     }
   ]
 }
@@ -781,9 +1124,33 @@ func TestNTIACompSupplier(t *testing.T) {
 		assert.False(t, got.Ignore)
 	})
 
+	// spdx3CompSupplierWithPersonNameAndEmail
+	t.Run("spdx3CompSupplierAsPersonWithNameAndEmail", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3CompSupplierWithPersonNameAndEmail, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIACompWithSupplier(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "supplier information declared for all components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
 	// spdxCompSupplierAsOrganizationWithNameAndEmail
 	t.Run("spdxCompSupplierAsOrganizationWithNameAndEmail", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompSupplierAsOrganizationWithNameAndEmail, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIACompWithSupplier(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "supplier information declared for all components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// spdx3CompSupplierWithOrganizationNameAndEmail
+	t.Run("spdx3CompSupplierAsOrganizationWithNameAndEmail", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3CompSupplierWithOrganizationNameAndEmail, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := NTIACompWithSupplier(doc)
@@ -817,9 +1184,33 @@ func TestNTIACompSupplier(t *testing.T) {
 		assert.False(t, got.Ignore)
 	})
 
+	// spdx3CompSupplierWithPersonEmail
+	t.Run("spdx3CompSupplierWithPersonEmail", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3CompSupplierWithPersonEmail, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIACompWithSupplier(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "supplier information declared for all components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
 	// spdxCompSupplierWithOrganizationEmail
 	t.Run("spdxCompSupplierWithOrganizationEmail", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompSupplierWithOrganizationEmail, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIACompWithSupplier(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "supplier information declared for all components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// spdx3CompSupplierWithOrganizationEmail
+	t.Run("spdx3CompSupplierWithOrganizationEmail", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3CompSupplierWithOrganizationEmail, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := NTIACompWithSupplier(doc)
@@ -865,9 +1256,33 @@ func TestNTIACompSupplier(t *testing.T) {
 		assert.False(t, got.Ignore)
 	})
 
+	// spdx3CompSupplierWithPersonName
+	t.Run("spdx3CompSupplierWithPersonName", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3CompSupplierWithPersonName, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIACompWithSupplier(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "supplier information declared for all components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
 	// spdxCompSupplierWithOrganizationName
 	t.Run("spdxCompSupplierWithOrganizationName", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompSupplierWithOrganizationName, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIACompWithSupplier(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "supplier information declared for all components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// spdx3CompSupplierWithOrganizationName
+	t.Run("spdx3CompSupplierWithOrganizationName", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3CompSupplierWithOrganizationName, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := NTIACompWithSupplier(doc)
@@ -901,6 +1316,18 @@ func TestNTIACompSupplier(t *testing.T) {
 		assert.False(t, got.Ignore)
 	})
 
+	// spdx3CompSupplierAbsent
+	t.Run("spdx3CompSupplierAbsent", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3CompSupplierAbsent, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIACompWithSupplier(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "supplier or manufacturer information missing for all 1 components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
 	// cdxCompSupplierWithEmptyName
 	t.Run("cdxCompSupplierWithEmptyName", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompSupplierWithEmptyName, sbom.Signature{})
@@ -916,6 +1343,18 @@ func TestNTIACompSupplier(t *testing.T) {
 	// spdxCompSupplierWithPersonNameEmpty
 	t.Run("spdxCompSupplierWithPersonNameEmpty", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompSupplierWithPersonNameEmpty, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIACompWithSupplier(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "supplier or manufacturer information missing for all 1 components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// spdx3CompSupplierWithPersonNameEmpty
+	t.Run("spdx3CompSupplierWithPersonNameEmpty", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3CompSupplierWithPersonNameEmpty, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := NTIACompWithSupplier(doc)
@@ -1196,6 +1635,164 @@ var cdxMultipleCompWithOneCPEAndAnotherMissing = []byte(`
 }
 `)
 
+// SPDX 3.0 - Component with valid PURL
+var spdx3CompPURLValid = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Test",
+      "creationInfo": "_:creationinfo",
+      "element": ["SPDXRef-Package"],
+      "profileConformance": ["core", "software"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:author"]
+    },
+    {
+      "type": "Person",
+      "@id": "_:author",
+      "name": "Test Author"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package",
+      "name": "my-application",
+      "software_packageVersion": "1.0.0",
+      "externalIdentifier": [
+        {
+          "externalIdentifierType": "packageUrl",
+          "identifier": "pkg:golang/github.com/pkg/errors@0.9.1"
+        }
+      ]
+    }
+  ]
+}
+`)
+
+// SPDX 3.0 - Component with invalid PURL
+var spdx3CompInValidPURL = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Test",
+      "creationInfo": "_:creationinfo",
+      "element": ["SPDXRef-Package"],
+      "profileConformance": ["core", "software"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:author"]
+    },
+    {
+      "type": "Person",
+      "@id": "_:author",
+      "name": "Test Author"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package",
+      "name": "my-application",
+      "software_packageVersion": "1.0.0",
+      "externalIdentifier": [
+        {
+          "externalIdentifierType": "packageUrl",
+          "identifier": "kskowo2ke8eiemdndn"
+        }
+      ]
+    }
+  ]
+}
+`)
+
+// SPDX 3.0 - Component with invalid PURL
+var spdx3CompdPURLWhitespace = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Test",
+      "creationInfo": "_:creationinfo",
+      "element": ["SPDXRef-Package"],
+      "profileConformance": ["core", "software"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:author"]
+    },
+    {
+      "type": "Person",
+      "@id": "_:author",
+      "name": "Test Author"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package",
+      "name": "my-application",
+      "software_packageVersion": "1.0.0",
+      "externalIdentifier": [
+        {
+          "externalIdentifierType": "packageUrl",
+          "identifier": " "
+        }
+      ]
+    }
+  ]
+}
+`)
+
+// SPDX 3.0 - Component with PURL absent
+var spdx3CompPURLAbsent = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Test",
+      "creationInfo": "_:creationinfo",
+      "element": ["SPDXRef-Package"],
+      "profileConformance": ["core", "software"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:author"]
+    },
+    {
+      "type": "Person",
+      "@id": "_:author",
+      "name": "Test Author"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package",
+      "name": "my-application",
+      "software_packageVersion": "1.0.0"
+    }
+  ]
+}
+`)
+
 func TestNTIACompUniqueID(t *testing.T) {
 	ctx := context.Background()
 
@@ -1223,6 +1820,18 @@ func TestNTIACompUniqueID(t *testing.T) {
 		assert.False(t, got.Ignore)
 	})
 
+	// spdx3CompPURLValid
+	t.Run("spdx3CompPURLValid", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3CompPURLValid, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIACompWithUniqID(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "unique identifier declared for all components (PURL)", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
 	// cdxCompPURLInValid
 	t.Run("cdxCompPURLInValid", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompPURLInValid, sbom.Signature{})
@@ -1238,6 +1847,18 @@ func TestNTIACompUniqueID(t *testing.T) {
 	// spdxCompInValidPURL
 	t.Run("spdxCompInValidPURL", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompInValidPURL, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIACompWithUniqID(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "unique identifier missing for all 1 components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// spdx3CompInValidPURL
+	t.Run("spdx3CompInValidPURL", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3CompInValidPURL, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := NTIACompWithUniqID(doc)
@@ -1282,6 +1903,17 @@ func TestNTIACompUniqueID(t *testing.T) {
 		assert.Equal(t, "unique identifier missing for all 1 components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
+	// spdx3CompdPURLWhitespace
+	t.Run("spdx3CompdPURLWhitespace", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3CompdPURLWhitespace, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIACompWithUniqID(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "unique identifier missing for all 1 components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
 
 	// cdxCompPURLAbsent
 	t.Run("cdxCompPURLAbsent", func(t *testing.T) {
@@ -1298,6 +1930,18 @@ func TestNTIACompUniqueID(t *testing.T) {
 	// spdxCompPURLAbsent
 	t.Run("spdxCompPURLAbsent", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompPURLAbsent, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIACompWithUniqID(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "unique identifier missing for all 1 components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// spdx3CompPURLAbsent
+	t.Run("spdx3CompPURLAbsent", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3CompPURLAbsent, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := NTIACompWithUniqID(doc)
@@ -1402,6 +2046,41 @@ var spdxSBOMAuthorWithPersonNameAndEmail = []byte(`
 }
 `)
 
+// SPDX 3.0 - SBOM Author with Person email only
+var spdx3SBOMAuthorWithPersonNameAndEmail = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Test",
+      "creationInfo": "_:creationinfo",
+      "element": [],
+      "profileConformance": ["core"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:person1"]
+    },
+    {
+      "type": "Person",
+      "@id": "_:person1",
+      "name": "Samantha Wright",
+      "externalIdentifier": [
+        {
+          "externalIdentifierType": "email",
+          "identifier": "samantha.wright@example.com"
+        }
+      ]
+    }
+  ]
+}
+`)
+
 var spdxSBOMAuthorWithOrganizationNameAndEmail = []byte(`
 {
   "spdxVersion": "SPDX-2.3",
@@ -1413,6 +2092,41 @@ var spdxSBOMAuthorWithOrganizationNameAndEmail = []byte(`
     ]
   },
   "packages": []
+}
+`)
+
+// SPDX 3.0 - SBOM Author with Organization name and email
+var spdx3SBOMAuthorWithOrganizationNameAndEmail = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Test",
+      "creationInfo": "_:creationinfo",
+      "element": [],
+      "profileConformance": ["core"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:org1"]
+    },
+    {
+      "type": "Organization",
+      "@id": "_:org1",
+      "name": "samantha wright",
+      "externalIdentifier": [
+        {
+          "externalIdentifierType": "email",
+          "identifier": "samantha.wright@example.com"
+        }
+      ]
+    }
+  ]
 }
 `)
 
@@ -1449,6 +2163,40 @@ var spdxSBOMAuthorWithPersonEmail = []byte(`
 }
 `)
 
+// SPDX 3.0 - SBOM Author with Person email only
+var spdx3SBOMAuthorWithPersonEmail = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Test",
+      "creationInfo": "_:creationinfo",
+      "element": [],
+      "profileConformance": ["core"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:person1"]
+    },
+    {
+      "type": "Person",
+      "@id": "_:person1",
+      "externalIdentifier": [
+        {
+          "externalIdentifierType": "email",
+          "identifier": "samantha.wright@example.com"
+        }
+      ]
+    }
+  ]
+}
+`)
+
 var spdxSBOMAuthorWithOrganizationEmail = []byte(`
 {
   "spdxVersion": "SPDX-2.3",
@@ -1460,6 +2208,40 @@ var spdxSBOMAuthorWithOrganizationEmail = []byte(`
     ]
   },
   "packages": []
+}
+`)
+
+// SPDX 3.0 - SBOM Author with Organization email only
+var spdx3SBOMAuthorWithOrganizationEmail = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Test",
+      "creationInfo": "_:creationinfo",
+      "element": [],
+      "profileConformance": ["core"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:org1"]
+    },
+    {
+      "type": "Organization",
+      "@id": "_:org1",
+      "externalIdentifier": [
+        {
+          "externalIdentifierType": "email",
+          "identifier": "samantha.wright@example.com"
+        }
+      ]
+    }
+  ]
 }
 `)
 
@@ -1496,6 +2278,35 @@ var spdxSBOMAuthorWithPersonName = []byte(`
 }
 `)
 
+// SPDX 3.0 - SBOM Author with Person name only
+var spdx3SBOMAuthorWithPersonName = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Test",
+      "creationInfo": "_:creationinfo",
+      "element": [],
+      "profileConformance": ["core"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:person1"]
+    },
+    {
+      "type": "Person",
+      "@id": "_:person1",
+      "name": "Samantha Wright"
+    }
+  ]
+}
+`)
+
 var spdxSBOMAuthorWithOrganizationName = []byte(`
 {
   "spdxVersion": "SPDX-2.3",
@@ -1510,18 +2321,92 @@ var spdxSBOMAuthorWithOrganizationName = []byte(`
 }
 `)
 
-// var cdxSBOMAuthorsAbsent = []byte(`
-// {
-//   "bomFormat": "CycloneDX",
-//   "specVersion": "1.6",
-//   "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
-//   "version": 1,
-//   "metadata": {
-//     "timestamp": "2025-11-07T14:10:59Z"
-//     },
-//   "components": []
-// }
-// `)
+// SPDX 3.0 - SBOM Author with Organization name only
+var spdx3SBOMAuthorWithOrganizationName = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Test",
+      "creationInfo": "_:creationinfo",
+      "element": [],
+      "profileConformance": ["core"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:org1"]
+    },
+    {
+      "type": "Organization",
+      "@id": "_:org1",
+      "name": "Samantha Wright"
+    }
+  ]
+}
+`)
+
+// SPDX 3.0 - SBOM Author with Organization
+var spdx3SBOMAuthorWithOrganization = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Test",
+      "creationInfo": "_:creationinfo",
+      "element": [],
+      "profileConformance": ["core"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:org1"]
+    },
+    {
+      "type": "Organization",
+      "@id": "_:org1",
+      "name": "Example Organization Inc"
+    }
+  ]
+}
+`)
+
+// SPDX 3.0 - SBOM Author with Person
+var spdx3SBOMAuthorWithPerson = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Test",
+      "creationInfo": "_:creationinfo",
+      "element": [],
+      "profileConformance": ["core"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:person1"]
+    },
+    {
+      "type": "Person",
+      "@id": "_:person1",
+      "name": "John Doe"
+    }
+  ]
+}
+`)
 
 var spdxSBOMAuthorAbsent = []byte(`
 {
@@ -1531,6 +2416,30 @@ var spdxSBOMAuthorAbsent = []byte(`
     "created": "2023-01-12T22:06:03Z"
     },
   "packages": []
+}
+`)
+
+// SPDX 3.0 - SBOM Author absent
+var spdx3SBOMAuthorAbsent = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Test",
+      "creationInfo": "_:creationinfo",
+      "element": [],
+      "profileConformance": ["core"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": []
+    }
+  ]
 }
 `)
 
@@ -1560,6 +2469,29 @@ var spdxSBOMCreatorMissing = []byte(`
 }
 `)
 
+// SPDX 3.0 - SBOM Creator missing (no createdBy)
+var spdx3SBOMCreatorMissing = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Test",
+      "creationInfo": "_:creationinfo",
+      "element": [],
+      "profileConformance": ["core"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z"
+    }
+  ]
+}
+`)
+
 var spdxSBOMAuthorPersonMissing = []byte(`
 {
   "spdxVersion": "SPDX-2.3",
@@ -1574,6 +2506,35 @@ var spdxSBOMAuthorPersonMissing = []byte(`
 }
 `)
 
+// SPDX 3.0 - SBOM Author Person missing (empty name)
+var spdx3SBOMAuthorPersonMissing = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Test",
+      "creationInfo": "_:creationinfo",
+      "element": [],
+      "profileConformance": ["core"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:person1"]
+    },
+    {
+      "type": "Person",
+      "@id": "_:person1",
+      "name": ""
+    }
+  ]
+}
+`)
+
 var spdxSBOMAuthorOrganizationMissing = []byte(`
 {
   "spdxVersion": "SPDX-2.3",
@@ -1585,6 +2546,35 @@ var spdxSBOMAuthorOrganizationMissing = []byte(`
     ]
   },
   "packages": []
+}
+`)
+
+// SPDX 3.0 - SBOM Author Organization missing (empty name)
+var spdx3SBOMAuthorOrganizationMissing = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Test",
+      "creationInfo": "_:creationinfo",
+      "element": [],
+      "profileConformance": ["core"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:org1"]
+    },
+    {
+      "type": "Organization",
+      "@id": "_:org1",
+      "name": ""
+    }
+  ]
 }
 `)
 
@@ -1617,6 +2607,30 @@ var spdxSBOMCreatorsWithEmptyString = []byte(`
     "creators": [""]
   },
   "packages": []
+}
+`)
+
+// SPDX 3.0 - SBOM Creators with empty string
+var spdx3SBOMCreatorsWithEmptyString = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Test",
+      "creationInfo": "_:creationinfo",
+      "element": [],
+      "profileConformance": ["core"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": []
+    }
+  ]
 }
 `)
 
@@ -1684,6 +2698,30 @@ var spdxSBOMCreatorsWithWrongTypeSomeValue = []byte(`
 }
 `)
 
+// SPDX 3.0 - SBOM Creators with wrong type (string instead of agent reference)
+var spdx3SBOMCreatorsWithWrongType = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Test",
+      "creationInfo": "_:creationinfo",
+      "element": [],
+      "profileConformance": ["core"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["foobar"]
+    }
+  ]
+}
+`)
+
 var spdxSBOMCreatorsWithWhitespace = []byte(`
 {
   "spdxVersion": "SPDX-2.3",
@@ -1693,6 +2731,30 @@ var spdxSBOMCreatorsWithWhitespace = []byte(`
     "creators": ["    "]
   },
   "packages": []
+}
+`)
+
+// SPDX 3.0 - SBOM Creators with whitespace
+var spdx3SBOMCreatorsWithWhitespace = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Test",
+      "creationInfo": "_:creationinfo",
+      "element": [],
+      "profileConformance": ["core"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["    "]
+    }
+  ]
 }
 `)
 
@@ -1733,6 +2795,37 @@ var spdxSBOMToolWithNameAndVersion = []byte(`
 }
 `)
 
+// SPDX 3.0 - SBOM Tool with name and version (via createdUsing Tool)
+// Note: SPDX 3.0 Tool has no software_version field; version is embedded in name
+var spdx3SBOMToolWithNameAndVersion = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Test",
+      "creationInfo": "_:creationinfo",
+      "element": [],
+      "profileConformance": ["core"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": [],
+      "createdUsing": ["_:tool1"]
+    },
+    {
+      "type": "Tool",
+      "spdxId": "_:tool1",
+      "name": "Awesome Tool-9.1.2"
+    }
+  ]
+}
+`)
+
 var cdxSBOMToolWithName = []byte(`
 {
   "bomFormat": "CycloneDX",
@@ -1766,6 +2859,36 @@ var spdxSBOMToolWithName = []byte(`
     ]
   },
   packages: []
+}
+`)
+
+// SPDX 3.0 - SBOM Tool with name only (via createdUsing Tool)
+var spdx3SBOMToolWithName = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Test",
+      "creationInfo": "_:creationinfo",
+      "element": [],
+      "profileConformance": ["core"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": [],
+      "createdUsing": ["_:tool1"]
+    },
+    {
+      "type": "Tool",
+      "spdxId": "_:tool1",
+      "name": "Awesome Tool"
+    }
+  ]
 }
 `)
 
@@ -1805,6 +2928,37 @@ var spdxSBOMToolWithVersion = []byte(`
 }
 `)
 
+// SPDX 3.0 - SBOM Tool with version only (no name - edge case)
+// Note: SPDX 3.0 Tool has no software_version field; version is embedded in name
+var spdx3SBOMToolWithVersion = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Test",
+      "creationInfo": "_:creationinfo",
+      "element": [],
+      "profileConformance": ["core"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": [],
+      "createdUsing": ["_:tool1"]
+    },
+    {
+      "type": "Tool",
+      "spdxId": "_:tool1",
+      "name": "-9.1.2"
+    }
+  ]
+}
+`)
+
 var cdxSBOMToolAbsent = []byte(`
 {
   "bomFormat": "CycloneDX",
@@ -1822,6 +2976,30 @@ var spdxSBOMToolAbsent = []byte(`
   "SPDXID": "SPDXRef-DOCUMENT",
   "creationInfo": {},
   "packages": []
+}
+`)
+
+// SPDX 3.0 - SBOM Tool absent (no createdUsing)
+var spdx3SBOMToolAbsent = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Test",
+      "creationInfo": "_:creationinfo",
+      "element": [],
+      "profileConformance": ["core"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": []
+    }
+  ]
 }
 `)
 
@@ -1849,6 +3027,30 @@ var spdxSBOMToolMissing = []byte(`
 }
 `)
 
+// SPDX 3.0 - SBOM Tool missing (creationInfo present but no tool)
+var spdx3SBOMToolMissing = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Test",
+      "creationInfo": "_:creationinfo",
+      "element": [],
+      "profileConformance": ["core"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": []
+    }
+  ]
+}
+`)
+
 var spdxSBOMToolWithEmptyString = []byte(`
 {
   "spdxVersion": "SPDX-2.3",
@@ -1859,6 +3061,36 @@ var spdxSBOMToolWithEmptyString = []byte(`
       ]
   },
   "packages": []
+}
+`)
+
+// SPDX 3.0 - SBOM Tool with empty string
+var spdx3SBOMToolWithEmptyString = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Test",
+      "creationInfo": "_:creationinfo",
+      "element": [],
+      "profileConformance": ["core"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": [],
+      "createdUsing": ["_:tool1"]
+    },
+    {
+      "type": "Tool",
+      "spdxId": "_:tool1",
+      "name": ""
+    }
+  ]
 }
 `)
 
@@ -1965,6 +3197,31 @@ var spdxSBOMToolWrongType = []byte(`
     "creators": {}
   },
   "packages": []
+}
+`)
+
+// SPDX 3.0 - SBOM Tool with wrong type (object instead of array for createdUsing)
+var spdx3SBOMToolWrongType = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Test",
+      "creationInfo": "_:creationinfo",
+      "element": [],
+      "profileConformance": ["core"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": [],
+      "createdUsing": {}
+    }
+  ]
 }
 `)
 
@@ -2263,9 +3520,33 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		assert.False(t, got.Ignore)
 	})
 
+	// spdx3SBOMAuthorWithPersonNameAndEmail
+	t.Run("spdx3SBOMAuthorWithPersonNameAndEmail", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3SBOMAuthorWithPersonNameAndEmail, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIASBOMWithAuthors(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "SBOM author declared explicitly", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
 	// spdxSBOMAuthorWithOrganizationNameAndEmail
 	t.Run("spdxSBOMAuthorWithOrganizationNameAndEmail", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorWithOrganizationNameAndEmail, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIASBOMWithAuthors(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "SBOM author declared explicitly", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// spdx3SBOMAuthorWithOrganizationNameAndEmail
+	t.Run("spdx3SBOMAuthorWithOrganizationNameAndEmail", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3SBOMAuthorWithOrganizationNameAndEmail, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := NTIASBOMWithAuthors(doc)
@@ -2299,9 +3580,33 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		assert.False(t, got.Ignore)
 	})
 
+	// spdx3SBOMAuthorWithPersonEmail
+	t.Run("spdx3SBOMAuthorWithPersonEmail", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3SBOMAuthorWithPersonEmail, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIASBOMWithAuthors(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "SBOM author declared explicitly", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
 	// spdxSBOMAuthorWithOrganizationEmail
 	t.Run("spdxSBOMAuthorWithOrganizationEmail", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorWithOrganizationEmail, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIASBOMWithAuthors(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "SBOM author declared explicitly", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// spdx3SBOMAuthorWithOrganizationEmail
+	t.Run("spdx3SBOMAuthorWithOrganizationEmail", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3SBOMAuthorWithOrganizationEmail, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := NTIASBOMWithAuthors(doc)
@@ -2335,6 +3640,18 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		assert.False(t, got.Ignore)
 	})
 
+	// spdx3SBOMAuthorWithPersonName
+	t.Run("spdx3SBOMAuthorWithPersonName", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3SBOMAuthorWithPersonName, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIASBOMWithAuthors(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "SBOM author declared explicitly", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
 	// spdxSBOMAuthorWithOrganizationName
 	t.Run("spdxSBOMAuthorWithOrganizationName", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorWithOrganizationName, sbom.Signature{})
@@ -2344,6 +3661,55 @@ func TestNTIASBOMAuthor(t *testing.T) {
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "SBOM author declared explicitly", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// spdx3SBOMAuthorWithOrganizationName
+	t.Run("spdx3SBOMAuthorWithOrganizationName", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3SBOMAuthorWithOrganizationName, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIASBOMWithAuthors(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "SBOM author declared explicitly", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// SPDX 3.0 Tests
+	// spdx3SBOMAuthorWithOrganization
+	t.Run("spdx3SBOMAuthorWithOrganization", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3SBOMAuthorWithOrganization, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIASBOMWithAuthors(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "SBOM author declared explicitly", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// spdx3SBOMAuthorWithPerson
+	t.Run("spdx3SBOMAuthorWithPerson", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3SBOMAuthorWithPerson, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIASBOMWithAuthors(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "SBOM author declared explicitly", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// spdx3SBOMAuthorAbsent
+	t.Run("spdx3SBOMAuthorAbsent", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3SBOMAuthorAbsent, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIASBOMWithAuthors(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "SBOM author information missing", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2395,6 +3761,18 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		assert.False(t, got.Ignore)
 	})
 
+	// spdx3SBOMCreatorMissing
+	t.Run("spdx3SBOMCreatorMissing", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3SBOMCreatorMissing, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIASBOMWithAuthors(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "SBOM author information missing", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
 	// spdxSBOMAuthorPersonMissing
 	t.Run("spdxSBOMAuthorPersonMissing", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorPersonMissing, sbom.Signature{})
@@ -2407,9 +3785,33 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		assert.False(t, got.Ignore)
 	})
 
+	// spdx3SBOMAuthorPersonMissing
+	t.Run("spdx3SBOMAuthorPersonMissing", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3SBOMAuthorPersonMissing, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIASBOMWithAuthors(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "SBOM author information missing", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
 	// spdxSBOMAuthorOrganizationMissing
 	t.Run("spdxSBOMAuthorOrganizationMissing", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMAuthorOrganizationMissing, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIASBOMWithAuthors(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "SBOM author information missing", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// spdx3SBOMAuthorOrganizationMissing
+	t.Run("spdx3SBOMAuthorOrganizationMissing", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3SBOMAuthorOrganizationMissing, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := NTIASBOMWithAuthors(doc)
@@ -2435,6 +3837,18 @@ func TestNTIASBOMAuthor(t *testing.T) {
 	t.Run("spdxSBOMCreatorsWithEmptyString", func(t *testing.T) {
 		_, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMCreatorsWithEmptyString, sbom.Signature{})
 		require.Error(t, err)
+	})
+
+	// spdx3SBOMCreatorsWithEmptyString
+	t.Run("spdx3SBOMCreatorsWithEmptyString", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3SBOMCreatorsWithEmptyString, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIASBOMWithAuthors(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "SBOM author information missing", got.Desc)
+		assert.False(t, got.Ignore)
 	})
 
 	// cdxSBOMAuthorsWithEmptyArray
@@ -2485,10 +3899,34 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		require.Error(t, err)
 	})
 
+	// spdx3SBOMCreatorsWithWrongType
+	t.Run("spdx3SBOMCreatorsWithWrongType", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3SBOMCreatorsWithWrongType, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIASBOMWithAuthors(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "SBOM author information missing", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
 	// spdxSBOMCreatorsWithWhitespace
 	t.Run("spdxSBOMCreatorsWithWhitespace", func(t *testing.T) {
 		_, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMCreatorsWithWhitespace, sbom.Signature{})
 		require.Error(t, err)
+	})
+
+	// spdx3SBOMCreatorsWithWhitespace
+	t.Run("spdx3SBOMCreatorsWithWhitespace", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3SBOMCreatorsWithWhitespace, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIASBOMWithAuthors(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "SBOM author information missing", got.Desc)
+		assert.False(t, got.Ignore)
 	})
 
 	// cdxSBOMToolWithNameAndVersion
@@ -2506,6 +3944,18 @@ func TestNTIASBOMAuthor(t *testing.T) {
 	// spdxSBOMToolWithNameAndVersion
 	t.Run("spdxSBOMToolWithNameAndVersion", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMToolWithNameAndVersion, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIASBOMWithAuthors(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "SBOM author inferred from SBOM generation tool", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// spdx3SBOMToolWithNameAndVersion
+	t.Run("spdx3SBOMToolWithNameAndVersion", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3SBOMToolWithNameAndVersion, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := NTIASBOMWithAuthors(doc)
@@ -2539,6 +3989,18 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		assert.False(t, got.Ignore)
 	})
 
+	// spdx3SBOMToolWithName
+	t.Run("spdx3SBOMToolWithName", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3SBOMToolWithName, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIASBOMWithAuthors(doc)
+
+		assert.InDelta(t, 5.0, got.Score, 1e-9)
+		assert.Equal(t, "SBOM author inferred from SBOM generation tool (name only)", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
 	// cdxSBOMToolWithVersion
 	t.Run("cdxSBOMToolWithVersion", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMToolWithVersion, sbom.Signature{})
@@ -2554,6 +4016,18 @@ func TestNTIASBOMAuthor(t *testing.T) {
 	// spdxSBOMToolWithVersion
 	t.Run("spdxSBOMToolWithVersion", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMToolWithVersion, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIASBOMWithAuthors(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "SBOM author inferred from SBOM generation tool (version only)", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// spdx3SBOMToolWithVersion
+	t.Run("spdx3SBOMToolWithVersion", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3SBOMToolWithVersion, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := NTIASBOMWithAuthors(doc)
@@ -2587,6 +4061,18 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		assert.False(t, got.Ignore)
 	})
 
+	// spdx3SBOMToolAbsent
+	t.Run("spdx3SBOMToolAbsent", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3SBOMToolAbsent, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIASBOMWithAuthors(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "SBOM author information missing", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
 	// cdxSBOMToolMissing
 	t.Run("cdxSBOMToolMissing", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxSBOMToolMissing, sbom.Signature{})
@@ -2611,9 +4097,33 @@ func TestNTIASBOMAuthor(t *testing.T) {
 		assert.False(t, got.Ignore)
 	})
 
+	// spdx3SBOMToolMissing
+	t.Run("spdx3SBOMToolMissing", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3SBOMToolMissing, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIASBOMWithAuthors(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "SBOM author information missing", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
 	// spdxSBOMToolWithEmptyString
 	t.Run("spdxSBOMToolWithEmptyString", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMToolWithEmptyString, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIASBOMWithAuthors(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "SBOM author information missing", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// spdx3SBOMToolWithEmptyString
+	t.Run("spdx3SBOMToolWithEmptyString", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3SBOMToolWithEmptyString, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := NTIASBOMWithAuthors(doc)
@@ -2699,6 +4209,18 @@ func TestNTIASBOMAuthor(t *testing.T) {
 	t.Run("spdxSBOMToolWrongType", func(t *testing.T) {
 		_, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMToolWrongType, sbom.Signature{})
 		require.Error(t, err)
+	})
+
+	// spdx3SBOMToolWrongType
+	t.Run("spdx3SBOMToolWrongType", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3SBOMToolWrongType, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIASBOMWithAuthors(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "SBOM author information missing", got.Desc)
+		assert.False(t, got.Ignore)
 	})
 
 	// cdxSBOMSupplierWithNameAndURL(fallback when neither author not tool is present)
@@ -3480,6 +5002,277 @@ var cdxCompWithRelationshipsAbsent = []byte(`
 }
 `)
 
+// SPDX 3.0 - Component with primary relationships (DEPENDS_ON)
+var spdx3CompWithPrimaryRelationships = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Test",
+      "creationInfo": "_:creationinfo",
+      "element": ["SPDXRef-App", "SPDXRef-LibA", "SPDXRef-LibB"],
+      "profileConformance": ["core", "software"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:author"]
+    },
+    {
+      "type": "Person",
+      "@id": "_:author",
+      "name": "Test Author"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-App",
+      "name": "my-app",
+      "software_packageVersion": "1.0.0"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-LibA",
+      "name": "library-a",
+      "software_packageVersion": "1.0.0"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-LibB",
+      "name": "library-b",
+      "software_packageVersion": "1.0.0"
+    },
+    {
+      "type": "Relationship",
+      "from": "SPDXRef-DOCUMENT",
+      "to": ["SPDXRef-App"],
+      "relationshipType": "DESCRIBES"
+    },
+    {
+      "type": "Relationship",
+      "from": "SPDXRef-App",
+      "to": ["SPDXRef-LibA", "SPDXRef-LibB"],
+      "relationshipType": "DEPENDS_ON"
+    }
+  ]
+}
+`)
+
+// SPDX 3.0 - Component with no primary relationships
+var spdx3CompWithNoPrimaryRelationships = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Test",
+      "creationInfo": "_:creationinfo",
+      "element": ["SPDXRef-App", "SPDXRef-LibA"],
+      "profileConformance": ["core", "software"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:author"]
+    },
+    {
+      "type": "Person",
+      "@id": "_:author",
+      "name": "Test Author"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-App",
+      "name": "my-app",
+      "software_packageVersion": "1.0.0"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-LibA",
+      "name": "library-a",
+      "software_packageVersion": "1.0.0"
+    },
+    {
+      "type": "Relationship",
+      "from": "SPDXRef-DOCUMENT",
+      "to": ["SPDXRef-App"],
+      "relationshipType": "DESCRIBES"
+    }
+  ]
+}
+`)
+
+// SPDX 3.0 - Component with primary component missing (no DESCRIBES relationship)
+var spdx3CompWithPrimaryComponentMissing = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Test",
+      "creationInfo": "_:creationinfo",
+      "element": ["SPDXRef-App", "SPDXRef-LibA"],
+      "profileConformance": ["core", "software"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:author"]
+    },
+    {
+      "type": "Person",
+      "@id": "_:author",
+      "name": "Test Author"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-App",
+      "name": "my-app",
+      "software_packageVersion": "1.0.0"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-LibA",
+      "name": "library-a",
+      "software_packageVersion": "1.0.0"
+    }
+  ]
+}
+`)
+
+// SPDX 3.0 - Component with no relationships at all (only describes relationship)
+var spdx3CompWithRelationshipsAbsent = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Test",
+      "creationInfo": "_:creationinfo",
+      "element": ["SPDXRef-App", "SPDXRef-LibA", "SPDXRef-LibB"],
+      "profileConformance": ["core", "software"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:author"]
+    },
+    {
+      "type": "Person",
+      "@id": "_:author",
+      "name": "Test Author"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-App",
+      "name": "my-app",
+      "software_packageVersion": "1.0.0"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-LibA",
+      "name": "library-a",
+      "software_packageVersion": "1.0.0"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-LibB",
+      "name": "library-b",
+      "software_packageVersion": "1.0.0"
+    },
+    {
+      "type": "Relationship",
+      "from": "SPDXRef-DOCUMENT",
+      "to": ["SPDXRef-App"],
+      "relationshipType": "describes"
+    }
+  ]
+}
+`)
+
+// SPDX 3.0 - Component with multiple dependencies (4 dependencies)
+var spdx3CompWithMultipleDependencies = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Test",
+      "creationInfo": "_:creationinfo",
+      "element": ["SPDXRef-App", "SPDXRef-Lib1", "SPDXRef-Lib2", "SPDXRef-Lib3", "SPDXRef-Lib4"],
+      "profileConformance": ["core", "software"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:author"]
+    },
+    {
+      "type": "Person",
+      "@id": "_:author",
+      "name": "Test Author"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-App",
+      "name": "my-app",
+      "software_packageVersion": "1.0.0"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Lib1",
+      "name": "library-one",
+      "software_packageVersion": "1.0.0"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Lib2",
+      "name": "library-two",
+      "software_packageVersion": "2.0.0"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Lib3",
+      "name": "library-three",
+      "software_packageVersion": "3.0.0"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Lib4",
+      "name": "library-four",
+      "software_packageVersion": "4.0.0"
+    },
+    {
+      "type": "Relationship",
+      "from": "SPDXRef-DOCUMENT",
+      "to": ["SPDXRef-App"],
+      "relationshipType": "describes"
+    },
+    {
+      "type": "Relationship",
+      "from": "SPDXRef-App",
+      "to": ["SPDXRef-Lib1", "SPDXRef-Lib2", "SPDXRef-Lib3", "SPDXRef-Lib4"],
+      "relationshipType": "dependsOn"
+    }
+  ]
+}
+`)
+
 func TestNTIACompDependencies(t *testing.T) {
 	ctx := context.Background()
 
@@ -3496,6 +5289,17 @@ func TestNTIACompDependencies(t *testing.T) {
 
 	t.Run("spdxCompWithPrimaryRelationships", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWithPrimaryRelationships, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIASBOMWithDependencyRelationships(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "primary component declares 2 direct (top-level) dependencies", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdx3CompWithPrimaryRelationships", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3CompWithPrimaryRelationships, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := NTIASBOMWithDependencyRelationships(doc)
@@ -3527,6 +5331,17 @@ func TestNTIACompDependencies(t *testing.T) {
 		assert.False(t, got.Ignore)
 	})
 
+	t.Run("spdx3CompWithNoPrimaryRelationships", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3CompWithNoPrimaryRelationships, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIASBOMWithDependencyRelationships(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "primary component declares no direct dependencies and does not declare relationship completeness", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
 	t.Run("cdxCompWithPrimaryComponentMissing", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithPrimaryComponentMissing, sbom.Signature{})
 		require.NoError(t, err)
@@ -3540,6 +5355,17 @@ func TestNTIACompDependencies(t *testing.T) {
 
 	t.Run("spdxCompWithPrimaryComponentMissing", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWithPrimaryComponentMissing, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIASBOMWithDependencyRelationships(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "define primary component", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdx3CompWithPrimaryComponentMissing", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3CompWithPrimaryComponentMissing, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := NTIASBOMWithDependencyRelationships(doc)
@@ -3601,6 +5427,29 @@ func TestNTIACompDependencies(t *testing.T) {
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "primary component declares no direct dependencies and does not declare relationship completeness", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// Additional SPDX 3.0 test cases
+	t.Run("spdx3CompWithRelationshipsAbsent", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3CompWithRelationshipsAbsent, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIASBOMWithDependencyRelationships(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "primary component declares no direct dependencies and does not declare relationship completeness", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdx3CompWithMultipleDependencies", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3CompWithMultipleDependencies, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIASBOMWithDependencyRelationships(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "primary component declares 4 direct (top-level) dependencies", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 }
@@ -3778,6 +5627,95 @@ var spdxSBOMWithCompleteFields = []byte(`
 }
 `)
 
+// SPDX 3.0 - Complete SBOM with all NTIA fields
+var spdx3SBOMWithCompleteFields = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Test",
+      "creationInfo": "_:creationinfo",
+      "element": ["SPDXRef-App", "SPDXRef-LibA", "SPDXRef-LibB", "SPDXRef-LibC"],
+      "profileConformance": ["core", "software"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:author"]
+    },
+    {
+      "type": "Person",
+      "@id": "_:author",
+      "name": "Samantha Wright",
+      "externalIdentifier": [
+        {
+          "externalIdentifierType": "email",
+          "identifier": "samantha.wright@example.com"
+        }
+      ]
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-App",
+      "name": "my-app",
+      "software_packageVersion": "1.0.0"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-LibA",
+      "name": "library-a",
+      "software_packageVersion": "1.0.0",
+      "suppliedBy": "_:supplier1"
+    },
+    {
+      "type": "Organization",
+      "@id": "_:supplier1",
+      "name": "Acme, Inc.",
+      "externalIdentifier": [
+        {
+          "externalIdentifierType": "email",
+          "identifier": "professional.services@example.com"
+        }
+      ]
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-LibB",
+      "name": "library-b",
+      "software_packageVersion": "1.0.0"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-LibC",
+      "name": "library-c",
+      "software_packageVersion": "1.0.0"
+    },
+    {
+      "type": "Relationship",
+      "from": "SPDXRef-DOCUMENT",
+      "to": ["SPDXRef-App"],
+      "relationshipType": "DESCRIBES"
+    },
+    {
+      "type": "Relationship",
+      "from": "SPDXRef-App",
+      "to": ["SPDXRef-LibA", "SPDXRef-LibB"],
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "type": "Relationship",
+      "from": "SPDXRef-LibB",
+      "to": ["SPDXRef-LibC"],
+      "relationshipType": "DEPENDS_ON"
+    }
+  ]
+}
+`)
+
 func TestNTIAComplete(t *testing.T) {
 	ctx := context.Background()
 
@@ -3846,6 +5784,43 @@ func TestNTIAComplete(t *testing.T) {
 	// spdxSBOMWithCompleteFields
 	t.Run("spdxSBOMWithCompleteFields", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxSBOMWithCompleteFields, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIACompWithSupplier(doc)
+
+		assert.InDelta(t, 2.5, got.Score, 1e-9)
+		assert.Equal(t, "supplier or manufacturer information declared for 1 of 4 components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// --- SPDX 3.0 TESTS ----
+	// spdx3SBOMWithCompleteFields - Dependency Relationships
+	t.Run("spdx3SBOMWithCompleteFields-Dependencies", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3SBOMWithCompleteFields, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIASBOMWithDependencyRelationships(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "primary component declares 2 direct (top-level) dependencies", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// spdx3SBOMWithCompleteFields - Authors
+	t.Run("spdx3SBOMWithCompleteFields-Authors", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3SBOMWithCompleteFields, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIASBOMWithAuthors(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "SBOM author declared explicitly", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// spdx3SBOMWithCompleteFields - Supplier
+	t.Run("spdx3SBOMWithCompleteFields-Supplier", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3SBOMWithCompleteFields, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := NTIACompWithSupplier(doc)
