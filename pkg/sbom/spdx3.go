@@ -32,8 +32,6 @@ import (
 	"github.com/interlynk-io/spdx-zen/parse"
 )
 
-var spdx3SpecVersions = []string{"3.0", "3.0.1"}
-
 type Spdx3Doc struct {
 	doc              *parse.Document
 	format           FileFormat
@@ -266,11 +264,17 @@ func (s *Spdx3Doc) parseSpec() {
 		sp.URI = ns
 	}
 
-	// Data license
+	// Data license - SPDX 3.0 stores it as a reference in SpdxID
 	dataLicense := s.doc.GetDataLicense()
-	if dataLicense != nil && dataLicense.Name != "" {
-		lics := licenses.LookupExpression(dataLicense.Name, nil)
-		sp.Licenses = append(sp.Licenses, lics...)
+	if dataLicense != nil {
+		licenseID := dataLicense.SpdxID
+		if licenseID == "" {
+			licenseID = dataLicense.Name
+		}
+		if licenseID != "" {
+			lics := licenses.LookupExpression(licenseID, nil)
+			sp.Licenses = append(sp.Licenses, lics...)
+		}
 	}
 
 	sp.isReqFieldsPresent = true
@@ -312,9 +316,17 @@ func (s *Spdx3Doc) parseAuthors() {
 		if org.Name == "" {
 			continue
 		}
+		email := ""
+		// Extract email from externalIdentifier
+		for _, extId := range org.ExternalIdentifier {
+			if extId.ExternalIdentifierType == spdx.ExternalIdentifierTypeEmail {
+				email = extId.Identifier
+				break
+			}
+		}
 		a := Author{
 			Name:       org.Name,
-			Email:      "",
+			Email:      email,
 			AuthorType: "organization",
 		}
 		s.Auths = append(s.Auths, a)
@@ -325,9 +337,17 @@ func (s *Spdx3Doc) parseAuthors() {
 		if person.Name == "" {
 			continue
 		}
+		email := ""
+		// Extract email from externalIdentifier
+		for _, extId := range person.ExternalIdentifier {
+			if extId.ExternalIdentifierType == spdx.ExternalIdentifierTypeEmail {
+				email = extId.Identifier
+				break
+			}
+		}
 		a := Author{
 			Name:       person.Name,
-			Email:      "",
+			Email:      email,
 			AuthorType: "person",
 		}
 		s.Auths = append(s.Auths, a)
@@ -403,6 +423,20 @@ func (s *Spdx3Doc) parsePrimaryComponent() {
 	s.PrimaryComponent.Type = string(pkg.PrimaryPurpose)
 }
 
+// convertRelType converts SPDX 3.0 camelCase relationship type to UPPER_CASE
+// e.g., "dependsOn" -> "DEPENDS_ON", "contains" -> "CONTAINS"
+func convertRelType(rt spdx.RelationshipType) string {
+	s := string(rt)
+	var result []rune
+	for i, r := range s {
+		if i > 0 && r >= 'A' && r <= 'Z' {
+			result = append(result, '_')
+		}
+		result = append(result, r)
+	}
+	return strings.ToUpper(string(result))
+}
+
 func (s *Spdx3Doc) parseRelationships() {
 	s.Relationships = make([]GetRelationship, 0)
 
@@ -418,7 +452,7 @@ func (s *Spdx3Doc) parseRelationships() {
 			r := Relationship{
 				From: strings.TrimPrefix(rel.From.GetSpdxID(), "SPDXRef-"),
 				To:   strings.TrimPrefix(to.GetSpdxID(), "SPDXRef-"),
-				Type: strings.ToUpper(string(rel.RelationshipType)),
+				Type: convertRelType(rel.RelationshipType),
 			}
 			s.Relationships = append(s.Relationships, r)
 		}
@@ -448,26 +482,21 @@ func (s *Spdx3Doc) parseComps() {
 		nc.Licenses = s.licenses(pkg)
 		nc.DeclaredLicense = s.declaredLicenses(pkg)
 		nc.ConcludedLicense = s.concludedLicenses(pkg)
-		nc.ID = pkg.SpdxID
+		nc.ID = strings.TrimPrefix(pkg.SpdxID, "SPDXRef-")
+
+		// Source code URL and download location from SPDX 3.0 Package fields
+		// Use SourceInfo for source code URL, fallback to HomePage if empty
+		if pkg.SourceInfo != "" {
+			nc.SourceCodeURL = pkg.SourceInfo
+		} else {
+			nc.SourceCodeURL = pkg.HomePage
+		}
+
+		nc.DownloadLocation = pkg.DownloadLocation
 
 		// Supplier (SuppliedBy in SPDX 3.0)
-		if pkg.SuppliedBy != nil {
-			nc.Supplier = Supplier{
-				Name:  pkg.SuppliedBy.Name,
-				Email: "",
-				URL:   "",
-			}
-		}
-
-		// Manufacturer (OriginatedBy in SPDX 3.0)
-		if len(pkg.OriginatedBy) > 0 {
-			orig := pkg.OriginatedBy[0]
-			nc.Manufacture = Manufacturer{
-				Name:  orig.Name,
-				Email: "",
-				URL:   "",
-			}
-		}
+		nc.Supplier = s.extractSupplier(pkg.SuppliedBy)
+		nc.Manufacture = s.extractManufacturer(pkg.OriginatedBy)
 
 		// If no supplier but has manufacturer, copy manufacturer to supplier
 		if pkg.SuppliedBy == nil && len(pkg.OriginatedBy) > 0 {
@@ -478,9 +507,6 @@ func (s *Spdx3Doc) parseComps() {
 			}
 		}
 
-		nc.SourceCodeURL = pkg.HomePage
-		nc.DownloadLocation = pkg.DownloadLocation
-
 		s.Comps = append(s.Comps, nc)
 
 	}
@@ -490,7 +516,130 @@ func (s *Spdx3Doc) parseComps() {
 
 // isNoAssertion checks if a value is NOASSERTION (case-insensitive)
 func isNoAssertion(val string) bool {
-	return strings.EqualFold(val, "NOASSERTION") || strings.EqualFold(val, "NOASSERTION")
+	return strings.EqualFold(val, "NOASSERTION")
+}
+
+// extractSupplier extracts supplier information from an SPDX 3.0 Agent reference
+// Looks up the actual Person or Organization and extracts name, email, and URL
+func (s *Spdx3Doc) extractSupplier(suppliedBy *spdx.Agent) Supplier {
+	if suppliedBy == nil {
+		return Supplier{}
+	}
+
+	supplierName := ""
+	supplierEmail := ""
+	supplierURL := ""
+
+	// Try to look up by SpdxID match first (for reference case)
+	if suppliedBy.SpdxID != "" {
+		// First check Organizations
+		for _, org := range s.doc.Organizations {
+			if org.SpdxID == suppliedBy.SpdxID {
+				supplierName = org.Name
+				// Extract email and URL from externalIdentifier
+				for _, extId := range org.ExternalIdentifier {
+					if extId.ExternalIdentifierType == spdx.ExternalIdentifierTypeEmail {
+						supplierEmail = extId.Identifier
+					}
+					if extId.ExternalIdentifierType == spdx.ExternalIdentifierTypeUrlScheme {
+						supplierURL = extId.Identifier
+					}
+				}
+				break
+			}
+		}
+		// If not found in Organizations, check Persons
+		if supplierName == "" && supplierEmail == "" {
+			for _, person := range s.doc.Persons {
+				if person.SpdxID == suppliedBy.SpdxID {
+					supplierName = person.Name
+					// Extract email and URL from externalIdentifier
+					for _, extId := range person.ExternalIdentifier {
+						if extId.ExternalIdentifierType == spdx.ExternalIdentifierTypeEmail {
+							supplierEmail = extId.Identifier
+						}
+						if extId.ExternalIdentifierType == spdx.ExternalIdentifierTypeUrlScheme {
+							supplierURL = extId.Identifier
+						}
+					}
+					break
+				}
+			}
+		}
+	}
+
+	// Fall back to Name if already populated (embedded case) or lookup failed
+	if supplierName == "" {
+		supplierName = suppliedBy.Name
+	}
+
+	return Supplier{
+		Name:  supplierName,
+		Email: supplierEmail,
+		URL:   supplierURL,
+	}
+}
+
+// extractManufacturer extracts manufacturer information from SPDX 3.0 OriginatedBy agents
+// Looks up the actual Person or Organization and extracts name, email, and URL
+func (s *Spdx3Doc) extractManufacturer(originatedBy []spdx.Agent) Manufacturer {
+	if len(originatedBy) == 0 {
+		return Manufacturer{}
+	}
+
+	orig := originatedBy[0]
+	manufacturerName := ""
+	manufacturerEmail := ""
+	manufacturerURL := ""
+
+	// Try to look up by SpdxID match first (for reference case)
+	if orig.SpdxID != "" {
+		// First check Organizations
+		for _, org := range s.doc.Organizations {
+			if org.SpdxID == orig.SpdxID {
+				manufacturerName = org.Name
+				// Extract email and URL from externalIdentifier
+				for _, extId := range org.ExternalIdentifier {
+					if extId.ExternalIdentifierType == spdx.ExternalIdentifierTypeEmail {
+						manufacturerEmail = extId.Identifier
+					}
+					if extId.ExternalIdentifierType == spdx.ExternalIdentifierTypeUrlScheme {
+						manufacturerURL = extId.Identifier
+					}
+				}
+				break
+			}
+		}
+		// If not found in Organizations, check Persons
+		if manufacturerName == "" && manufacturerEmail == "" {
+			for _, person := range s.doc.Persons {
+				if person.SpdxID == orig.SpdxID {
+					manufacturerName = person.Name
+					// Extract email and URL from externalIdentifier
+					for _, extId := range person.ExternalIdentifier {
+						if extId.ExternalIdentifierType == spdx.ExternalIdentifierTypeEmail {
+							manufacturerEmail = extId.Identifier
+						}
+						if extId.ExternalIdentifierType == spdx.ExternalIdentifierTypeUrlScheme {
+							manufacturerURL = extId.Identifier
+						}
+					}
+					break
+				}
+			}
+		}
+	}
+
+	// Fall back to Name if already populated (embedded case) or lookup failed
+	if manufacturerName == "" {
+		manufacturerName = orig.Name
+	}
+
+	return Manufacturer{
+		Name:  manufacturerName,
+		Email: manufacturerEmail,
+		URL:   manufacturerURL,
+	}
 }
 
 func (s *Spdx3Doc) pkgRequiredFields(pkg *spdx.Package) bool {
@@ -535,9 +684,18 @@ func (s *Spdx3Doc) cpes(pkg *spdx.Package) []cpe.CPE {
 
 func (s *Spdx3Doc) checksums(pkg *spdx.Package) []GetChecksum {
 	chks := make([]GetChecksum, 0)
-	// Note: VerifiedUsing is []IntegrityMethod, but Hash embeds IntegrityMethod
-	// In SPDX 3.0 JSON, hashes are parsed as Hash objects
-	// For now, return empty as we'd need type assertion to access Hash fields
+
+	if len(pkg.VerifiedUsing) > 0 {
+		for _, vu := range pkg.VerifiedUsing {
+			if h, ok := interface{}(vu).(spdx.Hash); ok {
+				ck := Checksum{
+					Alg:     string(h.Algorithm),
+					Content: h.HashValue,
+				}
+				chks = append(chks, ck)
+			}
+		}
+	}
 	return chks
 }
 
