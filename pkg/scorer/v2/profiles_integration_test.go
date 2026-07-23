@@ -61,7 +61,7 @@ func Test_NTIA2025ProfileForStaticSBOMFiles(t *testing.T) {
 		filepath.Join(base, "spdx3-perfect-score.json"):   {Score: 9.2, Grade: "A", Required: 12},
 		filepath.Join(base, "spdx3-minimal.json"):       {Score: 4.2, Grade: "F", Required: 5},
 		filepath.Join(base, "spdx3-no-version.json"):    {Score: 8.5, Grade: "B", Required: 11},
-		filepath.Join(base, "spdx3-no-authors.json"):    {Score: 9.2, Grade: "A", Required: 12},
+		filepath.Join(base, "spdx3-no-authors.json"):    {Score: 8.5, Grade: "B", Required: 11},
 		filepath.Join(base, "spdx3-no-timestamp.json"):  {Score: 7.7, Grade: "C", Required: 10},
 		filepath.Join(base, "spdx3-no-supplier.json"):   {Score: 8.5, Grade: "B", Required: 11},
 		filepath.Join(base, "spdx3-no-tool.json"):       {Score: 8.5, Grade: "B", Required: 11},
@@ -267,7 +267,7 @@ func Test_FSCTProfileForStaticSBOMFiles(t *testing.T) {
 		// SPDX 3.0 test cases - "no-*" files are perfect score minus only that field
 		filepath.Join(base, "spdx3-perfect-score.json"): {Score: 8.9, Grade: "B", Required: 8, Optional: 0},
 		filepath.Join(base, "spdx3-minimal.json"):       {Score: 1.1, Grade: "F", Required: 1, Optional: 0},
-		filepath.Join(base, "spdx3-no-authors.json"):    {Score: 8.9, Grade: "B", Required: 8, Optional: 0},
+		filepath.Join(base, "spdx3-no-authors.json"):    {Score: 7.8, Grade: "C", Required: 7, Optional: 0},
 		filepath.Join(base, "spdx3-no-timestamp.json"):  {Score: 7.8, Grade: "C", Required: 7, Optional: 0},
 
 		// CycloneDX test cases
@@ -384,7 +384,7 @@ func Test_BSI11ProfileForStaticSBOMFiles(t *testing.T) {
 		filepath.Join(base, "spdx3-perfect-score.json"): {Score: 9.2, Grade: "A", Required: 7, Additional: 4, Optional: 0},
 		filepath.Join(base, "spdx3-minimal.json"):       {Score: 3.3, Grade: "F", Required: 2, Additional: 1, Optional: 0},
 		filepath.Join(base, "spdx3-no-version.json"):    {Score: 8.3, Grade: "B", Required: 6, Additional: 4, Optional: 0},
-		filepath.Join(base, "spdx3-no-authors.json"):    {Score: 9.2, Grade: "A", Required: 7, Additional: 4, Optional: 0},
+		filepath.Join(base, "spdx3-no-authors.json"):    {Score: 8.3, Grade: "B", Required: 6, Additional: 4, Optional: 0},
 		filepath.Join(base, "spdx3-no-timestamp.json"):  {Score: 8.3, Grade: "B", Required: 6, Additional: 4, Optional: 0},
 		filepath.Join(base, "spdx3-no-supplier.json"):   {Score: 8.3, Grade: "B", Required: 6, Additional: 4, Optional: 0},
 		filepath.Join(base, "spdx3-no-unique-id.json"):       {Score: 9.1, Grade: "A", Required: 7, Additional: 3, Optional: 0},
@@ -517,7 +517,7 @@ func Test_BSI20ProfileForStaticSBOMFiles(t *testing.T) {
 		filepath.Join(base, "spdx3-perfect-score.json"): {Score: 6.9, Grade: "D", Required: 7, Additional: 5, Optional: 1},
 		filepath.Join(base, "spdx3-minimal.json"):       {Score: 2.9, Grade: "F", Required: 3, Additional: 1, Optional: 0},
 		filepath.Join(base, "spdx3-no-version.json"):    {Score: 6.4, Grade: "D", Required: 6, Additional: 5, Optional: 1},
-		filepath.Join(base, "spdx3-no-authors.json"):    {Score: 6.9, Grade: "D", Required: 7, Additional: 5, Optional: 1},
+		filepath.Join(base, "spdx3-no-authors.json"):    {Score: 6.4, Grade: "D", Required: 6, Additional: 5, Optional: 1},
 		filepath.Join(base, "spdx3-no-timestamp.json"):  {Score: 6.4, Grade: "D", Required: 6, Additional: 5, Optional: 1},
 		filepath.Join(base, "spdx3-no-supplier.json"):   {Score: 6.4, Grade: "D", Required: 6, Additional: 5, Optional: 1},
 		filepath.Join(base, "spdx3-no-unique-id.json"):       {Score: 6.8, Grade: "D", Required: 7, Additional: 4, Optional: 1},
@@ -639,15 +639,15 @@ func Test_InterlynkProfileForStaticSBOMFiles(t *testing.T) {
 		filepath.Join(base, "spdx-old-version.json"):      {Score: 5.6, Grade: "D"},
 
 		// SPDX 3.0 test cases - "no-*" files are perfect score minus only that field
-		filepath.Join(base, "spdx3-perfect-score.json"): {Score: 8.9, Grade: "B"},
+		filepath.Join(base, "spdx3-perfect-score.json"): {Score: 8.1, Grade: "B"},
 		filepath.Join(base, "spdx3-minimal.json"):       {Score: 6.7, Grade: "D"},
-		filepath.Join(base, "spdx3-no-version.json"):    {Score: 8.5, Grade: "B"},
-		filepath.Join(base, "spdx3-no-authors.json"):    {Score: 8.9, Grade: "B"},
-		filepath.Join(base, "spdx3-no-timestamp.json"):  {Score: 8.5, Grade: "B"},
-		filepath.Join(base, "spdx3-no-supplier.json"):   {Score: 8.5, Grade: "B"},
-		filepath.Join(base, "spdx3-no-unique-id.json"):       {Score: 7.8, Grade: "C"},
-		filepath.Join(base, "spdx3-no-dependencies.json"): {Score: 8.9, Grade: "B"},
-		filepath.Join(base, "spdx3-no-tool.json"):       {Score: 8.5, Grade: "B"},
+		filepath.Join(base, "spdx3-no-version.json"):    {Score: 7.8, Grade: "C"},
+		filepath.Join(base, "spdx3-no-authors.json"):    {Score: 7.8, Grade: "C"},
+		filepath.Join(base, "spdx3-no-timestamp.json"):  {Score: 7.8, Grade: "C"},
+		filepath.Join(base, "spdx3-no-supplier.json"):   {Score: 7.8, Grade: "C"},
+		filepath.Join(base, "spdx3-no-unique-id.json"):       {Score: 7.0, Grade: "C"},
+		filepath.Join(base, "spdx3-no-dependencies.json"): {Score: 8.1, Grade: "B"},
+		filepath.Join(base, "spdx3-no-tool.json"):       {Score: 7.8, Grade: "C"},
 
 		// CycloneDX test cases
 		filepath.Join(base, "cdx-perfect-score.json"):    {Score: 8.0, Grade: "C"},
@@ -746,7 +746,7 @@ func Test_OCTV11ProfileForStaticSBOMFiles(t *testing.T) {
 		filepath.Join(base, "spdx3-perfect-score.json"): {Score: 10.0, Grade: "A", Required: 18, Optional: 2},
 		filepath.Join(base, "spdx3-minimal.json"):       {Score: 6.2, Grade: "D", Required: 8, Optional: 0},
 		filepath.Join(base, "spdx3-no-version.json"):    {Score: 8.8, Grade: "B", Required: 16, Optional: 2},
-		filepath.Join(base, "spdx3-no-authors.json"):    {Score: 9.4, Grade: "A", Required: 17, Optional: 2},
+		filepath.Join(base, "spdx3-no-authors.json"):    {Score: 8.8, Grade: "B", Required: 16, Optional: 2},
 		filepath.Join(base, "spdx3-no-timestamp.json"):  {Score: 8.8, Grade: "B", Required: 16, Optional: 2},
 		filepath.Join(base, "spdx3-no-supplier.json"):   {Score: 8.8, Grade: "B", Required: 16, Optional: 2},
 		filepath.Join(base, "spdx3-no-unique-id.json"):       {Score: 9.4, Grade: "A", Required: 17, Optional: 1},

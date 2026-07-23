@@ -195,7 +195,7 @@ func (extractor *Extractor) MapFieldWithFunction(ctx context.Context) {
 		return nil
 	}
 
-	// sbom_author -> aggregate d.Authors()
+	// sbom_author/sbom_authors -> aggregate d.Authors()
 	extractor.docGetters["sbom_author"] = func(d sbom.Document) []string {
 		sbomAuthors := []string{}
 		for _, a := range d.Authors() {
@@ -209,6 +209,8 @@ func (extractor *Extractor) MapFieldWithFunction(ctx context.Context) {
 		}
 		return nilOrSlice(sbomAuthors)
 	}
+	// Alias: sbom_authors -> same as sbom_author
+	extractor.docGetters["sbom_authors"] = extractor.docGetters["sbom_author"]
 
 	// sbom_supplier -> doc-level supplier
 	extractor.docGetters["sbom_supplier"] = func(d sbom.Document) []string {

@@ -245,12 +245,31 @@ func (s *Spdx3Doc) parseSpec() {
 
 		sp.Comment = ci.Comment
 
-		// Organization - find in CreatedBy by checking SpdxID prefix or using the first entry
-		// In SPDX 3.0, agent types are distinguished by the concrete type, not a Type field
+		// Organization - find in CreatedBy by looking up the actual Organization/Person
+		// In SPDX 3.0, CreatedBy contains Agent references (SpdxID only), need to lookup actual entity
 		for _, creator := range ci.CreatedBy {
-			// Use the first creator as the organization if it has a name
-			if creator.Name != "" {
-				sp.Organization = creator.Name
+			if creator.SpdxID == "" {
+				continue
+			}
+			// Look up the Organization or Person by SpdxID
+			orgName := ""
+			for _, org := range s.doc.Organizations {
+				if org.SpdxID == creator.SpdxID {
+					orgName = org.Name
+					break
+				}
+			}
+			if orgName == "" {
+				// Try looking up in Persons
+				for _, person := range s.doc.Persons {
+					if person.SpdxID == creator.SpdxID {
+						orgName = person.Name
+						break
+					}
+				}
+			}
+			if orgName != "" {
+				sp.Organization = orgName
 				break
 			}
 		}
@@ -307,12 +326,25 @@ func (s *Spdx3Doc) parseSchemaValidation() {
 func (s *Spdx3Doc) parseAuthors() {
 	s.Auths = []GetAuthor{}
 
-	// In SPDX 3.0, authors are Organizations and Persons in the document
-	// The CreationInfo.CreatedBy contains references, but the actual data
-	// is in the Organizations and Persons slices
+	// In SPDX 3.0, authors are Organizations and Persons referenced in CreationInfo.CreatedBy
+	// CreatedBy contains Agent references (via SpdxID) to the actual author entities
+	if s.doc.CreationInfo == nil {
+		return
+	}
 
-	// Add all Organizations as authors
+	// Build a set of SpdxIDs from CreatedBy
+	createdByIDs := make(map[string]bool)
+	for _, agent := range s.doc.CreationInfo.CreatedBy {
+		if agent.SpdxID != "" {
+			createdByIDs[agent.SpdxID] = true
+		}
+	}
+
+	// Only add Organizations that are in CreatedBy
 	for _, org := range s.doc.Organizations {
+		if !createdByIDs[org.SpdxID] {
+			continue
+		}
 		email := ""
 		// Extract email from externalIdentifier
 		for _, extId := range org.ExternalIdentifier {
@@ -333,8 +365,11 @@ func (s *Spdx3Doc) parseAuthors() {
 		s.Auths = append(s.Auths, a)
 	}
 
-	// Add all Persons as authors
+	// Only add Persons that are in CreatedBy
 	for _, person := range s.doc.Persons {
+		if !createdByIDs[person.SpdxID] {
+			continue
+		}
 		email := ""
 		// Extract email from externalIdentifier
 		for _, extId := range person.ExternalIdentifier {
@@ -387,8 +422,19 @@ func (s *Spdx3Doc) parseTool() {
 		return inputName, ""
 	}
 
-	// Look for tools in the document's Tools collection
+	// Build a set of SpdxIDs from CreatedUsing (document-level tools only)
+	createdUsingIDs := make(map[string]bool)
+	for _, tool := range s.doc.CreationInfo.CreatedUsing {
+		if tool.SpdxID != "" {
+			createdUsingIDs[tool.SpdxID] = true
+		}
+	}
+
+	// Only add Tools that are referenced in CreatedUsing
 	for _, tool := range s.doc.Tools {
+		if !createdUsingIDs[tool.SpdxID] {
+			continue
+		}
 		t := Tool{}
 		t.Name, t.Version = extractVersion(tool.Name)
 		s.SpdxTools = append(s.SpdxTools, t)
