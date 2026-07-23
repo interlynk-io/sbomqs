@@ -4,34 +4,192 @@
     {
       "type": "SpdxDocument",
       "spdxId": "SPDXRef-DOCUMENT",
-      "name": "No Authors Test",
+      "name": "SPDX 3.0 - Perfect Score Minus Authors Only",
       "creationInfo": "_:creationinfo",
-      "element": ["SPDXRef-Package-Root"]
+      "element": [
+        "SPDXRef-Package-App",
+        "SPDXRef-Package-Lib",
+        "SPDXRef-File-Readme"
+      ],
+      "dataLicense": "CC0-1.0",
+      "profileConformance": ["core", "software", "licensing"],
+      "namespaceMap": [
+        {
+          "prefix": "",
+          "namespace": "https://example.com/sbom/my-application-1.0.0"
+        }
+      ]
     },
     {
       "type": "CreationInfo",
       "@id": "_:creationinfo",
       "specVersion": "3.0.1",
       "created": "2024-01-15T10:30:00Z",
+      "createdBy": [],
       "createdUsing": ["_:tool1"]
     },
     {
       "type": "Tool",
       "@id": "_:tool1",
-      "name": "no-authors-generator"
+      "name": "sbomqs-generator-1.0.0",
+      "externalIdentifier": [
+        {
+          "externalIdentifierType": "other",
+          "identifier": "https://github.com/interlynk-io/sbomqs"
+        }
+      ]
+    },
+    {
+      "type": "Organization",
+      "@id": "_:supplier1",
+      "name": "Example Organization Inc",
+      "externalIdentifier": [
+        {
+          "externalIdentifierType": "email",
+          "identifier": "contact@example.com"
+        },
+        {
+          "externalIdentifierType": "other",
+          "identifier": "https://example.com/contact"
+        }
+      ]
+    },
+    {
+      "type": "Organization",
+      "@id": "_:supplier2",
+      "name": "Library Vendor Ltd",
+      "externalIdentifier": [
+        {
+          "externalIdentifierType": "email",
+          "identifier": "support@libraryvendor.com"
+        },
+        {
+          "externalIdentifierType": "other",
+          "identifier": "https://libraryvendor.com"
+        }
+      ]
     },
     {
       "type": "software_Package",
-      "spdxId": "SPDXRef-Package-Root",
-      "name": "no-authors-app",
-      "software_packageVersion": "1.0.0"
+      "spdxId": "SPDXRef-Package-App",
+      "name": "my-application",
+      "software_packageVersion": "1.0.0",
+      "software_primaryPurpose": "application",
+      "suppliedBy": "_:supplier1",
+      "software_downloadLocation": "https://github.com/example/my-app/releases/download/v1.0.0/my-app.tar.gz",
+      "software_homePage": "https://example.com/my-app",
+      "software_sourceInfo": "https://github.com/example/my-app",
+      "software_copyrightText": "Copyright 2024 Example Organization Inc",
+      "externalIdentifier": [
+        {
+          "externalIdentifierType": "packageUrl",
+          "identifier": "pkg:npm/my-application@1.0.0"
+        },
+        {
+          "externalIdentifierType": "cpe23",
+          "identifier": "cpe:2.3:a:example:my-application:1.0.0:*:*:*:*:*:*:*"
+        }
+      ],
+      "verifiedUsing": [
+        {
+          "algorithm": "sha256",
+          "hashValue": "d2ca1ac5e3c0efa0e3c2e8e92f3a7f3d3f9c8b8e7f6d5c4b3a29182736453627"
+        }
+      ]
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package-Lib",
+      "name": "my-library",
+      "software_packageVersion": "2.3.4",
+      "software_primaryPurpose": "library",
+      "suppliedBy": "_:supplier2",
+      "software_downloadLocation": "https://npmjs.org/my-library/-/my-library-2.3.4.tgz",
+      "software_sourceInfo": "https://github.com/libraryvendor/my-library",
+      "software_copyrightText": "Copyright 2024 Library Vendor Ltd",
+      "externalIdentifier": [
+        {
+          "externalIdentifierType": "packageUrl",
+          "identifier": "pkg:npm/my-library@2.3.4"
+        },
+        {
+          "externalIdentifierType": "cpe23",
+          "identifier": "cpe:2.3:a:libraryvendor:my-library:2.3.4:*:*:*:*:*:*:*"
+        }
+      ],
+      "verifiedUsing": [
+        {
+          "algorithm": "sha256",
+          "hashValue": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    {
+      "type": "software_File",
+      "spdxId": "SPDXRef-File-Readme",
+      "name": "/README.md",
+      "software_copyrightText": "Copyright 2024 Example Organization Inc",
+      "verifiedUsing": [
+        {
+          "algorithm": "sha256",
+          "hashValue": "a3f5c7e9b2d4f6a8c0e2b4d6f8a0c2e4b6d8f0a2c4e6b8d0f2a4c6e8b0d2f4a6"
+        }
+      ]
+    },
+    {
+      "type": "License",
+      "spdxId": "SPDXRef-License-MIT",
+      "name": "MIT",
+      "licenseText": "MIT License\n\nPermission is hereby granted..."
     },
     {
       "type": "Relationship",
       "spdxId": "SPDXRef-Relationship-1",
+      "relationshipType": "describes",
       "from": "SPDXRef-DOCUMENT",
-      "to": ["SPDXRef-Package-Root"],
-      "relationshipType": "describes"
+      "to": ["SPDXRef-Package-App"]
+    },
+    {
+      "type": "Relationship",
+      "spdxId": "SPDXRef-Relationship-2",
+      "relationshipType": "dependsOn",
+      "from": "SPDXRef-Package-App",
+      "to": ["SPDXRef-Package-Lib"]
+    },
+    {
+      "type": "Relationship",
+      "spdxId": "SPDXRef-Relationship-3",
+      "relationshipType": "contains",
+      "from": "SPDXRef-Package-App",
+      "to": ["SPDXRef-File-Readme"]
+    },
+    {
+      "type": "Relationship",
+      "spdxId": "SPDXRef-Relationship-4",
+      "relationshipType": "hasDeclaredLicense",
+      "from": "SPDXRef-Package-App",
+      "to": ["SPDXRef-License-MIT"]
+    },
+    {
+      "type": "Relationship",
+      "spdxId": "SPDXRef-Relationship-5",
+      "relationshipType": "hasConcludedLicense",
+      "from": "SPDXRef-Package-App",
+      "to": ["SPDXRef-License-MIT"]
+    },
+    {
+      "type": "Relationship",
+      "spdxId": "SPDXRef-Relationship-6",
+      "relationshipType": "hasDeclaredLicense",
+      "from": "SPDXRef-Package-Lib",
+      "to": ["SPDXRef-License-MIT"]
+    },
+    {
+      "type": "Relationship",
+      "spdxId": "SPDXRef-Relationship-7",
+      "relationshipType": "hasConcludedLicense",
+      "from": "SPDXRef-Package-Lib",
+      "to": ["SPDXRef-License-MIT"]
     }
   ]
 }

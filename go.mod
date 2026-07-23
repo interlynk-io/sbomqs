@@ -24,7 +24,7 @@ require (
 	sigs.k8s.io/release-utils v0.11.1
 )
 
-replace github.com/interlynk-io/spdx-zen => ../spdx_zen
+replace github.com/interlynk-io/spdx-zen => ../spdx-zen
 
 require (
 	github.com/clipperhouse/uax29/v2 v2.7.0 // indirect

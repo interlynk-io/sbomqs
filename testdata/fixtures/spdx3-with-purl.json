@@ -4,14 +4,15 @@
     {
       "type": "SpdxDocument",
       "spdxId": "SPDXRef-DOCUMENT",
-      "name": "Minimal SPDX 3.0 SBOM",
+      "name": "SBOM with Component Unique ID",
       "creationInfo": "_:creationinfo",
+      "element": ["SPDXRef-Package-App"],
       "dataLicense": "CC0-1.0",
-      "profileConformance": ["core"],
+      "profileConformance": ["core", "software"],
       "namespaceMap": [
         {
           "prefix": "",
-          "namespace": "https://example.com/sbom/minimal"
+          "namespace": "https://example.com/sbom/my-application-1.0.0"
         }
       ]
     },
@@ -65,6 +66,35 @@
         {
           "externalIdentifierType": "other",
           "identifier": "https://github.com/interlynk-io/sbomqs"
+        }
+      ]
+    },
+    {
+      "type": "Organization",
+      "@id": "_:supplier1",
+      "name": "Supplier Corp",
+      "externalIdentifier": [
+        {
+          "externalIdentifierType": "email",
+          "identifier": "supplier@example.com"
+        },
+        {
+          "externalIdentifierType": "other",
+          "identifier": "https://supplier.example.com"
+        }
+      ]
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package-App",
+      "name": "my-application",
+      "software_packageVersion": "1.0.0",
+      "suppliedBy": "_:supplier1",
+      "software_copyrightText": "Copyright 2024 Supplier Corp",
+      "externalIdentifier": [
+        {
+          "externalIdentifierType": "packageUrl",
+          "identifier": "pkg:npm/my-application@1.0.0"
         }
       ]
     }

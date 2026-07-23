@@ -4,7 +4,7 @@
     {
       "type": "SpdxDocument",
       "spdxId": "SPDXRef-DOCUMENT",
-      "name": "SPDX 3.0 - Perfect Score Minus Timestamp Only",
+      "name": "SPDX 3.0 - Perfect Score Minus Supplier Only",
       "creationInfo": "_:creationinfo",
       "element": [
         "SPDXRef-Package-App",
@@ -24,6 +24,7 @@
       "type": "CreationInfo",
       "@id": "_:creationinfo",
       "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
       "createdBy": ["_:org1", "_:person1"],
       "createdUsing": ["_:tool1"]
     },
@@ -69,42 +70,11 @@
       ]
     },
     {
-      "type": "Organization",
-      "@id": "_:supplier1",
-      "name": "Example Organization Inc",
-      "externalIdentifier": [
-        {
-          "externalIdentifierType": "email",
-          "identifier": "contact@example.com"
-        },
-        {
-          "externalIdentifierType": "other",
-          "identifier": "https://example.com/contact"
-        }
-      ]
-    },
-    {
-      "type": "Organization",
-      "@id": "_:supplier2",
-      "name": "Library Vendor Ltd",
-      "externalIdentifier": [
-        {
-          "externalIdentifierType": "email",
-          "identifier": "support@libraryvendor.com"
-        },
-        {
-          "externalIdentifierType": "other",
-          "identifier": "https://libraryvendor.com"
-        }
-      ]
-    },
-    {
       "type": "software_Package",
       "spdxId": "SPDXRef-Package-App",
       "name": "my-application",
       "software_packageVersion": "1.0.0",
       "software_primaryPurpose": "application",
-      "suppliedBy": "_:supplier1",
       "software_downloadLocation": "https://github.com/example/my-app/releases/download/v1.0.0/my-app.tar.gz",
       "software_homePage": "https://example.com/my-app",
       "software_sourceInfo": "https://github.com/example/my-app",
@@ -132,7 +102,6 @@
       "name": "my-library",
       "software_packageVersion": "2.3.4",
       "software_primaryPurpose": "library",
-      "suppliedBy": "_:supplier2",
       "software_downloadLocation": "https://npmjs.org/my-library/-/my-library-2.3.4.tgz",
       "software_sourceInfo": "https://github.com/libraryvendor/my-library",
       "software_copyrightText": "Copyright 2024 Library Vendor Ltd",

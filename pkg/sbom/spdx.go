@@ -39,7 +39,7 @@ import (
 
 var (
 	spdxFileFormats    = []string{"json", "yaml", "rdf", "tag-value"}
-	spdxSpecVersions   = []string{"2.1", "2.2", "2.3"}
+	spdxSpecVersions   = []string{"2.1", "2.2", "2.3", "3.0.1"}
 	spdxPrimaryPurpose = []string{"application", "framework", "library", "container", "operating-system", "device", "firmware", "source", "archive", "file", "install", "other"}
 )
 

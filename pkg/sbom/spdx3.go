@@ -313,9 +313,6 @@ func (s *Spdx3Doc) parseAuthors() {
 
 	// Add all Organizations as authors
 	for _, org := range s.doc.Organizations {
-		if org.Name == "" {
-			continue
-		}
 		email := ""
 		// Extract email from externalIdentifier
 		for _, extId := range org.ExternalIdentifier {
@@ -323,6 +320,10 @@ func (s *Spdx3Doc) parseAuthors() {
 				email = extId.Identifier
 				break
 			}
+		}
+		// Skip only if both name and email are empty
+		if org.Name == "" && email == "" {
+			continue
 		}
 		a := Author{
 			Name:       org.Name,
@@ -334,9 +335,6 @@ func (s *Spdx3Doc) parseAuthors() {
 
 	// Add all Persons as authors
 	for _, person := range s.doc.Persons {
-		if person.Name == "" {
-			continue
-		}
 		email := ""
 		// Extract email from externalIdentifier
 		for _, extId := range person.ExternalIdentifier {
@@ -344,6 +342,10 @@ func (s *Spdx3Doc) parseAuthors() {
 				email = extId.Identifier
 				break
 			}
+		}
+		// Skip only if both name and email are empty
+		if person.Name == "" && email == "" {
+			continue
 		}
 		a := Author{
 			Name:       person.Name,

@@ -4,7 +4,7 @@
     {
       "type": "SpdxDocument",
       "spdxId": "SPDXRef-DOCUMENT",
-      "name": "SPDX 3.0 - Perfect Score Minus Timestamp Only",
+      "name": "SPDX 3.0 - Perfect Score Minus Dependencies Only",
       "creationInfo": "_:creationinfo",
       "element": [
         "SPDXRef-Package-App",
@@ -24,6 +24,7 @@
       "type": "CreationInfo",
       "@id": "_:creationinfo",
       "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
       "createdBy": ["_:org1", "_:person1"],
       "createdUsing": ["_:tool1"]
     },
@@ -177,13 +178,6 @@
       "relationshipType": "describes",
       "from": "SPDXRef-DOCUMENT",
       "to": ["SPDXRef-Package-App"]
-    },
-    {
-      "type": "Relationship",
-      "spdxId": "SPDXRef-Relationship-2",
-      "relationshipType": "dependsOn",
-      "from": "SPDXRef-Package-App",
-      "to": ["SPDXRef-Package-Lib"]
     },
     {
       "type": "Relationship",

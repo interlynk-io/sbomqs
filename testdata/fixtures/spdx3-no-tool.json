@@ -4,7 +4,7 @@
     {
       "type": "SpdxDocument",
       "spdxId": "SPDXRef-DOCUMENT",
-      "name": "SPDX 3.0 - Perfect Score Minus Timestamp Only",
+      "name": "SPDX 3.0 - Perfect Score Minus Tool Only",
       "creationInfo": "_:creationinfo",
       "element": [
         "SPDXRef-Package-App",
@@ -24,8 +24,8 @@
       "type": "CreationInfo",
       "@id": "_:creationinfo",
       "specVersion": "3.0.1",
-      "createdBy": ["_:org1", "_:person1"],
-      "createdUsing": ["_:tool1"]
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:org1", "_:person1"]
     },
     {
       "type": "Organization",
@@ -54,17 +54,6 @@
         {
           "externalIdentifierType": "other",
           "identifier": "https://johndoe.example.com"
-        }
-      ]
-    },
-    {
-      "type": "Tool",
-      "@id": "_:tool1",
-      "name": "sbomqs-generator-1.0.0",
-      "externalIdentifier": [
-        {
-          "externalIdentifierType": "other",
-          "identifier": "https://github.com/interlynk-io/sbomqs"
         }
       ]
     },
