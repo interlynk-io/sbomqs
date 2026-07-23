@@ -1,0 +1,92 @@
+policy:
+  # Complete Component Identification
+  - name: "Component must have complete identification (name, version, type, supplier)"
+    type: required
+    rules:
+      - field: name
+      - field: version
+      - field: type
+      - field: supplier
+    action: warn
+
+  # Unique Identifiers (PURL or CPE)
+  - name: "Component must have at least one unique identifier (PURL or CPE)"
+    type: required
+    rules:
+      - field: purl
+      - field: cpe
+    action: warn
+
+  # PURL must follow standard format
+  - name: "PURL must follow standard package URL format"
+    type: whitelist
+    rules:
+      - field: purl
+        patterns:
+          - "^pkg:[a-z]+/.+@.+"
+    action: warn
+
+  # CPE must follow CPE 2.3 format
+  - name: "CPE must follow CPE 2.3 format"
+    type: whitelist
+    rules:
+      - field: cpe
+        patterns:
+          - "^cpe:2\\.3:.+"
+    action: warn
+
+  # License required
+  - name: "Component must have a license"
+    type: required
+    rules:
+      - field: license
+    action: warn
+
+  # No deprecated licenses
+  - name: "Component must not use deprecated SPDX licenses"
+    type: blacklist
+    rules:
+      - field: license
+        values:
+          - "GPL-1.0"
+          - "GPL-1.0-only"
+          - "GPL-1.0-or-later"
+          - "GPL-2.0"
+          - "GPL-2.0-with-classpath-exception"
+          - "GPL-2.0-with-font-exception"
+          - "GPL-2.0-with-GCC-exception"
+          - "GPL-3.0"
+          - "GPL-3.0-with-GCC-exception"
+          - "AGPL-1.0"
+          - "AGPL-3.0"
+          - "LGPL-2.0"
+          - "LGPL-2.1"
+          - "LGPL-3.0"
+          - "GFDL-1.0"
+          - "GFDL-1.1"
+          - "GFDL-1.2"
+          - "GFDL-1.3"
+    action: warn
+
+  # Copyright required
+  - name: "Component must have copyright text"
+    type: required
+    rules:
+      - field: copyright
+    action: warn
+
+  # Download location required
+  - name: "Component must have download location"
+    type: required
+    rules:
+      - field: downloadlocation
+    action: warn
+
+  # Checksum required
+  - name: "Component must have checksum"
+    type: required
+    rules:
+      - field: checksum
+    action: warn
+
+  # Component-level author (optional, but validated if present)

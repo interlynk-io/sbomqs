@@ -1,0 +1,9 @@
+policy:
+  - name: "Test: Component license blacklist - should fail if deprecated GPL licenses found"
+    type: blacklist
+    rules:
+      - field: license
+        values:
+          - "GPL-2.0"
+          - "GPL-3.0"
+    action: fail

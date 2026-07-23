@@ -1,0 +1,36 @@
+policy:
+  # Document Authors/Creators
+  - name: "Document must have authors"
+    type: required
+    rules:
+      - field: sbom_authors
+    action: warn
+
+  # Document Creation Timestamp
+  - name: "Document must have creation timestamp"
+    type: required
+    rules:
+      - field: sbom_timestamp
+    action: warn
+
+  # Document Creation Tool
+  - name: "Document must have creation tool"
+    type: required
+    rules:
+      - field: sbom_tool
+    action: warn
+
+  # Document Lifecycle
+  - name: "Document must have lifecycle information"
+    type: required
+    rules:
+      - field: sbom_lifecycle
+    action: warn
+
+
+  # Document Primary Component
+  - name: "Document must have primary component"
+    type: required
+    rules:
+      - field: sbom_pc
+    action: warn

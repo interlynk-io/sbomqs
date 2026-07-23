@@ -1,0 +1,6 @@
+policy:
+  - name: "Test: Component concluded license required"
+    type: required
+    rules:
+      - field: concluded_license
+    action: fail
