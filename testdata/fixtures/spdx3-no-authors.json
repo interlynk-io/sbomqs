@@ -4,7 +4,7 @@
     {
       "type": "SpdxDocument",
       "spdxId": "SPDXRef-DOCUMENT",
-      "name": "SPDX 3.0 - Perfect Score Minus Authors Only",
+      "name": "SPDX 3.0 - No Authors and No Tool",
       "creationInfo": "_:creationinfo",
       "element": [
         "SPDXRef-Package-App",
@@ -26,18 +26,7 @@
       "specVersion": "3.0.1",
       "created": "2024-01-15T10:30:00Z",
       "createdBy": [],
-      "createdUsing": ["_:tool1"]
-    },
-    {
-      "type": "Tool",
-      "@id": "_:tool1",
-      "name": "sbomqs-generator-1.0.0",
-      "externalIdentifier": [
-        {
-          "externalIdentifierType": "other",
-          "identifier": "https://github.com/interlynk-io/sbomqs"
-        }
-      ]
+      "createdUsing": []
     },
     {
       "type": "Organization",
