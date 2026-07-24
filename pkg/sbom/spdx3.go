@@ -494,6 +494,12 @@ func (s *Spdx3Doc) parseRelationships() {
 			continue
 		}
 
+		// Only include component-to-component dependency relationships
+		// Skip license, vulnerability assessment, and other non-dependency relationships
+		if !isComponentDependencyRelationship(rel.RelationshipType) {
+			continue
+		}
+
 		// SPDX 3.0 relationships can have multiple targets
 		// Flatten them into individual From->To relationships
 		for _, to := range rel.To {
@@ -504,6 +510,134 @@ func (s *Spdx3Doc) parseRelationships() {
 			}
 			s.Relationships = append(s.Relationships, r)
 		}
+	}
+}
+
+// isComponentDependencyRelationship returns true if the relationship type
+// represents an actual component-to-component dependency (not licenses,
+// vulnerability assessments, or other attribute relationships).
+func isComponentDependencyRelationship(relType spdx.RelationshipType) bool {
+	switch relType {
+	// Core dependency types
+	case spdx.RelationshipTypeDependsOn:
+		return true
+
+	case spdx.RelationshipTypeContains:
+		return true
+
+	// Linking relationships
+	case spdx.RelationshipTypeHasDynamicLink,
+		spdx.RelationshipTypeHasStaticLink:
+		return true
+
+	// Optional/provided dependencies
+	case spdx.RelationshipTypeHasOptionalDependency,
+		spdx.RelationshipTypeHasProvidedDependency:
+		return true
+
+	// Prerequisite/requirement dependencies
+	case spdx.RelationshipTypeHasPrerequisite,
+		spdx.RelationshipTypeHasRequirement:
+		return true
+
+	// Manifest/dependency tracking
+	case spdx.RelationshipTypeHasDependencyManifest:
+		return true
+
+	// Build relationships (input/output/tool/host)
+	case spdx.RelationshipTypeHasInput,
+		spdx.RelationshipTypeHasOutput,
+		spdx.RelationshipTypeHasHost,
+		spdx.RelationshipTypeUsesTool:
+		return true
+
+	// Generation
+	case spdx.RelationshipTypeGenerates:
+		return true
+
+	// Configuration
+	case spdx.RelationshipTypeConfigures:
+		return true
+
+	// NOT dependencies - license relationships
+	case spdx.RelationshipTypeHasDeclaredLicense,
+		spdx.RelationshipTypeHasConcludedLicense:
+		return false
+
+	// NOT dependencies - vulnerability assessment relationships
+	case spdx.RelationshipTypeHasAssessmentFor,
+		spdx.RelationshipTypeHasAssociatedVulnerability,
+		spdx.RelationshipTypeAffects,
+		spdx.RelationshipTypeDoesNotAffect,
+		spdx.RelationshipTypeFixedIn,
+		spdx.RelationshipTypeUnderInvestigationFor,
+		spdx.RelationshipTypeFoundBy,
+		spdx.RelationshipTypeReportedBy,
+		spdx.RelationshipTypeFixedBy,
+		spdx.RelationshipTypePublishedBy,
+		spdx.RelationshipTypeRepublishedBy,
+		spdx.RelationshipTypeExploitCreatedBy,
+		spdx.RelationshipTypeCoordinatedBy:
+		return false
+
+	// NOT dependencies - file/metadata relationships
+	case spdx.RelationshipTypeHasDataFile,
+		spdx.RelationshipTypeHasDocumentation,
+		spdx.RelationshipTypeHasTest,
+		spdx.RelationshipTypeHasTestCase,
+		spdx.RelationshipTypeHasExample,
+		spdx.RelationshipTypeHasEvidence,
+		spdx.RelationshipTypeHasMetadata,
+		spdx.RelationshipTypeHasAddedFile,
+		spdx.RelationshipTypeHasDeletedFile,
+		spdx.RelationshipTypeHasDistributionArtifact:
+		return false
+
+	// NOT dependencies - variant/specification relationships
+	case spdx.RelationshipTypeHasVariant,
+		spdx.RelationshipTypeHasSpecification,
+		spdx.RelationshipTypeHasOptionalComponent:
+		return false
+
+	// NOT dependencies - archive/packaging relationships
+	case spdx.RelationshipTypeExpandsTo,
+		spdx.RelationshipTypePackagedBy,
+		spdx.RelationshipTypePatchedBy,
+		spdx.RelationshipTypeModifiedBy,
+		spdx.RelationshipTypeCopiedTo,
+		spdx.RelationshipTypeAmendedBy:
+		return false
+
+	// NOT dependencies - serialization
+	case spdx.RelationshipTypeSerializedInArtifact:
+		return false
+
+	// NOT dependencies - dataset relationships
+	case spdx.RelationshipTypeTrainedOn,
+		spdx.RelationshipTypeTestedOn:
+		return false
+
+	// NOT dependencies - ancestry
+	case spdx.RelationshipTypeAncestorOf,
+		spdx.RelationshipTypeDescendantOf:
+		return false
+
+	// NOT dependencies - delegation/invocation
+	case spdx.RelationshipTypeDelegatedTo,
+		spdx.RelationshipTypeInvokedBy:
+		return false
+
+	// NOT dependencies - availability
+	case spdx.RelationshipTypeAvailableFrom:
+		return false
+
+	// NOT dependencies - other/catch-all
+	case spdx.RelationshipTypeOther:
+		return false
+
+	default:
+		// For unknown relationship types, be conservative and don't treat as dependency
+		return false
 	}
 }
 
