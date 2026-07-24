@@ -557,7 +557,129 @@ func TestBSISBOMCreator(t *testing.T) {
 		assert.Equal(t, "doc", got.ID)
 		assert.Equal(t, "", got.CheckValue)
 	})
+
+	// SPDX 3.0 test cases
+	t.Run("spdx3SBOMWithOrganizationAuthor", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiSpdx3SBOMAuthorWithOrganization, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := bsiV11SBOMCreator(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, SBOM_CREATOR, got.CheckKey)
+		assert.Equal(t, "doc", got.ID)
+		assert.Contains(t, got.CheckValue, "contact@example.com")
+	})
+
+	t.Run("spdx3SBOMWithPersonAuthor", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiSpdx3SBOMAuthorWithPerson, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := bsiV11SBOMCreator(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, SBOM_CREATOR, got.CheckKey)
+		assert.Equal(t, "doc", got.ID)
+		assert.Contains(t, got.CheckValue, "john.doe@example.com")
+	})
+
+	t.Run("spdx3SBOMAuthorAbsent", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiSpdx3SBOMAuthorAbsent, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := bsiV11SBOMCreator(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, SBOM_CREATOR, got.CheckKey)
+		assert.Equal(t, "doc", got.ID)
+		assert.Equal(t, "", got.CheckValue)
+	})
 }
+
+// SPDX 3.0 test data for BSI v1.1
+var bsiSpdx3SBOMAuthorWithOrganization = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "test-spdx3-doc",
+      "creationInfo": "_:creationinfo"
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2025-01-01T00:00:00Z",
+      "createdBy": ["_:org1"]
+    },
+    {
+      "type": "Organization",
+      "@id": "_:org1",
+      "name": "Example Organization Inc",
+      "externalIdentifier": [
+        {
+          "externalIdentifierType": "email",
+          "identifier": "contact@example.com"
+        }
+      ]
+    }
+  ]
+}
+`)
+
+var bsiSpdx3SBOMAuthorWithPerson = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "test-spdx3-doc",
+      "creationInfo": "_:creationinfo"
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2025-01-01T00:00:00Z",
+      "createdBy": ["_:person1"]
+    },
+    {
+      "type": "Person",
+      "@id": "_:person1",
+      "name": "John Doe",
+      "externalIdentifier": [
+        {
+          "externalIdentifierType": "email",
+          "identifier": "john.doe@example.com"
+        }
+      ]
+    }
+  ]
+}
+`)
+
+var bsiSpdx3SBOMAuthorAbsent = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "test-spdx3-doc",
+      "creationInfo": "_:creationinfo"
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2025-01-01T00:00:00Z"
+    }
+  ]
+}
+`)
 
 //
 // SBOM Timestamp fixtures and tests
@@ -638,7 +760,72 @@ func TestBSISBOMTimestamp(t *testing.T) {
 		assert.Equal(t, "doc", got.ID)
 		assert.Equal(t, "", got.CheckValue)
 	})
+
+	// SPDX 3.0 test cases
+	t.Run("spdx3SBOMWithValidTimestamp", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiSpdx3SBOMWithTimestamp, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := bsiV11SBOMTimestamp(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, SBOM_TIMESTAMP, got.CheckKey)
+		assert.Equal(t, "doc", got.ID)
+		assert.Contains(t, got.CheckValue, "2025-01-01")
+	})
+
+	t.Run("spdx3SBOMNoTimestamp", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiSpdx3SBOMNoTimestamp, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := bsiV11SBOMTimestamp(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, SBOM_TIMESTAMP, got.CheckKey)
+		assert.Equal(t, "doc", got.ID)
+		assert.Equal(t, "", got.CheckValue)
+	})
 }
+
+// SPDX 3.0 test data for BSI Timestamp
+var bsiSpdx3SBOMWithTimestamp = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "test-spdx3-doc",
+      "creationInfo": "_:creationinfo"
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2025-01-01T00:00:00Z"
+    }
+  ]
+}
+`)
+
+var bsiSpdx3SBOMNoTimestamp = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "test-spdx3-doc",
+      "creationInfo": "_:creationinfo"
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1"
+    }
+  ]
+}
+`)
 
 //
 // SBOM URI fixtures and tests
@@ -714,7 +901,79 @@ func TestBSISBOMURI(t *testing.T) {
 		assert.Equal(t, "doc", got.ID)
 		assert.Equal(t, "", got.CheckValue)
 	})
+
+	// SPDX 3.0 test cases
+	t.Run("spdx3SBOMWithNamespace", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiSpdx3SBOMWithNamespace, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := bsiV11SBOMURI(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, SBOM_URI, got.CheckKey)
+		assert.Equal(t, "doc", got.ID)
+		assert.Contains(t, got.CheckValue, "https://example.com/sbom")
+	})
+
+	t.Run("spdx3SBOMNoNamespace", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiSpdx3SBOMNoNamespace, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := bsiV11SBOMURI(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, SBOM_URI, got.CheckKey)
+		assert.Equal(t, "doc", got.ID)
+		assert.Equal(t, "", got.CheckValue)
+	})
 }
+
+// SPDX 3.0 test data for BSI URI
+var bsiSpdx3SBOMWithNamespace = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "test-spdx3-doc",
+      "creationInfo": "_:creationinfo",
+      "namespaceMap": [
+        {
+          "prefix": "",
+          "namespace": "https://example.com/sbom/test-123"
+        }
+      ]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2025-01-01T00:00:00Z"
+    }
+  ]
+}
+`)
+
+var bsiSpdx3SBOMNoNamespace = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "test-spdx3-doc",
+      "creationInfo": "_:creationinfo"
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2025-01-01T00:00:00Z"
+    }
+  ]
+}
+`)
 
 //
 // Component Creator fixtures and tests
@@ -1203,7 +1462,101 @@ func TestBSIComponentCreator(t *testing.T) {
 			assert.Equal(t, "", got.CheckValue)
 		}
 	})
+
+	// SPDX 3.0 test cases
+	t.Run("spdx3CompWithSupplier", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiSpdx3CompWithSupplier, sbom.Signature{})
+		require.NoError(t, err)
+
+		for _, c := range doc.Components() {
+			got := bsiV11ComponentCreator(c)
+
+			assert.InDelta(t, 10.0, got.Score, 1e-9)
+			assert.Equal(t, COMP_CREATOR, got.CheckKey)
+			assert.Equal(t, common.UniqueElementID(c), got.ID)
+			assert.Contains(t, got.CheckValue, "contact@example.com")
+		}
+	})
+
+	t.Run("spdx3CompWithNoSupplier", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiSpdx3CompWithNoSupplier, sbom.Signature{})
+		require.NoError(t, err)
+
+		for _, c := range doc.Components() {
+			got := bsiV11ComponentCreator(c)
+
+			assert.InDelta(t, 0.0, got.Score, 1e-9)
+			assert.Equal(t, COMP_CREATOR, got.CheckKey)
+			assert.Equal(t, common.UniqueElementID(c), got.ID)
+			assert.Equal(t, "", got.CheckValue)
+		}
+	})
 }
+
+// SPDX 3.0 test data for BSI Component Creator
+var bsiSpdx3CompWithSupplier = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "test-spdx3-doc",
+      "creationInfo": "_:creationinfo"
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2025-01-01T00:00:00Z"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package-App",
+      "name": "my-application",
+      "software_packageVersion": "1.0.0",
+      "suppliedBy": "_:supplier1"
+    },
+    {
+      "type": "Organization",
+      "@id": "_:supplier1",
+      "name": "Example Organization Inc",
+      "externalIdentifier": [
+        {
+          "externalIdentifierType": "email",
+          "identifier": "contact@example.com"
+        }
+      ]
+    }
+  ]
+}
+`)
+
+var bsiSpdx3CompWithNoSupplier = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "test-spdx3-doc",
+      "creationInfo": "_:creationinfo"
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2025-01-01T00:00:00Z"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package-App",
+      "name": "my-application",
+      "software_packageVersion": "1.0.0"
+    }
+  ]
+}
+`)
 
 //
 // Component Name & Version fixtures and tests
@@ -1289,7 +1642,49 @@ func TestBSIComponentName(t *testing.T) {
 			assert.Equal(t, "test-lib", got.CheckValue)
 		}
 	})
+
+	// SPDX 3.0 test case
+	t.Run("spdx3CompWithName", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiSpdx3CompWithName, sbom.Signature{})
+		require.NoError(t, err)
+
+		for _, c := range doc.Components() {
+			got := bsiV11ComponentName(c)
+
+			assert.InDelta(t, 10.0, got.Score, 1e-9)
+			assert.Equal(t, COMP_NAME, got.CheckKey)
+			assert.Equal(t, common.UniqueElementID(c), got.ID)
+			assert.Equal(t, "my-application", got.CheckValue)
+		}
+	})
 }
+
+// SPDX 3.0 test data for Component Name/Version
+var bsiSpdx3CompWithName = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "test-spdx3-doc",
+      "creationInfo": "_:creationinfo"
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2025-01-01T00:00:00Z"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package-App",
+      "name": "my-application",
+      "software_packageVersion": "1.0.0"
+    }
+  ]
+}
+`)
 
 func TestBSIComponentVersion(t *testing.T) {
 	ctx := context.Background()
@@ -1335,7 +1730,62 @@ func TestBSIComponentVersion(t *testing.T) {
 			assert.Equal(t, "", got.CheckValue)
 		}
 	})
+
+	// SPDX 3.0 test cases
+	t.Run("spdx3CompWithVersion", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiSpdx3CompWithName, sbom.Signature{})
+		require.NoError(t, err)
+
+		for _, c := range doc.Components() {
+			got := bsiV11ComponentVersion(c)
+
+			assert.InDelta(t, 10.0, got.Score, 1e-9)
+			assert.Equal(t, COMP_VERSION, got.CheckKey)
+			assert.Equal(t, common.UniqueElementID(c), got.ID)
+			assert.Equal(t, "1.0.0", got.CheckValue)
+		}
+	})
+
+	t.Run("spdx3CompNoVersion", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, bsiSpdx3CompNoVersion, sbom.Signature{})
+		require.NoError(t, err)
+
+		for _, c := range doc.Components() {
+			got := bsiV11ComponentVersion(c)
+
+			assert.InDelta(t, 0.0, got.Score, 1e-9)
+			assert.Equal(t, COMP_VERSION, got.CheckKey)
+			assert.Equal(t, common.UniqueElementID(c), got.ID)
+			assert.Equal(t, "", got.CheckValue)
+		}
+	})
 }
+
+// SPDX 3.0 test data for Component Version (no version)
+var bsiSpdx3CompNoVersion = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "test-spdx3-doc",
+      "creationInfo": "_:creationinfo"
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2025-01-01T00:00:00Z"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package-App",
+      "name": "my-application"
+    }
+  ]
+}
+`)
 
 //
 // Component License fixtures and tests

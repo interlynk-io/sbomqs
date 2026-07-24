@@ -72,10 +72,14 @@ func bsiV21SpecVersion(doc sbom.Document) *db.Record {
 	result, score := "", 0.0
 
 	if spec == string(sbom.SBOMSpecSPDX) {
-		// SPDX v2 is NOT allowed by BSI v2.1. Only SPDX >= 3.0.1 is valid.
-		// Since sbomqs doesn't support SPDX3 yet, all SPDX v2 SBOMs fail.
-		result = version + " (SPDX v2 not allowed by BSI v2.1)"
-		score = 0.0
+		// BSI v2.1 requires SPDX >= 3.0.1, SPDX v2.x is NOT allowed
+		if bsiV21SpdxVersionAtLeast(version) {
+			result = version
+			score = 10.0
+		} else {
+			result = version + " (SPDX v2 not allowed by BSI v2.1)"
+			score = 0.0
+		}
 	} else if spec == string(sbom.SBOMSpecCDX) {
 		if bsiV21CdxVersionAtLeast(version) {
 			result = version
@@ -87,6 +91,20 @@ func bsiV21SpecVersion(doc sbom.Document) *db.Record {
 	}
 
 	return db.NewRecordStmt(SBOM_SPEC_VERSION, "doc", result, score, "")
+}
+
+// bsiV21SpdxVersionAtLeast checks if an SPDX version is >= 3.0.1 (BSI v2.1 requirement)
+func bsiV21SpdxVersionAtLeast(version string) bool {
+	// Normalize version string (remove "SPDX-" prefix if present)
+	version = strings.TrimPrefix(version, "SPDX-")
+	version = strings.TrimSpace(version)
+
+	// Check if version starts with "3." (3.0, 3.0.1, 3.1, etc.)
+	// BSI v2.1 requires SPDX >= 3.0.1
+	if strings.HasPrefix(version, "3.") {
+		return true
+	}
+	return false
 }
 
 // bsiV21CdxVersionAtLeast checks if a CDX version is >= 1.6.
