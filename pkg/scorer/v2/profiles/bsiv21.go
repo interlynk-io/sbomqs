@@ -106,6 +106,9 @@ func BSIV21CompStructuredProperty(doc sbom.Document) catalog.ProfFeatScore {
 
 // BSIV21CompEffectiveLicence checks that components have effective licenses declared.
 // SPDX 3.0: uses hasEffectiveLicense relationship (non-standard but used by BSI v2.1).
+// CDX: bsi:component:effectiveLicence property. The BSI property taxonomy spells it
+// "effectiveLicence"; TR-03183-2 v2.1.0 (Table 12) spells it "effectiveLicense".
+// Both spellings are accepted.
 func BSIV21CompEffectiveLicence(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
 	total := len(comps)
@@ -120,7 +123,10 @@ func BSIV21CompEffectiveLicence(doc sbom.Document) catalog.ProfFeatScore {
 				return true
 			}
 		}
-		return false
+
+		return bsiPropertyValue(c,
+			"bsi:component:effectiveLicence",
+			"bsi:component:effectiveLicense") != ""
 	})
 
 	return componentScore(valid, total, "effective licence")
@@ -368,6 +374,17 @@ func bsiPropertyCheck(doc sbom.Document, propertyName, fieldLabel string) catalo
 	})
 
 	return componentScore(valid, total, fieldLabel)
+}
+
+// bsiPropertyValue returns the first non-empty value among the given property names.
+func bsiPropertyValue(c sbom.GetComponent, propertyNames ...string) string {
+	for _, name := range propertyNames {
+		if value := strings.TrimSpace(c.GetPropertyValue(name)); value != "" {
+			return value
+		}
+	}
+
+	return ""
 }
 
 // extRefURLCheck checks that components have an externalReference of one of the given types with a non-empty URL.

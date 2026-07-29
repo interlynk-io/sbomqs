@@ -563,7 +563,9 @@ func bsiV21ComponentOtherIdentifiers(component sbom.GetComponent) *db.Record {
 }
 
 // bsiV21ComponentEffectiveLicense checks for the effective license (MAY).
-// CDX: bsi:component:effectiveLicense property.
+// CDX: bsi:component:effectiveLicence property. The BSI property taxonomy spells it
+// "effectiveLicence"; TR-03183-2 v2.1.0 (Table 12) spells it "effectiveLicense".
+// Both spellings are accepted.
 // SPDX 3.0: hasEffectiveLicense relationship (non-standard BSI extension).
 func bsiV21ComponentEffectiveLicense(component sbom.GetComponent) *db.Record {
 	id := common.UniqueElementID(component)
@@ -577,8 +579,12 @@ func bsiV21ComponentEffectiveLicense(component sbom.GetComponent) *db.Record {
 		return db.NewRecordStmtOptional(COMP_EFFECTIVE_LICENSE, id, "compliant", 10.0)
 	}
 
-	// CDX: bsi:component:effectiveLicense property
-	value := strings.TrimSpace(component.GetPropertyValue("bsi:component:effectiveLicense"))
+	// CDX: bsi:component:effectiveLicence property (both spellings accepted)
+	value := strings.TrimSpace(component.GetPropertyValue("bsi:component:effectiveLicence"))
+	if value == "" {
+		value = strings.TrimSpace(component.GetPropertyValue("bsi:component:effectiveLicense"))
+	}
+
 	if value != "" {
 		return db.NewRecordStmtOptional(COMP_EFFECTIVE_LICENSE, id, value, 10.0)
 	}
