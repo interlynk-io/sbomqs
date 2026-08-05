@@ -207,13 +207,26 @@ When `--profile` is specified, feature extraction follows the rules of that comp
 | `comp_source_code` | Component | Completeness | Source code reference |
 | `comp_supplier` | Component | Completeness | Component supplier |
 | `comp_purpose` | Component | Completeness | Component purpose / type |
-| `comp_licenses` | Component | Licensing | License expressions |
-| `comp_valid_licenses` | Component | Licensing | Valid SPDX expression syntax (accepts LicenseRef-*) |
-| `comp_spdx_listed_license` | Component | Licensing | SPDX standard listed licenses only |
-| `comp_no_deprecated_licenses` | Component | Licensing | No deprecated licenses |
-| `comp_no_restrictive_licenses` | Component | Licensing | No restrictive licenses |
-| `comp_declared_licenses` | Component | Licensing | Declared (original) licenses |
-| `sbom_data_license` | SBOM | Licensing | SBOM data license |
+
+**License Features (Generic Mode):**
+
+Generic license features check **all licenses** on a component, regardless of whether they are:
+
+- Concluded licenses (`acknowledgement: concluded` in CDX)
+- Declared licenses (`acknowledgement: declared` in CDX)
+- Generic licenses (no acknowledgement field in CDX, e.g., CDX 1.5 or licenses without explicit acknowledgement)
+
+| Feature | Scope | Description |
+|---------|-------|-------------|
+| `comp_licenses` | All licenses | Any license present (regardless of SPDX validity) |
+| `comp_valid_licenses` | All licenses | Valid SPDX syntax (accepts LicenseRef-*, AND/OR expressions) |
+| `comp_spdx_listed_license` | All licenses | SPDX standard listed licenses only (excludes LicenseRef-*) |
+| `comp_concluded_license` | Concluded only | Concluded licenses only (from `acknowledgement: concluded` or SPDX concluded fields) |
+| `comp_declared_license` | Declared only | Declared licenses only (from `acknowledgement: declared` or SPDX declared fields) |
+| `comp_declared_licenses` | Declared only | Alias for `comp_declared_license` |
+| `comp_no_deprecated_licenses` | All licenses | No deprecated licenses present |
+| `comp_no_restrictive_licenses` | All licenses | No restrictive licenses present |
+| `sbom_data_license` | SBOM-level | SBOM data license |
 | `comp_purl` | Component | Vulnerability | Component PURL |
 | `comp_cpe` | Component | Vulnerability | Component CPE |
 | `sbom_spec_declared` | SBOM | Structural | SBOM spec declared |
