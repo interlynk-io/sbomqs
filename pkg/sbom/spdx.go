@@ -392,6 +392,7 @@ func (s *SpdxDoc) parseComps() {
 		nc.SourceCodeURL = sc.PackageSourceInfo
 		nc.DownloadLocation = sc.PackageDownloadLocation
 		nc.PackageFilename = sc.PackageFileName
+		nc.DistArtifact = DistributionArtifact{Absent: true}
 
 		s.Comps = append(s.Comps, nc)
 	}
@@ -410,6 +411,7 @@ func (s *SpdxDoc) parseFiles() {
 		nc.Spdxid = string(sf.FileSPDXIdentifier)
 		nc.ID = string(sf.FileSPDXIdentifier)
 		nc.PackageFilename = sf.FileName
+		nc.DistArtifact = DistributionArtifact{Absent: true}
 
 		// File checksums (mandatory SHA1 + optional others)
 		if len(sf.Checksums) > 0 {

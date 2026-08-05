@@ -377,6 +377,9 @@ var bsiV21FeatureKeys = map[string]struct{}{
 	"comp_effective_license": {},
 	"comp_source_hash":       {},
 	"comp_security_txt_url":  {},
+
+	// Optional: sbom-level
+	"sbom_bomlinks": {},
 }
 
 // normalizeProfile resolves profile aliases to their canonical names.
@@ -479,7 +482,7 @@ func validateparsedListCmd(uCmd *userListCmd) error {
 	case "bsiv21":
 		if _, ok := bsiV21FeatureKeys[cleaned]; !ok {
 			return fmt.Errorf(
-				"feature %q is not supported for profile %q.\n\nSupported features: sbom_spec_version, sbom_creator, sbom_timestamp, sbom_uri, comp_creator, comp_name, comp_version, comp_filename, comp_depth, comp_distribution_license, comp_deployable_hash, comp_executable_prop, comp_archive_prop, comp_structured_prop, comp_source_code_url, comp_download_url, comp_other_identifiers, comp_original_licenses, comp_effective_license, comp_source_hash, comp_security_txt_url",
+				"feature %q is not supported for profile %q.\n\nSupported features: sbom_spec_version, sbom_creator, sbom_timestamp, sbom_uri, sbom_bomlinks, comp_creator, comp_name, comp_version, comp_filename, comp_depth, comp_distribution_license, comp_deployable_hash, comp_executable_prop, comp_archive_prop, comp_structured_prop, comp_source_code_url, comp_download_url, comp_other_identifiers, comp_original_licenses, comp_effective_license, comp_source_hash, comp_security_txt_url",
 				cleaned, uCmd.profile,
 			)
 		}

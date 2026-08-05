@@ -48,6 +48,16 @@ type FakeGetAuthor struct {
 	getTypeReturnsOnCall map[int]struct {
 		result1 string
 	}
+	GetURLStub        func() string
+	getURLMutex       sync.RWMutex
+	getURLArgsForCall []struct {
+	}
+	getURLReturns struct {
+		result1 string
+	}
+	getURLReturnsOnCall map[int]struct {
+		result1 string
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
@@ -260,6 +270,59 @@ func (fake *FakeGetAuthor) GetTypeReturnsOnCall(i int, result1 string) {
 		})
 	}
 	fake.getTypeReturnsOnCall[i] = struct {
+		result1 string
+	}{result1}
+}
+
+func (fake *FakeGetAuthor) GetURL() string {
+	fake.getURLMutex.Lock()
+	ret, specificReturn := fake.getURLReturnsOnCall[len(fake.getURLArgsForCall)]
+	fake.getURLArgsForCall = append(fake.getURLArgsForCall, struct {
+	}{})
+	stub := fake.GetURLStub
+	fakeReturns := fake.getURLReturns
+	fake.recordInvocation("GetURL", []interface{}{})
+	fake.getURLMutex.Unlock()
+	if stub != nil {
+		return stub()
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeGetAuthor) GetURLCallCount() int {
+	fake.getURLMutex.RLock()
+	defer fake.getURLMutex.RUnlock()
+	return len(fake.getURLArgsForCall)
+}
+
+func (fake *FakeGetAuthor) GetURLCalls(stub func() string) {
+	fake.getURLMutex.Lock()
+	defer fake.getURLMutex.Unlock()
+	fake.GetURLStub = stub
+}
+
+func (fake *FakeGetAuthor) GetURLReturns(result1 string) {
+	fake.getURLMutex.Lock()
+	defer fake.getURLMutex.Unlock()
+	fake.GetURLStub = nil
+	fake.getURLReturns = struct {
+		result1 string
+	}{result1}
+}
+
+func (fake *FakeGetAuthor) GetURLReturnsOnCall(i int, result1 string) {
+	fake.getURLMutex.Lock()
+	defer fake.getURLMutex.Unlock()
+	fake.GetURLStub = nil
+	if fake.getURLReturnsOnCall == nil {
+		fake.getURLReturnsOnCall = make(map[int]struct {
+			result1 string
+		})
+	}
+	fake.getURLReturnsOnCall[i] = struct {
 		result1 string
 	}{result1}
 }

@@ -159,7 +159,23 @@ func (s Spdx3Doc) Logs() []string {
 }
 
 func (s Spdx3Doc) Lifecycles() []string {
-	return []string{s.Lifecycle}
+	// SPDX 3.0 software_Sbom has sbomType (build, source, runtime, etc.)
+	if s.doc != nil && len(s.doc.Sboms) > 0 {
+		types := make([]string, 0)
+		for _, sbom := range s.doc.Sboms {
+			for _, st := range sbom.SbomType {
+				types = append(types, string(st))
+			}
+		}
+		if len(types) > 0 {
+			return types
+		}
+	}
+	// Fallback to legacy CreationInfo comment hack
+	if s.Lifecycle != "" {
+		return []string{s.Lifecycle}
+	}
+	return []string{}
 }
 
 func (s Spdx3Doc) Manufacturer() GetManufacturer {
@@ -193,9 +209,9 @@ func (s *Spdx3Doc) parse() {
 	s.parseAuthors()
 	s.parseTool()
 	s.parsePrimaryComponent()
-	s.parseRelationships()
 	s.parseComps()
 	s.parseFiles()
+	s.parseRelationships()
 }
 
 func (s *Spdx3Doc) addToLogs(log string) {
@@ -238,7 +254,7 @@ func (s *Spdx3Doc) parseSpec() {
 
 		ci := s.doc.CreationInfo
 
-		// Creation timestamp - format time.Time to RFC3339 string
+		// Creation timestamp - format time.Time to RFC3339 string.
 		if !ci.Created.IsZero() {
 			sp.CreationTimestamp = ci.Created.Format(time.RFC3339)
 		}
@@ -275,12 +291,48 @@ func (s *Spdx3Doc) parseSpec() {
 		}
 	}
 
-	// Namespace - from SpdxDocument namespaceMap (SPDX 3.0 uses namespaceMap array)
-	if s.doc.SpdxDocument != nil && len(s.doc.SpdxDocument.NamespaceMap) > 0 {
-		// Use the first namespace entry
-		ns := s.doc.SpdxDocument.NamespaceMap[0].Namespace
-		sp.Namespace = ns
-		sp.URI = ns
+	// Namespace / SBOM-URI - SPDX 3.0 sources:
+	// 1. namespaceMap[].namespace (preferred)
+	// 2. SpdxDocument.spdxId (fallback - only if it looks like a valid URI, e.g. https:// or urn:)
+	if s.doc.SpdxDocument != nil {
+		if len(s.doc.SpdxDocument.NamespaceMap) > 0 {
+			ns := s.doc.SpdxDocument.NamespaceMap[0].Namespace
+			sp.Namespace = ns
+			sp.URI = ns
+		} else if s.doc.SpdxDocument.SpdxID != "" {
+			// spdxId on SpdxDocument may be the document URI or just a local reference like SPDXRef-DOCUMENT.
+			// Only use it as URI if it looks like a real URI.
+			if strings.HasPrefix(s.doc.SpdxDocument.SpdxID, "http://") ||
+				strings.HasPrefix(s.doc.SpdxDocument.SpdxID, "https://") ||
+				strings.HasPrefix(s.doc.SpdxDocument.SpdxID, "urn:") {
+				sp.URI = s.doc.SpdxDocument.SpdxID
+			}
+		}
+	}
+
+	// BOM links / external document references
+	// SPDX 3.0: SpdxDocument.import[].locationHint (proper mechanism, replaces SPDX 2.x externalDocumentRefs).
+	// Fallback: SpdxDocument.externalRef[] with type buildMeta|productMetadata|other (some tools misuse externalRef).
+	if s.doc.SpdxDocument != nil {
+		// Primary: Import / ExternalMap
+		for _, imp := range s.doc.SpdxDocument.Import {
+			if strings.TrimSpace(imp.LocationHint) != "" {
+				sp.ExternalDocReference = append(sp.ExternalDocReference, imp.LocationHint)
+			} else if strings.TrimSpace(imp.ExternalSpdxId) != "" {
+				sp.ExternalDocReference = append(sp.ExternalDocReference, imp.ExternalSpdxId)
+			}
+		}
+		// Fallback: externalRef on SpdxDocument (only for specific types that could indicate a BOM link)
+		for _, extRef := range s.doc.SpdxDocument.ExternalRef {
+			t := strings.ToLower(string(extRef.ExternalRefType))
+			if t == "buildmeta" || t == "productmetadata" || t == "other" {
+				for _, loc := range extRef.Locator {
+					if strings.TrimSpace(loc) != "" {
+						sp.ExternalDocReference = append(sp.ExternalDocReference, loc)
+					}
+				}
+			}
+		}
 	}
 
 	// Data license - SPDX 3.0 stores it as a reference in SpdxID
@@ -327,7 +379,6 @@ func (s *Spdx3Doc) parseAuthors() {
 	s.Auths = []GetAuthor{}
 
 	// In SPDX 3.0, authors are Organizations and Persons referenced in CreationInfo.CreatedBy
-	// CreatedBy contains Agent references (via SpdxID) to the actual author entities
 	if s.doc.CreationInfo == nil {
 		return
 	}
@@ -346,20 +397,24 @@ func (s *Spdx3Doc) parseAuthors() {
 			continue
 		}
 		email := ""
-		// Extract email from externalIdentifier
+		url := ""
+		// Extract email and URL from externalIdentifier
 		for _, extId := range org.ExternalIdentifier {
-			if extId.ExternalIdentifierType == spdx.ExternalIdentifierTypeEmail {
+			switch extId.ExternalIdentifierType {
+			case spdx.ExternalIdentifierTypeEmail:
 				email = extId.Identifier
-				break
+			case spdx.ExternalIdentifierTypeUrlScheme:
+				url = extId.Identifier
 			}
 		}
-		// Skip only if both name and email are empty
-		if org.Name == "" && email == "" {
+		// Skip only if name, email, and URL are all empty
+		if org.Name == "" && email == "" && url == "" {
 			continue
 		}
 		a := Author{
 			Name:       org.Name,
 			Email:      email,
+			URL:        url,
 			AuthorType: "organization",
 		}
 		s.Auths = append(s.Auths, a)
@@ -371,20 +426,24 @@ func (s *Spdx3Doc) parseAuthors() {
 			continue
 		}
 		email := ""
-		// Extract email from externalIdentifier
+		url := ""
+		// Extract email and URL from externalIdentifier
 		for _, extId := range person.ExternalIdentifier {
-			if extId.ExternalIdentifierType == spdx.ExternalIdentifierTypeEmail {
+			switch extId.ExternalIdentifierType {
+			case spdx.ExternalIdentifierTypeEmail:
 				email = extId.Identifier
-				break
+			case spdx.ExternalIdentifierTypeUrlScheme:
+				url = extId.Identifier
 			}
 		}
-		// Skip only if both name and email are empty
-		if person.Name == "" && email == "" {
+		// Skip only if name, email, and URL are all empty
+		if person.Name == "" && email == "" && url == "" {
 			continue
 		}
 		a := Author{
 			Name:       person.Name,
 			Email:      email,
+			URL:        url,
 			AuthorType: "person",
 		}
 		s.Auths = append(s.Auths, a)
@@ -488,6 +547,18 @@ func convertRelType(rt spdx.RelationshipType) string {
 func (s *Spdx3Doc) parseRelationships() {
 	s.Relationships = make([]GetRelationship, 0)
 
+	// Build a set of all component IDs (packages + files) so we can filter
+	// out relationships that reference non-component elements (e.g.
+	// software_SoftwareArtifact, build tools) which are valid SPDX 3.0
+	// elements but not part of the component dependency graph.
+	componentIDs := make(map[string]bool)
+	for _, c := range s.Comps {
+		componentIDs[c.GetID()] = true
+	}
+	for _, f := range s.File {
+		componentIDs[f.GetID()] = true
+	}
+
 	for _, rel := range s.doc.Relationships {
 		// Skip "describes" relationships (document -> primary component)
 		if rel.RelationshipType == spdx.RelationshipTypeDescribes {
@@ -503,9 +574,23 @@ func (s *Spdx3Doc) parseRelationships() {
 		// SPDX 3.0 relationships can have multiple targets
 		// Flatten them into individual From->To relationships
 		for _, to := range rel.To {
+			fromID := strings.TrimPrefix(rel.From.GetSpdxID(), "SPDXRef-")
+			toID := strings.TrimPrefix(to.GetSpdxID(), "SPDXRef-")
+
+			// Skip relationships where source or target is not a component
+			// SPDX 3.0 allows relationships between any elements (build tools,
+			// source artifacts, etc.) but BSI scoring only cares about
+			// component-to-component dependencies.
+			if !componentIDs[fromID] {
+				continue
+			}
+			if !componentIDs[toID] {
+				continue
+			}
+
 			r := Relationship{
-				From: strings.TrimPrefix(rel.From.GetSpdxID(), "SPDXRef-"),
-				To:   strings.TrimPrefix(to.GetSpdxID(), "SPDXRef-"),
+				From: fromID,
+				To:   toID,
 				Type: convertRelType(rel.RelationshipType),
 			}
 			s.Relationships = append(s.Relationships, r)
@@ -589,9 +674,13 @@ func isComponentDependencyRelationship(relType spdx.RelationshipType) bool {
 		spdx.RelationshipTypeHasEvidence,
 		spdx.RelationshipTypeHasMetadata,
 		spdx.RelationshipTypeHasAddedFile,
-		spdx.RelationshipTypeHasDeletedFile,
-		spdx.RelationshipTypeHasDistributionArtifact:
+		spdx.RelationshipTypeHasDeletedFile:
 		return false
+
+	// Distribution artifact links a package to its deployable file;
+	// treat as dependency so the artifact is reachable in graph traversals.
+	case spdx.RelationshipTypeHasDistributionArtifact:
+		return true
 
 	// NOT dependencies - variant/specification relationships
 	case spdx.RelationshipTypeHasVariant,
@@ -664,6 +753,7 @@ func (s *Spdx3Doc) parseComps() {
 		nc.Licenses = s.licenses(pkg)
 		nc.DeclaredLicense = s.declaredLicenses(pkg)
 		nc.ConcludedLicense = s.concludedLicenses(pkg)
+		nc.EffectiveLicense = s.effectiveLicenses(pkg)
 		nc.ID = strings.TrimPrefix(pkg.SpdxID, "SPDXRef-")
 
 		// Source code URL and download location from SPDX 3.0 Package fields
@@ -674,7 +764,105 @@ func (s *Spdx3Doc) parseComps() {
 			nc.SourceCodeURL = pkg.HomePage
 		}
 
+		// Alternative: check for generates relationship from software_SoftwareArtifact
+		// with externalRef of type sourceArtifact (e.g., externalRefType: "SourceArtifact",
+		// locator: "https://github.com/...")
+		if nc.SourceCodeURL == "" {
+			if buildInfo := s.doc.GetBuildInfoFor(pkg.SpdxID); buildInfo != nil {
+				for _, rel := range buildInfo.Relationships {
+					if rel.RelationshipType == spdx.RelationshipTypeGenerates {
+						fromID := rel.From.SpdxID
+						if sa := s.doc.SoftwareArtifactsByID[fromID]; sa != nil {
+							for _, extRef := range sa.ExternalRef {
+								if strings.EqualFold(string(extRef.ExternalRefType), string(spdx.ExternalRefTypeSourceArtifact)) && len(extRef.Locator) > 0 {
+									nc.SourceCodeURL = extRef.Locator[0]
+									break
+								}
+							}
+						}
+					}
+					if nc.SourceCodeURL != "" {
+						break
+					}
+				}
+			}
+		}
+
+		// SPDX 3.0: source code hash from software_SoftwareArtifact linked via generates relationship.
+		// BSI v2.1 MAY: hash value of the source code of the component.
+		if nc.sourceCodeHash == "" {
+			if buildInfo := s.doc.GetBuildInfoFor(pkg.SpdxID); buildInfo != nil {
+				for _, rel := range buildInfo.Relationships {
+					if rel.RelationshipType == spdx.RelationshipTypeGenerates {
+						fromID := rel.From.SpdxID
+						// Check SoftwareArtifact first
+						if sa := s.doc.SoftwareArtifactsByID[fromID]; sa != nil {
+							for _, vu := range sa.VerifiedUsing {
+								if h, ok := interface{}(vu).(spdx.Hash); ok {
+									algo := strings.ToUpper(strings.ReplaceAll(string(h.Algorithm), "-", ""))
+									content := strings.TrimSpace(h.HashValue)
+									if content != "" {
+										nc.sourceCodeHash = algo + ": " + content
+										break
+									}
+								}
+							}
+						}
+						// Fallback: check FilesByID if not found in SoftwareArtifactsByID
+						if nc.sourceCodeHash == "" {
+							if f := s.doc.FilesByID[fromID]; f != nil {
+								for _, vu := range f.VerifiedUsing {
+									if h, ok := interface{}(vu).(spdx.Hash); ok {
+										algo := strings.ToUpper(strings.ReplaceAll(string(h.Algorithm), "-", ""))
+										content := strings.TrimSpace(h.HashValue)
+										if content != "" {
+											nc.sourceCodeHash = algo + ": " + content
+											break
+										}
+									}
+								}
+							}
+						}
+					}
+					if nc.sourceCodeHash != "" {
+						break
+					}
+				}
+			}
+		}
+
 		nc.DownloadLocation = pkg.DownloadLocation
+
+		// Alternative: check distribution artifact file (linked via hasDistributionArtifact)
+		// for externalRef with type binaryArtifact (BSI mapping: File.externalRef.externalRefType="binaryArtifact")
+		if nc.DownloadLocation == "" {
+			for _, rel := range s.doc.Relationships {
+				if rel.RelationshipType != spdx.RelationshipTypeHasDistributionArtifact {
+					continue
+				}
+				if rel.From.GetSpdxID() != pkg.SpdxID {
+					continue
+				}
+				for _, to := range rel.To {
+					targetID := to.GetSpdxID()
+					if file := s.doc.FilesByID[targetID]; file != nil {
+						for _, extRef := range file.ExternalRef {
+
+							if strings.EqualFold(string(extRef.ExternalRefType), string(spdx.ExternalRefTypeBinaryArtifact)) && len(extRef.Locator) > 0 {
+								nc.DownloadLocation = extRef.Locator[0]
+								break
+							}
+						}
+					}
+					if nc.DownloadLocation != "" {
+						break
+					}
+				}
+				if nc.DownloadLocation != "" {
+					break
+				}
+			}
+		}
 
 		// Supplier (SuppliedBy in SPDX 3.0)
 		nc.Supplier = s.extractSupplier(pkg.SuppliedBy)
@@ -689,12 +877,89 @@ func (s *Spdx3Doc) parseComps() {
 			}
 		}
 
+		// Filename from distribution artifact (hasDistributionArtifact relationship)
+		nc.PackageFilename = s.extractDistributionArtifactFilename(pkg.SpdxID)
+
+		// Distribution artifact properties (hashes, executable/archive/structured flags)
+		nc.DistArtifact = s.extractDistributionArtifact(pkg.SpdxID)
+
 		s.Comps = append(s.Comps, nc)
 
 	}
 }
 
 // Helper methods for parseComps
+
+// extractDistributionArtifactFilename finds the filename of a package's
+// distribution artifact via hasDistributionArtifact relationships.
+// SPDX 3.0 links packages to their deployable files using relationships with type
+// "hasDistributionArtifact", rather than embedding a packageFileName field.
+func (s *Spdx3Doc) extractDistributionArtifactFilename(pkgSpdxID string) string {
+	for _, rel := range s.doc.Relationships {
+		if rel.RelationshipType != spdx.RelationshipTypeHasDistributionArtifact {
+			continue
+		}
+		if rel.From.GetSpdxID() != pkgSpdxID {
+			continue
+		}
+		for _, to := range rel.To {
+			targetID := to.GetSpdxID()
+			for _, f := range s.doc.Files {
+				if f.SpdxID == targetID {
+					return f.Name
+				}
+			}
+		}
+	}
+	return ""
+}
+
+// extractDistributionArtifact finds the distribution artifact file linked to a
+// package via hasDistributionArtifact and returns its properties.
+func (s *Spdx3Doc) extractDistributionArtifact(pkgSpdxID string) DistributionArtifact {
+	for _, rel := range s.doc.Relationships {
+		if rel.RelationshipType != spdx.RelationshipTypeHasDistributionArtifact {
+			continue
+		}
+		if rel.From.GetSpdxID() != pkgSpdxID {
+			continue
+		}
+		for _, to := range rel.To {
+			targetID := to.GetSpdxID()
+			for _, f := range s.doc.Files {
+				if f.SpdxID != targetID {
+					continue
+				}
+				da := DistributionArtifact{
+					Filename: f.Name,
+					Absent:   false,
+				}
+				// Check additionalPurpose for executable/archive/structured flags
+				for _, purpose := range f.AdditionalPurpose {
+					switch purpose {
+					case spdx.SoftwarePurposeExecutable:
+						da.IsExec = true
+					case spdx.SoftwarePurposeArchive:
+						da.IsArch = true
+					case spdx.SoftwarePurposeContainer:
+						da.IsStruct = true
+					}
+				}
+				// Extract hashes from verifiedUsing
+				for _, vu := range f.VerifiedUsing {
+					if h, ok := interface{}(vu).(spdx.Hash); ok {
+						da.Hashes = append(da.Hashes, Checksum{
+							Alg:     string(h.Algorithm),
+							Content: h.HashValue,
+						})
+					}
+				}
+				return da
+			}
+		}
+	}
+	return DistributionArtifact{Absent: true}
+}
 
 // isNoAssertion checks if a value is NOASSERTION (case-insensitive)
 func isNoAssertion(val string) bool {
@@ -837,9 +1102,10 @@ func (s *Spdx3Doc) pkgRequiredFields(pkg *spdx.Package) bool {
 
 func (s *Spdx3Doc) purls(pkg *spdx.Package) []purl.PURL {
 	urls := make([]purl.PURL, 0)
-	// PURL is stored as ExternalIdentifier in SPDX 3.0
+	// PURL is stored as ExternalIdentifier in SPDX 3.0.
+	// SPDX 3.0 spec uses "packageUrl" but some documents may use "packageURL".
 	for _, ei := range pkg.ExternalIdentifier {
-		if ei.ExternalIdentifierType == spdx.ExternalIdentifierTypePackageUrl {
+		if strings.EqualFold(string(ei.ExternalIdentifierType), string(spdx.ExternalIdentifierTypePackageUrl)) {
 			prl := purl.NewPURL(ei.Identifier)
 			if prl.Valid() {
 				urls = append(urls, prl)
@@ -944,6 +1210,29 @@ func (s *Spdx3Doc) concludedLicenses(pkg *spdx.Package) []licenses.License {
 	return lics
 }
 
+func (s *Spdx3Doc) effectiveLicenses(pkg *spdx.Package) []licenses.License {
+	lics := []licenses.License{}
+
+	// BSI v2.1 maps effective license using the standard SPDX 3.0 pattern:
+	// relationshipType="other" with comment="hasEffectiveLicense".
+	// See BSI TR-03183-2 v2.1 official SPDX 3.0 mapping examples.
+	if s.doc != nil {
+		for _, rel := range s.doc.GetRelationshipsFrom(pkg.SpdxID) {
+			if string(rel.RelationshipType) == "other" && rel.Comment == "hasEffectiveLicense" {
+				for _, to := range rel.To {
+					if lic := s.doc.GetAnyLicenseInfoByID(to.GetSpdxID()); lic != nil {
+						if lic.Name != "" {
+							lics = append(lics, licenses.LookupExpression(lic.Name, nil)...)
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return lics
+}
+
 func (s *Spdx3Doc) parseFiles() {
 	s.File = []GetComponent{}
 
@@ -952,7 +1241,7 @@ func (s *Spdx3Doc) parseFiles() {
 
 		nc.Name = f.Name
 		nc.Spdxid = f.SpdxID
-		nc.ID = f.SpdxID
+		nc.ID = strings.TrimPrefix(f.SpdxID, "SPDXRef-")
 		nc.PackageFilename = f.Name
 
 		// File checksums/hashes - VerifiedUsing in SPDX 3.0

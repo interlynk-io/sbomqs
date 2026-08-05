@@ -227,6 +227,42 @@ var spdxSBOMAuthorsEmptyArray = []byte(`
 }
 `)
 
+var spdx3SBOMAuthorURLOnly = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "https://example.com/sboms/test.spdx.json",
+      "name": "Test",
+      "creationInfo": "_:creationinfo",
+      "element": [],
+      "profileConformance": ["core"],
+      "namespaceMap": [{"prefix": "", "namespace": "https://example.com/sboms/"}]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:author"]
+    },
+    {
+      "type": "Person",
+      "@id": "_:author",
+      "name": "Test Author",
+      "externalIdentifiers": [
+        {
+          "type": "ExternalIdentifier",
+          "externalIdentifierType": "urlScheme",
+          "identifier": "https://example.com/author"
+        }
+      ]
+    }
+  ]
+}
+`)
+
 var spdxSBOMCreatorsWrongTypeSomeValue = []byte(`
 {
   "spdxVersion": "SPDX-2.3",
@@ -544,6 +580,17 @@ func TestBSIV11SBOMCreator(t *testing.T) {
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "SBOM creator contact(email) provided via authors", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdx3SBOMAuthorURLOnly", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3SBOMAuthorURLOnly, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11SBOMCreator(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "SBOM creator contact(URL) provided via authors", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1521,6 +1568,136 @@ var cdxCompInvalidManufacturerWithMultipleComponents = []byte(`
 }
 `)
 
+// SPDX 3.0 - Component Supplier with Person name and URL (no email)
+var spdx3CompSupplierWithPersonURLOnly = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Test",
+      "creationInfo": "_:creationinfo",
+      "element": ["SPDXRef-Package"],
+      "profileConformance": ["core", "software"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:author"]
+    },
+    {
+      "type": "Person",
+      "@id": "_:author",
+      "name": "Test Author"
+    },
+    {
+      "type": "Person",
+      "@id": "_:supplier1",
+      "name": "Samantha Wright",
+      "externalIdentifier": [
+        {
+          "externalIdentifierType": "urlScheme",
+          "identifier": "https://example.com/supplier"
+        }
+      ]
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package",
+      "name": "my-application",
+      "software_packageVersion": "1.0.0",
+      "suppliedBy": "_:supplier1"
+    }
+  ]
+}
+`)
+
+// SPDX 3.0 - Component Originator (originatedBy) with Organization name and email
+// This tests the Manufacturer/Originator path for component creator.
+var spdx3CompOriginatorWithOrganizationNameAndEmail = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Test",
+      "creationInfo": "_:creationinfo",
+      "element": ["SPDXRef-Package"],
+      "profileConformance": ["core", "software"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:author"]
+    },
+    {
+      "type": "Person",
+      "@id": "_:author",
+      "name": "Test Author"
+    },
+    {
+      "type": "Organization",
+      "@id": "_:originator1",
+      "name": "Acme Corp",
+      "externalIdentifier": [
+        {
+          "externalIdentifierType": "email",
+          "identifier": "originator@example.com"
+        }
+      ]
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package",
+      "name": "my-application",
+      "software_packageVersion": "1.0.0",
+      "originatedBy": ["_:originator1"]
+    }
+  ]
+}
+`)
+
+// SPDX 3.0 - Component with empty name
+var spdx3CompWithEmptyName = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Test",
+      "creationInfo": "_:creationinfo",
+      "element": ["SPDXRef-Package"],
+      "profileConformance": ["core", "software"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:author"]
+    },
+    {
+      "type": "Person",
+      "@id": "_:author",
+      "name": "Test Author"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package",
+      "name": "",
+      "software_packageVersion": "1.0.0"
+    }
+  ]
+}
+`)
+
 func TestBSIV11CompCreator(t *testing.T) {
 	ctx := context.Background()
 
@@ -1863,6 +2040,30 @@ func TestBSIV11CompCreator(t *testing.T) {
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "1/1 components have creator info, but only valid email or URL required", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+	// SPDX 3.0: Component supplier is Person with URL only (no email)
+	t.Run("spdx3CompSupplierPersonWithURLOnly", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3CompSupplierWithPersonURLOnly, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompCreator(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "creator contact (email or URL) declared for all components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// SPDX 3.0: Component originator (originatedBy) is Organization with email
+	// This verifies the Manufacturer path works for SPDX 3.0 component creator.
+	t.Run("spdx3CompOriginatorOrganizationWithEmail", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3CompOriginatorWithOrganizationNameAndEmail, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompCreator(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "creator contact (email or URL) declared for all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 }
@@ -4620,6 +4821,39 @@ var spdxSBOMWithInvalidTimestamp = []byte(`
 }
 `)
 
+var spdx3SBOMWithInvalidTimestamp = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Test",
+      "creationInfo": "_:creationinfo",
+      "profileConformance": ["core", "software"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "01-01-2026",
+      "createdBy": ["_:author"]
+    },
+    {
+      "type": "Person",
+      "@id": "_:author",
+      "name": "Test Author",
+      "externalIdentifier": [
+        {
+          "externalIdentifierType": "email",
+          "identifier": "test@example.com"
+        }
+      ]
+    }
+  ]
+}
+`)
+
 func TestBSIV11SBOMCreationTimestamp(t *testing.T) {
 	ctx := context.Background()
 
@@ -4703,6 +4937,20 @@ func TestBSIV11SBOMCreationTimestamp(t *testing.T) {
 		assert.Equal(t, "SBOM creation timestamp is valid and RFC3339-compliant.", got.Desc)
 		assert.False(t, got.Ignore)
 	})
+
+	// SPDX 3.0: Invalid timestamp in CreationInfo
+	t.Run("spdx3WithInvalidTimestamp", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3SBOMWithInvalidTimestamp, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11SBOMCreationTimestamp(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		// Without CreatedRaw in the model, an unparseable timestamp appears as missing
+		// (zero time.Time cannot distinguish "invalid" from "absent").
+		assert.Equal(t, "SBOM creation timestamp is missing", got.Desc)
+		assert.False(t, got.Ignore)
+	})
 }
 
 // ====================
@@ -4771,11 +5019,57 @@ func TestBSIV11CompName(t *testing.T) {
 		assert.Equal(t, "component name declared for all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
+
+	// SPDX 3.0: Component with empty name
+	t.Run("spdx3CompWithEmptyName", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3CompWithEmptyName, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompName(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "component name missing for 1 out of 1 components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
 }
 
 // =======================
 // TestBSIV11CompVersion
 // =======================
+
+// SPDX 3.0 - Component with missing version
+var spdx3CompWithMissingVersion = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Test",
+      "creationInfo": "_:creationinfo",
+      "element": ["SPDXRef-Package"],
+      "profileConformance": ["core", "software"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:author"]
+    },
+    {
+      "type": "Person",
+      "@id": "_:author",
+      "name": "Test Author"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package",
+      "name": "my-application"
+    }
+  ]
+}
+`)
 
 // cdxCompWithMissingVersion
 var cdxCompWithMissingVersion = []byte(`
@@ -4929,6 +5223,18 @@ func TestBSIV11CompVersion(t *testing.T) {
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "component version declared for all components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// SPDX 3.0: Component with missing version
+	t.Run("spdx3CompWithMissingVersion", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3CompWithMissingVersion, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompVersion(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "component version missing for 1 out of 1 components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 }

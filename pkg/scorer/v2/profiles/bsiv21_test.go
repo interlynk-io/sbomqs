@@ -321,6 +321,60 @@ var spdx3CompWithoutSourceInfo = []byte(`
 }
 `)
 
+// SPDX 3.0: software_SoftwareArtifact with externalRef (type SourceArtifact) linked via generates relationship.
+var spdx3CompWithSourceArtifactExternalRef = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "BSI v2.1 Test",
+      "creationInfo": "_:creationinfo",
+      "element": ["SPDXRef-Package", "SPDXRef-SourceArtifact"],
+      "profileConformance": ["core", "software"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:author"]
+    },
+    {
+      "type": "Person",
+      "@id": "_:author",
+      "name": "Test Author"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package",
+      "name": "lib-with-source-artifact",
+      "software_packageVersion": "1.0.0"
+    },
+    {
+      "type": "software_SoftwareArtifact",
+      "spdxId": "SPDXRef-SourceArtifact",
+      "software_primaryPurpose": "source",
+      "externalRef": [
+        {
+          "type": "ExternalRef",
+          "externalRefType": "SourceArtifact",
+          "locator": "https://github.com/example/package/releases/download/v1.0.0/source.tar.gz"
+        }
+      ]
+    },
+    {
+      "type": "Relationship",
+      "from": "SPDXRef-SourceArtifact",
+      "to": ["SPDXRef-Package"],
+      "relationshipType": "generates",
+      "completeness": "complete"
+    }
+  ]
+}
+`)
+
 func TestBSIV21CompSourceCodeURI(t *testing.T) {
 	ctx := context.Background()
 
@@ -442,6 +496,18 @@ func TestBSIV21CompSourceCodeURI(t *testing.T) {
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "no components declare source code URI", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// SPDX 3.0: software_SoftwareArtifact with externalRef SourceArtifact linked via generates → score 10.0
+	t.Run("spdx3SourceArtifactExternalRef", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3CompWithSourceArtifactExternalRef, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV21CompSourceCodeURI(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "source code URI declared for all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 }
@@ -577,6 +643,60 @@ var cdx21TwoCompsOneWithDeployableURL = []byte(`
 }
 `)
 
+// SPDX 3.0: software_File with externalRef (type binaryArtifact) linked via hasDistributionArtifact.
+var spdx3CompWithBinaryArtifactDownload = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "BSI v2.1 Test",
+      "creationInfo": "_:creationinfo",
+      "element": ["SPDXRef-Package", "SPDXRef-File"],
+      "profileConformance": ["core", "software"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:author"]
+    },
+    {
+      "type": "Person",
+      "@id": "_:author",
+      "name": "Test Author"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package",
+      "name": "lib-with-binary-artifact",
+      "software_packageVersion": "1.0.0"
+    },
+    {
+      "type": "software_File",
+      "spdxId": "SPDXRef-File",
+      "name": "lib-1.0.0.jar",
+      "externalRef": [
+        {
+          "type": "ExternalRef",
+          "externalRefType": "binaryArtifact",
+          "locator": "https://example.com/lib-1.0.0.jar"
+        }
+      ]
+    },
+    {
+      "type": "Relationship",
+      "from": "SPDXRef-Package",
+      "to": ["SPDXRef-File"],
+      "relationshipType": "hasDistributionArtifact",
+      "completeness": "complete"
+    }
+  ]
+}
+`)
+
 func TestBSIV21CompDownloadURI(t *testing.T) {
 	ctx := context.Background()
 
@@ -655,6 +775,18 @@ func TestBSIV21CompDownloadURI(t *testing.T) {
 	// SPDX 3.0: software_downloadLocation with URL → score 10.0
 	t.Run("spdx3DownloadLocationURL", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3CompWithDownloadLocation, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV21CompDownloadURI(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "deployable form URI declared for all components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// SPDX 3.0: software_File with externalRef (type binaryArtifact) linked via hasDistributionArtifact → score 10.0
+	t.Run("spdx3BinaryArtifactExternalRef", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3CompWithBinaryArtifactDownload, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := BSIV21CompDownloadURI(doc)
@@ -1900,5 +2032,981 @@ func TestBSIV21CompOriginalLicences(t *testing.T) {
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "no components declare original licence (declared)", got.Desc)
+	})
+}
+
+// SPDX 3.0 - Component with distribution artifact filename
+var spdx3CompWithFilename = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Test",
+      "creationInfo": "_:creationinfo",
+      "element": ["SPDXRef-Package"],
+      "profileConformance": ["core", "software"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:author"]
+    },
+    {
+      "type": "Person",
+      "@id": "_:author",
+      "name": "Test Author"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package",
+      "name": "TestPackage",
+      "software_packageVersion": "1.0.0"
+    },
+    {
+      "type": "software_File",
+      "spdxId": "SPDXRef-File",
+      "name": "test-package-1.0.0.jar",
+      "verifiedUsing": [
+        {
+          "type": "Hash",
+          "algorithm": "sha512",
+          "hashValue": "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e"
+        }
+      ]
+    },
+    {
+      "type": "Relationship",
+      "from": "SPDXRef-Package",
+      "to": ["SPDXRef-File"],
+      "relationshipType": "hasDistributionArtifact",
+      "completeness": "complete"
+    }
+  ]
+}
+`)
+
+// SPDX 3.0 - Component without distribution artifact relationship
+var spdx3CompWithMissingFilename = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Test",
+      "creationInfo": "_:creationinfo",
+      "element": ["SPDXRef-Package"],
+      "profileConformance": ["core", "software"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:author"]
+    },
+    {
+      "type": "Person",
+      "@id": "_:author",
+      "name": "Test Author"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package",
+      "name": "TestPackage",
+      "software_packageVersion": "1.0.0"
+    }
+  ]
+}
+`)
+
+func TestBSIV21CompFilename(t *testing.T) {
+	ctx := context.Background()
+
+	// SPDX 3.0: hasDistributionArtifact relationship to software_File
+	t.Run("spdx3CompWithFilename", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3CompWithFilename, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV21CompFilename(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "filename declared for all components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// SPDX 3.0: no hasDistributionArtifact relationship
+	t.Run("spdx3CompWithMissingFilename", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3CompWithMissingFilename, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV21CompFilename(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "no components declare filename", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+}
+
+// SPDX 3.0 - Component with distribution artifact file containing SHA-512 hash
+var spdx3CompWithDeployableHash = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Test",
+      "creationInfo": "_:creationinfo",
+      "element": ["SPDXRef-Package"],
+      "profileConformance": ["core", "software"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:author"]
+    },
+    {
+      "type": "Person",
+      "@id": "_:author",
+      "name": "Test Author"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package",
+      "name": "TestPackage",
+      "software_packageVersion": "1.0.0"
+    },
+    {
+      "type": "software_File",
+      "spdxId": "SPDXRef-File",
+      "name": "test-package-1.0.0.jar",
+      "verifiedUsing": [
+        {
+          "type": "Hash",
+          "algorithm": "sha512",
+          "hashValue": "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e"
+        }
+      ]
+    },
+    {
+      "type": "Relationship",
+      "from": "SPDXRef-Package",
+      "to": ["SPDXRef-File"],
+      "relationshipType": "hasDistributionArtifact",
+      "completeness": "complete"
+    }
+  ]
+}
+`)
+
+// SPDX 3.0 - Two components, both with distribution artifact + SHA-512 hash
+var spdx3TwoCompsWithDeployableHash = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Test",
+      "creationInfo": "_:creationinfo",
+      "element": ["SPDXRef-Package1", "SPDXRef-Package2"],
+      "profileConformance": ["core", "software"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:author"]
+    },
+    {
+      "type": "Person",
+      "@id": "_:author",
+      "name": "Test Author"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package1",
+      "name": "PackageOne",
+      "software_packageVersion": "1.0.0"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package2",
+      "name": "PackageTwo",
+      "software_packageVersion": "2.0.0"
+    },
+    {
+      "type": "software_File",
+      "spdxId": "SPDXRef-File1",
+      "name": "package1-1.0.0.jar",
+      "verifiedUsing": [
+        {
+          "type": "Hash",
+          "algorithm": "sha512",
+          "hashValue": "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e"
+        }
+      ]
+    },
+    {
+      "type": "software_File",
+      "spdxId": "SPDXRef-File2",
+      "name": "package2-2.0.0.jar",
+      "verifiedUsing": [
+        {
+          "type": "Hash",
+          "algorithm": "sha512",
+          "hashValue": "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e"
+        }
+      ]
+    },
+    {
+      "type": "Relationship",
+      "from": "SPDXRef-Package1",
+      "to": ["SPDXRef-File1"],
+      "relationshipType": "hasDistributionArtifact",
+      "completeness": "complete"
+    },
+    {
+      "type": "Relationship",
+      "from": "SPDXRef-Package2",
+      "to": ["SPDXRef-File2"],
+      "relationshipType": "hasDistributionArtifact",
+      "completeness": "complete"
+    }
+  ]
+}
+`)
+
+// SPDX 3.0 - Two components, one with deployable hash, one without
+var spdx3TwoCompsOneWithDeployableHash = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Test",
+      "creationInfo": "_:creationinfo",
+      "element": ["SPDXRef-Package1", "SPDXRef-Package2"],
+      "profileConformance": ["core", "software"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:author"]
+    },
+    {
+      "type": "Person",
+      "@id": "_:author",
+      "name": "Test Author"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package1",
+      "name": "PackageOne",
+      "software_packageVersion": "1.0.0"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package2",
+      "name": "PackageTwo",
+      "software_packageVersion": "2.0.0"
+    },
+    {
+      "type": "software_File",
+      "spdxId": "SPDXRef-File1",
+      "name": "package1-1.0.0.jar",
+      "verifiedUsing": [
+        {
+          "type": "Hash",
+          "algorithm": "sha512",
+          "hashValue": "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e"
+        }
+      ]
+    },
+    {
+      "type": "Relationship",
+      "from": "SPDXRef-Package1",
+      "to": ["SPDXRef-File1"],
+      "relationshipType": "hasDistributionArtifact",
+      "completeness": "complete"
+    }
+  ]
+}
+`)
+
+// SPDX 3.0 - Component with distribution artifact file but only MD5 hash (not acceptable)
+var spdx3CompWithDeployableHashMD5Only = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Test",
+      "creationInfo": "_:creationinfo",
+      "element": ["SPDXRef-Package"],
+      "profileConformance": ["core", "software"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:author"]
+    },
+    {
+      "type": "Person",
+      "@id": "_:author",
+      "name": "Test Author"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package",
+      "name": "TestPackage",
+      "software_packageVersion": "1.0.0"
+    },
+    {
+      "type": "software_File",
+      "spdxId": "SPDXRef-File",
+      "name": "test-package-1.0.0.jar",
+      "verifiedUsing": [
+        {
+          "type": "Hash",
+          "algorithm": "md5",
+          "hashValue": "d41d8cd98f00b204e9800998ecf8427e"
+        }
+      ]
+    },
+    {
+      "type": "Relationship",
+      "from": "SPDXRef-Package",
+      "to": ["SPDXRef-File"],
+      "relationshipType": "hasDistributionArtifact",
+      "completeness": "complete"
+    }
+  ]
+}
+`)
+
+// ===========================================================================
+// TestBSIV21CompDeployableHash
+// ===========================================================================
+
+func TestBSIV21CompDeployableHash(t *testing.T) {
+	ctx := context.Background()
+
+	// SPDX 3.0: distribution artifact file with SHA-512 hash → score 10.0
+	t.Run("spdx3CompWithDeployableHash", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3CompWithDeployableHash, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV21CompDeployableHash(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "deployable component hash declared for all components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// SPDX 3.0: two components both with distribution artifact + SHA-512 → score 10.0
+	t.Run("spdx3TwoCompsWithDeployableHash", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3TwoCompsWithDeployableHash, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV21CompDeployableHash(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "deployable component hash declared for all components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// SPDX 3.0: 1 of 2 components has deployable hash → partial score 5.0
+	t.Run("spdx3PartialDeployableHash", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3TwoCompsOneWithDeployableHash, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV21CompDeployableHash(doc)
+
+		assert.InDelta(t, 5.0, got.Score, 1e-9)
+		assert.Equal(t, "1/2 components declare deployable component hash", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// SPDX 3.0: no distribution artifact file → score 0.0
+	t.Run("spdx3NoDeployableHash", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3CompWithMissingFilename, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV21CompDeployableHash(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "no components declare deployable component hash", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// SPDX 3.0: distribution artifact with MD5 only → score 0.0
+	t.Run("spdx3DeployableHashMD5Only", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3CompWithDeployableHashMD5Only, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV21CompDeployableHash(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "no components declare deployable component hash", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+}
+
+// SPDX 3.0 - Component with distribution artifact file having executable purpose
+var spdx3CompWithExecutableProp = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Test",
+      "creationInfo": "_:creationinfo",
+      "element": ["SPDXRef-Package", "SPDXRef-File"],
+      "profileConformance": ["core", "software"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:author"]
+    },
+    {
+      "type": "Person",
+      "@id": "_:author",
+      "name": "Test Author"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package",
+      "name": "TestPackage",
+      "software_packageVersion": "1.0.0"
+    },
+    {
+      "type": "software_File",
+      "spdxId": "SPDXRef-File",
+      "name": "test-package-1.0.0.jar",
+      "software_additionalPurpose": ["executable"],
+      "verifiedUsing": [
+        {
+          "type": "Hash",
+          "algorithm": "sha512",
+          "hashValue": "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e"
+        }
+      ]
+    },
+    {
+      "type": "Relationship",
+      "from": "SPDXRef-DOCUMENT",
+      "to": ["SPDXRef-Package"],
+      "relationshipType": "describes",
+      "completeness": "complete"
+    },
+    {
+      "type": "Relationship",
+      "from": "SPDXRef-Package",
+      "to": ["SPDXRef-File"],
+      "relationshipType": "hasDistributionArtifact",
+      "completeness": "complete"
+    }
+  ]
+}
+`)
+
+// SPDX 3.0 - Component with distribution artifact file having archive purpose
+var spdx3CompWithArchivePropOnly = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Test",
+      "creationInfo": "_:creationinfo",
+      "element": ["SPDXRef-Package", "SPDXRef-File"],
+      "profileConformance": ["core", "software"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:author"]
+    },
+    {
+      "type": "Person",
+      "@id": "_:author",
+      "name": "Test Author"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package",
+      "name": "TestPackage",
+      "software_packageVersion": "1.0.0"
+    },
+    {
+      "type": "software_File",
+      "spdxId": "SPDXRef-File",
+      "name": "test-package-1.0.0.jar",
+      "software_additionalPurpose": ["archive"],
+      "verifiedUsing": [
+        {
+          "type": "Hash",
+          "algorithm": "sha512",
+          "hashValue": "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e"
+        }
+      ]
+    },
+    {
+      "type": "Relationship",
+      "from": "SPDXRef-DOCUMENT",
+      "to": ["SPDXRef-Package"],
+      "relationshipType": "describes",
+      "completeness": "complete"
+    },
+    {
+      "type": "Relationship",
+      "from": "SPDXRef-Package",
+      "to": ["SPDXRef-File"],
+      "relationshipType": "hasDistributionArtifact",
+      "completeness": "complete"
+    }
+  ]
+}
+`)
+
+// SPDX 3.0 - Component with distribution artifact file having structured (container) purpose
+var spdx3CompWithStructuredProp = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Test",
+      "creationInfo": "_:creationinfo",
+      "element": ["SPDXRef-Package", "SPDXRef-File"],
+      "profileConformance": ["core", "software"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:author"]
+    },
+    {
+      "type": "Person",
+      "@id": "_:author",
+      "name": "Test Author"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package",
+      "name": "TestPackage",
+      "software_packageVersion": "1.0.0"
+    },
+    {
+      "type": "software_File",
+      "spdxId": "SPDXRef-File",
+      "name": "test-package-1.0.0.tar.gz",
+      "software_additionalPurpose": ["container"],
+      "verifiedUsing": [
+        {
+          "type": "Hash",
+          "algorithm": "sha512",
+          "hashValue": "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e"
+        }
+      ]
+    },
+    {
+      "type": "Relationship",
+      "from": "SPDXRef-DOCUMENT",
+      "to": ["SPDXRef-Package"],
+      "relationshipType": "describes",
+      "completeness": "complete"
+    },
+    {
+      "type": "Relationship",
+      "from": "SPDXRef-Package",
+      "to": ["SPDXRef-File"],
+      "relationshipType": "hasDistributionArtifact",
+      "completeness": "complete"
+    }
+  ]
+}
+`)
+
+// SPDX 3.0 - Two components, one with container (structured) purpose, one with archive purpose
+var spdx3TwoCompsOneStructured = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Test",
+      "creationInfo": "_:creationinfo",
+      "element": ["SPDXRef-Package1", "SPDXRef-Package2", "SPDXRef-File1", "SPDXRef-File2"],
+      "profileConformance": ["core", "software"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:author"]
+    },
+    {
+      "type": "Person",
+      "@id": "_:author",
+      "name": "Test Author"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package1",
+      "name": "PackageOne",
+      "software_packageVersion": "1.0.0"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package2",
+      "name": "PackageTwo",
+      "software_packageVersion": "2.0.0"
+    },
+    {
+      "type": "software_File",
+      "spdxId": "SPDXRef-File1",
+      "name": "package1-1.0.0.tar.gz",
+      "software_additionalPurpose": ["container"],
+      "verifiedUsing": [
+        {
+          "type": "Hash",
+          "algorithm": "sha512",
+          "hashValue": "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e"
+        }
+      ]
+    },
+    {
+      "type": "software_File",
+      "spdxId": "SPDXRef-File2",
+      "name": "package2-2.0.0.jar",
+      "software_additionalPurpose": ["archive"],
+      "verifiedUsing": [
+        {
+          "type": "Hash",
+          "algorithm": "sha512",
+          "hashValue": "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e"
+        }
+      ]
+    },
+    {
+      "type": "Relationship",
+      "from": "SPDXRef-DOCUMENT",
+      "to": ["SPDXRef-Package1"],
+      "relationshipType": "describes",
+      "completeness": "complete"
+    },
+    {
+      "type": "Relationship",
+      "from": "SPDXRef-Package1",
+      "to": ["SPDXRef-Package2"],
+      "relationshipType": "dependsOn",
+      "completeness": "complete"
+    },
+    {
+      "type": "Relationship",
+      "from": "SPDXRef-Package1",
+      "to": ["SPDXRef-File1"],
+      "relationshipType": "hasDistributionArtifact",
+      "completeness": "complete"
+    },
+    {
+      "type": "Relationship",
+      "from": "SPDXRef-Package2",
+      "to": ["SPDXRef-File2"],
+      "relationshipType": "hasDistributionArtifact",
+      "completeness": "complete"
+    }
+  ]
+}
+`)
+
+// SPDX 3.0 - Two components, one with executable purpose, one with archive purpose
+var spdx3TwoCompsOneExecutable = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Test",
+      "creationInfo": "_:creationinfo",
+      "element": ["SPDXRef-Package1", "SPDXRef-Package2", "SPDXRef-File1", "SPDXRef-File2"],
+      "profileConformance": ["core", "software"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:author"]
+    },
+    {
+      "type": "Person",
+      "@id": "_:author",
+      "name": "Test Author"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package1",
+      "name": "PackageOne",
+      "software_packageVersion": "1.0.0"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package2",
+      "name": "PackageTwo",
+      "software_packageVersion": "2.0.0"
+    },
+    {
+      "type": "software_File",
+      "spdxId": "SPDXRef-File1",
+      "name": "package1-1.0.0.jar",
+      "software_additionalPurpose": ["executable"],
+      "verifiedUsing": [
+        {
+          "type": "Hash",
+          "algorithm": "sha512",
+          "hashValue": "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e"
+        }
+      ]
+    },
+    {
+      "type": "software_File",
+      "spdxId": "SPDXRef-File2",
+      "name": "package2-2.0.0.jar",
+      "software_additionalPurpose": ["archive"],
+      "verifiedUsing": [
+        {
+          "type": "Hash",
+          "algorithm": "sha512",
+          "hashValue": "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e"
+        }
+      ]
+    },
+    {
+      "type": "Relationship",
+      "from": "SPDXRef-DOCUMENT",
+      "to": ["SPDXRef-Package1"],
+      "relationshipType": "describes",
+      "completeness": "complete"
+    },
+    {
+      "type": "Relationship",
+      "from": "SPDXRef-Package1",
+      "to": ["SPDXRef-Package2"],
+      "relationshipType": "dependsOn",
+      "completeness": "complete"
+    },
+    {
+      "type": "Relationship",
+      "from": "SPDXRef-Package1",
+      "to": ["SPDXRef-File1"],
+      "relationshipType": "hasDistributionArtifact",
+      "completeness": "complete"
+    },
+    {
+      "type": "Relationship",
+      "from": "SPDXRef-Package2",
+      "to": ["SPDXRef-File2"],
+      "relationshipType": "hasDistributionArtifact",
+      "completeness": "complete"
+    }
+  ]
+}
+`)
+
+// ===========================================================================
+// TestBSIV21CompExecutableProperty
+// ===========================================================================
+
+func TestBSIV21CompExecutableProperty(t *testing.T) {
+	ctx := context.Background()
+
+	// SPDX 3.0: distribution artifact file with executable purpose → score 10.0
+	t.Run("spdx3CompWithExecutableProp", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3CompWithExecutableProp, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV21CompExecutableProperty(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "executable property declared for all components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// SPDX 3.0: distribution artifact file with archive purpose (not executable) → score 0.0
+	t.Run("spdx3CompWithArchivePropOnly", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3CompWithArchivePropOnly, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV21CompExecutableProperty(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "no components declare executable property", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// SPDX 3.0: 1 of 2 components has executable purpose → partial score 5.0
+	t.Run("spdx3PartialExecutableProp", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3TwoCompsOneExecutable, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV21CompExecutableProperty(doc)
+
+		assert.InDelta(t, 5.0, got.Score, 1e-9)
+		assert.Equal(t, "1/2 components declare executable property", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// SPDX 3.0: no distribution artifact file → score 0.0
+	t.Run("spdx3NoDistributionArtifact", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3CompWithMissingFilename, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV21CompExecutableProperty(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "no components declare executable property", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+}
+
+// ===========================================================================
+// TestBSIV21CompArchiveProperty
+// ===========================================================================
+
+func TestBSIV21CompArchiveProperty(t *testing.T) {
+	ctx := context.Background()
+
+	// SPDX 3.0: distribution artifact file with archive purpose → score 10.0
+	t.Run("spdx3CompWithArchiveProp", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3CompWithArchivePropOnly, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV21CompArchiveProperty(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "archive property declared for all components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// SPDX 3.0: distribution artifact file with executable purpose (not archive) → score 0.0
+	t.Run("spdx3CompWithExecutablePropOnly", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3CompWithExecutableProp, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV21CompArchiveProperty(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "no components declare archive property", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// SPDX 3.0: 1 of 2 components has archive purpose → partial score 5.0
+	t.Run("spdx3PartialArchiveProp", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3TwoCompsOneExecutable, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV21CompArchiveProperty(doc)
+
+		assert.InDelta(t, 5.0, got.Score, 1e-9)
+		assert.Equal(t, "1/2 components declare archive property", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// SPDX 3.0: no distribution artifact file → score 0.0
+	t.Run("spdx3NoDistributionArtifact", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3CompWithMissingFilename, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV21CompArchiveProperty(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "no components declare archive property", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+}
+
+// ===========================================================================
+// TestBSIV21CompStructuredProperty
+// ===========================================================================
+
+func TestBSIV21CompStructuredProperty(t *testing.T) {
+	ctx := context.Background()
+
+	// SPDX 3.0: distribution artifact file with container (structured) purpose → score 10.0
+	t.Run("spdx3CompWithStructuredProp", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3CompWithStructuredProp, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV21CompStructuredProperty(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "structured property declared for all components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// SPDX 3.0: distribution artifact file with archive purpose (not structured) → score 0.0
+	t.Run("spdx3CompWithArchivePropOnly", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3CompWithArchivePropOnly, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV21CompStructuredProperty(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "no components declare structured property", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// SPDX 3.0: 1 of 2 components has structured purpose → partial score 5.0
+	t.Run("spdx3PartialStructuredProp", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3TwoCompsOneStructured, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV21CompStructuredProperty(doc)
+
+		assert.InDelta(t, 5.0, got.Score, 1e-9)
+		assert.Equal(t, "1/2 components declare structured property", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// SPDX 3.0: no distribution artifact file → score 0.0
+	t.Run("spdx3NoDistributionArtifact", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3CompWithMissingFilename, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV21CompStructuredProperty(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "no components declare structured property", got.Desc)
+		assert.False(t, got.Ignore)
 	})
 }

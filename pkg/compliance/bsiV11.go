@@ -447,10 +447,13 @@ func bsiV11SBOMDepth(doc sbom.Document) *db.Record {
 	}
 	dfs(primary.GetID())
 
-	// Detect orphan components
+	// Detect orphan components — only count actual components, not files.
+	// Files are leaf nodes linked via non-dependency relationships
+	// (e.g., hasDistributionArtifact) and should not be counted in
+	// the dependency graph completeness check.
 	orphanCount := 0
-	for id := range componentMap {
-		if !visited[id] {
+	for _, c := range doc.Components() {
+		if !visited[c.GetID()] {
 			orphanCount++
 		}
 	}

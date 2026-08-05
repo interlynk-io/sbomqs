@@ -142,67 +142,11 @@ func BSIV20CompVersion(doc sbom.Document) catalog.ProfFeatScore {
 	return BSIV11CompVersion(doc)
 }
 
-/*
-REQUIRED FIELD: BSIV20CompFilename
-
-BSI 5.2.2: "The actual filename of the component (i.e. not its path)."
-
-NOTE: The sbom.GetComponent interface does not yet expose a dedicated filename
-field (PackageFileName / equivalent). This check returns N/A until the
-interface is extended.
-
-SBOM Mappings:
-SPDX: PackageFileName
-CDX:  no native field custom properties[bsi:filename]
-*/
+// BSIV20CompFilename checks that components have a distribution artifact filename declared.
 func BSIV20CompFilename(doc sbom.Document) catalog.ProfFeatScore {
-	spec := strings.TrimSpace(strings.ToLower(doc.Spec().GetSpecType()))
-
-	if spec == "" {
-		return catalog.ProfFeatScore{
-			Score: 0.0,
-			Desc:  "SBOM spec is missing",
-		}
-	}
-
-	switch spec {
-	case string(sbom.SBOMSpecCDX):
-		return bsiPropertyCheck(doc, "bsi:component:filename", "filename")
-
-	case string(sbom.SBOMSpecSPDX):
-		// SPDX section 7.13: PackageFileName is the actual filename of the package.
-		comps := doc.Components()
-		total := len(comps)
-		if total == 0 {
-			return catalog.ProfFeatScore{Score: 0.0, Desc: "no components found in SBOM."}
-		}
-
-		withFilename := 0
-		for _, c := range comps {
-			if strings.TrimSpace(c.GetFilename()) != "" {
-				withFilename++
-			}
-		}
-
-		if withFilename == total {
-			return catalog.ProfFeatScore{Score: 10.0, Desc: "PackageFileName declared for all components."}
-		}
-
-		if withFilename == 0 {
-			return catalog.ProfFeatScore{Score: 0.0, Desc: "no components declare PackageFileName."}
-		}
-
-		return catalog.ProfFeatScore{
-			Score: float64(withFilename) / float64(total) * 10.0,
-			Desc:  fmt.Sprintf("%d/%d components declare PackageFileName.", withFilename, total),
-		}
-	}
-
-	return catalog.ProfFeatScore{
-		Score:  0.0,
-		Desc:   "unknown SBOM spec type; cannot evaluate filename property.",
-		Ignore: true,
-	}
+	return componentStringCheck(doc, "filename", func(c sbom.GetComponent) string {
+		return c.GetFilename()
+	})
 }
 
 /*
@@ -291,10 +235,13 @@ func BSIV20CompDependencies(doc sbom.Document) catalog.ProfFeatScore {
 	}
 	dfs(primary.GetID())
 
-	// 4. Ensure no orphan components
+	// 4. Ensure no orphan components — only count actual components, not files.
+	// Files are leaf nodes linked via non-dependency relationships
+	// (e.g., hasDistributionArtifact) and should not be counted in
+	// the dependency graph completeness check.
 	orphanCount := 0
-	for id := range componentMap {
-		if !visited[id] {
+	for _, c := range doc.Components() {
+		if !visited[c.GetID()] {
 			orphanCount++
 		}
 	}
@@ -377,10 +324,19 @@ func BSIV20CompDeployableHash(doc sbom.Document) catalog.ProfFeatScore {
 				}
 			}
 		case string(sbom.SBOMSpecSPDX):
-			// SPDX: PackageChecksum directly on the package
+			// SPDX 2.x: PackageChecksum directly on the package
 			for _, chk := range c.GetChecksums() {
 				algo := common.NormalizeAlgoName(chk.GetAlgo())
 				value := strings.TrimSpace(chk.GetContent())
+				if algo == "SHA512" && value != "" {
+					withData++
+					goto nextComp
+				}
+			}
+			// SPDX 3.0: hash is on the distribution artifact file
+			for _, h := range c.DistributionArtifact().GetHashes() {
+				algo := common.NormalizeAlgoName(h.GetAlgo())
+				value := strings.TrimSpace(h.GetContent())
 				if algo == "SHA512" && value != "" {
 					withData++
 					goto nextComp
@@ -407,112 +363,25 @@ SBOM Mappings:
 SPDX: PrimaryPackagePurpose = APPLICATION (section 7.12)
 CDX:  no dedicated field: custom properties[bsi:executableProperty]
 */
+// BSIV20CompExecutableProperty checks that components have an executable distribution artifact.
 func BSIV20CompExecutableProperty(doc sbom.Document) catalog.ProfFeatScore {
-	spec := strings.TrimSpace(strings.ToLower(doc.Spec().GetSpecType()))
-
-	if spec == "" {
-		return catalog.ProfFeatScore{
-			Score: 0.0,
-			Desc:  "SBOM spec is missing",
-		}
-	}
-
-	switch spec {
-	case string(sbom.SBOMSpecCDX):
-		return bsiPropertyCheck(doc, "bsi:component:executable", "executable property")
-
-	case string(sbom.SBOMSpecSPDX):
-		// SPDX section 7.12: PrimaryPackagePurpose APPLICATION maps to executable.
-		return spdxPurposeCheck(doc, "APPLICATION", "executable property")
-	}
-
-	return catalog.ProfFeatScore{
-		Score:  0.0,
-		Desc:   "unknown SBOM spec type; cannot evaluate executable property.",
-		Ignore: false,
-	}
+	return componentBoolCheck(doc, "executable property", func(c sbom.GetComponent) bool {
+		return c.DistributionArtifact().IsExecutable()
+	})
 }
 
-/*
-REQUIRED FIELD: BSIV20CompArchiveProperty
-
-BSI 5.2.2 "Describes whether the component is an archive;
-possible values are 'archive' and 'no archive'."
-
-NOTE: The sbom.GetComponent interface does not expose a dedicated
-archive-property field. This check returns N/A until the interface
-is extended.
-
-SBOM Mappings:
-SPDX: PrimaryPackagePurpose = ARCHIVE (section 7.12)
-CDX:  no dedicated field: custom properties[bsi:archiveProperty]
-*/
+// BSIV20CompArchiveProperty checks that components have an archive distribution artifact.
 func BSIV20CompArchiveProperty(doc sbom.Document) catalog.ProfFeatScore {
-	spec := strings.TrimSpace(strings.ToLower(doc.Spec().GetSpecType()))
-
-	if spec == "" {
-		return catalog.ProfFeatScore{
-			Score: 0.0,
-			Desc:  "SBOM spec is missing",
-		}
-	}
-
-	switch spec {
-	case string(sbom.SBOMSpecCDX):
-		return bsiPropertyCheck(doc, "bsi:component:archive", "archive property")
-
-	case string(sbom.SBOMSpecSPDX):
-		// SPDX section 7.12: PrimaryPackagePurpose ARCHIVE maps to archive.
-		return spdxPurposeCheck(doc, "ARCHIVE", "archive property")
-	}
-
-	return catalog.ProfFeatScore{
-		Score:  0.0,
-		Desc:   "unknown SBOM spec type; cannot evaluate archive property.",
-		Ignore: false,
-	}
+	return componentBoolCheck(doc, "archive property", func(c sbom.GetComponent) bool {
+		return c.DistributionArtifact().IsArchive()
+	})
 }
 
-/*
-REQUIRED FIELD: BSIV20CompStructuredProperty
-
-BSI 5.2.2 "Describes whether the component is a structured file;
-possible values are 'structured' and 'unstructured'.
-If a component contains both structured and unstructured parts the
-value 'structured' MUST be used."
-
-NOTE: The sbom.GetComponent interface does not expose a dedicated
-structured-property field. This check returns N/A until the interface
-is extended.
-
-SBOM Mappings:
-SPDX: PrimaryPackagePurpose = SOURCE (section 7.12)
-CDX:  no dedicated field: custom properties[bsi:structuredProperty]
-*/
+// BSIV20CompStructuredProperty checks that components have a structured distribution artifact.
 func BSIV20CompStructuredProperty(doc sbom.Document) catalog.ProfFeatScore {
-	spec := strings.TrimSpace(strings.ToLower(doc.Spec().GetSpecType()))
-
-	if spec == "" {
-		return catalog.ProfFeatScore{
-			Score: 0.0,
-			Desc:  "SBOM spec is missing",
-		}
-	}
-
-	switch spec {
-	case string(sbom.SBOMSpecCDX):
-		return bsiPropertyCheck(doc, "bsi:component:structured", "structured property")
-
-	case string(sbom.SBOMSpecSPDX):
-		// SPDX section 7.12: PrimaryPackagePurpose SOURCE maps to structured.
-		return spdxPurposeCheck(doc, "SOURCE", "structured property")
-	}
-
-	return catalog.ProfFeatScore{
-		Score:  0.0,
-		Desc:   "unknown SBOM spec type; cannot evaluate structured property.",
-		Ignore: false,
-	}
+	return componentBoolCheck(doc, "structured property", func(c sbom.GetComponent) bool {
+		return c.DistributionArtifact().IsStructured()
+	})
 }
 
 // =========================================================
