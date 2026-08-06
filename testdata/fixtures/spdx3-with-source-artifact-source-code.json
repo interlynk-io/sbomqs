@@ -1,0 +1,82 @@
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Source Artifact Source Code Test",
+      "creationInfo": "_:creationinfo",
+      "element": ["SPDXRef-Package1", "SPDXRef-Package2", "SPDXRef-SourceArtifact1", "SPDXRef-SourceArtifact2"],
+      "profileConformance": ["core", "software"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:author"]
+    },
+    {
+      "type": "Person",
+      "@id": "_:author",
+      "name": "Test Author"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package1",
+      "name": "package-one",
+      "software_packageVersion": "1.0.0"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package2",
+      "name": "package-two",
+      "software_packageVersion": "2.0.0"
+    },
+    {
+      "type": "software_SoftwareArtifact",
+      "spdxId": "SPDXRef-SourceArtifact1",
+      "software_primaryPurpose": "source",
+      "externalRef": [
+        {
+          "type": "ExternalRef",
+          "externalRefType": "SourceArtifact",
+          "locator": "https://github.com/example/package-one/releases/download/v1.0.0/source.tar.gz"
+        }
+      ]
+    },
+    {
+      "type": "software_SoftwareArtifact",
+      "spdxId": "SPDXRef-SourceArtifact2",
+      "software_primaryPurpose": "source",
+      "externalRef": [
+        {
+          "type": "ExternalRef",
+          "externalRefType": "SourceArtifact",
+          "locator": "https://github.com/example/package-two/releases/download/v2.0.0/source.tar.gz"
+        }
+      ]
+    },
+    {
+      "type": "Relationship",
+      "from": "SPDXRef-SourceArtifact1",
+      "to": ["SPDXRef-Package1"],
+      "relationshipType": "generates",
+      "completeness": "complete"
+    },
+    {
+      "type": "Relationship",
+      "from": "SPDXRef-SourceArtifact2",
+      "to": ["SPDXRef-Package2"],
+      "relationshipType": "generates",
+      "completeness": "complete"
+    },
+    {
+      "type": "Relationship",
+      "from": "SPDXRef-DOCUMENT",
+      "to": ["SPDXRef-Package1", "SPDXRef-Package2"],
+      "relationshipType": "describes",
+      "completeness": "complete"
+    }
+  ]
+}

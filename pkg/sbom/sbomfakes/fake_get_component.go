@@ -34,16 +34,6 @@ type FakeGetComponent struct {
 	concludedLicensesReturnsOnCall map[int]struct {
 		result1 []licenses.License
 	}
-	EffectiveLicensesStub        func() []licenses.License
-	effectiveLicensesMutex       sync.RWMutex
-	effectiveLicensesArgsForCall []struct {
-	}
-	effectiveLicensesReturns struct {
-		result1 []licenses.License
-	}
-	effectiveLicensesReturnsOnCall map[int]struct {
-		result1 []licenses.License
-	}
 	CountOfDependenciesStub        func() int
 	countOfDependenciesMutex       sync.RWMutex
 	countOfDependenciesArgsForCall []struct {
@@ -83,6 +73,16 @@ type FakeGetComponent struct {
 	}
 	distributionArtifactReturnsOnCall map[int]struct {
 		result1 sbom.GetDistributionArtifact
+	}
+	EffectiveLicensesStub        func() []licenses.License
+	effectiveLicensesMutex       sync.RWMutex
+	effectiveLicensesArgsForCall []struct {
+	}
+	effectiveLicensesReturns struct {
+		result1 []licenses.License
+	}
+	effectiveLicensesReturnsOnCall map[int]struct {
+		result1 []licenses.License
 	}
 	ExternalReferencesStub        func() []sbom.GetExternalReference
 	externalReferencesMutex       sync.RWMutex
@@ -485,59 +485,6 @@ func (fake *FakeGetComponent) ConcludedLicensesReturnsOnCall(i int, result1 []li
 	}{result1}
 }
 
-func (fake *FakeGetComponent) EffectiveLicenses() []licenses.License {
-	fake.effectiveLicensesMutex.Lock()
-	ret, specificReturn := fake.effectiveLicensesReturnsOnCall[len(fake.effectiveLicensesArgsForCall)]
-	fake.effectiveLicensesArgsForCall = append(fake.effectiveLicensesArgsForCall, struct {
-	}{})
-	stub := fake.EffectiveLicensesStub
-	fakeReturns := fake.effectiveLicensesReturns
-	fake.recordInvocation("EffectiveLicenses", []interface{}{})
-	fake.effectiveLicensesMutex.Unlock()
-	if stub != nil {
-		return stub()
-	}
-	if specificReturn {
-		return ret.result1
-	}
-	return fakeReturns.result1
-}
-
-func (fake *FakeGetComponent) EffectiveLicensesCallCount() int {
-	fake.effectiveLicensesMutex.RLock()
-	defer fake.effectiveLicensesMutex.RUnlock()
-	return len(fake.effectiveLicensesArgsForCall)
-}
-
-func (fake *FakeGetComponent) EffectiveLicensesCalls(stub func() []licenses.License) {
-	fake.effectiveLicensesMutex.Lock()
-	defer fake.effectiveLicensesMutex.Unlock()
-	fake.EffectiveLicensesStub = stub
-}
-
-func (fake *FakeGetComponent) EffectiveLicensesReturns(result1 []licenses.License) {
-	fake.effectiveLicensesMutex.Lock()
-	defer fake.effectiveLicensesMutex.Unlock()
-	fake.EffectiveLicensesStub = nil
-	fake.effectiveLicensesReturns = struct {
-		result1 []licenses.License
-	}{result1}
-}
-
-func (fake *FakeGetComponent) EffectiveLicensesReturnsOnCall(i int, result1 []licenses.License) {
-	fake.effectiveLicensesMutex.Lock()
-	defer fake.effectiveLicensesMutex.Unlock()
-	fake.EffectiveLicensesStub = nil
-	if fake.effectiveLicensesReturnsOnCall == nil {
-		fake.effectiveLicensesReturnsOnCall = make(map[int]struct {
-			result1 []licenses.License
-		})
-	}
-	fake.effectiveLicensesReturnsOnCall[i] = struct {
-		result1 []licenses.License
-	}{result1}
-}
-
 func (fake *FakeGetComponent) CountOfDependencies() int {
 	fake.countOfDependenciesMutex.Lock()
 	ret, specificReturn := fake.countOfDependenciesReturnsOnCall[len(fake.countOfDependenciesArgsForCall)]
@@ -747,6 +694,59 @@ func (fake *FakeGetComponent) DistributionArtifactReturnsOnCall(i int, result1 s
 	}
 	fake.distributionArtifactReturnsOnCall[i] = struct {
 		result1 sbom.GetDistributionArtifact
+	}{result1}
+}
+
+func (fake *FakeGetComponent) EffectiveLicenses() []licenses.License {
+	fake.effectiveLicensesMutex.Lock()
+	ret, specificReturn := fake.effectiveLicensesReturnsOnCall[len(fake.effectiveLicensesArgsForCall)]
+	fake.effectiveLicensesArgsForCall = append(fake.effectiveLicensesArgsForCall, struct {
+	}{})
+	stub := fake.EffectiveLicensesStub
+	fakeReturns := fake.effectiveLicensesReturns
+	fake.recordInvocation("EffectiveLicenses", []interface{}{})
+	fake.effectiveLicensesMutex.Unlock()
+	if stub != nil {
+		return stub()
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeGetComponent) EffectiveLicensesCallCount() int {
+	fake.effectiveLicensesMutex.RLock()
+	defer fake.effectiveLicensesMutex.RUnlock()
+	return len(fake.effectiveLicensesArgsForCall)
+}
+
+func (fake *FakeGetComponent) EffectiveLicensesCalls(stub func() []licenses.License) {
+	fake.effectiveLicensesMutex.Lock()
+	defer fake.effectiveLicensesMutex.Unlock()
+	fake.EffectiveLicensesStub = stub
+}
+
+func (fake *FakeGetComponent) EffectiveLicensesReturns(result1 []licenses.License) {
+	fake.effectiveLicensesMutex.Lock()
+	defer fake.effectiveLicensesMutex.Unlock()
+	fake.EffectiveLicensesStub = nil
+	fake.effectiveLicensesReturns = struct {
+		result1 []licenses.License
+	}{result1}
+}
+
+func (fake *FakeGetComponent) EffectiveLicensesReturnsOnCall(i int, result1 []licenses.License) {
+	fake.effectiveLicensesMutex.Lock()
+	defer fake.effectiveLicensesMutex.Unlock()
+	fake.EffectiveLicensesStub = nil
+	if fake.effectiveLicensesReturnsOnCall == nil {
+		fake.effectiveLicensesReturnsOnCall = make(map[int]struct {
+			result1 []licenses.License
+		})
+	}
+	fake.effectiveLicensesReturnsOnCall[i] = struct {
+		result1 []licenses.License
 	}{result1}
 }
 

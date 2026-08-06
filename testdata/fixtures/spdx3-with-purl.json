@@ -1,14 +1,21 @@
 {
-  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@context": [
+    "https://spdx.org/rdf/3.0.1/spdx-context.jsonld"
+  ],
   "@graph": [
     {
       "type": "SpdxDocument",
       "spdxId": "SPDXRef-DOCUMENT",
       "name": "SBOM with Component Unique ID",
       "creationInfo": "_:creationinfo",
-      "element": ["SPDXRef-Package-App"],
+      "element": [
+        "SPDXRef-Package-App"
+      ],
       "dataLicense": "CC0-1.0",
-      "profileConformance": ["core", "software"],
+      "profileConformance": [
+        "core",
+        "software"
+      ],
       "namespaceMap": [
         {
           "prefix": "",
@@ -21,14 +28,19 @@
       "@id": "_:creationinfo",
       "specVersion": "3.0.1",
       "created": "2024-01-15T10:30:00Z",
-      "createdBy": ["_:org1", "_:person1"],
-      "createdUsing": ["_:tool1"]
+      "createdBy": [
+        "_:org1",
+        "_:person1"
+      ],
+      "createdUsing": [
+        "_:tool1"
+      ]
     },
     {
       "type": "Organization",
       "@id": "_:org1",
       "name": "Example Organization Inc",
-      "externalIdentifier": [
+      "externalIdentifiers": [
         {
           "externalIdentifierType": "email",
           "identifier": "sbom@example.com"
@@ -43,7 +55,7 @@
       "type": "Person",
       "@id": "_:person1",
       "name": "John Doe",
-      "externalIdentifier": [
+      "externalIdentifiers": [
         {
           "externalIdentifierType": "email",
           "identifier": "john.doe@example.com"
@@ -58,7 +70,7 @@
       "type": "Tool",
       "@id": "_:tool1",
       "name": "sbomqs-generator-1.0.0",
-      "externalIdentifier": [
+      "externalIdentifiers": [
         {
           "externalIdentifierType": "email",
           "identifier": "tools@sbomqs.dev"
@@ -73,7 +85,7 @@
       "type": "Organization",
       "@id": "_:supplier1",
       "name": "Supplier Corp",
-      "externalIdentifier": [
+      "externalIdentifiers": [
         {
           "externalIdentifierType": "email",
           "identifier": "supplier@example.com"
@@ -89,13 +101,15 @@
       "spdxId": "SPDXRef-Package-App",
       "name": "my-application",
       "software_packageVersion": "1.0.0",
-      "suppliedBy": "_:supplier1",
       "software_copyrightText": "Copyright 2024 Supplier Corp",
-      "externalIdentifier": [
+      "externalIdentifiers": [
         {
           "externalIdentifierType": "packageUrl",
           "identifier": "pkg:npm/my-application@1.0.0"
         }
+      ],
+      "originatedBy": [
+        "_:supplier1"
       ]
     }
   ]

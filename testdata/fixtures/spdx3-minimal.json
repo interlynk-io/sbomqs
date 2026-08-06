@@ -1,5 +1,7 @@
 {
-  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@context": [
+    "https://spdx.org/rdf/3.0.1/spdx-context.jsonld"
+  ],
   "@graph": [
     {
       "type": "SpdxDocument",
@@ -7,7 +9,9 @@
       "name": "Minimal SPDX 3.0 SBOM",
       "creationInfo": "_:creationinfo",
       "dataLicense": "CC0-1.0",
-      "profileConformance": ["core"],
+      "profileConformance": [
+        "core"
+      ],
       "namespaceMap": [
         {
           "prefix": "",
@@ -20,14 +24,19 @@
       "@id": "_:creationinfo",
       "specVersion": "3.0.1",
       "created": "2024-01-15T10:30:00Z",
-      "createdBy": ["_:org1", "_:person1"],
-      "createdUsing": ["_:tool1"]
+      "createdBy": [
+        "_:org1",
+        "_:person1"
+      ],
+      "createdUsing": [
+        "_:tool1"
+      ]
     },
     {
       "type": "Organization",
       "@id": "_:org1",
       "name": "Example Organization Inc",
-      "externalIdentifier": [
+      "externalIdentifiers": [
         {
           "externalIdentifierType": "email",
           "identifier": "sbom@example.com"
@@ -42,7 +51,7 @@
       "type": "Person",
       "@id": "_:person1",
       "name": "John Doe",
-      "externalIdentifier": [
+      "externalIdentifiers": [
         {
           "externalIdentifierType": "email",
           "identifier": "john.doe@example.com"
@@ -57,7 +66,7 @@
       "type": "Tool",
       "@id": "_:tool1",
       "name": "sbomqs-generator-1.0.0",
-      "externalIdentifier": [
+      "externalIdentifiers": [
         {
           "externalIdentifierType": "email",
           "identifier": "tools@sbomqs.dev"

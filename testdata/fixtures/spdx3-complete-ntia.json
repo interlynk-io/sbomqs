@@ -1,27 +1,42 @@
 {
-  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@context": [
+    "https://spdx.org/rdf/3.0.1/spdx-context.jsonld"
+  ],
   "@graph": [
     {
       "type": "SpdxDocument",
       "spdxId": "SPDXRef-DOCUMENT",
       "name": "NTIA Complete SPDX 3.0 SBOM",
       "creationInfo": "_:creationinfo",
-      "element": ["SPDXRef-App", "SPDXRef-LibA", "SPDXRef-LibB", "SPDXRef-LibC", "SPDXRef-LibD"],
-      "profileConformance": ["core", "software"]
+      "element": [
+        "SPDXRef-App",
+        "SPDXRef-LibA",
+        "SPDXRef-LibB",
+        "SPDXRef-LibC",
+        "SPDXRef-LibD"
+      ],
+      "profileConformance": [
+        "core",
+        "software"
+      ]
     },
     {
       "type": "CreationInfo",
       "@id": "_:creationinfo",
       "specVersion": "3.0.1",
       "created": "2024-01-15T10:30:00Z",
-      "createdBy": ["_:author"],
-      "createdUsing": ["_:tool1"]
+      "createdBy": [
+        "_:author"
+      ],
+      "createdUsing": [
+        "_:tool1"
+      ]
     },
     {
       "type": "Person",
       "@id": "_:author",
       "name": "Samantha Wright",
-      "externalIdentifier": [
+      "externalIdentifiers": [
         {
           "externalIdentifierType": "email",
           "identifier": "samantha.wright@example.com"
@@ -38,7 +53,7 @@
       "spdxId": "SPDXRef-App",
       "name": "my-application",
       "software_packageVersion": "1.0.0",
-      "externalIdentifier": [
+      "externalIdentifiers": [
         {
           "externalIdentifierType": "packageUrl",
           "identifier": "pkg:github/example/my-application@1.0.0"
@@ -50,19 +65,21 @@
       "spdxId": "SPDXRef-LibA",
       "name": "library-a",
       "software_packageVersion": "1.5.0",
-      "suppliedBy": "_:supplier1",
-      "externalIdentifier": [
+      "externalIdentifiers": [
         {
           "externalIdentifierType": "packageUrl",
           "identifier": "pkg:npm/library-a@1.5.0"
         }
+      ],
+      "originatedBy": [
+        "_:supplier1"
       ]
     },
     {
       "type": "Organization",
       "@id": "_:supplier1",
       "name": "Acme Inc.",
-      "externalIdentifier": [
+      "externalIdentifiers": [
         {
           "externalIdentifierType": "email",
           "identifier": "contact@acme.com"
@@ -74,19 +91,21 @@
       "spdxId": "SPDXRef-LibB",
       "name": "library-b",
       "software_packageVersion": "2.1.0",
-      "suppliedBy": "_:supplier2",
-      "externalIdentifier": [
+      "externalIdentifiers": [
         {
           "externalIdentifierType": "packageUrl",
           "identifier": "pkg:maven/com.example/library-b@2.1.0"
         }
+      ],
+      "originatedBy": [
+        "_:supplier2"
       ]
     },
     {
       "type": "Person",
       "@id": "_:supplier2",
       "name": "John Doe",
-      "externalIdentifier": [
+      "externalIdentifiers": [
         {
           "externalIdentifierType": "email",
           "identifier": "john.doe@example.com"
@@ -98,19 +117,21 @@
       "spdxId": "SPDXRef-LibC",
       "name": "library-c",
       "software_packageVersion": "3.0.2",
-      "suppliedBy": "_:supplier3",
-      "externalIdentifier": [
+      "externalIdentifiers": [
         {
           "externalIdentifierType": "packageUrl",
           "identifier": "pkg:pypi/library-c@3.0.2"
         }
+      ],
+      "originatedBy": [
+        "_:supplier3"
       ]
     },
     {
       "type": "Organization",
       "@id": "_:supplier3",
       "name": "Example Corp",
-      "externalIdentifier": [
+      "externalIdentifiers": [
         {
           "externalIdentifierType": "email",
           "identifier": "security@example.com"
@@ -122,31 +143,44 @@
       "spdxId": "SPDXRef-LibD",
       "name": "library-d",
       "software_packageVersion": "0.5.0",
-      "suppliedBy": "_:supplier1",
-      "externalIdentifier": [
+      "externalIdentifiers": [
         {
           "externalIdentifierType": "packageUrl",
           "identifier": "pkg:github/example/library-d@0.5.0"
         }
+      ],
+      "originatedBy": [
+        "_:supplier1"
       ]
     },
     {
       "type": "Relationship",
       "from": "SPDXRef-DOCUMENT",
-      "to": ["SPDXRef-App"],
-      "relationshipType": "DESCRIBES"
+      "to": [
+        "SPDXRef-App"
+      ],
+      "relationshipType": "describes",
+      "completeness": "complete"
     },
     {
       "type": "Relationship",
       "from": "SPDXRef-App",
-      "to": ["SPDXRef-LibA", "SPDXRef-LibB", "SPDXRef-LibD"],
-      "relationshipType": "DEPENDS_ON"
+      "to": [
+        "SPDXRef-LibA",
+        "SPDXRef-LibB",
+        "SPDXRef-LibD"
+      ],
+      "relationshipType": "dependsOn",
+      "completeness": "complete"
     },
     {
       "type": "Relationship",
       "from": "SPDXRef-LibB",
-      "to": ["SPDXRef-LibC"],
-      "relationshipType": "DEPENDS_ON"
+      "to": [
+        "SPDXRef-LibC"
+      ],
+      "relationshipType": "dependsOn",
+      "completeness": "complete"
     }
   ]
 }

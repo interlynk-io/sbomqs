@@ -45,7 +45,7 @@
       "type": "Organization",
       "@id": "_:org1",
       "name": "Example Organization Inc",
-      "externalIdentifier": [
+      "externalIdentifiers": [
         {
           "externalIdentifierType": "email",
           "identifier": "sbom@example.com"
@@ -60,7 +60,7 @@
       "type": "Person",
       "@id": "_:person1",
       "name": "John Doe",
-      "externalIdentifier": [
+      "externalIdentifiers": [
         {
           "externalIdentifierType": "email",
           "identifier": "john.doe@example.com"
@@ -75,7 +75,7 @@
       "type": "Tool",
       "@id": "_:tool1",
       "name": "sbomqs-generator-1.0.0",
-      "externalIdentifier": [
+      "externalIdentifiers": [
         {
           "externalIdentifierType": "email",
           "identifier": "tools@sbomqs.dev"
@@ -90,7 +90,7 @@
       "type": "Organization",
       "@id": "_:supplier1",
       "name": "Example Organization Inc",
-      "externalIdentifier": [
+      "externalIdentifiers": [
         {
           "externalIdentifierType": "email",
           "identifier": "contact@example.com"
@@ -105,7 +105,7 @@
       "type": "Organization",
       "@id": "_:supplier2",
       "name": "Library Vendor Ltd",
-      "externalIdentifier": [
+      "externalIdentifiers": [
         {
           "externalIdentifierType": "email",
           "identifier": "support@libraryvendor.com"
@@ -122,22 +122,24 @@
       "name": "my-application",
       "software_packageVersion": "1.0.0",
       "software_primaryPurpose": "application",
-      "suppliedBy": "_:supplier1",
       "software_downloadLocation": "https://github.com/example/my-app/releases/download/v1.0.0/my-app.tar.gz",
       "software_homePage": "https://example.com/my-app",
       "software_sourceInfo": "https://github.com/example/my-app",
       "software_copyrightText": "Copyright 2024 Example Organization Inc",
-      "externalIdentifier": [
+      "verifiedUsing": [
+        {
+          "algorithm": "sha512",
+          "hashValue": "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e"
+        }
+      ],
+      "externalIdentifiers": [
         {
           "externalIdentifierType": "packageUrl",
           "identifier": "pkg:npm/my-application@1.0.0"
         }
       ],
-      "verifiedUsing": [
-        {
-          "algorithm": "sha256",
-          "hashValue": "d2ca1ac5e3c0efa0e3c2e8e92f3a7f3d3f9c8b8e7f6d5c4b3a29182736453627"
-        }
+      "originatedBy": [
+        "_:supplier1"
       ]
     },
     {
@@ -146,21 +148,23 @@
       "name": "my-library",
       "software_packageVersion": "2.3.4",
       "software_primaryPurpose": "library",
-      "suppliedBy": "_:supplier2",
       "software_downloadLocation": "https://npmjs.org/my-library/-/my-library-2.3.4.tgz",
       "software_sourceInfo": "https://github.com/libraryvendor/my-library",
       "software_copyrightText": "Copyright 2024 Library Vendor Ltd",
-      "externalIdentifier": [
+      "verifiedUsing": [
+        {
+          "algorithm": "sha512",
+          "hashValue": "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e"
+        }
+      ],
+      "externalIdentifiers": [
         {
           "externalIdentifierType": "packageUrl",
           "identifier": "pkg:npm/my-library@2.3.4"
         }
       ],
-      "verifiedUsing": [
-        {
-          "algorithm": "sha256",
-          "hashValue": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-        }
+      "originatedBy": [
+        "_:supplier2"
       ]
     },
     {
@@ -170,9 +174,12 @@
       "software_copyrightText": "Copyright 2024 Example Organization Inc",
       "verifiedUsing": [
         {
-          "algorithm": "sha256",
-          "hashValue": "a3f5c7e9b2d4f6a8c0e2b4d6f8a0c2e4b6d8f0a2c4e6b8d0f2a4c6e8b0d2f4a6"
+          "algorithm": "sha512",
+          "hashValue": "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e"
         }
+      ],
+      "software_additionalPurpose": [
+        "install"
       ]
     },
     {
@@ -190,7 +197,8 @@
       "from": "SPDXRef-DOCUMENT",
       "to": [
         "SPDXRef-Package-App"
-      ]
+      ],
+      "completeness": "complete"
     },
     {
       "type": "Relationship",
@@ -199,7 +207,8 @@
       "from": "SPDXRef-Package-App",
       "to": [
         "SPDXRef-Package-Lib"
-      ]
+      ],
+      "completeness": "complete"
     },
     {
       "type": "Relationship",
@@ -208,7 +217,8 @@
       "from": "SPDXRef-Package-App",
       "to": [
         "SPDXRef-File-Readme"
-      ]
+      ],
+      "completeness": "complete"
     },
     {
       "type": "Relationship",
@@ -217,7 +227,8 @@
       "from": "SPDXRef-Package-App",
       "to": [
         "SPDXRef-License-MIT"
-      ]
+      ],
+      "completeness": "complete"
     },
     {
       "type": "Relationship",
@@ -226,7 +237,8 @@
       "from": "SPDXRef-Package-App",
       "to": [
         "SPDXRef-License-MIT"
-      ]
+      ],
+      "completeness": "complete"
     },
     {
       "type": "Relationship",
@@ -235,7 +247,8 @@
       "from": "SPDXRef-Package-Lib",
       "to": [
         "SPDXRef-License-MIT"
-      ]
+      ],
+      "completeness": "complete"
     },
     {
       "type": "Relationship",
@@ -244,7 +257,17 @@
       "from": "SPDXRef-Package-Lib",
       "to": [
         "SPDXRef-License-MIT"
-      ]
+      ],
+      "completeness": "complete"
+    },
+    {
+      "type": "Relationship",
+      "from": "SPDXRef-Package-App",
+      "to": [
+        "SPDXRef-File-Readme"
+      ],
+      "relationshipType": "hasDistributionArtifact",
+      "completeness": "complete"
     }
   ]
 }

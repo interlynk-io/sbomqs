@@ -1,0 +1,37 @@
+{
+  "@context": [
+    "https://spdx.org/rdf/3.0.1/spdx-context.jsonld"
+  ],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Test",
+      "creationInfo": "_:creationinfo",
+      "profileConformance": [
+        "core",
+        "software"
+      ]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "01-01-2026",
+      "createdBy": [
+        "_:author"
+      ]
+    },
+    {
+      "type": "Person",
+      "@id": "_:author",
+      "name": "Test Author",
+      "externalIdentifiers": [
+        {
+          "externalIdentifierType": "email",
+          "identifier": "test@example.com"
+        }
+      ]
+    }
+  ]
+}

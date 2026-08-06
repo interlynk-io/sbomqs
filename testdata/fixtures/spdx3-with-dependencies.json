@@ -1,5 +1,7 @@
 {
-  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@context": [
+    "https://spdx.org/rdf/3.0.1/spdx-context.jsonld"
+  ],
   "@graph": [
     {
       "type": "SpdxDocument",
@@ -11,7 +13,10 @@
         "SPDXRef-Package-Lib"
       ],
       "dataLicense": "CC0-1.0",
-      "profileConformance": ["core", "software"],
+      "profileConformance": [
+        "core",
+        "software"
+      ],
       "namespaceMap": [
         {
           "prefix": "",
@@ -36,7 +41,7 @@
       "type": "Organization",
       "@id": "_:org1",
       "name": "Example Organization Inc",
-      "externalIdentifier": [
+      "externalIdentifiers": [
         {
           "externalIdentifierType": "email",
           "identifier": "sbom@example.com"
@@ -51,7 +56,7 @@
       "type": "Person",
       "@id": "_:person1",
       "name": "John Doe",
-      "externalIdentifier": [
+      "externalIdentifiers": [
         {
           "externalIdentifierType": "email",
           "identifier": "john.doe@example.com"
@@ -66,7 +71,7 @@
       "type": "Tool",
       "@id": "_:tool1",
       "name": "sbomqs-generator-1.0.0",
-      "externalIdentifier": [
+      "externalIdentifiers": [
         {
           "externalIdentifierType": "email",
           "identifier": "tools@sbomqs.dev"
@@ -81,7 +86,7 @@
       "type": "Organization",
       "@id": "_:supplier1",
       "name": "Supplier Corp",
-      "externalIdentifier": [
+      "externalIdentifiers": [
         {
           "externalIdentifierType": "email",
           "identifier": "supplier@example.com"
@@ -96,7 +101,7 @@
       "type": "Organization",
       "@id": "_:supplier2",
       "name": "Library Supplier",
-      "externalIdentifier": [
+      "externalIdentifiers": [
         {
           "externalIdentifierType": "email",
           "identifier": "library@example.com"
@@ -112,13 +117,15 @@
       "spdxId": "SPDXRef-Package-App",
       "name": "my-application",
       "software_packageVersion": "1.0.0",
-      "suppliedBy": "_:supplier1",
       "software_copyrightText": "Copyright 2024 Supplier Corp",
-      "externalIdentifier": [
+      "externalIdentifiers": [
         {
           "externalIdentifierType": "packageUrl",
           "identifier": "pkg:npm/my-application@1.0.0"
         }
+      ],
+      "originatedBy": [
+        "_:supplier1"
       ]
     },
     {
@@ -126,13 +133,15 @@
       "spdxId": "SPDXRef-Package-Lib",
       "name": "my-library",
       "software_packageVersion": "2.0.0",
-      "suppliedBy": "_:supplier2",
       "software_copyrightText": "Copyright 2024 Library Supplier",
-      "externalIdentifier": [
+      "externalIdentifiers": [
         {
           "externalIdentifierType": "packageUrl",
           "identifier": "pkg:npm/my-library@2.0.0"
         }
+      ],
+      "originatedBy": [
+        "_:supplier2"
       ]
     },
     {
@@ -142,7 +151,8 @@
       "from": "SPDXRef-DOCUMENT",
       "to": [
         "SPDXRef-Package-App"
-      ]
+      ],
+      "completeness": "complete"
     },
     {
       "type": "Relationship",
@@ -151,7 +161,8 @@
       "from": "SPDXRef-Package-App",
       "to": [
         "SPDXRef-Package-Lib"
-      ]
+      ],
+      "completeness": "complete"
     }
   ]
 }

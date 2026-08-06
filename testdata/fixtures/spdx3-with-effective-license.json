@@ -125,6 +125,7 @@
       "software_downloadLocation": "https://github.com/example/my-app/releases/download/v1.0.0/my-app.tar.gz",
       "software_homePage": "https://example.com/my-app",
       "software_sourceInfo": "https://github.com/example/my-app",
+      "software_copyrightText": "Copyright 2024 Example Organization Inc",
       "verifiedUsing": [
         {
           "algorithm": "sha512",
@@ -153,6 +154,7 @@
       "software_primaryPurpose": "library",
       "software_downloadLocation": "https://npmjs.org/my-library/-/my-library-2.3.4.tgz",
       "software_sourceInfo": "https://github.com/libraryvendor/my-library",
+      "software_copyrightText": "Copyright 2024 Library Vendor Ltd",
       "verifiedUsing": [
         {
           "algorithm": "sha512",
@@ -177,6 +179,7 @@
       "type": "software_File",
       "spdxId": "SPDXRef-File-Readme",
       "name": "/README.md",
+      "software_copyrightText": "Copyright 2024 Example Organization Inc",
       "verifiedUsing": [
         {
           "algorithm": "sha512",
@@ -188,12 +191,14 @@
       ]
     },
     {
-      "type": "License",
+      "type": "simpleLicensing_LicenseExpression",
       "spdxId": "SPDXRef-License-MIT",
-      "name": "MIT",
-      "licenseText": "MIT License\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the 'Software'), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.",
-      "isOsiApproved": true,
-      "isFsfLibre": true
+      "licenseExpression": "MIT"
+    },
+    {
+      "type": "simpleLicensing_LicenseExpression",
+      "spdxId": "SPDXRef-License-Apache-2.0",
+      "licenseExpression": "Apache-2.0"
     },
     {
       "type": "Relationship",
@@ -251,7 +256,7 @@
       "relationshipType": "hasDeclaredLicense",
       "from": "SPDXRef-Package-Lib",
       "to": [
-        "SPDXRef-License-MIT"
+        "SPDXRef-License-Apache-2.0"
       ],
       "completeness": "complete"
     },
@@ -261,7 +266,29 @@
       "relationshipType": "hasConcludedLicense",
       "from": "SPDXRef-Package-Lib",
       "to": [
+        "SPDXRef-License-Apache-2.0"
+      ],
+      "completeness": "complete"
+    },
+    {
+      "type": "Relationship",
+      "spdxId": "SPDXRef-Relationship-8",
+      "relationshipType": "other",
+      "comment": "hasEffectiveLicense",
+      "from": "SPDXRef-Package-App",
+      "to": [
         "SPDXRef-License-MIT"
+      ],
+      "completeness": "complete"
+    },
+    {
+      "type": "Relationship",
+      "spdxId": "SPDXRef-Relationship-9",
+      "relationshipType": "other",
+      "comment": "hasEffectiveLicense",
+      "from": "SPDXRef-Package-Lib",
+      "to": [
+        "SPDXRef-License-Apache-2.0"
       ],
       "completeness": "complete"
     },

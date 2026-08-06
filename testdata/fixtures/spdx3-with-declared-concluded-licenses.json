@@ -1,5 +1,7 @@
 {
-  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@context": [
+    "https://spdx.org/rdf/3.0.1/spdx-context.jsonld"
+  ],
   "@graph": [
     {
       "type": "SpdxDocument",
@@ -11,7 +13,11 @@
         "SPDXRef-Package-Lib"
       ],
       "dataLicense": "CC0-1.0",
-      "profileConformance": ["core", "software", "licensing"],
+      "profileConformance": [
+        "core",
+        "software",
+        "licensing"
+      ],
       "namespaceMap": [
         {
           "prefix": "",
@@ -24,8 +30,12 @@
       "@id": "_:creationinfo",
       "specVersion": "3.0.1",
       "created": "2024-01-15T10:30:00Z",
-      "createdBy": ["_:org1"],
-      "createdUsing": ["_:tool1"]
+      "createdBy": [
+        "_:org1"
+      ],
+      "createdUsing": [
+        "_:tool1"
+      ]
     },
     {
       "type": "Organization",
@@ -43,7 +53,9 @@
       "name": "my-application",
       "software_packageVersion": "1.0.0",
       "software_primaryPurpose": "application",
-      "suppliedBy": "_:supplier1"
+      "originatedBy": [
+        "_:supplier1"
+      ]
     },
     {
       "type": "software_Package",
@@ -51,7 +63,9 @@
       "name": "my-library",
       "software_packageVersion": "2.0.0",
       "software_primaryPurpose": "library",
-      "suppliedBy": "_:supplier1"
+      "originatedBy": [
+        "_:supplier1"
+      ]
     },
     {
       "type": "Organization",
@@ -63,28 +77,40 @@
       "spdxId": "SPDXRef-Relationship-DeclaredLicense-App",
       "relationshipType": "hasDeclaredLicense",
       "from": "SPDXRef-Package-App",
-      "to": ["SPDXRef-License-MIT-Declared"]
+      "to": [
+        "SPDXRef-License-MIT-Declared"
+      ],
+      "completeness": "complete"
     },
     {
       "type": "Relationship",
       "spdxId": "SPDXRef-Relationship-ConcludedLicense-App",
       "relationshipType": "hasConcludedLicense",
       "from": "SPDXRef-Package-App",
-      "to": ["SPDXRef-License-MIT-Concluded"]
+      "to": [
+        "SPDXRef-License-MIT-Concluded"
+      ],
+      "completeness": "complete"
     },
     {
       "type": "Relationship",
       "spdxId": "SPDXRef-Relationship-DeclaredLicense-Lib",
       "relationshipType": "hasDeclaredLicense",
       "from": "SPDXRef-Package-Lib",
-      "to": ["SPDXRef-License-Apache-Declared"]
+      "to": [
+        "SPDXRef-License-Apache-Declared"
+      ],
+      "completeness": "complete"
     },
     {
       "type": "Relationship",
       "spdxId": "SPDXRef-Relationship-ConcludedLicense-Lib",
       "relationshipType": "hasConcludedLicense",
       "from": "SPDXRef-Package-Lib",
-      "to": ["SPDXRef-License-Apache-Concluded"]
+      "to": [
+        "SPDXRef-License-Apache-Concluded"
+      ],
+      "completeness": "complete"
     },
     {
       "type": "ListedLicense",
