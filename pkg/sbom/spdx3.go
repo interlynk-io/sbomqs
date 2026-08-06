@@ -871,10 +871,12 @@ func (s *Spdx3Doc) parseComps() {
 
 		// If no supplier but has manufacturer, copy manufacturer to supplier
 		if pkg.SuppliedBy == nil && len(pkg.OriginatedBy) > 0 {
-			nc.Supplier = Supplier{
-				Name:  nc.Manufacture.Name,
-				Email: nc.Manufacture.Email,
-				URL:   nc.Manufacture.URL,
+			if nc.Manufacture.Name != "" || nc.Manufacture.Email != "" || nc.Manufacture.URL != "" {
+				nc.Supplier = Supplier{
+					Name:  nc.Manufacture.Name,
+					Email: nc.Manufacture.Email,
+					URL:   nc.Manufacture.URL,
+				}
 			}
 		}
 
@@ -971,7 +973,7 @@ func isNoAssertion(val string) bool {
 // Looks up the actual Person or Organization and extracts name, email, and URL
 func (s *Spdx3Doc) extractSupplier(suppliedBy *spdx.Agent) Supplier {
 	if suppliedBy == nil {
-		return Supplier{}
+		return Supplier{Absent: true}
 	}
 
 	supplierName := ""
@@ -1022,9 +1024,10 @@ func (s *Spdx3Doc) extractSupplier(suppliedBy *spdx.Agent) Supplier {
 	}
 
 	return Supplier{
-		Name:  supplierName,
-		Email: supplierEmail,
-		URL:   supplierURL,
+		Name:   supplierName,
+		Email:  supplierEmail,
+		URL:    supplierURL,
+		Absent: supplierName == "" && supplierEmail == "" && supplierURL == "",
 	}
 }
 
@@ -1032,7 +1035,7 @@ func (s *Spdx3Doc) extractSupplier(suppliedBy *spdx.Agent) Supplier {
 // Looks up the actual Person or Organization and extracts name, email, and URL
 func (s *Spdx3Doc) extractManufacturer(originatedBy []spdx.Agent) Manufacturer {
 	if len(originatedBy) == 0 {
-		return Manufacturer{}
+		return Manufacturer{Absent: true}
 	}
 
 	orig := originatedBy[0]
@@ -1084,9 +1087,10 @@ func (s *Spdx3Doc) extractManufacturer(originatedBy []spdx.Agent) Manufacturer {
 	}
 
 	return Manufacturer{
-		Name:  manufacturerName,
-		Email: manufacturerEmail,
-		URL:   manufacturerURL,
+		Name:   manufacturerName,
+		Email:  manufacturerEmail,
+		URL:    manufacturerURL,
+		Absent: manufacturerName == "" && manufacturerEmail == "" && manufacturerURL == "",
 	}
 }
 

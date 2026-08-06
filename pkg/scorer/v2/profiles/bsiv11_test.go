@@ -2039,7 +2039,7 @@ func TestBSIV11CompCreator(t *testing.T) {
 		got := BSIV11CompCreator(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "1/1 components have creator info, but only valid email or URL required", got.Desc)
+		assert.Equal(t, "creator information missing for all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 	// SPDX 3.0: Component supplier is Person with URL only (no email)

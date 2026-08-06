@@ -191,12 +191,12 @@
       ]
     },
     {
-      "type": "simpleLicensing_LicenseExpression",
+      "type": "simplelicensing_LicenseExpression",
       "spdxId": "SPDXRef-License-MIT",
       "licenseExpression": "MIT"
     },
     {
-      "type": "simpleLicensing_LicenseExpression",
+      "type": "simplelicensing_LicenseExpression",
       "spdxId": "SPDXRef-License-Apache-2.0",
       "licenseExpression": "Apache-2.0"
     },

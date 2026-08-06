@@ -135,17 +135,17 @@
       ]
     },
     {
-      "type": "simpleLicensing_LicenseExpression",
+      "type": "simplelicensing_LicenseExpression",
       "spdxId": "SPDXRef-License-Declared-A",
       "licenseExpression": "Apache-2.0"
     },
     {
-      "type": "simpleLicensing_LicenseExpression",
+      "type": "simplelicensing_LicenseExpression",
       "spdxId": "SPDXRef-License-Concluded-A",
       "licenseExpression": "MIT"
     },
     {
-      "type": "simpleLicensing_LicenseExpression",
+      "type": "simplelicensing_LicenseExpression",
       "spdxId": "SPDXRef-License-Effective-A",
       "licenseExpression": "MIT"
     },
@@ -217,17 +217,17 @@
       ]
     },
     {
-      "type": "simpleLicensing_LicenseExpression",
+      "type": "simplelicensing_LicenseExpression",
       "spdxId": "SPDXRef-License-Declared-B",
       "licenseExpression": "Apache-2.0"
     },
     {
-      "type": "simpleLicensing_LicenseExpression",
+      "type": "simplelicensing_LicenseExpression",
       "spdxId": "SPDXRef-License-Concluded-B",
       "licenseExpression": "MIT"
     },
     {
-      "type": "simpleLicensing_LicenseExpression",
+      "type": "simplelicensing_LicenseExpression",
       "spdxId": "SPDXRef-License-Effective-B",
       "licenseExpression": "MIT"
     },
