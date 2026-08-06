@@ -639,15 +639,15 @@ func Test_InterlynkProfileForStaticSBOMFiles(t *testing.T) {
 		filepath.Join(base, "spdx-old-version.json"):      {Score: 5.6, Grade: "D"},
 
 		// SPDX 3.0 test cases - "no-*" files are perfect score minus only that field
-		filepath.Join(base, "spdx3-perfect-score.json"): {Score: 8.1, Grade: "B"},
-		filepath.Join(base, "spdx3-minimal.json"):       {Score: 6.7, Grade: "D"},
-		filepath.Join(base, "spdx3-no-version.json"):    {Score: 7.8, Grade: "C"},
-		filepath.Join(base, "spdx3-no-authors.json"):    {Score: 7.4, Grade: "C"},
-		filepath.Join(base, "spdx3-no-timestamp.json"):  {Score: 7.8, Grade: "C"},
-		filepath.Join(base, "spdx3-no-supplier.json"):   {Score: 7.8, Grade: "C"},
-		filepath.Join(base, "spdx3-no-unique-id.json"):       {Score: 7.0, Grade: "C"},
-		filepath.Join(base, "spdx3-no-dependencies.json"): {Score: 8.1, Grade: "B"},
-		filepath.Join(base, "spdx3-no-tool.json"):       {Score: 7.8, Grade: "C"},
+		filepath.Join(base, "spdx3-perfect-score.json"): {Score: 8.5, Grade: "B"},
+		filepath.Join(base, "spdx3-minimal.json"):       {Score: 7.3, Grade: "C"},
+		filepath.Join(base, "spdx3-no-version.json"):    {Score: 8.1, Grade: "B"},
+		filepath.Join(base, "spdx3-no-authors.json"):    {Score: 7.7, Grade: "C"},
+		filepath.Join(base, "spdx3-no-timestamp.json"):  {Score: 8.1, Grade: "B"},
+		filepath.Join(base, "spdx3-no-supplier.json"):   {Score: 8.1, Grade: "B"},
+		filepath.Join(base, "spdx3-no-unique-id.json"):       {Score: 7.3, Grade: "C"},
+		filepath.Join(base, "spdx3-no-dependencies.json"): {Score: 8.5, Grade: "B"},
+		filepath.Join(base, "spdx3-no-tool.json"):       {Score: 8.1, Grade: "B"},
 
 		// CycloneDX test cases
 		filepath.Join(base, "cdx-perfect-score.json"):    {Score: 8.0, Grade: "C"},

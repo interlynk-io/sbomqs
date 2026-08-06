@@ -131,8 +131,20 @@ func SBOMFileFormat(_ context.Context, input catalog.EvalInput) catalog.ComprFea
 }
 
 // SBOMSchemaValid: validate document against official schema for its spec/version.
+// SPDX 3.0 schema validation is not supported.
 func SBOMSchemaValid(_ context.Context, input catalog.EvalInput) catalog.ComprFeatScore {
 	doc := input.Doc
+	spec := strings.TrimSpace(strings.ToLower(doc.Spec().GetSpecType()))
+	ver := strings.TrimSpace(doc.Spec().GetVersion())
+
+	if spec == string(sbom.SBOMSpecSPDX) && strings.HasPrefix(ver, "3.") {
+		return catalog.ComprFeatScore{
+			Score:  formulae.BooleanScore(false),
+			Desc:   "not supported by SPDX",
+			Ignore: false,
+		}
+	}
+
 	if doc.SchemaValidation() {
 		return catalog.ComprFeatScore{
 			Score:  formulae.BooleanScore(true),
