@@ -169,10 +169,13 @@ func bsiIsValidURL(u string) bool {
 
 func bsiV11SBOMCreator(doc sbom.Document) *db.Record {
 
-	// Authors: valid email only
+	// Authors: valid email or URL
 	for _, author := range doc.Authors() {
 		if bsiIsValidEmail(author.GetEmail()) {
 			return db.NewRecordStmt(SBOM_CREATOR, "doc", author.GetEmail()+" (author)", 10.0, "")
+		}
+		if bsiIsValidURL(author.GetURL()) {
+			return db.NewRecordStmt(SBOM_CREATOR, "doc", author.GetURL()+" (author)", 10.0, "")
 		}
 	}
 

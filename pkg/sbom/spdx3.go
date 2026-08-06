@@ -589,9 +589,10 @@ func (s *Spdx3Doc) parseRelationships() {
 			}
 
 			r := Relationship{
-				From: fromID,
-				To:   toID,
-				Type: convertRelType(rel.RelationshipType),
+				From:         fromID,
+				To:           toID,
+				Type:         convertRelType(rel.RelationshipType),
+				Completeness: string(rel.Completeness),
 			}
 			s.Relationships = append(s.Relationships, r)
 		}

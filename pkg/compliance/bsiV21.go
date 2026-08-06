@@ -257,14 +257,31 @@ func bsiV21SBOMDepth(doc sbom.Document) *db.Record {
 
 	// v2.1 §5.2.2: completeness of the enumeration MUST be clearly indicated
 	hasCompletenessIndication := false
-	for _, comp := range doc.Composition() {
-		scope := comp.Scope()
-		agg := comp.Aggregate()
-		if (scope == sbom.ScopeDependencies || scope == sbom.ScopeGlobal) && agg != sbom.AggregateMissing {
-			hasCompletenessIndication = true
-			break
+
+	switch doc.Spec().GetSpecType() {
+	case string(sbom.SBOMSpecCDX):
+		// CycloneDX: Composition element indicates scope and aggregate
+		for _, comp := range doc.Composition() {
+			scope := comp.Scope()
+			agg := comp.Aggregate()
+			if (scope == sbom.ScopeDependencies || scope == sbom.ScopeGlobal) && agg != sbom.AggregateMissing {
+				hasCompletenessIndication = true
+				break
+			}
+		}
+	case string(sbom.SBOMSpecSPDX):
+		// SPDX 3.0: relationship-level completeness field ("complete", "incomplete", "noAssertion")
+		// BSI v2.1 requires SPDX >= 3.0.1, so all dependency relationships carry completeness.
+		for _, rel := range doc.GetRelationships() {
+			if strings.EqualFold(rel.GetType(), "DEPENDS_ON") || strings.EqualFold(rel.GetType(), "CONTAINS") {
+				if strings.EqualFold(rel.GetCompleteness(), "complete") || strings.EqualFold(rel.GetCompleteness(), "incomplete") || strings.EqualFold(rel.GetCompleteness(), "noAssertion") {
+					hasCompletenessIndication = true
+					break
+				}
+			}
 		}
 	}
+
 	if !hasCompletenessIndication {
 		return db.NewRecordStmt(SBOM_DEPTH, "doc", "dependency graph complete but completeness indication missing (BSI v2.1 §5.2.2 requires explicit indication)", 5.0, "")
 	}
@@ -311,14 +328,23 @@ func bsiV21Components(doc sbom.Document) []*db.Record {
 }
 
 // bsiV21ComponentFilename checks for the bsi:component:filename property (SHALL).
+// CDX: components[].properties[] with name="bsi:component:filename"
+// SPDX 3.0: DistributionArtifact().GetFilename() from software_File linked via hasDistributionArtifact.
 func bsiV21ComponentFilename(component sbom.GetComponent) *db.Record {
-	value := strings.TrimSpace(component.GetPropertyValue("bsi:component:filename"))
+	id := common.UniqueElementID(component)
 
+	// Check CDX-style BSI property
+	value := strings.TrimSpace(component.GetPropertyValue("bsi:component:filename"))
 	if value != "" {
-		return db.NewRecordStmt(COMP_FILENAME, common.UniqueElementID(component), value, 10.0, "")
+		return db.NewRecordStmt(COMP_FILENAME, id, value, 10.0, "")
 	}
 
-	return db.NewRecordStmt(COMP_FILENAME, common.UniqueElementID(component), "", 0.0, "")
+	// Check SPDX 3.0 distribution artifact
+	if filename := strings.TrimSpace(component.DistributionArtifact().GetFilename()); filename != "" {
+		return db.NewRecordStmt(COMP_FILENAME, id, filename, 10.0, "")
+	}
+
+	return db.NewRecordStmt(COMP_FILENAME, id, "", 0.0, "")
 }
 
 // bsiV21ComponentExecutable checks for the bsi:component:executable property (SHALL).
