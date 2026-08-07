@@ -1,0 +1,394 @@
+{
+  "@context" : "https://spdx.org/rdf/3.0.1/spdx-context.jsonld",
+  "@graph" : [ {
+    "@id" : "_:creationInfo_0",
+    "type" : "CreationInfo",
+    "specVersion" : "3.0.1",
+    "createdBy" : [ "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd0" ],
+    "createdUsing" : [ "http://spdx.org/documents/examplemaven-0.0.1-specv3/additionalToolSPDXRef-gnrtd1" ],
+    "created" : "2022-10-23T15:44:16Z"
+  }, {
+    "@id" : "_:creationInfo_1",
+    "type" : "CreationInfo",
+    "specVersion" : "3.0.1",
+    "createdBy" : [ "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd38" ],
+    "createdUsing" : [ "http://spdx.org/documents/examplemaven-0.0.1-specv3/additionalToolSPDXRef-gnrtd39" ],
+    "created" : "2022-10-23T15:44:16Z"
+  }, {
+    "spdxId" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd2",
+    "type" : "Relationship",
+    "relationshipType" : "describes",
+    "completeness" : "noAssertion",
+    "to" : [ "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd3" ],
+    "from" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/document0",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd4",
+    "type" : "Relationship",
+    "relationshipType" : "contains",
+    "completeness" : "noAssertion",
+    "to" : [ "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd5" ],
+    "from" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd3",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd6",
+    "type" : "Relationship",
+    "relationshipType" : "generates",
+    "completeness" : "noAssertion",
+    "to" : [ "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd3" ],
+    "from" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd5",
+    "comment" : "",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd7",
+    "type" : "Relationship",
+    "relationshipType" : "hasConcludedLicense",
+    "to" : [ "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd8" ],
+    "from" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd5",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd9",
+    "type" : "Relationship",
+    "relationshipType" : "hasDeclaredLicense",
+    "to" : [ "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd8" ],
+    "from" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd5",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd10",
+    "type" : "Relationship",
+    "relationshipType" : "contains",
+    "completeness" : "noAssertion",
+    "to" : [ "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd11" ],
+    "from" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd3",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd12",
+    "type" : "Relationship",
+    "relationshipType" : "hasTestCase",
+    "to" : [ "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd11" ],
+    "completeness" : "noAssertion",
+    "from" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd3",
+    "comment" : "",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd13",
+    "type" : "Relationship",
+    "relationshipType" : "hasConcludedLicense",
+    "to" : [ "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd8" ],
+    "from" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd11",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd14",
+    "type" : "Relationship",
+    "relationshipType" : "hasDeclaredLicense",
+    "to" : [ "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd8" ],
+    "from" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd11",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd15",
+    "type" : "Relationship",
+    "relationshipType" : "hasDynamicLink",
+    "to" : [ "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd3" ],
+    "completeness" : "noAssertion",
+    "from" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd16",
+    "comment" : "Relationship based on Maven POM file dependency information",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd17",
+    "type" : "Relationship",
+    "relationshipType" : "hasConcludedLicense",
+    "to" : [ "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd18" ],
+    "from" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd16",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd19",
+    "type" : "Relationship",
+    "relationshipType" : "hasDeclaredLicense",
+    "to" : [ "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd18" ],
+    "from" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd16",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd20",
+    "type" : "Relationship",
+    "relationshipType" : "hasDynamicLink",
+    "to" : [ "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd3" ],
+    "completeness" : "noAssertion",
+    "from" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd21",
+    "comment" : "Relationship based on Maven POM file dependency information",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd22",
+    "type" : "Relationship",
+    "relationshipType" : "hasConcludedLicense",
+    "to" : [ "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd18" ],
+    "from" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd21",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd23",
+    "type" : "Relationship",
+    "relationshipType" : "hasDeclaredLicense",
+    "to" : [ "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd18" ],
+    "from" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd21",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd24",
+    "type" : "Relationship",
+    "relationshipType" : "hasDynamicLink",
+    "to" : [ "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd3" ],
+    "completeness" : "noAssertion",
+    "from" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd25",
+    "comment" : "Relationship based on Maven POM file dependency information",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd26",
+    "type" : "Relationship",
+    "relationshipType" : "hasConcludedLicense",
+    "to" : [ "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd18" ],
+    "from" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd25",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd27",
+    "type" : "Relationship",
+    "relationshipType" : "hasDeclaredLicense",
+    "to" : [ "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd18" ],
+    "from" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd25",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd28",
+    "type" : "Relationship",
+    "relationshipType" : "hasDynamicLink",
+    "to" : [ "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd3" ],
+    "completeness" : "noAssertion",
+    "from" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd29",
+    "comment" : "Relationship based on Maven POM file dependency information",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd30",
+    "type" : "Relationship",
+    "relationshipType" : "hasConcludedLicense",
+    "to" : [ "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd18" ],
+    "from" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd29",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd31",
+    "type" : "Relationship",
+    "relationshipType" : "hasDeclaredLicense",
+    "to" : [ "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd18" ],
+    "from" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd29",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd32",
+    "type" : "Relationship",
+    "relationshipType" : "hasConcludedLicense",
+    "to" : [ "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd8" ],
+    "from" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd3",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd35",
+    "type" : "Relationship",
+    "relationshipType" : "hasDistributionArtifact",
+    "to" : [ "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd34" ],
+    "completeness" : "complete",
+    "from" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd3",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd37",
+    "type" : "Relationship",
+    "relationshipType" : "hasDeclaredLicense",
+    "to" : [ "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd8" ],
+    "from" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd3",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd43",
+    "type" : "Relationship",
+    "relationshipType" : "hasConcludedLicense",
+    "to" : [ "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd18" ],
+    "from" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd41",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd45",
+    "type" : "Relationship",
+    "relationshipType" : "hasDeclaredLicense",
+    "to" : [ "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd46" ],
+    "from" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd41",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/document0",
+    "type" : "SpdxDocument",
+    "dataLicense" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd40",
+    "rootElement" : [ "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd3" ],
+    "name" : "examplemaven",
+    "creationInfo" : "_:creationInfo_1"
+  }, {
+    "spdxId" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/additionalToolSPDXRef-gnrtd1",
+    "type" : "Tool",
+    "name" : "spdx-maven-plugin",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/additionalToolSPDXRef-gnrtd39",
+    "type" : "Tool",
+    "name" : "spdx-maven-plugin",
+    "creationInfo" : "_:creationInfo_1"
+  }, {
+    "spdxId" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd8",
+    "type" : "simplelicensing_LicenseExpression",
+    "simplelicensing_licenseExpression" : "Apache-2.0",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd18",
+    "type" : "simplelicensing_LicenseExpression",
+    "simplelicensing_licenseExpression" : "NOASSERTION",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd40",
+    "type" : "simplelicensing_LicenseExpression",
+    "simplelicensing_licenseExpression" : "CC0-1.0",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd46",
+    "type" : "simplelicensing_LicenseExpression",
+    "simplelicensing_licenseExpression" : "CPL-1.0",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd42",
+    "type" : "LifecycleScopedRelationship",
+    "relationshipType" : "dependsOn",
+    "scope" : "test",
+    "to" : [ "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd41" ],
+    "completeness" : "noAssertion",
+    "from" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd3",
+    "comment" : "Relationship created based on Maven POM information",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd33",
+    "type" : "Organization",
+    "name" : "Linux Foundation",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd36",
+    "type" : "Organization",
+    "name" : "SPDX",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd44",
+    "type" : "Organization",
+    "name" : "JUnit",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd0",
+    "type" : "Person",
+    "name" : "Gary O'Neall",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd38",
+    "type" : "Person",
+    "name" : "Gary O'Neall",
+    "creationInfo" : "_:creationInfo_1"
+  }, {
+    "spdxId" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd5",
+    "type" : "software_File",
+    "software_copyrightText" : "Copyright (c) 2020 Source Auditor Inc.",
+    "verifiedUsing" : [ {
+      "type" : "Hash",
+      "algorithm" : "sha1",
+      "hashValue" : "a6f47dbc7e4615058490055172fe0065c55f8fc5"
+    } ],
+    "software_attributionText" : [ "SPDX-License-Identifier: Apache-2.0\nCopyright (c) 2022 Source Auditor Inc." ],
+    "name" : "./src/main/java/org/spdx/examplemaven/App.java",
+    "software_primaryPurpose" : "source",
+    "comment" : "This file contains SPDX-License-Identifiers for Apache-2.0",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd11",
+    "type" : "software_File",
+    "software_copyrightText" : "Copyright (c) 2020 Source Auditor Inc.",
+    "verifiedUsing" : [ {
+      "type" : "Hash",
+      "algorithm" : "sha1",
+      "hashValue" : "4b4df52d36588c8e9482d56eebc42336447f3dad"
+    } ],
+    "software_attributionText" : [ "SPDX-License-Identifier: Apache-2.0\nCopyright (c) 2022 Source Auditor Inc." ],
+    "name" : "./src/test/java/org/spdx/examplemaven/AppTest.java",
+    "software_primaryPurpose" : "source",
+    "comment" : "This file contains SPDX-License-Identifiers for Apache-2.0",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd34",
+    "type" : "software_File",
+    "verifiedUsing" : [ {
+      "type" : "Hash",
+      "algorithm" : "sha1",
+      "hashValue" : "b8a7e6c75001e6d78625cfc9a3103bf121abf8b4"
+    } ],
+    "name" : "examplemaven-0.0.1.jar",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd3",
+    "type" : "software_Package",
+    "software_copyrightText" : "Copyright (c) 2022 Source Auditor Inc.",
+    "suppliedBy" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd36",
+    "verifiedUsing" : [ {
+      "type" : "PackageVerificationCode",
+      "algorithm" : "sha1",
+      "hashValue" : "c12417def36d7804096521de4280721e5863e68b"
+    } ],
+    "name" : "examplemaven",
+    "software_primaryPurpose" : "library",
+    "software_downloadLocation" : "NOASSERTION",
+    "summary" : "This is a simple example Maven project created using the Maven quickstart archetype with one dependency added.",
+    "software_packageVersion" : "0.0.1",
+    "software_homePage" : "https://github.com/spdx/spdx-examples",
+    "description" : "This is a simple example Maven project created using the Maven quickstart archetype with one dependency added.",
+    "originatedBy" : [ "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd33" ],
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd16",
+    "type" : "software_Package",
+    "software_copyrightText" : "UNSPECIFIED",
+    "software_downloadLocation" : "NOASSERTION",
+    "summary" : "The Apache Log4j API",
+    "description" : "The Apache Log4j API",
+    "name" : "Apache Log4j API",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd21",
+    "type" : "software_Package",
+    "software_copyrightText" : "UNSPECIFIED",
+    "software_downloadLocation" : "NOASSERTION",
+    "summary" : "The slf4j API",
+    "software_homePage" : "http://www.slf4j.org",
+    "description" : "The slf4j API",
+    "name" : "SLF4J API Module",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd25",
+    "type" : "software_Package",
+    "software_copyrightText" : "UNSPECIFIED",
+    "software_downloadLocation" : "NOASSERTION",
+    "summary" : "The Apache Log4j Implementation",
+    "description" : "The Apache Log4j Implementation",
+    "name" : "Apache Log4j Core",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd29",
+    "type" : "software_Package",
+    "software_copyrightText" : "UNSPECIFIED",
+    "software_downloadLocation" : "NOASSERTION",
+    "summary" : "The Apache Log4j SLF4J API binding to Log4j 2 Core",
+    "description" : "The Apache Log4j SLF4J API binding to Log4j 2 Core",
+    "name" : "Apache Log4j SLF4J Binding",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd41",
+    "type" : "software_Package",
+    "software_copyrightText" : "UNSPECIFIED",
+    "software_downloadLocation" : "NOASSERTION",
+    "summary" : "JUnit is a regression testing framework written by Erich Gamma and Kent Beck. It is used by the developer who implements unit tests in Java.",
+    "software_packageVersion" : "3.8.1",
+    "software_homePage" : "http://junit.org",
+    "description" : "JUnit is a regression testing framework written by Erich Gamma and Kent Beck. It is used by the developer who implements unit tests in Java.",
+    "name" : "JUnit",
+    "originatedBy" : [ "http://spdx.org/documents/examplemaven-0.0.1-specv3/SPDXRef-gnrtd44" ],
+    "creationInfo" : "_:creationInfo_0"
+  } ]
+}

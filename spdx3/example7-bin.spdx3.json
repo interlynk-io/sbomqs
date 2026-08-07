@@ -1,0 +1,166 @@
+{
+  "@context": "https://spdx.org/rdf/3.0.1/spdx-context.jsonld",
+  "@graph": [
+    {
+      "spdxId": "urn:uuid:6731cd26-926c-486b-8127-340c0f11a228",
+      "type": "Person",
+      "creationInfo": "_:creationInfo",
+      "comment": "Person or Tool that created this document",
+      "name": "Nisha K",
+      "externalIdentifier": [
+        {
+          "type": "ExternalIdentifier",
+          "externalIdentifierType": "email",
+          "identifier": "nishak@vmware.com"
+        }
+      ]
+    },
+    {
+      "@id": "_:creationInfo",
+      "type": "CreationInfo",
+      "specVersion": "3.0.1",
+      "created": "2020-11-24T01:12:27Z",
+      "createdBy": [
+        "urn:uuid:6731cd26-926c-486b-8127-340c0f11a228"
+      ],
+      "comment": "All objects within the graph will have this same CreationInfo"
+    },
+    {
+      "spdxId": "urn:uuid:3773937f-6db8-49f9-920f-7d1a6b0cfcbb",
+      "type": "software_File",
+      "name": "hello",
+      "creationInfo": "_:creationInfo",
+      "comment": "This binary was created by building go source code",
+      "originatedBy": [
+        "urn:uuid:6731cd26-926c-486b-8127-340c0f11a228"
+      ],
+      "software_primaryPurpose": "executable"
+    },
+    {
+      "type": "LifecycleScopedRelationship",
+      "scope": "build",
+      "spdxId": "urn:uuid:98dd3b3f-6b8f-49a1-88b6-628750516f1e",
+      "creationInfo": "_:creationInfo",
+      "relationshipType": "usesTool",
+      "from": "urn:uuid:e1877974-0aaa-48e6-931f-db4898c543f8",
+      "to": [
+        "urn:uuid:a9f18ff3-17fa-419d-8966-abe4b992312b"
+      ] 
+    },
+    {
+      "type": "LifecycleScopedRelationship",
+      "scope": "build",
+      "spdxId": "urn:uuid:a7b65a78-8ed2-4b20-a91b-40f94ecdb81c",
+      "creationInfo": "_:creationInfo",
+      "relationshipType": "generates",
+      "from": "urn:uuid:3b2939bf-fcce-4617-a06f-115168870b95",
+      "to": [
+        "urn:uuid:3773937f-6db8-49f9-920f-7d1a6b0cfcbb"
+      ] 
+    },
+    {
+      "type": "LifecycleScopedRelationship",
+      "scope": "build",
+      "spdxId": "urn:uuid:5524e7dd-5d2f-44fa-86b0-ccaa3cf6fa63",
+      "creationInfo": "_:creationInfo",
+      "relationshipType": "hasStaticLink",
+      "from": "urn:uuid:3773937f-6db8-49f9-920f-7d1a6b0cfcbb",
+      "to": [
+        "urn:uuid:4918b993-36f8-4e75-bf94-2f017575eae5",
+        "urn:uuid:84e4231d-fc1d-4b4e-9609-05781f81fa73"
+      ] 
+    },
+    {
+      "type": "software_Sbom",
+      "spdxId": "urn:uuid:4c7ec5f3-875b-4f99-8c4c-f0a718da8c4f",
+      "creationInfo": "_:creationInfo",
+      "comment": "The SBOM communicates that this document is an SBOM",
+      "rootElement": [
+        "urn:uuid:3773937f-6db8-49f9-920f-7d1a6b0cfcbb"
+      ],
+      "element": [
+        "urn:uuid:6731cd26-926c-486b-8127-340c0f11a228",
+        "urn:uuid:3773937f-6db8-49f9-920f-7d1a6b0cfcbb",
+        "urn:uuid:98dd3b3f-6b8f-49a1-88b6-628750516f1e",
+        "urn:uuid:a7b65a78-8ed2-4b20-a91b-40f94ecdb81c",
+        "urn:uuid:5524e7dd-5d2f-44fa-86b0-ccaa3cf6fa63"
+      ]
+    },
+    {
+      "spdxId": "urn:uuid:6a1ea0da-1801-495b-9d35-2735e79eee1b",
+      "type": "SpdxDocument",
+      "creationInfo": "_:creationInfo",
+      "comment": "This document's primary communication is the SBOM",
+      "name": "example7-bin.spdx",
+      "profileConformance": [
+        "core",
+        "software"
+      ],
+      "rootElement": [
+        "urn:uuid:4c7ec5f3-875b-4f99-8c4c-f0a718da8c4f"
+      ],
+      "import": [
+        {
+          "type": "ExternalMap",
+          "externalSpdxId": "urn:uuid:a9f18ff3-17fa-419d-8966-abe4b992312b",
+          "locationHint": "https://github.com/spdx/spdx-examples/software/example7/example7-golang.spdx3.json",
+          "verifiedUsing": [
+            {
+              "type": "Hash",
+              "algorithm": "sha256",
+              "hashValue": "15ed567c36a30fb37f7d19f0f471434b9453909bf62d925194efe713ede62086"
+            }
+          ]
+        },
+        {
+          "type": "ExternalMap",
+          "externalSpdxId": "urn:uuid:3b2939bf-fcce-4617-a06f-115168870b95",
+          "locationHint": "https://github.com/spdx/spdx-examples/software/example7/example7-golang.spdx3.json",
+          "verifiedUsing": [
+            {
+              "type": "Hash",
+              "algorithm": "sha256",
+              "hashValue": "15ed567c36a30fb37f7d19f0f471434b9453909bf62d925194efe713ede62086"
+            }
+          ]
+        },
+        {
+          "type": "ExternalMap",
+          "externalSpdxId": "urn:uuid:e1877974-0aaa-48e6-931f-db4898c543f8",
+          "locationHint": "https://github.com/spdx/spdx-examples/software/example7/example7-go-module.spdx3.json",
+          "verifiedUsing": [
+            {
+              "type": "Hash",
+              "algorithm": "sha256",
+              "hashValue": "7bb2343efdccb4a2a2947219c87747673854fc6b550b2f98518af342f8dded17"
+            }
+          ]
+        },
+        {
+           "type": "ExternalMap",
+           "externalSpdxId": "urn:uuid:4918b993-36f8-4e75-bf94-2f017575eae5",
+           "locationHint": "https://github.com/spdx/spdx-examples/software/example7/example7-third-party-modules.spdx3.json",
+           "verifiedUsing": [
+             {
+              "type": "Hash",
+              "algorithm": "sha256",
+              "hashValue": "0e3532e0773d24d1a3a0a58592effd67daf22ac89282dc18805e1eef23f68dfe"
+            }
+          ]
+        },
+        {
+          "type": "ExternalMap",
+          "externalSpdxId": "urn:uuid:84e4231d-fc1d-4b4e-9609-05781f81fa73",
+          "locationHint": "https://github.com/spdx/spdx-examples/software/example7/example7-third-party-modules.spdx3.json",
+          "verifiedUsing": [
+            {
+              "type": "Hash",
+              "algorithm": "sha256",
+              "hashValue": "0e3532e0773d24d1a3a0a58592effd67daf22ac89282dc18805e1eef23f68dfe"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

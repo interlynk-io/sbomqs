@@ -1,0 +1,270 @@
+{
+  "@context" : "https://spdx.org/rdf/3.0.1/spdx-context.jsonld",
+  "@graph" : [ {
+    "@id" : "_:creationInfo_0",
+    "type" : "CreationInfo",
+    "specVersion" : "3.0.1",
+    "createdBy" : [ "https://github.com/spdx/spdx-examples/example10/spdx-specv3/SPDXRef-gnrtd0" ],
+    "created" : "2022-10-28T17:24:21Z"
+  }, {
+    "@id" : "_:creationInfo_1",
+    "type" : "CreationInfo",
+    "specVersion" : "3.0.1",
+    "createdBy" : [ "https://github.com/spdx/spdx-examples/example10/spdx-specv3/SPDXRef-gnrtd28" ],
+    "created" : "2022-10-28T17:24:21Z"
+  }, {
+    "spdxId" : "https://github.com/spdx/spdx-examples/example10/spdx-specv3/SPDXRef-gnrtd1",
+    "type" : "Relationship",
+    "relationshipType" : "describes",
+    "completeness" : "noAssertion",
+    "to" : [ "https://github.com/spdx/spdx-examples/example10/spdx-specv3/SPDXRef-gnrtd2" ],
+    "from" : "https://github.com/spdx/spdx-examples/example10/spdx-specv3/document0",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://github.com/spdx/spdx-examples/example10/spdx-specv3/SPDXRef-gnrtd3",
+    "type" : "Relationship",
+    "relationshipType" : "contains",
+    "completeness" : "noAssertion",
+    "to" : [ "https://github.com/spdx/spdx-examples/example10/spdx-specv3/SPDXRef-gnrtd4" ],
+    "from" : "https://github.com/spdx/spdx-examples/example10/spdx-specv3/SPDXRef-gnrtd2",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://github.com/spdx/spdx-examples/example10/spdx-specv3/SPDXRef-gnrtd5",
+    "type" : "Relationship",
+    "relationshipType" : "hasConcludedLicense",
+    "to" : [ "https://github.com/spdx/spdx-examples/example10/spdx-specv3/SPDXRef-gnrtd6" ],
+    "from" : "https://github.com/spdx/spdx-examples/example10/spdx-specv3/SPDXRef-gnrtd4",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://github.com/spdx/spdx-examples/example10/spdx-specv3/SPDXRef-gnrtd7",
+    "type" : "Relationship",
+    "relationshipType" : "contains",
+    "completeness" : "noAssertion",
+    "to" : [ "https://github.com/spdx/spdx-examples/example10/spdx-specv3/SPDXRef-gnrtd8" ],
+    "from" : "https://github.com/spdx/spdx-examples/example10/spdx-specv3/SPDXRef-gnrtd2",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://github.com/spdx/spdx-examples/example10/spdx-specv3/SPDXRef-gnrtd9",
+    "type" : "Relationship",
+    "relationshipType" : "hasConcludedLicense",
+    "to" : [ "https://github.com/spdx/spdx-examples/example10/spdx-specv3/SPDXRef-gnrtd10" ],
+    "from" : "https://github.com/spdx/spdx-examples/example10/spdx-specv3/SPDXRef-gnrtd8",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://github.com/spdx/spdx-examples/example10/spdx-specv3/SPDXRef-gnrtd11",
+    "type" : "Relationship",
+    "relationshipType" : "contains",
+    "completeness" : "noAssertion",
+    "to" : [ "https://github.com/spdx/spdx-examples/example10/spdx-specv3/SPDXRef-gnrtd12" ],
+    "from" : "https://github.com/spdx/spdx-examples/example10/spdx-specv3/SPDXRef-gnrtd2",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://github.com/spdx/spdx-examples/example10/spdx-specv3/SPDXRef-gnrtd13",
+    "type" : "Relationship",
+    "relationshipType" : "hasConcludedLicense",
+    "to" : [ "https://github.com/spdx/spdx-examples/example10/spdx-specv3/SPDXRef-gnrtd14" ],
+    "from" : "https://github.com/spdx/spdx-examples/example10/spdx-specv3/SPDXRef-gnrtd12",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://github.com/spdx/spdx-examples/example10/spdx-specv3/SPDXRef-gnrtd15",
+    "type" : "Relationship",
+    "relationshipType" : "contains",
+    "completeness" : "noAssertion",
+    "to" : [ "https://github.com/spdx/spdx-examples/example10/spdx-specv3/SPDXRef-gnrtd16" ],
+    "from" : "https://github.com/spdx/spdx-examples/example10/spdx-specv3/SPDXRef-gnrtd2",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://github.com/spdx/spdx-examples/example10/spdx-specv3/SPDXRef-gnrtd17",
+    "type" : "Relationship",
+    "relationshipType" : "hasConcludedLicense",
+    "to" : [ "https://github.com/spdx/spdx-examples/example10/spdx-specv3/SPDXRef-gnrtd18" ],
+    "from" : "https://github.com/spdx/spdx-examples/example10/spdx-specv3/SPDXRef-gnrtd16",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://github.com/spdx/spdx-examples/example10/spdx-specv3/SPDXRef-gnrtd19",
+    "type" : "Relationship",
+    "relationshipType" : "contains",
+    "completeness" : "noAssertion",
+    "to" : [ "https://github.com/spdx/spdx-examples/example10/spdx-specv3/SPDXRef-gnrtd20" ],
+    "from" : "https://github.com/spdx/spdx-examples/example10/spdx-specv3/SPDXRef-gnrtd2",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://github.com/spdx/spdx-examples/example10/spdx-specv3/SPDXRef-gnrtd21",
+    "type" : "Relationship",
+    "relationshipType" : "hasConcludedLicense",
+    "to" : [ "https://github.com/spdx/spdx-examples/example10/spdx-specv3/SPDXRef-gnrtd22" ],
+    "from" : "https://github.com/spdx/spdx-examples/example10/spdx-specv3/SPDXRef-gnrtd20",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://github.com/spdx/spdx-examples/example10/spdx-specv3/SPDXRef-gnrtd23",
+    "type" : "Relationship",
+    "relationshipType" : "hasConcludedLicense",
+    "to" : [ "https://github.com/spdx/spdx-examples/example10/spdx-specv3/SPDXRef-gnrtd24" ],
+    "from" : "https://github.com/spdx/spdx-examples/example10/spdx-specv3/SPDXRef-gnrtd2",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://github.com/spdx/spdx-examples/example10/spdx-specv3/SPDXRef-gnrtd26",
+    "type" : "Relationship",
+    "relationshipType" : "hasDeclaredLicense",
+    "to" : [ "https://github.com/spdx/spdx-examples/example10/spdx-specv3/SPDXRef-gnrtd27" ],
+    "from" : "https://github.com/spdx/spdx-examples/example10/spdx-specv3/SPDXRef-gnrtd2",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://github.com/spdx/spdx-examples/example10/spdx-specv3/document0",
+    "type" : "SpdxDocument",
+    "dataLicense" : "https://github.com/spdx/spdx-examples/example10/spdx-specv3/SPDXRef-gnrtd29",
+    "rootElement" : [ "https://github.com/spdx/spdx-examples/example10/spdx-specv3/SPDXRef-gnrtd2" ],
+    "name" : "hello",
+    "creationInfo" : "_:creationInfo_1"
+  }, {
+    "spdxId" : "https://github.com/spdx/spdx-examples/example10/spdx-specv3/SPDXRef-gnrtd6",
+    "type" : "simplelicensing_LicenseExpression",
+    "simplelicensing_licenseExpression" : "NOASSERTION",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://github.com/spdx/spdx-examples/example10/spdx-specv3/SPDXRef-gnrtd10",
+    "type" : "simplelicensing_LicenseExpression",
+    "simplelicensing_licenseExpression" : "NOASSERTION",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://github.com/spdx/spdx-examples/example10/spdx-specv3/SPDXRef-gnrtd14",
+    "type" : "simplelicensing_LicenseExpression",
+    "simplelicensing_licenseExpression" : "NOASSERTION",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://github.com/spdx/spdx-examples/example10/spdx-specv3/SPDXRef-gnrtd18",
+    "type" : "simplelicensing_LicenseExpression",
+    "simplelicensing_licenseExpression" : "NOASSERTION",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://github.com/spdx/spdx-examples/example10/spdx-specv3/SPDXRef-gnrtd22",
+    "type" : "simplelicensing_LicenseExpression",
+    "simplelicensing_licenseExpression" : "NOASSERTION",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://github.com/spdx/spdx-examples/example10/spdx-specv3/SPDXRef-gnrtd24",
+    "type" : "simplelicensing_LicenseExpression",
+    "simplelicensing_licenseExpression" : "NOASSERTION",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://github.com/spdx/spdx-examples/example10/spdx-specv3/SPDXRef-gnrtd27",
+    "type" : "simplelicensing_LicenseExpression",
+    "simplelicensing_licenseExpression" : "MIT",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://github.com/spdx/spdx-examples/example10/spdx-specv3/SPDXRef-gnrtd29",
+    "type" : "simplelicensing_LicenseExpression",
+    "simplelicensing_licenseExpression" : "CC0-1.0",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://github.com/spdx/spdx-examples/example10/spdx-specv3/SPDXRef-gnrtd0",
+    "type" : "Person",
+    "name" : "Nisha Kumar",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://github.com/spdx/spdx-examples/example10/spdx-specv3/SPDXRef-gnrtd25",
+    "type" : "Person",
+    "name" : "Nisha Kumar",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://github.com/spdx/spdx-examples/example10/spdx-specv3/SPDXRef-gnrtd28",
+    "type" : "Person",
+    "name" : "Nisha Kumar",
+    "creationInfo" : "_:creationInfo_1"
+  }, {
+    "spdxId" : "https://github.com/spdx/spdx-examples/example10/spdx-specv3/SPDXRef-gnrtd4",
+    "type" : "software_File",
+    "software_copyrightText" : "",
+    "verifiedUsing" : [ {
+      "type" : "Hash",
+      "algorithm" : "sha1",
+      "hashValue" : "da39a3ee5e6b4b0d3255bfef95601890afd80709"
+    }, {
+      "type" : "Hash",
+      "algorithm" : "sha256",
+      "hashValue" : "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    } ],
+    "name" : "__init__.py",
+    "software_primaryPurpose" : "source",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://github.com/spdx/spdx-examples/example10/spdx-specv3/SPDXRef-gnrtd8",
+    "type" : "software_File",
+    "software_copyrightText" : "",
+    "verifiedUsing" : [ {
+      "type" : "Hash",
+      "algorithm" : "sha256",
+      "hashValue" : "c2ddb1bc9641d602a4cec707f9d3ea3d6bfd2687ed0e90e523802beb7f02ab4c"
+    }, {
+      "type" : "Hash",
+      "algorithm" : "sha1",
+      "hashValue" : "810b63b67229d14e4687df80502d160a3545c852"
+    } ],
+    "name" : "hello.py",
+    "software_primaryPurpose" : "source",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://github.com/spdx/spdx-examples/example10/spdx-specv3/SPDXRef-gnrtd12",
+    "type" : "software_File",
+    "software_copyrightText" : "",
+    "verifiedUsing" : [ {
+      "type" : "Hash",
+      "algorithm" : "sha1",
+      "hashValue" : "4fd366f723928905612bb8dcfb04aa5c7ad389fa"
+    }, {
+      "type" : "Hash",
+      "algorithm" : "sha256",
+      "hashValue" : "4d442a156f678a19c6728a2d9fcaebeff521e2665e1f58202856c627158dd511"
+    } ],
+    "name" : "README.md",
+    "software_primaryPurpose" : "documentation",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://github.com/spdx/spdx-examples/example10/spdx-specv3/SPDXRef-gnrtd16",
+    "type" : "software_File",
+    "software_copyrightText" : "",
+    "verifiedUsing" : [ {
+      "type" : "Hash",
+      "algorithm" : "sha1",
+      "hashValue" : "8ec142b2c6bc7826d18075923b7d2c0cb4db0253"
+    }, {
+      "type" : "Hash",
+      "algorithm" : "sha256",
+      "hashValue" : "acb9c4a44e4e8cb9f332002d2a407932eea7d22496a74ac43f5eb53f9610f4b9"
+    } ],
+    "name" : "LICENSE",
+    "contentType" : "text/plain",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://github.com/spdx/spdx-examples/example10/spdx-specv3/SPDXRef-gnrtd20",
+    "type" : "software_File",
+    "software_copyrightText" : "",
+    "verifiedUsing" : [ {
+      "type" : "Hash",
+      "algorithm" : "sha256",
+      "hashValue" : "58f8786e67c5adbbdc2a7b70d0227785d295ae01e9d491e1bfda755043815fb0"
+    }, {
+      "type" : "Hash",
+      "algorithm" : "sha1",
+      "hashValue" : "9a1ca5d00712aa9029172d50ab2bcf62784560b9"
+    } ],
+    "name" : "pyproject.toml",
+    "software_primaryPurpose" : "source",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://github.com/spdx/spdx-examples/example10/spdx-specv3/SPDXRef-gnrtd2",
+    "type" : "software_Package",
+    "software_copyrightText" : "Copyright (c) 2022 Authors of Hello",
+    "software_downloadLocation" : "NOASSERTION",
+    "verifiedUsing" : [ {
+      "type" : "PackageVerificationCode",
+      "algorithm" : "sha1",
+      "hashValue" : "2dce8a5d1c734df7a46b88e62a751b4b30063d78"
+    } ],
+    "software_homePage" : "https://github.com/spdx/spdx-examples",
+    "name" : "hello",
+    "originatedBy" : [ "https://github.com/spdx/spdx-examples/example10/spdx-specv3/SPDXRef-gnrtd25" ],
+    "software_primaryPurpose" : "library",
+    "creationInfo" : "_:creationInfo_0"
+  } ]
+}

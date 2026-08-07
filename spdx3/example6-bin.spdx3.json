@@ -1,0 +1,268 @@
+{
+  "@context" : "https://spdx.org/rdf/3.0.1/spdx-context.jsonld",
+  "@graph" : [ {
+    "@id" : "_:creationInfo_0",
+    "type" : "CreationInfo",
+    "specVersion" : "3.0.1",
+    "createdBy" : [ "https://swinslow.net/spdx-examples/example6/hello-go-bin-v2-specv3/SPDXRef-gnrtd0" ],
+    "createdUsing" : [ "https://swinslow.net/spdx-examples/example6/hello-go-bin-v2-specv3/additionalToolSPDXRef-gnrtd1", "https://swinslow.net/spdx-examples/example6/hello-go-bin-v2-specv3/additionalToolSPDXRef-gnrtd2" ],
+    "created" : "2021-08-26T01:56:00Z"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example6/hello-go-bin-v2-specv3/SPDXRef-gnrtd3",
+    "type" : "Relationship",
+    "relationshipType" : "describes",
+    "completeness" : "noAssertion",
+    "to" : [ "https://swinslow.net/spdx-examples/example6/hello-go-bin-v2-specv3/SPDXRef-gnrtd4" ],
+    "from" : "https://swinslow.net/spdx-examples/example6/hello-go-bin-v2-specv3/document0",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example6/hello-go-bin-v2-specv3/SPDXRef-gnrtd5",
+    "type" : "Relationship",
+    "relationshipType" : "contains",
+    "completeness" : "noAssertion",
+    "to" : [ "https://swinslow.net/spdx-examples/example6/hello-go-bin-v2-specv3/SPDXRef-gnrtd6" ],
+    "from" : "https://swinslow.net/spdx-examples/example6/hello-go-bin-v2-specv3/SPDXRef-gnrtd4",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example6/hello-go-bin-v2-specv3/SPDXRef-gnrtd7",
+    "type" : "Relationship",
+    "relationshipType" : "generates",
+    "to" : [ "https://swinslow.net/spdx-examples/example6/hello-go-bin-v2-specv3/SPDXRef-gnrtd6" ],
+    "completeness" : "noAssertion",
+    "from" : "https://swinslow.net/spdx-examples/example6/hello-go-src-v2#SPDXRef-hello-go-src",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example6/hello-go-bin-v2-specv3/SPDXRef-gnrtd8",
+    "type" : "Relationship",
+    "relationshipType" : "generates",
+    "to" : [ "https://swinslow.net/spdx-examples/example6/hello-go-bin-v2-specv3/SPDXRef-gnrtd6" ],
+    "completeness" : "noAssertion",
+    "from" : "https://swinslow.net/spdx-examples/example6/hello-go-src-v2#SPDXRef-Makefile",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example6/hello-go-bin-v2-specv3/SPDXRef-gnrtd9",
+    "type" : "Relationship",
+    "relationshipType" : "hasConcludedLicense",
+    "to" : [ "https://swinslow.net/spdx-examples/example6/hello-go-bin-v2-specv3/SPDXRef-gnrtd10" ],
+    "from" : "https://swinslow.net/spdx-examples/example6/hello-go-bin-v2-specv3/SPDXRef-gnrtd6",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example6/hello-go-bin-v2-specv3/SPDXRef-gnrtd11",
+    "type" : "Relationship",
+    "relationshipType" : "hasDeclaredLicense",
+    "to" : [ "https://swinslow.net/spdx-examples/example6/hello-go-bin-v2-specv3/SPDXRef-gnrtd12" ],
+    "from" : "https://swinslow.net/spdx-examples/example6/hello-go-bin-v2-specv3/SPDXRef-gnrtd6",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example6/hello-go-bin-v2-specv3/SPDXRef-gnrtd13",
+    "type" : "Relationship",
+    "relationshipType" : "hasConcludedLicense",
+    "to" : [ "https://swinslow.net/spdx-examples/example6/hello-go-bin-v2-specv3/SPDXRef-gnrtd14" ],
+    "from" : "https://swinslow.net/spdx-examples/example6/hello-go-bin-v2-specv3/SPDXRef-gnrtd4",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example6/hello-go-bin-v2-specv3/SPDXRef-gnrtd15",
+    "type" : "Relationship",
+    "relationshipType" : "hasDeclaredLicense",
+    "to" : [ "https://swinslow.net/spdx-examples/example6/hello-go-bin-v2-specv3/SPDXRef-gnrtd12" ],
+    "from" : "https://swinslow.net/spdx-examples/example6/hello-go-bin-v2-specv3/SPDXRef-gnrtd4",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example6/hello-go-bin-v2-specv3/SPDXRef-gnrtd151",
+    "type" : "LifecycleScopedRelationship",
+	"scope" : "build",
+    "relationshipType" : "usesTool",
+    "to" : [ "https://swinslow.net/spdx-examples/example6/go-lib-v2#SPDXRef-Package-go-compiler" ],
+    "from" : "https://swinslow.net/spdx-examples/example6/hello-go-bin-v2-specv3/SPDXRef-gnrtd4",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example6/hello-go-bin-v2-specv3/SPDXRef-gnrtd152",
+    "type" : "LifecycleScopedRelationship",
+    "relationshipType" : "dependsOn",
+	"scope" : "runtime",
+    "to" : [ "https://swinslow.net/spdx-examples/example6/go-lib-v2#SPDXRef-Package-go.fmt" ],
+    "from" : "https://swinslow.net/spdx-examples/example6/hello-go-bin-v2-specv3/SPDXRef-gnrtd4",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example6/hello-go-bin-v2-specv3/SPDXRef-gnrtd153",
+    "type" : "Relationship",
+    "relationshipType" : "hasStaticLink",
+    "to" : [ "https://swinslow.net/spdx-examples/example6/hello-go-bin-v2-specv3/SPDXRef-gnrtd4" ],
+    "from" : "https://swinslow.net/spdx-examples/example6/go-lib-v2#SPDXRef-Package-go.fmt",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example6/hello-go-bin-v2-specv3/SPDXRef-gnrtd154",
+    "type" : "Relationship",
+    "relationshipType" : "hasStaticLink",
+    "to" : [ "https://swinslow.net/spdx-examples/example6/hello-go-bin-v2-specv3/SPDXRef-gnrtd4" ],
+    "from" : "https://swinslow.net/spdx-examples/example6/go-lib-v2#SPDXRef-Package-go.reflect",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example6/hello-go-bin-v2-specv3/SPDXRef-gnrtd155",
+    "type" : "Relationship",
+    "relationshipType" : "hasStaticLink",
+    "to" : [ "https://swinslow.net/spdx-examples/example6/hello-go-bin-v2-specv3/SPDXRef-gnrtd4" ],
+    "from" : "https://swinslow.net/spdx-examples/example6/go-lib-v2#SPDXRef-Package-go.strconv",
+    "creationInfo" : "_:creationInfo_0"
+  },  {
+    "spdxId" : "https://swinslow.net/spdx-examples/example6/hello-go-bin-v2-specv3/document0",
+    "type" : "SpdxDocument",
+    "dataLicense" : "https://swinslow.net/spdx-examples/example6/hello-go-bin-v2-specv3/SPDXRef-gnrtd16",
+    "rootElement" : [ "https://swinslow.net/spdx-examples/example6/hello-go-bin-v2-specv3/SPDXRef-gnrtd4" ],
+	"import" : [ {
+      "type" : "ExternalMap",
+      "verifiedUsing" : [ {
+        "type" : "Hash",
+        "algorithm" : "sha1",
+        "hashValue" : "58e4a6d5745f032b9788142e49edee1b508c7ac5"
+      } ],
+      "externalSpdxId" : "https://swinslow.net/spdx-examples/example6/go-lib-v2#SPDXRef-Package-go-compiler",
+      "locationHint" : "https://swinslow.net/spdx-examples/example6/go-lib-v2"
+    }, {
+	"type" : "ExternalMap",
+      "verifiedUsing" : [ {
+        "type" : "Hash",
+        "algorithm" : "sha1",
+        "hashValue" : "58e4a6d5745f032b9788142e49edee1b508c7ac5"
+      } ],
+      "externalSpdxId" : "https://swinslow.net/spdx-examples/example6/go-lib-v2#SPDXRef-Package-go.fmt",
+      "locationHint" : "https://swinslow.net/spdx-examples/example6/go-lib-v2"
+    }, {
+	"type" : "ExternalMap",
+      "verifiedUsing" : [ {
+        "type" : "Hash",
+        "algorithm" : "sha1",
+        "hashValue" : "58e4a6d5745f032b9788142e49edee1b508c7ac5"
+      } ],
+      "externalSpdxId" : "https://swinslow.net/spdx-examples/example6/go-lib-v2#SPDXRef-Package-go.reflect",
+      "locationHint" : "https://swinslow.net/spdx-examples/example6/go-lib-v2"
+    }, {
+	"type" : "ExternalMap",
+      "verifiedUsing" : [ {
+        "type" : "Hash",
+        "algorithm" : "sha1",
+        "hashValue" : "58e4a6d5745f032b9788142e49edee1b508c7ac5"
+      } ],
+      "externalSpdxId" : "https://swinslow.net/spdx-examples/example6/go-lib-v2#SPDXRef-Package-go.strconv",
+      "locationHint" : "https://swinslow.net/spdx-examples/example6/go-lib-v2"
+    }, {
+	"type" : "ExternalMap",
+      "verifiedUsing" : [ {
+        "type" : "Hash",
+        "algorithm" : "sha1",
+        "hashValue" : "b3018ddb18802a56b60ad839c98d279687b60bd6"
+      } ],
+      "externalSpdxId" : "https://swinslow.net/spdx-examples/example6/hello-go-src-v2#SPDXRef-hello-go-src",
+      "locationHint" : "https://swinslow.net/spdx-examples/example6/hello-go-src-v2"
+    }, {
+      "type" : "ExternalMap",
+      "verifiedUsing" : [ {
+        "type" : "Hash",
+        "algorithm" : "sha1",
+        "hashValue" : "b3018ddb18802a56b60ad839c98d279687b60bd6"
+      } ],
+      "externalSpdxId" : "https://swinslow.net/spdx-examples/example6/hello-go-src-v2#SPDXRef-Makefile",
+      "locationHint" : "https://swinslow.net/spdx-examples/example6/hello-go-src-v2"
+    } ],
+    "name" : "hello-go-bin",
+    "namespaceMap" : [ {
+      "type" : "NamespaceMap",
+      "prefix" : "DocumentRef-go-lib",
+      "namespace" : "https://swinslow.net/spdx-examples/example6/go-lib-v2#"
+    }, {
+      "type" : "NamespaceMap",
+      "prefix" : "DocumentRef-hello-go-src",
+      "namespace" : "https://swinslow.net/spdx-examples/example6/hello-go-src-v2#"
+    } ],
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example6/hello-go-bin-v2-specv3/additionalToolSPDXRef-gnrtd1",
+    "type" : "Tool",
+    "name" : "github.com/spdx/tools-golang/builder",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example6/hello-go-bin-v2-specv3/additionalToolSPDXRef-gnrtd2",
+    "type" : "Tool",
+    "name" : "github.com/spdx/tools-golang/idsearcher",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example6/hello-go-bin-v2-specv3/SPDXRef-gnrtd10",
+    "type" : "simplelicensing_LicenseExpression",
+    "simplelicensing_licenseExpression" : "(GPL-3.0-or-later AND LicenseRef-Golang-BSD-plus-Patents)",
+    "simplelicensing_customIdToUri" : [ {
+      "type" : "DictionaryEntry",
+      "value" : "https://swinslow.net/spdx-examples/example6/hello-go-bin-v2-specv3/LicenseRef-Golang-BSD-plus-Patents",
+      "key" : "LicenseRef-Golang-BSD-plus-Patents"
+    } ],
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example6/hello-go-bin-v2-specv3/SPDXRef-gnrtd12",
+    "type" : "simplelicensing_LicenseExpression",
+    "simplelicensing_licenseExpression" : "NOASSERTION",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example6/hello-go-bin-v2-specv3/SPDXRef-gnrtd14",
+    "type" : "simplelicensing_LicenseExpression",
+    "simplelicensing_licenseExpression" : "(GPL-3.0-or-later AND LicenseRef-Golang-BSD-plus-Patents)",
+    "simplelicensing_customIdToUri" : [ {
+      "type" : "DictionaryEntry",
+      "value" : "https://swinslow.net/spdx-examples/example6/hello-go-bin-v2-specv3/LicenseRef-Golang-BSD-plus-Patents",
+      "key" : "LicenseRef-Golang-BSD-plus-Patents"
+    } ],
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example6/hello-go-bin-v2-specv3/SPDXRef-gnrtd16",
+    "type" : "simplelicensing_LicenseExpression",
+    "simplelicensing_licenseExpression" : "CC0-1.0",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example6/hello-go-bin-v2-specv3/SPDXRef-gnrtd0",
+    "type" : "Person",
+    "externalIdentifier" : [ {
+      "type" : "ExternalIdentifier",
+      "identifier" : "steve@swinslow.net",
+      "externalIdentifierType" : "email"
+    } ],
+    "name" : "Steve Winslow",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example6/hello-go-bin-v2-specv3/SPDXRef-gnrtd17",
+    "type" : "expandedlicensing_CustomLicense",
+    "expandedlicensing_seeAlso" : [ "https://github.com/golang/go/blob/master/LICENSE", "https://github.com/golang/go/blob/master/PATENTS" ],
+    "simplelicensing_licenseText" : "Copyright (c) 2009 The Go Authors. All rights reserved.\n\nRedistribution and use in source and binary forms, with or without\nmodification, are permitted provided that the following conditions are\nmet:\n\n   * Redistributions of source code must retain the above copyright\nnotice, this list of conditions and the following disclaimer.\n   * Redistributions in binary form must reproduce the above\ncopyright notice, this list of conditions and the following disclaimer\nin the documentation and/or other materials provided with the\ndistribution.\n   * Neither the name of Google Inc. nor the names of its\ncontributors may be used to endorse or promote products derived from\nthis software without specific prior written permission.\n\nTHIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS\n\"AS IS\" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT\nLIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR\nA PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT\nOWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,\nSPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT\nLIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,\nDATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY\nTHEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT\n(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE\nOF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.\n\nAdditional IP Rights Grant (Patents)\n\n\"This implementation\" means the copyrightable works distributed by\nGoogle as part of the Go project.\n\nGoogle hereby grants to You a perpetual, worldwide, non-exclusive,\nno-charge, royalty-free, irrevocable (except as stated in this section)\npatent license to make, have made, use, offer to sell, sell, import,\ntransfer and otherwise run, modify and propagate the contents of this\nimplementation of Go, where such license applies only to those patent\nclaims, both currently owned or controlled by Google and acquired in\nthe future, licensable by Google that are necessarily infringed by this\nimplementation of Go.  This grant does not include claims that would be\ninfringed only as a consequence of further modification of this\nimplementation.  If you or your agent or exclusive licensee institute or\norder or agree to the institution of patent litigation against any\nentity (including a cross-claim or counterclaim in a lawsuit) alleging\nthat this implementation of Go or any code incorporated within this\nimplementation of Go constitutes direct or contributory patent\ninfringement, or inducement of patent infringement, then any patent\nrights granted to you under this License for this implementation of Go\nshall terminate as of the date such litigation is filed.",
+    "name" : "Golang BSD-plus-PATENTS",
+    "comment" : "The Golang license text is split across two files, with the BSD-3-Clause content in LICENSE and the Additional IP Rights Grant in PATENTS.",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example6/hello-go-bin-v2-specv3/SPDXRef-gnrtd6",
+    "type" : "software_File",
+    "software_copyrightText" : "NOASSERTION",
+    "verifiedUsing" : [ {
+      "type" : "Hash",
+      "algorithm" : "md5",
+      "hashValue" : "9ec63d68bdceb2922548e3faa377e7d0"
+    }, {
+      "type" : "Hash",
+      "algorithm" : "sha1",
+      "hashValue" : "78ed46e8e6f86f19d3a6782979029be5f918235f"
+    }, {
+      "type" : "Hash",
+      "algorithm" : "sha256",
+      "hashValue" : "3d51cb6c9a38d437e8ee20a1902a15875ea1d3771a215622e14739532be14949"
+    } ],
+    "name" : "./hello",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example6/hello-go-bin-v2-specv3/SPDXRef-gnrtd4",
+    "type" : "software_Package",
+    "software_copyrightText" : "NOASSERTION",
+    "software_downloadLocation" : "git+https://github.com/swinslow/spdx-examples.git#example6/content/build",
+    "verifiedUsing" : [ {
+      "type" : "PackageVerificationCode",
+      "algorithm" : "sha1",
+      "hashValue" : "41acac4b846ee388cb6c1234f04489ccd5daa5a5"
+    } ],
+    "name" : "hello-go-bin",
+    "creationInfo" : "_:creationInfo_0"
+  } ]
+}

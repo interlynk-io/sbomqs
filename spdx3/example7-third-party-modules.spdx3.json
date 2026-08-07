@@ -1,0 +1,98 @@
+{ 
+  "@context": "https://spdx.org/rdf/3.0.1/spdx-context.jsonld",
+  "@graph": [
+    {
+      "spdxId": "urn:uuid:75f4bf57-0976-446d-869a-67856a1fa5bb",
+      "type": "Person",
+      "creationInfo": "_:creationInfo",
+      "comment": "Person or Tool that created this document. Assuming that this document was created by the same person/tool but at a different time",
+      "name": "Nisha K",
+      "externalIdentifier": [
+        {
+          "type": "ExternalIdentifier",
+          "externalIdentifierType": "email",
+          "identifier": "nishak@vmware.com"
+        }
+      ]
+    },
+    {
+      "spdxId": "urn:uuid:4b3add7d-8d36-488d-b7cc-f3891af633d1",
+      "type": "Organization",
+      "creationInfo": "_:creationInfo",
+      "comment": "It is unclear who originated the packages in the SBOM. However, there are domain names",
+      "name": "golang.org"
+    },
+    {
+      "spdxId": "urn:uuid:1c20ec6e-6e84-417a-8b7f-51bb69f62cb2",
+      "type": "Organization",
+      "creationInfo": "_:creationInfo",
+      "comment": "It is unclear who originated the packages in the SBOM. However, there are domain names",
+      "name": "rsc.io"
+    },
+    {
+      "@id": "_:creationInfo",
+      "type": "CreationInfo",
+      "specVersion": "3.0.1",
+      "created": "2020-11-25T01:12:27Z",
+      "createdBy": [
+        "urn:uuid:75f4bf57-0976-446d-869a-67856a1fa5bb"
+      ],
+      "comment": "All objects within the graph will have this same CreationInfo"
+    },
+    {
+      "spdxId": "urn:uuid:4918b993-36f8-4e75-bf94-2f017575eae5",
+      "type": "software_Package",
+      "name": "golang.org/x/text",
+      "creationInfo": "_:creationInfo",
+      "comment": "Go module dependency. The author is not given",
+      "software_primaryPurpose": "library",
+      "software_downloadLocation": "git://golang.org/x/text@v0.0.0-20170915032832-14c0d48ead0c",
+      "originatedBy": [
+        "urn:uuid:4b3add7d-8d36-488d-b7cc-f3891af633d1"
+      ]
+    },
+    {
+      "spdxId": "urn:uuid:84e4231d-fc1d-4b4e-9609-05781f81fa73",
+      "type": "software_Package",
+      "name": "rsc.io/quote",
+      "creationInfo": "_:creationInfo",
+      "comment": "Go module dependency. The author is not given",
+      "software_primaryPurpose": "library",
+      "software_downloadLocation": "git://rsc.io/sampler@v1.3.0",
+      "originatedBy": [
+        "urn:uuid:1c20ec6e-6e84-417a-8b7f-51bb69f62cb2"
+      ]
+    },
+    {
+      "type": "software_Sbom",
+      "spdxId": "urn:uuid:30bebcfc-096f-4cbd-9fea-da1b8c5f8ea6",
+      "creationInfo": "_:creationInfo",
+      "comment": "The SBOM communicates that this document is an SBOM. The SBOM has more than one root element",
+      "rootElement": [
+        "urn:uuid:4918b993-36f8-4e75-bf94-2f017575eae5",
+        "urn:uuid:84e4231d-fc1d-4b4e-9609-05781f81fa73"
+      ],
+      "element": [
+        "urn:uuid:75f4bf57-0976-446d-869a-67856a1fa5bb",
+        "urn:uuid:4b3add7d-8d36-488d-b7cc-f3891af633d1",
+        "urn:uuid:1c20ec6e-6e84-417a-8b7f-51bb69f62cb2",
+        "urn:uuid:4918b993-36f8-4e75-bf94-2f017575eae5",
+        "urn:uuid:84e4231d-fc1d-4b4e-9609-05781f81fa73"      
+      ]
+    },
+    {
+      "spdxId": "urn:uuid:28789527-d15c-4c77-93b3-d6f25df6c1ef",
+      "type": "SpdxDocument",
+      "creationInfo": "_:creationInfo",
+      "comment": "This document's primary communication is the SBOM",
+      "name": "example7-third-party-modules.spdx",
+      "profileConformance": [
+	"core",
+        "software"
+      ],
+      "rootElement": [
+        "urn:uuid:30bebcfc-096f-4cbd-9fea-da1b8c5f8ea6"
+      ]
+    }
+  ]
+}

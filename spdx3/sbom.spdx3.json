@@ -1,0 +1,252 @@
+{
+  "@context" : "https://spdx.org/rdf/3.0.1/spdx-context.jsonld",
+  "@graph" : [ {
+    "@id" : "_:creationInfo_0",
+    "type" : "CreationInfo",
+    "specVersion" : "3.0.1",
+    "createdBy" : [ "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/SPDXRef-gnrtd1" ],
+    "createdUsing" : [ "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/additionalToolSPDXRef-gnrtd0" ],
+    "created" : "2022-11-03T07:10:10Z"
+  }, {
+    "@id" : "_:creationInfo_1",
+    "type" : "CreationInfo",
+    "specVersion" : "3.0.1",
+    "createdBy" : [ "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/SPDXRef-gnrtd29" ],
+    "createdUsing" : [ "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/additionalToolSPDXRef-gnrtd28" ],
+    "created" : "2022-11-03T07:10:10Z"
+  }, {
+    "spdxId" : "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/SPDXRef-gnrtd2",
+    "type" : "Relationship",
+    "relationshipType" : "describes",
+    "completeness" : "noAssertion",
+    "to" : [ "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/SPDXRef-gnrtd3" ],
+    "from" : "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/document0",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/SPDXRef-gnrtd4",
+    "type" : "Relationship",
+    "relationshipType" : "generates",
+    "to" : [ "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/SPDXRef-gnrtd3" ],
+    "completeness" : "noAssertion",
+    "from" : "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/SPDXRef-gnrtd5",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/SPDXRef-gnrtd8",
+    "type" : "Relationship",
+    "relationshipType" : "hasConcludedLicense",
+    "to" : [ "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/SPDXRef-gnrtd9" ],
+    "from" : "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/SPDXRef-gnrtd7",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/SPDXRef-gnrtd10",
+    "type" : "Relationship",
+    "relationshipType" : "hasDeclaredLicense",
+    "to" : [ "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/SPDXRef-gnrtd11" ],
+    "from" : "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/SPDXRef-gnrtd7",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/SPDXRef-gnrtd14",
+    "type" : "Relationship",
+    "relationshipType" : "hasConcludedLicense",
+    "to" : [ "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/SPDXRef-gnrtd9" ],
+    "from" : "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/SPDXRef-gnrtd13",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/SPDXRef-gnrtd15",
+    "type" : "Relationship",
+    "relationshipType" : "hasDeclaredLicense",
+    "to" : [ "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/SPDXRef-gnrtd11" ],
+    "from" : "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/SPDXRef-gnrtd13",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/SPDXRef-gnrtd18",
+    "type" : "Relationship",
+    "relationshipType" : "hasConcludedLicense",
+    "to" : [ "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/SPDXRef-gnrtd19" ],
+    "from" : "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/SPDXRef-gnrtd17",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/SPDXRef-gnrtd20",
+    "type" : "Relationship",
+    "relationshipType" : "hasDeclaredLicense",
+    "to" : [ "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/SPDXRef-gnrtd11" ],
+    "from" : "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/SPDXRef-gnrtd17",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/SPDXRef-gnrtd21",
+    "type" : "Relationship",
+    "relationshipType" : "hasConcludedLicense",
+    "to" : [ "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/SPDXRef-gnrtd22" ],
+    "from" : "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/SPDXRef-gnrtd5",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/SPDXRef-gnrtd23",
+    "type" : "Relationship",
+    "relationshipType" : "hasDeclaredLicense",
+    "to" : [ "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/SPDXRef-gnrtd22" ],
+    "from" : "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/SPDXRef-gnrtd5",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/SPDXRef-gnrtd24",
+    "type" : "Relationship",
+    "relationshipType" : "hasConcludedLicense",
+    "to" : [ "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/SPDXRef-gnrtd22" ],
+    "from" : "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/SPDXRef-gnrtd3",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/SPDXRef-gnrtd25",
+    "type" : "Relationship",
+    "relationshipType" : "hasDeclaredLicense",
+    "to" : [ "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/SPDXRef-gnrtd26" ],
+    "from" : "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/SPDXRef-gnrtd3",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/SPDXRef-gnrtd27",
+    "type" : "Relationship",
+    "relationshipType" : "describes",
+    "completeness" : "noAssertion",
+    "to" : [ "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/SPDXRef-gnrtd5" ],
+    "from" : "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/document0",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/document0",
+    "type" : "SpdxDocument",
+    "dataLicense" : "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/SPDXRef-gnrtd30",
+    "rootElement" : [ "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/SPDXRef-gnrtd3", "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/SPDXRef-gnrtd5" ],
+    "name" : "SBOM-SPDX-2d85f548-12fa-46d5-87ce-5e78e5e111f4",
+    "creationInfo" : "_:creationInfo_1"
+  }, {
+    "spdxId" : "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/additionalToolSPDXRef-gnrtd0",
+    "type" : "Tool",
+    "name" : "sigs.k8s.io/bom/pkg/spdx",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/additionalToolSPDXRef-gnrtd28",
+    "type" : "Tool",
+    "name" : "sigs.k8s.io/bom/pkg/spdx",
+    "creationInfo" : "_:creationInfo_1"
+  }, {
+    "spdxId" : "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/SPDXRef-gnrtd9",
+    "type" : "simplelicensing_LicenseExpression",
+    "simplelicensing_licenseExpression" : "MIT",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/SPDXRef-gnrtd11",
+    "type" : "simplelicensing_LicenseExpression",
+    "simplelicensing_licenseExpression" : "NOASSERTION",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/SPDXRef-gnrtd19",
+    "type" : "simplelicensing_LicenseExpression",
+    "simplelicensing_licenseExpression" : "(MIT OR Apache-2.0)",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/SPDXRef-gnrtd22",
+    "type" : "simplelicensing_LicenseExpression",
+    "simplelicensing_licenseExpression" : "Apache-2.0",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/SPDXRef-gnrtd26",
+    "type" : "simplelicensing_LicenseExpression",
+    "simplelicensing_licenseExpression" : "NONE",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/SPDXRef-gnrtd30",
+    "type" : "simplelicensing_LicenseExpression",
+    "simplelicensing_licenseExpression" : "CC0-1.0",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/SPDXRef-gnrtd6",
+    "type" : "LifecycleScopedRelationship",
+    "relationshipType" : "dependsOn",
+    "scope" : "build",
+    "completeness" : "noAssertion",
+    "to" : [ "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/SPDXRef-gnrtd7" ],
+    "from" : "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/SPDXRef-gnrtd5",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/SPDXRef-gnrtd12",
+    "type" : "LifecycleScopedRelationship",
+    "relationshipType" : "dependsOn",
+    "scope" : "build",
+    "completeness" : "noAssertion",
+    "to" : [ "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/SPDXRef-gnrtd13" ],
+    "from" : "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/SPDXRef-gnrtd5",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/SPDXRef-gnrtd16",
+    "type" : "LifecycleScopedRelationship",
+    "relationshipType" : "dependsOn",
+    "scope" : "build",
+    "completeness" : "noAssertion",
+    "to" : [ "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/SPDXRef-gnrtd17" ],
+    "from" : "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/SPDXRef-gnrtd5",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/SPDXRef-gnrtd1",
+    "type" : "Organization",
+    "name" : "Unknown",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/SPDXRef-gnrtd29",
+    "type" : "Organization",
+    "name" : "Unknown",
+    "creationInfo" : "_:creationInfo_1"
+  }, {
+    "spdxId" : "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/SPDXRef-gnrtd3",
+    "type" : "software_File",
+    "software_copyrightText" : "NOASSERTION",
+    "verifiedUsing" : [ {
+      "type" : "Hash",
+      "algorithm" : "sha512",
+      "hashValue" : "c61eeb0b489bb219b898c6d3044fc431dec58ad999dae2cf0a8067dd1b3e4eef2b186d0f8af63b4d80732aa5146f7b13b1feb7a454227cf26d4525874231a281"
+    }, {
+      "type" : "Hash",
+      "algorithm" : "sha256",
+      "hashValue" : "bd2195f2551328fa3ad870726f5591fd82fdc5dd33a359be79d356dbecd5868b"
+    }, {
+      "type" : "Hash",
+      "algorithm" : "sha1",
+      "hashValue" : "79b7bfed022c9c7c9957d8aec36cb6492a25b42a"
+    } ],
+    "name" : "hello-server",
+    "contentType" : "application/octet-stream",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/SPDXRef-gnrtd5",
+    "type" : "software_Package",
+    "software_copyrightText" : "NOASSERTION",
+    "software_downloadLocation" : "NONE",
+    "software_packageVersion" : "0.1.0",
+    "name" : "hello-server-src",
+    "software_packageUrl" : "pkg:deb/debian/libselinux1-dev@3.1-3?arch=s390x",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/SPDXRef-gnrtd7",
+    "type" : "software_Package",
+    "software_copyrightText" : "NOASSERTION",
+    "software_downloadLocation" : "https://github.com/rust-lang/crates.io-index",
+    "software_packageVersion" : "0.14",
+    "name" : "hyper",
+    "software_packageUrl" : "pkg:cargo/hyper@0.14",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/SPDXRef-gnrtd13",
+    "type" : "software_Package",
+    "software_copyrightText" : "NOASSERTION",
+    "software_downloadLocation" : "https://github.com/rust-lang/crates.io-index",
+    "software_packageVersion" : "1.19.2",
+    "name" : "tokio",
+    "software_packageUrl" : "pkg:cargo/tokio@1.19.2",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://spdx.org/spdxdocs/k8s-releng-bom-7c6a33ab-bd76-4b06-b291-a850e0815b07-specv3/SPDXRef-gnrtd17",
+    "type" : "software_Package",
+    "software_copyrightText" : "NOASSERTION",
+    "software_downloadLocation" : "NONE",
+    "software_packageVersion" : "0.4.0",
+    "name" : "pretty_env_logger",
+    "software_packageUrl" : "pkg:cargo/pretty_env_logger@0.4.0",
+    "creationInfo" : "_:creationInfo_0"
+  } ]
+}
