@@ -129,9 +129,11 @@ func normalizeAlgoName(algo string) string {
 }
 
 // evaluateCompWithValidLicenses evaluates if the component has valid SPDX syntax licenses.
+// Checks all licenses regardless of concluded/declared categorization.
 // Accepts: standard SPDX IDs, LicenseRef-* custom licenses, AND/OR expressions.
 func evaluateCompWithValidLicenses(comp sbom.GetComponent) (bool, string, error) {
-	lics := comp.ConcludedLicenses()
+	// Check all licenses (concluded, declared, or generic)
+	lics := comp.GetLicenses()
 	if len(lics) == 0 {
 		return false, "missing", nil
 	}
@@ -164,17 +166,19 @@ func evaluateCompWithValidLicenses(comp sbom.GetComponent) (bool, string, error)
 }
 
 // evaluateCompWithSPDXListedLicense evaluates if the component has SPDX standard listed licenses.
+// Checks all licenses regardless of concluded/declared categorization.
 // Only accepts officially listed SPDX licenses. LicenseRef-* custom licenses are not valid.
 func evaluateCompWithSPDXListedLicense(comp sbom.GetComponent) (bool, string, error) {
-	licenses := comp.ConcludedLicenses()
-	if len(licenses) == 0 {
+	// Check all licenses (concluded, declared, or generic)
+	lics := comp.GetLicenses()
+	if len(lics) == 0 {
 		return false, "missing", nil
 	}
 
-	listedLicenses := make([]string, 0, len(licenses))
+	listedLicenses := make([]string, 0)
 	notListed := make([]string, 0)
 
-	for _, l := range licenses {
+	for _, l := range lics {
 		if l == nil {
 			continue
 		}
