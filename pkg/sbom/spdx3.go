@@ -32,6 +32,8 @@ import (
 	"github.com/interlynk-io/spdx-zen/parse"
 )
 
+const spdx3DefaultVersion = "3.0"
+
 type Spdx3Doc struct {
 	doc              *parse.Document
 	format           FileFormat
@@ -238,7 +240,7 @@ func (s *Spdx3Doc) parseSpec() {
 	sp.SpecType = string(SBOMSpecSPDX)
 
 	// Default version
-	sp.Version = "3.0"
+	sp.Version = spdx3DefaultVersion
 
 	// Get name and spdxID from the document
 	sp.Name = s.doc.GetName()
