@@ -171,7 +171,15 @@ func constructSections(dtb *db.DB) []bsiSection {
 			if section.Required {
 				newSection.Score = score.totalScore()
 			} else {
-				newSection.Score = score.totalOptionalScore()
+				// Non-required sections may be Additional or Optional.
+				// totalOptionalScore() only looks at optional records,
+				// so combine both buckets to get the correct per-section score.
+				totalRecords := score.additionalRecords + score.optionalRecords
+				if totalRecords == 0 {
+					newSection.Score = 0.0
+				} else {
+					newSection.Score = (score.additionalScore + score.optionalScore) / float64(totalRecords)
+				}
 			}
 			if r.ID == "doc" {
 				newSection.ElementID = "SBOM"

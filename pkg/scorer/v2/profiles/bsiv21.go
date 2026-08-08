@@ -75,8 +75,10 @@ func BSIV21SpecVersion(doc sbom.Document) catalog.ProfFeatScore {
 // Distribution Artifact Filename Mapping:
 // SPDX 2.x: packages[].packageFileName
 // SPDX 3.0: software_File.name linked via hasDistributionArtifact relationship
-//             from software_Package (no embedded filename field).
-// CDX:       components[].properties[] with name="bsi:component:filename"
+//
+//	from software_Package (no embedded filename field).
+//
+// CDX: components[].properties[] with name="bsi:component:filename"
 func BSIV21CompFilename(doc sbom.Document) catalog.ProfFeatScore {
 	return componentStringCheck(doc, "filename", func(c sbom.GetComponent) string {
 		return c.GetFilename()
@@ -445,53 +447,6 @@ func extRefOrFieldURLCheck(doc sbom.Document, fieldLabel string, fieldGetter str
 
 		return false
 	})
-
-	return componentScore(valid, total, fieldLabel)
-}
-
-// extRefHashCheck checks that components have an externalReference of one of the given types with at least one hash.
-// extRefHashCheck counts components that have a non-empty hash on an external reference
-// of one of the given types. If requiredAlgo is non-empty (e.g. "SHA512"), only hashes
-// with that normalised algorithm name are counted.
-// ignoreWhenAbsent=true sets Ignore=true when no component provides the field (optional fields).
-func extRefHashCheck(doc sbom.Document, fieldLabel string, requiredAlgo string, ignoreWhenAbsent bool, refTypes ...string) catalog.ProfFeatScore {
-	comps := doc.Components()
-	total := len(comps)
-
-	if total == 0 {
-		return catalog.ProfFeatScore{Score: 0.0, Desc: "no components found", Ignore: ignoreWhenAbsent}
-	}
-
-	valid := lo.CountBy(comps, func(c sbom.GetComponent) bool {
-		for _, er := range c.ExternalReferences() {
-			for _, refType := range refTypes {
-				if er.GetRefType() == refType {
-					for _, h := range er.GetRefHashes() {
-						content := strings.TrimSpace(h.GetContent())
-						if content == "" {
-							continue
-						}
-						if requiredAlgo != "" {
-							algo := common.NormalizeAlgoName(h.GetAlgo())
-							if algo != requiredAlgo {
-								continue
-							}
-						}
-						return true
-					}
-				}
-			}
-		}
-		return false
-	})
-
-	if valid == 0 {
-		return catalog.ProfFeatScore{
-			Score:  0.0,
-			Desc:   fmt.Sprintf("no components declare %s", fieldLabel),
-			Ignore: ignoreWhenAbsent,
-		}
-	}
 
 	return componentScore(valid, total, fieldLabel)
 }
