@@ -1,0 +1,104 @@
+{
+  "@context": [
+    "https://spdx.org/rdf/3.0.1/spdx-context.jsonld"
+  ],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "SPDX 3.0 with security.txt",
+      "creationInfo": "_:creationinfo",
+      "element": [
+        "SPDXRef-Package-App",
+        "SPDXRef-Package-Lib"
+      ],
+      "dataLicense": "CC0-1.0",
+      "profileConformance": [
+        "core",
+        "software"
+      ]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": [
+        "_:org1"
+      ],
+      "createdUsing": [
+        "_:tool1"
+      ]
+    },
+    {
+      "type": "Organization",
+      "@id": "_:org1",
+      "name": "Example Organization Inc",
+      "externalIdentifiers": [
+        {
+          "externalIdentifierType": "email",
+          "identifier": "sbom@example.com"
+        }
+      ]
+    },
+    {
+      "type": "Tool",
+      "@id": "_:tool1",
+      "name": "sbomqs-generator-1.0.0"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package-App",
+      "name": "my-application",
+      "software_packageVersion": "1.0.0",
+      "software_primaryPurpose": "application",
+      "software_downloadLocation": "https://github.com/example/my-app/releases/download/v1.0.0/my-app.tar.gz",
+      "externalRef": [
+        {
+          "type": "ExternalRef",
+          "externalRefType": "securityOther",
+          "locator": [
+            "https://example.com/.well-known/security.txt"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package-Lib",
+      "name": "my-library",
+      "software_packageVersion": "2.3.4",
+      "software_primaryPurpose": "library",
+      "software_downloadLocation": "https://npmjs.org/my-library/-/my-library-2.3.4.tgz",
+      "externalRef": [
+        {
+          "type": "ExternalRef",
+          "externalRefType": "securityOther",
+          "locator": [
+            "https://libraryvendor.com/.well-known/security.txt"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "Relationship",
+      "spdxId": "SPDXRef-Rel-1",
+      "relationshipType": "describes",
+      "from": "SPDXRef-DOCUMENT",
+      "to": [
+        "SPDXRef-Package-App"
+      ],
+      "completeness": "complete"
+    },
+    {
+      "type": "Relationship",
+      "spdxId": "SPDXRef-Rel-2",
+      "relationshipType": "dependsOn",
+      "from": "SPDXRef-Package-App",
+      "to": [
+        "SPDXRef-Package-Lib"
+      ],
+      "completeness": "complete"
+    }
+  ]
+}

@@ -48,6 +48,8 @@ type GetComponent interface {
 	DeclaredLicenses() []licenses.License
 	// ConcludedLicenses returns the concluded licenses for the component
 	ConcludedLicenses() []licenses.License
+	// EffectiveLicenses returns the effective licenses for the component
+	EffectiveLicenses() []licenses.License
 	// GetChecksums returns the cryptographic checksums for the component
 	GetChecksums() []GetChecksum
 	// PrimaryPurpose returns the primary purpose classification of the component
@@ -94,6 +96,8 @@ type GetComponent interface {
 	GetProperties() []ComponentProperty
 	// GetFilename returns the filename of the component (PackageFileName in SPDX, bsi:component:filename in CDX)
 	GetFilename() string
+	// DistributionArtifact returns the component's distribution artifact (deployable file)
+	DistributionArtifact() GetDistributionArtifact
 	// GetComposition returns the composition information for the specified component ID
 	// GetCompositions() []GetComposition
 }
@@ -116,6 +120,7 @@ type Component struct {
 	Licenses                []licenses.License
 	DeclaredLicense         []licenses.License
 	ConcludedLicense        []licenses.License
+	EffectiveLicense        []licenses.License
 	Checksums               []GetChecksum
 	Purpose                 string
 	isReqFieldsPresent      bool
@@ -139,12 +144,15 @@ type Component struct {
 	ExternalRefs            []GetExternalReference
 	Props                   []ComponentProperty
 	PackageFilename         string
+	DistArtifact            DistributionArtifact
 	// composition             map[string]string
 }
 
 // NewComponent creates a new instance of Component with default values
 func NewComponent() *Component {
-	return &Component{}
+	return &Component{
+		DistArtifact: DistributionArtifact{Absent: true},
+	}
 }
 
 // GetName returns the name of the component
@@ -195,6 +203,11 @@ func (c Component) DeclaredLicenses() []licenses.License {
 // ConcludedLicenses returns the concluded licenses for the component
 func (c Component) ConcludedLicenses() []licenses.License {
 	return c.ConcludedLicense
+}
+
+// EffectiveLicenses returns the effective licenses for the component
+func (c Component) EffectiveLicenses() []licenses.License {
+	return c.EffectiveLicense
 }
 
 // GetChecksums returns the cryptographic checksums for the component
@@ -302,7 +315,9 @@ func (c Component) ExternalReferences() []GetExternalReference {
 	return c.ExternalRefs
 }
 
-// GetPropertyValue returns the value of a component property by name, or empty string if not found
+// GetPropertyValue returns the value of a component property by name, or empty string if not found.
+// Used by format-specific adapters for generic property storage (e.g., CDX properties).
+// Prefer semantic methods (GetFilename, IsExecutable, IsArchive, IsStructured) for common fields.
 func (c Component) GetPropertyValue(name string) string {
 	for _, p := range c.Props {
 		if p.Name == name {
@@ -318,9 +333,17 @@ func (c Component) GetProperties() []ComponentProperty {
 }
 
 // GetFilename returns the filename of the component.
-// For SPDX this is PackageFileName (section 7.13); for CDX it is the bsi:component:filename property.
+// Prefers DistributionArtifact filename; falls back to PackageFilename.
 func (c Component) GetFilename() string {
+	if !c.DistArtifact.IsAbsent() && c.DistArtifact.Filename != "" {
+		return c.DistArtifact.Filename
+	}
 	return c.PackageFilename
+}
+
+// DistributionArtifact returns the component's distribution artifact.
+func (c Component) DistributionArtifact() GetDistributionArtifact {
+	return c.DistArtifact
 }
 
 // // GetComposition returns the composition information for the specified component ID

@@ -1,0 +1,6 @@
+policy:
+  - name: "Test: Component download location required"
+    type: required
+    rules:
+      - field: downloadlocation
+    action: fail

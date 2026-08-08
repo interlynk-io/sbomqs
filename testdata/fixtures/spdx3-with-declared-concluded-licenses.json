@@ -1,0 +1,140 @@
+{
+  "@context": [
+    "https://spdx.org/rdf/3.0.1/spdx-context.jsonld"
+  ],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "SPDX 3.0 SBOM with Declared and Concluded Licenses",
+      "creationInfo": "_:creationinfo",
+      "element": [
+        "SPDXRef-Package-App",
+        "SPDXRef-Package-Lib"
+      ],
+      "dataLicense": "CC0-1.0",
+      "profileConformance": [
+        "core",
+        "software",
+        "licensing"
+      ],
+      "namespaceMap": [
+        {
+          "prefix": "",
+          "namespace": "https://example.com/sbom/license-test"
+        }
+      ]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": [
+        "_:org1"
+      ],
+      "createdUsing": [
+        "_:tool1"
+      ]
+    },
+    {
+      "type": "Organization",
+      "@id": "_:org1",
+      "name": "Test Organization"
+    },
+    {
+      "type": "Tool",
+      "@id": "_:tool1",
+      "name": "test-tool-1.0.0"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package-App",
+      "name": "my-application",
+      "software_packageVersion": "1.0.0",
+      "software_primaryPurpose": "application",
+      "originatedBy": [
+        "_:supplier1"
+      ]
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package-Lib",
+      "name": "my-library",
+      "software_packageVersion": "2.0.0",
+      "software_primaryPurpose": "library",
+      "originatedBy": [
+        "_:supplier1"
+      ]
+    },
+    {
+      "type": "Organization",
+      "@id": "_:supplier1",
+      "name": "Test Supplier Inc"
+    },
+    {
+      "type": "Relationship",
+      "spdxId": "SPDXRef-Relationship-DeclaredLicense-App",
+      "relationshipType": "hasDeclaredLicense",
+      "from": "SPDXRef-Package-App",
+      "to": [
+        "SPDXRef-License-MIT-Declared"
+      ],
+      "completeness": "complete"
+    },
+    {
+      "type": "Relationship",
+      "spdxId": "SPDXRef-Relationship-ConcludedLicense-App",
+      "relationshipType": "hasConcludedLicense",
+      "from": "SPDXRef-Package-App",
+      "to": [
+        "SPDXRef-License-MIT-Concluded"
+      ],
+      "completeness": "complete"
+    },
+    {
+      "type": "Relationship",
+      "spdxId": "SPDXRef-Relationship-DeclaredLicense-Lib",
+      "relationshipType": "hasDeclaredLicense",
+      "from": "SPDXRef-Package-Lib",
+      "to": [
+        "SPDXRef-License-Apache-Declared"
+      ],
+      "completeness": "complete"
+    },
+    {
+      "type": "Relationship",
+      "spdxId": "SPDXRef-Relationship-ConcludedLicense-Lib",
+      "relationshipType": "hasConcludedLicense",
+      "from": "SPDXRef-Package-Lib",
+      "to": [
+        "SPDXRef-License-Apache-Concluded"
+      ],
+      "completeness": "complete"
+    },
+    {
+      "type": "ListedLicense",
+      "spdxId": "SPDXRef-License-MIT-Declared",
+      "name": "MIT",
+      "licenseId": "MIT"
+    },
+    {
+      "type": "ListedLicense",
+      "spdxId": "SPDXRef-License-MIT-Concluded",
+      "name": "MIT",
+      "licenseId": "MIT"
+    },
+    {
+      "type": "ListedLicense",
+      "spdxId": "SPDXRef-License-Apache-Declared",
+      "name": "Apache-2.0",
+      "licenseId": "Apache-2.0"
+    },
+    {
+      "type": "ListedLicense",
+      "spdxId": "SPDXRef-License-Apache-Concluded",
+      "name": "Apache-2.0",
+      "licenseId": "Apache-2.0"
+    }
+  ]
+}

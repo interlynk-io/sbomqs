@@ -1,0 +1,168 @@
+{
+  "@context": [
+    "https://spdx.org/rdf/3.0.1/spdx-context.jsonld"
+  ],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "SBOM with Relationships",
+      "creationInfo": "_:creationinfo",
+      "element": [
+        "SPDXRef-Package-App",
+        "SPDXRef-Package-Lib"
+      ],
+      "dataLicense": "CC0-1.0",
+      "profileConformance": [
+        "core",
+        "software"
+      ],
+      "namespaceMap": [
+        {
+          "prefix": "",
+          "namespace": "https://example.com/sbom/my-application-with-relationships"
+        }
+      ]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": [
+        "_:org1",
+        "_:person1"
+      ],
+      "createdUsing": [
+        "_:tool1"
+      ]
+    },
+    {
+      "type": "Organization",
+      "@id": "_:org1",
+      "name": "Example Organization Inc",
+      "externalIdentifiers": [
+        {
+          "externalIdentifierType": "email",
+          "identifier": "sbom@example.com"
+        },
+        {
+          "externalIdentifierType": "other",
+          "identifier": "https://example.com"
+        }
+      ]
+    },
+    {
+      "type": "Person",
+      "@id": "_:person1",
+      "name": "John Doe",
+      "externalIdentifiers": [
+        {
+          "externalIdentifierType": "email",
+          "identifier": "john.doe@example.com"
+        },
+        {
+          "externalIdentifierType": "other",
+          "identifier": "https://johndoe.example.com"
+        }
+      ]
+    },
+    {
+      "type": "Tool",
+      "@id": "_:tool1",
+      "name": "sbomqs-generator-1.0.0",
+      "externalIdentifiers": [
+        {
+          "externalIdentifierType": "email",
+          "identifier": "tools@sbomqs.dev"
+        },
+        {
+          "externalIdentifierType": "other",
+          "identifier": "https://github.com/interlynk-io/sbomqs"
+        }
+      ]
+    },
+    {
+      "type": "Organization",
+      "@id": "_:supplier1",
+      "name": "Supplier Corp",
+      "externalIdentifiers": [
+        {
+          "externalIdentifierType": "email",
+          "identifier": "supplier@example.com"
+        },
+        {
+          "externalIdentifierType": "other",
+          "identifier": "https://supplier.example.com"
+        }
+      ]
+    },
+    {
+      "type": "Organization",
+      "@id": "_:supplier2",
+      "name": "Library Supplier",
+      "externalIdentifiers": [
+        {
+          "externalIdentifierType": "email",
+          "identifier": "library@example.com"
+        },
+        {
+          "externalIdentifierType": "other",
+          "identifier": "https://library.example.com"
+        }
+      ]
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package-App",
+      "name": "my-application",
+      "software_packageVersion": "1.0.0",
+      "software_copyrightText": "Copyright 2024 Supplier Corp",
+      "externalIdentifiers": [
+        {
+          "externalIdentifierType": "packageUrl",
+          "identifier": "pkg:npm/my-application@1.0.0"
+        }
+      ],
+      "originatedBy": [
+        "_:supplier1"
+      ]
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package-Lib",
+      "name": "my-library",
+      "software_packageVersion": "2.0.0",
+      "software_copyrightText": "Copyright 2024 Library Supplier",
+      "externalIdentifiers": [
+        {
+          "externalIdentifierType": "packageUrl",
+          "identifier": "pkg:npm/my-library@2.0.0"
+        }
+      ],
+      "originatedBy": [
+        "_:supplier2"
+      ]
+    },
+    {
+      "type": "Relationship",
+      "spdxId": "SPDXRef-Relationship-1",
+      "relationshipType": "describes",
+      "from": "SPDXRef-DOCUMENT",
+      "to": [
+        "SPDXRef-Package-App"
+      ],
+      "completeness": "complete"
+    },
+    {
+      "type": "Relationship",
+      "spdxId": "SPDXRef-Relationship-2",
+      "relationshipType": "dependsOn",
+      "from": "SPDXRef-Package-App",
+      "to": [
+        "SPDXRef-Package-Lib"
+      ],
+      "completeness": "complete"
+    }
+  ]
+}

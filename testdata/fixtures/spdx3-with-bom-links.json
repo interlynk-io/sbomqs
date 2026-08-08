@@ -1,0 +1,83 @@
+{
+  "@context": [
+    "https://spdx.org/rdf/3.0.1/spdx-context.jsonld"
+  ],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "SPDX 3.0 with BOM Links",
+      "creationInfo": "_:creationinfo",
+      "element": [
+        "SPDXRef-Package-App"
+      ],
+      "dataLicense": "CC0-1.0",
+      "profileConformance": [
+        "core",
+        "software"
+      ],
+      "namespaceMap": [
+        {
+          "prefix": "",
+          "namespace": "https://example.com/sbom/my-app-1.0.0"
+        }
+      ],
+      "import": [
+        {
+          "externalSpdxId": "https://example.com/sbom/dependency-lib-2.3.4.spdx.json",
+          "locationHint": "https://example.com/sbom/dependency-lib-2.3.4.spdx.json"
+        },
+        {
+          "externalSpdxId": "https://example.com/sbom/runtime-deps.spdx.json",
+          "locationHint": "https://example.com/sbom/runtime-deps.spdx.json"
+        }
+      ]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": [
+        "_:org1"
+      ],
+      "createdUsing": [
+        "_:tool1"
+      ]
+    },
+    {
+      "type": "Organization",
+      "@id": "_:org1",
+      "name": "Example Organization Inc",
+      "externalIdentifiers": [
+        {
+          "externalIdentifierType": "email",
+          "identifier": "sbom@example.com"
+        }
+      ]
+    },
+    {
+      "type": "Tool",
+      "@id": "_:tool1",
+      "name": "sbomqs-generator-1.0.0"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package-App",
+      "name": "my-application",
+      "software_packageVersion": "1.0.0",
+      "software_primaryPurpose": "application",
+      "software_downloadLocation": "https://github.com/example/my-app/releases/download/v1.0.0/my-app.tar.gz"
+    },
+    {
+      "type": "Relationship",
+      "spdxId": "SPDXRef-Rel-1",
+      "relationshipType": "describes",
+      "from": "SPDXRef-DOCUMENT",
+      "to": [
+        "SPDXRef-Package-App"
+      ],
+      "completeness": "complete"
+    }
+  ]
+}

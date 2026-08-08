@@ -1,0 +1,6 @@
+policy:
+  - name: "Test: Document authors required"
+    type: required
+    rules:
+      - field: sbom_authors
+    action: fail

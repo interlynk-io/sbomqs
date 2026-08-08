@@ -227,6 +227,42 @@ var spdxSBOMAuthorsEmptyArray = []byte(`
 }
 `)
 
+var spdx3SBOMAuthorURLOnly = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "https://example.com/sboms/test.spdx.json",
+      "name": "Test",
+      "creationInfo": "_:creationinfo",
+      "element": [],
+      "profileConformance": ["core"],
+      "namespaceMap": [{"prefix": "", "namespace": "https://example.com/sboms/"}]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:author"]
+    },
+    {
+      "type": "Person",
+      "@id": "_:author",
+      "name": "Test Author",
+      "externalIdentifiers": [
+        {
+          "type": "ExternalIdentifier",
+          "externalIdentifierType": "urlScheme",
+          "identifier": "https://example.com/author"
+        }
+      ]
+    }
+  ]
+}
+`)
+
 var spdxSBOMCreatorsWrongTypeSomeValue = []byte(`
 {
   "spdxVersion": "SPDX-2.3",
@@ -544,6 +580,17 @@ func TestBSIV11SBOMCreator(t *testing.T) {
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "SBOM creator contact(email) provided via authors", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdx3SBOMAuthorURLOnly", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3SBOMAuthorURLOnly, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11SBOMCreator(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "SBOM creator contact(URL) provided via authors", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -874,6 +921,54 @@ func TestBSIV11SBOMCreator(t *testing.T) {
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "SBOM creator present but lacks valid email or URL", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// SPDX 3.0: Author is Person with name and email → score 10.0
+	t.Run("spdx3AuthorPersonWithNameAndEmail", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3SBOMAuthorWithPersonNameAndEmail, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11SBOMCreator(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "SBOM creator contact(email) provided via authors", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// SPDX 3.0: Author is Organization with name and email → score 10.0
+	t.Run("spdx3AuthorOrganizationWithNameAndEmail", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3SBOMAuthorWithOrganizationNameAndEmail, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11SBOMCreator(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "SBOM creator contact(email) provided via authors", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// SPDX 3.0: Author has name only, no email → score 0.0
+	t.Run("spdx3AuthorPersonWithNameOnly", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3SBOMAuthorWithPersonName, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11SBOMCreator(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "SBOM creator present but lacks valid email or URL", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// SPDX 3.0: No author present → score 0.0
+	t.Run("spdx3AuthorAbsent", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3SBOMAuthorAbsent, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11SBOMCreator(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "SBOM creator is missing", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 }
@@ -1473,6 +1568,136 @@ var cdxCompInvalidManufacturerWithMultipleComponents = []byte(`
 }
 `)
 
+// SPDX 3.0 - Component Supplier with Person name and URL (no email)
+var spdx3CompSupplierWithPersonURLOnly = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Test",
+      "creationInfo": "_:creationinfo",
+      "element": ["SPDXRef-Package"],
+      "profileConformance": ["core", "software"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:author"]
+    },
+    {
+      "type": "Person",
+      "@id": "_:author",
+      "name": "Test Author"
+    },
+    {
+      "type": "Person",
+      "@id": "_:supplier1",
+      "name": "Samantha Wright",
+      "externalIdentifier": [
+        {
+          "externalIdentifierType": "urlScheme",
+          "identifier": "https://example.com/supplier"
+        }
+      ]
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package",
+      "name": "my-application",
+      "software_packageVersion": "1.0.0",
+      "suppliedBy": "_:supplier1"
+    }
+  ]
+}
+`)
+
+// SPDX 3.0 - Component Originator (originatedBy) with Organization name and email
+// This tests the Manufacturer/Originator path for component creator.
+var spdx3CompOriginatorWithOrganizationNameAndEmail = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Test",
+      "creationInfo": "_:creationinfo",
+      "element": ["SPDXRef-Package"],
+      "profileConformance": ["core", "software"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:author"]
+    },
+    {
+      "type": "Person",
+      "@id": "_:author",
+      "name": "Test Author"
+    },
+    {
+      "type": "Organization",
+      "@id": "_:originator1",
+      "name": "Acme Corp",
+      "externalIdentifier": [
+        {
+          "externalIdentifierType": "email",
+          "identifier": "originator@example.com"
+        }
+      ]
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package",
+      "name": "my-application",
+      "software_packageVersion": "1.0.0",
+      "originatedBy": ["_:originator1"]
+    }
+  ]
+}
+`)
+
+// SPDX 3.0 - Component with empty name
+var spdx3CompWithEmptyName = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Test",
+      "creationInfo": "_:creationinfo",
+      "element": ["SPDXRef-Package"],
+      "profileConformance": ["core", "software"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:author"]
+    },
+    {
+      "type": "Person",
+      "@id": "_:author",
+      "name": "Test Author"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package",
+      "name": "",
+      "software_packageVersion": "1.0.0"
+    }
+  ]
+}
+`)
+
 func TestBSIV11CompCreator(t *testing.T) {
 	ctx := context.Background()
 
@@ -1779,6 +2004,66 @@ func TestBSIV11CompCreator(t *testing.T) {
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "No components declared in SBOM", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// SPDX 3.0: Component supplier is Person with name and email
+	t.Run("spdx3CompSupplierPersonWithNameAndEmail", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3CompSupplierWithPersonNameAndEmail, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompCreator(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "creator contact (email or URL) declared for all components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// SPDX 3.0: Component supplier has name only, no email
+	t.Run("spdx3CompSupplierPersonWithNameOnly", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3CompSupplierWithPersonName, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompCreator(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "1/1 components have creator info, but only valid email or URL required", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// SPDX 3.0: Component has no supplier
+	t.Run("spdx3CompSupplierAbsent", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3CompSupplierAbsent, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompCreator(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "creator information missing for all components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+	// SPDX 3.0: Component supplier is Person with URL only (no email)
+	t.Run("spdx3CompSupplierPersonWithURLOnly", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3CompSupplierWithPersonURLOnly, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompCreator(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "creator contact (email or URL) declared for all components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// SPDX 3.0: Component originator (originatedBy) is Organization with email
+	// This verifies the Manufacturer path works for SPDX 3.0 component creator.
+	t.Run("spdx3CompOriginatorOrganizationWithEmail", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3CompOriginatorWithOrganizationNameAndEmail, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompCreator(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "creator contact (email or URL) declared for all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 }
@@ -2815,6 +3100,30 @@ func TestBSIV11CompDependencies(t *testing.T) {
 		assert.Equal(t, "Dependencies are recursively declared and structurally complete.", got.Desc)
 		assert.False(t, got.Ignore)
 	})
+
+	// SPDX 3.0: Complete dependencies with relationships
+	t.Run("spdx3WithPrimaryRelationships", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3CompWithPrimaryRelationships, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompDependencies(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "Dependencies are recursively declared and structurally complete.", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// SPDX 3.0: No primary relationships defined
+	t.Run("spdx3WithNoPrimaryRelationships", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3CompWithNoPrimaryRelationships, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompDependencies(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "Dependency information is missing.", got.Desc)
+		assert.False(t, got.Ignore)
+	})
 }
 
 var cdxCompWithLicenseExpression = []byte(`
@@ -3554,6 +3863,54 @@ func TestBSIV11CompLicense(t *testing.T) {
 		assert.Equal(t, "No components found in SBOM.", got.Desc)
 		assert.False(t, got.Ignore)
 	})
+
+	// SPDX 3.0: Component with concluded license
+	t.Run("spdx3CompWithConcludedLicense", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3CompWithConcludedLicense, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompLicenses(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "licence information declared for all components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// SPDX 3.0: Component without concluded license
+	t.Run("spdx3CompWithoutConcludedLicense", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3CompWithoutConcludedLicense, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompLicenses(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "licence info is missing for all components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// SPDX 3.0: Component with declared license
+	t.Run("spdx3CompWithDeclaredLicense", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3CompWithDeclaredLicense, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompLicenses(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "licence information declared for all components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// SPDX 3.0: Component without declared license
+	t.Run("spdx3CompWithoutDeclaredLicense", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3CompWithoutDeclaredLicense, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompLicenses(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "licence info is missing for all components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
 }
 
 // BSIV11CompExecutableHash test cases
@@ -4060,6 +4417,110 @@ var spdxTwoCompsOneWithSHA256Hash = []byte(`
 }
 `)
 
+// SPDX 3.0: Component with SHA-256 checksum in verifiedUsing
+var spdx3CompWithSHA256Checksum = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Test",
+      "creationInfo": "_:creationinfo",
+      "element": ["SPDXRef-Package"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package",
+      "name": "test-package",
+      "software_packageVersion": "1.0.0",
+      "verifiedUsing": [
+        {
+          "type": "Hash",
+          "algorithm": "sha256",
+          "hashValue": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
+        }
+      ]
+    }
+  ]
+}
+`)
+
+// SPDX 3.0: Component without checksum
+var spdx3CompWithoutChecksum = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Test",
+      "creationInfo": "_:creationinfo",
+      "element": ["SPDXRef-Package"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package",
+      "name": "test-package",
+      "software_packageVersion": "1.0.0"
+    }
+  ]
+}
+`)
+
+// SPDX 3.0: Two components, one with SHA-256 checksum
+var spdx3TwoCompsOneWithChecksum = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Test",
+      "creationInfo": "_:creationinfo",
+      "element": ["SPDXRef-Package1", "SPDXRef-Package2"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package1",
+      "name": "package-with-checksum",
+      "software_packageVersion": "1.0.0",
+      "verifiedUsing": [
+        {
+          "type": "Hash",
+          "algorithm": "sha256",
+          "hashValue": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
+        }
+      ]
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package2",
+      "name": "package-without-checksum",
+      "software_packageVersion": "2.0.0"
+    }
+  ]
+}
+`)
+
 func TestBSIV11CompExecutableHash(t *testing.T) {
 	ctx := context.Background()
 
@@ -4266,6 +4727,42 @@ func TestBSIV11CompExecutableHash(t *testing.T) {
 		assert.Equal(t, "1/2 components declare executable component hash", got.Desc)
 		assert.False(t, got.Ignore)
 	})
+
+	// SPDX 3.0: Component with SHA-256 checksum
+	t.Run("spdx3CompWithSHA256Checksum", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3CompWithSHA256Checksum, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompExecutableHash(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "executable component hash declared for all components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// SPDX 3.0: Component without checksum
+	t.Run("spdx3CompWithoutChecksum", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3CompWithoutChecksum, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompExecutableHash(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "no components declare executable component hash", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// SPDX 3.0: Two components, one with checksum
+	t.Run("spdx3TwoCompsOneWithChecksum", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3TwoCompsOneWithChecksum, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompExecutableHash(doc)
+
+		assert.InDelta(t, 5.0, got.Score, 1e-9)
+		assert.Equal(t, "1/2 components declare executable component hash", got.Desc)
+		assert.False(t, got.Ignore)
+	})
 }
 
 // ===================================
@@ -4321,6 +4818,39 @@ var spdxSBOMWithInvalidTimestamp = []byte(`
     "creators": ["Tool: syft-0.95.0"]
   },
   "packages": []
+}
+`)
+
+var spdx3SBOMWithInvalidTimestamp = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Test",
+      "creationInfo": "_:creationinfo",
+      "profileConformance": ["core", "software"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "01-01-2026",
+      "createdBy": ["_:author"]
+    },
+    {
+      "type": "Person",
+      "@id": "_:author",
+      "name": "Test Author",
+      "externalIdentifier": [
+        {
+          "externalIdentifierType": "email",
+          "identifier": "test@example.com"
+        }
+      ]
+    }
+  ]
 }
 `)
 
@@ -4395,6 +4925,32 @@ func TestBSIV11SBOMCreationTimestamp(t *testing.T) {
 		assert.Equal(t, "SBOM creation timestamp is not a valid RFC3339 (ISO-8601) timestamp.", got.Desc)
 		assert.False(t, got.Ignore)
 	})
+
+	// SPDX 3.0: Valid timestamp in CreationInfo
+	t.Run("spdx3WithValidTimestamp", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3SBOMWithCompleteFields, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11SBOMCreationTimestamp(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "SBOM creation timestamp is valid and RFC3339-compliant.", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// SPDX 3.0: Invalid timestamp in CreationInfo
+	t.Run("spdx3WithInvalidTimestamp", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3SBOMWithInvalidTimestamp, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11SBOMCreationTimestamp(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		// Without CreatedRaw in the model, an unparseable timestamp appears as missing
+		// (zero time.Time cannot distinguish "invalid" from "absent").
+		assert.Equal(t, "SBOM creation timestamp is missing", got.Desc)
+		assert.False(t, got.Ignore)
+	})
 }
 
 // ====================
@@ -4451,11 +5007,69 @@ func TestBSIV11CompName(t *testing.T) {
 		assert.Equal(t, "no components declared in SBOM", got.Desc)
 		assert.False(t, got.Ignore)
 	})
+
+	// SPDX 3.0: Components with names declared
+	t.Run("spdx3CompWithName", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3SBOMWithCompleteFields, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompName(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "component name declared for all components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// SPDX 3.0: Component with empty name
+	t.Run("spdx3CompWithEmptyName", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3CompWithEmptyName, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompName(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "component name missing for 1 out of 1 components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
 }
 
 // =======================
 // TestBSIV11CompVersion
 // =======================
+
+// SPDX 3.0 - Component with missing version
+var spdx3CompWithMissingVersion = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Test",
+      "creationInfo": "_:creationinfo",
+      "element": ["SPDXRef-Package"],
+      "profileConformance": ["core", "software"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:author"]
+    },
+    {
+      "type": "Person",
+      "@id": "_:author",
+      "name": "Test Author"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package",
+      "name": "my-application"
+    }
+  ]
+}
+`)
 
 // cdxCompWithMissingVersion
 var cdxCompWithMissingVersion = []byte(`
@@ -4599,6 +5213,30 @@ func TestBSIV11CompVersion(t *testing.T) {
 		assert.Equal(t, "component version missing for 1 out of 2 components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
+
+	// SPDX 3.0: All components with versions declared
+	t.Run("spdx3CompWithVersion", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3SBOMWithCompleteFields, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompVersion(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "component version declared for all components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// SPDX 3.0: Component with missing version
+	t.Run("spdx3CompWithMissingVersion", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3CompWithMissingVersion, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompVersion(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "component version missing for 1 out of 1 components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
 }
 
 // ===========================================================================
@@ -4711,6 +5349,20 @@ func TestBSIV11SBOMURI(t *testing.T) {
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "SBOM-URI is present but invalid.", got.Desc)
 		assert.False(t, got.Ignore)
+	})
+
+	// SPDX 3.0: SpdxDocument without namespaceMap - URI is missing
+	// spdxId (e.g., SPDXRef-DOCUMENT) is not a valid URI, it's just a local reference
+	t.Run("spdx3WithoutNamespace", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3SBOMWithCompleteFields, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11SBOMURI(doc)
+
+		// SPDX 3.0 spdxId is not a valid URI - needs namespaceMap for actual URI
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "SBOM-URI is missing (additional field).", got.Desc)
+		assert.True(t, got.Ignore)
 	})
 }
 
@@ -4899,6 +5551,43 @@ func TestBSIV11CompSourceURI(t *testing.T) {
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "No components found.", got.Desc)
 		assert.True(t, got.Ignore)
+	})
+
+	// SPDX 3.0: Component with software_sourceInfo URL
+	t.Run("spdx3WithSourceInfoURL", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3CompWithSourceInfo, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompSourceURI(doc)
+
+		// SPDX 3.0 uses software_sourceInfo for source URIs
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "Source code URI declared for all components.", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// SPDX 3.0: Component without software_sourceInfo
+	t.Run("spdx3WithoutSourceInfo", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3CompWithoutSourceInfo, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompSourceURI(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "No components declare source code URI (additional field).", got.Desc)
+		assert.True(t, got.Ignore)
+	})
+
+	// SPDX 3.0: Two components, one with sourceInfo
+	t.Run("spdx3PartialSourceInfo", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3TwoCompsOneWithSourceInfo, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompSourceURI(doc)
+
+		assert.InDelta(t, 5.0, got.Score, 1e-9)
+		assert.Equal(t, "1/2 components declare source code URI.", got.Desc)
+		assert.False(t, got.Ignore)
 	})
 }
 
@@ -5135,6 +5824,19 @@ func TestBSIV11CompExecutableURI(t *testing.T) {
 		assert.Equal(t, "no components found.", got.Desc)
 		assert.True(t, got.Ignore)
 	})
+
+	// SPDX 3.0: Component with software_downloadLocation
+	t.Run("spdx3WithDownloadLocation", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3CompWithDownloadLocation, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompExecutableURI(doc)
+
+		// SPDX 3.0 uses software_downloadLocation for executable URIs
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "Executable URI declared for all components.", got.Desc)
+		assert.False(t, got.Ignore)
+	})
 }
 
 // ===========================================================================
@@ -5331,6 +6033,21 @@ func TestBSIV11CompSourceHash(t *testing.T) {
 		assert.Equal(t, "no components found.", got.Desc)
 		assert.True(t, got.Ignore)
 	})
+
+	// SPDX 3.0: Source hash is not directly supported
+	// SPDX 3.0 verifiedUsing is for package verification, not source code hash
+	// SPDX 3.0 has no equivalent to SPDX 2.x packageVerificationCode
+	t.Run("spdx3SourceHashNotSupported", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3CompWithSHA256Checksum, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompSourceHash(doc)
+
+		// SPDX 3.0 does not have source hash support
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "No components declare source hash (additional field).", got.Desc)
+		assert.True(t, got.Ignore)
+	})
 }
 
 // ===========================================================================
@@ -5513,5 +6230,41 @@ func TestBSIV11CompOtherIdentifiers(t *testing.T) {
 		assert.InDelta(t, 5.0, got.Score, 1e-9)
 		assert.Equal(t, "1/2 components declare unique identifiers.", got.Desc)
 		assert.False(t, got.Ignore)
+	})
+
+	// SPDX 3.0: Component with valid PURL
+	t.Run("spdx3WithPURLValid", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3CompPURLValid, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompOtherIdentifiers(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "Unique identifiers declared for all components.", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// SPDX 3.0: Component with invalid PURL
+	t.Run("spdx3WithInvalidPURL", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3CompInValidPURL, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompOtherIdentifiers(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "No components declare additional unique identifiers (additional field).", got.Desc)
+		assert.True(t, got.Ignore)
+	})
+
+	// SPDX 3.0: Component without PURL
+	t.Run("spdx3WithPURLAbsent", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3CompPURLAbsent, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompOtherIdentifiers(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "No components declare additional unique identifiers (additional field).", got.Desc)
+		assert.True(t, got.Ignore)
 	})
 }

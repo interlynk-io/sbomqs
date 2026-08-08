@@ -70,42 +70,150 @@ func BSIV21SpecVersion(doc sbom.Document) catalog.ProfFeatScore {
 	}
 }
 
-// BSIV21CompFilename checks that components have the bsi:component:filename property set.
+// BSIV21CompFilename checks that components have a distribution artifact filename declared.
+//
+// Distribution Artifact Filename Mapping:
+// SPDX 2.x: packages[].packageFileName
+// SPDX 3.0: software_File.name linked via hasDistributionArtifact relationship
+//             from software_Package (no embedded filename field).
+// CDX:       components[].properties[] with name="bsi:component:filename"
 func BSIV21CompFilename(doc sbom.Document) catalog.ProfFeatScore {
-	return bsiPropertyCheck(doc, "bsi:component:filename", "filename")
+	return componentStringCheck(doc, "filename", func(c sbom.GetComponent) string {
+		return c.GetFilename()
+	})
 }
 
-// BSIV21CompExecutableProperty checks that components have the bsi:component:executable property set.
+// BSIV21CompExecutableProperty checks that components have an executable distribution artifact.
 func BSIV21CompExecutableProperty(doc sbom.Document) catalog.ProfFeatScore {
-	return bsiPropertyCheck(doc, "bsi:component:executable", "executable property")
+	return componentBoolCheck(doc, "executable property", func(c sbom.GetComponent) bool {
+		return c.DistributionArtifact().IsExecutable()
+	})
 }
 
-// BSIV21CompArchiveProperty checks that components have the bsi:component:archive property set.
+// BSIV21CompArchiveProperty checks that components have an archive distribution artifact.
 func BSIV21CompArchiveProperty(doc sbom.Document) catalog.ProfFeatScore {
-	return bsiPropertyCheck(doc, "bsi:component:archive", "archive property")
+	return componentBoolCheck(doc, "archive property", func(c sbom.GetComponent) bool {
+		return c.DistributionArtifact().IsArchive()
+	})
 }
 
-// BSIV21CompStructuredProperty checks that components have the bsi:component:structured property set.
+// BSIV21CompStructuredProperty checks that components have a structured distribution artifact.
 func BSIV21CompStructuredProperty(doc sbom.Document) catalog.ProfFeatScore {
-	return bsiPropertyCheck(doc, "bsi:component:structured", "structured property")
+	return componentBoolCheck(doc, "structured property", func(c sbom.GetComponent) bool {
+		return c.DistributionArtifact().IsStructured()
+	})
 }
 
-// BSIV21CompEffectiveLicence checks that components have the bsi:component:effectiveLicense property set.
+// BSIV21CompEffectiveLicence checks that components have effective licenses declared.
+// SPDX 3.0: uses hasEffectiveLicense relationship (non-standard but used by BSI v2.1).
 func BSIV21CompEffectiveLicence(doc sbom.Document) catalog.ProfFeatScore {
-	return bsiPropertyCheck(doc, "bsi:component:effectiveLicence", "effective licence")
+	comps := doc.Components()
+	total := len(comps)
+
+	if total == 0 {
+		return catalog.ProfFeatScore{Score: 0.0, Desc: "no components found"}
+	}
+
+	valid := lo.CountBy(comps, func(c sbom.GetComponent) bool {
+		for _, l := range c.EffectiveLicenses() {
+			if isAcceptableLicense(l) {
+				return true
+			}
+		}
+		return false
+	})
+
+	return componentScore(valid, total, "effective licence")
 }
 
 // BSIV21CompDeployableHash checks that components have a hash on their distribution or distribution-intake external reference.
 // BSI v2.1 maps this to externalReferences[].hashes[] with type="distribution" or "distribution-intake".
 func BSIV21CompDeployableHash(doc sbom.Document) catalog.ProfFeatScore {
 	// BSI v2.1 §5.2.2: deployable hash MUST be SHA-512.
-	return extRefHashCheck(doc, "deployable component hash", "SHA512", false, "distribution", "distribution-intake")
+	// SPDX 3.0: hash is on the distribution artifact file (software_File.verifiedUsing),
+	// not on an external reference. Check both sources.
+	comps := doc.Components()
+	total := len(comps)
+
+	if total == 0 {
+		return catalog.ProfFeatScore{Score: 0.0, Desc: "no components found"}
+	}
+
+	valid := lo.CountBy(comps, func(c sbom.GetComponent) bool {
+		// Check 1: external reference hash (CDX, SPDX 2.x)
+		for _, er := range c.ExternalReferences() {
+			if er.GetRefType() == "distribution" || er.GetRefType() == "distribution-intake" {
+				for _, h := range er.GetRefHashes() {
+					if common.NormalizeAlgoName(h.GetAlgo()) == "SHA512" && strings.TrimSpace(h.GetContent()) != "" {
+						return true
+					}
+				}
+			}
+		}
+		// Check 2: distribution artifact hash (SPDX 3.0)
+		for _, h := range c.DistributionArtifact().GetHashes() {
+			if common.NormalizeAlgoName(h.GetAlgo()) == "SHA512" && strings.TrimSpace(h.GetContent()) != "" {
+				return true
+			}
+		}
+		return false
+	})
+
+	return componentScore(valid, total, "deployable component hash")
 }
 
 // BSIV21CompSourceHash checks that components have a SHA-512 hash on their source-distribution or vcs external reference.
+// SPDX 3.0: source code hash from software_SoftwareArtifact.verifiedUsing linked via generates relationship.
 // Source hash is an optional field — absence does not penalise the score (Ignore=true when absent).
 func BSIV21CompSourceHash(doc sbom.Document) catalog.ProfFeatScore {
-	return extRefHashCheck(doc, "source code hash", "SHA512", true, "source-distribution", "vcs")
+	comps := doc.Components()
+	total := len(comps)
+
+	if total == 0 {
+		return catalog.ProfFeatScore{Score: 0.0, Desc: "no components found", Ignore: true}
+	}
+
+	valid := lo.CountBy(comps, func(c sbom.GetComponent) bool {
+		// CDX: externalReferences[type=source-distribution or vcs].hashes
+		for _, er := range c.ExternalReferences() {
+			t := er.GetRefType()
+			if t == "source-distribution" || t == "vcs" {
+				for _, h := range er.GetRefHashes() {
+					content := strings.TrimSpace(h.GetContent())
+					if content != "" {
+						algo := common.NormalizeAlgoName(h.GetAlgo())
+						if algo == "SHA512" {
+							return true
+						}
+					}
+				}
+			}
+		}
+
+		// SPDX 3.0: check SourceCodeHash from source artifact verifiedUsing
+		hash := strings.TrimSpace(c.SourceCodeHash())
+		if hash != "" {
+			parts := strings.SplitN(hash, ":", 2)
+			if len(parts) == 2 {
+				algo := strings.ToUpper(strings.TrimSpace(parts[0]))
+				if algo == "SHA512" {
+					return true
+				}
+			}
+		}
+
+		return false
+	})
+
+	if valid == 0 {
+		return catalog.ProfFeatScore{
+			Score:  0.0,
+			Desc:   "no components declare source code hash",
+			Ignore: true,
+		}
+	}
+
+	return componentScore(valid, total, "source code hash")
 }
 
 // BSIV21CompDistributionLicence checks that components have concluded licences
@@ -177,19 +285,40 @@ func BSIV21CompOtherIdentifiers(doc sbom.Document) catalog.ProfFeatScore {
 	return componentScore(valid, total, "unique identifiers (CPE/SWID/purl)")
 }
 
-// BSIV21CompSecurityTxtURL checks that components have an externalReference of type rfc-9116.
+// BSIV21CompSecurityTxtURL checks that components have a security.txt URL.
+// CDX: externalReferences[type=rfc-9116].
+// SPDX 3.0: externalRef.externalRefType="securityOther".
 func BSIV21CompSecurityTxtURL(doc sbom.Document) catalog.ProfFeatScore {
-	return extRefURLCheck(doc, "security.txt URL", "rfc-9116")
+	comps := doc.Components()
+	total := len(comps)
+
+	if total == 0 {
+		return catalog.ProfFeatScore{Score: 0.0, Desc: "no components found"}
+	}
+
+	valid := lo.CountBy(comps, func(c sbom.GetComponent) bool {
+		for _, er := range c.ExternalReferences() {
+			t := er.GetRefType()
+			if (t == "rfc-9116" || strings.EqualFold(t, "securityOther")) && strings.TrimSpace(er.GetRefLocator()) != "" {
+				return true
+			}
+		}
+		return false
+	})
+
+	return componentScore(valid, total, "security.txt URL")
 }
 
 // BSIV21CompDownloadURI checks that components have an externalReference of type distribution or distribution-intake with a URL.
+// SPDX 3.0: software_downloadLocation on software_Package, OR File.externalRef.externalRefType="binaryArtifact" on distribution artifact.
 func BSIV21CompDownloadURI(doc sbom.Document) catalog.ProfFeatScore {
-	return extRefURLCheck(doc, "deployable form URI", "distribution", "distribution-intake")
+	return extRefOrFieldURLCheck(doc, "deployable form URI", "GetDownloadLocationURL", "distribution", "distribution-intake")
 }
 
 // BSIV21CompSourceCodeURI checks that components have an externalReference of type source-distribution or vcs with a URL.
+// SPDX 3.0: software_sourceInfo on software_Package, OR software_SoftwareArtifact.externalRef.externalRefType="SourceArtifact" linked via generates relationship.
 func BSIV21CompSourceCodeURI(doc sbom.Document) catalog.ProfFeatScore {
-	return extRefURLCheck(doc, "source code URI", "source-distribution", "vcs")
+	return extRefOrFieldURLCheck(doc, "source code URI", "GetSourceCodeURL", "source-distribution", "vcs")
 }
 
 // BSIV21SBOMURI checks the SBOM-URI field (serialNumber for CDX, namespace for SPDX).
@@ -264,6 +393,45 @@ func extRefURLCheck(doc sbom.Document, fieldLabel string, refTypes ...string) ca
 	return componentScore(valid, total, fieldLabel)
 }
 
+// extRefOrFieldURLCheck checks that components have either:
+// 1. An externalReference of one of the given types with a non-empty URL (CDX, SPDX 2.x), OR
+// 2. A non-empty value from the specified field getter method (SPDX 3.0 sourceInfo/downloadLocation)
+func extRefOrFieldURLCheck(doc sbom.Document, fieldLabel string, fieldGetter string, refTypes ...string) catalog.ProfFeatScore {
+	comps := doc.Components()
+	total := len(comps)
+
+	if total == 0 {
+		return catalog.ProfFeatScore{Score: 0.0, Desc: "no components found"}
+	}
+
+	valid := lo.CountBy(comps, func(c sbom.GetComponent) bool {
+		// First check external references (CDX, SPDX 2.x style)
+		for _, er := range c.ExternalReferences() {
+			for _, refType := range refTypes {
+				if er.GetRefType() == refType && strings.TrimSpace(er.GetRefLocator()) != "" {
+					return true
+				}
+			}
+		}
+
+		// Then check SPDX 3.0 style fields
+		switch fieldGetter {
+		case "GetSourceCodeURL":
+			if strings.TrimSpace(c.GetSourceCodeURL()) != "" {
+				return true
+			}
+		case "GetDownloadLocationURL":
+			if strings.TrimSpace(c.GetDownloadLocationURL()) != "" {
+				return true
+			}
+		}
+
+		return false
+	})
+
+	return componentScore(valid, total, fieldLabel)
+}
+
 // extRefHashCheck checks that components have an externalReference of one of the given types with at least one hash.
 // extRefHashCheck counts components that have a non-empty hash on an external reference
 // of one of the given types. If requiredAlgo is non-empty (e.g. "SHA512"), only hashes
@@ -331,6 +499,34 @@ func componentScore(valid, total int, fieldLabel string) catalog.ProfFeatScore {
 		Score: 0.0,
 		Desc:  fmt.Sprintf("no components declare %s", fieldLabel),
 	}
+}
+
+// componentBoolCheck checks that components satisfy a boolean condition.
+func componentBoolCheck(doc sbom.Document, fieldLabel string, check func(sbom.GetComponent) bool) catalog.ProfFeatScore {
+	comps := doc.Components()
+	total := len(comps)
+
+	if total == 0 {
+		return catalog.ProfFeatScore{Score: 0.0, Desc: "no components found"}
+	}
+
+	valid := lo.CountBy(comps, check)
+	return componentScore(valid, total, fieldLabel)
+}
+
+// componentStringCheck checks that components have a non-empty string value from a getter.
+func componentStringCheck(doc sbom.Document, fieldLabel string, getValue func(sbom.GetComponent) string) catalog.ProfFeatScore {
+	comps := doc.Components()
+	total := len(comps)
+
+	if total == 0 {
+		return catalog.ProfFeatScore{Score: 0.0, Desc: "no components found"}
+	}
+
+	valid := lo.CountBy(comps, func(c sbom.GetComponent) bool {
+		return strings.TrimSpace(getValue(c)) != ""
+	})
+	return componentScore(valid, total, fieldLabel)
 }
 
 // isVersionAtLeast compares two version strings (e.g., "1.6" >= "1.6").

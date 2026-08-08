@@ -1,0 +1,241 @@
+{
+  "@context": [
+    "https://spdx.org/rdf/3.0.1/spdx-context.jsonld"
+  ],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Complete SPDX 3.0 SBOM with Full Score",
+      "creationInfo": "_:creationinfo",
+      "element": [
+        "SPDXRef-Package-App",
+        "SPDXRef-Package-Lib",
+        "SPDXRef-File-Readme"
+      ],
+      "dataLicense": "CC0-1.0",
+      "profileConformance": [
+        "core",
+        "software",
+        "licensing"
+      ],
+      "comment": "This is a complete SPDX 3.0 SBOM example demonstrating all NTIA minimum elements with full compliance scoring.",
+      "namespaceMap": [
+        {
+          "prefix": "",
+          "namespace": "https://example.com/sbom/my-application-1.0.0"
+        }
+      ]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": [
+        "_:org1",
+        "_:person1"
+      ],
+      "createdUsing": [
+        "_:tool1"
+      ],
+      "comment": "SBOM generated for demonstration purposes"
+    },
+    {
+      "type": "Organization",
+      "@id": "_:org1",
+      "name": "Example Organization Inc",
+      "externalIdentifiers": [
+        {
+          "externalIdentifierType": "email",
+          "identifier": "sbom@example.com"
+        },
+        {
+          "externalIdentifierType": "other",
+          "identifier": "https://example.com"
+        }
+      ]
+    },
+    {
+      "type": "Person",
+      "@id": "_:person1",
+      "name": "John Doe",
+      "externalIdentifiers": [
+        {
+          "externalIdentifierType": "email",
+          "identifier": "john.doe@example.com"
+        },
+        {
+          "externalIdentifierType": "other",
+          "identifier": "https://johndoe.example.com"
+        }
+      ]
+    },
+    {
+      "type": "Tool",
+      "@id": "_:tool1",
+      "name": "sbomqs-generator-1.0.0",
+      "externalIdentifiers": [
+        {
+          "externalIdentifierType": "email",
+          "identifier": "tools@sbomqs.dev"
+        },
+        {
+          "externalIdentifierType": "other",
+          "identifier": "https://github.com/interlynk-io/sbomqs"
+        }
+      ]
+    },
+    {
+      "type": "Organization",
+      "@id": "_:supplier1",
+      "name": "Example Organization Inc",
+      "externalIdentifiers": [
+        {
+          "externalIdentifierType": "email",
+          "identifier": "contact@example.com"
+        },
+        {
+          "externalIdentifierType": "other",
+          "identifier": "https://example.com/contact"
+        }
+      ]
+    },
+    {
+      "type": "Organization",
+      "@id": "_:supplier2",
+      "name": "Library Vendor Ltd",
+      "externalIdentifiers": [
+        {
+          "externalIdentifierType": "email",
+          "identifier": "support@libraryvendor.com"
+        },
+        {
+          "externalIdentifierType": "other",
+          "identifier": "https://libraryvendor.com"
+        }
+      ]
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package-App",
+      "name": "my-application",
+      "software_packageVersion": "1.0.0",
+      "software_primaryPurpose": "application",
+      "software_downloadLocation": "https://github.com/example/my-app/releases/download/v1.0.0/my-app.tar.gz",
+      "software_homePage": "https://example.com/my-app",
+      "software_sourceInfo": "https://github.com/example/my-app",
+      "software_copyrightText": "Copyright 2024 Example Organization Inc",
+      "verifiedUsing": [
+        {
+          "algorithm": "sha512",
+          "hashValue": "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e"
+        }
+      ],
+      "externalIdentifiers": [
+        {
+          "externalIdentifierType": "packageUrl",
+          "identifier": "pkg:npm/my-application@1.0.0"
+        },
+        {
+          "externalIdentifierType": "cpe23",
+          "identifier": "cpe:2.3:a:example:my-application:1.0.0:*:*:*:*:*:*:*"
+        }
+      ],
+      "originatedBy": [
+        "_:supplier1"
+      ]
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package-Lib",
+      "name": "my-library",
+      "software_packageVersion": "2.3.4",
+      "software_primaryPurpose": "library",
+      "software_downloadLocation": "https://npmjs.org/my-library/-/my-library-2.3.4.tgz",
+      "software_sourceInfo": "https://github.com/libraryvendor/my-library",
+      "software_copyrightText": "Copyright 2024 Library Vendor Ltd",
+      "verifiedUsing": [
+        {
+          "algorithm": "sha512",
+          "hashValue": "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e"
+        }
+      ],
+      "externalIdentifiers": [
+        {
+          "externalIdentifierType": "packageUrl",
+          "identifier": "pkg:npm/my-library@2.3.4"
+        },
+        {
+          "externalIdentifierType": "cpe23",
+          "identifier": "cpe:2.3:a:libraryvendor:my-library:2.3.4:*:*:*:*:*:*:*"
+        }
+      ],
+      "originatedBy": [
+        "_:supplier2"
+      ]
+    },
+    {
+      "type": "software_File",
+      "spdxId": "SPDXRef-File-Readme",
+      "name": "/README.md",
+      "software_copyrightText": "Copyright 2024 Example Organization Inc",
+      "verifiedUsing": [
+        {
+          "algorithm": "sha512",
+          "hashValue": "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e"
+        }
+      ]
+    },
+    {
+      "type": "Relationship",
+      "spdxId": "SPDXRef-Relationship-1",
+      "relationshipType": "describes",
+      "from": "SPDXRef-DOCUMENT",
+      "to": [
+        "SPDXRef-Package-App"
+      ],
+      "completeness": "complete"
+    },
+    {
+      "type": "Relationship",
+      "spdxId": "SPDXRef-Relationship-2",
+      "relationshipType": "dependsOn",
+      "from": "SPDXRef-Package-App",
+      "to": [
+        "SPDXRef-Package-Lib"
+      ],
+      "completeness": "complete"
+    },
+    {
+      "type": "Relationship",
+      "spdxId": "SPDXRef-Relationship-3",
+      "relationshipType": "contains",
+      "from": "SPDXRef-Package-App",
+      "to": [
+        "SPDXRef-File-Readme"
+      ],
+      "completeness": "complete"
+    },
+    {
+      "type": "Relationship",
+      "spdxId": "SPDXRef-Relationship-5",
+      "relationshipType": "hasConcludedLicense",
+      "from": "SPDXRef-Package-App",
+      "to": [
+        "SPDXRef-License-MIT"
+      ],
+      "completeness": "complete"
+    },
+    {
+      "type": "Relationship",
+      "spdxId": "SPDXRef-Relationship-7",
+      "relationshipType": "hasConcludedLicense",
+      "from": "SPDXRef-Package-Lib",
+      "to": [
+        "SPDXRef-License-MIT"
+      ],
+      "completeness": "complete"
+    }
+  ]
+}

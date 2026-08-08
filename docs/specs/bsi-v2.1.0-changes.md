@@ -183,7 +183,7 @@ The following cannot be evaluated without SPDX3 parsing support:
 - `software_additionalPurpose` field
 - `hasDistributionArtifact` relationship type
 - `hasDeclaredLicense` / `hasConcludedLicense` relationship types
-- `simpleLicensing_LicenseExpression` type
+- `simplelicensing_LicenseExpression` type
 - New SPDX3 element types (`CreationInfo`, `software_Sbom`, `software_Package`, `software_SoftwareArtifact`)
 
 **For SPDX v2 SBOMs scored against `bsi-v2.1`:** hard fail on spec version, all fields N/A.

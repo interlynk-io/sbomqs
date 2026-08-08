@@ -168,7 +168,11 @@ func constructSections(dtb *db.DB) []bsiSection {
 				Required:  section.Required,
 			}
 			score := bsiKeyIDScore(dtb, r.CheckKey, r.ID)
-			newSection.Score = score.totalScore()
+			if section.Required {
+				newSection.Score = score.totalScore()
+			} else {
+				newSection.Score = score.totalOptionalScore()
+			}
 			if r.ID == "doc" {
 				newSection.ElementID = "SBOM"
 			} else {

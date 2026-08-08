@@ -1,0 +1,186 @@
+{
+  "@context": [
+    "https://spdx.org/rdf/3.0.1/spdx-context.jsonld"
+  ],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "NTIA Complete SPDX 3.0 SBOM",
+      "creationInfo": "_:creationinfo",
+      "element": [
+        "SPDXRef-App",
+        "SPDXRef-LibA",
+        "SPDXRef-LibB",
+        "SPDXRef-LibC",
+        "SPDXRef-LibD"
+      ],
+      "profileConformance": [
+        "core",
+        "software"
+      ]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": [
+        "_:author"
+      ],
+      "createdUsing": [
+        "_:tool1"
+      ]
+    },
+    {
+      "type": "Person",
+      "@id": "_:author",
+      "name": "Samantha Wright",
+      "externalIdentifiers": [
+        {
+          "externalIdentifierType": "email",
+          "identifier": "samantha.wright@example.com"
+        }
+      ]
+    },
+    {
+      "type": "Tool",
+      "@id": "_:tool1",
+      "name": "sbom-generator-2.0.0"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-App",
+      "name": "my-application",
+      "software_packageVersion": "1.0.0",
+      "externalIdentifiers": [
+        {
+          "externalIdentifierType": "packageUrl",
+          "identifier": "pkg:github/example/my-application@1.0.0"
+        }
+      ]
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-LibA",
+      "name": "library-a",
+      "software_packageVersion": "1.5.0",
+      "externalIdentifiers": [
+        {
+          "externalIdentifierType": "packageUrl",
+          "identifier": "pkg:npm/library-a@1.5.0"
+        }
+      ],
+      "originatedBy": [
+        "_:supplier1"
+      ]
+    },
+    {
+      "type": "Organization",
+      "@id": "_:supplier1",
+      "name": "Acme Inc.",
+      "externalIdentifiers": [
+        {
+          "externalIdentifierType": "email",
+          "identifier": "contact@acme.com"
+        }
+      ]
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-LibB",
+      "name": "library-b",
+      "software_packageVersion": "2.1.0",
+      "externalIdentifiers": [
+        {
+          "externalIdentifierType": "packageUrl",
+          "identifier": "pkg:maven/com.example/library-b@2.1.0"
+        }
+      ],
+      "originatedBy": [
+        "_:supplier2"
+      ]
+    },
+    {
+      "type": "Person",
+      "@id": "_:supplier2",
+      "name": "John Doe",
+      "externalIdentifiers": [
+        {
+          "externalIdentifierType": "email",
+          "identifier": "john.doe@example.com"
+        }
+      ]
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-LibC",
+      "name": "library-c",
+      "software_packageVersion": "3.0.2",
+      "externalIdentifiers": [
+        {
+          "externalIdentifierType": "packageUrl",
+          "identifier": "pkg:pypi/library-c@3.0.2"
+        }
+      ],
+      "originatedBy": [
+        "_:supplier3"
+      ]
+    },
+    {
+      "type": "Organization",
+      "@id": "_:supplier3",
+      "name": "Example Corp",
+      "externalIdentifiers": [
+        {
+          "externalIdentifierType": "email",
+          "identifier": "security@example.com"
+        }
+      ]
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-LibD",
+      "name": "library-d",
+      "software_packageVersion": "0.5.0",
+      "externalIdentifiers": [
+        {
+          "externalIdentifierType": "packageUrl",
+          "identifier": "pkg:github/example/library-d@0.5.0"
+        }
+      ],
+      "originatedBy": [
+        "_:supplier1"
+      ]
+    },
+    {
+      "type": "Relationship",
+      "from": "SPDXRef-DOCUMENT",
+      "to": [
+        "SPDXRef-App"
+      ],
+      "relationshipType": "describes",
+      "completeness": "complete"
+    },
+    {
+      "type": "Relationship",
+      "from": "SPDXRef-App",
+      "to": [
+        "SPDXRef-LibA",
+        "SPDXRef-LibB",
+        "SPDXRef-LibD"
+      ],
+      "relationshipType": "dependsOn",
+      "completeness": "complete"
+    },
+    {
+      "type": "Relationship",
+      "from": "SPDXRef-LibB",
+      "to": [
+        "SPDXRef-LibC"
+      ],
+      "relationshipType": "dependsOn",
+      "completeness": "complete"
+    }
+  ]
+}

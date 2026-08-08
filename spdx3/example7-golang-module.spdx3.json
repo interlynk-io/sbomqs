@@ -1,0 +1,107 @@
+{
+  "@context": "https://spdx.org/rdf/3.0.1/spdx-context.jsonld",
+  "@graph": [
+    {
+      "spdxId": "urn:uuid:cc81c9c0-c466-4e22-b3f6-945a65f5d07b",
+      "type": "Person",
+      "creationInfo": "_:creationInfo",
+      "comment": "Person or Tool that created this document",
+      "name": "Nisha K",
+      "externalIdentifier": [
+        {
+          "type": "ExternalIdentifier",
+          "externalIdentifierType": "email",
+          "identifier": "nishak@vmware.com"
+        }
+      ]
+    },
+    {
+      "spdxId": "urn:uuid:a5d2b614-1c0a-477d-b1fc-dc391f2c1c6d",
+      "type": "Organization",
+      "creationInfo": "_:creationInfo",
+      "comment": "The organization that originated the software package",
+      "name": "golang.org"
+    },
+    {
+      "@id": "_:creationInfo",
+      "type": "CreationInfo",
+      "specVersion": "3.0.1",
+      "created": "2020-11-24T01:12:27Z",
+      "createdBy": [
+        "urn:uuid:cc81c9c0-c466-4e22-b3f6-945a65f5d07b"
+      ],
+      "comment": "All objects within the graph will have this same CreationInfo"
+    },
+    {
+      "spdxId": "urn:uuid:a9f18ff3-17fa-419d-8966-abe4b992312b",
+      "type": "software_Package",
+      "name": "go1.16.4.linux-amd64.tar.gz",
+      "creationInfo": "_:creationInfo",
+      "comment": "This is the downloaded tarball to be installed on disk",
+      "software_packageVersion": "1.16.4",
+      "software_primaryPurpose": "install",
+      "software_downloadLocation": "https://golang.org/dl/go1.16.4.linux-amd64.tar.gz",
+      "originatedBy": [
+        "urn:uuid:a5d2b614-1c0a-477d-b1fc-dc391f2c1c6d"
+      ],
+      "verifiedUsing": [
+        {
+          "type": "Hash",
+          "algorithm": "sha256",
+          "hashValue": "7154e88f5a8047aad4b80ebace58a059e36e7e2e4eb3b383127a28c711b4ff59"
+        }
+      ]
+    },
+    {
+      "spdxId": "urn:uuid:3b2939bf-fcce-4617-a06f-115168870b95",
+      "type": "software_File",
+      "name": "go",
+      "creationInfo": "_:creationInfo",
+      "comment": "The installation comes with an executable",
+      "originatedBy": [
+        "urn:uuid:a5d2b614-1c0a-477d-b1fc-dc391f2c1c6d"
+      ],
+      "software_primaryPurpose": "executable"
+    },
+    {
+      "type": "Relationship",
+      "spdxId": "urn:uuid:92c6754b-d6e9-48b7-8b86-54fdc89995a6",
+      "creationInfo": "_:creationInfo",
+      "relationshipType": "contains",
+      "from": "urn:uuid:a9f18ff3-17fa-419d-8966-abe4b992312b",
+      "to": [
+        "urn:uuid:3b2939bf-fcce-4617-a06f-115168870b95"
+      ] 
+    },
+    {
+      "type": "software_Sbom",
+      "spdxId": "urn:uuid:d523d308-8348-4051-85ea-a67a14978fad",
+      "creationInfo": "_:creationInfo",
+      "comment": "The SBOM communicates that this document is an SBOM",
+      "rootElement": [
+        "urn:uuid:a9f18ff3-17fa-419d-8966-abe4b992312b"
+      ],
+      "element": [
+        "urn:uuid:a5d2b614-1c0a-477d-b1fc-dc391f2c1c6d",
+        "urn:uuid:cc81c9c0-c466-4e22-b3f6-945a65f5d07b",
+        "urn:uuid:a9f18ff3-17fa-419d-8966-abe4b992312b",
+        "urn:uuid:3b2939bf-fcce-4617-a06f-115168870b95",
+        "urn:uuid:92c6754b-d6e9-48b7-8b86-54fdc89995a6"
+      ]
+    },
+    {
+      "spdxId": "urn:uuid:93867a66-8945-45c2-ac11-4277d3af38fa",
+      "type": "SpdxDocument",
+      "creationInfo": "_:creationInfo",
+      "comment": "This document's primary communication is the SBOM",
+      "name": "example7-golang.spdx",
+      "profileConformance": [
+        "core",
+        "software"
+      ],
+      "rootElement": [
+        "urn:uuid:d523d308-8348-4051-85ea-a67a14978fad"
+      ]
+    }
+  ]
+}

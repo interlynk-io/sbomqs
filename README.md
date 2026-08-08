@@ -306,9 +306,9 @@ Interlynk provides a comprehensive suite of SBOM tools:
 
 ## Blog Posts
 
-- [sbomqs and SBOM Policies](https://sbom-insights.dev/posts/sbomqs-and-sbom-policies-turning-transparency-into-action/)
+- [sbomqs and SBOM Policies: Turning Transparency Into Action](https://sbom-insights.dev/posts/sbomqs-sbom-policies-turning-transparency-into-action/)
 - [sbomqs scoring support for BSI-1.1 and BSI-2.0](https://sbom-insights.dev/posts/sbomqs-scoring-support-for-bsi-1.1-and-bsi-2.0-in-a-summarized-way/)
-- [What’s Missing in Your SBOM](https://sbom-insights.dev/posts/whats-missing-in-your-sbom-sbomqs-list-can-help-you-in-inspecting.../)
+- [What’s Missing in Your SBOM? sbomqs List...](https://sbom-insights.dev/posts/whats-missing-in-your-sbom-sbomqs-list-can-help/)
 
 ## Contact
 

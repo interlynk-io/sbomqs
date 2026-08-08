@@ -94,8 +94,20 @@ func SBOMAutomationSpec(doc sbom.Document) catalog.ProfFeatScore {
 }
 
 // SBOMSchema checks whether the SBOM document has valid schema for
-// spdx/cyclonedsx spec or not and then score accordingly
+// spdx/cyclonedsx spec or not and then score accordingly.
+// SPDX 3.0 schema validation is not supported.
 func SBOMSchema(doc sbom.Document) catalog.ProfFeatScore {
+	spec := strings.TrimSpace(strings.ToLower(doc.Spec().GetSpecType()))
+	ver := strings.TrimSpace(doc.Spec().GetVersion())
+
+	if spec == string(sbom.SBOMSpecSPDX) && strings.HasPrefix(ver, "3.") {
+		return catalog.ProfFeatScore{
+			Score:  formulae.BooleanScore(false),
+			Desc:   formulae.NonSupportedSPDXField(),
+			Ignore: true,
+		}
+	}
+
 	if doc.SchemaValidation() {
 		return formulae.ScoreSBOMProfFull("valid schema", false)
 	}

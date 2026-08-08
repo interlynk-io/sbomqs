@@ -211,7 +211,6 @@ When `--profile` is specified, feature extraction follows the rules of that comp
 **License Features (Generic Mode):**
 
 Generic license features check **all licenses** on a component, regardless of whether they are:
-
 - Concluded licenses (`acknowledgement: concluded` in CDX)
 - Declared licenses (`acknowledgement: declared` in CDX)
 - Generic licenses (no acknowledgement field in CDX, e.g., CDX 1.5 or licenses without explicit acknowledgement)

@@ -46,6 +46,7 @@ func bsiV21Result(ctx context.Context, doc sbom.Document, fileName string, outFo
 	dtb.AddRecord(bsiV11SBOMTimestamp(doc))
 	dtb.AddRecord(bsiV21SBOMDepth(doc))
 	dtb.AddRecord(bsiV21SBOMURI(doc))
+	dtb.AddRecord(bsiV21SbomLinks(doc))
 
 	// Component-level checks
 	dtb.AddRecords(bsiV21Components(doc))
@@ -72,10 +73,14 @@ func bsiV21SpecVersion(doc sbom.Document) *db.Record {
 	result, score := "", 0.0
 
 	if spec == string(sbom.SBOMSpecSPDX) {
-		// SPDX v2 is NOT allowed by BSI v2.1. Only SPDX >= 3.0.1 is valid.
-		// Since sbomqs doesn't support SPDX3 yet, all SPDX v2 SBOMs fail.
-		result = version + " (SPDX v2 not allowed by BSI v2.1)"
-		score = 0.0
+		// BSI v2.1 requires SPDX >= 3.0.1, SPDX v2.x is NOT allowed
+		if bsiV21SpdxVersionAtLeast(version) {
+			result = version
+			score = 10.0
+		} else {
+			result = version + " (SPDX v2 not allowed by BSI v2.1)"
+			score = 0.0
+		}
 	} else if spec == string(sbom.SBOMSpecCDX) {
 		if bsiV21CdxVersionAtLeast(version) {
 			result = version
@@ -87,6 +92,20 @@ func bsiV21SpecVersion(doc sbom.Document) *db.Record {
 	}
 
 	return db.NewRecordStmt(SBOM_SPEC_VERSION, "doc", result, score, "")
+}
+
+// bsiV21SpdxVersionAtLeast checks if an SPDX version is >= 3.0.1 (BSI v2.1 requirement)
+func bsiV21SpdxVersionAtLeast(version string) bool {
+	// Normalize version string (remove "SPDX-" prefix if present)
+	version = strings.TrimPrefix(version, "SPDX-")
+	version = strings.TrimSpace(version)
+
+	// Check if version starts with "3." (3.0, 3.0.1, 3.1, etc.)
+	// BSI v2.1 requires SPDX >= 3.0.1
+	if strings.HasPrefix(version, "3.") {
+		return true
+	}
+	return false
 }
 
 // bsiV21CdxVersionAtLeast checks if a CDX version is >= 1.6.
@@ -125,6 +144,18 @@ func bsiV21SBOMURI(doc sbom.Document) *db.Record {
 
 	result := strings.Join(breakLongString(candidate, 80), "\n")
 	return db.NewRecordStmtAdditional(SBOM_URI, "doc", result, 10.0, false)
+}
+
+// bsiV21SbomLinks checks for references to another BOM (optional, §8.1.12).
+// CDX: externalReferences[type=Bom].
+// SPDX 3.0: SpdxDocument.externalRef[].locator referencing other SBOMs.
+func bsiV21SbomLinks(doc sbom.Document) *db.Record {
+	bom := doc.Spec().GetExtDocRef()
+	if bom != nil {
+		result := strings.Join(bom, ", ")
+		return db.NewRecordStmtOptional(SBOM_BOM_LINKS, "doc", result, 10.0)
+	}
+	return db.NewRecordStmtOptional(SBOM_BOM_LINKS, "doc", "", 0.0)
 }
 
 // bsiV21Vulnerabilities checks that the SBOM does NOT contain vulnerability info.
@@ -210,9 +241,13 @@ func bsiV21SBOMDepth(doc sbom.Document) *db.Record {
 	}
 	dfs(primary.GetID())
 
+	// Only count components (not files) as orphans.
+	// Files are leaf nodes linked via non-dependency relationships
+	// (e.g., hasDistributionArtifact) and should not be counted in
+	// the dependency graph completeness check.
 	orphanCount := 0
-	for id := range componentMap {
-		if !visited[id] {
+	for _, c := range doc.Components() {
+		if !visited[c.GetID()] {
 			orphanCount++
 		}
 	}
@@ -222,14 +257,31 @@ func bsiV21SBOMDepth(doc sbom.Document) *db.Record {
 
 	// v2.1 §5.2.2: completeness of the enumeration MUST be clearly indicated
 	hasCompletenessIndication := false
-	for _, comp := range doc.Composition() {
-		scope := comp.Scope()
-		agg := comp.Aggregate()
-		if (scope == sbom.ScopeDependencies || scope == sbom.ScopeGlobal) && agg != sbom.AggregateMissing {
-			hasCompletenessIndication = true
-			break
+
+	switch doc.Spec().GetSpecType() {
+	case string(sbom.SBOMSpecCDX):
+		// CycloneDX: Composition element indicates scope and aggregate
+		for _, comp := range doc.Composition() {
+			scope := comp.Scope()
+			agg := comp.Aggregate()
+			if (scope == sbom.ScopeDependencies || scope == sbom.ScopeGlobal) && agg != sbom.AggregateMissing {
+				hasCompletenessIndication = true
+				break
+			}
+		}
+	case string(sbom.SBOMSpecSPDX):
+		// SPDX 3.0: relationship-level completeness field ("complete", "incomplete", "noAssertion")
+		// BSI v2.1 requires SPDX >= 3.0.1, so all dependency relationships carry completeness.
+		for _, rel := range doc.GetRelationships() {
+			if strings.EqualFold(rel.GetType(), "DEPENDS_ON") || strings.EqualFold(rel.GetType(), "CONTAINS") {
+				if strings.EqualFold(rel.GetCompleteness(), "complete") || strings.EqualFold(rel.GetCompleteness(), "incomplete") || strings.EqualFold(rel.GetCompleteness(), "noAssertion") {
+					hasCompletenessIndication = true
+					break
+				}
+			}
 		}
 	}
+
 	if !hasCompletenessIndication {
 		return db.NewRecordStmt(SBOM_DEPTH, "doc", "dependency graph complete but completeness indication missing (BSI v2.1 §5.2.2 requires explicit indication)", 5.0, "")
 	}
@@ -276,47 +328,80 @@ func bsiV21Components(doc sbom.Document) []*db.Record {
 }
 
 // bsiV21ComponentFilename checks for the bsi:component:filename property (SHALL).
+// CDX: components[].properties[] with name="bsi:component:filename"
+// SPDX 3.0: DistributionArtifact().GetFilename() from software_File linked via hasDistributionArtifact.
 func bsiV21ComponentFilename(component sbom.GetComponent) *db.Record {
-	value := strings.TrimSpace(component.GetPropertyValue("bsi:component:filename"))
+	id := common.UniqueElementID(component)
 
+	// Check CDX-style BSI property
+	value := strings.TrimSpace(component.GetPropertyValue("bsi:component:filename"))
 	if value != "" {
-		return db.NewRecordStmt(COMP_FILENAME, common.UniqueElementID(component), value, 10.0, "")
+		return db.NewRecordStmt(COMP_FILENAME, id, value, 10.0, "")
 	}
 
-	return db.NewRecordStmt(COMP_FILENAME, common.UniqueElementID(component), "", 0.0, "")
+	// Check SPDX 3.0 distribution artifact
+	if filename := strings.TrimSpace(component.DistributionArtifact().GetFilename()); filename != "" {
+		return db.NewRecordStmt(COMP_FILENAME, id, filename, 10.0, "")
+	}
+
+	return db.NewRecordStmt(COMP_FILENAME, id, "", 0.0, "")
 }
 
 // bsiV21ComponentExecutable checks for the bsi:component:executable property (SHALL).
+// SPDX 3.0: checks DistributionArtifact().IsExecutable() from software_additionalPurpose.
 func bsiV21ComponentExecutable(component sbom.GetComponent) *db.Record {
-	value := strings.TrimSpace(component.GetPropertyValue("bsi:component:executable"))
+	id := common.UniqueElementID(component)
 
+	// Check CDX-style BSI property
+	value := strings.TrimSpace(component.GetPropertyValue("bsi:component:executable"))
 	if value != "" {
-		return db.NewRecordStmt(COMP_EXECUTABLE, common.UniqueElementID(component), value, 10.0, "")
+		return db.NewRecordStmt(COMP_EXECUTABLE, id, value, 10.0, "")
 	}
 
-	return db.NewRecordStmt(COMP_EXECUTABLE, common.UniqueElementID(component), "", 0.0, "")
+	// Check SPDX 3.0 distribution artifact
+	if component.DistributionArtifact().IsExecutable() {
+		return db.NewRecordStmt(COMP_EXECUTABLE, id, component.DistributionArtifact().GetFilename(), 10.0, "")
+	}
+
+	return db.NewRecordStmt(COMP_EXECUTABLE, id, "", 0.0, "")
 }
 
 // bsiV21ComponentArchive checks for the bsi:component:archive property (SHALL).
+// SPDX 3.0: checks DistributionArtifact().IsArchive() from software_additionalPurpose.
 func bsiV21ComponentArchive(component sbom.GetComponent) *db.Record {
-	value := strings.TrimSpace(component.GetPropertyValue("bsi:component:archive"))
+	id := common.UniqueElementID(component)
 
+	// Check CDX-style BSI property
+	value := strings.TrimSpace(component.GetPropertyValue("bsi:component:archive"))
 	if value != "" {
-		return db.NewRecordStmt(COMP_ARCHIVE, common.UniqueElementID(component), value, 10.0, "")
+		return db.NewRecordStmt(COMP_ARCHIVE, id, value, 10.0, "")
 	}
 
-	return db.NewRecordStmt(COMP_ARCHIVE, common.UniqueElementID(component), "", 0.0, "")
+	// Check SPDX 3.0 distribution artifact
+	if component.DistributionArtifact().IsArchive() {
+		return db.NewRecordStmt(COMP_ARCHIVE, id, component.DistributionArtifact().GetFilename(), 10.0, "")
+	}
+
+	return db.NewRecordStmt(COMP_ARCHIVE, id, "", 0.0, "")
 }
 
 // bsiV21ComponentStructured checks for the bsi:component:structured property (SHALL).
+// SPDX 3.0: checks DistributionArtifact().IsStructured() from software_additionalPurpose.
 func bsiV21ComponentStructured(component sbom.GetComponent) *db.Record {
-	value := strings.TrimSpace(component.GetPropertyValue("bsi:component:structured"))
+	id := common.UniqueElementID(component)
 
+	// Check CDX-style BSI property
+	value := strings.TrimSpace(component.GetPropertyValue("bsi:component:structured"))
 	if value != "" {
-		return db.NewRecordStmt(COMP_STRUCTURED, common.UniqueElementID(component), value, 10.0, "")
+		return db.NewRecordStmt(COMP_STRUCTURED, id, value, 10.0, "")
 	}
 
-	return db.NewRecordStmt(COMP_STRUCTURED, common.UniqueElementID(component), "", 0.0, "")
+	// Check SPDX 3.0 distribution artifact
+	if component.DistributionArtifact().IsStructured() {
+		return db.NewRecordStmt(COMP_STRUCTURED, id, component.DistributionArtifact().GetFilename(), 10.0, "")
+	}
+
+	return db.NewRecordStmt(COMP_STRUCTURED, id, "", 0.0, "")
 }
 
 // bsiV21ComponentDistributionLicense checks for concluded licenses (SHALL).
@@ -353,9 +438,11 @@ func bsiV21ComponentOriginalLicenses(component sbom.GetComponent) *db.Record {
 }
 
 // bsiV21ComponentDeployableHash checks for hash via externalReferences with type="distribution" or "distribution-intake" (SHALL).
+// SPDX 3.0: hash is on the distribution artifact file (software_File.verifiedUsing).
 func bsiV21ComponentDeployableHash(component sbom.GetComponent) *db.Record {
 	id := common.UniqueElementID(component)
 
+	// Check 1: external reference hash (CDX, SPDX 2.x)
 	for _, er := range component.ExternalReferences() {
 		t := er.GetRefType()
 		if t == "distribution" || t == "distribution-intake" {
@@ -369,14 +456,25 @@ func bsiV21ComponentDeployableHash(component sbom.GetComponent) *db.Record {
 		}
 	}
 
+	// Check 2: distribution artifact hash (SPDX 3.0)
+	for _, h := range component.DistributionArtifact().GetHashes() {
+		content := strings.TrimSpace(h.GetContent())
+		algo := strings.ToUpper(strings.ReplaceAll(h.GetAlgo(), "-", ""))
+		if content != "" && algo == "SHA512" {
+			return db.NewRecordStmt(COMP_DEPLOYABLE_HASH, id, algo+": "+content, 10.0, "")
+		}
+	}
+
 	return db.NewRecordStmt(COMP_DEPLOYABLE_HASH, id, "", 0.0, "")
 }
 
 // bsiV21ComponentSourceCodeURL checks for source code URI via externalReferences type="source-distribution" or "vcs" (additional, §5.3).
 // CDX 1.6: externalReferences[type=source-distribution|vcs].url
+// SPDX 3.0: software_sourceInfo OR software_SoftwareArtifact with externalRef (type SourceArtifact) linked via generates relationship.
 func bsiV21ComponentSourceCodeURL(component sbom.GetComponent) *db.Record {
 	id := common.UniqueElementID(component)
 
+	// CDX: externalReferences[type=source-distribution|vcs].url
 	for _, er := range component.ExternalReferences() {
 		t := er.GetRefType()
 		if t == "source-distribution" || t == "vcs" {
@@ -391,14 +489,24 @@ func bsiV21ComponentSourceCodeURL(component sbom.GetComponent) *db.Record {
 		}
 	}
 
+	// SPDX: GetSourceCodeURL is populated from software_sourceInfo or source artifact externalRef
+	if url := strings.TrimSpace(component.GetSourceCodeURL()); url != "" {
+		if bsiIsValidURL(url) {
+			return db.NewRecordStmtAdditional(COMP_SOURCE_CODE_URL, id, url, 10.0, false)
+		}
+		return db.NewRecordStmtAdditional(COMP_SOURCE_CODE_URL, id, url, 0.0, false)
+	}
+
 	return db.NewRecordStmtAdditional(COMP_SOURCE_CODE_URL, id, "", 0.0, true)
 }
 
 // bsiV21ComponentDownloadURL checks for deployable URI via externalReferences type="distribution" or "distribution-intake" (additional, §5.3).
 // CDX 1.6: externalReferences[type=distribution|distribution-intake].url
+// SPDX 3.0: software_downloadLocation on Package, OR File.externalRef.externalRefType="binaryArtifact" on distribution artifact.
 func bsiV21ComponentDownloadURL(component sbom.GetComponent) *db.Record {
 	id := common.UniqueElementID(component)
 
+	// CDX: externalReferences[type=distribution|distribution-intake].url
 	for _, er := range component.ExternalReferences() {
 		t := er.GetRefType()
 		if t == "distribution" || t == "distribution-intake" {
@@ -411,6 +519,14 @@ func bsiV21ComponentDownloadURL(component sbom.GetComponent) *db.Record {
 			}
 			return db.NewRecordStmtAdditional(COMP_DOWNLOAD_URL, id, locator, 0.0, false)
 		}
+	}
+
+	// SPDX: GetDownloadLocationURL is populated from software_downloadLocation or binaryArtifact externalRef
+	if url := strings.TrimSpace(component.GetDownloadLocationURL()); url != "" {
+		if bsiIsValidURL(url) {
+			return db.NewRecordStmtAdditional(COMP_DOWNLOAD_URL, id, url, 10.0, false)
+		}
+		return db.NewRecordStmtAdditional(COMP_DOWNLOAD_URL, id, url, 0.0, false)
 	}
 
 	return db.NewRecordStmtAdditional(COMP_DOWNLOAD_URL, id, "", 0.0, true)
@@ -446,21 +562,51 @@ func bsiV21ComponentOtherIdentifiers(component sbom.GetComponent) *db.Record {
 	return db.NewRecordStmtAdditional(COMP_OTHER_UNIQ_IDS, id, "", 0.0, true)
 }
 
-// bsiV21ComponentEffectiveLicense checks for the bsi:component:effectiveLicense property (MAY).
+// bsiV21ComponentEffectiveLicense checks for the effective license (MAY).
+// CDX: bsi:component:effectiveLicense property.
+// SPDX 3.0: hasEffectiveLicense relationship (non-standard BSI extension).
 func bsiV21ComponentEffectiveLicense(component sbom.GetComponent) *db.Record {
-	value := strings.TrimSpace(component.GetPropertyValue("bsi:component:effectiveLicense"))
+	id := common.UniqueElementID(component)
 
-	if value != "" {
-		return db.NewRecordStmtOptional(COMP_EFFECTIVE_LICENSE, common.UniqueElementID(component), value, 10.0)
+	// SPDX 3.0: check EffectiveLicenses populated from hasEffectiveLicense relationships
+	licenses := component.EffectiveLicenses()
+	if len(licenses) > 0 {
+		if !common.AreLicensesValid(licenses) {
+			return db.NewRecordStmtOptional(COMP_EFFECTIVE_LICENSE, id, "non-compliant", 0.0)
+		}
+		return db.NewRecordStmtOptional(COMP_EFFECTIVE_LICENSE, id, "compliant", 10.0)
 	}
 
-	return db.NewRecordStmtOptional(COMP_EFFECTIVE_LICENSE, common.UniqueElementID(component), "", 0.0)
+	// CDX: bsi:component:effectiveLicense property
+	value := strings.TrimSpace(component.GetPropertyValue("bsi:component:effectiveLicense"))
+	if value != "" {
+		return db.NewRecordStmtOptional(COMP_EFFECTIVE_LICENSE, id, value, 10.0)
+	}
+
+	return db.NewRecordStmtOptional(COMP_EFFECTIVE_LICENSE, id, "", 0.0)
 }
 
 // bsiV21ComponentSourceHash checks for hash via externalReferences type="source-distribution" or "vcs" (MAY).
+// SPDX 3.0: source code hash from software_SoftwareArtifact.verifiedUsing linked via generates relationship.
 func bsiV21ComponentSourceHash(component sbom.GetComponent) *db.Record {
 	id := common.UniqueElementID(component)
 
+	// SPDX 3.0: check SourceCodeHash populated from source artifact verifiedUsing
+	hash := strings.TrimSpace(component.SourceCodeHash())
+	if hash != "" {
+		// hash is stored as "algo: content"; extract algo for validation
+		parts := strings.SplitN(hash, ":", 2)
+		if len(parts) == 2 {
+			algo := strings.ToUpper(strings.TrimSpace(parts[0]))
+			if algo == "SHA512" {
+				return db.NewRecordStmtOptional(COMP_SOURCE_HASH, id, hash, 10.0)
+			}
+		}
+		// Non-SHA512 still counts as present but not compliant
+		return db.NewRecordStmtOptional(COMP_SOURCE_HASH, id, hash, 0.0)
+	}
+
+	// CDX: externalReferences[type=source-distribution or vcs].hashes
 	for _, er := range component.ExternalReferences() {
 		t := er.GetRefType()
 		if t == "source-distribution" || t == "vcs" {
@@ -477,12 +623,16 @@ func bsiV21ComponentSourceHash(component sbom.GetComponent) *db.Record {
 	return db.NewRecordStmtOptional(COMP_SOURCE_HASH, id, "", 0.0)
 }
 
-// bsiV21ComponentSecurityTxtURL checks for externalReferences type="rfc-9116" (MAY).
+// bsiV21ComponentSecurityTxtURL checks for security.txt URL (MAY).
+// CDX: externalReferences[type=rfc-9116].
+// SPDX 3.0: externalRef.externalRefType="securityOther".
 func bsiV21ComponentSecurityTxtURL(component sbom.GetComponent) *db.Record {
 	id := common.UniqueElementID(component)
 
 	for _, er := range component.ExternalReferences() {
-		if er.GetRefType() == "rfc-9116" {
+		t := er.GetRefType()
+		// CDX uses "rfc-9116", SPDX 3.0 uses "securityOther" for security.txt
+		if t == "rfc-9116" || strings.EqualFold(t, "securityOther") {
 			locator := strings.TrimSpace(er.GetRefLocator())
 			if locator != "" {
 				return db.NewRecordStmtOptional(COMP_SECURITY_TXT_URL, id, locator, 10.0)

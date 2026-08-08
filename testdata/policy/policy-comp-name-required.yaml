@@ -1,0 +1,6 @@
+policy:
+  - name: "Test: Component name required - should fail on any component without name"
+    type: required
+    rules:
+      - field: name
+    action: fail

@@ -719,13 +719,28 @@ func copyC(cdxc *cydx.Component, c *CdxDoc) *Component {
 		}
 	}
 
-	// Populate component properties
+	// Populate component properties and DistributionArtifact
 	if cdxc.Properties != nil {
 		for _, p := range *cdxc.Properties {
 			nc.Props = append(nc.Props, ComponentProperty{
 				Name:  p.Name,
 				Value: p.Value,
 			})
+			// Map BSI component properties to DistributionArtifact fields
+			switch p.Name {
+			case "bsi:component:filename":
+				nc.DistArtifact.Absent = false
+				nc.DistArtifact.Filename = p.Value
+			case "bsi:component:executable":
+				nc.DistArtifact.Absent = false
+				nc.DistArtifact.IsExec = true
+			case "bsi:component:archive":
+				nc.DistArtifact.Absent = false
+				nc.DistArtifact.IsArch = true
+			case "bsi:component:structured":
+				nc.DistArtifact.Absent = false
+				nc.DistArtifact.IsStruct = true
+			}
 		}
 	}
 

@@ -1,0 +1,6 @@
+policy:
+  - name: "Test: Component supplier required"
+    type: required
+    rules:
+      - field: supplier
+    action: fail

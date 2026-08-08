@@ -1,0 +1,6 @@
+policy:
+  - name: "Test: Component PURL required"
+    type: required
+    rules:
+      - field: purl
+    action: fail

@@ -1,0 +1,6 @@
+policy:
+  - name: "Test: Component checksum required"
+    type: required
+    rules:
+      - field: checksum
+    action: fail
