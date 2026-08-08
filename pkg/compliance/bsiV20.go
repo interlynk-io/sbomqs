@@ -28,10 +28,29 @@ import (
 	"github.com/samber/lo"
 )
 
-var (
-	validBsiV20SpdxVersions = []string{"2.2", "2.3"}
-	validBsiV20CdxVersions  = []string{"1.5", "1.6"}
-)
+// bsiV20VersionMeetsMinimum checks whether a version string meets a minimum requirement.
+// It parses "major.minor" segments and returns true if version >= minVersion.
+func bsiV20VersionMeetsMinimum(version, minVersion string) bool {
+	parseParts := func(v string) (int, int) {
+		parts := strings.Split(v, ".")
+		major, minor := 0, 0
+		if len(parts) >= 1 {
+			fmt.Sscanf(parts[0], "%d", &major)
+		}
+		if len(parts) >= 2 {
+			fmt.Sscanf(parts[1], "%d", &minor)
+		}
+		return major, minor
+	}
+
+	vMajor, vMinor := parseParts(version)
+	mMajor, mMinor := parseParts(minVersion)
+
+	if vMajor > mMajor {
+		return true
+	}
+	return vMajor == mMajor && vMinor >= mMinor
+}
 
 func bsiV20Result(ctx context.Context, doc sbom.Document, fileName string, outFormat string) {
 	log := logger.FromContext(ctx)
@@ -146,10 +165,9 @@ func bsiV20SpecVersion(doc sbom.Document) *db.Record {
 	result, score := "", 0.0
 
 	if spec == string(sbom.SBOMSpecSPDX) {
-		count := lo.Count(validBsiV20SpdxVersions, version)
 		validate := lo.Contains(validSpdxVersion, version)
 		if validate {
-			if count > 0 {
+			if bsiV20VersionMeetsMinimum(version, "2.2") {
 				result = version
 				score = 10.0
 			} else {
@@ -158,8 +176,7 @@ func bsiV20SpecVersion(doc sbom.Document) *db.Record {
 			}
 		}
 	} else if spec == string(sbom.SBOMSpecCDX) {
-		count := lo.Count(validBsiV20CdxVersions, version)
-		if count > 0 {
+		if bsiV20VersionMeetsMinimum(version, "1.5") {
 			result = version
 			score = 10.0
 		} else {
@@ -234,11 +251,22 @@ func bsiV20ComponentDeployableHash(doc sbom.Document, component sbom.GetComponen
 			}
 		}
 	case string(sbom.SBOMSpecSPDX):
+		// SPDX 2.x: PackageChecksum directly on the package
 		for _, checksum := range component.GetChecksums() {
 			algo := strings.ToUpper(strings.ReplaceAll(checksum.GetAlgo(), "-", ""))
 			value := strings.TrimSpace(checksum.GetContent())
 			if algo == "SHA512" && value != "" {
 				result = checksum.GetAlgo() + ": " + value
+				score = 10.0
+				goto done
+			}
+		}
+		// SPDX 3.0: hash is on the distribution artifact file
+		for _, h := range component.DistributionArtifact().GetHashes() {
+			algo := strings.ToUpper(strings.ReplaceAll(h.GetAlgo(), "-", ""))
+			value := strings.TrimSpace(h.GetContent())
+			if algo == "SHA512" && value != "" {
+				result = h.GetAlgo() + ": " + value
 				score = 10.0
 				goto done
 			}
@@ -275,7 +303,7 @@ func bsiV20ComponentFilename(doc sbom.Document, component sbom.GetComponent) *db
 
 // bsiV20ComponentExecutable checks whether the component is executable.
 // BSI V20.0: Describes whether the component is executable.
-// SPDX: PrimaryPackagePurpose = APPLICATION.
+// SPDX 2.x/3.0: DistributionArtifact.IsExecutable() abstracts File purposes.
 // CDX: custom property bsi:component:executable.
 func bsiV20ComponentExecutable(doc sbom.Document, component sbom.GetComponent) *db.Record {
 	id := common.UniqueElementID(component)
@@ -289,9 +317,8 @@ func bsiV20ComponentExecutable(doc sbom.Document, component sbom.GetComponent) *
 		}
 
 	case string(sbom.SBOMSpecSPDX):
-		purpose := strings.ToUpper(strings.TrimSpace(component.PrimaryPurpose()))
-		if purpose == "APPLICATION" {
-			return db.NewRecordStmt(COMP_EXECUTABLE, id, purpose, 10.0, "")
+		if component.DistributionArtifact().IsExecutable() {
+			return db.NewRecordStmt(COMP_EXECUTABLE, id, "executable", 10.0, "")
 		}
 	}
 
@@ -300,7 +327,7 @@ func bsiV20ComponentExecutable(doc sbom.Document, component sbom.GetComponent) *
 
 // bsiV20ComponentArchive checks whether the component is an archive.
 // BSI V20.0: Describes whether the component is an archive.
-// SPDX: PrimaryPackagePurpose = ARCHIVE .
+// SPDX 2.x/3.0: DistributionArtifact.IsArchive() abstracts File purposes.
 // CDX: custom property bsi:component:archive.
 func bsiV20ComponentArchive(doc sbom.Document, component sbom.GetComponent) *db.Record {
 	id := common.UniqueElementID(component)
@@ -314,9 +341,8 @@ func bsiV20ComponentArchive(doc sbom.Document, component sbom.GetComponent) *db.
 		}
 
 	case string(sbom.SBOMSpecSPDX):
-		purpose := strings.ToUpper(strings.TrimSpace(component.PrimaryPurpose()))
-		if purpose == "ARCHIVE" {
-			return db.NewRecordStmt(COMP_ARCHIVE, id, purpose, 10.0, "")
+		if component.DistributionArtifact().IsArchive() {
+			return db.NewRecordStmt(COMP_ARCHIVE, id, "archive", 10.0, "")
 		}
 	}
 
@@ -325,7 +351,7 @@ func bsiV20ComponentArchive(doc sbom.Document, component sbom.GetComponent) *db.
 
 // bsiV20ComponentStructured checks whether the component is structured data.
 // BSI V20.0: Describes whether the component is a structured file.
-// SPDX: PrimaryPackagePurpose = SOURCE
+// SPDX 2.x/3.0: DistributionArtifact.IsStructured() abstracts File purposes.
 // CDX: custom property bsi:component:structured.
 func bsiV20ComponentStructured(doc sbom.Document, component sbom.GetComponent) *db.Record {
 	id := common.UniqueElementID(component)
@@ -339,9 +365,8 @@ func bsiV20ComponentStructured(doc sbom.Document, component sbom.GetComponent) *
 		}
 
 	case string(sbom.SBOMSpecSPDX):
-		purpose := strings.ToUpper(strings.TrimSpace(component.PrimaryPurpose()))
-		if purpose == "SOURCE" {
-			return db.NewRecordStmt(COMP_STRUCTURED, id, purpose, 10.0, "")
+		if component.DistributionArtifact().IsStructured() {
+			return db.NewRecordStmt(COMP_STRUCTURED, id, "structured", 10.0, "")
 		}
 	}
 

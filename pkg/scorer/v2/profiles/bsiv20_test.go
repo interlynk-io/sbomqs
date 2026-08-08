@@ -1608,6 +1608,60 @@ func TestBSIV20CompDeclaredLicenses(t *testing.T) {
 	})
 }
 
+// spdx3CompWithSourceHash has a software_SoftwareArtifact with SHA-512 verifiedUsing hash linked via generates relationship.
+var spdx3CompWithSourceHash = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "BSI v2.0 Test",
+      "creationInfo": "_:creationinfo",
+      "element": ["SPDXRef-Package", "SPDXRef-SourceArtifact"],
+      "profileConformance": ["core", "software"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:author"]
+    },
+    {
+      "type": "Person",
+      "@id": "_:author",
+      "name": "Test Author"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package",
+      "name": "lib-with-source-hash",
+      "software_packageVersion": "1.0.0"
+    },
+    {
+      "type": "software_SoftwareArtifact",
+      "spdxId": "SPDXRef-SourceArtifact",
+      "software_primaryPurpose": "source",
+      "verifiedUsing": [
+        {
+          "type": "Hash",
+          "algorithm": "sha512",
+          "hashValue": "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e"
+        }
+      ]
+    },
+    {
+      "type": "Relationship",
+      "from": "SPDXRef-SourceArtifact",
+      "to": ["SPDXRef-Package"],
+      "relationshipType": "generates",
+      "completeness": "complete"
+    }
+  ]
+}
+`)
+
 // ===========================================================================
 // TestBSIV20CompSourceHash
 // ===========================================================================
@@ -1667,6 +1721,18 @@ func TestBSIV20CompSourceHash(t *testing.T) {
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "no components declare source code hash", got.Desc)
 		assert.True(t, got.Ignore)
+	})
+
+	// SPDX 3.0: software_SoftwareArtifact.verifiedUsing SHA-512 linked via generates → score 10.0
+	t.Run("spdx3WithSHA512SourceHash", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3CompWithSourceHash, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV20CompSourceHash(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "source code hash declared for all components", got.Desc)
+		assert.False(t, got.Ignore)
 	})
 
 	// SPDX PackageVerificationCode is SHA-1, not SHA-512 → score 0.0 (not applicable)

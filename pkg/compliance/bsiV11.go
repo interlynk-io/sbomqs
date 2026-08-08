@@ -30,9 +30,7 @@ import (
 )
 
 var (
-	validBsiSpdxVersions = []string{"2.3"}
-	validSpdxVersion     = []string{"2.1", "2.2", "2.3"}
-	validBsiCdxVersions  = []string{"1.4", "1.5", "1.6"}
+	validSpdxVersion = []string{"2.1", "2.2", "2.3", "3.0.1"}
 )
 
 // BSI compliance check identifiers.
