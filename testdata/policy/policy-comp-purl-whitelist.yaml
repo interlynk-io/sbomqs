@@ -1,0 +1,8 @@
+policy:
+  - name: "Test: Component PURL whitelist - should pass for valid npm PURLs"
+    type: whitelist
+    rules:
+      - field: purl
+        patterns:
+          - "^pkg:npm/.+@.+"
+    action: fail

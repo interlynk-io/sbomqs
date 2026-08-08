@@ -136,6 +136,38 @@ func (extractor *Extractor) MapFieldWithFunction(ctx context.Context) {
 		return nil
 	}
 
+	// filename: distribution artifact filename
+	extractor.compGetters["filename"] = func(c sbom.GetComponent) []string {
+		if s := c.GetFilename(); s != "" {
+			return []string{s}
+		}
+		return nil
+	}
+
+	// executable: whether the distribution artifact is executable
+	extractor.compGetters["executable"] = func(c sbom.GetComponent) []string {
+		if c.DistributionArtifact().IsExecutable() {
+			return []string{"true"}
+		}
+		return nil
+	}
+
+	// archive: whether the distribution artifact is an archive
+	extractor.compGetters["archive"] = func(c sbom.GetComponent) []string {
+		if c.DistributionArtifact().IsArchive() {
+			return []string{"true"}
+		}
+		return nil
+	}
+
+	// structured: whether the distribution artifact is structured
+	extractor.compGetters["structured"] = func(c sbom.GetComponent) []string {
+		if c.DistributionArtifact().IsStructured() {
+			return []string{"true"}
+		}
+		return nil
+	}
+
 	// supplier: aggregate common supplier fields
 	extractor.compGetters["supplier"] = func(c sbom.GetComponent) []string {
 		suppliers := []string{}
@@ -195,7 +227,7 @@ func (extractor *Extractor) MapFieldWithFunction(ctx context.Context) {
 		return nil
 	}
 
-	// sbom_author -> aggregate d.Authors()
+	// sbom_author/sbom_authors -> aggregate d.Authors()
 	extractor.docGetters["sbom_author"] = func(d sbom.Document) []string {
 		sbomAuthors := []string{}
 		for _, a := range d.Authors() {
@@ -205,10 +237,14 @@ func (extractor *Extractor) MapFieldWithFunction(ctx context.Context) {
 			if n := a.GetEmail(); n != "" {
 				sbomAuthors = append(sbomAuthors, n)
 			}
-
+			if n := a.GetURL(); n != "" {
+				sbomAuthors = append(sbomAuthors, n)
+			}
 		}
 		return nilOrSlice(sbomAuthors)
 	}
+	// Alias: sbom_authors -> same as sbom_author
+	extractor.docGetters["sbom_authors"] = extractor.docGetters["sbom_author"]
 
 	// sbom_supplier -> doc-level supplier
 	extractor.docGetters["sbom_supplier"] = func(d sbom.Document) []string {

@@ -94,6 +94,14 @@ func BSIV11SBOMCreator(doc sbom.Document) catalog.ProfFeatScore {
 				Ignore: false,
 			}
 		}
+
+		if isValidURL(a.GetURL()) {
+			return catalog.ProfFeatScore{
+				Score:  10.0,
+				Desc:   "SBOM creator contact(URL) provided via authors",
+				Ignore: false,
+			}
+		}
 	}
 
 	// ---- Manufacturer ----
@@ -740,9 +748,12 @@ func BSIV11CompDependencies(doc sbom.Document) catalog.ProfFeatScore {
 	// (already ensured by relationship validation)
 
 	// 5. Ensure no orphan components (strict enforcement)
+	// Only count actual components, not files. Files are leaf nodes
+	// linked via non-dependency relationships (e.g., hasDistributionArtifact)
+	// and should not be counted in the dependency graph completeness check.
 	orphanCount := 0
-	for id := range componentMap {
-		if !visited[id] {
+	for _, c := range doc.Components() {
+		if !visited[c.GetID()] {
 			orphanCount++
 		}
 	}

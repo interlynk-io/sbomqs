@@ -1,0 +1,6 @@
+policy:
+  - name: "Test: Component CPE required"
+    type: required
+    rules:
+      - field: cpe
+    action: fail

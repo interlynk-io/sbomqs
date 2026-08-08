@@ -50,6 +50,7 @@ var bsiV21SectionDetails = map[int]bsiSection{
 	COMP_EFFECTIVE_LICENSE: {Title: "Optional component fields", ID: "5.2.3", Required: false, DataField: "effective licence"},
 	COMP_SOURCE_HASH:       {Title: "Optional component fields", ID: "5.2.3", Required: false, DataField: "hash of source code"},
 	COMP_SECURITY_TXT_URL:  {Title: "Optional component fields", ID: "5.2.3", Required: false, DataField: "security.txt URL"},
+	SBOM_BOM_LINKS:         {Title: "Optional SBOM fields", ID: "8.1.12", Required: false, DataField: "BOM links"},
 }
 
 func bsiV21JSONReport(dtb *db.DB, fileName string) {
@@ -123,7 +124,11 @@ func constructV21Sections(dtb *db.DB) []bsiSection {
 				Required:  section.Required,
 			}
 			score := bsiKeyIDScore(dtb, r.CheckKey, r.ID)
-			newSection.Score = score.totalScore()
+			if section.Required {
+				newSection.Score = score.totalScore()
+			} else {
+				newSection.Score = score.totalOptionalScore()
+			}
 			if r.ID == "doc" {
 				newSection.ElementID = "SBOM"
 			} else {

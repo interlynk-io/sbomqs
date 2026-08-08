@@ -1,0 +1,96 @@
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Binary Artifact Download Test",
+      "creationInfo": "_:creationinfo",
+      "element": ["SPDXRef-Package1", "SPDXRef-Package2", "SPDXRef-File1", "SPDXRef-File2"],
+      "profileConformance": ["core", "software"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:author"]
+    },
+    {
+      "type": "Person",
+      "@id": "_:author",
+      "name": "Test Author"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package1",
+      "name": "package-one",
+      "software_packageVersion": "1.0.0"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package2",
+      "name": "package-two",
+      "software_packageVersion": "2.0.0"
+    },
+    {
+      "type": "software_File",
+      "spdxId": "SPDXRef-File1",
+      "name": "package-one-1.0.0.jar",
+      "externalRef": [
+        {
+          "type": "ExternalRef",
+          "externalRefType": "binaryArtifact",
+          "locator": "https://example.com/download/package-one-1.0.0.jar"
+        }
+      ],
+      "verifiedUsing": [
+        {
+          "type": "Hash",
+          "algorithm": "sha512",
+          "hashValue": "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e"
+        }
+      ]
+    },
+    {
+      "type": "software_File",
+      "spdxId": "SPDXRef-File2",
+      "name": "package-two-2.0.0.jar",
+      "externalRef": [
+        {
+          "type": "ExternalRef",
+          "externalRefType": "binaryArtifact",
+          "locator": "https://example.com/download/package-two-2.0.0.jar"
+        }
+      ],
+      "verifiedUsing": [
+        {
+          "type": "Hash",
+          "algorithm": "sha512",
+          "hashValue": "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e"
+        }
+      ]
+    },
+    {
+      "type": "Relationship",
+      "from": "SPDXRef-Package1",
+      "to": ["SPDXRef-File1"],
+      "relationshipType": "hasDistributionArtifact",
+      "completeness": "complete"
+    },
+    {
+      "type": "Relationship",
+      "from": "SPDXRef-Package2",
+      "to": ["SPDXRef-File2"],
+      "relationshipType": "hasDistributionArtifact",
+      "completeness": "complete"
+    },
+    {
+      "type": "Relationship",
+      "from": "SPDXRef-DOCUMENT",
+      "to": ["SPDXRef-Package1", "SPDXRef-Package2"],
+      "relationshipType": "describes",
+      "completeness": "complete"
+    }
+  ]
+}

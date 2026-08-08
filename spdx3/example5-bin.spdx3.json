@@ -1,0 +1,168 @@
+{
+  "@context" : "https://spdx.org/rdf/3.0.1/spdx-context.jsonld",
+  "@graph" : [ {
+    "@id" : "_:creationInfo_0",
+    "type" : "CreationInfo",
+    "specVersion" : "3.0.1",
+    "createdBy" : [ "https://swinslow.net/spdx-examples/example5/hello-go-bin-v2-specv3/SPDXRef-gnrtd0" ],
+    "createdUsing" : [ "https://swinslow.net/spdx-examples/example5/hello-go-bin-v2-specv3/additionalToolSPDXRef-gnrtd1", "https://swinslow.net/spdx-examples/example5/hello-go-bin-v2-specv3/additionalToolSPDXRef-gnrtd2" ],
+    "created" : "2021-08-26T01:54:00Z"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example5/hello-go-bin-v2-specv3/SPDXRef-gnrtd3",
+    "type" : "Relationship",
+    "relationshipType" : "describes",
+    "completeness" : "noAssertion",
+    "to" : [ "https://swinslow.net/spdx-examples/example5/hello-go-bin-v2-specv3/SPDXRef-gnrtd4" ],
+    "from" : "https://swinslow.net/spdx-examples/example5/hello-go-bin-v2-specv3/document0",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example5/hello-go-bin-v2-specv3/SPDXRef-gnrtd5",
+    "type" : "Relationship",
+    "relationshipType" : "contains",
+    "completeness" : "noAssertion",
+    "to" : [ "https://swinslow.net/spdx-examples/example5/hello-go-bin-v2-specv3/SPDXRef-gnrtd6" ],
+    "from" : "https://swinslow.net/spdx-examples/example5/hello-go-bin-v2-specv3/SPDXRef-gnrtd4",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example5/hello-go-bin-v2-specv3/SPDXRef-gnrtd7",
+    "type" : "Relationship",
+    "relationshipType" : "generates",
+    "to" : [ "https://swinslow.net/spdx-examples/example5/hello-go-bin-v2-specv3/SPDXRef-gnrtd6" ],
+    "completeness" : "noAssertion",
+    "from" : "https://swinslow.net/spdx-examples/example5/hello-go-src-v2#SPDXRef-Makefile",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example5/hello-go-bin-v2-specv3/SPDXRef-gnrtd8",
+    "type" : "Relationship",
+    "relationshipType" : "generates",
+    "to" : [ "https://swinslow.net/spdx-examples/example5/hello-go-bin-v2-specv3/SPDXRef-gnrtd6" ],
+    "completeness" : "noAssertion",
+    "from" : "https://swinslow.net/spdx-examples/example5/hello-go-src-v2#SPDXRef-hello-go-src",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example5/hello-go-bin-v2-specv3/SPDXRef-gnrtd9",
+    "type" : "Relationship",
+    "relationshipType" : "hasConcludedLicense",
+    "to" : [ "https://swinslow.net/spdx-examples/example5/hello-go-bin-v2-specv3/SPDXRef-gnrtd10" ],
+    "from" : "https://swinslow.net/spdx-examples/example5/hello-go-bin-v2-specv3/SPDXRef-gnrtd6",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example5/hello-go-bin-v2-specv3/SPDXRef-gnrtd11",
+    "type" : "Relationship",
+    "relationshipType" : "hasDeclaredLicense",
+    "to" : [ "https://swinslow.net/spdx-examples/example5/hello-go-bin-v2-specv3/SPDXRef-gnrtd12" ],
+    "from" : "https://swinslow.net/spdx-examples/example5/hello-go-bin-v2-specv3/SPDXRef-gnrtd6",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example5/hello-go-bin-v2-specv3/SPDXRef-gnrtd13",
+    "type" : "Relationship",
+    "relationshipType" : "hasConcludedLicense",
+    "to" : [ "https://swinslow.net/spdx-examples/example5/hello-go-bin-v2-specv3/SPDXRef-gnrtd10" ],
+    "from" : "https://swinslow.net/spdx-examples/example5/hello-go-bin-v2-specv3/SPDXRef-gnrtd4",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example5/hello-go-bin-v2-specv3/SPDXRef-gnrtd14",
+    "type" : "Relationship",
+    "relationshipType" : "hasDeclaredLicense",
+    "to" : [ "https://swinslow.net/spdx-examples/example5/hello-go-bin-v2-specv3/SPDXRef-gnrtd12" ],
+    "from" : "https://swinslow.net/spdx-examples/example5/hello-go-bin-v2-specv3/SPDXRef-gnrtd4",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example5/hello-go-bin-v2-specv3/document0",
+    "type" : "SpdxDocument",
+    "dataLicense" : "https://swinslow.net/spdx-examples/example5/hello-go-bin-v2-specv3/SPDXRef-gnrtd15",
+    "rootElement" : [ "https://swinslow.net/spdx-examples/example5/hello-go-bin-v2-specv3/SPDXRef-gnrtd4" ],
+    "import" : [ {
+      "type" : "ExternalMap",
+      "verifiedUsing" : [ {
+        "type" : "Hash",
+        "algorithm" : "sha1",
+        "hashValue" : "c7ecde060983373ace6ff9cfd1ddc7ccd5ce5e29"
+      } ],
+      "externalSpdxId" : "https://swinslow.net/spdx-examples/example5/hello-go-src-v2#SPDXRef-hello-go-src",
+      "locationHint" : "https://swinslow.net/spdx-examples/example5/hello-go-src-v2"
+    }, {
+      "type" : "ExternalMap",
+      "verifiedUsing" : [ {
+        "type" : "Hash",
+        "algorithm" : "sha1",
+        "hashValue" : "c7ecde060983373ace6ff9cfd1ddc7ccd5ce5e29"
+      } ],
+      "externalSpdxId" : "https://swinslow.net/spdx-examples/example5/hello-go-src-v2#SPDXRef-Makefile",
+      "locationHint" : "https://swinslow.net/spdx-examples/example5/hello-go-src-v2"
+    } ],
+    "name" : "hello-go-bin",
+    "namespaceMap" : [ {
+      "type" : "NamespaceMap",
+      "prefix" : "DocumentRef-hello-go-src",
+      "namespace" : "https://swinslow.net/spdx-examples/example5/hello-go-src-v2#"
+    } ],
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example5/hello-go-bin-v2-specv3/additionalToolSPDXRef-gnrtd1",
+    "type" : "Tool",
+    "name" : "github.com/spdx/tools-golang/builder",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example5/hello-go-bin-v2-specv3/additionalToolSPDXRef-gnrtd2",
+    "type" : "Tool",
+    "name" : "github.com/spdx/tools-golang/idsearcher",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example5/hello-go-bin-v2-specv3/SPDXRef-gnrtd10",
+    "type" : "simplelicensing_LicenseExpression",
+    "simplelicensing_licenseExpression" : "GPL-3.0-or-later",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example5/hello-go-bin-v2-specv3/SPDXRef-gnrtd12",
+    "type" : "simplelicensing_LicenseExpression",
+    "simplelicensing_licenseExpression" : "NOASSERTION",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example5/hello-go-bin-v2-specv3/SPDXRef-gnrtd15",
+    "type" : "simplelicensing_LicenseExpression",
+    "simplelicensing_licenseExpression" : "CC0-1.0",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example5/hello-go-bin-v2-specv3/SPDXRef-gnrtd0",
+    "type" : "Person",
+    "externalIdentifier" : [ {
+      "type" : "ExternalIdentifier",
+      "identifier" : "steve@swinslow.net",
+      "externalIdentifierType" : "email"
+    } ],
+    "name" : "Steve Winslow",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example5/hello-go-bin-v2-specv3/SPDXRef-gnrtd6",
+    "type" : "software_File",
+    "software_copyrightText" : "NOASSERTION",
+    "verifiedUsing" : [ {
+      "type" : "Hash",
+      "algorithm" : "md5",
+      "hashValue" : "9ec63d68bdceb2922548e3faa377e7d0"
+    }, {
+      "type" : "Hash",
+      "algorithm" : "sha1",
+      "hashValue" : "78ed46e8e6f86f19d3a6782979029be5f918235f"
+    }, {
+      "type" : "Hash",
+      "algorithm" : "sha256",
+      "hashValue" : "3d51cb6c9a38d437e8ee20a1902a15875ea1d3771a215622e14739532be14949"
+    } ],
+    "name" : "./hello",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example5/hello-go-bin-v2-specv3/SPDXRef-gnrtd4",
+    "type" : "software_Package",
+    "software_copyrightText" : "NOASSERTION",
+    "software_downloadLocation" : "git+https://github.com/swinslow/spdx-examples.git#example5/content/build",
+    "verifiedUsing" : [ {
+      "type" : "PackageVerificationCode",
+      "algorithm" : "sha1",
+      "hashValue" : "41acac4b846ee388cb6c1234f04489ccd5daa5a5"
+    } ],
+    "name" : "hello-go-bin",
+    "creationInfo" : "_:creationInfo_0"
+  } ]
+}

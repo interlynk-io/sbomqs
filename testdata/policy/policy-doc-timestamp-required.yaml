@@ -1,0 +1,6 @@
+policy:
+  - name: "Test: Document timestamp required"
+    type: required
+    rules:
+      - field: sbom_timestamp
+    action: fail

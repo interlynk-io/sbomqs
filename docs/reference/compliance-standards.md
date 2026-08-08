@@ -23,26 +23,26 @@ Key changes from v2.0.0:
 
 | TR-03183-2 Section | Data Field | Required | CycloneDX v1.6+ | SPDX v3.0.1 | SPDX v2 | Notes |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| 5.2.1 SBOM Fields | Creator of the SBOM | SHALL | `metadata.manufacturer[].url` XOR `metadata.manufacturer[].contact[].email` | `CreationInfo.createdBy` | N/A | |
+| 5.2.1 SBOM Fields | Creator of the SBOM | SHALL | `metadata.manufacturer[].url` XOR `metadata.manufacturer[].contact[].email` | `CreationInfo.createdBy` → `Person`/`Organization` with `externalIdentifiers` (email or URL) | N/A | |
 | | Timestamp | SHALL | `metadata.timestamp` | `CreationInfo.created` | N/A | |
-| | SBOM-URI | SHALL | `serialNumber` (BOM-Link: `urn:cdx:{serialNumber}/{version}`) | `Sbom.spdxId` | N/A | Promoted from additional in v2.0 |
-| 5.2.2 Component Fields | Component creator | SHALL | `components[].manufacturer[].url` XOR `components[].manufacturer[].contact[].email` | `Package.originatedBy` | N/A | |
-| | Component name | SHALL | `components[].name` | `Package.name` | N/A | |
-| | Component version | SHALL | `components[].version` | `Package.packageVersion` | N/A | |
-| | Filename | SHALL | `components[].properties[].name="bsi:component:filename"` | `File.name` | N/A | New in v2.1 |
-| | Dependencies | SHALL | `dependencies[]` + `compositions` | `Relationship.relationshipType=["contains" OR "dependsOn"]` | N/A | |
-| | Distribution licences | SHALL | `components[].licenses[].expression` + `acknowledgement="concluded"` | `Relationship.relationshipType="hasConcludedLicense"` | N/A | Requires CDX 1.6+ acknowledgement field |
-| | Hash of deployable component | SHALL | `components[].externalReferences[].hashes[]` with `type="distribution"` | `File.verifiedUsing` | N/A | Changed from component hash in v2.0 |
-| | Executable property | SHALL | `components[].properties[].name="bsi:component:executable"` | `File.additionalPurpose=["executable"]` | N/A | New in v2.1 |
-| | Archive property | SHALL | `components[].properties[].name="bsi:component:archive"` | `File.additionalPurpose=["archive"]` | N/A | New in v2.1 |
-| | Structured property | SHALL | `components[].properties[].name="bsi:component:structured"` | `File.additionalPurpose=["container" OR "firmware"]` | N/A | New in v2.1 |
-| | Source code URI | SHALL | `components[].externalReferences[].type="source-distribution"` | `SoftwareArtifact.externalRef.externalRefType="SourceArtifact"` | N/A | Promoted from additional in v2.0 |
-| | URI of the deployable form | SHALL | `components[].externalReferences[].type="distribution"` + `.url` | `File.externalRef.externalRefType="binaryArtifact"` | N/A | Promoted from additional in v2.0 |
-| | Other unique identifiers | SHALL | `components[].cpe` OR `components[].swid` OR `components[].purl` | `Package.externalIdentifiers` | N/A | Promoted from additional in v2.0 |
-| | Original licences | SHALL | `components[].licenses[].expression` + `acknowledgement="declared"` | `Relationship.relationshipType="hasDeclaredLicense"` | N/A | New in v2.1 (SHALL) |
-| 5.2.3 Optional Fields | Effective licence | MAY | `components[].properties[].name="bsi:component:effectiveLicense"` | `Relationship.relationshipType="other"` + `.comment="hasEffectiveLicense"` | N/A | New in v2.1 |
-| | Hash of source code | MAY | `components[].externalReferences[].hashes[]` with `type="source-distribution"` | `SoftwareArtifact.verifiedUsing` | N/A | |
-| | URL of the security.txt | MAY | `components[].externalReferences[].type="rfc-9116"` + `.url` | `Package.externalRef.externalRefType="securityOther"` | N/A | New in v2.1 |
+| | SBOM-URI | SHALL | `serialNumber` (BOM-Link: `urn:cdx:{serialNumber}/{version}`) | `SpdxDocument.namespaceMap[].namespace` or `SpdxDocument.spdxId` | N/A | Promoted from additional in v2.0 |
+| 5.2.2 Component Fields | Component creator | SHALL | `components[].manufacturer[].url` XOR `components[].manufacturer[].contact[].email` | `software_Package.originatedBy` → `Person`/`Organization` with `externalIdentifiers` (email or URL) | N/A | |
+| | Component name | SHALL | `components[].name` | `software_Package.name` | N/A | |
+| | Component version | SHALL | `components[].version` | `software_Package.software_packageVersion` | N/A | |
+| | Filename | SHALL | `components[].properties[].name="bsi:component:filename"` | `software_File.name` linked via `hasDistributionArtifact` relationship | N/A | New in v2.1 |
+| | Dependencies | SHALL | `dependencies[]` + `compositions` | `Relationship` with `relationshipType: "contains"` or `"dependsOn"` + `completeness` | N/A | |
+| | Distribution licences | SHALL | `components[].licenses[].expression` + `acknowledgement="concluded"` | `Relationship` `hasConcludedLicense` → `simplelicensing_LicenseExpression.licenseExpression` | N/A | Requires CDX 1.6+ acknowledgement field |
+| | Hash of deployable component | SHALL | `components[].externalReferences[].hashes[]` with `type="distribution"` | `software_File.verifiedUsing` with `algorithm: "sha512"` linked via `hasDistributionArtifact` | N/A | Changed from component hash in v2.0 |
+| | Executable property | SHALL | `components[].properties[].name="bsi:component:executable"` | `software_File.software_additionalPurpose: ["executable"]` linked via `hasDistributionArtifact` | N/A | New in v2.1 |
+| | Archive property | SHALL | `components[].properties[].name="bsi:component:archive"` | `software_File.software_additionalPurpose: ["archive"]` linked via `hasDistributionArtifact` | N/A | New in v2.1 |
+| | Structured property | SHALL | `components[].properties[].name="bsi:component:structured"` | Structured: `software_File.software_additionalPurpose: ["container"]`; Unstructured: absence of `"container"` linked via `hasDistributionArtifact` | N/A | New in v2.1 |
+| | Source code URI | SHALL | `components[].externalReferences[].type="source-distribution"` | `software_Package.software_sourceInfo` or `software_SoftwareArtifact.externalRef` type `"SourceArtifact"` via `generates` relationship | N/A | Promoted from additional in v2.0 |
+| | URI of the deployable form | SHALL | `components[].externalReferences[].type="distribution"` + `.url` | `software_Package.software_downloadLocation` or `software_File.externalRef` type `"binaryArtifact"` linked via `hasDistributionArtifact` | N/A | Promoted from additional in v2.0 |
+| | Other unique identifiers | SHALL | `components[].cpe` OR `components[].swid` OR `components[].purl` | `software_Package.externalIdentifiers` with types `"packageUrl"`, `"cpe23"`, `"swid"` | N/A | Promoted from additional in v2.0 |
+| | Original licences | SHALL | `components[].licenses[].expression` + `acknowledgement="declared"` | `Relationship` `hasDeclaredLicense` → `simplelicensing_LicenseExpression.licenseExpression` | N/A | New in v2.1 (SHALL) |
+| 5.2.3 Optional Fields | Effective licence | MAY | `components[].properties[].name="bsi:component:effectiveLicense"` | `Relationship` `other` with `comment: "hasEffectiveLicense"` → `simplelicensing_LicenseExpression` | N/A | New in v2.1 |
+| | Hash of source code | MAY | `components[].externalReferences[].hashes[]` with `type="source-distribution"` | `software_SoftwareArtifact.verifiedUsing` with `algorithm: "sha512"` linked via `generates` relationship | N/A | |
+| | URL of the security.txt | MAY | `components[].externalReferences[].type="rfc-9116"` + `.url` | `software_Package.externalRef` with `externalRefType: "securityOther"` | N/A | New in v2.1 |
 
 > **Note:** SPDX v2 SBOMs scored against BSI v2.1.0 receive a hard fail on the format version check. All individual field checks return N/A. Full SPDX v3 support is required for complete v2.1.0 compliance.
 

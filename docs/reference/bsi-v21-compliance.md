@@ -274,7 +274,7 @@ Distribution licences represent the licence under which a downstream party is pe
 **SBOM Mappings:**
 
 - SPDX v3.0.1:
-  - `software_Package` linked via `Relationship` of type `hasConcludedLicense` (completeness: `complete`) to a `simpleLicensing_LicenseExpression` element whose `licenseExpression` holds the SPDX expression
+  - `software_Package` linked via `Relationship` of type `hasConcludedLicense` (completeness: `complete`) to a `simplelicensing_LicenseExpression` element whose `licenseExpression` holds the SPDX expression
 
 - CycloneDX v1.6:
   - [`metadata.component.licenses[].expression`](https://cyclonedx.org/docs/1.6/json/#metadata_component_licenses_items_oneOf_i1_expression) with `"acknowledgement": "concluded"` (primary component)
@@ -488,7 +488,7 @@ Original licences represent what the component's creator declared as the licence
 **SBOM Mappings:**
 
 - SPDX v3.0.1:
-  - `software_Package` linked via `Relationship` of type `hasDeclaredLicense` (completeness: `complete`) to a `simpleLicensing_LicenseExpression` element
+  - `software_Package` linked via `Relationship` of type `hasDeclaredLicense` (completeness: `complete`) to a `simplelicensing_LicenseExpression` element
 
 - CycloneDX v1.6:
   - `licenses[].expression` with `"acknowledgement": "declared"`
@@ -512,7 +512,7 @@ When a component is available under multiple mutually exclusive licence choices 
 **SBOM Mappings:**
 
 - SPDX v3.0.1:
-  - `software_Package` linked via `Relationship` of type `other` with `comment: "hasEffectiveLicense"` (completeness: `complete`) to a `simpleLicensing_LicenseExpression` element
+  - `software_Package` linked via `Relationship` of type `other` with `comment: "hasEffectiveLicense"` (completeness: `complete`) to a `simplelicensing_LicenseExpression` element
 
 - CycloneDX v1.6:
   - `properties[]` with `name: "bsi:component:effectiveLicense"`, `value: "..."`
@@ -557,28 +557,28 @@ The `security.txt` file (RFC 9116) provides a standardized machine-readable cont
 
 ## Summary Table
 
-| # | Field | Level | Category | BSI Section |
-|---|-------|-------|----------|-------------|
-| 1 | Creator of the SBOM | SBOM | Required | §5.2.1 |
-| 2 | Timestamp | SBOM | Required | §5.2.1 |
-| 3 | Component creator | Component | Required | §5.2.2 |
-| 4 | Component name | Component | Required | §5.2.2 |
-| 5 | Component version | Component | Required | §5.2.2 |
-| 6 | Filename of the component | Component | Required | §5.2.2 |
-| 7 | Dependencies on other components | Component | Required | §5.2.2 |
-| 8 | Distribution licences | Component | Required | §5.2.2 |
-| 9 | Hash value of the deployable component (SHA-512) | Component | Required | §5.2.2 |
-| 10 | Executable property | Component | Required | §5.2.2 |
-| 11 | Archive property | Component | Required | §5.2.2 |
-| 12 | Structured property | Component | Required | §5.2.2 |
-| 13 | SBOM-URI | SBOM | Additional | §5.2.3 |
-| 14 | Source code URI | Component | Additional | §5.2.4 |
-| 15 | URI of the deployable form of the component | Component | Additional | §5.2.4 |
-| 16 | Other unique identifiers | Component | Additional | §5.2.4 |
-| 17 | Original licences | Component | Additional | §5.2.4 |
-| 18 | Effective licence | Component | Optional | §5.2.5 |
-| 19 | Hash value of the source code of the component | Component | Optional | §5.2.5 |
-| 20 | URL of the **security.txt** | Component | Optional | §5.2.5 |
+| # | Field | Level | Category | BSI Section | SPDX 3.0.1 Mapping |
+|---|-------|-------|----------|-------------|-------------------|
+| 1 | Creator of the SBOM | SBOM | Required | §5.2.1 | `CreationInfo.createdBy` → `Person`/`Organization` with `externalIdentifiers` (email or URL) |
+| 2 | Timestamp | SBOM | Required | §5.2.1 | `CreationInfo.created` |
+| 3 | Component creator | Component | Required | §5.2.2 | `software_Package.originatedBy` → `Person`/`Organization` with `externalIdentifiers` (email or URL) |
+| 4 | Component name | Component | Required | §5.2.2 | `software_Package.name` |
+| 5 | Component version | Component | Required | §5.2.2 | `software_Package.software_packageVersion` |
+| 6 | Filename of the component | Component | Required | §5.2.2 | `software_File.name` linked via `hasDistributionArtifact` relationship |
+| 7 | Dependencies on other components | Component | Required | §5.2.2 | `Relationship` with `relationshipType: dependsOn` or `contains`, `completeness: complete` |
+| 8 | Distribution licences | Component | Required | §5.2.2 | `Relationship` `hasConcludedLicense` → `simplelicensing_LicenseExpression.licenseExpression` |
+| 9 | Hash value of the deployable component (SHA-512) | Component | Required | §5.2.2 | `software_File.verifiedUsing` with `algorithm: sha512` linked via `hasDistributionArtifact` |
+| 10 | Executable property | Component | Required | §5.2.2 | `software_File.software_additionalPurpose: ["executable"]` linked via `hasDistributionArtifact` |
+| 11 | Archive property | Component | Required | §5.2.2 | `software_File.software_additionalPurpose: ["archive"]` linked via `hasDistributionArtifact` |
+| 12 | Structured property | Component | Required | §5.2.2 | `software_File.software_additionalPurpose: ["container"]` linked via `hasDistributionArtifact` |
+| 13 | SBOM-URI | SBOM | Additional | §5.2.3 | `SpdxDocument.namespaceMap[].namespace` or `SpdxDocument.spdxId` as URI |
+| 14 | Source code URI | Component | Additional | §5.2.4 | `software_Package.software_sourceInfo` or `software_SoftwareArtifact.externalRef` type `SourceArtifact` via `generates` relationship |
+| 15 | URI of the deployable form of the component | Component | Additional | §5.2.4 | `software_Package.software_downloadLocation` or `software_File.externalRef` type `binaryArtifact` linked via `hasDistributionArtifact` |
+| 16 | Other unique identifiers | Component | Additional | §5.2.4 | `software_Package.externalIdentifiers` with types `packageUrl`, `cpe23`, `swid` |
+| 17 | Original licences | Component | Additional | §5.2.4 | `Relationship` `hasDeclaredLicense` → `simplelicensing_LicenseExpression.licenseExpression` |
+| 18 | Effective licence | Component | Optional | §5.2.5 | `Relationship` `other` with `comment: hasEffectiveLicense` → `simplelicensing_LicenseExpression` |
+| 19 | Hash value of the source code of the component | Component | Optional | §5.2.5 | `software_SoftwareArtifact.verifiedUsing` with `algorithm: sha512` linked via `generates` relationship |
+| 20 | URL of the **security.txt** | Component | Optional | §5.2.5 | `software_Package.externalRef` with `externalRefType: securityOther` |
 
 ## Key Differences vs v1.1
 

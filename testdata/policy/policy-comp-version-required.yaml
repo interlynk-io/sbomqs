@@ -1,0 +1,6 @@
+policy:
+  - name: "Test: Component version required"
+    type: required
+    rules:
+      - field: version
+    action: fail

@@ -138,6 +138,9 @@ func BSIV21SBOMCreator(doc sbom.Document) (bool, string, error) {
 		if bsiIsValidEmail(a.GetEmail()) {
 			return true, fmt.Sprintf("author email: %s", a.GetEmail()), nil
 		}
+		if bsiIsValidURL(a.GetURL()) {
+			return true, fmt.Sprintf("author url: %s", a.GetURL()), nil
+		}
 	}
 
 	if m := doc.Manufacturer(); m != nil {
@@ -211,8 +214,14 @@ func BSIV21SBOMURI(doc sbom.Document) (bool, string, error) {
 func BSIV21CompCreator(doc sbom.Document, comp sbom.GetComponent) (bool, string, error) {
 	// Authors
 	for _, a := range comp.Authors() {
-		if a != nil && bsiIsValidEmail(a.GetEmail()) {
+		if a == nil {
+			continue
+		}
+		if bsiIsValidEmail(a.GetEmail()) {
 			return true, fmt.Sprintf("author email: %s", a.GetEmail()), nil
+		}
+		if bsiIsValidURL(a.GetURL()) {
+			return true, fmt.Sprintf("author url: %s", a.GetURL()), nil
 		}
 	}
 
@@ -270,29 +279,13 @@ func BSIV21CompVersion(_ sbom.Document, comp sbom.GetComponent) (bool, string, e
 }
 
 // BSIV21CompFilename checks for the component filename.
-// CDX: bsi:component:filename property.
-// SPDX v2: PackageFileName via comp.GetFilename().
-// Mirrors: profiles.BSIV21CompFilename / profiles.BSIV20CompFilename (SPDX branch)
+// Mirrors: profiles.BSIV21CompFilename / profiles.BSIV20CompFilename
 func BSIV21CompFilename(doc sbom.Document, comp sbom.GetComponent) (bool, string, error) {
-	spec := strings.TrimSpace(strings.ToLower(doc.Spec().GetSpecType()))
-
-	switch spec {
-	case string(sbom.SBOMSpecCDX):
-		val := strings.TrimSpace(comp.GetPropertyValue("bsi:component:filename"))
-		if val != "" {
-			return true, val, nil
-		}
-		return false, "missing", nil
-
-	case string(sbom.SBOMSpecSPDX):
-		val := strings.TrimSpace(comp.GetFilename())
-		if val != "" {
-			return true, val, nil
-		}
-		return false, "missing", nil
+	val := strings.TrimSpace(comp.GetFilename())
+	if val != "" {
+		return true, val, nil
 	}
-
-	return false, "unsupported spec", nil
+	return false, "missing", nil
 }
 
 // BSIV21CompDepth shows the component's position in the dependency graph.
@@ -360,6 +353,8 @@ func BSIV21CompDistributionLicense(_ sbom.Document, comp sbom.GetComponent) (boo
 // Mirrors: profiles.BSIV21CompDeployableHash (CDX) + profiles.BSIV20CompDeployableHash (SPDX branch)
 func BSIV21CompDeployableHash(doc sbom.Document, comp sbom.GetComponent) (bool, string, error) {
 	spec := strings.TrimSpace(strings.ToLower(doc.Spec().GetSpecType()))
+	version := strings.TrimSpace(doc.Spec().GetVersion())
+	isSpdx3 := spec == string(sbom.SBOMSpecSPDX) && strings.HasPrefix(version, "3.")
 
 	switch spec {
 	case string(sbom.SBOMSpecCDX):
@@ -379,6 +374,18 @@ func BSIV21CompDeployableHash(doc sbom.Document, comp sbom.GetComponent) (bool, 
 		return false, "missing (no hash on distribution extref)", nil
 
 	case string(sbom.SBOMSpecSPDX):
+		if isSpdx3 {
+			// SPDX 3.0: deployable hash is on the distribution artifact file (software_File.verifiedUsing)
+			for _, h := range comp.DistributionArtifact().GetHashes() {
+				algo := scorercommon.NormalizeAlgoName(h.GetAlgo())
+				content := strings.TrimSpace(h.GetContent())
+				if content != "" {
+					return true, fmt.Sprintf("%s: %s", algo, content), nil
+				}
+			}
+			return false, "missing (no distribution artifact hash)", nil
+		}
+		// SPDX 2.x: package checksum
 		for _, chk := range comp.GetChecksums() {
 			algo := scorercommon.NormalizeAlgoName(chk.GetAlgo())
 			content := strings.TrimSpace(chk.GetContent())
@@ -393,90 +400,30 @@ func BSIV21CompDeployableHash(doc sbom.Document, comp sbom.GetComponent) (bool, 
 }
 
 // BSIV21CompExecutableProp checks the executable property for the component.
-// CDX: bsi:component:executable property.
-// SPDX v2: PrimaryPackagePurpose = APPLICATION.
 // Mirrors: profiles.BSIV21CompExecutableProperty / profiles.BSIV20CompExecutableProperty
 func BSIV21CompExecutableProp(doc sbom.Document, comp sbom.GetComponent) (bool, string, error) {
-	spec := strings.TrimSpace(strings.ToLower(doc.Spec().GetSpecType()))
-
-	switch spec {
-	case string(sbom.SBOMSpecCDX):
-		val := strings.TrimSpace(comp.GetPropertyValue("bsi:component:executable"))
-		if val != "" {
-			return true, val, nil
-		}
-		return false, "missing", nil
-
-	case string(sbom.SBOMSpecSPDX):
-		purpose := strings.ToUpper(strings.TrimSpace(comp.PrimaryPurpose()))
-		if purpose == "APPLICATION" {
-			return true, purpose, nil
-		}
-		if purpose != "" {
-			return false, fmt.Sprintf("purpose: %s (not APPLICATION)", purpose), nil
-		}
-		return false, "missing", nil
+	if comp.DistributionArtifact().IsExecutable() {
+		return true, fmt.Sprintf("%s (executable)", comp.DistributionArtifact().GetFilename()), nil
 	}
-
-	return false, "unsupported spec", nil
+	return false, "missing", nil
 }
 
 // BSIV21CompArchiveProp checks the archive property for the component.
-// CDX: bsi:component:archive property.
-// SPDX v2: PrimaryPackagePurpose = ARCHIVE.
 // Mirrors: profiles.BSIV21CompArchiveProperty / profiles.BSIV20CompArchiveProperty
 func BSIV21CompArchiveProp(doc sbom.Document, comp sbom.GetComponent) (bool, string, error) {
-	spec := strings.TrimSpace(strings.ToLower(doc.Spec().GetSpecType()))
-
-	switch spec {
-	case string(sbom.SBOMSpecCDX):
-		val := strings.TrimSpace(comp.GetPropertyValue("bsi:component:archive"))
-		if val != "" {
-			return true, val, nil
-		}
-		return false, "missing", nil
-
-	case string(sbom.SBOMSpecSPDX):
-		purpose := strings.ToUpper(strings.TrimSpace(comp.PrimaryPurpose()))
-		if purpose == "ARCHIVE" {
-			return true, purpose, nil
-		}
-		if purpose != "" {
-			return false, fmt.Sprintf("purpose: %s (not ARCHIVE)", purpose), nil
-		}
-		return false, "missing", nil
+	if comp.DistributionArtifact().IsArchive() {
+		return true, fmt.Sprintf("%s (archive)", comp.DistributionArtifact().GetFilename()), nil
 	}
-
-	return false, "unsupported spec", nil
+	return false, "missing", nil
 }
 
 // BSIV21CompStructuredProp checks the structured property for the component.
-// CDX: bsi:component:structured property.
-// SPDX v2: PrimaryPackagePurpose = SOURCE.
 // Mirrors: profiles.BSIV21CompStructuredProperty / profiles.BSIV20CompStructuredProperty
 func BSIV21CompStructuredProp(doc sbom.Document, comp sbom.GetComponent) (bool, string, error) {
-	spec := strings.TrimSpace(strings.ToLower(doc.Spec().GetSpecType()))
-
-	switch spec {
-	case string(sbom.SBOMSpecCDX):
-		val := strings.TrimSpace(comp.GetPropertyValue("bsi:component:structured"))
-		if val != "" {
-			return true, val, nil
-		}
-		return false, "missing", nil
-
-	case string(sbom.SBOMSpecSPDX):
-		purpose := strings.ToUpper(strings.TrimSpace(comp.PrimaryPurpose()))
-		if purpose == "SOURCE" {
-			return true, purpose, nil
-		}
-		if purpose != "" {
-			return false, fmt.Sprintf("purpose: %s (not SOURCE)", purpose), nil
-		}
-		return false, "missing", nil
+	if comp.DistributionArtifact().IsStructured() {
+		return true, fmt.Sprintf("%s (structured)", comp.DistributionArtifact().GetFilename()), nil
 	}
-
-	return false, "unsupported spec", nil
+	return false, "missing", nil
 }
 
 // BSIV21CompSourceCodeURL extracts the source code URI for the component.
@@ -513,7 +460,8 @@ func BSIV21CompSourceCodeURL(doc sbom.Document, comp sbom.GetComponent) (bool, s
 
 // BSIV21CompDownloadURL extracts the deployable form URI for the component.
 // CDX: externalReferences[type=distribution or distribution-intake].url.
-// SPDX v2: PackageDownloadLocation via comp.GetDownloadLocationURL().
+// SPDX 3.0: software_downloadLocation on software_Package,
+// OR File.externalRef.externalRefType="binaryArtifact" on distribution artifact (hasDistributionArtifact relationship).
 // Mirrors: profiles.BSIV21CompDownloadURI / profiles.BSIV11CompExecutableURI (SPDX branch)
 func BSIV21CompDownloadURL(doc sbom.Document, comp sbom.GetComponent) (bool, string, error) {
 	spec := strings.TrimSpace(strings.ToLower(doc.Spec().GetSpecType()))
@@ -588,10 +536,12 @@ func BSIV21CompOriginalLicenses(_ sbom.Document, comp sbom.GetComponent) (bool, 
 
 // BSIV21CompEffectiveLicense extracts the effective licence property.
 // CDX: bsi:component:effectiveLicense property.
-// SPDX v2: no equivalent field available.
+// SPDX 3.0: hasEffectiveLicense relationship (non-standard BSI extension).
 // Mirrors: profiles.BSIV21CompEffectiveLicence
 func BSIV21CompEffectiveLicense(doc sbom.Document, comp sbom.GetComponent) (bool, string, error) {
 	spec := strings.TrimSpace(strings.ToLower(doc.Spec().GetSpecType()))
+	version := strings.TrimSpace(doc.Spec().GetVersion())
+	isSpdx3 := spec == string(sbom.SBOMSpecSPDX) && strings.HasPrefix(version, "3.")
 
 	switch spec {
 	case string(sbom.SBOMSpecCDX):
@@ -602,6 +552,23 @@ func BSIV21CompEffectiveLicense(doc sbom.Document, comp sbom.GetComponent) (bool
 		return false, "missing", nil
 
 	case string(sbom.SBOMSpecSPDX):
+		if isSpdx3 {
+			licenses := comp.EffectiveLicenses()
+			if len(licenses) > 0 {
+				var names []string
+				for _, l := range licenses {
+					if l.ShortID() != "" {
+						names = append(names, l.ShortID())
+					} else if l.Name() != "" {
+						names = append(names, l.Name())
+					}
+				}
+				if len(names) > 0 {
+					return true, strings.Join(names, ", "), nil
+				}
+			}
+			return false, "missing (no hasEffectiveLicense relationship)", nil
+		}
 		return false, "not available in SPDX v2", nil
 	}
 
@@ -614,10 +581,13 @@ func BSIV21CompEffectiveLicense(doc sbom.Document, comp sbom.GetComponent) (bool
 //	Note: BSI v2.1 requires SHA-512 specifically; the list command shows the
 //	actual value present so the user can cross-check what the scorer enforces.
 //
+// SPDX 3.0: source code hash from software_SoftwareArtifact.verifiedUsing linked via generates relationship.
 // SPDX v2: PackageVerificationCode / SourceCodeHash via comp.SourceCodeHash().
 // Mirrors: profiles.BSIV21CompSourceHash
 func BSIV21CompSourceHash(doc sbom.Document, comp sbom.GetComponent) (bool, string, error) {
 	spec := strings.TrimSpace(strings.ToLower(doc.Spec().GetSpecType()))
+	version := strings.TrimSpace(doc.Spec().GetVersion())
+	isSpdx3 := spec == string(sbom.SBOMSpecSPDX) && strings.HasPrefix(version, "3.")
 
 	switch spec {
 	case string(sbom.SBOMSpecCDX):
@@ -641,17 +611,24 @@ func BSIV21CompSourceHash(doc sbom.Document, comp sbom.GetComponent) (bool, stri
 		if hash != "" {
 			return true, hash, nil
 		}
+		if isSpdx3 {
+			return false, "missing (no source artifact hash)", nil
+		}
 		return false, "missing", nil
 	}
 
 	return false, "unsupported spec", nil
 }
 
-// BSIV21CompSecurityTxtURL extracts the security.txt URL from externalReferences[type=rfc-9116].
+// BSIV21CompSecurityTxtURL extracts the security.txt URL.
+// CDX: externalReferences[type=rfc-9116].
+// SPDX 3.0: externalRef.externalRefType="securityOther".
 // Mirrors: profiles.BSIV21CompSecurityTxtURL
 func BSIV21CompSecurityTxtURL(_ sbom.Document, comp sbom.GetComponent) (bool, string, error) {
 	for _, er := range comp.ExternalReferences() {
-		if er.GetRefType() == "rfc-9116" {
+		t := er.GetRefType()
+		// CDX uses "rfc-9116", SPDX 3.0 uses "securityOther" for security.txt
+		if t == "rfc-9116" || strings.EqualFold(t, "securityOther") {
 			loc := strings.TrimSpace(er.GetRefLocator())
 			if loc != "" {
 				return true, loc, nil

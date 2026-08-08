@@ -45,7 +45,7 @@ func Test_NTIA2025ProfileForStaticSBOMFiles(t *testing.T) {
 	base := filepath.Join("..", "..", "..", "testdata", "fixtures")
 
 	testCases := map[string]expectedProfileScore{
-		// SPDX test cases
+		// SPDX 2.x test cases
 		filepath.Join(base, "spdx-perfect-score.json"):    {Score: 9.2, Grade: "A", Required: 12},
 		filepath.Join(base, "spdx-minimal.json"):          {Score: 4.6, Grade: "F", Required: 6},
 		filepath.Join(base, "spdx-no-version.json"):       {Score: 5.4, Grade: "D", Required: 7},
@@ -56,6 +56,18 @@ func Test_NTIA2025ProfileForStaticSBOMFiles(t *testing.T) {
 		filepath.Join(base, "spdx-no-authors.json"):       {Score: 5.4, Grade: "D", Required: 7},
 		filepath.Join(base, "spdx-no-timestamp.json"):     {Score: 4.6, Grade: "F", Required: 6},
 		filepath.Join(base, "spdx-old-version.json"):      {Score: 6.2, Grade: "D", Required: 8},
+
+		// SPDX 3.0 test cases - "no-*" files are perfect score minus only that field
+		filepath.Join(base, "spdx3-perfect-score.json"):   {Score: 9.2, Grade: "A", Required: 12},
+		filepath.Join(base, "spdx3-minimal.json"):       {Score: 4.2, Grade: "F", Required: 5},
+		filepath.Join(base, "spdx3-no-version.json"):    {Score: 8.5, Grade: "B", Required: 11},
+		filepath.Join(base, "spdx3-no-authors.json"):    {Score: 7.7, Grade: "C", Required: 10},
+		filepath.Join(base, "spdx3-no-timestamp.json"):  {Score: 7.7, Grade: "C", Required: 10},
+		filepath.Join(base, "spdx3-no-supplier.json"):   {Score: 8.5, Grade: "B", Required: 11},
+		filepath.Join(base, "spdx3-no-tool.json"):       {Score: 8.5, Grade: "B", Required: 11},
+		filepath.Join(base, "spdx3-no-unique-id.json"):       {Score: 9.2, Grade: "A", Required: 12},
+		filepath.Join(base, "spdx3-no-dependencies.json"): {Score: 8.5, Grade: "B", Required: 11},
+		filepath.Join(base, "spdx3-complete-ntia.json"):   {Score: 7.5, Grade: "C", Required: 9},
 
 		// CycloneDX test cases
 		filepath.Join(base, "cdx-perfect-score.json"):    {Score: 10.0, Grade: "A", Required: 13},
@@ -130,6 +142,106 @@ func Test_NTIA2025ProfileForStaticSBOMFiles(t *testing.T) {
 	fmt.Printf("NTIA-2025 Profile: ✓ All %d test cases completed\n", len(testCases))
 }
 
+// Test_NTIAMinimumElementsProfileForStaticSBOMFiles tests original NTIA Minimum Elements profile
+func Test_NTIAMinimumElementsProfileForStaticSBOMFiles(t *testing.T) {
+	fmt.Println()
+	fmt.Println("==========================================")
+	fmt.Println("Running NTIA Minimum Elements Profile Integration Tests")
+	fmt.Println("==========================================")
+
+	base := filepath.Join("..", "..", "..", "testdata", "fixtures")
+
+	// NTIA Minimum Elements has fewer fields than NTIA-2025:
+	// Required: sbom_author, sbom_timestamp, comp_name, comp_version, comp_supplier, comp_uniq_id, dep_relationships
+	testCases := map[string]expectedProfileScore{
+		// SPDX 2.x test cases
+		filepath.Join(base, "spdx-perfect-score.json"):     {Score: 10.0, Grade: "A", Required: 7},
+		filepath.Join(base, "spdx-minimal.json"):           {Score: 3.6, Grade: "F", Required: 2},
+		filepath.Join(base, "spdx-no-version.json"):      {Score: 4.3, Grade: "F", Required: 3},
+		filepath.Join(base, "spdx-no-dependencies.json"): {Score: 7.1, Grade: "C", Required: 5},
+		filepath.Join(base, "spdx-no-authors.json"):       {Score: 4.3, Grade: "F", Required: 3},
+		filepath.Join(base, "spdx-no-timestamp.json"):     {Score: 4.3, Grade: "F", Required: 3},
+
+		// SPDX 3.0 test cases - "no-*" files are perfect score minus only that field
+		filepath.Join(base, "spdx3-perfect-score.json"):   {Score: 10.0, Grade: "A", Required: 7},
+		filepath.Join(base, "spdx3-minimal.json"):         {Score: 2.9, Grade: "F", Required: 2},
+		filepath.Join(base, "spdx3-no-version.json"):      {Score: 8.6, Grade: "B", Required: 6},
+		filepath.Join(base, "spdx3-no-authors.json"):       {Score: 8.6, Grade: "B", Required: 6},
+		filepath.Join(base, "spdx3-no-timestamp.json"):    {Score: 8.6, Grade: "B", Required: 6},
+		filepath.Join(base, "spdx3-no-supplier.json"):    {Score: 8.6, Grade: "B", Required: 6},
+		filepath.Join(base, "spdx3-no-unique-id.json"):        {Score: 8.6, Grade: "B", Required: 6},
+		filepath.Join(base, "spdx3-no-dependencies.json"): {Score: 8.6, Grade: "B", Required: 6},
+		filepath.Join(base, "spdx3-complete-ntia.json"):   {Score: 9.7, Grade: "A", Required: 6},
+
+		// CycloneDX test cases
+		filepath.Join(base, "cdx-perfect-score.json"):     {Score: 10.0, Grade: "A", Required: 7},
+		filepath.Join(base, "cdx-minimal.json"):           {Score: 1.4, Grade: "F", Required: 1},
+		filepath.Join(base, "cdx-no-version.json"):        {Score: 4.3, Grade: "F", Required: 3},
+		filepath.Join(base, "cdx-no-dependencies.json"):   {Score: 7.1, Grade: "C", Required: 5},
+		filepath.Join(base, "cdx-no-authors.json"):       {Score: 4.3, Grade: "F", Required: 3},
+		filepath.Join(base, "cdx-no-timestamp.json"):     {Score: 4.3, Grade: "F", Required: 3},
+	}
+
+	for path, want := range testCases {
+		filename := filepath.Base(path)
+		testName := "NTIA_" + filename
+
+		t.Run(testName, func(t *testing.T) {
+			t.Parallel()
+
+			cfg := config.Config{
+				Profile: []string{string(registry.ProfileNTIA)},
+			}
+			paths := []string{path}
+
+			ctx := context.Background()
+
+			results, err := score.ScoreSBOM(ctx, cfg, paths)
+			require.NoError(t, err)
+
+			for _, r := range results {
+				require.NotNil(t, r.Profiles, "Profile results should not be nil")
+				require.Len(t, r.Profiles.ProfResult, 1, "Should have exactly one profile result")
+
+				profResult := r.Profiles.ProfResult[0]
+				require.Equal(t, "NTIA Minimum Elements (2021)", profResult.Name)
+
+				gotRaw := profResult.InterlynkScore
+				gotRounded := math.Round(gotRaw*10) / 10
+
+				// Count required fields
+				requiredCompliant := 0
+
+				for _, item := range profResult.Items {
+					if item.Required && item.Score >= 10.0 {
+						requiredCompliant++
+					}
+				}
+
+				// Log the score for visibility
+				t.Logf("File: %s | Score: %.1f/10.0 | Grade: %s | Required: %d/7",
+					filename, gotRounded, profResult.Grade, requiredCompliant)
+				t.Logf("  Expected: Score: %.1f | Grade: %s | Required: %d/7",
+					want.Score, want.Grade, want.Required)
+
+				// compare NTIA score
+				require.InDelta(t, want.Score, gotRounded, 1e-9,
+					"NTIA score (rounded to 1 decimal) mismatch for %s", filename)
+
+				// compare grade
+				require.Equal(t, want.Grade, profResult.Grade,
+					"Grade mismatch for %s", filename)
+
+				// compare required fields count
+				require.Equal(t, want.Required, requiredCompliant,
+					"Required fields compliance count mismatch for %s", filename)
+			}
+		})
+	}
+
+	fmt.Printf("NTIA Minimum Elements Profile: ✓ All %d test cases completed\n", len(testCases))
+}
+
 // Test_FSCTProfileForStaticSBOMFiles tests FSCT profile
 func Test_FSCTProfileForStaticSBOMFiles(t *testing.T) {
 	fmt.Println()
@@ -140,7 +252,7 @@ func Test_FSCTProfileForStaticSBOMFiles(t *testing.T) {
 	base := filepath.Join("..", "..", "..", "testdata", "fixtures")
 
 	testCases := map[string]expectedProfileScore{
-		// SPDX test cases
+		// SPDX 2.x test cases
 		filepath.Join(base, "spdx-perfect-score.json"):    {Score: 8.9, Grade: "B", Required: 8, Optional: 0},
 		filepath.Join(base, "spdx-minimal.json"):          {Score: 0.0, Grade: "F", Required: 0, Optional: 0},
 		filepath.Join(base, "spdx-no-version.json"):       {Score: 0.0, Grade: "F", Required: 0, Optional: 0},
@@ -151,6 +263,12 @@ func Test_FSCTProfileForStaticSBOMFiles(t *testing.T) {
 		filepath.Join(base, "spdx-no-authors.json"):       {Score: 1.1, Grade: "F", Required: 1, Optional: 0},
 		filepath.Join(base, "spdx-no-timestamp.json"):     {Score: 1.1, Grade: "F", Required: 1, Optional: 0},
 		filepath.Join(base, "spdx-old-version.json"):      {Score: 1.1, Grade: "F", Required: 1, Optional: 0},
+
+		// SPDX 3.0 test cases - "no-*" files are perfect score minus only that field
+		filepath.Join(base, "spdx3-perfect-score.json"): {Score: 8.9, Grade: "B", Required: 8, Optional: 0},
+		filepath.Join(base, "spdx3-minimal.json"):       {Score: 1.1, Grade: "F", Required: 1, Optional: 0},
+		filepath.Join(base, "spdx3-no-authors.json"):    {Score: 7.8, Grade: "C", Required: 7, Optional: 0},
+		filepath.Join(base, "spdx3-no-timestamp.json"):  {Score: 7.8, Grade: "C", Required: 7, Optional: 0},
 
 		// CycloneDX test cases
 		filepath.Join(base, "cdx-perfect-score.json"):    {Score: 7.8, Grade: "C", Required: 7, Optional: 0},
@@ -250,7 +368,7 @@ func Test_BSI11ProfileForStaticSBOMFiles(t *testing.T) {
 	// Additional fields are conditional-mandatory: they count in the score only when data exists
 	// (i.e., the evaluator does not return Ignore:true).
 	testCases := map[string]expectedProfileScore{
-		// SPDX test cases
+		// SPDX 2.x test cases
 		filepath.Join(base, "spdx-perfect-score.json"):    {Score: 9.4, Grade: "A", Required: 7, Additional: 3, Optional: 0},
 		filepath.Join(base, "spdx-minimal.json"):          {Score: 3.3, Grade: "F", Required: 2, Additional: 1, Optional: 0},
 		filepath.Join(base, "spdx-no-version.json"):       {Score: 5.0, Grade: "D", Required: 3, Additional: 2, Optional: 0},
@@ -261,6 +379,17 @@ func Test_BSI11ProfileForStaticSBOMFiles(t *testing.T) {
 		filepath.Join(base, "spdx-no-authors.json"):       {Score: 6.0, Grade: "D", Required: 4, Additional: 2, Optional: 0},
 		filepath.Join(base, "spdx-no-timestamp.json"):     {Score: 5.0, Grade: "D", Required: 3, Additional: 2, Optional: 0},
 		filepath.Join(base, "spdx-old-version.json"):      {Score: 6.0, Grade: "D", Required: 4, Additional: 2, Optional: 0},
+
+		// SPDX 3.0 test cases - "no-*" files are perfect score minus only that field
+		filepath.Join(base, "spdx3-perfect-score.json"): {Score: 9.2, Grade: "A", Required: 7, Additional: 4, Optional: 0},
+		filepath.Join(base, "spdx3-minimal.json"):       {Score: 3.3, Grade: "F", Required: 2, Additional: 1, Optional: 0},
+		filepath.Join(base, "spdx3-no-version.json"):    {Score: 8.3, Grade: "B", Required: 6, Additional: 4, Optional: 0},
+		filepath.Join(base, "spdx3-no-authors.json"):    {Score: 8.3, Grade: "B", Required: 6, Additional: 4, Optional: 0},
+		filepath.Join(base, "spdx3-no-timestamp.json"):  {Score: 8.3, Grade: "B", Required: 6, Additional: 4, Optional: 0},
+		filepath.Join(base, "spdx3-no-supplier.json"):   {Score: 8.3, Grade: "B", Required: 6, Additional: 4, Optional: 0},
+		filepath.Join(base, "spdx3-no-unique-id.json"):       {Score: 9.1, Grade: "A", Required: 7, Additional: 3, Optional: 0},
+		filepath.Join(base, "spdx3-no-dependencies.json"): {Score: 8.8, Grade: "B", Required: 6, Additional: 4, Optional: 0},
+		filepath.Join(base, "spdx3-no-tool.json"):       {Score: 9.2, Grade: "A", Required: 7, Additional: 4, Optional: 0},
 
 		// CycloneDX test cases
 		filepath.Join(base, "cdx-perfect-score.json"):    {Score: 9.2, Grade: "A", Required: 7, Additional: 3, Optional: 0},
@@ -372,17 +501,28 @@ func Test_BSI20ProfileForStaticSBOMFiles(t *testing.T) {
 	//   - comp_executable/archive/structured use PrimaryPackagePurpose (SPDX) or BSI properties (CDX)
 	//   - Most fixtures do not carry these BSI-specific fields so those checks score 0.
 	testCases := map[string]expectedProfileScore{
-		// SPDX test cases
-		filepath.Join(base, "spdx-perfect-score.json"):    {Score: 7.5, Grade: "C", Required: 8, Additional: 4, Optional: 1},
+		// SPDX 2.x test cases
+		filepath.Join(base, "spdx-perfect-score.json"):    {Score: 7.3, Grade: "C", Required: 8, Additional: 4, Optional: 1},
 		filepath.Join(base, "spdx-minimal.json"):          {Score: 2.9, Grade: "F", Required: 3, Additional: 1, Optional: 0},
 		filepath.Join(base, "spdx-no-version.json"):       {Score: 4.4, Grade: "F", Required: 4, Additional: 3, Optional: 1},
 		filepath.Join(base, "spdx-no-checksums.json"):     {Score: 5.0, Grade: "D", Required: 5, Additional: 3, Optional: 1},
 		filepath.Join(base, "spdx-weak-checksums.json"):   {Score: 5.0, Grade: "D", Required: 5, Additional: 3, Optional: 1},
-		filepath.Join(base, "spdx-no-dependencies.json"):  {Score: 5.3, Grade: "D", Required: 5, Additional: 3, Optional: 1},
+		filepath.Join(base, "spdx-no-dependencies.json"):  {Score: 5.0, Grade: "D", Required: 5, Additional: 3, Optional: 1},
 		filepath.Join(base, "spdx-invalid-licenses.json"): {Score: 4.6, Grade: "F", Required: 4, Additional: 2, Optional: 0},
 		filepath.Join(base, "spdx-no-authors.json"):       {Score: 5.0, Grade: "D", Required: 5, Additional: 3, Optional: 1},
 		filepath.Join(base, "spdx-no-timestamp.json"):     {Score: 4.4, Grade: "F", Required: 4, Additional: 3, Optional: 1},
 		filepath.Join(base, "spdx-old-version.json"):      {Score: 5.0, Grade: "D", Required: 5, Additional: 3, Optional: 1},
+
+		// SPDX 3.0 test cases - "no-*" files are perfect score minus only that field
+		filepath.Join(base, "spdx3-perfect-score.json"): {Score: 8.1, Grade: "B", Required: 9, Additional: 5, Optional: 1},
+		filepath.Join(base, "spdx3-minimal.json"):       {Score: 2.9, Grade: "F", Required: 3, Additional: 1, Optional: 0},
+		filepath.Join(base, "spdx3-no-version.json"):    {Score: 7.5, Grade: "C", Required: 8, Additional: 5, Optional: 1},
+		filepath.Join(base, "spdx3-no-authors.json"):    {Score: 7.5, Grade: "C", Required: 8, Additional: 5, Optional: 1},
+		filepath.Join(base, "spdx3-no-timestamp.json"):  {Score: 7.5, Grade: "C", Required: 8, Additional: 5, Optional: 1},
+		filepath.Join(base, "spdx3-no-supplier.json"):   {Score: 7.5, Grade: "C", Required: 8, Additional: 5, Optional: 1},
+		filepath.Join(base, "spdx3-no-unique-id.json"):       {Score: 7.9, Grade: "C", Required: 9, Additional: 4, Optional: 1},
+		filepath.Join(base, "spdx3-no-dependencies.json"): {Score: 7.8, Grade: "C", Required: 8, Additional: 5, Optional: 1},
+		filepath.Join(base, "spdx3-no-tool.json"):       {Score: 8.1, Grade: "B", Required: 9, Additional: 5, Optional: 1},
 
 		// CycloneDX test cases
 		filepath.Join(base, "cdx-perfect-score.json"):    {Score: 6.7, Grade: "D", Required: 7, Additional: 4, Optional: 0},
@@ -486,7 +626,7 @@ func Test_InterlynkProfileForStaticSBOMFiles(t *testing.T) {
 	base := filepath.Join("..", "..", "..", "testdata", "fixtures")
 
 	testCases := map[string]expectedProfileScore{
-		// SPDX test cases
+		// SPDX 2.x test cases
 		filepath.Join(base, "spdx-perfect-score.json"):    {Score: 8.6, Grade: "B"},
 		filepath.Join(base, "spdx-minimal.json"):          {Score: 3.2, Grade: "F"},
 		filepath.Join(base, "spdx-no-version.json"):       {Score: 5.2, Grade: "D"},
@@ -497,6 +637,17 @@ func Test_InterlynkProfileForStaticSBOMFiles(t *testing.T) {
 		filepath.Join(base, "spdx-no-authors.json"):       {Score: 4.8, Grade: "F"},
 		filepath.Join(base, "spdx-no-timestamp.json"):     {Score: 4.8, Grade: "F"},
 		filepath.Join(base, "spdx-old-version.json"):      {Score: 5.6, Grade: "D"},
+
+		// SPDX 3.0 test cases - "no-*" files are perfect score minus only that field
+		filepath.Join(base, "spdx3-perfect-score.json"): {Score: 8.5, Grade: "B"},
+		filepath.Join(base, "spdx3-minimal.json"):       {Score: 7.3, Grade: "C"},
+		filepath.Join(base, "spdx3-no-version.json"):    {Score: 8.1, Grade: "B"},
+		filepath.Join(base, "spdx3-no-authors.json"):    {Score: 7.7, Grade: "C"},
+		filepath.Join(base, "spdx3-no-timestamp.json"):  {Score: 8.1, Grade: "B"},
+		filepath.Join(base, "spdx3-no-supplier.json"):   {Score: 8.1, Grade: "B"},
+		filepath.Join(base, "spdx3-no-unique-id.json"):       {Score: 7.3, Grade: "C"},
+		filepath.Join(base, "spdx3-no-dependencies.json"): {Score: 8.5, Grade: "B"},
+		filepath.Join(base, "spdx3-no-tool.json"):       {Score: 8.1, Grade: "B"},
 
 		// CycloneDX test cases
 		filepath.Join(base, "cdx-perfect-score.json"):    {Score: 8.0, Grade: "C"},
@@ -579,7 +730,7 @@ func Test_OCTV11ProfileForStaticSBOMFiles(t *testing.T) {
 	base := filepath.Join("..", "..", "..", "testdata", "fixtures")
 
 	testCases := map[string]expectedProfileScore{
-		// SPDX test cases
+		// SPDX 2.x test cases
 		filepath.Join(base, "spdx-perfect-score.json"):    {Score: 9.4, Grade: "A", Required: 17, Optional: 2},
 		filepath.Join(base, "spdx-minimal.json"):          {Score: 5.9, Grade: "D", Required: 10, Optional: 0},
 		filepath.Join(base, "spdx-no-version.json"):       {Score: 7.1, Grade: "C", Required: 13, Optional: 0},
@@ -590,6 +741,17 @@ func Test_OCTV11ProfileForStaticSBOMFiles(t *testing.T) {
 		filepath.Join(base, "spdx-no-authors.json"):       {Score: 7.6, Grade: "C", Required: 14, Optional: 0},
 		filepath.Join(base, "spdx-no-timestamp.json"):     {Score: 7.1, Grade: "C", Required: 13, Optional: 0},
 		filepath.Join(base, "spdx-old-version.json"):      {Score: 7.6, Grade: "C", Required: 14, Optional: 0},
+
+		// SPDX 3.0 test cases - "no-*" files are perfect score minus only that field
+		filepath.Join(base, "spdx3-perfect-score.json"): {Score: 10.0, Grade: "A", Required: 18, Optional: 2},
+		filepath.Join(base, "spdx3-minimal.json"):       {Score: 6.2, Grade: "D", Required: 8, Optional: 0},
+		filepath.Join(base, "spdx3-no-version.json"):    {Score: 8.8, Grade: "B", Required: 16, Optional: 2},
+		filepath.Join(base, "spdx3-no-authors.json"):    {Score: 8.8, Grade: "B", Required: 16, Optional: 2},
+		filepath.Join(base, "spdx3-no-timestamp.json"):  {Score: 8.8, Grade: "B", Required: 16, Optional: 2},
+		filepath.Join(base, "spdx3-no-supplier.json"):   {Score: 8.8, Grade: "B", Required: 16, Optional: 2},
+		filepath.Join(base, "spdx3-no-unique-id.json"):       {Score: 9.4, Grade: "A", Required: 17, Optional: 1},
+		filepath.Join(base, "spdx3-no-dependencies.json"): {Score: 8.8, Grade: "B", Required: 16, Optional: 2},
+		filepath.Join(base, "spdx3-no-tool.json"):       {Score: 8.8, Grade: "B", Required: 16, Optional: 2},
 
 		// CycloneDX test cases
 		filepath.Join(base, "cdx-perfect-score.json"):    {Score: 7.6, Grade: "C", Required: 13, Optional: 2},
@@ -807,14 +969,15 @@ func Test_ProfileIntegrationSummary(t *testing.T) {
 	fmt.Println("Profile Integration Tests Summary")
 	fmt.Println("==========================================")
 	fmt.Println("✓ NTIA-2025 Profile: Active (20 test cases)")
+	fmt.Println("✓ NTIA Minimum Elements (2021): Active (17 test cases)")
 	fmt.Println("✓ Interlynk Profile: Active (28 test cases)")
 	fmt.Println("✓ OCT v1.1 Profile: Active (20 test cases)")
 	fmt.Println("✓ CycloneDX Signatures: Active (6 test cases)")
-	fmt.Println("✓ BSI v2.1 Profile: Active (3 test cases)")
-	fmt.Println("○ BSI v1.1 Profile: TODO (placeholder)")
-	fmt.Println("○ BSI v2.0 Profile: TODO (placeholder)")
+	fmt.Println("✓ BSI v1.1 Profile: Active (25 test cases)")
+	fmt.Println("✓ BSI v2.0 Profile: Active (25 test cases)")
+	fmt.Println("○ BSI v2.1 Profile: TODO (3 test cases)")
 	fmt.Println("==========================================")
-	fmt.Println("Total Active Tests: 77")
+	fmt.Println("Total Active Tests: 141")
 	fmt.Println("==========================================")
 }
 
@@ -835,7 +998,7 @@ func Test_InterlynkProfileForLicensing(t *testing.T) {
 	}
 
 	testCases := map[string]licensingExpectedScores{
-		// SPDX test cases
+		// SPDX 2.x test cases
 		// spdx-standard-license: MIT, Apache-2.0 - both features should pass
 		filepath.Join(base, "spdx-standard-license.json"): {
 			ValidLicensesScore: 10.0,

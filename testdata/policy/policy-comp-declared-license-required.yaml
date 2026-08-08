@@ -1,0 +1,6 @@
+policy:
+  - name: "Test: Component declared license required"
+    type: required
+    rules:
+      - field: declared_license
+    action: fail

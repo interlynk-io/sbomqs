@@ -1,0 +1,548 @@
+{
+  "@context" : "https://spdx.org/rdf/3.0.1/spdx-context.jsonld",
+  "@graph" : [ {
+    "@id" : "_:creationInfo_0",
+    "type" : "CreationInfo",
+    "specVersion" : "3.0.1",
+    "createdBy" : [ "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd0" ],
+    "createdUsing" : [ "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/additionalToolSPDXRef-gnrtd1" ],
+    "created" : "2022-11-04T11:11:52Z"
+  }, {
+    "@id" : "_:creationInfo_1",
+    "type" : "CreationInfo",
+    "specVersion" : "3.0.1",
+    "createdBy" : [ "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd57" ],
+    "createdUsing" : [ "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/additionalToolSPDXRef-gnrtd58" ],
+    "created" : "2022-11-04T11:11:52Z"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd2",
+    "type" : "Relationship",
+    "relationshipType" : "describes",
+    "completeness" : "noAssertion",
+    "to" : [ "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd3" ],
+    "from" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/document0",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd4",
+    "type" : "Relationship",
+    "relationshipType" : "contains",
+    "completeness" : "noAssertion",
+    "to" : [ "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd5" ],
+    "from" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd3",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd6",
+    "type" : "Relationship",
+    "relationshipType" : "hasConcludedLicense",
+    "to" : [ "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd7" ],
+    "from" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd5",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd8",
+    "type" : "Relationship",
+    "relationshipType" : "hasDeclaredLicense",
+    "to" : [ "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd7" ],
+    "from" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd5",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd9",
+    "type" : "Relationship",
+    "relationshipType" : "contains",
+    "completeness" : "noAssertion",
+    "to" : [ "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd10" ],
+    "from" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd3",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd11",
+    "type" : "Relationship",
+    "relationshipType" : "hasConcludedLicense",
+    "to" : [ "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd7" ],
+    "from" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd10",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd12",
+    "type" : "Relationship",
+    "relationshipType" : "hasDeclaredLicense",
+    "to" : [ "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd7" ],
+    "from" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd10",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd13",
+    "type" : "Relationship",
+    "relationshipType" : "contains",
+    "completeness" : "noAssertion",
+    "to" : [ "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd14" ],
+    "from" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd3",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd15",
+    "type" : "Relationship",
+    "relationshipType" : "hasConcludedLicense",
+    "to" : [ "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd7" ],
+    "from" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd14",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd16",
+    "type" : "Relationship",
+    "relationshipType" : "hasDeclaredLicense",
+    "to" : [ "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd7" ],
+    "from" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd14",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd17",
+    "type" : "Relationship",
+    "relationshipType" : "contains",
+    "completeness" : "noAssertion",
+    "to" : [ "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd18" ],
+    "from" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd3",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd19",
+    "type" : "Relationship",
+    "relationshipType" : "hasConcludedLicense",
+    "to" : [ "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd7" ],
+    "from" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd18",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd20",
+    "type" : "Relationship",
+    "relationshipType" : "hasDeclaredLicense",
+    "to" : [ "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd7" ],
+    "from" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd18",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd21",
+    "type" : "Relationship",
+    "relationshipType" : "contains",
+    "completeness" : "noAssertion",
+    "to" : [ "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd22" ],
+    "from" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd3",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd23",
+    "type" : "Relationship",
+    "relationshipType" : "hasConcludedLicense",
+    "to" : [ "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd7" ],
+    "from" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd22",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd24",
+    "type" : "Relationship",
+    "relationshipType" : "hasDeclaredLicense",
+    "to" : [ "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd7" ],
+    "from" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd22",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd25",
+    "type" : "Relationship",
+    "relationshipType" : "contains",
+    "completeness" : "noAssertion",
+    "to" : [ "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd26" ],
+    "from" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd3",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd27",
+    "type" : "Relationship",
+    "relationshipType" : "hasConcludedLicense",
+    "to" : [ "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd7" ],
+    "from" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd26",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd28",
+    "type" : "Relationship",
+    "relationshipType" : "hasDeclaredLicense",
+    "to" : [ "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd7" ],
+    "from" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd26",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd29",
+    "type" : "Relationship",
+    "relationshipType" : "contains",
+    "completeness" : "noAssertion",
+    "to" : [ "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd30" ],
+    "from" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd3",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd31",
+    "type" : "Relationship",
+    "relationshipType" : "hasConcludedLicense",
+    "to" : [ "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd7" ],
+    "from" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd30",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd32",
+    "type" : "Relationship",
+    "relationshipType" : "hasDeclaredLicense",
+    "to" : [ "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd7" ],
+    "from" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd30",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd33",
+    "type" : "Relationship",
+    "relationshipType" : "contains",
+    "completeness" : "noAssertion",
+    "to" : [ "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd34" ],
+    "from" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd3",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd35",
+    "type" : "Relationship",
+    "relationshipType" : "hasConcludedLicense",
+    "to" : [ "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd7" ],
+    "from" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd34",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd36",
+    "type" : "Relationship",
+    "relationshipType" : "hasDeclaredLicense",
+    "to" : [ "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd7" ],
+    "from" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd34",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd37",
+    "type" : "Relationship",
+    "relationshipType" : "contains",
+    "completeness" : "noAssertion",
+    "to" : [ "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd38" ],
+    "from" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd3",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd39",
+    "type" : "Relationship",
+    "relationshipType" : "hasConcludedLicense",
+    "to" : [ "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd7" ],
+    "from" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd38",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd40",
+    "type" : "Relationship",
+    "relationshipType" : "hasDeclaredLicense",
+    "to" : [ "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd7" ],
+    "from" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd38",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd41",
+    "type" : "Relationship",
+    "relationshipType" : "contains",
+    "completeness" : "noAssertion",
+    "to" : [ "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd42" ],
+    "from" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd3",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd43",
+    "type" : "Relationship",
+    "relationshipType" : "hasConcludedLicense",
+    "to" : [ "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd7" ],
+    "from" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd42",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd44",
+    "type" : "Relationship",
+    "relationshipType" : "hasDeclaredLicense",
+    "to" : [ "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd7" ],
+    "from" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd42",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd45",
+    "type" : "Relationship",
+    "relationshipType" : "contains",
+    "completeness" : "noAssertion",
+    "to" : [ "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd46" ],
+    "from" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd3",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd47",
+    "type" : "Relationship",
+    "relationshipType" : "hasConcludedLicense",
+    "to" : [ "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd7" ],
+    "from" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd46",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd48",
+    "type" : "Relationship",
+    "relationshipType" : "hasDeclaredLicense",
+    "to" : [ "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd7" ],
+    "from" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd46",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd49",
+    "type" : "Relationship",
+    "relationshipType" : "contains",
+    "completeness" : "noAssertion",
+    "to" : [ "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd50" ],
+    "from" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd3",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd51",
+    "type" : "Relationship",
+    "relationshipType" : "hasDocumentation",
+    "to" : [ "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd50" ],
+    "completeness" : "noAssertion",
+    "from" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd3",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd52",
+    "type" : "Relationship",
+    "relationshipType" : "hasConcludedLicense",
+    "to" : [ "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd7" ],
+    "from" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd50",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd53",
+    "type" : "Relationship",
+    "relationshipType" : "hasDeclaredLicense",
+    "to" : [ "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd7" ],
+    "from" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd50",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd54",
+    "type" : "Relationship",
+    "relationshipType" : "hasConcludedLicense",
+    "to" : [ "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd7" ],
+    "from" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd3",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd56",
+    "type" : "Relationship",
+    "relationshipType" : "hasDeclaredLicense",
+    "to" : [ "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd7" ],
+    "from" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd3",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/document0",
+    "type" : "SpdxDocument",
+    "dataLicense" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd59",
+    "rootElement" : [ "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd3" ],
+    "name" : "hello 0.0.1",
+    "creationInfo" : "_:creationInfo_1"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/additionalToolSPDXRef-gnrtd1",
+    "type" : "Tool",
+    "name" : "Microsoft.SBOMTool-0.2.7",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/additionalToolSPDXRef-gnrtd58",
+    "type" : "Tool",
+    "name" : "Microsoft.SBOMTool-0.2.7",
+    "creationInfo" : "_:creationInfo_1"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd7",
+    "type" : "simplelicensing_LicenseExpression",
+    "simplelicensing_licenseExpression" : "NOASSERTION",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd59",
+    "type" : "simplelicensing_LicenseExpression",
+    "simplelicensing_licenseExpression" : "CC0-1.0",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd0",
+    "type" : "Organization",
+    "name" : "DocFest",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd55",
+    "type" : "Organization",
+    "name" : "DocFest",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd57",
+    "type" : "Organization",
+    "name" : "DocFest",
+    "creationInfo" : "_:creationInfo_1"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd5",
+    "type" : "software_File",
+    "software_copyrightText" : "NOASSERTION",
+    "verifiedUsing" : [ {
+      "type" : "Hash",
+      "algorithm" : "sha1",
+      "hashValue" : "f84d3a18eaf5aa1d343be06a8c456b2e2a614d4c"
+    }, {
+      "type" : "Hash",
+      "algorithm" : "sha256",
+      "hashValue" : "87e1aa32dcc9b590ad37b0c51bbff0b90d992ac017b24190b1403479c73fe373"
+    } ],
+    "name" : "./lib/hello.rb",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd10",
+    "type" : "software_File",
+    "software_copyrightText" : "NOASSERTION",
+    "verifiedUsing" : [ {
+      "type" : "Hash",
+      "algorithm" : "sha256",
+      "hashValue" : "e55578b18df9ac77fab26e36ae165ff1e4b5d498e1005880f570739d206cbfef"
+    }, {
+      "type" : "Hash",
+      "algorithm" : "sha1",
+      "hashValue" : "7fd905d8ba81beb7e4194bdef067e68620c42a91"
+    } ],
+    "name" : "./hello.gemspec",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd14",
+    "type" : "software_File",
+    "software_copyrightText" : "NOASSERTION",
+    "verifiedUsing" : [ {
+      "type" : "Hash",
+      "algorithm" : "sha256",
+      "hashValue" : "5283a80567ec44c5cafc4434b8c15d59a261eb9faf14ec1d648f2f762840cfae"
+    }, {
+      "type" : "Hash",
+      "algorithm" : "sha1",
+      "hashValue" : "f5a5b10f3e0feeab03d48e9d377692dad9b7bd52"
+    } ],
+    "name" : "./README.md",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd18",
+    "type" : "software_File",
+    "software_copyrightText" : "NOASSERTION",
+    "verifiedUsing" : [ {
+      "type" : "Hash",
+      "algorithm" : "sha1",
+      "hashValue" : "b5be44ef7a6f7f6ded5cc28ec27bd3cb9a67ccb2"
+    }, {
+      "type" : "Hash",
+      "algorithm" : "sha256",
+      "hashValue" : "19dfdedc02d042051495e22c522446664235ffcff56d9d9ecc30c31b22a6815c"
+    } ],
+    "name" : "./lib/hello/version.rb",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd22",
+    "type" : "software_File",
+    "software_copyrightText" : "NOASSERTION",
+    "verifiedUsing" : [ {
+      "type" : "Hash",
+      "algorithm" : "sha256",
+      "hashValue" : "e201190bc24e9f00849b3efa5fbaece2cbf069703232e50c7fa15d41c47f2ead"
+    }, {
+      "type" : "Hash",
+      "algorithm" : "sha1",
+      "hashValue" : "38ae71152a2d22a6b6418e0add993df2268cce81"
+    } ],
+    "name" : "./bin/setup",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd26",
+    "type" : "software_File",
+    "software_copyrightText" : "NOASSERTION",
+    "verifiedUsing" : [ {
+      "type" : "Hash",
+      "algorithm" : "sha1",
+      "hashValue" : "bced536adbe99bde1b1d0d0039f57ba83f10d727"
+    }, {
+      "type" : "Hash",
+      "algorithm" : "sha256",
+      "hashValue" : "1034271790dc61a4a4c444dfb05c77cb1f01a1f1622f9f6ada3d4034645947c9"
+    } ],
+    "name" : "./bin/console",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd30",
+    "type" : "software_File",
+    "software_copyrightText" : "NOASSERTION",
+    "verifiedUsing" : [ {
+      "type" : "Hash",
+      "algorithm" : "sha1",
+      "hashValue" : "7d82872a906a22904a3419329427b957edf26e7f"
+    }, {
+      "type" : "Hash",
+      "algorithm" : "sha256",
+      "hashValue" : "37745cce994a91bda95e5ddabad0e2c4df489361c619826240d49f52d752c392"
+    } ],
+    "name" : "./Rakefile",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd34",
+    "type" : "software_File",
+    "software_copyrightText" : "NOASSERTION",
+    "verifiedUsing" : [ {
+      "type" : "Hash",
+      "algorithm" : "sha1",
+      "hashValue" : "f11ed3c48976fa5eff33cea9eef89dc36db3d68c"
+    }, {
+      "type" : "Hash",
+      "algorithm" : "sha256",
+      "hashValue" : "43be4a455dc8d2ae2844e1fd3ea7353d33c2411997dff8d3d4e8cc9377c6f5df"
+    } ],
+    "name" : "./sig/hello.rbs",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd38",
+    "type" : "software_File",
+    "software_copyrightText" : "NOASSERTION",
+    "verifiedUsing" : [ {
+      "type" : "Hash",
+      "algorithm" : "sha1",
+      "hashValue" : "d95216a381538de969c759a32a427d8eb437e532"
+    }, {
+      "type" : "Hash",
+      "algorithm" : "sha256",
+      "hashValue" : "bb1f875a243678ad0267c354424efaedab526a159576b2c2f20fb12527b39ba4"
+    } ],
+    "name" : "./Gemfile",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd42",
+    "type" : "software_File",
+    "software_copyrightText" : "NOASSERTION",
+    "verifiedUsing" : [ {
+      "type" : "Hash",
+      "algorithm" : "sha1",
+      "hashValue" : "dd14ebd399202141553c772590fe3977ce39f36c"
+    }, {
+      "type" : "Hash",
+      "algorithm" : "sha256",
+      "hashValue" : "dca446f7e4e73589403ecfc03515c75dd3853711dbfb809f6d53f99ba3d13be1"
+    } ],
+    "name" : "./Gemfile.lock",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd46",
+    "type" : "software_File",
+    "software_copyrightText" : "NOASSERTION",
+    "verifiedUsing" : [ {
+      "type" : "Hash",
+      "algorithm" : "sha256",
+      "hashValue" : "b6dc3c62c55aa27af79a6e9d0d33a033e8ac4a50c8574aa18dbbfb75de2322ae"
+    }, {
+      "type" : "Hash",
+      "algorithm" : "sha1",
+      "hashValue" : "42d586fd523fe822c198e99af5866bc26bba4eb5"
+    } ],
+    "name" : "./LICENSE.txt",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd50",
+    "type" : "software_File",
+    "software_copyrightText" : "NOASSERTION",
+    "verifiedUsing" : [ {
+      "type" : "Hash",
+      "algorithm" : "sha1",
+      "hashValue" : "60d67ed18c1946a93a47b7d30ff010024c843a16"
+    }, {
+      "type" : "Hash",
+      "algorithm" : "sha256",
+      "hashValue" : "46e3278d9ad88f04bee1e3e8797f77e11833674d744647ac7d43954f7b2b199a"
+    } ],
+    "name" : "./CHANGELOG.md",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd3",
+    "type" : "software_Package",
+    "software_copyrightText" : "NOASSERTION",
+    "suppliedBy" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/csf4PsHt3k6fM6HJmv4tGQ-specv3/SPDXRef-gnrtd55",
+    "software_downloadLocation" : "NOASSERTION",
+    "software_packageVersion" : "0.0.1",
+    "verifiedUsing" : [ {
+      "type" : "PackageVerificationCode",
+      "algorithm" : "sha1",
+      "hashValue" : "87568b828a4fd64624024c6ab26009fe9ece46e2"
+    } ],
+    "name" : "hello",
+    "creationInfo" : "_:creationInfo_0"
+  } ]
+}

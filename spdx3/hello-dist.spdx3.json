@@ -1,0 +1,133 @@
+{
+  "@context" : "https://spdx.org/rdf/3.0.1/spdx-context.jsonld",
+  "@graph" : [ {
+    "@id" : "_:creationInfo_0",
+    "type" : "CreationInfo",
+    "specVersion" : "3.0.1",
+    "createdBy" : [ "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/q7S1LJe0Tke-HnphZSB1MQ-specv3/SPDXRef-gnrtd0" ],
+    "createdUsing" : [ "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/q7S1LJe0Tke-HnphZSB1MQ-specv3/additionalToolSPDXRef-gnrtd1" ],
+    "created" : "2022-11-04T11:13:29Z"
+  }, {
+    "@id" : "_:creationInfo_1",
+    "type" : "CreationInfo",
+    "specVersion" : "3.0.1",
+    "createdBy" : [ "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/q7S1LJe0Tke-HnphZSB1MQ-specv3/SPDXRef-gnrtd12" ],
+    "createdUsing" : [ "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/q7S1LJe0Tke-HnphZSB1MQ-specv3/additionalToolSPDXRef-gnrtd13" ],
+    "created" : "2022-11-04T11:13:29Z"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/q7S1LJe0Tke-HnphZSB1MQ-specv3/SPDXRef-gnrtd2",
+    "type" : "Relationship",
+    "relationshipType" : "describes",
+    "completeness" : "noAssertion",
+    "to" : [ "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/q7S1LJe0Tke-HnphZSB1MQ-specv3/SPDXRef-gnrtd3" ],
+    "from" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/q7S1LJe0Tke-HnphZSB1MQ-specv3/document0",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/q7S1LJe0Tke-HnphZSB1MQ-specv3/SPDXRef-gnrtd4",
+    "type" : "Relationship",
+    "relationshipType" : "contains",
+    "completeness" : "noAssertion",
+    "to" : [ "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/q7S1LJe0Tke-HnphZSB1MQ-specv3/SPDXRef-gnrtd5" ],
+    "from" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/q7S1LJe0Tke-HnphZSB1MQ-specv3/SPDXRef-gnrtd3",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/q7S1LJe0Tke-HnphZSB1MQ-specv3/SPDXRef-gnrtd6",
+    "type" : "Relationship",
+    "relationshipType" : "hasConcludedLicense",
+    "to" : [ "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/q7S1LJe0Tke-HnphZSB1MQ-specv3/SPDXRef-gnrtd7" ],
+    "from" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/q7S1LJe0Tke-HnphZSB1MQ-specv3/SPDXRef-gnrtd5",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/q7S1LJe0Tke-HnphZSB1MQ-specv3/SPDXRef-gnrtd8",
+    "type" : "Relationship",
+    "relationshipType" : "hasDeclaredLicense",
+    "to" : [ "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/q7S1LJe0Tke-HnphZSB1MQ-specv3/SPDXRef-gnrtd7" ],
+    "from" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/q7S1LJe0Tke-HnphZSB1MQ-specv3/SPDXRef-gnrtd5",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/q7S1LJe0Tke-HnphZSB1MQ-specv3/SPDXRef-gnrtd9",
+    "type" : "Relationship",
+    "relationshipType" : "hasConcludedLicense",
+    "to" : [ "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/q7S1LJe0Tke-HnphZSB1MQ-specv3/SPDXRef-gnrtd7" ],
+    "from" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/q7S1LJe0Tke-HnphZSB1MQ-specv3/SPDXRef-gnrtd3",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/q7S1LJe0Tke-HnphZSB1MQ-specv3/SPDXRef-gnrtd11",
+    "type" : "Relationship",
+    "relationshipType" : "hasDeclaredLicense",
+    "to" : [ "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/q7S1LJe0Tke-HnphZSB1MQ-specv3/SPDXRef-gnrtd7" ],
+    "from" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/q7S1LJe0Tke-HnphZSB1MQ-specv3/SPDXRef-gnrtd3",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/q7S1LJe0Tke-HnphZSB1MQ-specv3/document0",
+    "type" : "SpdxDocument",
+    "dataLicense" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/q7S1LJe0Tke-HnphZSB1MQ-specv3/SPDXRef-gnrtd14",
+    "rootElement" : [ "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/q7S1LJe0Tke-HnphZSB1MQ-specv3/SPDXRef-gnrtd3" ],
+    "name" : "hello 0.0.1",
+    "creationInfo" : "_:creationInfo_1"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/q7S1LJe0Tke-HnphZSB1MQ-specv3/additionalToolSPDXRef-gnrtd1",
+    "type" : "Tool",
+    "name" : "Microsoft.SBOMTool-0.2.7",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/q7S1LJe0Tke-HnphZSB1MQ-specv3/additionalToolSPDXRef-gnrtd13",
+    "type" : "Tool",
+    "name" : "Microsoft.SBOMTool-0.2.7",
+    "creationInfo" : "_:creationInfo_1"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/q7S1LJe0Tke-HnphZSB1MQ-specv3/SPDXRef-gnrtd7",
+    "type" : "simplelicensing_LicenseExpression",
+    "simplelicensing_licenseExpression" : "NOASSERTION",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/q7S1LJe0Tke-HnphZSB1MQ-specv3/SPDXRef-gnrtd14",
+    "type" : "simplelicensing_LicenseExpression",
+    "simplelicensing_licenseExpression" : "CC0-1.0",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/q7S1LJe0Tke-HnphZSB1MQ-specv3/SPDXRef-gnrtd0",
+    "type" : "Organization",
+    "name" : "DocFest",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/q7S1LJe0Tke-HnphZSB1MQ-specv3/SPDXRef-gnrtd10",
+    "type" : "Organization",
+    "name" : "DocFest",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/q7S1LJe0Tke-HnphZSB1MQ-specv3/SPDXRef-gnrtd12",
+    "type" : "Organization",
+    "name" : "DocFest",
+    "creationInfo" : "_:creationInfo_1"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/q7S1LJe0Tke-HnphZSB1MQ-specv3/SPDXRef-gnrtd5",
+    "type" : "software_File",
+    "software_copyrightText" : "NOASSERTION",
+    "verifiedUsing" : [ {
+      "type" : "Hash",
+      "algorithm" : "sha256",
+      "hashValue" : "3e11868522b3c014cd7ef27b8472c19cf6911e6faa222b3aa7179b167d4c0b0b"
+    }, {
+      "type" : "Hash",
+      "algorithm" : "sha1",
+      "hashValue" : "0be4586c7dbcb2081ab136bdaff7362530e5d364"
+    } ],
+    "name" : "./hello-0.0.1.tar.gz",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/q7S1LJe0Tke-HnphZSB1MQ-specv3/SPDXRef-gnrtd3",
+    "type" : "software_Package",
+    "software_copyrightText" : "NOASSERTION",
+    "suppliedBy" : "https://swinslow.net/spdx-examples/example11/hello/hello/0.0.1/q7S1LJe0Tke-HnphZSB1MQ-specv3/SPDXRef-gnrtd10",
+    "software_downloadLocation" : "NOASSERTION",
+    "software_packageVersion" : "0.0.1",
+    "verifiedUsing" : [ {
+      "type" : "PackageVerificationCode",
+      "algorithm" : "sha1",
+      "hashValue" : "b305e250fb019ba01deb27ccbd255fafe5a8d988"
+    } ],
+    "name" : "hello",
+    "creationInfo" : "_:creationInfo_0"
+  } ]
+}

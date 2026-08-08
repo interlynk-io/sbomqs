@@ -348,6 +348,13 @@ func evaluateSBOMOrganization(doc sbom.Document) (bool, string, error) {
 
 // schema
 func evaluateSBOMSchema(doc sbom.Document) (bool, string, error) {
+	spec := strings.TrimSpace(strings.ToLower(doc.Spec().GetSpecType()))
+	ver := strings.TrimSpace(doc.Spec().GetVersion())
+
+	if spec == string(sbom.SBOMSpecSPDX) && strings.HasPrefix(ver, "3.") {
+		return false, "not supported in SPDX", nil
+	}
+
 	if doc.SchemaValidation() {
 		return true, "valid schema", nil
 	}

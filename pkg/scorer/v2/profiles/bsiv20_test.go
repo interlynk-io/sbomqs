@@ -661,7 +661,7 @@ func TestBSIV20CompFilename(t *testing.T) {
 		got := BSIV20CompFilename(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "PackageFileName declared for all components.", got.Desc)
+		assert.Equal(t, "filename declared for all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -673,7 +673,7 @@ func TestBSIV20CompFilename(t *testing.T) {
 		got := BSIV20CompFilename(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "no components declare PackageFileName.", got.Desc)
+		assert.Equal(t, "no components declare filename", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -685,7 +685,7 @@ func TestBSIV20CompFilename(t *testing.T) {
 		got := BSIV20CompFilename(doc)
 
 		assert.InDelta(t, 5.0, got.Score, 1e-9)
-		assert.Equal(t, "1/2 components declare PackageFileName.", got.Desc)
+		assert.Equal(t, "1/2 components declare filename", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 }
@@ -1338,8 +1338,8 @@ func TestBSIV20CompExecutableProperty(t *testing.T) {
 
 		got := BSIV20CompExecutableProperty(doc)
 
-		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "executable property declared for all components.", got.Desc)
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "no components declare executable property", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1351,7 +1351,7 @@ func TestBSIV20CompExecutableProperty(t *testing.T) {
 		got := BSIV20CompExecutableProperty(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "no components declare executable property via PrimaryPackagePurpose.", got.Desc)
+		assert.Equal(t, "no components declare executable property", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1362,8 +1362,8 @@ func TestBSIV20CompExecutableProperty(t *testing.T) {
 
 		got := BSIV20CompExecutableProperty(doc)
 
-		assert.InDelta(t, 5.0, got.Score, 1e-9)
-		assert.Equal(t, "1/2 components declare executable property via PrimaryPackagePurpose.", got.Desc)
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "no components declare executable property", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 }
@@ -1406,8 +1406,8 @@ func TestBSIV20CompArchiveProperty(t *testing.T) {
 
 		got := BSIV20CompArchiveProperty(doc)
 
-		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "archive property declared for all components.", got.Desc)
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "no components declare archive property", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1419,7 +1419,7 @@ func TestBSIV20CompArchiveProperty(t *testing.T) {
 		got := BSIV20CompArchiveProperty(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "no components declare archive property via PrimaryPackagePurpose.", got.Desc)
+		assert.Equal(t, "no components declare archive property", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 }
@@ -1462,8 +1462,8 @@ func TestBSIV20CompStructuredProperty(t *testing.T) {
 
 		got := BSIV20CompStructuredProperty(doc)
 
-		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "structured property declared for all components.", got.Desc)
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "no components declare structured property", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1475,7 +1475,7 @@ func TestBSIV20CompStructuredProperty(t *testing.T) {
 		got := BSIV20CompStructuredProperty(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "no components declare structured property via PrimaryPackagePurpose.", got.Desc)
+		assert.Equal(t, "no components declare structured property", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 }

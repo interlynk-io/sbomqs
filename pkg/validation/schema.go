@@ -58,6 +58,7 @@ var schemaRegistry = map[string]string{
 	"spdx:2.2.2": "schemas/spdx/2.2.2/spdx-schema.json",
 	"spdx:2.3":   "schemas/spdx/2.3/spdx-schema.json",
 	"spdx:2.3.1": "schemas/spdx/2.3.1/spdx-schema.json",
+	"spdx:3.0.1": "schemas/spdx/3.0.1/spdx-schema.json",
 }
 
 // loadSchema compiles and returns a JSON schema

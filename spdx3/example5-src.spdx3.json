@@ -1,0 +1,178 @@
+{
+  "@context" : "https://spdx.org/rdf/3.0.1/spdx-context.jsonld",
+  "@graph" : [ {
+    "@id" : "_:creationInfo_0",
+    "type" : "CreationInfo",
+    "specVersion" : "3.0.1",
+    "createdBy" : [ "https://swinslow.net/spdx-examples/example5/hello-go-src-v2-specv3/SPDXRef-gnrtd0" ],
+    "createdUsing" : [ "https://swinslow.net/spdx-examples/example5/hello-go-src-v2-specv3/additionalToolSPDXRef-gnrtd1", "https://swinslow.net/spdx-examples/example5/hello-go-src-v2-specv3/additionalToolSPDXRef-gnrtd2" ],
+    "created" : "2021-08-26T01:53:00Z"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example5/hello-go-src-v2-specv3/SPDXRef-gnrtd3",
+    "type" : "Relationship",
+    "relationshipType" : "describes",
+    "completeness" : "noAssertion",
+    "to" : [ "https://swinslow.net/spdx-examples/example5/hello-go-src-v2-specv3/SPDXRef-gnrtd4" ],
+    "from" : "https://swinslow.net/spdx-examples/example5/hello-go-src-v2-specv3/document0",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example5/hello-go-src-v2-specv3/SPDXRef-gnrtd5",
+    "type" : "Relationship",
+    "relationshipType" : "contains",
+    "completeness" : "noAssertion",
+    "to" : [ "https://swinslow.net/spdx-examples/example5/hello-go-src-v2-specv3/SPDXRef-gnrtd6" ],
+    "from" : "https://swinslow.net/spdx-examples/example5/hello-go-src-v2-specv3/SPDXRef-gnrtd4",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example5/hello-go-src-v2-specv3/SPDXRef-gnrtd8",
+    "type" : "Relationship",
+    "relationshipType" : "hasConcludedLicense",
+    "to" : [ "https://swinslow.net/spdx-examples/example5/hello-go-src-v2-specv3/SPDXRef-gnrtd9" ],
+    "from" : "https://swinslow.net/spdx-examples/example5/hello-go-src-v2-specv3/SPDXRef-gnrtd6",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example5/hello-go-src-v2-specv3/SPDXRef-gnrtd10",
+    "type" : "Relationship",
+    "relationshipType" : "hasDeclaredLicense",
+    "to" : [ "https://swinslow.net/spdx-examples/example5/hello-go-src-v2-specv3/SPDXRef-gnrtd9" ],
+    "from" : "https://swinslow.net/spdx-examples/example5/hello-go-src-v2-specv3/SPDXRef-gnrtd6",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example5/hello-go-src-v2-specv3/SPDXRef-gnrtd11",
+    "type" : "Relationship",
+    "relationshipType" : "contains",
+    "completeness" : "noAssertion",
+    "to" : [ "https://swinslow.net/spdx-examples/example5/hello-go-src-v2-specv3/SPDXRef-gnrtd12" ],
+    "from" : "https://swinslow.net/spdx-examples/example5/hello-go-src-v2-specv3/SPDXRef-gnrtd4",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example5/hello-go-src-v2-specv3/SPDXRef-gnrtd13",
+    "type" : "Relationship",
+    "relationshipType" : "hasConcludedLicense",
+    "to" : [ "https://swinslow.net/spdx-examples/example5/hello-go-src-v2-specv3/SPDXRef-gnrtd9" ],
+    "from" : "https://swinslow.net/spdx-examples/example5/hello-go-src-v2-specv3/SPDXRef-gnrtd12",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example5/hello-go-src-v2-specv3/SPDXRef-gnrtd14",
+    "type" : "Relationship",
+    "relationshipType" : "hasDeclaredLicense",
+    "to" : [ "https://swinslow.net/spdx-examples/example5/hello-go-src-v2-specv3/SPDXRef-gnrtd9" ],
+    "from" : "https://swinslow.net/spdx-examples/example5/hello-go-src-v2-specv3/SPDXRef-gnrtd12",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example5/hello-go-src-v2-specv3/SPDXRef-gnrtd15",
+    "type" : "Relationship",
+    "relationshipType" : "hasConcludedLicense",
+    "to" : [ "https://swinslow.net/spdx-examples/example5/hello-go-src-v2-specv3/SPDXRef-gnrtd16" ],
+    "from" : "https://swinslow.net/spdx-examples/example5/hello-go-src-v2-specv3/SPDXRef-gnrtd4",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example5/hello-go-src-v2-specv3/SPDXRef-gnrtd17",
+    "type" : "Relationship",
+    "relationshipType" : "hasDeclaredLicense",
+    "to" : [ "https://swinslow.net/spdx-examples/example5/hello-go-src-v2-specv3/SPDXRef-gnrtd9" ],
+    "from" : "https://swinslow.net/spdx-examples/example5/hello-go-src-v2-specv3/SPDXRef-gnrtd4",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example5/hello-go-src-v2-specv3/document0",
+    "type" : "SpdxDocument",
+    "dataLicense" : "https://swinslow.net/spdx-examples/example5/hello-go-src-v2-specv3/SPDXRef-gnrtd18",
+    "rootElement" : [ "https://swinslow.net/spdx-examples/example5/hello-go-src-v2-specv3/SPDXRef-gnrtd4" ],
+    "name" : "hello-go-src",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example5/hello-go-src-v2-specv3/additionalToolSPDXRef-gnrtd1",
+    "type" : "Tool",
+    "name" : "github.com/spdx/tools-golang/builder",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example5/hello-go-src-v2-specv3/additionalToolSPDXRef-gnrtd2",
+    "type" : "Tool",
+    "name" : "github.com/spdx/tools-golang/idsearcher",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example5/hello-go-src-v2-specv3/SPDXRef-gnrtd9",
+    "type" : "simplelicensing_LicenseExpression",
+    "simplelicensing_licenseExpression" : "GPL-3.0-or-later",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example5/hello-go-src-v2-specv3/SPDXRef-gnrtd16",
+    "type" : "simplelicensing_LicenseExpression",
+    "simplelicensing_licenseExpression" : "NOASSERTION",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example5/hello-go-src-v2-specv3/SPDXRef-gnrtd18",
+    "type" : "simplelicensing_LicenseExpression",
+    "simplelicensing_licenseExpression" : "CC0-1.0",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example5/hello-go-src-v2-specv3/SPDXRef-gnrtd7",
+    "type" : "LifecycleScopedRelationship",
+    "relationshipType" : "usesTool",
+    "scope" : "build",
+    "to" : [ "https://swinslow.net/spdx-examples/example5/hello-go-src-v2-specv3/SPDXRef-gnrtd6" ],
+    "completeness" : "noAssertion",
+    "from" : "https://swinslow.net/spdx-examples/example5/hello-go-src-v2-specv3/SPDXRef-gnrtd4",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example5/hello-go-src-v2-specv3/SPDXRef-gnrtd0",
+    "type" : "Person",
+    "externalIdentifier" : [ {
+      "type" : "ExternalIdentifier",
+      "identifier" : "steve@swinslow.net",
+      "externalIdentifierType" : "email"
+    } ],
+    "name" : "Steve Winslow",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example5/hello-go-src-v2-specv3/SPDXRef-gnrtd6",
+    "type" : "software_File",
+    "software_copyrightText" : "NOASSERTION",
+    "verifiedUsing" : [ {
+      "type" : "Hash",
+      "algorithm" : "sha1",
+      "hashValue" : "5cb1c1c76bd0694fe5be2774c7df8166f52498a0"
+    }, {
+      "type" : "Hash",
+      "algorithm" : "sha256",
+      "hashValue" : "23ffc10f988297282e29b32e9c520fd33b4122a487ccaa74c979d225181aa8bf"
+    }, {
+      "type" : "Hash",
+      "algorithm" : "md5",
+      "hashValue" : "7c1236d86a868a5762ba16274339c0f8"
+    } ],
+    "name" : "./Makefile",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example5/hello-go-src-v2-specv3/SPDXRef-gnrtd12",
+    "type" : "software_File",
+    "software_copyrightText" : "NOASSERTION",
+    "verifiedUsing" : [ {
+      "type" : "Hash",
+      "algorithm" : "sha1",
+      "hashValue" : "bb5ae27c76cd4332edd0da834eb4bd8a7c31ca93"
+    }, {
+      "type" : "Hash",
+      "algorithm" : "sha256",
+      "hashValue" : "1ce078bb915470348fcf481198b8ab1cdb7d36481564959387153e8d4cd1bbf2"
+    }, {
+      "type" : "Hash",
+      "algorithm" : "md5",
+      "hashValue" : "7f4170f33ec5c81492785e1147dfd3af"
+    } ],
+    "name" : "./hello.go",
+    "creationInfo" : "_:creationInfo_0"
+  }, {
+    "spdxId" : "https://swinslow.net/spdx-examples/example5/hello-go-src-v2-specv3/SPDXRef-gnrtd4",
+    "type" : "software_Package",
+    "software_copyrightText" : "NOASSERTION",
+    "software_downloadLocation" : "git+https://github.com/swinslow/spdx-examples.git#example5/content/src",
+    "verifiedUsing" : [ {
+      "type" : "PackageVerificationCode",
+      "algorithm" : "sha1",
+      "hashValue" : "6486e016b01e9ec8a76998cefd0705144d869234"
+    } ],
+    "name" : "hello-go-src",
+    "creationInfo" : "_:creationInfo_0"
+  } ]
+}

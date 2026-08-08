@@ -1,0 +1,98 @@
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Structured Prop Test",
+      "creationInfo": "_:creationinfo",
+      "element": ["SPDXRef-Package-App", "SPDXRef-Package-Lib", "SPDXRef-File-App", "SPDXRef-File-Lib"],
+      "profileConformance": ["core", "software"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": ["_:author"]
+    },
+    {
+      "type": "Person",
+      "@id": "_:author",
+      "name": "Test Author",
+      "externalIdentifiers": [
+        {
+          "type": "ExternalIdentifier",
+          "externalIdentifierType": "email",
+          "identifier": "author@example.com"
+        }
+      ]
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package-App",
+      "name": "my-application",
+      "software_packageVersion": "1.0.0"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package-Lib",
+      "name": "my-library",
+      "software_packageVersion": "2.3.4"
+    },
+    {
+      "type": "software_File",
+      "spdxId": "SPDXRef-File-App",
+      "name": "my-application-1.0.0.tar.gz",
+      "software_additionalPurpose": ["container"],
+      "verifiedUsing": [
+        {
+          "type": "Hash",
+          "algorithm": "sha512",
+          "hashValue": "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e"
+        }
+      ]
+    },
+    {
+      "type": "software_File",
+      "spdxId": "SPDXRef-File-Lib",
+      "name": "my-library-2.3.4.tar.gz",
+      "software_additionalPurpose": ["container"],
+      "verifiedUsing": [
+        {
+          "type": "Hash",
+          "algorithm": "sha512",
+          "hashValue": "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e"
+        }
+      ]
+    },
+    {
+      "type": "Relationship",
+      "from": "SPDXRef-DOCUMENT",
+      "to": ["SPDXRef-Package-App"],
+      "relationshipType": "describes",
+      "completeness": "complete"
+    },
+    {
+      "type": "Relationship",
+      "from": "SPDXRef-Package-App",
+      "to": ["SPDXRef-Package-Lib"],
+      "relationshipType": "dependsOn",
+      "completeness": "complete"
+    },
+    {
+      "type": "Relationship",
+      "from": "SPDXRef-Package-App",
+      "to": ["SPDXRef-File-App"],
+      "relationshipType": "hasDistributionArtifact",
+      "completeness": "complete"
+    },
+    {
+      "type": "Relationship",
+      "from": "SPDXRef-Package-Lib",
+      "to": ["SPDXRef-File-Lib"],
+      "relationshipType": "hasDistributionArtifact",
+      "completeness": "complete"
+    }
+  ]
+}

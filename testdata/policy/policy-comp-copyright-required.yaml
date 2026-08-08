@@ -1,0 +1,6 @@
+policy:
+  - name: "Test: Component copyright required"
+    type: required
+    rules:
+      - field: copyright
+    action: fail

@@ -18,12 +18,14 @@ type GetRelationship interface {
 	GetFrom() string
 	GetTo() string
 	GetType() string
+	GetCompleteness() string
 }
 
 type Relationship struct {
-	From string // component ID
-	To   string // component ID
-	Type string // relationship type
+	From        string // component ID
+	To          string // component ID
+	Type        string // relationship type
+	Completeness string // SPDX 3.0 completeness value (e.g., "complete", "noAssertion")
 }
 
 func (r Relationship) GetFrom() string {
@@ -36,4 +38,8 @@ func (r Relationship) GetTo() string {
 
 func (r Relationship) GetType() string {
 	return r.Type
+}
+
+func (r Relationship) GetCompleteness() string {
+	return r.Completeness
 }

@@ -1,0 +1,6 @@
+policy:
+  - name: "Test: Component type required"
+    type: required
+    rules:
+      - field: type
+    action: fail

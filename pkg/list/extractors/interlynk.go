@@ -625,7 +625,15 @@ func InterlynkSBOMFileFormat(doc sbom.Document) (bool, string, error) {
 
 // InterlynkSBOMSchemaValid reports whether the SBOM passes schema validation.
 // Mirrors: profiles.InterSBOMSchema → profiles.SBOMSchema
+// SPDX 3.0 schema validation is not supported.
 func InterlynkSBOMSchemaValid(doc sbom.Document) (bool, string, error) {
+	spec := strings.TrimSpace(strings.ToLower(doc.Spec().GetSpecType()))
+	ver := strings.TrimSpace(doc.Spec().GetVersion())
+
+	if spec == string(sbom.SBOMSpecSPDX) && strings.HasPrefix(ver, "3.") {
+		return false, "not supported in SPDX", nil
+	}
+
 	if doc.SchemaValidation() {
 		return true, "valid", nil
 	}

@@ -1,0 +1,69 @@
+{
+  "@context": [
+    "https://spdx.org/rdf/3.0.1/spdx-context.jsonld"
+  ],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "BSI v2.1.0 Minimal Valid",
+      "creationInfo": "_:creationinfo",
+      "element": [
+        "SPDXRef-Package"
+      ],
+      "profileConformance": [
+        "core",
+        "software"
+      ]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": [
+        "_:author"
+      ]
+    },
+    {
+      "type": "Person",
+      "@id": "_:author",
+      "name": "Test Author",
+      "externalIdentifiers": [
+        {
+          "type": "ExternalIdentifier",
+          "externalIdentifierType": "email",
+          "identifier": "author@example.com"
+        }
+      ]
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package",
+      "name": "MinimalPackage",
+      "software_packageVersion": "1.0.0",
+      "originatedBy": [
+        "_:supplier"
+      ]
+    },
+    {
+      "type": "Organization",
+      "@id": "_:supplier",
+      "name": "Minimal Supplier Inc",
+      "externalIdentifiers": [
+        {
+          "type": "ExternalIdentifier",
+          "externalIdentifierType": "email",
+          "identifier": "supplier@example.com"
+        }
+      ]
+    },
+    {
+      "type": "Relationship",
+      "from": "SPDXRef-Package",
+      "to": [],
+      "relationshipType": "dependsOn",
+      "completeness": "complete"
+    }
+  ]
+}

@@ -105,3 +105,52 @@ sbomqs policy -f testdata/policy/metadata-provenance.yaml testdata/sboms/metadat
 # Test comprehensive policy
 sbomqs policy -f testdata/policy/advanced-comprehensive.yaml testdata/sboms/advanced-comprehensive-violations.cdx.json
 ```
+
+## Policy Integration Tests
+
+The `policy-*` files (document-level and component-level) are used by the policy integration test suite in `pkg/policy/policy_integration_test.go`. These test against SPDX 3.0 test fixtures.
+
+### Running Integration Tests
+
+```bash
+# Run all policy integration tests
+go test ./pkg/policy/... -v -run TestPolicyIntegration
+
+# Run specific test
+go test ./pkg/policy/... -v -run "TestPolicyIntegration/Component_name_required"
+```
+
+### Document-Level Policies
+
+| Policy | Description |
+|--------|-------------|
+| `policy-doc-authors-required.yaml` | Requires sbom_authors field |
+| `policy-doc-timestamp-required.yaml` | Requires sbom_timestamp field |
+| `policy-doc-tool-required.yaml` | Requires sbom_tool field |
+| `policy-complete-document-fields-required.yaml` | Requires all document fields (comprehensive) |
+
+### Component-Level Policies
+
+| Policy | Description |
+|--------|-------------|
+| `policy-comp-name-required.yaml` | Requires component name |
+| `policy-comp-version-required.yaml` | Requires component version |
+| `policy-comp-supplier-required.yaml` | Requires component supplier |
+| `policy-comp-license-required.yaml` | Requires component license |
+| `policy-comp-declared-license-required.yaml` | Requires declared license (SPDX 3) |
+| `policy-comp-concluded-license-required.yaml` | Requires concluded license (SPDX 3) |
+| `policy-comp-checksum-required.yaml` | Requires component checksum |
+| `policy-comp-purl-required.yaml` | Requires PURL |
+| `policy-comp-cpe-required.yaml` | Requires CPE |
+| `policy-comp-copyright-required.yaml` | Requires copyright text |
+| `policy-comp-downloadlocation-required.yaml` | Requires download location |
+| `policy-comp-type-required.yaml` | Requires component type |
+| `policy-comp-purl-whitelist.yaml` | Validates PURL format (npm) |
+| `policy-comp-license-blacklist.yaml` | Blocks deprecated GPL licenses |
+| `policy-complete-component-fields-required.yaml` | Requires all component fields (comprehensive) |
+
+### Policy Naming Convention
+
+- `policy-doc-*` - Document-level field policies
+- `policy-comp-*` - Component-level field policies
+- `policy-complete-*` - Multi-field comprehensive policies

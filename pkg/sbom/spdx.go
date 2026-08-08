@@ -39,7 +39,7 @@ import (
 
 var (
 	spdxFileFormats    = []string{"json", "yaml", "rdf", "tag-value"}
-	spdxSpecVersions   = []string{"2.1", "2.2", "2.3"}
+	spdxSpecVersions   = []string{"2.1", "2.2", "2.3", "3.0.1"}
 	spdxPrimaryPurpose = []string{"application", "framework", "library", "container", "operating-system", "device", "firmware", "source", "archive", "file", "install", "other"}
 )
 
@@ -245,7 +245,7 @@ func (s *SpdxDoc) parse() {
 
 func (s *SpdxDoc) parseDoc() {
 	if s.doc == nil {
-		s.addToLogs("cdx doc is not parsable")
+		s.addToLogs("spdx doc is not parsable")
 		return
 	}
 	if s.doc.CreationInfo != nil {
@@ -393,6 +393,7 @@ func (s *SpdxDoc) parseComps() {
 		nc.SourceCodeURL = sc.PackageSourceInfo
 		nc.DownloadLocation = sc.PackageDownloadLocation
 		nc.PackageFilename = sc.PackageFileName
+		nc.DistArtifact = DistributionArtifact{Absent: true}
 
 		s.Comps = append(s.Comps, nc)
 	}
@@ -411,6 +412,7 @@ func (s *SpdxDoc) parseFiles() {
 		nc.Spdxid = string(sf.FileSPDXIdentifier)
 		nc.ID = string(sf.FileSPDXIdentifier)
 		nc.PackageFilename = sf.FileName
+		nc.DistArtifact = DistributionArtifact{Absent: true}
 
 		// File checksums (mandatory SHA1 + optional others)
 		if len(sf.Checksums) > 0 {
