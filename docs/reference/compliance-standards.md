@@ -23,10 +23,10 @@ Key changes from v2.0.0:
 
 | TR-03183-2 Section | Data Field | Required | CycloneDX v1.6+ | SPDX v3.0.1 | SPDX v2 | Notes |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| 5.2.1 SBOM Fields | Creator of the SBOM | SHALL | `metadata.manufacturer[].url` XOR `metadata.manufacturer[].contact[].email` | `CreationInfo.createdBy` → `Person`/`Organization` with `externalIdentifiers` (email or URL) | N/A | |
+| 5.2.1 SBOM Fields | Creator of the SBOM | SHALL | `metadata.authors[].email`, then `metadata.manufacturer` (`.email`, `.url`, `.contact[].email`), then `metadata.supplier` (`.email`, `.url`, `.contact[].email`) | `CreationInfo.createdBy` → `Person`/`Organization` with `externalIdentifiers` (email or URL) | N/A | First contactable field wins; a name without email or URL is not sufficient |
 | | Timestamp | SHALL | `metadata.timestamp` | `CreationInfo.created` | N/A | |
 | | SBOM-URI | SHALL | `serialNumber` (BOM-Link: `urn:cdx:{serialNumber}/{version}`) | `SpdxDocument.namespaceMap[].namespace` or `SpdxDocument.spdxId` | N/A | Promoted from additional in v2.0 |
-| 5.2.2 Component Fields | Component creator | SHALL | `components[].manufacturer[].url` XOR `components[].manufacturer[].contact[].email` | `software_Package.originatedBy` → `Person`/`Organization` with `externalIdentifiers` (email or URL) | N/A | |
+| 5.2.2 Component Fields | Component creator | SHALL | `components[].authors[].email`, then `components[].manufacturer` (`.email`, `.url`, `.contact[].email`), then `components[].supplier` (`.email`, `.url`, `.contact[].email`) | `software_Package.originatedBy` → `Person`/`Organization` with `externalIdentifiers` (email or URL) | N/A | First contactable field wins; a name without email or URL is not sufficient |
 | | Component name | SHALL | `components[].name` | `software_Package.name` | N/A | |
 | | Component version | SHALL | `components[].version` | `software_Package.software_packageVersion` | N/A | |
 | | Filename | SHALL | `components[].properties[].name="bsi:component:filename"` | `software_File.name` linked via `hasDistributionArtifact` relationship | N/A | New in v2.1 |
