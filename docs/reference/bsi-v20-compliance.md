@@ -1,5 +1,5 @@
 
-# BSI TR-03183-2 v1.1: Field Reference
+# BSI TR-03183-2 v2.0: Field Reference
 
 **Standard:** BSI Technical Guideline TR-03183-2, Part 2: Software Bill of Materials (SBOM), Version 1.1 (2023-11-28)
 **Issuer:** Federal Office for Information Security (BSI), Germany

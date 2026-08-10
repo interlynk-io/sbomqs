@@ -417,14 +417,25 @@ var profileAliases = map[string]catalog.ProfileKey{
 	"BSI-V1.1":              ProfileBSI11,
 	"bsi-v1.1":              ProfileBSI11,
 	"bsi-v1_1":              ProfileBSI11,
+	"bsiv11":                ProfileBSI11,
+	"BSIV11":                ProfileBSI11,
 	"BSI-V2.0":              ProfileBSI20,
 	"bsi-v2.0":              ProfileBSI20,
+	"bsiv20":                ProfileBSI20,
+	"BSIV20":                ProfileBSI20,
 	"BSI-V2.1":              ProfileBSI21,
 	"bsi-v2.1":              ProfileBSI21,
 	"bsi-v2_1":              ProfileBSI21,
+	"bsiv21":                ProfileBSI21,
+	"BSIV21":                ProfileBSI21,
 	"OCT-V1.1":              ProfileOCTV11,
 	"oct-v1.1":              ProfileOCTV11,
+	"oct-v1_1":              ProfileOCTV11,
+	"octv11":                ProfileOCTV11,
+	"OCTV11":                ProfileOCTV11,
 	"OpenChain-Telco-v1.1":  ProfileOCTV11,
+	"oct":                   ProfileOCTV11,
+	"OCT":                   ProfileOCTV11,
 }
 
 // Returns an error on serious IO / decode failures only.
@@ -824,13 +835,13 @@ func getProfileDisplayName(profile string) string {
 		return "NTIA Minimum Elements (2021)"
 	case "ntia-2025":
 		return "NTIA Minimum Elements (2025)"
-	case "bsi-v1.1":
+	case "bsi-v1.1", "bsi-v1_1", "bsiv11":
 		return "BSI TR-03183-2 v1.1"
-	case "bsi-v2.0":
+	case "bsi-v2.0", "bsi-v2_0", "bsiv20":
 		return "BSI TR-03183-2 v2.0"
-	case "bsi", "bsi-v2.1":
+	case "bsi", "bsi-v2.1", "bsi-v2_1", "bsiv21":
 		return "BSI TR-03183-2 v2.1"
-	case "oct-v1.1":
+	case "oct-v1.1", "oct-v1_1", "octv11", "OCTV11", "oct", "OCT":
 		return "OpenChain Telco v1.1"
 	case "fsct":
 		return "Framing 3rd Edition"
@@ -877,16 +888,16 @@ func filterProfiles(ctx context.Context, profiles []string) ([]catalog.ProfSpec,
 		case "bsi":
 			finalProfiles = append(finalProfiles, profileBSI21Spec)
 
-		case string(ProfileBSI11):
+		case string(ProfileBSI11), "bsi-v1_1", "bsiv11":
 			finalProfiles = append(finalProfiles, profileBSI11Spec)
 
-		case string(ProfileBSI20):
+		case string(ProfileBSI20), "bsi-v2_0", "bsiv20":
 			finalProfiles = append(finalProfiles, profileBSI20Spec)
 
-		case string(ProfileBSI21):
+		case string(ProfileBSI21), "bsi-v2_1", "bsiv21":
 			finalProfiles = append(finalProfiles, profileBSI21Spec)
 
-		case string(ProfileOCTV11):
+		case string(ProfileOCTV11), "oct-v1_1", "octv11", "OCTV11", "oct", "OCT":
 			finalProfiles = append(finalProfiles, profileOCTV11Spec)
 
 		case string(ProfileInterlynk):

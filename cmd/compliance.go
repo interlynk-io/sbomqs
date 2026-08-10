@@ -92,9 +92,35 @@ func setupEngineParams(cmd *cobra.Command, args []string) *engine.Params {
 	engParams.Ntia, _ = cmd.Flags().GetBool("ntia")
 	engParams.Bsi, _ = cmd.Flags().GetBool("bsi")
 	engParams.BsiV1, _ = cmd.Flags().GetBool("bsi-v1")
+	if v, _ := cmd.Flags().GetBool("bsi-v1.1"); v {
+		engParams.BsiV1 = true
+	}
+	if v, _ := cmd.Flags().GetBool("bsiv11"); v {
+		engParams.BsiV1 = true
+	}
+
 	engParams.BsiV2, _ = cmd.Flags().GetBool("bsi-v2")
+	if v, _ := cmd.Flags().GetBool("bsi-v2.0"); v {
+		engParams.BsiV2 = true
+	}
+	if v, _ := cmd.Flags().GetBool("bsiv20"); v {
+		engParams.BsiV2 = true
+	}
+
 	engParams.BsiV21, _ = cmd.Flags().GetBool("bsi-v21")
+	if v, _ := cmd.Flags().GetBool("bsi-v2.1"); v {
+		engParams.BsiV21 = true
+	}
+	if v, _ := cmd.Flags().GetBool("bsiv21"); v {
+		engParams.BsiV21 = true
+	}
 	engParams.Oct, _ = cmd.Flags().GetBool("oct")
+	if v, _ := cmd.Flags().GetBool("oct-v1.1"); v {
+		engParams.Oct = true
+	}
+	if v, _ := cmd.Flags().GetBool("octv11"); v {
+		engParams.Oct = true
+	}
 	engParams.Fsct, _ = cmd.Flags().GetBool("fsct")
 
 	engParams.Debug, _ = cmd.Flags().GetBool("debug")
@@ -124,8 +150,16 @@ func init() {
 	complianceCmd.Flags().BoolP("ntia", "n", false, "NTIA minimum elements (July 12, 2021)")
 	complianceCmd.Flags().BoolP("bsi", "c", false, "BSI TR-03183-2 (latest, currently v2.1.0)")
 	complianceCmd.Flags().BoolP("bsi-v1", "", false, "BSI TR-03183-2 (v1.1)")
+	complianceCmd.Flags().BoolP("bsi-v1.1", "", false, "BSI TR-03183-2 (v1.1)")
+	complianceCmd.Flags().BoolP("bsiv11", "", false, "BSI TR-03183-2 (v1.1)")
 	complianceCmd.Flags().BoolP("bsi-v2", "s", false, "BSI TR-03183-2 (v2.0.0)")
+	complianceCmd.Flags().BoolP("bsi-v2.0", "", false, "BSI TR-03183-2 (v2.0.0)")
+	complianceCmd.Flags().BoolP("bsiv20", "", false, "BSI TR-03183-2 (v2.0.0)")
 	complianceCmd.Flags().BoolP("bsi-v21", "w", false, "BSI TR-03183-2 (v2.1.0)")
-	complianceCmd.Flags().BoolP("oct", "t", false, "OpenChain Telco SBOM (v1.0)")
+	complianceCmd.Flags().BoolP("bsi-v2.1", "", false, "BSI TR-03183-2 (v2.1.0)")
+	complianceCmd.Flags().BoolP("bsiv21", "", false, "BSI TR-03183-2 (v2.1.0)")
+	complianceCmd.Flags().BoolP("oct", "t", false, "OpenChain Telco SBOM (v1.1)")
+	complianceCmd.Flags().BoolP("oct-v1.1", "", false, "OpenChain Telco SBOM (v1.1)")
+	complianceCmd.Flags().BoolP("octv11", "", false, "OpenChain Telco SBOM (v1.1)")
 	complianceCmd.Flags().BoolP("fsct", "f", false, "Framing Software Component Transparency (v3)")
 }

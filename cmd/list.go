@@ -185,7 +185,7 @@ func init() {
 
 	listCmd.Flags().BoolP("missing", "m", false, "List components or properties missing the specified feature")
 
-	listCmd.Flags().String("profile", "", "Compliance profile for feature extraction (e.g. bsi, bsiv21, bsiv11, bsiv20, fsct, ntia, interlynk). 'bsi' is an alias for the latest BSI version (bsiv21). Run 'sbomqs features --profile <profile>' to see supported features for each profile.")
+	listCmd.Flags().String("profile", "", "Compliance profile for feature extraction (e.g. bsi [=bsiv21], bsiv11|bsi-v1.1, bsiv20|bsi-v2.0, bsiv21|bsi-v2.1, fsct, ntia, oct|oct-v1.1, interlynk). Run 'sbomqs features --profile <profile>' to see supported features for each profile.")
 
 	// -- Output Control --
 	listCmd.Flags().BoolP("basic", "b", false, "Results in single-line format")
@@ -388,6 +388,14 @@ func normalizeProfile(profile string) string {
 	switch strings.ToLower(strings.TrimSpace(profile)) {
 	case "bsi":
 		return "bsiv21"
+	case "bsi-v1.1", "bsi-v1_1":
+		return "bsiv11"
+	case "bsi-v2.0", "bsi-v2_0":
+		return "bsiv20"
+	case "bsi-v2.1", "bsi-v2_1":
+		return "bsiv21"
+	case "oct", "oct-v1.1", "oct-v1_1", "octv11":
+		return "oct-v1.1"
 	default:
 		return profile
 	}
@@ -398,20 +406,31 @@ var supportedProfiles = map[string]struct{}{
 	"fsct":      {},
 	"ntia":      {},
 	"bsiv11":    {},
+	"bsi-v1.1":  {},
+	"bsi-v1_1":  {},
 	"bsiv20":    {},
+	"bsi-v2.0":  {},
+	"bsi-v2_0":  {},
 	"bsiv21":    {},
+	"bsi-v2.1":  {},
+	"bsi-v2_1":  {},
+	"oct-v1.1":  {},
+	"oct-v1_1":  {},
+	"octv11":    {},
+	"oct":       {},
 	"interlynk": {},
 }
 
 // profileSectionName maps a --profile value to the display section name used
 // in ProfileSections. Used by the features command to filter by profile.
 var profileSectionName = map[string]string{
-	"bsiv11":    "BSI TR-03183-2 v1.1 (--profile bsiv11)",
-	"bsiv20":    "BSI TR-03183-2 v2.0 (--profile bsiv20)",
-	"bsiv21":    "BSI TR-03183-2 v2.1 (--profile bsiv21)",
-	"ntia":      "NTIA Minimum Elements (--profile ntia)",
-	"fsct":      "FSCT Framing 3rd Edition (--profile fsct)",
-	"interlynk": "Interlynk (--profile interlynk)",
+	"bsiv11":      "BSI TR-03183-2 v1.1 (--profile bsiv11 / bsi-v1.1)",
+	"bsiv20":      "BSI TR-03183-2 v2.0 (--profile bsiv20 / bsi-v2.0)",
+	"bsiv21":      "BSI TR-03183-2 v2.1 (--profile bsiv21 / bsi-v2.1)",
+	"ntia":        "NTIA Minimum Elements (--profile ntia)",
+	"fsct":        "FSCT Framing 3rd Edition (--profile fsct)",
+	"oct-v1.1":    "OpenChain Telco v1.1 (--profile oct / oct-v1.1)",
+	"interlynk":   "Interlynk (--profile interlynk)",
 }
 
 func validateparsedListCmd(uCmd *userListCmd) error {
@@ -424,7 +443,7 @@ func validateparsedListCmd(uCmd *userListCmd) error {
 	if uCmd.profile != "" {
 		if _, ok := supportedProfiles[uCmd.profile]; !ok {
 			return fmt.Errorf(
-				"profile %q is not supported. Supported profiles: bsi (=bsiv21), bsiv11, bsiv20, bsiv21, fsct, ntia, interlynk",
+				"profile %q is not supported. Supported profiles: bsi (=bsiv21), bsiv11|bsi-v1.1, bsiv20|bsi-v2.0, bsiv21|bsi-v2.1, oct|oct-v1.1, fsct, ntia, interlynk",
 				uCmd.profile,
 			)
 		}
