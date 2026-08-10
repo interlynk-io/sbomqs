@@ -10,7 +10,7 @@ require (
 	github.com/interlynk-io/spdx-zen v0.1.5
 	github.com/knqyf263/go-cpe v0.0.0-20230627041855-cb0794d06872
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.12.2
-	github.com/olekukonko/tablewriter v0.0.5
+	github.com/olekukonko/tablewriter v1.1.4
 	github.com/package-url/packageurl-go v0.1.6
 	github.com/samber/lo v1.53.0
 	github.com/santhosh-tekuri/jsonschema/v5 v5.3.1
@@ -21,16 +21,21 @@ require (
 	go.uber.org/zap v1.28.0
 	go.yaml.in/yaml/v2 v2.4.4
 	gopkg.in/yaml.v2 v2.4.0
-	sigs.k8s.io/release-utils v0.11.1
+	sigs.k8s.io/release-utils v0.12.4
 )
 
 require (
 	github.com/cayleygraph/quad v1.3.0 // indirect
+	github.com/cespare/xxhash/v2 v2.3.0 // indirect
+	github.com/clipperhouse/displaywidth v0.10.0 // indirect
 	github.com/clipperhouse/uax29/v2 v2.7.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/mattn/go-colorable v0.1.15 // indirect
 	github.com/mattn/go-isatty v0.0.24 // indirect
+	github.com/olekukonko/cat v0.0.0-20250911104152-50322a0618f6 // indirect
+	github.com/olekukonko/errors v1.2.0 // indirect
+	github.com/olekukonko/ll v0.1.6 // indirect
 	github.com/piprate/json-gold v0.8.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
