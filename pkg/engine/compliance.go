@@ -59,6 +59,7 @@ func ComplianceRun(ctx context.Context, ep *Params) error {
 	doc, err := getSbomDocument(ctx, ep)
 	if err != nil {
 		log.Error("Failed to load SBOM document", zap.String("path", ep.Path[0]), zap.Error(err))
+		return err
 	}
 
 	var reportType string
