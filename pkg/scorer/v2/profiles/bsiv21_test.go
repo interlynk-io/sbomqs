@@ -3010,3 +3010,110 @@ func TestBSIV21CompStructuredProperty(t *testing.T) {
 		assert.False(t, got.Ignore)
 	})
 }
+
+//
+// TestBSIV21CompEffectiveLicence
+//
+
+// CDX: component carrying the taxonomy spelling, bsi:component:effectiveLicence.
+var cdx21CompEffectiveLicenceBritish = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:bsiv21-cdx-eff-lic-001",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "comp-eff-lic-british",
+      "name": "lib-effective-licence",
+      "version": "1.0.0",
+      "properties": [
+        {
+          "name": "bsi:component:effectiveLicence",
+          "value": "Apache-2.0"
+        }
+      ]
+    }
+  ]
+}
+`)
+
+// CDX: component carrying the TR-03183-2 spelling, bsi:component:effectiveLicense.
+var cdx21CompEffectiveLicenseAmerican = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:bsiv21-cdx-eff-lic-002",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "comp-eff-lic-american",
+      "name": "lib-effective-license",
+      "version": "1.0.0",
+      "properties": [
+        {
+          "name": "bsi:component:effectiveLicense",
+          "value": "MIT"
+        }
+      ]
+    }
+  ]
+}
+`)
+
+// CDX: component without any effective licence property.
+var cdx21CompWithoutEffectiveLicence = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:bsiv21-cdx-eff-lic-003",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "comp-no-eff-lic",
+      "name": "lib-without-effective-licence",
+      "version": "1.0.0"
+    }
+  ]
+}
+`)
+
+func TestBSIV21CompEffectiveLicence(t *testing.T) {
+	ctx := context.Background()
+
+	// taxonomy spelling (effectiveLicence) -> score 10.0
+	t.Run("taxonomySpelling", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdx21CompEffectiveLicenceBritish, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV21CompEffectiveLicence(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "effective licence declared for all components", got.Desc)
+	})
+
+	// TR-03183-2 spelling (effectiveLicense) -> score 10.0
+	t.Run("technicalGuidelineSpelling", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdx21CompEffectiveLicenseAmerican, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV21CompEffectiveLicence(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "effective licence declared for all components", got.Desc)
+	})
+
+	// property missing entirely -> score 0.0
+	t.Run("missing", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdx21CompWithoutEffectiveLicence, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV21CompEffectiveLicence(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "no components declare effective licence", got.Desc)
+	})
+}

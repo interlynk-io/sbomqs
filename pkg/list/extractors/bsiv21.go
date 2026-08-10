@@ -535,7 +535,8 @@ func BSIV21CompOriginalLicenses(_ sbom.Document, comp sbom.GetComponent) (bool, 
 }
 
 // BSIV21CompEffectiveLicense extracts the effective licence property.
-// CDX: bsi:component:effectiveLicense property.
+// CDX: bsi:component:effectiveLicence property; the TR-03183-2 spelling
+// "effectiveLicense" is accepted as well.
 // SPDX 3.0: hasEffectiveLicense relationship (non-standard BSI extension).
 // Mirrors: profiles.BSIV21CompEffectiveLicence
 func BSIV21CompEffectiveLicense(doc sbom.Document, comp sbom.GetComponent) (bool, string, error) {
@@ -545,7 +546,11 @@ func BSIV21CompEffectiveLicense(doc sbom.Document, comp sbom.GetComponent) (bool
 
 	switch spec {
 	case string(sbom.SBOMSpecCDX):
-		val := strings.TrimSpace(comp.GetPropertyValue("bsi:component:effectiveLicense"))
+		val := strings.TrimSpace(comp.GetPropertyValue("bsi:component:effectiveLicence"))
+		if val == "" {
+			val = strings.TrimSpace(comp.GetPropertyValue("bsi:component:effectiveLicense"))
+		}
+
 		if val != "" {
 			return true, val, nil
 		}

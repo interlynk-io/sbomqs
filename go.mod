@@ -14,7 +14,7 @@ require (
 	github.com/package-url/packageurl-go v0.1.6
 	github.com/samber/lo v1.53.0
 	github.com/santhosh-tekuri/jsonschema/v5 v5.3.1
-	github.com/santhosh-tekuri/jsonschema/v6 v6.0.2
+	github.com/santhosh-tekuri/jsonschema/v6 v6.0.3
 	github.com/spdx/tools-golang v0.5.7
 	github.com/spf13/cobra v1.10.2
 	github.com/stretchr/testify v1.11.1
@@ -25,12 +25,13 @@ require (
 )
 
 require (
+	github.com/cayleygraph/quad v1.3.0 // indirect
 	github.com/clipperhouse/uax29/v2 v2.7.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/mattn/go-colorable v0.1.15 // indirect
-	github.com/mattn/go-isatty v0.0.22 // indirect
-	github.com/piprate/json-gold v0.7.0 // indirect
+	github.com/mattn/go-isatty v0.0.24 // indirect
+	github.com/piprate/json-gold v0.8.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/pquerna/cachecontrol v0.2.0 // indirect
@@ -44,19 +45,19 @@ require (
 	github.com/anchore/go-struct-converter v0.1.0 // indirect
 	github.com/common-nighthawk/go-figure v0.0.0-20210622060536-734e95fb86be // indirect
 	github.com/fatih/color v1.19.0
-	github.com/go-git/go-billy/v5 v5.9.0
+	github.com/go-git/go-billy/v5 v5.9.1
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
-	github.com/mattn/go-runewidth v0.0.24 // indirect
+	github.com/mattn/go-runewidth v0.0.27 // indirect
 	github.com/spdx/gordf v0.0.0-20250128162952-000978ccd6fb // indirect
 	github.com/spf13/afero v1.15.0
 	github.com/spf13/pflag v1.0.10 // indirect
 	github.com/tidwall/sjson v1.2.5
 	go.uber.org/multierr v1.11.0 // indirect
-	golang.org/x/mod v0.37.0 // indirect
-	golang.org/x/sync v0.21.0 // indirect
-	golang.org/x/sys v0.46.0 // indirect
-	golang.org/x/text v0.38.0 // indirect
-	golang.org/x/tools v0.47.0 // indirect
+	golang.org/x/mod v0.38.0 // indirect
+	golang.org/x/sync v0.22.0 // indirect
+	golang.org/x/sys v0.47.0 // indirect
+	golang.org/x/text v0.40.0 // indirect
+	golang.org/x/tools v0.48.0 // indirect
 	gotest.tools v2.2.0+incompatible
 	sigs.k8s.io/yaml v1.6.0 // indirect
 )
