@@ -143,10 +143,9 @@ func BSIV20CompVersion(doc sbom.Document) catalog.ProfFeatScore {
 }
 
 // BSIV20CompFilename checks that components have a distribution artifact filename declared.
+// Logic is identical to BSI v2.1 — delegate directly to avoid drift.
 func BSIV20CompFilename(doc sbom.Document) catalog.ProfFeatScore {
-	return componentStringCheck(doc, "filename", func(c sbom.GetComponent) string {
-		return c.GetFilename()
-	})
+	return BSIV21CompFilename(doc)
 }
 
 /*
@@ -364,24 +363,21 @@ SPDX: PrimaryPackagePurpose = APPLICATION (section 7.12)
 CDX:  no dedicated field: custom properties[bsi:executableProperty]
 */
 // BSIV20CompExecutableProperty checks that components have an executable distribution artifact.
+// Logic is identical to BSI v2.1 — delegate directly to avoid drift.
 func BSIV20CompExecutableProperty(doc sbom.Document) catalog.ProfFeatScore {
-	return componentBoolCheck(doc, "executable property", func(c sbom.GetComponent) bool {
-		return c.DistributionArtifact().IsExecutable()
-	})
+	return BSIV21CompExecutableProperty(doc)
 }
 
 // BSIV20CompArchiveProperty checks that components have an archive distribution artifact.
+// Logic is identical to BSI v2.1 — delegate directly to avoid drift.
 func BSIV20CompArchiveProperty(doc sbom.Document) catalog.ProfFeatScore {
-	return componentBoolCheck(doc, "archive property", func(c sbom.GetComponent) bool {
-		return c.DistributionArtifact().IsArchive()
-	})
+	return BSIV21CompArchiveProperty(doc)
 }
 
 // BSIV20CompStructuredProperty checks that components have a structured distribution artifact.
+// Logic is identical to BSI v2.1 — delegate directly to avoid drift.
 func BSIV20CompStructuredProperty(doc sbom.Document) catalog.ProfFeatScore {
-	return componentBoolCheck(doc, "structured property", func(c sbom.GetComponent) bool {
-		return c.DistributionArtifact().IsStructured()
-	})
+	return BSIV21CompStructuredProperty(doc)
 }
 
 // =========================================================
@@ -633,12 +629,13 @@ v2.0.0 demotes this from "additional" to "optional" because the hash algorithm
 and source-tree calculation method remain unspecified.
 
 SBOM Mappings:
-SPDX: PackageVerificationCode (closest available, SHA-1-based)
-CDX:  externalReferences[].hashes[] on vcs or source-distribution references
+  SPDX: PackageVerificationCode (closest available, SHA-1-based)
+  CDX:  externalReferences[].hashes[] on vcs or source-distribution references
+
+NOTE: Logic is identical to BSI v2.1 — delegate directly to avoid drift.
 */
 func BSIV20CompSourceHash(doc sbom.Document) catalog.ProfFeatScore {
-	// BSI v2.0 aligns with v2.1: SHA-512 required. Source hash is optional — Ignore when absent.
-	return extRefHashCheck(doc, "source code hash", "SHA512", true, "source-distribution", "vcs")
+	return BSIV21CompSourceHash(doc)
 }
 
 // spdxPurposeCheck evaluates a BSI property for SPDX documents by checking whether
