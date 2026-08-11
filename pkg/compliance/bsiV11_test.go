@@ -3027,7 +3027,7 @@ func TestBSIComponentSourceHash(t *testing.T) {
 			assert.InDelta(t, 10.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_SOURCE_HASH, got.CheckKey)
 			assert.Equal(t, common.UniqueElementID(c), got.ID)
-			assert.Equal(t, "64440820e5d881ec20bc7b9937fdc9bd67d15ba4637b2e7959a8f31dd12c5b21", got.CheckValue)
+			assert.Equal(t, "SHA256: 64440820e5d881ec20bc7b9937fdc9bd67d15ba4637b2e7959a8f31dd12c5b21", got.CheckValue)
 		}
 	})
 

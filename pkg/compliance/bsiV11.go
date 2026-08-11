@@ -623,7 +623,18 @@ func bsiV11ComponentSourceHash(component sbom.GetComponent) *db.Record {
 	if result == "" {
 		return db.NewRecordStmtAdditional(COMP_SOURCE_HASH, id, "", 0.0, true)
 	}
-	return db.NewRecordStmtAdditional(COMP_SOURCE_HASH, id, result, 10.0, false)
+
+	parts := strings.SplitN(result, ":", 2)
+	if len(parts) == 2 {
+		algo := strings.ToUpper(strings.TrimSpace(parts[0]))
+		if algo == "SHA256" {
+			return db.NewRecordStmtAdditional(COMP_SOURCE_HASH, id, result, 10.0, false)
+		}
+	} else {
+		// No algo prefix (e.g. SPDX 2.x PackageVerificationCode) — backward compat.
+		return db.NewRecordStmtAdditional(COMP_SOURCE_HASH, id, result, 10.0, false)
+	}
+	return db.NewRecordStmtAdditional(COMP_SOURCE_HASH, id, result, 0.0, false)
 }
 
 func bsiV11ComponentOtherUniqueIdentifiers(component sbom.GetComponent) *db.Record {

@@ -165,6 +165,35 @@ var cdx21CompWithDistributionOnlyURL = []byte(`
 }
 `)
 
+// CDX: one component with BOTH vcs and source-distribution externalReferences.
+// source-distribution should win for source code URI (priority).
+var cdx21CompWithBothVCSAndSourceDist = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:bsiv21-cdx-both-src-001",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "comp-both",
+      "name": "lib-with-both",
+      "version": "1.0.0",
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/example/lib"
+        },
+        {
+          "type": "source-distribution",
+          "url": "https://example.com/lib-1.0.0-sources.tar.gz"
+        }
+      ]
+    }
+  ]
+}
+`)
+
 // SPDX 3.0: one component with software_sourceInfo (git URL) — score 10.0
 var spdx3CompWithSourceInfo = []byte(`
 {
@@ -405,6 +434,18 @@ func TestBSIV21CompSourceCodeURI(t *testing.T) {
 	// one comp with source-distribution, one with vcs → both pass → score 10.0
 	t.Run("bothSourceDistAndVCS", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdx21TwoCompsSourceDistAndVCS, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV21CompSourceCodeURI(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "source code URI declared for all components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// one component with BOTH vcs and source-distribution → source-distribution should win (priority)
+	t.Run("bothTypesOnSameComponent", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdx21CompWithBothVCSAndSourceDist, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := BSIV21CompSourceCodeURI(doc)
@@ -909,6 +950,47 @@ var cdx21TwoCompsSrcHashAndVCSHash = []byte(`
 }
 `)
 
+// CDX: one component with BOTH vcs and source-distribution hashes (SHA-512).
+// source-distribution should win for source code hash (priority).
+var cdx21CompWithBothVCSAndSourceDistHash = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:bsiv21-cdx-both-src-hash-001",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "comp-both-hash",
+      "name": "lib-with-both-hash",
+      "version": "1.0.0",
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/example/lib",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef12"
+            }
+          ]
+        },
+        {
+          "type": "source-distribution",
+          "url": "https://example.com/lib-1.0.0-sources.tar.gz",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+`)
+
 // CDX: two components — only one has a source code hash — partial score.
 var cdx21TwoCompsOneWithSourceHash = []byte(`
 {
@@ -969,6 +1051,66 @@ var cdx21CompWithSourceDistributionURLNoHash = []byte(`
 }
 `)
 
+// CDX: source-distribution ext ref with SHA-256 hash only → score 0 (SHA-512 required).
+var cdx21CompWithSourceDistributionHashSHA256 = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:bsiv21-cdx-src-hash-sha256-001",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "comp-src-hash-sha256",
+      "name": "lib-src-hash-sha256",
+      "version": "1.0.0",
+      "externalReferences": [
+        {
+          "type": "source-distribution",
+          "url": "https://example.com/lib-1.0.0-sources.tar.gz",
+          "hashes": [
+            {
+              "alg": "SHA-256",
+              "content": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+`)
+
+// CDX: source-distribution ext ref with SHA-384 hash only → score 0 (SHA-512 required).
+var cdx21CompWithSourceDistributionHashSHA384 = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:bsiv21-cdx-src-hash-sha384-001",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "comp-src-hash-sha384",
+      "name": "lib-src-hash-sha384",
+      "version": "1.0.0",
+      "externalReferences": [
+        {
+          "type": "source-distribution",
+          "url": "https://example.com/lib-1.0.0-sources.tar.gz",
+          "hashes": [
+            {
+              "alg": "SHA-384",
+              "content": "38b060a751ac96384cd9327eb1b1e123a1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+`)
+
 func TestBSIV21CompSourceHash(t *testing.T) {
 	ctx := context.Background()
 
@@ -1008,6 +1150,18 @@ func TestBSIV21CompSourceHash(t *testing.T) {
 		assert.False(t, got.Ignore)
 	})
 
+	// one component with BOTH vcs and source-distribution hashes → source-distribution should win (priority)
+	t.Run("bothTypesOnSameComponentHash", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdx21CompWithBothVCSAndSourceDistHash, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV21CompSourceHash(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "source code hash declared for all components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
 	// 1 of 2 components has source code hash → partial score 5.0
 	t.Run("partialSourceHash", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdx21TwoCompsOneWithSourceHash, sbom.Signature{})
@@ -1023,6 +1177,30 @@ func TestBSIV21CompSourceHash(t *testing.T) {
 	// source-distribution ext ref present but no hash → score 0.0, Ignore=true (optional field)
 	t.Run("sourceDistributionNoHash", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdx21CompWithSourceDistributionURLNoHash, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV21CompSourceHash(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "no components declare source code hash", got.Desc)
+		assert.True(t, got.Ignore)
+	})
+
+	// source-distribution ext ref with SHA-256 hash only → score 0.0 (SHA-512 required)
+	t.Run("sourceDistributionHashSHA256", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdx21CompWithSourceDistributionHashSHA256, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV21CompSourceHash(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "no components declare source code hash", got.Desc)
+		assert.True(t, got.Ignore)
+	})
+
+	// source-distribution ext ref with SHA-384 hash only → score 0.0 (SHA-512 required)
+	t.Run("sourceDistributionHashSHA384", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdx21CompWithSourceDistributionHashSHA384, sbom.Signature{})
 		require.NoError(t, err)
 
 		got := BSIV21CompSourceHash(doc)

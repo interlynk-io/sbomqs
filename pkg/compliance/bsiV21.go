@@ -475,9 +475,23 @@ func bsiV21ComponentSourceCodeURL(component sbom.GetComponent) *db.Record {
 	id := common.UniqueElementID(component)
 
 	// CDX: externalReferences[type=source-distribution|vcs].url
+	// Prioritize source-distribution over vcs.
 	for _, er := range component.ExternalReferences() {
 		t := er.GetRefType()
-		if t == "source-distribution" || t == "vcs" {
+		if t == "source-distribution" {
+			locator := strings.TrimSpace(er.GetRefLocator())
+			if locator == "" {
+				continue
+			}
+			if bsiIsValidURL(locator) {
+				return db.NewRecordStmtAdditional(COMP_SOURCE_CODE_URL, id, locator, 10.0, false)
+			}
+			return db.NewRecordStmtAdditional(COMP_SOURCE_CODE_URL, id, locator, 0.0, false)
+		}
+	}
+	for _, er := range component.ExternalReferences() {
+		t := er.GetRefType()
+		if t == "vcs" {
 			locator := strings.TrimSpace(er.GetRefLocator())
 			if locator == "" {
 				continue
@@ -607,21 +621,38 @@ func bsiV21ComponentSourceHash(component sbom.GetComponent) *db.Record {
 			if algo == "SHA512" {
 				return db.NewRecordStmtOptional(COMP_SOURCE_HASH, id, hash, 10.0)
 			}
+		} else {
+			// No algo prefix (e.g. SPDX 2.x) — backward compat.
+			return db.NewRecordStmtOptional(COMP_SOURCE_HASH, id, hash, 10.0)
 		}
-		// Non-SHA512 still counts as present but not compliant
-		return db.NewRecordStmtOptional(COMP_SOURCE_HASH, id, hash, 0.0)
+		// Non-SHA512 with algo prefix — fall through to check CDX external refs.
 	}
 
 	// CDX: externalReferences[type=source-distribution or vcs].hashes
+	// Prioritize source-distribution over vcs.
 	for _, er := range component.ExternalReferences() {
 		t := er.GetRefType()
-		if t == "source-distribution" || t == "vcs" {
-			for _, h := range er.GetRefHashes() {
-				content := strings.TrimSpace(h.GetContent())
-				algo := strings.ToUpper(strings.ReplaceAll(h.GetAlgo(), "-", ""))
-				if content != "" && algo == "SHA512" {
-					return db.NewRecordStmtOptional(COMP_SOURCE_HASH, id, algo+": "+content, 10.0)
-				}
+		if t != "source-distribution" {
+			continue
+		}
+		for _, h := range er.GetRefHashes() {
+			content := strings.TrimSpace(h.GetContent())
+			algo := strings.ToUpper(strings.ReplaceAll(h.GetAlgo(), "-", ""))
+			if content != "" && algo == "SHA512" {
+				return db.NewRecordStmtOptional(COMP_SOURCE_HASH, id, algo+": "+content, 10.0)
+			}
+		}
+	}
+	for _, er := range component.ExternalReferences() {
+		t := er.GetRefType()
+		if t != "vcs" {
+			continue
+		}
+		for _, h := range er.GetRefHashes() {
+			content := strings.TrimSpace(h.GetContent())
+			algo := strings.ToUpper(strings.ReplaceAll(h.GetAlgo(), "-", ""))
+			if content != "" && algo == "SHA512" {
+				return db.NewRecordStmtOptional(COMP_SOURCE_HASH, id, algo+": "+content, 10.0)
 			}
 		}
 	}

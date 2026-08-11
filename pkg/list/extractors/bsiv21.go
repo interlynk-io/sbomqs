@@ -358,6 +358,7 @@ func BSIV21CompDeployableHash(doc sbom.Document, comp sbom.GetComponent) (bool, 
 
 	switch spec {
 	case string(sbom.SBOMSpecCDX):
+		var fallback string
 		for _, er := range comp.ExternalReferences() {
 			t := er.GetRefType()
 			if t != "distribution" && t != "distribution-intake" {
@@ -366,32 +367,61 @@ func BSIV21CompDeployableHash(doc sbom.Document, comp sbom.GetComponent) (bool, 
 			for _, h := range er.GetRefHashes() {
 				algo := scorercommon.NormalizeAlgoName(h.GetAlgo())
 				content := strings.TrimSpace(h.GetContent())
-				if content != "" {
+				if content == "" {
+					continue
+				}
+				if algo == "SHA512" {
 					return true, fmt.Sprintf("%s: %s", algo, content), nil
 				}
+				if fallback == "" {
+					fallback = fmt.Sprintf("%s: %s", algo, content)
+				}
 			}
+		}
+		if fallback != "" {
+			return true, fallback, nil
 		}
 		return false, "missing (no hash on distribution extref)", nil
 
 	case string(sbom.SBOMSpecSPDX):
 		if isSpdx3 {
 			// SPDX 3.0: deployable hash is on the distribution artifact file (software_File.verifiedUsing)
+			var fallback string
 			for _, h := range comp.DistributionArtifact().GetHashes() {
 				algo := scorercommon.NormalizeAlgoName(h.GetAlgo())
 				content := strings.TrimSpace(h.GetContent())
-				if content != "" {
+				if content == "" {
+					continue
+				}
+				if algo == "SHA512" {
 					return true, fmt.Sprintf("%s: %s", algo, content), nil
 				}
+				if fallback == "" {
+					fallback = fmt.Sprintf("%s: %s", algo, content)
+				}
+			}
+			if fallback != "" {
+				return true, fallback, nil
 			}
 			return false, "missing (no distribution artifact hash)", nil
 		}
 		// SPDX 2.x: package checksum
+		var fallback string
 		for _, chk := range comp.GetChecksums() {
 			algo := scorercommon.NormalizeAlgoName(chk.GetAlgo())
 			content := strings.TrimSpace(chk.GetContent())
-			if content != "" {
+			if content == "" {
+				continue
+			}
+			if algo == "SHA512" {
 				return true, fmt.Sprintf("%s: %s", algo, content), nil
 			}
+			if fallback == "" {
+				fallback = fmt.Sprintf("%s: %s", algo, content)
+			}
+		}
+		if fallback != "" {
+			return true, fallback, nil
 		}
 		return false, "missing (no checksum)", nil
 	}
@@ -435,9 +465,20 @@ func BSIV21CompSourceCodeURL(doc sbom.Document, comp sbom.GetComponent) (bool, s
 
 	switch spec {
 	case string(sbom.SBOMSpecCDX):
+		// Prioritize source-distribution over vcs.
 		for _, er := range comp.ExternalReferences() {
 			t := er.GetRefType()
-			if t != "source-distribution" && t != "vcs" {
+			if t != "source-distribution" {
+				continue
+			}
+			loc := strings.TrimSpace(er.GetRefLocator())
+			if loc != "" {
+				return true, fmt.Sprintf("%s: %s", t, loc), nil
+			}
+		}
+		for _, er := range comp.ExternalReferences() {
+			t := er.GetRefType()
+			if t != "vcs" {
 				continue
 			}
 			loc := strings.TrimSpace(er.GetRefLocator())
@@ -596,18 +637,49 @@ func BSIV21CompSourceHash(doc sbom.Document, comp sbom.GetComponent) (bool, stri
 
 	switch spec {
 	case string(sbom.SBOMSpecCDX):
+		// Prioritize source-distribution over vcs.
+		// Within each ref type, prefer SHA-512 (the BSI-required algo) over others.
+		var fallback string
 		for _, er := range comp.ExternalReferences() {
 			t := er.GetRefType()
-			if t != "source-distribution" && t != "vcs" {
+			if t != "source-distribution" {
 				continue
 			}
 			for _, h := range er.GetRefHashes() {
 				algo := scorercommon.NormalizeAlgoName(h.GetAlgo())
 				content := strings.TrimSpace(h.GetContent())
-				if content != "" {
+				if content == "" {
+					continue
+				}
+				if algo == "SHA512" {
 					return true, fmt.Sprintf("%s: %s", algo, content), nil
 				}
+				if fallback == "" {
+					fallback = fmt.Sprintf("%s: %s", algo, content)
+				}
 			}
+		}
+		for _, er := range comp.ExternalReferences() {
+			t := er.GetRefType()
+			if t != "vcs" {
+				continue
+			}
+			for _, h := range er.GetRefHashes() {
+				algo := scorercommon.NormalizeAlgoName(h.GetAlgo())
+				content := strings.TrimSpace(h.GetContent())
+				if content == "" {
+					continue
+				}
+				if algo == "SHA512" {
+					return true, fmt.Sprintf("%s: %s", algo, content), nil
+				}
+				if fallback == "" {
+					fallback = fmt.Sprintf("%s: %s", algo, content)
+				}
+			}
+		}
+		if fallback != "" {
+			return true, fallback, nil
 		}
 		return false, "missing (no hash on source-distribution/vcs extref)", nil
 

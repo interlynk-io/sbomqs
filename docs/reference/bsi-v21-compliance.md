@@ -424,6 +424,7 @@ Knowing where a component's source code lives enables downstream consumers to au
 - CycloneDX v1.6:
   - [`metadata.component.externalReferences[]`](https://cyclonedx.org/docs/1.6/json/#metadata_component_externalReferences_items_type) with `type: "source-distribution"`, `url: "..."` (primary component)
   - [`components[].externalReferences[]`](https://cyclonedx.org/docs/1.6/json/#components_items_externalReferences_items_type) with `type: "source-distribution"`, `url: "..."` (other components)
+  - Fallback: `type: "vcs"`, `url: "..."` (used when `source-distribution` is not present)
 
 ### 15. URI of the deployable form of the component
 
@@ -534,6 +535,7 @@ A hash of the source code allows independent verification that the source archiv
 
 - CycloneDX v1.6:
   - `externalReferences[]` with `type: "source-distribution"`, `hashes[].alg: "SHA-512"`, `hashes[].content: "..."`
+  - Fallback: `type: "vcs"`, `hashes[].alg: "SHA-512"`, `hashes[].content: "..."` (used when `source-distribution` is not present)
 
 ### 20. URL of the security.txt
 
