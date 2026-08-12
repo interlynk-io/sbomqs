@@ -374,7 +374,7 @@ func CompSourceCodeURL(doc sbom.Document) catalog.ProfFeatScore {
 		return commonV2.HasComponentSourceCodeURL(c.GetSourceCodeURL())
 	})
 
-	return formulae.ScoreProfFull(have, len(comps), true)
+	return formulae.ScoreProfFull(have, len(comps), false)
 }
 
 // CompCopyright
@@ -491,19 +491,10 @@ func CompWithNODeprecatedLicenses(doc sbom.Document) catalog.ProfFeatScore {
 	}
 
 	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
-		return commonV2.ComponentHasAnyDeprecated(c)
+		return !commonV2.ComponentHasAnyDeprecated(c)
 	})
 
-	description := fmt.Sprintf("%d deprecated", have)
-	if have == 0 {
-		description = "N/A"
-	}
-
-	return catalog.ProfFeatScore{
-		Score:  formulae.PerComponentScore(have, len(comps)),
-		Desc:   description,
-		Ignore: false,
-	}
+	return formulae.ScoreProfFull(have, len(comps), false)
 }
 
 func CompWithNORestrictiveLicenses(doc sbom.Document) catalog.ProfFeatScore {
@@ -513,19 +504,10 @@ func CompWithNORestrictiveLicenses(doc sbom.Document) catalog.ProfFeatScore {
 	}
 
 	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
-		return commonV2.ComponentHasAnyRestrictive(c)
+		return !commonV2.ComponentHasAnyRestrictive(c)
 	})
 
-	description := fmt.Sprintf("%d restrictive", have)
-	if have == 0 {
-		description = "N/A"
-	}
-
-	return catalog.ProfFeatScore{
-		Score:  formulae.PerComponentScore(have, len(comps)),
-		Desc:   description,
-		Ignore: false,
-	}
+	return formulae.ScoreProfFull(have, len(comps), false)
 }
 
 // checkUniqueID checks for PURL/CPE
@@ -659,16 +641,18 @@ func SBOMCompleteness(doc sbom.Document) catalog.ProfFeatScore {
 		}
 
 	case string(sbom.SBOMSpecCDX):
-		// TODO: to add this method in our sbom module, then only we can fetch it here
-		// Compositions/Aggregate
-		// have := lo.CountBy(doc.Components(), func(c sbom.GetComponent) bool {
-		// 	return c.GetComposition() != ""
-		// })
-		return catalog.ProfFeatScore{
-			Score:  formulae.BooleanScore(false),
-			Desc:   formulae.MissingField("completeness"),
-			Ignore: true,
+		compositions := doc.Composition()
+		if len(compositions) > 0 {
+			// Check if any composition declares the SBOM as complete
+			haveComplete := lo.CountBy(compositions, func(comp sbom.GetComposition) bool {
+				return comp.IsSBOMComplete()
+			})
+			if haveComplete > 0 {
+				return formulae.ScoreSBOMProfFull("complete", false)
+			}
+			return formulae.ScoreSBOMProfMissingNA("completeness", false)
 		}
+		return formulae.ScoreSBOMProfMissingNA("completeness", false)
 	}
 
 	return catalog.ProfFeatScore{
