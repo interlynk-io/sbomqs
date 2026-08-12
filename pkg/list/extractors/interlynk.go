@@ -183,13 +183,17 @@ func InterlynkSBOMNamespace(doc sbom.Document) (bool, string, error) {
 }
 
 // InterlynkSBOMLifecycle reports the declared lifecycle phase(s) of the SBOM.
-// CDX only — SPDX does not have a lifecycle field.
+// CDX: metadata.lifecycles[]. SPDX >= 3.0: software_Sbom.sbomType.
+// SPDX < 3.0 does not have this field.
 // Mirrors: profiles.InterSBOMLifecycle → profiles.SBOMLifeCycle
 func InterlynkSBOMLifecycle(doc sbom.Document) (bool, string, error) {
 	spec := strings.ToLower(strings.TrimSpace(doc.Spec().GetSpecType()))
-	if spec == strings.ToLower(string(sbom.SBOMSpecSPDX)) {
+	ver := strings.TrimSpace(doc.Spec().GetVersion())
+
+	if spec == strings.ToLower(string(sbom.SBOMSpecSPDX)) && !strings.HasPrefix(ver, "3.") {
 		return false, "not supported in SPDX", nil
 	}
+
 	var phases []string
 	for _, p := range doc.Lifecycles() {
 		if strings.TrimSpace(p) != "" {
@@ -239,13 +243,17 @@ func InterlynkCompSHA256(_ sbom.Document, comp sbom.GetComponent) (bool, string,
 }
 
 // InterlynkSBOMSignature reports the SBOM signature metadata.
-// CDX only — SPDX does not support signatures.
+// CDX: metadata.signature. SPDX >= 3.0: Element-level signatures (via doc.Signature() if populated).
+// SPDX < 3.0 does not support signatures.
 // Mirrors: profiles.InterSBOMSignature → profiles.SBOMSignature
 func InterlynkSBOMSignature(doc sbom.Document) (bool, string, error) {
 	spec := strings.ToLower(strings.TrimSpace(doc.Spec().GetSpecType()))
-	if spec == strings.ToLower(string(sbom.SBOMSpecSPDX)) {
+	ver := strings.TrimSpace(doc.Spec().GetVersion())
+
+	if spec == strings.ToLower(string(sbom.SBOMSpecSPDX)) && !strings.HasPrefix(ver, "3.") {
 		return false, "not supported in SPDX", nil
 	}
+
 	sig := doc.Signature()
 	if sig == nil {
 		return false, "missing", nil
@@ -334,13 +342,35 @@ func InterlynkCompPurpose(doc sbom.Document, comp sbom.GetComponent) (bool, stri
 // ============================================================
 
 // InterlynkSBOMCompleteness reports the SBOM's composition completeness declaration.
-// CDX: compositions/aggregate. SPDX: not supported.
+// CDX: compositions/aggregate. SPDX >= 3.0: Relationship.completeness.
+// SPDX < 3.0 does not have this field.
 // Mirrors: profiles.InterSBOMCompleteness → profiles.SBOMCompleteness
 func InterlynkSBOMCompleteness(doc sbom.Document) (bool, string, error) {
 	spec := strings.ToLower(strings.TrimSpace(doc.Spec().GetSpecType()))
-	if spec == strings.ToLower(string(sbom.SBOMSpecSPDX)) {
+	ver := strings.TrimSpace(doc.Spec().GetVersion())
+
+	if spec == strings.ToLower(string(sbom.SBOMSpecSPDX)) && !strings.HasPrefix(ver, "3.") {
 		return false, "not supported in SPDX", nil
 	}
+
+	if spec == strings.ToLower(string(sbom.SBOMSpecSPDX)) && strings.HasPrefix(ver, "3.") {
+		rels := doc.GetRelationships()
+		if len(rels) > 0 {
+			var complete []string
+			for _, r := range rels {
+				c := strings.TrimSpace(r.GetCompleteness())
+				if c != "" {
+					complete = append(complete, fmt.Sprintf("%s-%s=%s", r.GetFrom(), r.GetTo(), c))
+				}
+			}
+			if len(complete) > 0 {
+				return true, strings.Join(complete, ", "), nil
+			}
+			return false, "missing", nil
+		}
+		return false, "missing", nil
+	}
+
 	// CDX: completeness is tracked via composition entries
 	// profiles.SBOMCompleteness currently marks this as not implemented
 	return false, "completeness not implemented for CDX (no composition aggregate field)", nil
