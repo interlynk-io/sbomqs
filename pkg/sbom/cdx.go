@@ -664,12 +664,20 @@ func copyC(cdxc *cydx.Component, c *CdxDoc) *Component {
 	}
 
 	if cdxc.ExternalReferences != nil {
-		sources := lo.Filter(*cdxc.ExternalReferences, func(er cydx.ExternalReference, _ int) bool {
-			return er.Type == cydx.ERTypeVCS || er.Type == cydx.ERTypeSourceDistribution
-		})
-
-		if len(sources) > 0 {
-			nc.SourceCodeURL = sources[0].URL
+		// Source code URI: prioritize source-distribution over vcs
+		for _, er := range *cdxc.ExternalReferences {
+			if er.Type == cydx.ERTypeSourceDistribution {
+				nc.SourceCodeURL = er.URL
+				break
+			}
+		}
+		if nc.SourceCodeURL == "" {
+			for _, er := range *cdxc.ExternalReferences {
+				if er.Type == cydx.ERTypeVCS {
+					nc.SourceCodeURL = er.URL
+					break
+				}
+			}
 		}
 
 		downloads := lo.Filter(*cdxc.ExternalReferences, func(er cydx.ExternalReference, _ int) bool {
@@ -682,20 +690,40 @@ func copyC(cdxc *cydx.Component, c *CdxDoc) *Component {
 	}
 
 	// add source code hash if available in external references of type VCS or Source Distribution.
+	// Prioritize source-distribution over vcs. Store algo and value separately.
 	if cdxc.ExternalReferences != nil {
 		for _, er := range *cdxc.ExternalReferences {
-			if er.Type == cydx.ERTypeVCS || er.Type == cydx.ERTypeSourceDistribution {
+			if er.Type == cydx.ERTypeSourceDistribution {
 				if er.Hashes != nil {
 					for _, h := range *er.Hashes {
-						if h.Algorithm == cydx.HashAlgoSHA256 && strings.TrimSpace(h.Value) != "" {
-							nc.sourceCodeHash = h.Value
+						if strings.TrimSpace(h.Value) != "" {
+							nc.sourceCodeHashAlgo = strings.ToUpper(strings.ReplaceAll(string(h.Algorithm), "-", ""))
+							nc.sourceCodeHashValue = h.Value
 							break
 						}
 					}
 				}
+				if nc.sourceCodeHashValue != "" {
+					break
+				}
 			}
-			if nc.sourceCodeHash != "" {
-				break
+		}
+		if nc.sourceCodeHashValue == "" {
+			for _, er := range *cdxc.ExternalReferences {
+				if er.Type == cydx.ERTypeVCS {
+					if er.Hashes != nil {
+						for _, h := range *er.Hashes {
+							if strings.TrimSpace(h.Value) != "" {
+								nc.sourceCodeHashAlgo = strings.ToUpper(strings.ReplaceAll(string(h.Algorithm), "-", ""))
+								nc.sourceCodeHashValue = h.Value
+								break
+							}
+						}
+					}
+					if nc.sourceCodeHashValue != "" {
+						break
+					}
+				}
 			}
 		}
 	}

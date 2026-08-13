@@ -284,10 +284,10 @@ Knowing where a component's source code lives enables downstream consumers to au
 
 - CycloneDX:
   - [`components[].externalReferences[]`](https://cyclonedx.org/docs/1.7/json/#components_items_externalReferences_items_type) with type:
-    - `vcs` — version control system URL (preferred)
-    - `source-distribution` — source distribution download URL
+    - `source-distribution` — source distribution download URL (preferred)
+    - `vcs` — version control system URL (fallback, used when `source-distribution` is not present)
 
-> **NOTE:** SPDX lacks a standardized field for source code URI. CycloneDX's `externalReferences` with type `vcs` is the clearest and most widely adopted mapping for this BSI requirement.
+> **NOTE:** SPDX lacks a standardized field for source code URI. CycloneDX's `externalReferences` with type `source-distribution` is the preferred mapping for this BSI requirement, with `vcs` as a fallback.
 
 ### 11. URI of the executable form of the component
 
@@ -332,7 +332,7 @@ A hash of the source code allows independent verification that the source archiv
   - [`PackageVerificationCode`](https://spdx.github.io/spdx-spec/v2.3/package-information/#79-package-verification-code-field) (SHA-1-based hash of all package files; closest available SPDX field)
 
 - CycloneDX:
-  - [`components[].externalReferences[]`](https://cyclonedx.org/docs/1.7/json/#components_items_externalReferences_items_type) with type `vcs` or `source-distribution`, including associated `hashes[]` entries with `alg` = `SHA-256`
+  - [`components[].externalReferences[]`](https://cyclonedx.org/docs/1.7/json/#components_items_externalReferences_items_type) with type `source-distribution` (preferred) or `vcs` (fallback), including associated `hashes[]` entries with `alg` = `SHA-256`
 
 ### 13. Other unique identifiers
 

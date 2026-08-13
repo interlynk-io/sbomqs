@@ -986,10 +986,18 @@ func BSIV11CompSourceHash(doc sbom.Document) catalog.ProfFeatScore {
 	withData := 0
 
 	for _, c := range comps {
-
 		sourceCodeHash := strings.TrimSpace(c.SourceCodeHash())
 		if sourceCodeHash != "" {
-			withData++
+			parts := strings.SplitN(sourceCodeHash, ":", 2)
+			if len(parts) == 2 {
+				algo := strings.ToUpper(strings.TrimSpace(parts[0]))
+				if algo == "SHA256" {
+					withData++
+				}
+			} else {
+				// No algo prefix (e.g. SPDX 2.x PackageVerificationCode) — backward compat.
+				withData++
+			}
 		}
 	}
 

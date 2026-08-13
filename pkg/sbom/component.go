@@ -132,7 +132,8 @@ type Component struct {
 	Dep                     []string
 	SourceCodeURL           string
 	DownloadLocation        string
-	sourceCodeHash          string
+	sourceCodeHashAlgo      string
+	sourceCodeHashValue     string
 	isPrimary               bool
 	HasRelationships        bool
 	RelationshipState       string
@@ -266,8 +267,12 @@ func (c Component) GetDownloadLocationURL() string {
 }
 
 // SourceCodeHash returns the hash of the source code for the component
+// Format: "ALGO: VALUE" when algo is known, or just "VALUE" otherwise.
 func (c Component) SourceCodeHash() string {
-	return c.sourceCodeHash
+	if c.sourceCodeHashAlgo != "" && c.sourceCodeHashValue != "" {
+		return c.sourceCodeHashAlgo + ": " + c.sourceCodeHashValue
+	}
+	return c.sourceCodeHashValue
 }
 
 // IsPrimaryComponent returns whether this component is the primary component in the SBOM

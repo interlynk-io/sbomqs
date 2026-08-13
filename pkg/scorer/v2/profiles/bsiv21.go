@@ -424,9 +424,10 @@ func extRefOrFieldURLCheck(doc sbom.Document, fieldLabel string, fieldGetter str
 	}
 
 	valid := lo.CountBy(comps, func(c sbom.GetComponent) bool {
-		// First check external references (CDX, SPDX 2.x style)
-		for _, er := range c.ExternalReferences() {
-			for _, refType := range refTypes {
+		// First check external references (CDX, SPDX 2.x style).
+		// Iterate refTypes first so priority order is respected regardless of JSON order.
+		for _, refType := range refTypes {
+			for _, er := range c.ExternalReferences() {
 				if er.GetRefType() == refType && strings.TrimSpace(er.GetRefLocator()) != "" {
 					return true
 				}

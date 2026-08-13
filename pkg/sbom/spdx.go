@@ -387,7 +387,7 @@ func (s *SpdxDoc) parseComps() {
 		}
 
 		if sc.PackageVerificationCode != nil {
-			nc.sourceCodeHash = sc.PackageVerificationCode.Value
+			nc.sourceCodeHashValue = sc.PackageVerificationCode.Value
 		}
 
 		nc.SourceCodeURL = sc.PackageSourceInfo
