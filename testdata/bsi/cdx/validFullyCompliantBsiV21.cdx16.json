@@ -94,6 +94,10 @@
             {
               "alg": "SHA-256",
               "content": "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+            },
+            {
+              "alg": "SHA-512",
+              "content": "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e"
             }
           ]
         },
@@ -138,7 +142,28 @@
           "value": "Apache-2.0"
         }
       ]
-    }
+    },
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "name": "cyclonedx-npm",
+          "version": "1.9.2"
+        }
+      ]
+    },
+    "lifecycles": [
+      {
+        "phase": "build"
+      }
+    ],
+    "licenses": [
+      {
+        "license": {
+          "id": "CC0-1.0"
+        }
+      }
+    ]
   },
   "components": [
     {
@@ -198,6 +223,10 @@
             {
               "alg": "SHA-256",
               "content": "aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899"
+            },
+            {
+              "alg": "SHA-512",
+              "content": "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e"
             }
           ]
         },
@@ -242,6 +271,103 @@
           "value": "Apache-2.0"
         }
       ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "comp-2",
+      "name": "acme-utils",
+      "version": "0.5.0",
+      "purl": "pkg:golang/github.com/acme/acme-utils@v0.5.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0",
+            "acknowledgement": "concluded"
+          }
+        },
+        {
+          "license": {
+            "id": "Apache-2.0",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "cpe": "cpe:2.3:a:acme:acme-utils:0.5.0:*:*:*:*:*:*:*",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ],
+      "supplier": {
+        "name": "Acme Distribution",
+        "contact": [
+          {
+            "name": "Acme Distribution Team",
+            "email": "distribution@acme.example.com"
+          }
+        ]
+      },
+      "externalReferences": [
+        {
+          "url": "https://github.com/acme/acme-utils",
+          "type": "vcs"
+        },
+        {
+          "url": "https://example.com/acme-utils-0.5.0-source.tar.gz",
+          "type": "source-distribution",
+          "hashes": [
+            {
+              "alg": "SHA-256",
+              "content": "d2b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b856"
+            },
+            {
+              "alg": "SHA-512",
+              "content": "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e"
+            }
+          ]
+        },
+        {
+          "url": "https://example.com/acme-utils-0.5.0.jar",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-256",
+              "content": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "alg": "SHA-512",
+              "content": "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e"
+            }
+          ]
+        },
+        {
+          "url": "https://acme.example.com/.well-known/security.txt",
+          "type": "rfc-9116"
+        }
+      ],
+      "properties": [
+        {
+          "name": "bsi:component:filename",
+          "value": "acme-utils-0.5.0.jar"
+        },
+        {
+          "name": "bsi:component:executable",
+          "value": "false"
+        },
+        {
+          "name": "bsi:component:archive",
+          "value": "false"
+        },
+        {
+          "name": "bsi:component:structured",
+          "value": "false"
+        },
+        {
+          "name": "bsi:component:effectiveLicense",
+          "value": "Apache-2.0"
+        }
+      ]
     }
   ],
   "dependencies": [
@@ -253,7 +379,25 @@
     },
     {
       "ref": "comp-1",
+      "dependsOn": [
+        "comp-2"
+      ]
+    },
+    {
+      "ref": "comp-2",
       "dependsOn": []
+    }
+  ],
+  "externalReferences": [
+    {
+      "type": "bom",
+      "url": "https://example.com/related-bom.json"
+    }
+  ],
+  "compositions": [
+    {
+      "bom-ref": "composition-1",
+      "aggregate": "complete"
     }
   ]
 }

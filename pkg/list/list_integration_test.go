@@ -1048,6 +1048,37 @@ func TestListIntegrationForSPDX3_Interlynk(t *testing.T) {
 			Profile:       "interlynk",
 			ExpectedFound: 2,
 		},
+		// Interlynk profile - Document fields missing from perfect-score fixture
+		{
+			Name:          "Interlynk profile - sbom_lifecycle PRESENT",
+			SBOMFile:      filepath.Join("..", "..", "testdata", "bsi", "spdx3", "v2.1.0-complete-all-fields.json"),
+			Feature:       "sbom_lifecycle",
+			Profile:       "interlynk",
+			ExpectedFound: 1,
+		},
+		{
+			Name:          "Interlynk profile - sbom_completeness PRESENT",
+			SBOMFile:      filepath.Join("..", "..", "testdata", "bsi", "spdx3", "v2.1.0-complete-all-fields.json"),
+			Feature:       "sbom_completeness",
+			Profile:       "interlynk",
+			ExpectedFound: 1,
+		},
+		{
+			Name:            "Interlynk profile - sbom_signature MISSING in spdx3",
+			SBOMFile:        filepath.Join(base, "spdx3-perfect-score.json"),
+			Feature:         "sbom_signature",
+			Profile:         "interlynk",
+			Missing:         true,
+			ExpectedMissing: 1,
+		},
+		{
+			Name:            "Interlynk profile - sbom_lifecycle MISSING in spdx3",
+			SBOMFile:        filepath.Join(base, "spdx3-no-version.json"),
+			Feature:         "sbom_lifecycle",
+			Profile:         "interlynk",
+			Missing:         true,
+			ExpectedMissing: 1,
+		},
 	}
 
 	runListTestCases(t, testCases)

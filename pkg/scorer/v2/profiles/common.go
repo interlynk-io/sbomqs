@@ -116,20 +116,21 @@ func SBOMSchema(doc sbom.Document) catalog.ProfFeatScore {
 }
 
 // SBOMLifeCycle check whether cyclonedx has lifecycle build
-// and score accordingly
-// SPDX doesn't support this field
+// and score accordingly.
+// SPDX < 3.0 does not support this field. SPDX >= 3.0 supports it via software_Sbom.sbomType.
 func SBOMLifeCycle(doc sbom.Document) catalog.ProfFeatScore {
-	spec := doc.Spec().GetSpecType()
+	spec := strings.TrimSpace(strings.ToLower(doc.Spec().GetSpecType()))
+	ver := strings.TrimSpace(doc.Spec().GetVersion())
 
-	switch spec {
-	case string(sbom.SBOMSpecSPDX):
+	if spec == string(sbom.SBOMSpecSPDX) && !strings.HasPrefix(ver, "3.") {
 		return catalog.ProfFeatScore{
 			Score:  formulae.BooleanScore(false),
 			Desc:   formulae.NonSupportedSPDXField(),
 			Ignore: true,
 		}
+	}
 
-	case string(sbom.SBOMSpecCDX):
+	if spec == string(sbom.SBOMSpecCDX) || (spec == string(sbom.SBOMSpecSPDX) && strings.HasPrefix(ver, "3.")) {
 		var phases []string
 
 		for _, p := range doc.Lifecycles() {
@@ -183,8 +184,12 @@ func SBOMSupplier(doc sbom.Document) catalog.ProfFeatScore {
 
 	switch spec {
 	case string(sbom.SBOMSpecSPDX):
-		// N/A for SPDX
-		return formulae.ScoreSBOMProfMissingNA("authors", false)
+		// N/A for SPDX — SPDX has no document-level supplier concept
+		return catalog.ProfFeatScore{
+			Score:  formulae.BooleanScore(false),
+			Desc:   formulae.NonSupportedSPDXField(),
+			Ignore: true,
+		}
 
 	case string(sbom.SBOMSpecCDX):
 		s := doc.Supplier()
@@ -202,7 +207,7 @@ func SBOMSupplier(doc sbom.Document) catalog.ProfFeatScore {
 	}
 
 	// Unknown spec → treat as not applicable to be safe (optional)
-	return formulae.ScoreSBOMProfUnknownNA("lifecycle", false)
+	return formulae.ScoreSBOMProfUnknownNA("supplier", false)
 }
 
 // SBOMCreationTime check has a valid ISO-8601 timestamp (RFC3339/RFC3339Nano).
@@ -374,7 +379,7 @@ func CompSourceCodeURL(doc sbom.Document) catalog.ProfFeatScore {
 		return commonV2.HasComponentSourceCodeURL(c.GetSourceCodeURL())
 	})
 
-	return formulae.ScoreProfFull(have, len(comps), true)
+	return formulae.ScoreProfFull(have, len(comps), false)
 }
 
 // CompCopyright
@@ -491,19 +496,10 @@ func CompWithNODeprecatedLicenses(doc sbom.Document) catalog.ProfFeatScore {
 	}
 
 	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
-		return commonV2.ComponentHasAnyDeprecated(c)
+		return !commonV2.ComponentHasAnyDeprecated(c)
 	})
 
-	description := fmt.Sprintf("%d deprecated", have)
-	if have == 0 {
-		description = "N/A"
-	}
-
-	return catalog.ProfFeatScore{
-		Score:  formulae.PerComponentScore(have, len(comps)),
-		Desc:   description,
-		Ignore: false,
-	}
+	return formulae.ScoreProfFull(have, len(comps), false)
 }
 
 func CompWithNORestrictiveLicenses(doc sbom.Document) catalog.ProfFeatScore {
@@ -513,19 +509,10 @@ func CompWithNORestrictiveLicenses(doc sbom.Document) catalog.ProfFeatScore {
 	}
 
 	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
-		return commonV2.ComponentHasAnyRestrictive(c)
+		return !commonV2.ComponentHasAnyRestrictive(c)
 	})
 
-	description := fmt.Sprintf("%d restrictive", have)
-	if have == 0 {
-		description = "N/A"
-	}
-
-	return catalog.ProfFeatScore{
-		Score:  formulae.PerComponentScore(have, len(comps)),
-		Desc:   description,
-		Ignore: false,
-	}
+	return formulae.ScoreProfFull(have, len(comps), false)
 }
 
 // checkUniqueID checks for PURL/CPE
@@ -555,10 +542,13 @@ func CompDeclaredLicenses(doc sbom.Document) catalog.ProfFeatScore {
 	return formulae.ScoreProfFull(have, len(comps), false)
 }
 
-// SBOMSignature look for signature
+// SBOMSignature look for signature.
+// SPDX < 3.0 does not support signatures. SPDX >= 3.0 supports Element-level signatures.
 func SBOMSignature(doc sbom.Document) catalog.ProfFeatScore {
-	// SPDX does not support signatures in its specification
-	if strings.ToLower(doc.Spec().GetSpecType()) == "spdx" {
+	spec := strings.TrimSpace(strings.ToLower(doc.Spec().GetSpecType()))
+	ver := strings.TrimSpace(doc.Spec().GetVersion())
+
+	if spec == string(sbom.SBOMSpecSPDX) && !strings.HasPrefix(ver, "3.") {
 		return catalog.ProfFeatScore{
 			Score:  0.0,
 			Desc:   formulae.NonSupportedSPDXField(),
@@ -648,27 +638,46 @@ func SBOMCompleteness(doc sbom.Document) catalog.ProfFeatScore {
 		return formulae.ScoreProfNA(true)
 	}
 
-	spec := doc.Spec().GetSpecType()
+	spec := strings.TrimSpace(strings.ToLower(doc.Spec().GetSpecType()))
+	ver := strings.TrimSpace(doc.Spec().GetVersion())
 
-	switch spec {
-	case string(sbom.SBOMSpecSPDX):
+	if spec == string(sbom.SBOMSpecSPDX) && !strings.HasPrefix(ver, "3.") {
 		return catalog.ProfFeatScore{
 			Score:  formulae.BooleanScore(false),
 			Desc:   formulae.NonSupportedSPDXField(),
 			Ignore: true,
 		}
+	}
 
-	case string(sbom.SBOMSpecCDX):
-		// TODO: to add this method in our sbom module, then only we can fetch it here
-		// Compositions/Aggregate
-		// have := lo.CountBy(doc.Components(), func(c sbom.GetComponent) bool {
-		// 	return c.GetComposition() != ""
-		// })
-		return catalog.ProfFeatScore{
-			Score:  formulae.BooleanScore(false),
-			Desc:   formulae.MissingField("completeness"),
-			Ignore: true,
+	if spec == string(sbom.SBOMSpecCDX) {
+		compositions := doc.Composition()
+		if len(compositions) > 0 {
+			// Check if any composition declares the SBOM as complete
+			haveComplete := lo.CountBy(compositions, func(comp sbom.GetComposition) bool {
+				return comp.IsSBOMComplete()
+			})
+			if haveComplete > 0 {
+				return formulae.ScoreSBOMProfFull("complete", false)
+			}
+			return formulae.ScoreSBOMProfMissingNA("completeness", false)
 		}
+		return formulae.ScoreSBOMProfMissingNA("completeness", false)
+	}
+
+	if spec == string(sbom.SBOMSpecSPDX) && strings.HasPrefix(ver, "3.") {
+		// SPDX 3.0: completeness is declared per-Relationship, not via compositions.
+		// Check if any relationship has a completeness assertion.
+		rels := doc.GetRelationships()
+		if len(rels) > 0 {
+			haveComplete := lo.CountBy(rels, func(r sbom.GetRelationship) bool {
+				return strings.TrimSpace(r.GetCompleteness()) != ""
+			})
+			if haveComplete > 0 {
+				return formulae.ScoreSBOMProfFull("complete", false)
+			}
+			return formulae.ScoreSBOMProfMissingNA("completeness", false)
+		}
+		return formulae.ScoreSBOMProfMissingNA("completeness", false)
 	}
 
 	return catalog.ProfFeatScore{

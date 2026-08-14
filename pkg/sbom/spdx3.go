@@ -793,7 +793,7 @@ func (s *Spdx3Doc) parseComps() {
 
 		// SPDX 3.0: source code hash from software_SoftwareArtifact linked via generates relationship.
 		// BSI v2.1 MAY: hash value of the source code of the component.
-		if nc.sourceCodeHash == "" {
+		if nc.sourceCodeHashValue == "" {
 			if buildInfo := s.doc.GetBuildInfoFor(pkg.SpdxID); buildInfo != nil {
 				for _, rel := range buildInfo.Relationships {
 					if rel.RelationshipType == spdx.RelationshipTypeGenerates {
@@ -805,21 +805,23 @@ func (s *Spdx3Doc) parseComps() {
 									algo := strings.ToUpper(strings.ReplaceAll(string(h.Algorithm), "-", ""))
 									content := strings.TrimSpace(h.HashValue)
 									if content != "" {
-										nc.sourceCodeHash = algo + ": " + content
+										nc.sourceCodeHashAlgo = algo
+										nc.sourceCodeHashValue = content
 										break
 									}
 								}
 							}
 						}
 						// Fallback: check FilesByID if not found in SoftwareArtifactsByID
-						if nc.sourceCodeHash == "" {
+						if nc.sourceCodeHashValue == "" {
 							if f := s.doc.FilesByID[fromID]; f != nil {
 								for _, vu := range f.VerifiedUsing {
 									if h, ok := interface{}(vu).(spdx.Hash); ok {
 										algo := strings.ToUpper(strings.ReplaceAll(string(h.Algorithm), "-", ""))
 										content := strings.TrimSpace(h.HashValue)
 										if content != "" {
-											nc.sourceCodeHash = algo + ": " + content
+											nc.sourceCodeHashAlgo = algo
+											nc.sourceCodeHashValue = content
 											break
 										}
 									}
@@ -827,7 +829,7 @@ func (s *Spdx3Doc) parseComps() {
 							}
 						}
 					}
-					if nc.sourceCodeHash != "" {
+					if nc.sourceCodeHashValue != "" {
 						break
 					}
 				}

@@ -9,6 +9,7 @@
       "name": "BSI v2.1.0 Complete All Fields",
       "creationInfo": "_:creationinfo",
       "element": [
+        "SPDXRef-Tool-1",
         "SPDXRef-Package-A",
         "SPDXRef-File-A",
         "SPDXRef-Source-A",
@@ -20,7 +21,11 @@
         "SPDXRef-Source-B",
         "SPDXRef-License-Declared-B",
         "SPDXRef-License-Concluded-B",
-        "SPDXRef-License-Effective-B"
+        "SPDXRef-License-Effective-B",
+        "SPDXRef-Sbom-1",
+        "SPDXRef-Package-C",
+        "SPDXRef-License-Declared-C",
+        "SPDXRef-License-Concluded-C"
       ],
       "profileConformance": [
         "core",
@@ -39,7 +44,8 @@
           "externalSpdxId": "https://example.com/sboms/dependency-sbom.spdx.json",
           "locationHint": "https://example.com/sboms/dependency-sbom.spdx.json"
         }
-      ]
+      ],
+      "dataLicense": "CC0-1.0"
     },
     {
       "type": "CreationInfo",
@@ -48,6 +54,9 @@
       "created": "2024-01-15T10:30:00Z",
       "createdBy": [
         "_:author"
+      ],
+      "createdUsing": [
+        "SPDXRef-Tool-1"
       ]
     },
     {
@@ -63,6 +72,11 @@
       ]
     },
     {
+      "type": "Tool",
+      "spdxId": "SPDXRef-Tool-1",
+      "name": "spdx-tools-1.0.0"
+    },
+    {
       "type": "Organization",
       "@id": "_:supplier",
       "name": "Example Supplier Inc",
@@ -72,6 +86,14 @@
           "externalIdentifierType": "email",
           "identifier": "supplier@example.com"
         }
+      ]
+    },
+    {
+      "type": "software_Sbom",
+      "spdxId": "SPDXRef-Sbom-1",
+      "name": "Build SBOM",
+      "sbomType": [
+        "build"
       ]
     },
     {
@@ -102,7 +124,15 @@
           "externalRefType": "securityOther",
           "locator": "https://example.com/.well-known/security.txt"
         }
-      ]
+      ],
+      "verifiedUsing": [
+        {
+          "type": "Hash",
+          "algorithm": "sha256",
+          "hashValue": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ],
+      "software_primaryPurpose": "application"
     },
     {
       "type": "software_File",
@@ -184,7 +214,15 @@
           "externalRefType": "securityOther",
           "locator": "https://example.com/.well-known/security.txt"
         }
-      ]
+      ],
+      "verifiedUsing": [
+        {
+          "type": "Hash",
+          "algorithm": "sha256",
+          "hashValue": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ],
+      "software_primaryPurpose": "application"
     },
     {
       "type": "software_File",
@@ -325,6 +363,16 @@
       "relationshipType": "hasConcludedLicense"
     },
     {
+      "type": "simplelicensing_LicenseExpression",
+      "spdxId": "SPDXRef-License-Declared-C",
+      "licenseExpression": "Apache-2.0"
+    },
+    {
+      "type": "simplelicensing_LicenseExpression",
+      "spdxId": "SPDXRef-License-Concluded-C",
+      "licenseExpression": "MIT"
+    },
+    {
       "type": "Relationship",
       "from": "SPDXRef-Package-B",
       "to": [
@@ -345,8 +393,74 @@
     {
       "type": "Relationship",
       "from": "SPDXRef-Package-B",
-      "to": [],
+      "to": [
+        "SPDXRef-Package-C"
+      ],
       "relationshipType": "dependsOn",
+      "completeness": "complete"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package-C",
+      "name": "TransitiveDependency",
+      "software_packageVersion": "1.5.0",
+      "software_primaryPurpose": "library",
+      "verifiedUsing": [
+        {
+          "type": "Hash",
+          "algorithm": "sha256",
+          "hashValue": "aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899"
+        }
+      ],
+      "externalIdentifiers": [
+        {
+          "type": "ExternalIdentifier",
+          "externalIdentifierType": "packageUrl",
+          "identifier": "pkg:maven/com.example/transitive@1.5.0"
+        },
+        {
+          "type": "ExternalIdentifier",
+          "externalIdentifierType": "cpe22",
+          "identifier": "cpe:/a:example:transitive:1.5.0"
+        }
+      ],
+      "software_sourceInfo": "https://github.com/example/transitive",
+      "originatedBy": [
+        "_:supplier"
+      ],
+      "externalRef": [
+        {
+          "type": "ExternalRef",
+          "externalRefType": "securityOther",
+          "locator": "https://example.com/.well-known/security.txt"
+        }
+      ]
+    },
+    {
+      "type": "Relationship",
+      "from": "SPDXRef-Package-B",
+      "to": [
+        "SPDXRef-Package-C"
+      ],
+      "relationshipType": "dependsOn",
+      "completeness": "complete"
+    },
+    {
+      "type": "Relationship",
+      "from": "SPDXRef-Package-C",
+      "to": [
+        "SPDXRef-License-Declared-C"
+      ],
+      "relationshipType": "hasDeclaredLicense",
+      "completeness": "complete"
+    },
+    {
+      "type": "Relationship",
+      "from": "SPDXRef-Package-C",
+      "to": [
+        "SPDXRef-License-Concluded-C"
+      ],
+      "relationshipType": "hasConcludedLicense",
       "completeness": "complete"
     }
   ]
