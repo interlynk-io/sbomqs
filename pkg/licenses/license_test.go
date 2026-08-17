@@ -314,3 +314,50 @@ func TestFreeAnyUseOverlay_LeavesOtherFieldsAlone(t *testing.T) {
 		t.Fatalf("overlay changed a field it does not own: %+v", lic)
 	}
 }
+
+// AboutCode's `Non-Commercial` category must count as restrictive. It was
+// introduced in the 2026 license database refresh and absorbed 24 licenses
+// that were previously categorised Copyleft, Copyleft Limited or Free
+// Restricted, so omitting it would quietly relax the classification.
+func TestLookupExpression_NonCommercialIsRestrictive(t *testing.T) {
+	testcases := []string{
+		"CC-BY-NC-4.0",
+		"CC-BY-NC-SA-4.0",
+		"CC-BY-NC-ND-4.0",
+		"CC-BY-NC-1.0",
+		"PolyForm-Noncommercial-1.0.0",
+		"FSL-1.1-MIT",
+		"SUL-1.0",
+		"Aladdin",
+		"NCGL-UK-2.0",
+		"OpenPBS-2.3",
+	}
+
+	for _, exp := range testcases {
+		t.Run(exp, func(t *testing.T) {
+			lics := LookupExpression(exp, nil)
+
+			if len(lics) == 0 {
+				t.Fatalf("expected license for %s, got none", exp)
+			}
+
+			if !lics[0].Restrictive() {
+				t.Fatalf("expected %s to be restrictive", exp)
+			}
+		})
+	}
+}
+
+// Guards the license database refresh: these counts change only when
+// pkg/licenses/files is regenerated, and the AboutCode category vocabulary
+// drives both the restrictive and freeAnyUse classifications.
+func TestLicenseDatabase_LoadedCounts(t *testing.T) {
+	if got, want := len(licenseList), 819; got != want {
+		t.Fatalf("expected %d spdx licenses and exceptions, got %d", want, got)
+	}
+
+	// Keyed by SPDX id, so this exceeds the 2733 raw AboutCode records.
+	if got, want := len(licenseListAboutCode), 2862; got != want {
+		t.Fatalf("expected %d aboutcode entries, got %d", want, got)
+	}
+}

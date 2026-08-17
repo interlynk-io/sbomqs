@@ -163,6 +163,16 @@ func loadAboutCodeLicense() error {
 			return true
 		}
 
+		// AboutCode introduced the `Non-Commercial` category and moved 209
+		// licenses into it, 24 of them out of categories we already treated as
+		// restrictive. Without this clause a license database refresh would
+		// silently reclassify the whole CC-BY-NC family, PolyForm-Noncommercial
+		// and FSL as unrestricted, which is backwards: a ban on commercial use
+		// is the restriction downstream consumers care about most.
+		if strings.Contains(lowerCategory, "non-commercial") {
+			return true
+		}
+
 		return false
 	}
 
