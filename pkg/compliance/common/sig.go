@@ -25,6 +25,7 @@ import (
 	"fmt"
 	"math/big"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/interlynk-io/sbomqs/v2/pkg/logger"
@@ -49,6 +50,39 @@ type PublicKey struct {
 	E   string `json:"e"`
 }
 
+// signatureArtifactDirPattern names the temporary directory that holds the
+// files extracted from an embedded CycloneDX signature.
+const signatureArtifactDirPattern = "sbomqs-signature-*"
+
+// RemoveSignatureArtifacts deletes files written by RetrieveSignatureFromSBOM
+// and prunes the temporary directory holding them. Paths outside a directory
+// created by RetrieveSignatureFromSBOM are ignored, so it is safe to pass a
+// signature value that is not a path at all.
+func RemoveSignatureArtifacts(paths ...string) {
+	prefix := strings.TrimSuffix(signatureArtifactDirPattern, "*")
+
+	dirs := map[string]struct{}{}
+	for _, path := range paths {
+		if path == "" {
+			continue
+		}
+
+		dir := filepath.Dir(path)
+		if !strings.HasPrefix(filepath.Base(dir), prefix) {
+			continue
+		}
+
+		RemoveFileIfExists(path)
+		dirs[dir] = struct{}{}
+	}
+
+	for dir := range dirs {
+		// Only succeeds once the directory is empty, which keeps a shared
+		// directory alive until its last artifact is gone.
+		_ = os.Remove(dir)
+	}
+}
+
 func RetrieveSignatureFromSBOM(ctx context.Context, sbomFile string) (string, string, string, error) {
 	log := logger.FromContext(ctx)
 	log.Debug("Retrieving signature from SBOM", zap.String("file", sbomFile))
@@ -63,12 +97,6 @@ func RetrieveSignatureFromSBOM(ctx context.Context, sbomFile string) (string, st
 
 	var sbom SBOM
 
-	//nolint
-	extracted_signature := "extracted_signature.bin"
-
-	//nolint
-	extracted_publick_key := "extracted_public_key.pem"
-
 	if err := json.Unmarshal(data, &sbom); err != nil {
 		log.Error("Failed to parse SBOM json", zap.Error(err))
 		return "", "", "", fmt.Errorf("error unmarshalling SBOM JSON: %w", err)
@@ -78,7 +106,21 @@ func RetrieveSignatureFromSBOM(ctx context.Context, sbomFile string) (string, st
 		log.Debug("SBOM doesn't contains signature and public key")
 		return sbomFile, "", "", nil
 	}
-	log.Debug("Signature and public key are extracted from SBOM")
+	log.Debug("Signature found in SBOM")
+
+	// Artifacts go to a temporary directory. Writing them next to the caller's
+	// working directory left extracted_signature.bin, extracted_public_key.pem
+	// and standalone_sbom.json behind on most code paths, since only two of the
+	// six callers cleaned up and they did so only on one success branch.
+	artifactDir, err := os.MkdirTemp("", signatureArtifactDirPattern)
+	if err != nil {
+		log.Error("Failed to create signature artifact directory", zap.Error(err))
+		return "", "", "", fmt.Errorf("error creating signature artifact directory: %w", err)
+	}
+
+	extractedSignature := filepath.Join(artifactDir, "extracted_signature.bin")
+	extractedPublicKey := filepath.Join(artifactDir, "extracted_public_key.pem")
+	standaloneSBOMFile := filepath.Join(artifactDir, "standalone_sbom.json")
 
 	signatureValue, err := base64.StdEncoding.DecodeString(sbom.Signature.Value)
 	if err != nil {
@@ -86,30 +128,41 @@ func RetrieveSignatureFromSBOM(ctx context.Context, sbomFile string) (string, st
 		return "", "", "", fmt.Errorf("error decoding signature: %w", err)
 	}
 
-	if err := os.WriteFile(extracted_signature, signatureValue, 0o600); err != nil {
+	if err := os.WriteFile(extractedSignature, signatureValue, 0o600); err != nil {
 		log.Error("Failed to write signature to as file", zap.Error(err))
 	}
-	log.Debug("Signature extracted and wrtitten to a file", zap.String("path", "extracted_signature.bin"))
+	log.Debug("Signature extracted and written to a file", zap.String("path", extractedSignature))
 
-	// extract the public key modulus and exponent
-	modulus, err := base64.StdEncoding.DecodeString(sbom.Signature.PublicKey.N)
-	if err != nil {
-		return "", "", "", fmt.Errorf("error decoding public key modulus: %w", err)
-	}
-	exponent := DecodeBase64URLEncodingToInt(sbom.Signature.PublicKey.E)
-	if exponent == 0 {
-		log.Debug("Invalid public key exponent")
-	}
+	// The public key is optional. CycloneDX JSF allows a signature to carry no
+	// inline publicKey, leaving verification material to be referenced by
+	// certPath/keyId or supplied out of band. Dereferencing it unconditionally
+	// panicked on any such document, samples/sbom.cdx.signed.json included.
+	publicKeyPath := ""
+	if sbom.Signature.PublicKey == nil {
+		log.Debug("Signature carries no embedded public key")
+	} else {
+		// extract the public key modulus and exponent
+		modulus, err := base64.StdEncoding.DecodeString(sbom.Signature.PublicKey.N)
+		if err != nil {
+			return "", "", "", fmt.Errorf("error decoding public key modulus: %w", err)
+		}
+		exponent := DecodeBase64URLEncodingToInt(sbom.Signature.PublicKey.E)
+		if exponent == 0 {
+			log.Debug("Invalid public key exponent")
+		}
 
-	// create the RSA public key
-	pubKey := &rsa.PublicKey{
-		N: DecodeBigInt(modulus),
-		E: exponent,
-	}
+		// create the RSA public key
+		pubKey := &rsa.PublicKey{
+			N: DecodeBigInt(modulus),
+			E: exponent,
+		}
 
-	pubKeyPEM := PublicKeyToPEM(pubKey)
-	if err := os.WriteFile(extracted_publick_key, pubKeyPEM, 0o600); err != nil {
-		log.Error("Failed to write public key to file", zap.String("path", "extracted_publick_key"), zap.Error(err))
+		pubKeyPEM := PublicKeyToPEM(pubKey)
+		if err := os.WriteFile(extractedPublicKey, pubKeyPEM, 0o600); err != nil {
+			log.Error("Failed to write public key to file", zap.String("path", extractedPublicKey), zap.Error(err))
+		} else {
+			publicKeyPath = extractedPublicKey
+		}
 	}
 
 	// remove the "signature" section
@@ -124,13 +177,12 @@ func RetrieveSignatureFromSBOM(ctx context.Context, sbomFile string) (string, st
 	}
 
 	// save the modified SBOM to a new file without a trailing newline
-	standaloneSBOMFile := "standalone_sbom.json"
 	if err := os.WriteFile(standaloneSBOMFile, bytes.TrimSuffix(normalizedSBOM.Bytes(), []byte("\n")), 0o600); err != nil {
 		return "", "", "", fmt.Errorf("error writing standalone SBOM file: %w", err)
 	}
 
 	log.Debug("New modified SBOM saved to", zap.String("path", standaloneSBOMFile))
-	return standaloneSBOMFile, extracted_signature, extracted_publick_key, nil
+	return standaloneSBOMFile, extractedSignature, publicKeyPath, nil
 }
 
 func DecodeBase64URLEncodingToInt(input string) int {

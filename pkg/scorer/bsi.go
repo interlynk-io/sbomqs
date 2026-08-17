@@ -366,9 +366,6 @@ func sbomWithSignatureCheck(doc sbom.Document, c *check) score {
 			s.setScore(5.0)
 			s.setDesc("Signature provided but verification failed!")
 		}
-		common.RemoveFileIfExists("extracted_public_key.pem")
-		common.RemoveFileIfExists("extracted_signature.bin")
-		common.RemoveFileIfExists("standalone_sbom.json")
 	} else {
 		s.setScore(0.0)
 		s.setDesc("No signature provided")

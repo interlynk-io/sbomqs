@@ -150,9 +150,6 @@ func bsiV20SbomSignature(doc sbom.Document) *db.Record {
 			result = "Signature provided but verification failed!"
 		}
 
-		common.RemoveFileIfExists("extracted_public_key.pem")
-		common.RemoveFileIfExists("extracted_signature.bin")
-		common.RemoveFileIfExists("standalone_sbom.json")
 	}
 
 	return db.NewRecordStmtOptional(SBOM_SIGNATURE, "doc", result, score)
