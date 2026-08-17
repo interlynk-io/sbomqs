@@ -51,7 +51,7 @@ var checks = []check{
 	// bsi-v1.1
 	{string(bsiv1_1), "comp_with_name", false, "components have a name", compWithNameCheck},
 	{string(bsiv1_1), "comp_with_version", false, "components have a version", compWithVersionCheck},
-	{string(bsiv1_1), "comp_with_uniq_ids", false, "components have uniq ids", bsiCompWithUniqIDCheck},
+	{string(bsiv1_1), "comp_with_uniq_ids", false, "components have uniq ids", compWithUniqIDCheck},
 	{string(bsiv1_1), "comp_with_supplier", false, "components have suppliers", compWithSupplierCheck},
 	{string(bsiv1_1), "comp_with_licenses", false, "components have licenses", compWithLicensesCompliantCheck},
 	{string(bsiv1_1), "comp_with_checksums_sha256", false, "components have checksums with sha256", compWithSHA256ChecksumsCheck},
@@ -68,7 +68,7 @@ var checks = []check{
 	// bsi-v2.0.0
 	{string(bsiv2_0), "comp_with_name", false, "components have a name", compWithNameCheck},
 	{string(bsiv2_0), "comp_with_version", false, "components have a version", compWithVersionCheck},
-	{string(bsiv2_0), "comp_with_uniq_ids", false, "components have uniq ids", bsiCompWithUniqIDCheck},
+	{string(bsiv2_0), "comp_with_uniq_ids", false, "components have uniq ids", compWithUniqIDCheck},
 	{string(bsiv2_0), "comp_with_supplier", false, "components have suppliers", compWithSupplierCheck},
 	{string(bsiv2_0), "comp_with_associated_license", false, "components have associated licenses", compWithAssociatedLicensesCheck},
 	{string(bsiv2_0), "comp_with_concluded_license", false, "components have concluded licenses", compWithConcludedLicensesCheck},

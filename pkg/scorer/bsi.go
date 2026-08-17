@@ -73,30 +73,6 @@ func sbomWithURICheck(doc sbom.Document, c *check) score {
 	return *s
 }
 
-func bsiCompWithUniqIDCheck(d sbom.Document, c *check) score {
-	s := newScoreFromCheck(c)
-
-	totalComponents := len(d.Components())
-	if totalComponents == 0 {
-		s.setScore(0.0)
-		s.setDesc("N/A (no components)")
-		s.setIgnore(true)
-		return *s
-	}
-
-	compIDs := lo.CountBy(d.Components(), func(c sbom.GetComponent) bool {
-		purl := c.GetPurls()
-		cpes := c.GetCpes()
-		return len(purl) > 0 || len(cpes) > 0
-	})
-
-	if totalComponents > 0 {
-		s.setScore((float64(compIDs) / float64(totalComponents)) * 10.0)
-	}
-	s.setDesc(fmt.Sprintf("%d/%d have unique ID's", compIDs, totalComponents))
-	return *s
-}
-
 // check whether provided license is compliant or non-compliant
 func compWithLicensesCompliantCheck(d sbom.Document, c *check) score {
 	s := newScoreFromCheck(c)
