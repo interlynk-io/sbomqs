@@ -21,6 +21,17 @@ import (
 	"github.com/samber/lo"
 )
 
+// sbomWithRequiredFieldCheck scores the spec-mandated fields of the document
+// header and of every package, blended into one value.
+//
+// The two halves are treated asymmetrically on purpose. Package completeness
+// earns partial credit, but the document header is a gate: a document missing
+// its own required fields is not spec-valid, so it scores zero however complete
+// its packages are.
+//
+// Known wart, unchanged here: a document with zero components takes the partial
+// path with a package score of 0 and lands on 5.0, where every sibling
+// component check instead reports N/A and sets Ignore.
 func sbomWithRequiredFieldCheck(d sbom.Document, c *check) score {
 	s := newScoreFromCheck(c)
 
@@ -30,30 +41,21 @@ func sbomWithRequiredFieldCheck(d sbom.Document, c *check) score {
 	noOfPkgs := lo.CountBy(d.Components(), func(c sbom.GetComponent) bool {
 		return c.RequiredFields()
 	})
-	pkgsOK := false
-	if totalComponents > 0 && noOfPkgs == totalComponents {
-		pkgsOK = true
-	}
+	pkgsOK := totalComponents > 0 && noOfPkgs == totalComponents
 
-	var docScore, pkgScore float64
-
-	if !docOK && pkgsOK {
-		docScore = 0
-		pkgScore = 10.0
-		s.setScore((docScore + pkgScore) / 2.0)
+	switch {
+	case !docOK:
 		s.setScore(0.0)
-	}
 
-	if docOK && !pkgsOK {
-		docScore = 10.0
+	case pkgsOK:
+		s.setScore(10.0)
+
+	default:
+		pkgScore := 0.0
 		if totalComponents > 0 {
 			pkgScore = (float64(noOfPkgs) / float64(totalComponents)) * 10.0
 		}
-		s.setScore((docScore + pkgScore) / 2.0)
-	}
-
-	if docOK && pkgsOK {
-		s.setScore(10.0)
+		s.setScore((10.0 + pkgScore) / 2.0)
 	}
 
 	s.setDesc(fmt.Sprintf("Doc Fields:%t Pkg Fields:%t", docOK, pkgsOK))
