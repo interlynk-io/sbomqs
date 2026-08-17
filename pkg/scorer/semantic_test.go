@@ -90,13 +90,12 @@ func TestSbomWithRequiredFieldCheck(t *testing.T) {
 			wantDesc:  "Doc Fields:true Pkg Fields:false",
 		},
 		{
-			// Known wart: no packages to check, yet the package half scores 0
-			// and drags the result to 5.0 instead of reporting N/A the way
-			// every sibling component check does.
+			// No packages to check, so the header alone decides. Previously
+			// the empty package half halved this to 5.0.
 			name:      "doc complete, zero components",
 			doc:       cdxDocOKNoComponents,
-			wantScore: 5.0,
-			wantDesc:  "Doc Fields:true Pkg Fields:false",
+			wantScore: 10.0,
+			wantDesc:  "Doc Fields:true Pkg Fields:n/a (no components)",
 		},
 	}
 
