@@ -25,6 +25,10 @@ The score command analyzes your SBOM across multiple categories:
 - **Quality**: Completeness and accuracy of data
 - **Sharing**: Readiness for distribution and consumption
 
+If you consume `--legacy` output programmatically or compare its scores against
+another tool, read [Legacy v1 scoring engine: known quirks](../specs/LEGACY-V1-QUIRKS.md)
+first. The legacy `avg_score` does not average only these five categories.
+
 ## Usage
 
 ```bash
