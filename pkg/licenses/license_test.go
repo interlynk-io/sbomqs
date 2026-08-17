@@ -244,3 +244,73 @@ func TestLookupExpression_CustomLicenses(t *testing.T) {
 		})
 	}
 }
+
+func TestLookupExpression_FreeAnyUseLicenses(t *testing.T) {
+	testcases := []struct {
+		exp            string
+		wantFreeAnyUse bool
+	}{
+		// Public domain ids that are on the SPDX list. Before the AboutCode
+		// overlay these all reported freeAnyUse=false, because the SPDX
+		// license list publishes no such flag.
+		{exp: "CC0-1.0", wantFreeAnyUse: true},
+		{exp: "Unlicense", wantFreeAnyUse: true},
+		{exp: "WTFPL", wantFreeAnyUse: true},
+		{exp: "PDDL-1.0", wantFreeAnyUse: true},
+		{exp: "CC-PDDC", wantFreeAnyUse: true},
+		{exp: "NIST-PD", wantFreeAnyUse: true},
+		{exp: "blessing", wantFreeAnyUse: true},
+
+		// Permissive and copyleft ids must stay false.
+		{exp: "MIT", wantFreeAnyUse: false},
+		{exp: "Apache-2.0", wantFreeAnyUse: false},
+		{exp: "BSD-3-Clause", wantFreeAnyUse: false},
+		{exp: "GPL-3.0-only", wantFreeAnyUse: false},
+		{exp: "AGPL-3.0-only", wantFreeAnyUse: false},
+	}
+
+	for _, test := range testcases {
+		t.Run(test.exp, func(t *testing.T) {
+			lics := LookupExpression(test.exp, nil)
+
+			if len(lics) == 0 {
+				t.Fatalf("expected license for %s, got none", test.exp)
+			}
+
+			lic := lics[0]
+
+			if lic.FreeAnyUse() != test.wantFreeAnyUse {
+				t.Fatalf(
+					"expected freeAnyUse=%v for %s, got %v",
+					test.wantFreeAnyUse,
+					test.exp,
+					lic.FreeAnyUse(),
+				)
+			}
+		})
+	}
+}
+
+// The overlay must not disturb the fields it does not own.
+func TestFreeAnyUseOverlay_LeavesOtherFieldsAlone(t *testing.T) {
+	lic, err := LookupSpdxLicense("CC0-1.0")
+	if err != nil {
+		t.Fatalf("expected CC0-1.0 on the spdx list, got %v", err)
+	}
+
+	if !lic.Spdx() {
+		t.Fatalf("expected source spdx, got %s", lic.Source())
+	}
+
+	if lic.Name() != "Creative Commons Zero v1.0 Universal" {
+		t.Fatalf("unexpected name %q", lic.Name())
+	}
+
+	if !lic.FsfLibre() {
+		t.Fatalf("expected fsfLibre to survive the overlay")
+	}
+
+	if lic.Deprecated() || lic.OsiApproved() || lic.Restrictive() || lic.Exception() {
+		t.Fatalf("overlay changed a field it does not own: %+v", lic)
+	}
+}

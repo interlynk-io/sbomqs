@@ -50,7 +50,13 @@ type spdxLicenseDetail struct {
 	SeeAlso            []string `json:"seeAlso"`
 	IsOsiApproved      bool     `json:"isOsiApproved"`
 	IsFsfLibre         bool     `json:"isFsfLibre"`
-	IsFreeAnyUse       bool     `json:"isFreeAnyUse"`
+	// IsFreeAnyUse is never present in the SPDX license list, which publishes
+	// only isOsiApproved and isFsfLibre. It is decoded for forward
+	// compatibility and always unmarshals to false today; free-for-any-use is
+	// derived from the AboutCode `Public Domain` category instead, in
+	// overlayFreeAnyUseFromAboutCode. Regenerating files/licenses_spdx.json
+	// from upstream will not populate this.
+	IsFreeAnyUse bool `json:"isFreeAnyUse"`
 }
 
 type aboutCodeLicenseDetail struct {
