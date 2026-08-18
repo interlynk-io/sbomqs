@@ -300,7 +300,7 @@ func handlePaths(ctx context.Context, ep *Params) error {
 				return err
 			}
 
-			_, signature, publicKey, err := common.GetSignatureBundle(ctx, path, "", "")
+			standalone, signature, publicKey, err := common.GetSignatureBundle(ctx, path, "", "")
 			if err != nil {
 				log.Error("Failed to fetch signature bundle",
 					zap.String("path", path),
@@ -316,11 +316,16 @@ func handlePaths(ctx context.Context, ep *Params) error {
 
 			doc, err := sbom.NewSBOMDocument(ctx, f, sig)
 			if err != nil {
+				common.RemoveSignatureArtifacts(standalone, signature, publicKey)
 				return err
 			}
 
 			sr := scorer.NewScorer(ctx, doc)
 			score := sr.Score()
+
+			// The bundle is extracted to a temp directory; whoever asks for it
+			// owns it. Scoring only tests these for emptiness, never reads them.
+			common.RemoveSignatureArtifacts(standalone, signature, publicKey)
 
 			docs = append(docs, doc)
 			scores = append(scores, score)
@@ -403,7 +408,7 @@ func processFile(ctx context.Context, ep *Params, path string, fs billy.Filesyst
 
 	var doc sbom.Document
 
-	_, signature, publicKey, err := common.GetSignatureBundle(ctx, path, "", "")
+	standalone, signature, publicKey, err := common.GetSignatureBundle(ctx, path, "", "")
 	if err != nil {
 		log.Error("Failed to fetch signature bundle",
 			zap.String("path", path),
@@ -411,6 +416,9 @@ func processFile(ctx context.Context, ep *Params, path string, fs billy.Filesyst
 		)
 		return nil, nil, err
 	}
+	// The bundle is extracted to a temp directory; whoever asks for it owns it.
+	// Scoring only tests these for emptiness, never reads them.
+	defer common.RemoveSignatureArtifacts(standalone, signature, publicKey)
 
 	sig := sbom.Signature{
 		SigValue:  signature,
