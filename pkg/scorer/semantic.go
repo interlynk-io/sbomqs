@@ -29,9 +29,11 @@ import (
 // its own required fields is not spec-valid, so it scores zero however complete
 // its packages are.
 //
-// Known wart, unchanged here: a document with zero components takes the partial
-// path with a package score of 0 and lands on 5.0, where every sibling
-// component check instead reports N/A and sets Ignore.
+// A document with no components is scored on its header alone. There are no
+// package fields to be absent, so an empty package half must not halve the
+// result. Reporting N/A instead would be worse than it looks: AvgScore keeps
+// ignored entries in its denominator, so an ignored feature costs exactly as
+// much as a zero.
 func sbomWithRequiredFieldCheck(d sbom.Document, c *check) score {
 	s := newScoreFromCheck(c)
 
@@ -47,15 +49,17 @@ func sbomWithRequiredFieldCheck(d sbom.Document, c *check) score {
 	case !docOK:
 		s.setScore(0.0)
 
-	case pkgsOK:
+	case totalComponents == 0, pkgsOK:
 		s.setScore(10.0)
 
 	default:
-		pkgScore := 0.0
-		if totalComponents > 0 {
-			pkgScore = (float64(noOfPkgs) / float64(totalComponents)) * 10.0
-		}
+		pkgScore := (float64(noOfPkgs) / float64(totalComponents)) * 10.0
 		s.setScore((10.0 + pkgScore) / 2.0)
+	}
+
+	if totalComponents == 0 {
+		s.setDesc(fmt.Sprintf("Doc Fields:%t Pkg Fields:n/a (no components)", docOK))
+		return *s
 	}
 
 	s.setDesc(fmt.Sprintf("Doc Fields:%t Pkg Fields:%t", docOK, pkgsOK))
