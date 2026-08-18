@@ -50,7 +50,13 @@ type spdxLicenseDetail struct {
 	SeeAlso            []string `json:"seeAlso"`
 	IsOsiApproved      bool     `json:"isOsiApproved"`
 	IsFsfLibre         bool     `json:"isFsfLibre"`
-	IsFreeAnyUse       bool     `json:"isFreeAnyUse"`
+	// IsFreeAnyUse is never present in the SPDX license list, which publishes
+	// only isOsiApproved and isFsfLibre. It is decoded for forward
+	// compatibility and always unmarshals to false today; free-for-any-use is
+	// derived from the AboutCode `Public Domain` category instead, in
+	// overlayFreeAnyUseFromAboutCode. Regenerating files/licenses_spdx.json
+	// from upstream will not populate this.
+	IsFreeAnyUse bool `json:"isFreeAnyUse"`
 }
 
 type aboutCodeLicenseDetail struct {
@@ -154,6 +160,16 @@ func loadAboutCodeLicense() error {
 		}
 
 		if strings.Contains(lowerCategory, "restricted") {
+			return true
+		}
+
+		// AboutCode introduced the `Non-Commercial` category and moved 209
+		// licenses into it, 24 of them out of categories we already treated as
+		// restrictive. Without this clause a license database refresh would
+		// silently reclassify the whole CC-BY-NC family, PolyForm-Noncommercial
+		// and FSL as unrestricted, which is backwards: a ban on commercial use
+		// is the restriction downstream consumers care about most.
+		if strings.Contains(lowerCategory, "non-commercial") {
 			return true
 		}
 

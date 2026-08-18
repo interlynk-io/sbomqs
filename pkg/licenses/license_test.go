@@ -244,3 +244,120 @@ func TestLookupExpression_CustomLicenses(t *testing.T) {
 		})
 	}
 }
+
+func TestLookupExpression_FreeAnyUseLicenses(t *testing.T) {
+	testcases := []struct {
+		exp            string
+		wantFreeAnyUse bool
+	}{
+		// Public domain ids that are on the SPDX list. Before the AboutCode
+		// overlay these all reported freeAnyUse=false, because the SPDX
+		// license list publishes no such flag.
+		{exp: "CC0-1.0", wantFreeAnyUse: true},
+		{exp: "Unlicense", wantFreeAnyUse: true},
+		{exp: "WTFPL", wantFreeAnyUse: true},
+		{exp: "PDDL-1.0", wantFreeAnyUse: true},
+		{exp: "CC-PDDC", wantFreeAnyUse: true},
+		{exp: "NIST-PD", wantFreeAnyUse: true},
+		{exp: "blessing", wantFreeAnyUse: true},
+
+		// Permissive and copyleft ids must stay false.
+		{exp: "MIT", wantFreeAnyUse: false},
+		{exp: "Apache-2.0", wantFreeAnyUse: false},
+		{exp: "BSD-3-Clause", wantFreeAnyUse: false},
+		{exp: "GPL-3.0-only", wantFreeAnyUse: false},
+		{exp: "AGPL-3.0-only", wantFreeAnyUse: false},
+	}
+
+	for _, test := range testcases {
+		t.Run(test.exp, func(t *testing.T) {
+			lics := LookupExpression(test.exp, nil)
+
+			if len(lics) == 0 {
+				t.Fatalf("expected license for %s, got none", test.exp)
+			}
+
+			lic := lics[0]
+
+			if lic.FreeAnyUse() != test.wantFreeAnyUse {
+				t.Fatalf(
+					"expected freeAnyUse=%v for %s, got %v",
+					test.wantFreeAnyUse,
+					test.exp,
+					lic.FreeAnyUse(),
+				)
+			}
+		})
+	}
+}
+
+// The overlay must not disturb the fields it does not own.
+func TestFreeAnyUseOverlay_LeavesOtherFieldsAlone(t *testing.T) {
+	lic, err := LookupSpdxLicense("CC0-1.0")
+	if err != nil {
+		t.Fatalf("expected CC0-1.0 on the spdx list, got %v", err)
+	}
+
+	if !lic.Spdx() {
+		t.Fatalf("expected source spdx, got %s", lic.Source())
+	}
+
+	if lic.Name() != "Creative Commons Zero v1.0 Universal" {
+		t.Fatalf("unexpected name %q", lic.Name())
+	}
+
+	if !lic.FsfLibre() {
+		t.Fatalf("expected fsfLibre to survive the overlay")
+	}
+
+	if lic.Deprecated() || lic.OsiApproved() || lic.Restrictive() || lic.Exception() {
+		t.Fatalf("overlay changed a field it does not own: %+v", lic)
+	}
+}
+
+// AboutCode's `Non-Commercial` category must count as restrictive. It was
+// introduced in the 2026 license database refresh and absorbed 24 licenses
+// that were previously categorised Copyleft, Copyleft Limited or Free
+// Restricted, so omitting it would quietly relax the classification.
+func TestLookupExpression_NonCommercialIsRestrictive(t *testing.T) {
+	testcases := []string{
+		"CC-BY-NC-4.0",
+		"CC-BY-NC-SA-4.0",
+		"CC-BY-NC-ND-4.0",
+		"CC-BY-NC-1.0",
+		"PolyForm-Noncommercial-1.0.0",
+		"FSL-1.1-MIT",
+		"SUL-1.0",
+		"Aladdin",
+		"NCGL-UK-2.0",
+		"OpenPBS-2.3",
+	}
+
+	for _, exp := range testcases {
+		t.Run(exp, func(t *testing.T) {
+			lics := LookupExpression(exp, nil)
+
+			if len(lics) == 0 {
+				t.Fatalf("expected license for %s, got none", exp)
+			}
+
+			if !lics[0].Restrictive() {
+				t.Fatalf("expected %s to be restrictive", exp)
+			}
+		})
+	}
+}
+
+// Guards the license database refresh: these counts change only when
+// pkg/licenses/files is regenerated, and the AboutCode category vocabulary
+// drives both the restrictive and freeAnyUse classifications.
+func TestLicenseDatabase_LoadedCounts(t *testing.T) {
+	if got, want := len(licenseList), 819; got != want {
+		t.Fatalf("expected %d spdx licenses and exceptions, got %d", want, got)
+	}
+
+	// Keyed by SPDX id, so this exceeds the 2733 raw AboutCode records.
+	if got, want := len(licenseListAboutCode), 2862; got != want {
+		t.Fatalf("expected %d aboutcode entries, got %d", want, got)
+	}
+}
