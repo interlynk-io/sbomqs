@@ -88,6 +88,20 @@ func compWithVersionCheck(d sbom.Document, c *check) score {
 	return *s
 }
 
+// compWithUniqIDCheck implements the NTIA minimum element "Other Unique
+// Identifiers": "At least one additional identifier if available (e.g., CPE,
+// PURL, SWID)."
+//
+// Mappings:
+//   - SPDX: PackageExternalRefs (PURL), PackageCPEs
+//   - CycloneDX: component external references (PURL), component CPEs
+//
+// "Unique" here means globally identifying, i.e. usable as a lookup key against
+// a vulnerability database. It does not mean "not duplicated within the
+// document", and NTIA asks nothing about intra-document distinctness. This
+// previously counted components with a non-empty bom-ref/SPDXID, which is a
+// document-local handle unrelated to the element, and so disagreed with the
+// list command, the v2 NTIA profile and the BSI checks that share this key.
 func compWithUniqIDCheck(d sbom.Document, c *check) score {
 	s := newScoreFromCheck(c)
 
@@ -99,19 +113,12 @@ func compWithUniqIDCheck(d sbom.Document, c *check) score {
 		return *s
 	}
 
-	compIDs := lo.FilterMap(d.Components(), func(c sbom.GetComponent, _ int) (string, bool) {
-		if c.GetID() == "" {
-			return "", false
-		}
-		return strings.Join([]string{d.Spec().GetNamespace(), c.GetID()}, ""), true
+	withIDs := lo.CountBy(d.Components(), func(c sbom.GetComponent) bool {
+		return len(c.GetPurls()) > 0 || len(c.GetCpes()) > 0
 	})
 
-	// uniqComps := lo.Uniq(compIDs)
-
-	if totalComponents > 0 {
-		s.setScore((float64(len(compIDs)) / float64(totalComponents)) * 10.0)
-	}
-	s.setDesc(fmt.Sprintf("%d/%d have unique ID's", len(compIDs), totalComponents))
+	s.setScore((float64(withIDs) / float64(totalComponents)) * 10.0)
+	s.setDesc(fmt.Sprintf("%d/%d have unique ID's", withIDs, totalComponents))
 	return *s
 }
 
