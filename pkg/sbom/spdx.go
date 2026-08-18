@@ -515,42 +515,86 @@ func (s *SpdxDoc) parseAuthors() {
 	}
 }
 
-// parsePrimaryComponent
+// SPDX inverse relationship types are flipped during normalization
+var spdxInverseRels = map[string]string{
+	"DESCRIBED_BY":  "DESCRIBES",
+	"CONTAINED_BY":  "CONTAINS",
+	"DEPENDENCY_OF": "DEPENDS_ON",
+}
+
+// isSpdxInverseRel returns true if the relationship type is an inverse form
+func isSpdxInverseRel(rel string) (string, bool) {
+	forward, ok := spdxInverseRels[strings.ToUpper(rel)]
+	return forward, ok
+}
+
+// parsePrimaryComponent detects the primary component from SPDX relationships.
+// It accepts both forward (DESCRIBES) and inverse (DESCRIBED_BY) forms.
 func (s *SpdxDoc) parsePrimaryComponent() {
 	for _, r := range s.doc.Relationships {
-		if strings.ToUpper(r.Relationship) != spdx_common.TypeRelationshipDescribe {
-			continue
-		}
+		relUpper := strings.ToUpper(r.Relationship)
 
-		// DOCUMENT -> component
-		bBytes, err := r.RefB.MarshalJSON()
-		if err != nil {
-			continue
-		}
-
-		id := CleanKey(string(bBytes))
-		s.PrimaryComponent.Present = true
-
-		// Resolve name/version from packages
-		pkgID := strings.TrimPrefix(id, "SPDXRef-")
-		s.PrimaryComponent.ID = pkgID
-		for _, p := range s.doc.Packages {
-			if string(p.PackageSPDXIdentifier) == pkgID {
-				s.PrimaryComponent.Name = p.PackageName
-				s.PrimaryComponent.Version = p.PackageVersion
-				break
+		// Forward: DOCUMENT DESCRIBES component (RefB is the component)
+		/*
+			{
+				"spdxElementId": "SPDXRef-DOCUMENT",
+				"relationshipType": "DESCRIBES",
+				"relatedSpdxElement": "SPDXRef-Primary"
 			}
+		*/
+		if relUpper == spdx_common.TypeRelationshipDescribe {
+			pBytes, err := r.RefB.MarshalJSON()
+			if err != nil {
+				continue
+			}
+			s.setPrimaryComponent(CleanKey(string(pBytes)))
+			break
 		}
-		break // assume single primary component
+
+		// Inverse: component DESCRIBED_BY DOCUMENT (RefA is the component)
+		/*
+			{
+				"spdxElementId": "SPDXRef-Primary",
+				"relationshipType": "DESCRIBED_BY",
+				"relatedSpdxElement": "SPDXRef-DOCUMENT"
+			},
+		*/
+		if relUpper == spdx_common.TypeRelationshipDescribeBy {
+			pBytes, err := r.RefA.MarshalJSON()
+			if err != nil {
+				continue
+			}
+			s.setPrimaryComponent(CleanKey(string(pBytes)))
+			break
+		}
 	}
 }
 
-// parseRelationships()
+// setPrimaryComponent resolves package metadata for the given SPDX ID.
+func (s *SpdxDoc) setPrimaryComponent(id string) {
+	s.PrimaryComponent.Present = true
+	pkgID := strings.TrimPrefix(id, "SPDXRef-")
+	s.PrimaryComponent.ID = pkgID
+
+	for _, p := range s.doc.Packages {
+		if string(p.PackageSPDXIdentifier) == pkgID {
+			s.PrimaryComponent.Name = p.PackageName
+			s.PrimaryComponent.Version = p.PackageVersion
+			break
+		}
+	}
+}
+
+// parseRelationships normalizes SPDX relationships and deduplicates them.
+// Inverse forms (e.g. DEPENDENCY_OF, DESCRIBED_BY, CONTAINED_BY) are flipped
+// to their forward equivalents so downstream consumers need no changes.
 func (s *SpdxDoc) parseRelationships() {
-	s.Relationships = make([]GetRelationship, 0, len(s.doc.Relationships))
+	rawRels := make([]GetRelationship, 0, len(s.doc.Relationships))
 
 	for _, r := range s.doc.Relationships {
-		if r.Relationship == spdx.RelationshipDescribes {
+		// Skip DESCRIBES relationships (and their inverse DESCRIBED_BY)
+		if strings.EqualFold(r.Relationship, spdx.RelationshipDescribes) ||
+			strings.EqualFold(r.Relationship, spdx_common.TypeRelationshipDescribeBy) {
 			continue
 		}
 
@@ -564,13 +608,35 @@ func (s *SpdxDoc) parseRelationships() {
 			continue
 		}
 
-		rel := Relationship{
-			From: strings.TrimPrefix(CleanKey(string(aBytes)), "SPDXRef-"),
-			To:   strings.TrimPrefix(CleanKey(string(bBytes)), "SPDXRef-"),
-			Type: strings.ToUpper(r.Relationship),
+		from := strings.TrimPrefix(CleanKey(string(aBytes)), "SPDXRef-")
+		to := strings.TrimPrefix(CleanKey(string(bBytes)), "SPDXRef-")
+		relType := strings.ToUpper(r.Relationship)
+
+		// Normalize inverse relationships by swapping direction.
+		if forward, ok := isSpdxInverseRel(relType); ok {
+			from, to = to, from
+			relType = forward
 		}
 
-		s.Relationships = append(s.Relationships, rel)
+		rel := Relationship{
+			From: from,
+			To:   to,
+			Type: relType,
+		}
+
+		rawRels = append(rawRels, rel)
+	}
+
+	// Deduplicate: exact duplicates (same From, To, Type) are collapsed.
+	seen := make(map[string]struct{}, len(rawRels))
+	s.Relationships = make([]GetRelationship, 0, len(rawRels))
+	for _, r := range rawRels {
+		key := r.GetFrom() + "-" + r.GetType() + "-" + r.GetTo()
+		if _, exists := seen[key]; exists {
+			continue
+		}
+		seen[key] = struct{}{}
+		s.Relationships = append(s.Relationships, r)
 	}
 }
 
