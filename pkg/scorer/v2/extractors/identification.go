@@ -57,8 +57,13 @@ func CompWithVersion(_ context.Context, input catalog.EvalInput) catalog.ComprFe
 	return formulae.ScoreCompFull(have, len(comps), "versions", false)
 }
 
-// CompWithUniqLocalIDs: percentage of components whose local ID is present and unique within the SBOM.
-// such as bom-ref, spdxid
+// CompWithUniqLocalIDs: percentage of components carrying a local ID, such as
+// a CycloneDX bom-ref or an SPDXID.
+//
+// Presence only. Distinctness within the document is not checked, so two
+// components sharing a bom-ref both count. This is deliberately a structural
+// check and is not the NTIA "Other Unique Identifiers" element, which asks for
+// a global lookup key and is implemented by the ntia profile's comp_uniq_id.
 func CompWithUniqLocalIDs(_ context.Context, input catalog.EvalInput) catalog.ComprFeatScore {
 	doc := input.Doc
 	comps := doc.Components()
@@ -73,5 +78,5 @@ func CompWithUniqLocalIDs(_ context.Context, input catalog.EvalInput) catalog.Co
 		return strings.Join([]string{doc.Spec().GetNamespace(), c.GetID()}, ""), true
 	})
 
-	return formulae.ScoreCompFull(len(have), len(comps), "unique IDs", false)
+	return formulae.ScoreCompFull(len(have), len(comps), "local IDs", false)
 }

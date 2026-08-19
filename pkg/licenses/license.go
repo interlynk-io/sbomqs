@@ -116,6 +116,7 @@ func LookupSpdxLicense(licenseKey string) (License, error) {
 	}
 
 	license = overlayRestrictiveFromAboutCode(license)
+	license = overlayFreeAnyUseFromAboutCode(license)
 
 	return license, nil
 }
@@ -314,6 +315,28 @@ func overlayRestrictiveFromAboutCode(spdx meta) meta {
 	// considered to be a “restrictive” license.
 	if ac, ok := licenseListAboutCode[spdx.short]; ok && ac.restrictive {
 		spdx.restrictive = true
+	}
+	return spdx
+}
+
+// overlayFreeAnyUseFromAboutCode sets spdx.freeAnyUse to true if AboutCode
+// metadata marks the same license ID as public domain. No other fields are changed.
+func overlayFreeAnyUseFromAboutCode(spdx meta) meta {
+	if spdx.freeAnyUse {
+		return spdx
+	}
+
+	// --NOTE--
+	// The SPDX license list does not publish any "free for any use" flag. Its
+	// entries carry only isOsiApproved and isFsfLibre, so meta.freeAnyUse is
+	// always false for SPDX-sourced licenses and every document licence that
+	// resolves through the SPDX list (including CC0-1.0, the dataLicense SPDX
+	// itself mandates) scored 0 on sbom_sharable.
+	//
+	// We use the AboutCode `Public Domain` license category to fill the gap,
+	// the same way restrictiveness is derived from its copyleft categories.
+	if ac, ok := licenseListAboutCode[spdx.short]; ok && ac.freeAnyUse {
+		spdx.freeAnyUse = true
 	}
 	return spdx
 }

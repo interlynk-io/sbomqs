@@ -128,7 +128,7 @@ func getSbomDocument(ctx context.Context, ep *Params) (*sbom.Document, error) {
 		zap.String("path", path),
 	)
 
-	_, signature, publicKey, err := common.GetSignatureBundle(ctx, path, "", "")
+	standalone, signature, publicKey, err := common.GetSignatureBundle(ctx, path, "", "")
 	if err != nil {
 		log.Error("Failed to fetch signature bundle",
 			zap.String("path", path),
@@ -136,6 +136,9 @@ func getSbomDocument(ctx context.Context, ep *Params) (*sbom.Document, error) {
 		)
 		return nil, err
 	}
+	// The bundle is extracted to a temp directory; whoever asks for it owns it.
+	// Compliance only tests these for emptiness, never reads them.
+	defer common.RemoveSignatureArtifacts(standalone, signature, publicKey)
 
 	sig := sbom.Signature{
 		SigValue:  signature,

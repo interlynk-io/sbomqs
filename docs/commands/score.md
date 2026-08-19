@@ -25,6 +25,10 @@ The score command analyzes your SBOM across multiple categories:
 - **Quality**: Completeness and accuracy of data
 - **Sharing**: Readiness for distribution and consumption
 
+If you consume `--legacy` output programmatically or compare its scores against
+another tool, read [Legacy v1 scoring engine: known quirks](../specs/LEGACY-V1-QUIRKS.md)
+first. The legacy `avg_score` does not average only these five categories.
+
 ## Usage
 
 ```bash
@@ -503,19 +507,19 @@ $ sbomqs score --legacy --category ntia my-app.spdx.json
 
 #### Numeric Scores (0-10)
 
-- **9-10**: Excellent - SBOM is high quality and compliant
-- **7-8.9**: Good - SBOM meets most requirements
-- **5-6.9**: Fair - SBOM has gaps that should be addressed
-- **3-4.9**: Poor - SBOM is missing critical information
-- **0-2.9**: Failing - SBOM is severely incomplete
+- **9.0-10.0**: Excellent - SBOM is high quality and compliant
+- **8.0-8.9**: Good - SBOM meets most requirements
+- **7.0-7.9**: Acceptable - SBOM has gaps that should be addressed
+- **5.0-6.9**: Poor - SBOM is missing critical information
+- **below 5.0**: Failing - SBOM is severely incomplete
 
 #### Letter Grades
 
-- **A**: 8.0-10.0 - Excellent quality
-- **B**: 6.0-7.9 - Good quality
-- **C**: 4.0-5.9 - Fair quality
-- **D**: 2.0-3.9 - Poor quality
-- **F**: 0.0-1.9 - Failing quality
+- **A**: 9.0-10.0 - Excellent quality
+- **B**: 8.0-8.9 - Good quality
+- **C**: 7.0-7.9 - Acceptable quality
+- **D**: 5.0-6.9 - Poor quality
+- **F**: below 5.0 - Failing quality
 
 ### Key Quality Indicators
 
