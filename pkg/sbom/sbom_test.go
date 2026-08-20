@@ -264,6 +264,14 @@ var spdx3_missing_CreationInfo = []byte(`
 }
 `)
 
+// A null entry inside an SPDX array decodes to a nil element, which used to be
+// dereferenced while walking packages, files and relationships.
+var spdxNullPackageEntry = []byte(`{"spdxVersion":"SPDX-2.1","SPDXID":"SPDXRef-DOCUMENT","name":"x","documentNamespace":"http://example.com/x","dataLicense":"CC0-1.0","creationInfo":{"created":"2020-01-01T00:00:00Z","creators":["Tool: t"]},"packages":[null]}`)
+
+var spdxNullFileEntry = []byte(`{"spdxVersion":"SPDX-2.3","SPDXID":"SPDXRef-DOCUMENT","name":"x","documentNamespace":"http://example.com/x","dataLicense":"CC0-1.0","creationInfo":{"created":"2020-01-01T00:00:00Z","creators":["Tool: t"]},"files":[null]}`)
+
+var spdxNullRelationshipEntry = []byte(`{"spdxVersion":"SPDX-2.1","SPDXID":"SPDXRef-DOCUMENT","name":"x","documentNamespace":"http://example.com/x","dataLicense":"CC0-1.0","creationInfo":{"created":"2020-01-01T00:00:00Z","creators":["Tool: t"]},"relationships":[null]}`)
+
 func TestNewSBOMDocumentFromBytes(t *testing.T) {
 	ctx := context.Background()
 
@@ -370,6 +378,24 @@ func TestNewSBOMDocumentFromBytes(t *testing.T) {
 			input:    spdx3_invalid_version_in_context,
 			wantSpec: SBOMSpecUnknown,
 			wantErr:  true,
+		},
+		{
+			name:     "spdx null package entry",
+			input:    spdxNullPackageEntry,
+			wantSpec: SBOMSpecSPDX,
+			wantErr:  false,
+		},
+		{
+			name:     "spdx null file entry",
+			input:    spdxNullFileEntry,
+			wantSpec: SBOMSpecSPDX,
+			wantErr:  false,
+		},
+		{
+			name:     "spdx null relationship entry",
+			input:    spdxNullRelationshipEntry,
+			wantSpec: SBOMSpecSPDX,
+			wantErr:  false,
 		},
 		{
 			name:     "spdx3_missing_CreationInfo",

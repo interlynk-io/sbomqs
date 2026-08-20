@@ -342,6 +342,11 @@ func (s *SpdxDoc) parseComps() {
 	s.Comps = []GetComponent{}
 
 	for index, sc := range s.doc.Packages {
+		// a null entry in the packages array decodes to a nil element
+		if sc == nil {
+			continue
+		}
+
 		nc := NewComponent()
 
 		nc.Version = sc.PackageVersion
@@ -405,6 +410,11 @@ func (s *SpdxDoc) parseFiles() {
 	s.File = []GetComponent{}
 
 	for _, sf := range s.doc.Files {
+		// a null entry in the files array decodes to a nil element
+		if sf == nil {
+			continue
+		}
+
 		nc := NewComponent()
 
 		// Basic file information
@@ -532,6 +542,11 @@ func isSpdxInverseRel(rel string) (string, bool) {
 // It accepts both forward (DESCRIBES) and inverse (DESCRIBED_BY) forms.
 func (s *SpdxDoc) parsePrimaryComponent() {
 	for _, r := range s.doc.Relationships {
+		// a null entry in the relationships array decodes to a nil element
+		if r == nil {
+			continue
+		}
+
 		relUpper := strings.ToUpper(r.Relationship)
 
 		// Forward: DOCUMENT DESCRIBES component (RefB is the component)
@@ -592,6 +607,11 @@ func (s *SpdxDoc) parseRelationships() {
 	rawRels := make([]GetRelationship, 0, len(s.doc.Relationships))
 
 	for _, r := range s.doc.Relationships {
+		// a null entry in the relationships array decodes to a nil element
+		if r == nil {
+			continue
+		}
+
 		// Skip DESCRIBES relationships (and their inverse DESCRIBED_BY)
 		if strings.EqualFold(r.Relationship, spdx.RelationshipDescribes) ||
 			strings.EqualFold(r.Relationship, spdx_common.TypeRelationshipDescribeBy) {
