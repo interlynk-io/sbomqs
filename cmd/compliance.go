@@ -122,6 +122,13 @@ func setupEngineParams(cmd *cobra.Command, args []string) *engine.Params {
 		engParams.Oct = true
 	}
 	engParams.Fsct, _ = cmd.Flags().GetBool("fsct")
+	engParams.Cisa2026, _ = cmd.Flags().GetBool("cisa-2026")
+	if v, _ := cmd.Flags().GetBool("cisa2026"); v {
+		engParams.Cisa2026 = true
+	}
+	if v, _ := cmd.Flags().GetBool("cisa"); v {
+		engParams.Cisa2026 = true
+	}
 
 	engParams.Debug, _ = cmd.Flags().GetBool("debug")
 
@@ -162,4 +169,7 @@ func init() {
 	complianceCmd.Flags().BoolP("oct-v1.1", "", false, "OpenChain Telco SBOM (v1.1)")
 	complianceCmd.Flags().BoolP("octv11", "", false, "OpenChain Telco SBOM (v1.1)")
 	complianceCmd.Flags().BoolP("fsct", "f", false, "Framing Software Component Transparency (v3)")
+	complianceCmd.Flags().BoolP("cisa-2026", "", false, "CISA Minimum Elements (2026)")
+	complianceCmd.Flags().BoolP("cisa2026", "", false, "CISA Minimum Elements (2026)")
+	complianceCmd.Flags().BoolP("cisa", "", false, "CISA Minimum Elements (2026)")
 }
