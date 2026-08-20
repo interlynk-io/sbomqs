@@ -962,6 +962,115 @@ func Test_CycloneDXSignatureSupport(t *testing.T) {
 	fmt.Printf("CycloneDX Signature Tests: ✓ All %d test cases completed\n", len(testCases))
 }
 
+// Test_CISA2026ProfileForStaticSBOMFiles tests CISA 2026 Minimum Elements profile
+func Test_CISA2026ProfileForStaticSBOMFiles(t *testing.T) {
+	fmt.Println()
+	fmt.Println("==========================================")
+	fmt.Println("Running CISA 2026 Profile Integration Tests")
+	fmt.Println("==========================================")
+
+	base := filepath.Join("..", "..", "..", "testdata", "fixtures")
+
+	// CISA 2026 has 17 fields total. All are Required.
+	// SPDX 2.x: sbom_version and sbom_signature are N/A → 15 evaluated
+	// SPDX 3.x: sbom_version is N/A → 16 evaluated
+	// CycloneDX: 0 N/A → 17 evaluated
+	testCases := map[string]expectedProfileScore{
+		// SPDX 2.x test cases (15 evaluated, 2 N/A)
+		filepath.Join(base, "spdx-perfect-score.json"):    {Score: 9.3, Grade: "A", Required: 14},
+		filepath.Join(base, "spdx-minimal.json"):          {Score: 3.3, Grade: "F", Required: 5},
+		filepath.Join(base, "spdx-no-version.json"):       {Score: 4.7, Grade: "F", Required: 7},
+		filepath.Join(base, "spdx-no-checksums.json"):     {Score: 6.7, Grade: "D", Required: 10},
+		filepath.Join(base, "spdx-no-dependencies.json"):  {Score: 8.0, Grade: "B", Required: 12},
+		filepath.Join(base, "spdx-invalid-licenses.json"): {Score: 5.3, Grade: "D", Required: 8},
+		filepath.Join(base, "spdx-no-authors.json"):       {Score: 4.0, Grade: "F", Required: 6},
+		filepath.Join(base, "spdx-no-timestamp.json"):     {Score: 4.7, Grade: "F", Required: 7},
+		filepath.Join(base, "spdx-old-version.json"):      {Score: 5.3, Grade: "D", Required: 8},
+
+		// SPDX 3.0 test cases (16 evaluated, 1 N/A)
+		filepath.Join(base, "spdx3-perfect-score.json"):   {Score: 9.4, Grade: "A", Required: 15},
+		filepath.Join(base, "spdx3-minimal.json"):         {Score: 3.8, Grade: "F", Required: 6},
+		filepath.Join(base, "spdx3-no-authors.json"):      {Score: 6.9, Grade: "D", Required: 11},
+		filepath.Join(base, "spdx3-no-timestamp.json"):    {Score: 8.1, Grade: "B", Required: 13},
+		filepath.Join(base, "spdx3-no-supplier.json"):     {Score: 8.1, Grade: "B", Required: 13},
+		filepath.Join(base, "spdx3-no-dependencies.json"): {Score: 8.1, Grade: "B", Required: 13},
+		filepath.Join(base, "spdx3-no-tool.json"):         {Score: 7.5, Grade: "C", Required: 12},
+		filepath.Join(base, "spdx3-no-version.json"):      {Score: 8.1, Grade: "B", Required: 13},
+		filepath.Join(base, "spdx3-no-unique-id.json"):    {Score: 8.1, Grade: "B", Required: 13},
+		filepath.Join(base, "spdx3-complete-ntia.json"):   {Score: 6.8, Grade: "D", Required: 10},
+
+		// CycloneDX test cases (17 evaluated, 0 N/A)
+		filepath.Join(base, "cdx-perfect-score.json"):    {Score: 8.8, Grade: "B", Required: 15},
+		filepath.Join(base, "cdx-minimal.json"):          {Score: 2.4, Grade: "F", Required: 4},
+		filepath.Join(base, "cdx-no-version.json"):       {Score: 4.1, Grade: "F", Required: 7},
+		filepath.Join(base, "cdx-no-checksums.json"):     {Score: 5.9, Grade: "D", Required: 10},
+		filepath.Join(base, "cdx-no-dependencies.json"):  {Score: 7.1, Grade: "C", Required: 12},
+		filepath.Join(base, "cdx-invalid-licenses.json"): {Score: 4.7, Grade: "F", Required: 8},
+		filepath.Join(base, "cdx-no-authors.json"):       {Score: 3.5, Grade: "F", Required: 6},
+		filepath.Join(base, "cdx-no-timestamp.json"):     {Score: 4.1, Grade: "F", Required: 7},
+		filepath.Join(base, "cdx-old-version.json"):      {Score: 2.9, Grade: "F", Required: 5},
+	}
+
+	for path, want := range testCases {
+		filename := filepath.Base(path)
+		testName := "CISA2026_" + filename
+
+		t.Run(testName, func(t *testing.T) {
+			t.Parallel()
+
+			cfg := config.Config{
+				Profile: []string{string(registry.ProfileCISA2026)},
+			}
+			paths := []string{path}
+
+			ctx := context.Background()
+
+			results, err := score.ScoreSBOM(ctx, cfg, paths)
+			require.NoError(t, err)
+
+			for _, r := range results {
+				require.NotNil(t, r.Profiles, "Profile results should not be nil")
+				require.Len(t, r.Profiles.ProfResult, 1, "Should have exactly one profile result")
+
+				profResult := r.Profiles.ProfResult[0]
+				require.Equal(t, "CISA Minimum Elements (2026)", profResult.Name)
+
+				gotRaw := profResult.InterlynkScore
+				gotRounded := math.Round(gotRaw*10) / 10
+
+				// Count required fields (all CISA 2026 fields are required)
+				requiredCompliant := 0
+
+				for _, item := range profResult.Items {
+					if item.Required && item.Score >= 10.0 {
+						requiredCompliant++
+					}
+				}
+
+				// Log the score for visibility
+				t.Logf("File: %s | Score: %.1f/10.0 | Grade: %s | Required: %d",
+					filename, gotRounded, profResult.Grade, requiredCompliant)
+				t.Logf("  Expected: Score: %.1f | Grade: %s | Required: %d",
+					want.Score, want.Grade, want.Required)
+
+				// compare CISA 2026 score
+				require.InDelta(t, want.Score, gotRounded, 1e-9,
+					"CISA 2026 score (rounded to 1 decimal) mismatch for %s", filename)
+
+				// compare grade
+				require.Equal(t, want.Grade, profResult.Grade,
+					"Grade mismatch for %s", filename)
+
+				// compare required fields count
+				require.Equal(t, want.Required, requiredCompliant,
+					"Required fields compliance count mismatch for %s", filename)
+			}
+		})
+	}
+
+	fmt.Printf("CISA 2026 Profile: ✓ All %d test cases completed\n", len(testCases))
+}
+
 // Test_ProfileIntegrationSummary provides a summary of all profile integration tests
 func Test_ProfileIntegrationSummary(t *testing.T) {
 	fmt.Println()
@@ -975,9 +1084,10 @@ func Test_ProfileIntegrationSummary(t *testing.T) {
 	fmt.Println("✓ CycloneDX Signatures: Active (6 test cases)")
 	fmt.Println("✓ BSI v1.1 Profile: Active (25 test cases)")
 	fmt.Println("✓ BSI v2.0 Profile: Active (25 test cases)")
+	fmt.Println("✓ CISA 2026 Profile: Active (28 test cases)")
 	fmt.Println("○ BSI v2.1 Profile: TODO (3 test cases)")
 	fmt.Println("==========================================")
-	fmt.Println("Total Active Tests: 141")
+	fmt.Println("Total Active Tests: 169")
 	fmt.Println("==========================================")
 }
 
