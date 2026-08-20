@@ -1,4 +1,4 @@
-// Copyright 2025 Interlynk.io
+// Copyright 2026 Interlynk.io
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -116,6 +116,9 @@ func ReadProfileConfigFile(path string) ([]catalog.ProfSpec, error) {
 
 		case string(ProfileNTIA2025):
 			profile.Features = similar(p, NTIA2025KeyToEvaluatingFunction)
+
+		case string(ProfileCISA2026):
+			profile.Features = similar(p, CISA2026KeyToEvaluatingFunction)
 
 		case string(ProfileFSCT):
 			profile.Features = similar(p, FSCTKeyToEvaluatingFunction)
