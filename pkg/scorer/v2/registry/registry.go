@@ -1,4 +1,4 @@
-// Copyright 2025 Interlynk.io
+// Copyright 2026 Interlynk.io
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -419,15 +419,15 @@ var CompKeyToEvaluatingFunction = map[string]catalog.ComprFeatEval{
 // ProfileKey lists all profiles
 // e.g. ntia, bsi-v1.1, bsi-v2.0, oct-v1.1, etc
 const (
-	ProfileNTIA       catalog.ProfileKey = "ntia"
-	ProfileNTIA2025   catalog.ProfileKey = "ntia-2025"
-	ProfileCISA2026   catalog.ProfileKey = "cisa-2026"
-	ProfileBSI11      catalog.ProfileKey = "bsi-v1.1"
-	ProfileBSI20      catalog.ProfileKey = "bsi-v2.0"
-	ProfileBSI21      catalog.ProfileKey = "bsi-v2.1"
-	ProfileOCTV11     catalog.ProfileKey = "oct-v1.1"
-	ProfileInterlynk  catalog.ProfileKey = "interlynk"
-	ProfileFSCT       catalog.ProfileKey = "fsct"
+	ProfileNTIA      catalog.ProfileKey = "ntia"
+	ProfileNTIA2025  catalog.ProfileKey = "ntia-2025"
+	ProfileCISA2026  catalog.ProfileKey = "cisa-2026"
+	ProfileBSI11     catalog.ProfileKey = "bsi-v1.1"
+	ProfileBSI20     catalog.ProfileKey = "bsi-v2.0"
+	ProfileBSI21     catalog.ProfileKey = "bsi-v2.1"
+	ProfileOCTV11    catalog.ProfileKey = "oct-v1.1"
+	ProfileInterlynk catalog.ProfileKey = "interlynk"
+	ProfileFSCT      catalog.ProfileKey = "fsct"
 )
 
 var profileAliases = map[string]catalog.ProfileKey{
@@ -1382,17 +1382,17 @@ var Profile = []catalog.ProfSpec{
 
 // ProfileSpecsMap provides easy access to profile specifications by key
 var ProfileSpecsMap = map[string]catalog.ProfSpec{
-	"ntia":       profileNTIASpec,
-	"ntia-2025":  profileNTIA2025Spec,
-	"cisa-2026":  profileCISA2026Spec,
-	"cisa":       profileCISA2026Spec,
-	"bsi-v1.1":   profileBSI11Spec,
-	"bsi-v2.0":   profileBSI20Spec,
-	"bsi-v2.1":   profileBSI21Spec,
-	"bsi":        profileBSI21Spec,
-	"oct-v1.1":   profileOCTV11Spec,
-	"fsct":       profileFSCTSpec,
-	"interlynk":  profileInterlynkSpec,
+	"ntia":      profileNTIASpec,
+	"ntia-2025": profileNTIA2025Spec,
+	"cisa-2026": profileCISA2026Spec,
+	"cisa":      profileCISA2026Spec,
+	"bsi-v1.1":  profileBSI11Spec,
+	"bsi-v2.0":  profileBSI20Spec,
+	"bsi-v2.1":  profileBSI21Spec,
+	"bsi":       profileBSI21Spec,
+	"oct-v1.1":  profileOCTV11Spec,
+	"fsct":      profileFSCTSpec,
+	"interlynk": profileInterlynkSpec,
 }
 
 // getProfileFeatureInfo looks up a feature in a profile spec and returns its metadata

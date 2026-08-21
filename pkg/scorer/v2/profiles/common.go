@@ -292,7 +292,7 @@ func CompSupplier(doc sbom.Document) catalog.ProfFeatScore {
 	return formulae.ScoreProfFull(have, len(comps), false)
 }
 
-// CompLicenses check for concluded valid license and score accordingly
+// CompLicenses checks for any valid license (declared or concluded) and scores accordingly.
 func CompLicenses(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
 	if len(comps) == 0 {
@@ -300,7 +300,7 @@ func CompLicenses(doc sbom.Document) catalog.ProfFeatScore {
 	}
 
 	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
-		return commonV2.ComponentHasAnyConcluded(c)
+		return commonV2.ComponentHasAnyLicense(c)
 	})
 
 	return formulae.ScoreProfFull(have, len(comps), false)
@@ -737,17 +737,4 @@ func SBOMTool(doc sbom.Document) catalog.ProfFeatScore {
 		Desc:   fmt.Sprintf("%d tool", len(toolsWithNV)),
 		Ignore: false,
 	}
-}
-
-// checkUniqueID checks for PURL/CPE
-func detectkUniqueIDs(c sbom.GetComponent) bool {
-	if commonV2.CompHasAnyPURLs(c) {
-		return true
-	}
-
-	if commonV2.CompHasAnyCPEs(c) {
-		return true
-	}
-
-	return false
 }
