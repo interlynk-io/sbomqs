@@ -234,7 +234,8 @@ func ComponentHasAnyConcluded(c sbom.GetComponent) bool {
 }
 
 func ComponentHasAnyLicense(c sbom.GetComponent) bool {
-	for _, l := range c.ConcludedLicenses() {
+
+	for _, l := range c.DeclaredLicenses() {
 		if id := strings.TrimSpace(l.ShortID()); ValidateLicenseText(id) {
 			return true
 		}
@@ -243,7 +244,7 @@ func ComponentHasAnyLicense(c sbom.GetComponent) bool {
 		}
 	}
 
-	for _, l := range c.DeclaredLicenses() {
+	for _, l := range c.ConcludedLicenses() {
 		if id := strings.TrimSpace(l.ShortID()); ValidateLicenseText(id) {
 			return true
 		}

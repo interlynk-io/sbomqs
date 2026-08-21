@@ -77,6 +77,8 @@ func ComplianceRun(ctx context.Context, ep *Params) error {
 		reportType = "OCT"
 	case ep.Fsct:
 		reportType = "FSCT"
+	case ep.Cisa2026:
+		reportType = "CISA-2026"
 	default:
 		reportType = "NTIA"
 	}

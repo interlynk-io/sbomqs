@@ -94,6 +94,46 @@ func LookupNTIADocExtractor(feature string) (extractors.DocExtractor, bool) {
 	return e, ok
 }
 
+// ProfileCISA2026 is the profile key for CISA Minimum Elements (2026).
+const ProfileCISA2026 = "cisa-2026"
+
+// cisa2026CompExtractors maps CISA 2026 feature keys to per-component extractors.
+var cisa2026CompExtractors = map[string]extractors.CompExtractor{
+	"comp_name":       extractors.CISA2026CompName,
+	"comp_version":    extractors.CISA2026CompVersion,
+	"comp_uniq_id":    extractors.CISA2026CompUniqID,
+	"comp_producer":   extractors.CISA2026CompProducer,
+	"comp_hash_value": extractors.CISA2026CompHashValue,
+	"comp_hash_algo":  extractors.CISA2026CompHashAlgo,
+	"comp_license":    extractors.CISA2026CompLicense,
+}
+
+// cisa2026DocExtractors maps CISA 2026 feature keys to SBOM-level extractors.
+var cisa2026DocExtractors = map[string]extractors.DocExtractor{
+	"sbom_data_format":        extractors.CISA2026SBOMDataFormat,
+	"sbom_spec_version":       extractors.CISA2026SBOMSpecVersion,
+	"sbom_author":             extractors.CISA2026SBOMAuthors,
+	"sbom_tool_name":          extractors.CISA2026SBOMToolName,
+	"sbom_tool_version":       extractors.CISA2026SBOMToolVersion,
+	"sbom_version":            extractors.CISA2026SBOMVersion,
+	"sbom_timestamp":          extractors.CISA2026SBOMTimestamp,
+	"sbom_generation_context": extractors.CISA2026SBOMGenerationContext,
+	"sbom_relationships":      extractors.CISA2026SBOMRelationships,
+	"sbom_signature":          extractors.CISA2026SBOMSignature,
+}
+
+// LookupCISA2026CompExtractor returns the CISA 2026 per-component extractor for the given feature key.
+func LookupCISA2026CompExtractor(feature string) (extractors.CompExtractor, bool) {
+	e, ok := cisa2026CompExtractors[feature]
+	return e, ok
+}
+
+// LookupCISA2026DocExtractor returns the CISA 2026 document-level extractor for the given feature key.
+func LookupCISA2026DocExtractor(feature string) (extractors.DocExtractor, bool) {
+	e, ok := cisa2026DocExtractors[feature]
+	return e, ok
+}
+
 // bsiV11CompExtractors maps BSI v1.1 feature keys to per-component extractors.
 // All features reuse existing BSIV21* or BSIV20* extractors since the list command
 // shows values rather than enforcing algorithm requirements.
