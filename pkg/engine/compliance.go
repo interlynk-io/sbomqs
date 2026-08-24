@@ -130,7 +130,7 @@ func getSbomDocument(ctx context.Context, ep *Params) (*sbom.Document, error) {
 		zap.String("path", path),
 	)
 
-	standalone, signature, publicKey, err := common.GetSignatureBundle(ctx, path, "", "")
+	standalone, signature, publicKey, err := common.GetSignatureBundle(ctx, path, ep.SignaturePath, ep.PublicKeyPath)
 	if err != nil {
 		log.Error("Failed to fetch signature bundle",
 			zap.String("path", path),

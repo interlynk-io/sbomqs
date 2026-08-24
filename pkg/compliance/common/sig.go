@@ -29,6 +29,7 @@ import (
 	"strings"
 
 	"github.com/interlynk-io/sbomqs/v2/pkg/logger"
+	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
 	"github.com/tidwall/sjson"
 	"go.uber.org/zap"
 )
@@ -235,19 +236,23 @@ func GetSignatureBundle(ctx context.Context, sbomFile, signature, publicKey stri
 	}
 
 	// handle signature extraction based on format
-	if format == "cyclonedx" {
+	switch format {
+
+	case string(sbom.SBOMSpecCDX):
 		log.Debug("CycloneDX SBOM detected, attempting to retrieve signature and public key from embedded SBOM")
 		standaloneSBOMFile, signatureRetrieved, publicKeyRetrieved, err := RetrieveSignatureFromSBOM(ctx, sbomFile)
 		if err != nil {
 			log.Debug("Failed to retrieve signature and public key from embedded sbom", zap.Error(err))
 		}
 		return standaloneSBOMFile, signatureRetrieved, publicKeyRetrieved, nil
-	} else if format == "spdx" {
-		return sbomFile, signature, publicKey, nil
-	}
-	log.Debug("Unknown SBOM format", zap.String("format", format), zap.String("sbom", sbomFile))
 
-	return "", "", "", nil
+	case string(sbom.SBOMSpecSPDX):
+		return sbomFile, signature, publicKey, nil
+
+	default:
+		log.Debug("Unknown SBOM format", zap.String("format", format), zap.String("sbom", sbomFile))
+		return "", "", "", nil
+	}
 }
 
 // detectSBOMFormat attempts to determine if the SBOM is SPDX or CycloneDX by inspecting the file
@@ -264,14 +269,18 @@ func detectSBOMFormatDirectlyFromSBOMFile(ctx context.Context, path string) (str
 
 	// check for key fields:
 	contentStr := strings.ToLower(string(content))
-	if strings.Contains(contentStr, `"bomformat": "cyclonedx"`) || strings.Contains(contentStr, `"specversion"`) {
-		log.Debug("Detected CycloneDX SBOM format")
-		return "cyclonedx", nil
-	}
-	if strings.Contains(contentStr, "spdxversion") || strings.Contains(contentStr, "spdxid") {
+
+	// SPDX markers — check first because SPDX 3.0 also uses "specVersion"
+	if strings.Contains(contentStr, "spdxversion") || strings.Contains(contentStr, "spdxid") || strings.Contains(contentStr, "spdxdocument") {
 		log.Debug("Detected SPDX SBOM format")
-		return "spdx", nil
+		return string(sbom.SBOMSpecSPDX), nil
 	}
 
-	return "", nil
+	// CycloneDX explicit marker
+	if strings.Contains(contentStr, `"bomformat": "cyclonedx"`) || strings.Contains(contentStr, `"specversion"`) {
+		log.Debug("Detected CycloneDX SBOM format")
+		return string(sbom.SBOMSpecCDX), nil
+	}
+
+	return string(sbom.SBOMSpecUnknown), nil
 }

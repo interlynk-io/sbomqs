@@ -38,6 +38,10 @@ type userListCmd struct {
 	missing bool
 	profile string
 
+	// Signature control
+	signaturePath string
+	publicKeyPath string
+
 	// Output control
 	basic    bool
 	json     bool
@@ -138,6 +142,13 @@ func parseListParams(cmd *cobra.Command, args []string) *userListCmd {
 	profile, _ := cmd.Flags().GetString("profile")
 	uCmd.profile = normalizeProfile(profile)
 
+	// Signature control
+	signaturePath, _ := cmd.Flags().GetString("signature")
+	uCmd.signaturePath = signaturePath
+
+	publicKeyPath, _ := cmd.Flags().GetString("public-key")
+	uCmd.publicKeyPath = publicKeyPath
+
 	// -- Output control --
 	basic, _ := cmd.Flags().GetBool("basic")
 	uCmd.basic = basic
@@ -163,16 +174,18 @@ func parseListParams(cmd *cobra.Command, args []string) *userListCmd {
 
 func fromListToEngineParams(uCmd *userListCmd) *engine.Params {
 	return &engine.Params{
-		Path:        []string{uCmd.path},
-		Features:    []string{uCmd.feature},
-		Missing:     uCmd.missing,
-		Basic:       uCmd.basic,
-		JSON:        uCmd.json,
-		Detailed:    uCmd.detailed,
-		Color:       uCmd.color,
-		Debug:       uCmd.debug,
-		Show:        uCmd.show,
-		ListProfile: uCmd.profile,
+		Path:          []string{uCmd.path},
+		Features:      []string{uCmd.feature},
+		Missing:       uCmd.missing,
+		Basic:         uCmd.basic,
+		JSON:          uCmd.json,
+		Detailed:      uCmd.detailed,
+		Color:         uCmd.color,
+		Debug:         uCmd.debug,
+		Show:          uCmd.show,
+		ListProfile:   uCmd.profile,
+		SignaturePath: uCmd.signaturePath,
+		PublicKeyPath: uCmd.publicKeyPath,
 	}
 }
 
@@ -186,6 +199,10 @@ func init() {
 	listCmd.Flags().BoolP("missing", "m", false, "List components or properties missing the specified feature")
 
 	listCmd.Flags().String("profile", "", "Compliance profile for feature extraction (e.g. bsi [=bsiv21], bsiv11|bsi-v1.1, bsiv20|bsi-v2.0, bsiv21|bsi-v2.1, cisa-2026|cisa|cisa2026, fsct, ntia, oct|oct-v1.1, interlynk). Run 'sbomqs features --profile <profile>' to see supported features for each profile.")
+
+	// -- Signature Control --
+	listCmd.Flags().String("signature", "", "Path to detached signature file for SPDX SBOMs")
+	listCmd.Flags().String("public-key", "", "Path to public key file for signature verification")
 
 	// -- Output Control --
 	listCmd.Flags().BoolP("basic", "b", false, "Results in single-line format")

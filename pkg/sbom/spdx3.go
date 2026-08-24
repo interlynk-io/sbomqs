@@ -17,6 +17,7 @@ package sbom
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"strings"
@@ -52,9 +53,10 @@ type Spdx3Doc struct {
 	Vuln             []GetVulnerabilities
 	rawContent       []byte // Store raw content for manual parsing
 	File             []GetComponent
+	signatureDetail  GetSignature
 }
 
-func newSPDX3Doc(ctx context.Context, f io.ReadSeeker, format FileFormat, version FormatVersion, _ Signature) (Document, error) {
+func newSPDX3Doc(ctx context.Context, f io.ReadSeeker, format FileFormat, version FormatVersion, sig Signature) (Document, error) {
 	log := logger.FromContext(ctx)
 	var err error
 
@@ -84,6 +86,15 @@ func newSPDX3Doc(ctx context.Context, f io.ReadSeeker, format FileFormat, versio
 	spdx3Doc.parse()
 	for _, l := range spdx3Doc.Logs() {
 		log.Debug(l)
+	}
+
+	// Store externally-provided signature (e.g. detached via --signature flag).
+	// If none was provided, try to extract an embedded signature from the raw
+	// SPDX 3.0 JSON-LD (SpdxDocument.verifiedUsing[] with type=Signature).
+	if sig.SigValue != "" {
+		spdx3Doc.signatureDetail = &sig
+	} else {
+		spdx3Doc.signatureDetail = spdx3Doc.extractEmbeddedSignature()
 	}
 
 	return spdx3Doc, err
@@ -197,6 +208,69 @@ func (s Spdx3Doc) Vulnerabilities() []GetVulnerabilities {
 }
 
 func (s Spdx3Doc) Signature() GetSignature {
+	return s.signatureDetail
+}
+
+// extractEmbeddedSignature parses the raw SPDX 3.0 JSON-LD to find a Signature
+// object inside the SpdxDocument element's verifiedUsing array.
+// The SPDX 3.0 spec stores signatures in verifiedUsing alongside Hash objects.
+func (s *Spdx3Doc) extractEmbeddedSignature() GetSignature {
+	if len(s.rawContent) == 0 {
+		return nil
+	}
+
+	var payload map[string]interface{}
+	if err := json.Unmarshal(s.rawContent, &payload); err != nil {
+		return nil
+	}
+
+	graph, ok := payload["@graph"].([]interface{})
+	if !ok {
+		return nil
+	}
+
+	for _, item := range graph {
+		elem, ok := item.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		// SPDX 3.0 element type may be "SpdxDocument" or prefixed like "spdx_SpdxDocument"
+		elemType, _ := elem["type"].(string)
+		if elemType != "SpdxDocument" {
+			continue
+		}
+
+		verifiedUsing, ok := elem["verifiedUsing"].([]interface{})
+		if !ok {
+			continue
+		}
+
+		for _, vuItem := range verifiedUsing {
+			vu, ok := vuItem.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			vuType, _ := vu["type"].(string)
+			if vuType != "Signature" {
+				continue
+			}
+
+			sig := &Signature{}
+			if algo, ok := vu["algorithm"].(string); ok {
+				sig.Algorithm = algo
+			}
+			if sigVal, ok := vu["signatureValue"].(string); ok {
+				sig.SigValue = sigVal
+			}
+			if pubKey, ok := vu["publicKey"].(string); ok {
+				sig.PublicKey = pubKey
+			}
+			if sig.SigValue != "" {
+				return sig
+			}
+		}
+	}
+
 	return nil
 }
 

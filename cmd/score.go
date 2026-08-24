@@ -71,6 +71,10 @@ type userCmd struct {
 	interlynkURL            string
 	interlynkAPIKey         string
 	enableComponentAnalysis bool
+
+	// Signature verification
+	signaturePath string
+	publicKeyPath string
 }
 
 // scoreCmd represents the score command for generating comprehensive quality scores for SBOM documents.
@@ -324,6 +328,10 @@ func toUserCmd(cmd *cobra.Command, args []string) *userCmd {
 		uCmd.interlynkAPIKey = envToken
 	}
 
+	// Signature verification
+	uCmd.signaturePath, _ = cmd.Flags().GetString("signature")
+	uCmd.publicKeyPath, _ = cmd.Flags().GetString("public-key")
+
 	return uCmd
 }
 
@@ -344,6 +352,8 @@ func toEngineParams(uCmd *userCmd) *engine.Params {
 		InterlynkURL:            uCmd.interlynkURL,
 		InterlynkAPIKey:         uCmd.interlynkAPIKey,
 		EnableComponentAnalysis: uCmd.enableComponentAnalysis,
+		SignaturePath:           uCmd.signaturePath,
+		PublicKeyPath:           uCmd.publicKeyPath,
 	}
 }
 
@@ -479,4 +489,8 @@ func init() {
 		log.Fatalf("Failed to mark flag as deprecated: %v", err)
 	}
 	scoreCmd.Flags().StringP("api-key", "k", "", "Interlynk API key (or INTERLYNK_SECURITY_TOKEN env var)")
+
+	// Signature verification
+	scoreCmd.Flags().StringP("signature", "", "", "path to detached signature file for SPDX SBOMs")
+	scoreCmd.Flags().StringP("public-key", "", "", "path to public key file for signature verification")
 }

@@ -16,6 +16,7 @@ package engine
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"io"
 	"net/http"
@@ -87,6 +88,11 @@ type Params struct {
 
 	// EnableComponentAnalysis explicitly opts in to component quality analysis.
 	EnableComponentAnalysis bool
+
+	// SignaturePath is an optional detached signature file for SPDX SBOMs.
+	SignaturePath string
+	// PublicKeyPath is an optional public key file for signature verification.
+	PublicKeyPath string
 }
 
 func Run(ctx context.Context, ep *Params) error {
@@ -123,6 +129,7 @@ func scored(ctx context.Context, ep *Params) ([]api.Result, error) {
 		zap.Strings("profiles", ep.Profiles),
 	)
 
+	sig := buildSBOMSignature(ep.SignaturePath, ep.PublicKeyPath)
 	cfg := config.Config{
 		Categories:              ep.Categories,
 		Features:                ep.Features,
@@ -132,6 +139,7 @@ func scored(ctx context.Context, ep *Params) ([]api.Result, error) {
 		InterlynkURL:            ep.InterlynkURL,
 		InterlynkAPIKey:         ep.InterlynkAPIKey,
 		EnableComponentAnalysis: ep.EnableComponentAnalysis,
+		SignatureBundle:         sig,
 	}
 
 	results, err := score.ScoreSBOM(ctx, cfg, ep.Path)
@@ -301,7 +309,7 @@ func handlePaths(ctx context.Context, ep *Params) error {
 				return err
 			}
 
-			standalone, signature, publicKey, err := common.GetSignatureBundle(ctx, path, "", "")
+			standalone, signature, publicKey, err := common.GetSignatureBundle(ctx, path, ep.SignaturePath, ep.PublicKeyPath)
 			if err != nil {
 				log.Error("Failed to fetch signature bundle",
 					zap.String("path", path),
@@ -310,9 +318,13 @@ func handlePaths(ctx context.Context, ep *Params) error {
 				return err
 			}
 
-			sig := sbom.Signature{
-				SigValue:  signature,
-				PublicKey: publicKey,
+			sig := buildSBOMSignature(ep.SignaturePath, ep.PublicKeyPath)
+			if sig.SigValue == "" {
+				// Fallback to path strings if files could not be read
+				sig = sbom.Signature{
+					SigValue:  signature,
+					PublicKey: publicKey,
+				}
 			}
 
 			doc, err := sbom.NewSBOMDocument(ctx, f, sig)
@@ -409,7 +421,7 @@ func processFile(ctx context.Context, ep *Params, path string, fs billy.Filesyst
 
 	var doc sbom.Document
 
-	standalone, signature, publicKey, err := common.GetSignatureBundle(ctx, path, "", "")
+	standalone, signature, publicKey, err := common.GetSignatureBundle(ctx, path, ep.SignaturePath, ep.PublicKeyPath)
 	if err != nil {
 		log.Error("Failed to fetch signature bundle",
 			zap.String("path", path),
@@ -421,9 +433,12 @@ func processFile(ctx context.Context, ep *Params, path string, fs billy.Filesyst
 	// Scoring only tests these for emptiness, never reads them.
 	defer common.RemoveSignatureArtifacts(standalone, signature, publicKey)
 
-	sig := sbom.Signature{
-		SigValue:  signature,
-		PublicKey: publicKey,
+	sig := buildSBOMSignature(ep.SignaturePath, ep.PublicKeyPath)
+	if sig.SigValue == "" {
+		sig = sbom.Signature{
+			SigValue:  signature,
+			PublicKey: publicKey,
+		}
 	}
 
 	if fs != nil {
@@ -545,4 +560,30 @@ func processFile(ctx context.Context, ep *Params, path string, fs billy.Filesyst
 
 	scores := sr.Score()
 	return doc, scores, nil
+}
+
+// buildSBOMSignature reads detached signature and public key files and
+// constructs an sbom.Signature. For raw signatures without embedded metadata
+// (like OpenSSL ECDSA signatures), it base64-encodes the content.
+func buildSBOMSignature(signaturePath, publicKeyPath string) sbom.Signature {
+	var sig sbom.Signature
+
+	if signaturePath != "" {
+		data, err := os.ReadFile(signaturePath)
+		if err == nil {
+			sig.SigValue = base64.StdEncoding.EncodeToString(data)
+			// Default to ES256 for raw ECDSA signatures when algorithm is not known.
+			// Callers can override by providing a signature with embedded metadata.
+			sig.Algorithm = "ES256"
+		}
+	}
+
+	if publicKeyPath != "" {
+		data, err := os.ReadFile(publicKeyPath)
+		if err == nil {
+			sig.PublicKey = string(data)
+		}
+	}
+
+	return sig
 }

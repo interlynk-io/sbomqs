@@ -406,19 +406,17 @@ func CISA2026SBOMRelationships(doc sbom.Document) catalog.ProfFeatScore {
 
 // CISA2026SBOMSignature checks whether the SBOM has a digital signature.
 func CISA2026SBOMSignature(doc sbom.Document) catalog.ProfFeatScore {
-	spec := strings.TrimSpace(strings.ToLower(doc.Spec().GetSpecType()))
-	ver := strings.TrimSpace(doc.Spec().GetVersion())
-
-	if spec == string(sbom.SBOMSpecSPDX) && !strings.HasPrefix(ver, "3.") {
-		return catalog.ProfFeatScore{
-			Score:  0.0,
-			Desc:   "SPDX versions below 3.0 do not support signatures",
-			Ignore: true,
-		}
-	}
-
 	sig := doc.Signature()
 	if sig == nil {
+		spec := strings.TrimSpace(strings.ToLower(doc.Spec().GetSpecType()))
+		ver := strings.TrimSpace(doc.Spec().GetVersion())
+		if spec == string(sbom.SBOMSpecSPDX) && !strings.HasPrefix(ver, "3.") {
+			return catalog.ProfFeatScore{
+				Score:  0.0,
+				Desc:   "SPDX versions below 3.0 do not support signatures",
+				Ignore: true,
+			}
+		}
 		return catalog.ProfFeatScore{
 			Score:  0.0,
 			Desc:   "SBOM digital signature is not declared",

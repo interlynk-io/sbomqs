@@ -54,4 +54,8 @@ type Params struct {
 	Missing bool
 
 	Debug bool
+
+	// Signature control
+	SignaturePath string
+	PublicKeyPath string
 }

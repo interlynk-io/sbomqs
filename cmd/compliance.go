@@ -132,6 +132,9 @@ func setupEngineParams(cmd *cobra.Command, args []string) *engine.Params {
 
 	engParams.Debug, _ = cmd.Flags().GetBool("debug")
 
+	engParams.SignaturePath, _ = cmd.Flags().GetString("signature")
+	engParams.PublicKeyPath, _ = cmd.Flags().GetString("public-key")
+
 	engParams.Path = append(engParams.Path, args[0])
 	engParams.Blob = args[0]
 
@@ -172,4 +175,8 @@ func init() {
 	complianceCmd.Flags().BoolP("cisa-2026", "", false, "CISA Minimum Elements (2026)")
 	complianceCmd.Flags().BoolP("cisa2026", "", false, "CISA Minimum Elements (2026)")
 	complianceCmd.Flags().BoolP("cisa", "", false, "CISA Minimum Elements (2026)")
+
+	// Signature verification
+	complianceCmd.Flags().StringP("signature", "", "", "path to detached signature file for SPDX SBOMs")
+	complianceCmd.Flags().StringP("public-key", "", "", "path to public key file for signature verification")
 }

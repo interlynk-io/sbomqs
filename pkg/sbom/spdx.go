@@ -61,9 +61,10 @@ type SpdxDoc struct {
 	Vuln             []GetVulnerabilities
 	rawContent       []byte // Store raw content for manual parsing
 	File             []GetComponent
+	SignatureDetail  GetSignature
 }
 
-func newSPDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat, version FormatVersion, _ Signature) (Document, error) {
+func newSPDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat, version FormatVersion, sig Signature) (Document, error) {
 	log := logger.FromContext(ctx)
 	var err error
 
@@ -103,6 +104,10 @@ func newSPDXDoc(ctx context.Context, f io.ReadSeeker, format FileFormat, version
 		ctx:        ctx,
 		version:    version,
 		rawContent: rawContent,
+	}
+
+	if sig.SigValue != "" {
+		doc.SignatureDetail = &sig
 	}
 
 	doc.parse()
@@ -223,8 +228,7 @@ func (s SpdxDoc) Vulnerabilities() []GetVulnerabilities {
 }
 
 func (s SpdxDoc) Signature() GetSignature {
-	// SPDX does not support signatures in its specification
-	return nil
+	return s.SignatureDetail
 }
 
 func (s SpdxDoc) SchemaValidation() bool {
