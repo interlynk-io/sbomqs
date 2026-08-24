@@ -151,13 +151,10 @@ The [OpenChain Telco](https://github.com/OpenChain-Project/Reference-Material/bl
 
 The [CISA 2026 SBOM Minimum Elements](https://www.cisa.gov/sites/default/files/2026-07/2026_cisa_sbom_minimum_elements_508c.pdf) specifies mandatory properties for an SBOM. It supersedes the NTIA 2021 Minimum Elements and the August 2025 draft. Below is how we have derived all the values.
 
-- Released: July 29, 2026
-- Contact:
-
 | CISA 2026 Field | Category | Required | CycloneDX | SPDX(2.3) | SPDX(3.0) | Notes |
 | :---------------------- | :--------- | :-------- | :------------------------------------ | :------------------------------------------------------ | :------------------------------------------------------ | :------------------------------------------------------------- |
 | SBOM Author | SBOM Metadata | Yes | `metadata->authors` (preferred), then `metadata->manufacturer` | `creator->Person`, `creator->Organization` | `creationInfo.createdBy` → `Person` / `Organization` | Tool entries are **not** accepted as authors |
-| SBOM Author Signature | SBOM Metadata | Yes | `signature` (JSF) | External signed envelope | External signed envelope | sbomqs checks presence only |
+| SBOM Author Signature | SBOM Metadata | Yes | `signature` (JSF) | `--signature` / `--public-key` CLI flags (detached envelope) | `SpdxDocument.verifiedUsing` with `type: "Signature"` (embedded), or `--signature` / `--public-key` CLI flags (detached) | sbomqs detects embedded CycloneDX JSF signatures; SPDX 2.x and 3.x detached signatures via `--signature` + `--public-key`; SPDX 3.x embedded signatures via `verifiedUsing` |
 | SBOM Data Format Name | SBOM Metadata | Yes | `bomFormat` | `spdxVersion` | `creationInfo.specVersion` | |
 | SBOM Data Format Version | SBOM Metadata | Yes | `specVersion` | `spdxVersion` | `creationInfo.specVersion` | |
 | SBOM Generation Context | SBOM Metadata | Yes | `metadata->lifecycles` | `creationInfo->comment` | `Software/Sbom.sbomType` | |

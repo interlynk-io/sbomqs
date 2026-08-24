@@ -8,8 +8,6 @@
 
 This document explains how **sbomqs** evaluates SBOMs against the finalized CISA 2026 Minimum Elements. It covers the official definitions, terminology shifts from the prior NTIA baseline, exact mappings to SPDX and CycloneDX, and the scoring logic sbomqs applies.
 
----
-
 ## What Changed from NTIA 2021/2025
 
 The July 2026 guidance makes the following changes explicit:
@@ -24,8 +22,6 @@ The July 2026 guidance makes the following changes explicit:
 - **RFC 9557 timestamps:** All timestamps must now adhere to RFC 9557 (supersedes prior RFC 3339 guidance)
 - **Machine-processable emphasis:** Stronger requirement for machine-actionable identifiers (PURL, CPE, SWID)
 
----
-
 ## Field Categories
 
 CISA 2026 organizes elements into two groups:
@@ -33,14 +29,12 @@ CISA 2026 organizes elements into two groups:
 1. **SBOM Metadata** (9 elements) — Information about the SBOM document itself
 2. **Component Data** (8 elements) — Information about each enumerated component
 
----
-
 ## Summary Table
 
 | CISA 2026 Field | Category | Required | CycloneDX | SPDX v2.x | SPDX v3.x | Notes |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | SBOM Author | SBOM Metadata | Yes | `metadata.authors[]` (preferred), then `metadata.manufacturer` | `creationInfo.creators[]` (`Person` / `Organization`) | `creationInfo.createdBy` → `Person` / `Organization` | Tool entries are **not** accepted as authors |
-| SBOM Author Signature | SBOM Metadata | Yes | `signature` (JSF) | External signed envelope | External signed envelope | sbomqs checks presence only; does not verify cryptographically |
+| SBOM Author Signature | SBOM Metadata | Yes | `signature` (JSF) | `--signature` / `--public-key` CLI flags (detached envelope) | `SpdxDocument.verifiedUsing` with `type: "Signature"` (embedded), or `--signature` / `--public-key` CLI flags (detached) | sbomqs detects embedded CycloneDX JSF signatures; SPDX 2.x and 3.x detached signatures via `--signature` + `--public-key`; SPDX 3.x embedded signatures via `verifiedUsing` |
 | SBOM Data Format Name | SBOM Metadata | Yes | `bomFormat` | `spdxVersion` | `creationInfo.specVersion` | |
 | SBOM Data Format Version | SBOM Metadata | Yes | `specVersion` | `spdxVersion` | `creationInfo.specVersion` | |
 | SBOM Generation Context | SBOM Metadata | Yes | `metadata.lifecycles[].phase` | `creationInfo.comment` | `Software/Sbom.sbomType` | |
@@ -56,8 +50,6 @@ CISA 2026 organizes elements into two groups:
 | Component License | Component Data | Yes | `components[].licenses[]` (1.4/1.5); `components[].licenses[]` with `acknowledgement=declared` (1.6+) | `packages[].licenseDeclared` | Linked via `hasDeclaredLicense` relationship type | Per-component percentage score; declared licenses only |
 | Component Name | Component Data | Yes | `components[].name` | `packages[].name` | `package.name` | Per-component percentage score |
 | Component Version | Component Data | Yes | `components[].version` | `packages[].versionInfo` | `package.packageVersion` | Per-component percentage score; `UNKNOWN` / `NOASSERTION` / `NONE` accepted |
-
----
 
 ## SBOM Metadata
 
@@ -96,8 +88,6 @@ The SBOM author is the accountable party for the data. If the SBOM is incorrect,
 **Final Conclusion — SBOM Author:**
 > **The SBOM Author is the identifiable person or organization that created the SBOM metadata. Automated tools are not accepted as authors under CISA 2026. At least one contact identifier (name, email, or URL) must be present.**
 
----
-
 ### 2. SBOM Author Signature
 
 **Official Definition (2026):**
@@ -116,9 +106,15 @@ A digital signature proves the SBOM data has not been tampered with since the au
     - `algorithm`, `value`, optional `publicKey`
 
 **Final Conclusion — SBOM Author Signature:**
-> **A digital signature attributable to the SBOM author must be present. sbomqs checks for the presence of signature data; cryptographic verification is out of scope for scoring.**
-
----
+> **A digital signature attributable to the SBOM author must be present.**
+>
+> sbomqs detects signatures as follows:
+> 
+> - **CycloneDX:** inline JSF signature inside the `signature` element (JSF — `algorithm`, `value`, optional `publicKey`).
+> - **SPDX v2.x:** detached signature via `--signature <path>` and `--public-key <path>` CLI flags.
+> - **SPDX v3.x:** embedded signature inside `SpdxDocument.verifiedUsing` with `type: "Signature"` (`algorithm`, `signatureValue`, optional `publicKey`), or detached signature via `--signature` and `--public-key` CLI flags.
+>
+> sbomqs checks that the signature object is present, complete (algorithm + value), and that verification material (public key or certificate) is provided where applicable.
 
 ### 3. SBOM Data Format Name
 
@@ -142,8 +138,6 @@ Consumers must know which specification to use when parsing the SBOM. The format
 **Final Conclusion — SBOM Data Format Name:**
 > **The SBOM must declare its data format name. sbomqs accepts SPDX or CycloneDX as valid machine-readable formats.**
 
----
-
 ### 4. SBOM Data Format Version
 
 **Official Definition (2026):**
@@ -165,8 +159,6 @@ Different versions of the same format support different fields. Knowing the exac
 
 **Final Conclusion — SBOM Data Format Version:**
 > **The SBOM must declare the version of its data format. sbomqs extracts the version from the format-specific field and validates it against supported versions.**
-
----
 
 ### 5. SBOM Generation Context
 
@@ -191,8 +183,6 @@ An SBOM generated from source code (design phase) contains different information
 **Final Conclusion — SBOM Generation Context:**
 > **The generation context indicates the software lifecycle phase during which the SBOM was produced. sbomqs checks the format-specific lifecycle or comment field for a non-empty value.**
 
----
-
 ### 6. SBOM Timestamp
 
 **Official Definition (2026):**
@@ -216,8 +206,6 @@ The timestamp is essential for determining whether an SBOM is stale. Vulnerabili
 
 **Final Conclusion — SBOM Timestamp:**
 > **The SBOM must include a timestamp of its most recent update. sbomqs validates that a valid RFC 9557 timestamp is present.**
-
----
 
 ### 7. SBOM Tool Name
 
@@ -246,8 +234,6 @@ Knowing which tool produced the SBOM helps consumers understand the quality and 
 **Final Conclusion — SBOM Tool Name:**
 > **The name of the tool used to generate the SBOM must be present. sbomqs extracts the tool name from the format-specific tool metadata field.**
 
----
-
 ### 8. SBOM Tool Version
 
 **Official Definition (2026):**
@@ -274,8 +260,6 @@ The tool version allows consumers to identify a specific code delivery of the ge
 **Final Conclusion — SBOM Tool Version:**
 > **The version of the SBOM generation tool must be present. sbomqs extracts the version from tool metadata. Values indicating unavailability (UNKNOWN, NOASSERTION, NONE) are accepted as valid non-empty values.**
 
----
-
 ### 9. SBOM Version
 
 **Official Definition (2026):**
@@ -296,8 +280,6 @@ The SBOM version indicates a relationship with earlier iterations of an SBOM. It
 
 **Final Conclusion — SBOM Version:**
 > **The SBOM document version is required for CycloneDX (`version` + `serialNumber`). SPDX does not support author-assigned document versions, so this field is scored as N/A for SPDX SBOMs.**
-
----
 
 ## Component Data
 
@@ -337,8 +319,6 @@ The component producer is the authority responsible for the component's identity
 **Final Conclusion — Component Producer:**
 > **Component Producer is a per-component field identifying the entity that created or defined the component. sbomqs checks each component for a name, email, or URL identifying the producer.**
 
----
-
 ### 11. Component Dependency Relationship
 
 **Official Definition (2026):**
@@ -362,9 +342,7 @@ Dependency relationships enable consumers to build a dependency graph, which is 
   - `dependsOn` references
 
 **Final Conclusion — Component Dependency Relationship:**
-> **The SBOM must declare dependency relationships for the primary component. At minimum, direct (top-level) dependencies must be present, or dependency completeness must be explicitly declared.**
-
----
+> **The SBOM must declare dependency relationships for the primary component. At minimum, direct (top-level) dependencies must be present.**
 
 ### 12. Component Hash Value
 
@@ -388,8 +366,6 @@ Hashes provide integrity verification. Consumers can re-compute the hash of a do
 **Final Conclusion — Component Hash Value:**
 > **Each component should have a cryptographic hash value for integrity verification. sbomqs scores this as a per-component percentage.**
 
----
-
 ### 13. Component Hash Algorithm
 
 **Official Definition (2026):**
@@ -411,8 +387,6 @@ The hash algorithm must be documented so consumers can validate the integrity of
 
 **Final Conclusion — Component Hash Algorithm:**
 > **The hash algorithm must be declared alongside the hash value. sbomqs scores this as a per-component percentage, matching the hash value coverage.**
-
----
 
 ### 14. Component Identifiers
 
@@ -448,8 +422,6 @@ Machine-processable, unique identifiers support automated analysis. PURL enables
 **Final Conclusion — Component Identifiers:**
 > **Each component must have at least one machine-processable identifier. sbomqs accepts PURL, CPE, SWID, OmniBOR, SWHID, commit hashes, and other unique identifiers. Presence of any one is sufficient.**
 
----
-
 ### 15. Component License
 
 **Official Definition (2026):**
@@ -475,8 +447,6 @@ License information is critical for legal compliance, redistribution decisions, 
 **Final Conclusion — Component License:**
 > **Each component must declare its license information. sbomqs accepts SPDX identifiers, declared expressions, and generic license references. Unknown licenses should be explicitly marked as such.**
 
----
-
 ### 16. Component Name
 
 **Official Definition (2026):**
@@ -500,8 +470,6 @@ The component name is the most fundamental human-readable identifier. Without it
 
 **Final Conclusion — Component Name:**
 > **Every component must have a non-empty name assigned by its producer. sbomqs checks all components for name presence.**
-
----
 
 ### 17. Component Version
 
@@ -529,8 +497,6 @@ Vulnerability tracking is version-specific. A CVE may affect version `1.2.3` but
 
 **Final Conclusion — Component Version:**
 > **Every component must have a version identifier. If the producer does not provide one, the SBOM author must explicitly indicate that the information is unknown.**
-
----
 
 ## CISA 2026 Compliance Structure (sbomqs)
 
@@ -563,8 +529,6 @@ CISA 2026 Minimum Elements Compliance Report
    - Known Unknowns (explicitly marked unknown information)
    - Non-machine-testable practices explicitly noted
 ```
-
----
 
 ## Final Takeaway
 
