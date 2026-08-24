@@ -178,12 +178,21 @@ func CISA2026CompUniqID(_ sbom.Document, comp sbom.GetComponent) (bool, string, 
 
 // CISA2026CompProducer reports the component producer.
 // Priority: supplier → manufacturer → author.
+// Accepts name, email, or URL as valid producer identifiers.
 func CISA2026CompProducer(_ sbom.Document, comp sbom.GetComponent) (bool, string, error) {
 	// 1. Supplier
 	if s := comp.Suppliers(); !s.IsAbsent() {
 		name := strings.TrimSpace(s.GetName())
 		if name != "" {
 			return true, name, nil
+		}
+		email := strings.TrimSpace(s.GetEmail())
+		if email != "" {
+			return true, email, nil
+		}
+		url := strings.TrimSpace(s.GetURL())
+		if url != "" {
+			return true, url, nil
 		}
 	}
 
@@ -192,6 +201,14 @@ func CISA2026CompProducer(_ sbom.Document, comp sbom.GetComponent) (bool, string
 		name := strings.TrimSpace(m.GetName())
 		if name != "" {
 			return true, name, nil
+		}
+		email := strings.TrimSpace(m.GetEmail())
+		if email != "" {
+			return true, email, nil
+		}
+		url := strings.TrimSpace(m.GetURL())
+		if url != "" {
+			return true, url, nil
 		}
 	}
 
@@ -203,6 +220,10 @@ func CISA2026CompProducer(_ sbom.Document, comp sbom.GetComponent) (bool, string
 		name := strings.TrimSpace(a.GetName())
 		if name != "" {
 			return true, name, nil
+		}
+		email := strings.TrimSpace(a.GetEmail())
+		if email != "" {
+			return true, email, nil
 		}
 	}
 

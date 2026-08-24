@@ -1263,6 +1263,64 @@ func TestListIntegrationForSPDX3_CISA2026(t *testing.T) {
 			Missing:         true,
 			ExpectedMissing: 2,
 		},
+		// Component producer - supplier email only
+		{
+			Name:          "CISA 2026 profile - comp_producer via supplier email only",
+			SBOMFile:      filepath.Join(base, "spdx3-with-comp-supplier-email-only.json"),
+			Feature:         "comp_producer",
+			Profile:         "cisa-2026",
+			ExpectedFound: 1,
+		},
+		// Component producer - supplier URL only
+		{
+			Name:          "CISA 2026 profile - comp_producer via supplier URL only",
+			SBOMFile:      filepath.Join(base, "spdx3-with-comp-supplier-url-only.json"),
+			Feature:         "comp_producer",
+			Profile:         "cisa-2026",
+			ExpectedFound: 1,
+		},
+		// Component producer - manufacturer name only
+		{
+			Name:          "CISA 2026 profile - comp_producer via manufacturer name only",
+			SBOMFile:      filepath.Join(base, "spdx3-with-comp-manufacturer-name-only.json"),
+			Feature:         "comp_producer",
+			Profile:         "cisa-2026",
+			ExpectedFound: 1,
+		},
+		// Component producer - manufacturer email only
+		{
+			Name:          "CISA 2026 profile - comp_producer via manufacturer email only",
+			SBOMFile:      filepath.Join(base, "spdx3-with-comp-manufacturer-email-only.json"),
+			Feature:         "comp_producer",
+			Profile:         "cisa-2026",
+			ExpectedFound: 1,
+		},
+		// Component producer - manufacturer URL only
+		{
+			Name:          "CISA 2026 profile - comp_producer via manufacturer URL only",
+			SBOMFile:      filepath.Join(base, "spdx3-with-comp-manufacturer-url-only.json"),
+			Feature:         "comp_producer",
+			Profile:         "cisa-2026",
+			ExpectedFound: 1,
+		},
+	}
+
+	runListTestCases(t, testCases)
+}
+
+// TestListIntegrationForCDX_CISA2026 tests CISA 2026 profile features with CycloneDX fixtures
+func TestListIntegrationForCDX_CISA2026(t *testing.T) {
+	base := filepath.Join("..", "..", "testdata", "fixtures")
+
+	testCases := []ListTestCase{
+		// Component producer - author email only (CycloneDX component-level authors)
+		{
+			Name:          "CISA 2026 profile - CDX comp_producer via author email only",
+			SBOMFile:      filepath.Join(base, "cdx-with-comp-author-email-only.json"),
+			Feature:       "comp_producer",
+			Profile:       "cisa-2026",
+			ExpectedFound: 1,
+		},
 	}
 
 	runListTestCases(t, testCases)

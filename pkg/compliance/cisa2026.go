@@ -17,7 +17,6 @@ package compliance
 import (
 	"context"
 	"fmt"
-	"slices"
 	"strings"
 	"time"
 
@@ -30,6 +29,7 @@ import (
 )
 
 // CISA 2026 compliance check identifiers.
+//
 //nolint:revive,stylecheck
 const (
 	CISA2026_SBOM_DATA_FORMAT = iota + 1000
@@ -121,9 +121,9 @@ func cisa2026SBOMAuthor(doc sbom.Document) *db.Record {
 		}
 	}
 
-	// 2. SBOM generation tools
-	if tools := doc.Tools(); len(tools) > 0 {
-		if val, ok := getToolInfo(tools); ok {
+	// 2. Manufacturer fallback
+	if manufacturer := doc.Manufacturer(); manufacturer != nil {
+		if val, ok := getManufacturerInfo(manufacturer); ok {
 			return db.NewRecordStmt(CISA2026_SBOM_AUTHOR, "doc", val, SCORE_FULL, "")
 		}
 	}
@@ -131,13 +131,6 @@ func cisa2026SBOMAuthor(doc sbom.Document) *db.Record {
 	// 3. Supplier fallback
 	if supplier := doc.Supplier(); supplier != nil {
 		if val, ok := getSupplierInfo(supplier); ok {
-			return db.NewRecordStmt(CISA2026_SBOM_AUTHOR, "doc", val, SCORE_FULL, "")
-		}
-	}
-
-	// 4. Manufacturer fallback
-	if manufacturer := doc.Manufacturer(); manufacturer != nil {
-		if val, ok := getManufacturerInfo(manufacturer); ok {
 			return db.NewRecordStmt(CISA2026_SBOM_AUTHOR, "doc", val, SCORE_FULL, "")
 		}
 	}
@@ -251,24 +244,6 @@ func cisa2026SBOMRelationships(doc sbom.Document) *db.Record {
 	directDeps := doc.GetDirectDependencies(primary.GetID(), "DEPENDS_ON")
 	if len(directDeps) > 0 {
 		return db.NewRecordStmt(CISA2026_SBOM_RELATIONSHIPS, "doc", fmt.Sprintf("primary component declares %d top-level dependencies", len(directDeps)), SCORE_FULL, "")
-	}
-
-	for _, c := range doc.Composition() {
-		if c.Scope() != sbom.ScopeDependencies {
-			continue
-		}
-		if !slices.Contains(c.Dependencies(), primary.GetID()) {
-			continue
-		}
-
-		switch c.Aggregate() {
-		case sbom.AggregateComplete:
-			return db.NewRecordStmt(CISA2026_SBOM_RELATIONSHIPS, "doc", "relationships completeness: complete", SCORE_FULL, "")
-		case sbom.AggregateUnknown:
-			return db.NewRecordStmt(CISA2026_SBOM_RELATIONSHIPS, "doc", "relationships completeness: unknown", SCORE_FULL, "")
-		case sbom.AggregateIncomplete:
-			return db.NewRecordStmt(CISA2026_SBOM_RELATIONSHIPS, "doc", "relationships completeness: incomplete", SCORE_ZERO, "")
-		}
 	}
 
 	return db.NewRecordStmt(CISA2026_SBOM_RELATIONSHIPS, "doc", "", SCORE_ZERO, "")
