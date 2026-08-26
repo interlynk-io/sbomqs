@@ -47,16 +47,19 @@ const (
 	// FSCT_V3 represents version 3 of the FSCT (FinTech Supply Chain Transparency)
 	// compliance framework.
 	FSCT_V3 = "FSCT"
+	// CISA_2026_REPORT represents the CISA Minimum Elements (2026) compliance framework.
+	CISA_2026_REPORT = "CISA-2026"
 )
 
 func validReportTypes() map[string]bool {
 	return map[string]bool{
-		BSI_REPORT:     true,
-		BSI_V2_REPORT:  true,
-		BSI_V21_REPORT: true,
-		NTIA_REPORT:    true,
-		OCT_TELCO:      true,
-		FSCT_V3:        true,
+		BSI_REPORT:       true,
+		BSI_V2_REPORT:    true,
+		BSI_V21_REPORT:   true,
+		NTIA_REPORT:      true,
+		OCT_TELCO:        true,
+		FSCT_V3:          true,
+		CISA_2026_REPORT: true,
 	}
 }
 
@@ -134,6 +137,10 @@ func ComplianceResult(ctx context.Context, doc sbom.Document, reportType, fileNa
 	case reportType == FSCT_V3:
 		log.Debug("Running FSCT v3 compliance report")
 		fsct.Result(ctx, doc, fileName, outFormat, coloredOutput)
+
+	case reportType == CISA_2026_REPORT:
+		log.Debug("Running CISA 2026 compliance report")
+		cisa2026Result(ctx, doc, fileName, outFormat, coloredOutput)
 
 	default:
 		log.Warn("No compliance report generated",

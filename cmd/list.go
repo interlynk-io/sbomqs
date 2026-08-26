@@ -38,6 +38,10 @@ type userListCmd struct {
 	missing bool
 	profile string
 
+	// Signature control
+	signaturePath string
+	publicKeyPath string
+
 	// Output control
 	basic    bool
 	json     bool
@@ -138,6 +142,13 @@ func parseListParams(cmd *cobra.Command, args []string) *userListCmd {
 	profile, _ := cmd.Flags().GetString("profile")
 	uCmd.profile = normalizeProfile(profile)
 
+	// Signature control
+	signaturePath, _ := cmd.Flags().GetString("signature")
+	uCmd.signaturePath = signaturePath
+
+	publicKeyPath, _ := cmd.Flags().GetString("public-key")
+	uCmd.publicKeyPath = publicKeyPath
+
 	// -- Output control --
 	basic, _ := cmd.Flags().GetBool("basic")
 	uCmd.basic = basic
@@ -163,16 +174,18 @@ func parseListParams(cmd *cobra.Command, args []string) *userListCmd {
 
 func fromListToEngineParams(uCmd *userListCmd) *engine.Params {
 	return &engine.Params{
-		Path:        []string{uCmd.path},
-		Features:    []string{uCmd.feature},
-		Missing:     uCmd.missing,
-		Basic:       uCmd.basic,
-		JSON:        uCmd.json,
-		Detailed:    uCmd.detailed,
-		Color:       uCmd.color,
-		Debug:       uCmd.debug,
-		Show:        uCmd.show,
-		ListProfile: uCmd.profile,
+		Path:          []string{uCmd.path},
+		Features:      []string{uCmd.feature},
+		Missing:       uCmd.missing,
+		Basic:         uCmd.basic,
+		JSON:          uCmd.json,
+		Detailed:      uCmd.detailed,
+		Color:         uCmd.color,
+		Debug:         uCmd.debug,
+		Show:          uCmd.show,
+		ListProfile:   uCmd.profile,
+		SignaturePath: uCmd.signaturePath,
+		PublicKeyPath: uCmd.publicKeyPath,
 	}
 }
 
@@ -185,7 +198,11 @@ func init() {
 
 	listCmd.Flags().BoolP("missing", "m", false, "List components or properties missing the specified feature")
 
-	listCmd.Flags().String("profile", "", "Compliance profile for feature extraction (e.g. bsi [=bsiv21], bsiv11|bsi-v1.1, bsiv20|bsi-v2.0, bsiv21|bsi-v2.1, fsct, ntia, oct|oct-v1.1, interlynk). Run 'sbomqs features --profile <profile>' to see supported features for each profile.")
+	listCmd.Flags().String("profile", "", "Compliance profile for feature extraction (e.g. bsi [=bsiv21], bsiv11|bsi-v1.1, bsiv20|bsi-v2.0, bsiv21|bsi-v2.1, cisa-2026|cisa|cisa2026, cisa-2021|cisa2021 [=ntia], fsct, ntia, oct|oct-v1.1, interlynk). Run 'sbomqs features --profile <profile>' to see supported features for each profile.")
+
+	// -- Signature Control --
+	listCmd.Flags().String("signature", "", "Path to detached signature file for SPDX SBOMs")
+	listCmd.Flags().String("public-key", "", "Path to public key file for signature verification")
 
 	// -- Output Control --
 	listCmd.Flags().BoolP("basic", "b", false, "Results in single-line format")
@@ -245,6 +262,29 @@ var ntiaFeatureKeys = map[string]struct{}{
 	"comp_name":     {},
 	"comp_version":  {},
 	"comp_uniq_id":  {},
+}
+
+// cisa2026FeatureKeys lists the feature keys supported by the cisa-2026 profile.
+var cisa2026FeatureKeys = map[string]struct{}{
+	// SBOM-level
+	"sbom_data_format":        {},
+	"sbom_spec_version":       {},
+	"sbom_author":             {},
+	"sbom_tool_name":          {},
+	"sbom_tool_version":       {},
+	"sbom_version":            {},
+	"sbom_timestamp":          {},
+	"sbom_generation_context": {},
+	"sbom_relationships":      {},
+	"sbom_signature":          {},
+	// Component-level
+	"comp_name":       {},
+	"comp_version":    {},
+	"comp_uniq_id":    {},
+	"comp_producer":   {},
+	"comp_hash_value": {},
+	"comp_hash_algo":  {},
+	"comp_license":    {},
 }
 
 // bsiV11FeatureKeys lists the feature keys supported by the bsiv11 profile.
@@ -394,6 +434,10 @@ func normalizeProfile(profile string) string {
 		return "bsiv20"
 	case "bsi-v2.1", "bsi-v2_1":
 		return "bsiv21"
+	case "cisa", "cisa2026", "CISA2026":
+		return "cisa-2026"
+	case "cisa-2021", "cisa2021", "CISA2021":
+		return "ntia"
 	case "oct", "oct-v1.1", "oct-v1_1", "octv11":
 		return "oct-v1.1"
 	default:
@@ -403,22 +447,26 @@ func normalizeProfile(profile string) string {
 
 // supportedProfiles lists the known profile values for --profile.
 var supportedProfiles = map[string]struct{}{
-	"fsct":      {},
-	"ntia":      {},
-	"bsiv11":    {},
-	"bsi-v1.1":  {},
-	"bsi-v1_1":  {},
-	"bsiv20":    {},
-	"bsi-v2.0":  {},
-	"bsi-v2_0":  {},
-	"bsiv21":    {},
-	"bsi-v2.1":  {},
-	"bsi-v2_1":  {},
-	"oct-v1.1":  {},
-	"oct-v1_1":  {},
-	"octv11":    {},
-	"oct":       {},
-	"interlynk": {},
+	"fsct":       {},
+	"ntia":       {},
+	"cisa-2021":  {},
+	"cisa2021":   {},
+	"cisa-2026":  {},
+	"cisa2026":   {},
+	"bsiv11":     {},
+	"bsi-v1.1":   {},
+	"bsi-v1_1":   {},
+	"bsiv20":     {},
+	"bsi-v2.0":   {},
+	"bsi-v2_0":   {},
+	"bsiv21":     {},
+	"bsi-v2.1":   {},
+	"bsi-v2_1":   {},
+	"oct-v1.1":   {},
+	"oct-v1_1":   {},
+	"octv11":     {},
+	"oct":        {},
+	"interlynk":  {},
 }
 
 // profileSectionName maps a --profile value to the display section name used
@@ -427,7 +475,8 @@ var profileSectionName = map[string]string{
 	"bsiv11":      "BSI TR-03183-2 v1.1 (--profile bsiv11 / bsi-v1.1)",
 	"bsiv20":      "BSI TR-03183-2 v2.0 (--profile bsiv20 / bsi-v2.0)",
 	"bsiv21":      "BSI TR-03183-2 v2.1 (--profile bsiv21 / bsi-v2.1)",
-	"ntia":        "NTIA Minimum Elements (--profile ntia)",
+	"ntia":        "NTIA Minimum Elements (--profile ntia / cisa-2021 / cisa2021)",
+	"cisa-2026":   "CISA Minimum Elements 2026 (--profile cisa-2026 / cisa / cisa2026)",
 	"fsct":        "FSCT Framing 3rd Edition (--profile fsct)",
 	"oct-v1.1":    "OpenChain Telco v1.1 (--profile oct / oct-v1.1)",
 	"interlynk":   "Interlynk (--profile interlynk)",
@@ -443,7 +492,7 @@ func validateparsedListCmd(uCmd *userListCmd) error {
 	if uCmd.profile != "" {
 		if _, ok := supportedProfiles[uCmd.profile]; !ok {
 			return fmt.Errorf(
-				"profile %q is not supported. Supported profiles: bsi (=bsiv21), bsiv11|bsi-v1.1, bsiv20|bsi-v2.0, bsiv21|bsi-v2.1, oct|oct-v1.1, fsct, ntia, interlynk",
+				"profile %q is not supported. Supported profiles: bsi (=bsiv21), bsiv11|bsi-v1.1, bsiv20|bsi-v2.0, bsiv21|bsi-v2.1, cisa-2026|cisa|cisa2026, cisa-2021|cisa2021 (=ntia), oct|oct-v1.1, fsct, ntia, interlynk",
 				uCmd.profile,
 			)
 		}
@@ -481,6 +530,13 @@ func validateparsedListCmd(uCmd *userListCmd) error {
 		if _, ok := ntiaFeatureKeys[cleaned]; !ok {
 			return fmt.Errorf(
 				"feature %q is not supported for profile %q.\n\nSupported features: sbom_authors, sbom_relationships, sbom_timestamp, comp_supplier, comp_name, comp_version, comp_uniq_id",
+				cleaned, uCmd.profile,
+			)
+		}
+	case "cisa-2026":
+		if _, ok := cisa2026FeatureKeys[cleaned]; !ok {
+			return fmt.Errorf(
+				"feature %q is not supported for profile %q.\n\nSupported features: sbom_data_format, sbom_spec_version, sbom_author, sbom_tool_name, sbom_tool_version, sbom_version, sbom_timestamp, sbom_generation_context, sbom_relationships, sbom_signature, comp_name, comp_version, comp_uniq_id, comp_producer, comp_hash_value, comp_hash_algo, comp_license",
 				cleaned, uCmd.profile,
 			)
 		}
@@ -745,6 +801,30 @@ var ProfileSections = []ProfileSection{
 			{Name: "comp_security_txt_url", Description: "security.txt URL"},
 		},
 	},
+		{
+			Name: "CISA Minimum Elements 2026 (--profile cisa-2026 / cisa / cisa2026)",
+			Features: []ProfileFeature{
+				// SBOM-level
+				{Name: "sbom_data_format", Description: "Valid spec (SPDX/CycloneDX) and format (JSON/XML)"},
+				{Name: "sbom_spec_version", Description: "SBOM specification version"},
+				{Name: "sbom_author", Description: "SBOM author (person or organization; tool entries not accepted)"},
+				{Name: "sbom_tool_name", Description: "SBOM generation tool name"},
+				{Name: "sbom_tool_version", Description: "SBOM generation tool version"},
+				{Name: "sbom_version", Description: "Author-assigned SBOM document version"},
+				{Name: "sbom_timestamp", Description: "SBOM creation timestamp"},
+				{Name: "sbom_generation_context", Description: "Context describing how the SBOM was generated"},
+				{Name: "sbom_relationships", Description: "Primary component dependency relationships"},
+				{Name: "sbom_signature", Description: "Digital signature on the SBOM document"},
+				// Component-level
+				{Name: "comp_name", Description: "Component name"},
+				{Name: "comp_version", Description: "Component version"},
+				{Name: "comp_uniq_id", Description: "Unique identifier (PURL or CPE)"},
+				{Name: "comp_producer", Description: "Component producer (supplier, manufacturer, or author)"},
+				{Name: "comp_hash_value", Description: "Component hash value"},
+				{Name: "comp_hash_algo", Description: "Component hash with algorithm specified"},
+				{Name: "comp_license", Description: "Component declared license"},
+			},
+		},
 	{
 		Name: "FSCT Framing 3rd Edition (--profile fsct)",
 		Features: []ProfileFeature{

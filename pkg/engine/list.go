@@ -24,16 +24,18 @@ import (
 
 func parseListParams(ep *Params) *list.Params {
 	return &list.Params{
-		Path:     ep.Path,
-		Features: ep.Features,
-		Profile:  ep.ListProfile,
-		JSON:     ep.JSON,
-		Basic:    ep.Basic,
-		Detailed: ep.Detailed,
-		Color:    ep.Color,
-		Missing:  ep.Missing,
-		Debug:    ep.Debug,
-		Show:     ep.Show,
+		Path:          ep.Path,
+		Features:      ep.Features,
+		Profile:       ep.ListProfile,
+		JSON:          ep.JSON,
+		Basic:         ep.Basic,
+		Detailed:      ep.Detailed,
+		Color:         ep.Color,
+		Missing:       ep.Missing,
+		Debug:         ep.Debug,
+		Show:          ep.Show,
+		SignaturePath: ep.SignaturePath,
+		PublicKeyPath: ep.PublicKeyPath,
 	}
 }
 

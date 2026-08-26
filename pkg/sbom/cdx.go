@@ -776,13 +776,11 @@ func copyC(cdxc *cydx.Component, c *CdxDoc) *Component {
 
 	// For CycloneDX 1.6+, licenses have an acknowledgement field to distinguish
 	// declared vs concluded. When acknowledgement is not specified but licenses exist,
-	// default to declared for 1.6+ (as per spec), and concluded for earlier versions.
+	// default to declared for all versions: the raw licenses field represents what
+	// the component supplier/originator declares. Concluded licences (post-analysis)
+	// require explicit acknowledgement="concluded" in CDX 1.6+.
 	if len(nc.Licenses) > 0 && len(nc.DeclaredLicense) == 0 && len(nc.ConcludedLicense) == 0 {
-		if isCdxSpecVersionAtLeast(c.doc.SpecVersion.String(), "1.6") {
-			nc.DeclaredLicense = nc.Licenses
-		} else {
-			nc.ConcludedLicense = nc.Licenses
-		}
+		nc.DeclaredLicense = nc.Licenses
 	}
 
 	return nc

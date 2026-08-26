@@ -71,6 +71,10 @@ type userCmd struct {
 	interlynkURL            string
 	interlynkAPIKey         string
 	enableComponentAnalysis bool
+
+	// Signature verification
+	signaturePath string
+	publicKeyPath string
 }
 
 // scoreCmd represents the score command for generating comprehensive quality scores for SBOM documents.
@@ -324,6 +328,10 @@ func toUserCmd(cmd *cobra.Command, args []string) *userCmd {
 		uCmd.interlynkAPIKey = envToken
 	}
 
+	// Signature verification
+	uCmd.signaturePath, _ = cmd.Flags().GetString("signature")
+	uCmd.publicKeyPath, _ = cmd.Flags().GetString("public-key")
+
 	return uCmd
 }
 
@@ -344,6 +352,8 @@ func toEngineParams(uCmd *userCmd) *engine.Params {
 		InterlynkURL:            uCmd.interlynkURL,
 		InterlynkAPIKey:         uCmd.interlynkAPIKey,
 		EnableComponentAnalysis: uCmd.enableComponentAnalysis,
+		SignaturePath:           uCmd.signaturePath,
+		PublicKeyPath:           uCmd.publicKeyPath,
 	}
 }
 
@@ -465,7 +475,7 @@ func init() {
 		log.Fatalf("Failed to mark flag as deprecated: %v", err)
 	}
 
-	scoreCmd.Flags().StringSlice("profile", nil, "profiles to run ('ntia', 'ntia-2025', 'fsct', 'bsi', 'bsi-v1.1'|'bsiv11', 'bsi-v2.0'|'bsiv20', 'bsi-v2.1'|'bsiv21', 'oct-v1.1'|'octv11'|'oct', 'interlynk')")
+	scoreCmd.Flags().StringSlice("profile", nil, "profiles to run ('ntia'|'cisa-2021'|'cisa2021', 'ntia-2025', 'cisa-2026'|'cisa'|'cisa2026', 'fsct', 'bsi', 'bsi-v1.1'|'bsiv11', 'bsi-v2.0'|'bsiv20', 'bsi-v2.1'|'bsiv21', 'oct-v1.1'|'octv11'|'oct', 'interlynk')")
 	scoreCmd.Flags().BoolP("legacy", "e", false, "legacy, prior to sbomqs version 2.0")
 
 	// Interlynk Component Quality API
@@ -479,4 +489,8 @@ func init() {
 		log.Fatalf("Failed to mark flag as deprecated: %v", err)
 	}
 	scoreCmd.Flags().StringP("api-key", "k", "", "Interlynk API key (or INTERLYNK_SECURITY_TOKEN env var)")
+
+	// Signature verification
+	scoreCmd.Flags().StringP("signature", "", "", "path to detached signature file for SPDX SBOMs")
+	scoreCmd.Flags().StringP("public-key", "", "", "path to public key file for signature verification")
 }

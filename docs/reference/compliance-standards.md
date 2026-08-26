@@ -147,6 +147,30 @@ The [OpenChain Telco](https://github.com/OpenChain-Project/Reference-Material/bl
 | Method of SBOM delivery      | 3.7        | `SBOM delivery method`            | delivery method         |                                                          |
 | SBOM Scope                   | 3.8        | `SBOM scope`                      | sbom scope              |                                                          |
 
+## CISA 2026 SBOM Minimum Elements
+
+The [CISA 2026 SBOM Minimum Elements](https://www.cisa.gov/sites/default/files/2026-07/2026_cisa_sbom_minimum_elements_508c.pdf) specifies mandatory properties for an SBOM. It supersedes the NTIA 2021 Minimum Elements and the August 2025 draft. Below is how we have derived all the values.
+
+| CISA 2026 Field | Category | Required | CycloneDX | SPDX(2.3) | SPDX(3.0) | Notes |
+| :---------------------- | :--------- | :-------- | :------------------------------------ | :------------------------------------------------------ | :------------------------------------------------------ | :------------------------------------------------------------- |
+| SBOM Author | SBOM Metadata | Yes | `metadata->authors` (preferred), then `metadata->manufacturer` | `creator->Person`, `creator->Organization` | `creationInfo.createdBy` → `Person` / `Organization` | Tool entries are **not** accepted as authors |
+| SBOM Author Signature | SBOM Metadata | Yes | `signature` (JSF) | `--signature` / `--public-key` CLI flags (detached envelope) | `SpdxDocument.verifiedUsing` with `type: "Signature"` (embedded), or `--signature` / `--public-key` CLI flags (detached) | sbomqs detects embedded CycloneDX JSF signatures; SPDX 2.x and 3.x detached signatures via `--signature` + `--public-key`; SPDX 3.x embedded signatures via `verifiedUsing` |
+| SBOM Data Format Name | SBOM Metadata | Yes | `bomFormat` | `spdxVersion` | `creationInfo.specVersion` | |
+| SBOM Data Format Version | SBOM Metadata | Yes | `specVersion` | `spdxVersion` | `creationInfo.specVersion` | |
+| SBOM Generation Context | SBOM Metadata | Yes | `metadata->lifecycles` | `creationInfo->comment` | `Software/Sbom.sbomType` | |
+| SBOM Timestamp | SBOM Metadata | Yes | `metadata->timestamp` | `created` | `creationInfo.created` | RFC 9557 compliant |
+| SBOM Tool Name | SBOM Metadata | Yes | `metadata->tools->components->name` (1.5+), `metadata->tools->name` (1.4) | `creator->Tool` | `createdUsing` → `Tool.name` | |
+| SBOM Tool Version | SBOM Metadata | Yes | `metadata->tools->components->version` (1.5+), `metadata->tools->version` (1.4) | Extracted from `creator->Tool` | Extracted from `createdUsing` → `Tool.name` | `UNKNOWN` / `NOASSERTION` / `NONE` accepted as valid non-empty |
+| SBOM Version | SBOM Metadata | Yes | `version` + `serialNumber` | N/A | N/A | SPDX does not support author-assigned document versions |
+| Component Producer | Component Data | Yes | `component->manufacturer` (1.6+), then `component->author` (1.5) | `package->originator` | `Package.originatedBy` | Per-component; replaces "Supplier Name" from NTIA 2021 |
+| Component Dependency Relationship | Component Data | Yes | `dependencies` | `relationships` (`DEPENDS_ON`) | `relationships` (`dependsOn`) | Primary component only; top-level direct dependencies minimum |
+| Component Hash Value | Component Data | Yes | `component->hashes->content` | `package->checksums->checksumValue` | `software.verifiedUsing.hashValue` | Per-component percentage |
+| Component Hash Algorithm | Component Data | Yes | `component->hashes->alg` | `package->checksums->algorithm` | `software.verifiedUsing.algorithm` | Per-component percentage |
+| Component Identifiers | Component Data | Yes | `component->purl`, `component->cpe`, `component->swid`, `component->omniborId`, `component->swhid` | `package->externalRefs` (PURL, CPE), `REFERENCE_CATEGORY_OTHER` (SWID, OmniBOR, commit) | `externalIdentifiers` (`packageUrl`, `cpe23`, `swid`, `gitoid`, `swhid`) | Per-component percentage; at least one identifier sufficient |
+| Component License | Component Data | Yes | `component->licenses` (1.4/1.5); `component->licenses` with `acknowledgement=declared` (1.6+) | `package->licenseDeclared` | Linked via `hasDeclaredLicense` relationship type | Per-component percentage; declared licenses only |
+| Component Name | Component Data | Yes | `component->name` | `package->name` | `package.name` | Per-component percentage |
+| Component Version | Component Data | Yes | `component->version` | `package->versionInfo` | `package.packageVersion` | Per-component percentage; `UNKNOWN` / `NOASSERTION` / `NONE` accepted |
+
 ## NTIA minimum elements: SBOM Requirements for NTIA
 
 The [NTIA](https://www.ntia.doc.gov/files/ntia/publications/sbom_minimum_elements_report.pdf) specifies mandatory properties for an SBOM. Below is how we have derived all the values.
