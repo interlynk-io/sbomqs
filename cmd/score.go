@@ -475,7 +475,7 @@ func init() {
 		log.Fatalf("Failed to mark flag as deprecated: %v", err)
 	}
 
-	scoreCmd.Flags().StringSlice("profile", nil, "profiles to run ('ntia', 'ntia-2025', 'cisa-2026'|'cisa'|'cisa2026', 'fsct', 'bsi', 'bsi-v1.1'|'bsiv11', 'bsi-v2.0'|'bsiv20', 'bsi-v2.1'|'bsiv21', 'oct-v1.1'|'octv11'|'oct', 'interlynk')")
+	scoreCmd.Flags().StringSlice("profile", nil, "profiles to run ('ntia'|'cisa-2021'|'cisa2021', 'ntia-2025', 'cisa-2026'|'cisa'|'cisa2026', 'fsct', 'bsi', 'bsi-v1.1'|'bsiv11', 'bsi-v2.0'|'bsiv20', 'bsi-v2.1'|'bsiv21', 'oct-v1.1'|'octv11'|'oct', 'interlynk')")
 	scoreCmd.Flags().BoolP("legacy", "e", false, "legacy, prior to sbomqs version 2.0")
 
 	// Interlynk Component Quality API

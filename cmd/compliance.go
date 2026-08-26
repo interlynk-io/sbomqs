@@ -129,6 +129,10 @@ func setupEngineParams(cmd *cobra.Command, args []string) *engine.Params {
 	if v, _ := cmd.Flags().GetBool("cisa"); v {
 		engParams.Cisa2026 = true
 	}
+	engParams.Cisa2021, _ = cmd.Flags().GetBool("cisa-2021")
+	if v, _ := cmd.Flags().GetBool("cisa2021"); v {
+		engParams.Cisa2021 = true
+	}
 
 	engParams.Debug, _ = cmd.Flags().GetBool("debug")
 
@@ -175,6 +179,8 @@ func init() {
 	complianceCmd.Flags().BoolP("cisa-2026", "", false, "CISA Minimum Elements (2026)")
 	complianceCmd.Flags().BoolP("cisa2026", "", false, "CISA Minimum Elements (2026)")
 	complianceCmd.Flags().BoolP("cisa", "", false, "CISA Minimum Elements (2026)")
+	complianceCmd.Flags().BoolP("cisa-2021", "", false, "CISA Minimum Elements (2021); alias for NTIA")
+	complianceCmd.Flags().BoolP("cisa2021", "", false, "CISA Minimum Elements (2021); alias for NTIA")
 
 	// Signature verification
 	complianceCmd.Flags().StringP("signature", "", "", "path to detached signature file for SPDX SBOMs")

@@ -440,6 +440,10 @@ var profileAliases = map[string]catalog.ProfileKey{
 	"NTIA-2025":             ProfileNTIA2025,
 	"ntia2025":              ProfileNTIA2025,
 	"NTIA2025":              ProfileNTIA2025,
+	"cisa-2021":             ProfileNTIA,
+	"CISA-2021":             ProfileNTIA,
+	"cisa2021":              ProfileNTIA,
+	"CISA2021":              ProfileNTIA,
 	"cisa-2026":             ProfileCISA2026,
 	"CISA-2026":             ProfileCISA2026,
 	"cisa2026":              ProfileCISA2026,
@@ -866,7 +870,7 @@ func findFeatureProfile(feature string) string {
 // getProfileDisplayName returns human-readable profile name
 func getProfileDisplayName(profile string) string {
 	switch profile {
-	case "ntia":
+	case "ntia", "cisa-2021", "cisa2021":
 		return "NTIA Minimum Elements (2021)"
 	case "ntia-2025":
 		return "NTIA Minimum Elements (2025) - DEPRECATED"
@@ -913,7 +917,7 @@ func filterProfiles(ctx context.Context, profiles []string) ([]catalog.ProfSpec,
 
 		switch profile {
 
-		case string(ProfileNTIA):
+		case string(ProfileNTIA), "cisa-2021", "cisa2021", "CISA-2021", "CISA2021":
 			finalProfiles = append(finalProfiles, profileNTIASpec)
 
 		case string(ProfileNTIA2025):

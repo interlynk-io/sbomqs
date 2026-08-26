@@ -198,7 +198,7 @@ func init() {
 
 	listCmd.Flags().BoolP("missing", "m", false, "List components or properties missing the specified feature")
 
-	listCmd.Flags().String("profile", "", "Compliance profile for feature extraction (e.g. bsi [=bsiv21], bsiv11|bsi-v1.1, bsiv20|bsi-v2.0, bsiv21|bsi-v2.1, cisa-2026|cisa|cisa2026, fsct, ntia, oct|oct-v1.1, interlynk). Run 'sbomqs features --profile <profile>' to see supported features for each profile.")
+	listCmd.Flags().String("profile", "", "Compliance profile for feature extraction (e.g. bsi [=bsiv21], bsiv11|bsi-v1.1, bsiv20|bsi-v2.0, bsiv21|bsi-v2.1, cisa-2026|cisa|cisa2026, cisa-2021|cisa2021 [=ntia], fsct, ntia, oct|oct-v1.1, interlynk). Run 'sbomqs features --profile <profile>' to see supported features for each profile.")
 
 	// -- Signature Control --
 	listCmd.Flags().String("signature", "", "Path to detached signature file for SPDX SBOMs")
@@ -436,6 +436,8 @@ func normalizeProfile(profile string) string {
 		return "bsiv21"
 	case "cisa", "cisa2026", "CISA2026":
 		return "cisa-2026"
+	case "cisa-2021", "cisa2021", "CISA2021":
+		return "ntia"
 	case "oct", "oct-v1.1", "oct-v1_1", "octv11":
 		return "oct-v1.1"
 	default:
@@ -447,6 +449,8 @@ func normalizeProfile(profile string) string {
 var supportedProfiles = map[string]struct{}{
 	"fsct":       {},
 	"ntia":       {},
+	"cisa-2021":  {},
+	"cisa2021":   {},
 	"cisa-2026":  {},
 	"cisa2026":   {},
 	"bsiv11":     {},
@@ -471,7 +475,7 @@ var profileSectionName = map[string]string{
 	"bsiv11":      "BSI TR-03183-2 v1.1 (--profile bsiv11 / bsi-v1.1)",
 	"bsiv20":      "BSI TR-03183-2 v2.0 (--profile bsiv20 / bsi-v2.0)",
 	"bsiv21":      "BSI TR-03183-2 v2.1 (--profile bsiv21 / bsi-v2.1)",
-	"ntia":        "NTIA Minimum Elements (--profile ntia)",
+	"ntia":        "NTIA Minimum Elements (--profile ntia / cisa-2021 / cisa2021)",
 	"cisa-2026":   "CISA Minimum Elements 2026 (--profile cisa-2026 / cisa / cisa2026)",
 	"fsct":        "FSCT Framing 3rd Edition (--profile fsct)",
 	"oct-v1.1":    "OpenChain Telco v1.1 (--profile oct / oct-v1.1)",
@@ -488,7 +492,7 @@ func validateparsedListCmd(uCmd *userListCmd) error {
 	if uCmd.profile != "" {
 		if _, ok := supportedProfiles[uCmd.profile]; !ok {
 			return fmt.Errorf(
-				"profile %q is not supported. Supported profiles: bsi (=bsiv21), bsiv11|bsi-v1.1, bsiv20|bsi-v2.0, bsiv21|bsi-v2.1, oct|oct-v1.1, fsct, ntia, interlynk",
+				"profile %q is not supported. Supported profiles: bsi (=bsiv21), bsiv11|bsi-v1.1, bsiv20|bsi-v2.0, bsiv21|bsi-v2.1, cisa-2026|cisa|cisa2026, cisa-2021|cisa2021 (=ntia), oct|oct-v1.1, fsct, ntia, interlynk",
 				uCmd.profile,
 			)
 		}
