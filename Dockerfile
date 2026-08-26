@@ -1,6 +1,6 @@
 # Use buildx for multi-platform builds
 # Build stage
-FROM --platform=$BUILDPLATFORM golang:1.26-alpine AS builder
+FROM --platform=$BUILDPLATFORM golang:1.27-alpine AS builder
 LABEL org.opencontainers.image.source="https://github.com/interlynk-io/sbomqs"
 
 RUN apk add --no-cache make git
