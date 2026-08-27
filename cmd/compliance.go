@@ -122,8 +122,22 @@ func setupEngineParams(cmd *cobra.Command, args []string) *engine.Params {
 		engParams.Oct = true
 	}
 	engParams.Fsct, _ = cmd.Flags().GetBool("fsct")
+	engParams.Cisa2026, _ = cmd.Flags().GetBool("cisa-2026")
+	if v, _ := cmd.Flags().GetBool("cisa2026"); v {
+		engParams.Cisa2026 = true
+	}
+	if v, _ := cmd.Flags().GetBool("cisa"); v {
+		engParams.Cisa2026 = true
+	}
+	engParams.Cisa2021, _ = cmd.Flags().GetBool("cisa-2021")
+	if v, _ := cmd.Flags().GetBool("cisa2021"); v {
+		engParams.Cisa2021 = true
+	}
 
 	engParams.Debug, _ = cmd.Flags().GetBool("debug")
+
+	engParams.SignaturePath, _ = cmd.Flags().GetString("signature")
+	engParams.PublicKeyPath, _ = cmd.Flags().GetString("public-key")
 
 	engParams.Path = append(engParams.Path, args[0])
 	engParams.Blob = args[0]
@@ -162,4 +176,13 @@ func init() {
 	complianceCmd.Flags().BoolP("oct-v1.1", "", false, "OpenChain Telco SBOM (v1.1)")
 	complianceCmd.Flags().BoolP("octv11", "", false, "OpenChain Telco SBOM (v1.1)")
 	complianceCmd.Flags().BoolP("fsct", "f", false, "Framing Software Component Transparency (v3)")
+	complianceCmd.Flags().BoolP("cisa-2026", "", false, "CISA Minimum Elements (2026)")
+	complianceCmd.Flags().BoolP("cisa2026", "", false, "CISA Minimum Elements (2026)")
+	complianceCmd.Flags().BoolP("cisa", "", false, "CISA Minimum Elements (2026)")
+	complianceCmd.Flags().BoolP("cisa-2021", "", false, "CISA Minimum Elements (2021); alias for NTIA")
+	complianceCmd.Flags().BoolP("cisa2021", "", false, "CISA Minimum Elements (2021); alias for NTIA")
+
+	// Signature verification
+	complianceCmd.Flags().StringP("signature", "", "", "path to detached signature file for SPDX SBOMs")
+	complianceCmd.Flags().StringP("public-key", "", "", "path to public key file for signature verification")
 }

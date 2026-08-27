@@ -16,6 +16,7 @@ package list
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -180,7 +181,7 @@ func collectResultsForSBOMs(ctx context.Context, ep *Params, filePaths []string)
 func collectResultsForSBOM(ctx context.Context, ep *Params, filePath string) ([]*Result, error) {
 	log := logger.FromContext(ctx)
 
-	doc, err := parseSBOMDocument(ctx, filePath)
+	doc, err := parseSBOMDocument(ctx, filePath, ep.SignaturePath, ep.PublicKeyPath)
 	if err != nil {
 		log.Error("Failed to parse SBOM document",
 			zap.String("file", filePath),
@@ -213,7 +214,7 @@ func collectResultsForSBOM(ctx context.Context, ep *Params, filePath string) ([]
 }
 
 // parseSBOMDocument parses an SBOM document from a local file path
-func parseSBOMDocument(ctx context.Context, filePath string) (sbom.Document, error) {
+func parseSBOMDocument(ctx context.Context, filePath, signaturePath, publicKeyPath string) (sbom.Document, error) {
 	log := logger.FromContext(ctx)
 	log.Debug("Opening SBOM file",
 		zap.String("file", filePath),
@@ -232,7 +233,8 @@ func parseSBOMDocument(ctx context.Context, filePath string) (sbom.Document, err
 		}
 	}()
 
-	currentDoc, err := sbom.NewSBOMDocument(ctx, f, sbom.Signature{})
+	sig := buildSBOMSignature(signaturePath, publicKeyPath)
+	currentDoc, err := sbom.NewSBOMDocument(ctx, f, sig)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create SBOM document for %s: %w", filePath, err)
 	}
@@ -241,6 +243,29 @@ func parseSBOMDocument(ctx context.Context, filePath string) (sbom.Document, err
 		zap.String("file", filePath),
 	)
 	return currentDoc, nil
+}
+
+// buildSBOMSignature reads the detached signature and public key files and
+// returns a populated sbom.Signature. If the paths are empty or the files
+// cannot be read, an empty Signature is returned.
+func buildSBOMSignature(signaturePath, publicKeyPath string) sbom.Signature {
+	var sig sbom.Signature
+	if signaturePath != "" {
+		sigData, err := os.ReadFile(signaturePath)
+		if err == nil {
+			sig.SigValue = base64.StdEncoding.EncodeToString(sigData)
+		}
+	}
+	if publicKeyPath != "" {
+		pkData, err := os.ReadFile(publicKeyPath)
+		if err == nil {
+			sig.PublicKey = string(pkData)
+		}
+	}
+	if sig.SigValue != "" {
+		sig.Algorithm = "ES256"
+	}
+	return sig
 }
 
 // evaluateFeature processes a single feature for an SBOM document and returns a ListResult
@@ -424,6 +449,12 @@ func evaluateFeaturePerComponent(feature, profile string, comp sbom.GetComponent
 		}
 	}
 
+	if profile == ProfileCISA2026 {
+		if ext, ok := LookupCISA2026CompExtractor(feature); ok {
+			return ext(doc, comp)
+		}
+	}
+
 	// Generic fallback: resolve aliases then look up registry
 	if f, ok := compFeatureAliases[feature]; ok {
 		feature = f
@@ -474,6 +505,12 @@ func evaluateSBOMFeature(feature, profile string, doc sbom.Document) (bool, stri
 
 	if profile == ProfileInterlynk {
 		if ext, ok := LookupInterlynkDocExtractor(feature); ok {
+			return ext(doc)
+		}
+	}
+
+	if profile == ProfileCISA2026 {
+		if ext, ok := LookupCISA2026DocExtractor(feature); ok {
 			return ext(doc)
 		}
 	}

@@ -1,0 +1,53 @@
+{
+  "@context": "https://spdx.org/rdf/3.0.1/spdx-context.jsonld",
+  "@graph": [
+    {
+      "spdxId": "https://example.org/doc",
+      "type": "SpdxDocument",
+      "name": "example-spdx3-sbom",
+      "creationInfo": "_:creationInfo_1",
+      "verifiedUsing": [
+        {
+          "type": "Signature",
+          "algorithm": "ES256",
+          "signatureValue": "MEUCIBrDF6eXYG4wgqClVF4SSDGGd2djuD9OImWoWVNN1U35AiEAon3aficdihWLNUT3VSS9qCX4Vroc+i+6Oatn+5wyWos=",
+          "publicKey": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAECNipzzf0knDfMDVfCJzfJHS+4azb\nYRKgbdnA2v4TYPjzKxL7bmInmsyl7ErZSdXoGh7sLmUTnsHvKTqDdVMhqQ==\n-----END PUBLIC KEY-----"
+        }
+      ]
+    },
+    {
+      "spdxId": "_:creationInfo_1",
+      "type": "CreationInfo",
+      "specVersion": "SPDX-3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": [
+        {
+          "spdxId": "https://example.org/org"
+        }
+      ],
+      "createdUsing": [
+        {
+          "spdxId": "https://example.org/tool"
+        }
+      ]
+    },
+    {
+      "spdxId": "https://example.org/org",
+      "type": "Organization",
+      "name": "Example Organization"
+    },
+    {
+      "spdxId": "https://example.org/tool",
+      "type": "Tool",
+      "name": "sbom-examples-1.0.0"
+    },
+    {
+      "spdxId": "https://example.org/pkg",
+      "type": "software_Package",
+      "name": "example-package",
+      "software_packageVersion": "1.0.0",
+      "primaryPurpose": "application",
+      "creationInfo": "_:creationInfo_1"
+    }
+  ]
+}

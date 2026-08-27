@@ -128,29 +128,32 @@ func ExtractSignature(ctx context.Context, cfg config.Config, path string) (sbom
 	sigValue := cfg.SignatureBundle.SigValue
 	publicKey := cfg.SignatureBundle.PublicKey
 
-	if sigValue == "" || publicKey == "" {
+	if sigValue == "" {
 		log.Debug("Signature verification not configured",
 			zap.String("path", path),
 		)
 		return sbom.Signature{}, nil
 	}
 
-	log.Debug("Signature verification not configured",
+	log.Debug("Signature verification configured",
 		zap.String("path", path),
 	)
 
 	standalone, signature, pubKey, err := common.GetSignatureBundle(ctx, path, sigValue, publicKey)
 	if err != nil {
-		log.Debug("Signature verification not configured",
+		log.Debug("Failed to get signature bundle",
 			zap.String("path", path),
+			zap.Error(err),
 		)
 		return sbom.Signature{}, err
 	}
+
 	// The bundle is extracted to a temp directory; whoever asks for it owns it.
 	// Scoring only tests these for emptiness, never reads them.
 	defer common.RemoveSignatureArtifacts(standalone, signature, pubKey)
 
 	return sbom.Signature{
+		Algorithm: cfg.SignatureBundle.Algorithm,
 		SigValue:  signature,
 		PublicKey: pubKey,
 	}, nil

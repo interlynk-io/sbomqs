@@ -1,0 +1,48 @@
+{
+  "@context": [
+    "https://spdx.org/rdf/3.0.1/spdx-context.jsonld"
+  ],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "Test",
+      "creationInfo": "_:creationinfo",
+      "element": [
+        "SPDXRef-Package"
+      ],
+      "profileConformance": [
+        "core",
+        "software"
+      ]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2024-01-15T10:30:00Z",
+      "createdBy": [
+        "_:author"
+      ]
+    },
+    {
+      "type": "Person",
+      "@id": "_:author",
+      "name": "Test Author"
+    },
+    {
+      "type": "Organization",
+      "@id": "_:manuf1",
+      "name": "Example Manufacturer Inc"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package",
+      "name": "my-application",
+      "software_packageVersion": "1.0.0",
+      "originatedBy": [
+        "_:manuf1"
+      ]
+    }
+  ]
+}
