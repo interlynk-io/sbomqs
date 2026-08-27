@@ -873,7 +873,7 @@ func getProfileDisplayName(profile string) string {
 	case "ntia", "cisa-2021", "cisa2021":
 		return "NTIA Minimum Elements (2021)"
 	case "ntia-2025":
-		return "NTIA Minimum Elements (2025) - DEPRECATED"
+		return "NTIA Minimum Elements (2025) - Initial Draft"
 	case "cisa-2026", "cisa2026", "CISA2026", "cisa", "CISA":
 		return "CISA Minimum Elements (2026)"
 	case "bsi-v1.1", "bsi-v1_1", "bsiv11":
@@ -1091,7 +1091,7 @@ var comprehenssiveCategories = []catalog.ComprCatSpec{
 var defaultProfiles = []catalog.ProfSpec{
 	profileInterlynkSpec,
 	profileNTIASpec,
-	profileNTIA2025Spec,
+	profileCISA2026Spec,
 	profileFSCTSpec,
 	profileBSI11Spec,
 	profileOCTV11Spec,
@@ -1165,8 +1165,8 @@ var profileNTIASpec = catalog.ProfSpec{
 
 var profileNTIA2025Spec = catalog.ProfSpec{
 	Key:         ProfileNTIA2025,
-	Name:        "NTIA Minimum Elements (2025) - DEPRECATED",
-	Description: "NTIA Minimum Elements 2025 Profile (DEPRECATED - superseded by CISA 2026)",
+	Name:        "NTIA Minimum Elements (2025) - Initial Draft",
+	Description: "NTIA Minimum Elements 2025 Profile (Initial Draft - superseded by CISA 2026)",
 	Features: []catalog.ProfFeatSpec{
 		{Key: "sbom_machine_format", Name: "Machine-Readable Formats", Required: true, Description: "Valid spec (SPDX/CycloneDX) and format (JSON/XML)", Evaluate: profiles.SBOMAutomationSpec},
 		{Key: "sbom_author", Name: "SBOM Author", Required: true, Description: "Tool or person who created SBOM", Evaluate: profiles.SBOMAuthors},
