@@ -104,7 +104,7 @@ func Test_NTIA2025ProfileForStaticSBOMFiles(t *testing.T) {
 				require.Len(t, r.Profiles.ProfResult, 1, "Should have exactly one profile result")
 
 				profResult := r.Profiles.ProfResult[0]
-				require.Equal(t, "NTIA Minimum Elements (2025) - DEPRECATED", profResult.Name)
+				require.Equal(t, "NTIA Minimum Elements (2025) - Initial Draft", profResult.Name)
 
 				gotRaw := profResult.InterlynkScore
 				gotRounded := math.Round(gotRaw*10) / 10
