@@ -35,28 +35,28 @@ BSI TR-03183-2, Framing Software Component Transparency (v3) and OpenChain Telco
 	Example: ` sbomqs compliance  < --ntia | --bsi | --bsi-v2 | --bsi-v21 | --fsct | --oct >  [--basic | --json]   <SBOM file>
 
   # Check a NTIA minimum elements compliance against a SBOM in a table output
-  sbomqs compliance --ntia samples/sbomqs-spdx-syft.json
+  sbomqs compliance --ntia samples/photon.spdx.json
 
   # Check BSI TR-03183-2 compliance (latest version, currently v2.1.0)
-  sbomqs compliance --bsi samples/sbomqs-cdx.json
+  sbomqs compliance --bsi samples/sbom_cdx.json
 
   # Check a BSI TR-03183-2 v1.1 compliance against a SBOM in a table output
-  sbomqs compliance --bsi-v1 samples/sbomqs-spdx-syft.json
+  sbomqs compliance --bsi-v1 samples/photon.spdx.json
 
   # Check a BSI TR-03183-2 v2.0.0 compliance against a SBOM in a table output
-  sbomqs compliance --bsi-v2 samples/sbomqs-spdx-syft.json
+  sbomqs compliance --bsi-v2 samples/photon.spdx.json
 
   # Check a BSI TR-03183-2 v2.1.0 compliance against a SBOM in a table output
-  sbomqs compliance --bsi-v21 samples/sbomqs-cdx.json
+  sbomqs compliance --bsi-v21 samples/sbom_cdx.json
 
    # Check a Framing Software Component Transparency (v3) compliance against a SBOM in a table output
-  sbomqs compliance --fsct samples/sbomqs-spdx-syft.json
+  sbomqs compliance --fsct samples/photon.spdx.json
 
   # Check a OpenChain Telco compliance against a SBOM in a JSON output
-  sbomqs compliance --oct --json samples/sbomqs-spdx-syft.json
+  sbomqs compliance --oct --json samples/photon.spdx.json
 
    # Check a Framing Software Component Transparency (v3) compliance against a SBOM in a table colorful output
-  sbomqs compliance --fsct --color samples/sbomqs-spdx-syft.json
+  sbomqs compliance --fsct --color samples/photon.spdx.json
 
 `,
 	Args: func(cmd *cobra.Command, args []string) error {
