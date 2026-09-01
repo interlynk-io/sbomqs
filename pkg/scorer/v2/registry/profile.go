@@ -151,6 +151,11 @@ func similar(p Prof, eval map[string]catalog.ProfFeatEval) []catalog.ProfFeatSpe
 	var profSpec []catalog.ProfFeatSpec
 
 	for _, f := range p.Features {
+		evalFn := eval[f.Key]
+		if evalFn == nil {
+			log.Printf("WARN: profile %q feature %q has no evaluator; skipping", p.Key, f.Key)
+			continue
+		}
 
 		feat := catalog.ProfFeatSpec{
 			Name:        f.Name,
@@ -158,10 +163,9 @@ func similar(p Prof, eval map[string]catalog.ProfFeatEval) []catalog.ProfFeatSpe
 			Key:         f.Key,
 			Required:    f.Required,
 			Additional:  f.Additional,
-			Evaluate:    eval[f.Key],
+			Evaluate:    evalFn,
 		}
 		profSpec = append(profSpec, feat)
-
 	}
 	return profSpec
 }
