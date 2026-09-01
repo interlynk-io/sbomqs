@@ -16,10 +16,10 @@ package compliance
 
 import "github.com/interlynk-io/sbomqs/v2/pkg/compliance/db"
 
-// cisa2026ScoreResult accumulates per-element scores.
-// CISA 2026 has only Required fields (all 17 minimum elements are required).
+// ntia2026ScoreResult accumulates per-element scores.
+// NTIA 2026 has only Required fields (all 17 minimum elements are required).
 // Optional records (N/A) are tracked for display but never counted in score.
-type cisa2026ScoreResult struct {
+type ntia2026ScoreResult struct {
 	id              string
 	requiredScore   float64
 	optionalScore   float64
@@ -27,20 +27,20 @@ type cisa2026ScoreResult struct {
 	optionalRecords int
 }
 
-func newCisa2026ScoreResult(id string) *cisa2026ScoreResult {
-	return &cisa2026ScoreResult{id: id}
+func newNtia2026ScoreResult(id string) *ntia2026ScoreResult {
+	return &ntia2026ScoreResult{id: id}
 }
 
 // totalScore = requiredScore / requiredRecords
 // Optional fields are excluded from the denominator entirely.
-func (r *cisa2026ScoreResult) totalScore() float64 {
+func (r *ntia2026ScoreResult) totalScore() float64 {
 	if r.requiredRecords == 0 {
 		return 0.0
 	}
 	return r.requiredScore / float64(r.requiredRecords)
 }
 
-func (r *cisa2026ScoreResult) totalRequiredScore() float64 {
+func (r *ntia2026ScoreResult) totalRequiredScore() float64 {
 	if r.requiredRecords == 0 {
 		return 0.0
 	}
@@ -48,21 +48,21 @@ func (r *cisa2026ScoreResult) totalRequiredScore() float64 {
 }
 
 // totalOptionalScore is informational only — it is NOT part of totalScore().
-func (r *cisa2026ScoreResult) totalOptionalScore() float64 {
+func (r *ntia2026ScoreResult) totalOptionalScore() float64 {
 	if r.optionalRecords == 0 {
 		return 0.0
 	}
 	return r.optionalScore / float64(r.optionalRecords)
 }
 
-func cisa2026KeyIDScore(dtb *db.DB, key int, id string) *cisa2026ScoreResult {
+func ntia2026KeyIDScore(dtb *db.DB, key int, id string) *ntia2026ScoreResult {
 	records := dtb.GetRecordsByKeyID(key, id)
 
 	if len(records) == 0 {
-		return newCisa2026ScoreResult(id)
+		return newNtia2026ScoreResult(id)
 	}
 
-	res := newCisa2026ScoreResult(id)
+	res := newNtia2026ScoreResult(id)
 	for _, r := range records {
 		if r.Required {
 			res.requiredScore += r.Score
@@ -75,14 +75,14 @@ func cisa2026KeyIDScore(dtb *db.DB, key int, id string) *cisa2026ScoreResult {
 	return res
 }
 
-func cisa2026IDScore(dtb *db.DB, id string) *cisa2026ScoreResult {
+func ntia2026IDScore(dtb *db.DB, id string) *ntia2026ScoreResult {
 	records := dtb.GetRecordsByID(id)
 
 	if len(records) == 0 {
-		return newCisa2026ScoreResult(id)
+		return newNtia2026ScoreResult(id)
 	}
 
-	res := newCisa2026ScoreResult(id)
+	res := newNtia2026ScoreResult(id)
 	for _, r := range records {
 		if r.Required {
 			res.requiredScore += r.Score
@@ -95,11 +95,11 @@ func cisa2026IDScore(dtb *db.DB, id string) *cisa2026ScoreResult {
 	return res
 }
 
-func cisa2026AggregateScore(dtb *db.DB) *cisa2026ScoreResult {
-	var final cisa2026ScoreResult
+func ntia2026AggregateScore(dtb *db.DB) *ntia2026ScoreResult {
+	var final ntia2026ScoreResult
 
 	for _, id := range dtb.GetAllIDs() {
-		r := cisa2026IDScore(dtb, id)
+		r := ntia2026IDScore(dtb, id)
 		final.requiredScore += r.requiredScore
 		final.optionalScore += r.optionalScore
 		final.requiredRecords += r.requiredRecords

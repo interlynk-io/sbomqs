@@ -425,7 +425,7 @@ func evaluateFeaturePerComponent(feature, profile string, comp sbom.GetComponent
 		}
 	}
 
-	if profile == "ntia-2021" {
+	if profile == ProfileNTIA2021 {
 		if ext, ok := LookupNTIA2021CompExtractor(feature); ok {
 			return ext(doc, comp)
 		}
@@ -451,12 +451,6 @@ func evaluateFeaturePerComponent(feature, profile string, comp sbom.GetComponent
 
 	if profile == ProfileInterlynk {
 		if ext, ok := LookupInterlynkCompExtractor(feature); ok {
-			return ext(doc, comp)
-		}
-	}
-
-	if profile == ProfileCISA2026 {
-		if ext, ok := LookupCISA2026CompExtractor(feature); ok {
 			return ext(doc, comp)
 		}
 	}
@@ -491,7 +485,7 @@ func evaluateSBOMFeature(feature, profile string, doc sbom.Document) (bool, stri
 		}
 	}
 
-	if profile == "ntia-2021" {
+	if profile == ProfileNTIA2021 {
 		if ext, ok := LookupNTIA2021DocExtractor(feature); ok {
 			return ext(doc)
 		}
@@ -517,12 +511,6 @@ func evaluateSBOMFeature(feature, profile string, doc sbom.Document) (bool, stri
 
 	if profile == ProfileInterlynk {
 		if ext, ok := LookupInterlynkDocExtractor(feature); ok {
-			return ext(doc)
-		}
-	}
-
-	if profile == ProfileCISA2026 {
-		if ext, ok := LookupCISA2026DocExtractor(feature); ok {
 			return ext(doc)
 		}
 	}

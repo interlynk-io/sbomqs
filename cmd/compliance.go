@@ -131,16 +131,16 @@ func setupEngineParams(cmd *cobra.Command, args []string) *engine.Params {
 		engParams.Oct = true
 	}
 	engParams.Fsct, _ = cmd.Flags().GetBool("fsct")
-	engParams.Cisa2026, _ = cmd.Flags().GetBool("cisa-2026")
+	engParams.Ntia, _ = cmd.Flags().GetBool("cisa-2026")
 	if v, _ := cmd.Flags().GetBool("cisa2026"); v {
-		engParams.Cisa2026 = true
+		engParams.Ntia = true
 	}
 	if v, _ := cmd.Flags().GetBool("cisa"); v {
-		engParams.Cisa2026 = true
+		engParams.Ntia = true
 	}
-	engParams.Cisa2021, _ = cmd.Flags().GetBool("cisa-2021")
+	engParams.Ntia2021, _ = cmd.Flags().GetBool("cisa-2021")
 	if v, _ := cmd.Flags().GetBool("cisa2021"); v {
-		engParams.Cisa2021 = true
+		engParams.Ntia2021 = true
 	}
 
 	engParams.Debug, _ = cmd.Flags().GetBool("debug")
@@ -170,7 +170,7 @@ func init() {
 	complianceCmd.MarkFlagsMutuallyExclusive("json", "basic", "detailed")
 
 	// Standards control
-	complianceCmd.Flags().BoolP("ntia", "n", false, "NTIA minimum elements (CISA 2026)")
+	complianceCmd.Flags().BoolP("ntia", "n", false, "NTIA minimum elements (2026)")
 	complianceCmd.Flags().BoolP("ntia-2021", "", false, "NTIA minimum elements (2021)")
 	complianceCmd.Flags().BoolP("ntia2021", "", false, "NTIA minimum elements (2021)")
 	complianceCmd.Flags().BoolP("bsi", "c", false, "BSI TR-03183-2 (latest, currently v2.1.0)")

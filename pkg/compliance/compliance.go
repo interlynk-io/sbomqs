@@ -40,15 +40,15 @@ const (
 	BSI_V21_REPORT = "BSI-V21"
 	// NTIA_REPORT represents the NTIA (National Telecommunications and Information
 	// Administration) minimum elements compliance framework.
-	NTIA_REPORT = "NTIA"
+	NTIA_2021_REPORT = "NTIA-2021"
 	// OCT_TELCO represents the OpenChain Telco SBOM compliance framework
 	// specifically for telecommunications industry requirements.
 	OCT_TELCO = "OCT"
 	// FSCT_V3 represents version 3 of the FSCT (FinTech Supply Chain Transparency)
 	// compliance framework.
 	FSCT_V3 = "FSCT"
-	// CISA_2026_REPORT represents the NTIA Minimum Elements (2026) compliance framework.
-	CISA_2026_REPORT = "CISA-2026"
+	// NTIA_2026_REPORT represents the NTIA Minimum Elements (2026) compliance framework.
+	NTIA_2026_REPORT = "NTIA"
 )
 
 func validReportTypes() map[string]bool {
@@ -56,10 +56,10 @@ func validReportTypes() map[string]bool {
 		BSI_REPORT:       true,
 		BSI_V2_REPORT:    true,
 		BSI_V21_REPORT:   true,
-		NTIA_REPORT:      true,
+		NTIA_2021_REPORT: true,
 		OCT_TELCO:        true,
 		FSCT_V3:          true,
-		CISA_2026_REPORT: true,
+		NTIA_2026_REPORT: true,
 	}
 }
 
@@ -120,8 +120,8 @@ func ComplianceResult(ctx context.Context, doc sbom.Document, reportType, fileNa
 		log.Debug("Running BSI V2.1 compliance report")
 		bsiV21Result(ctx, doc, fileName, outFormat)
 
-	case reportType == NTIA_REPORT:
-		log.Debug("Running NTIA compliance report")
+	case reportType == NTIA_2021_REPORT:
+		log.Debug("Running NTIA-2021 compliance report")
 		ntiaResult(ctx, doc, fileName, outFormat, coloredOutput)
 
 	case reportType == OCT_TELCO:
@@ -138,9 +138,9 @@ func ComplianceResult(ctx context.Context, doc sbom.Document, reportType, fileNa
 		log.Debug("Running FSCT v3 compliance report")
 		fsct.Result(ctx, doc, fileName, outFormat, coloredOutput)
 
-	case reportType == CISA_2026_REPORT:
-		log.Debug("Running CISA 2026 compliance report")
-		cisa2026Result(ctx, doc, fileName, outFormat, coloredOutput)
+	case reportType == NTIA_2026_REPORT:
+		log.Debug("Running NTIA 2026 compliance report")
+		ntia2026Result(ctx, doc, fileName, outFormat, coloredOutput)
 
 	default:
 		log.Warn("No compliance report generated",

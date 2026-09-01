@@ -252,8 +252,8 @@ var fsctFeatureKeys = map[string]struct{}{
 	"copyright_coverage":   {},
 }
 
-// ntiaFeatureKeys lists the feature keys supported by the ntia profile.
-var ntiaFeatureKeys = map[string]struct{}{
+// ntia2021FeatureKeys lists the feature keys supported by the ntia profile.
+var ntia2021FeatureKeys = map[string]struct{}{
 	// SBOM-level
 	"sbom_authors":       {},
 	"sbom_relationships": {},
@@ -265,8 +265,8 @@ var ntiaFeatureKeys = map[string]struct{}{
 	"comp_uniq_id":  {},
 }
 
-// cisa2026FeatureKeys lists the feature keys supported by the cisa-2026 profile.
-var cisa2026FeatureKeys = map[string]struct{}{
+// ntiaFeatureKeys lists the feature keys supported by the cisa-2026 profile.
+var ntiaFeatureKeys = map[string]struct{}{
 	// SBOM-level
 	"sbom_data_format":        {},
 	"sbom_spec_version":       {},
@@ -430,18 +430,25 @@ func normalizeProfile(profile string) string {
 	switch strings.ToLower(strings.TrimSpace(profile)) {
 	case "bsi":
 		return "bsiv21"
+
 	case "bsi-v1.1", "bsi-v1_1":
 		return "bsiv11"
+
 	case "bsi-v2.0", "bsi-v2_0":
 		return "bsiv20"
+
 	case "bsi-v2.1", "bsi-v2_1":
 		return "bsiv21"
-	case "cisa-2026", "cisa", "cisa2026", "CISA2026":
+
+	case "cisa-2026", "cisa", "cisa2026", "ntia-2026":
 		return "ntia"
+
 	case "ntia-2021", "ntia2021", "cisa-2021", "cisa2021", "CISA2021":
 		return "ntia-2021"
+
 	case "oct", "oct-v1.1", "oct-v1_1", "octv11":
 		return "oct-v1.1"
+
 	default:
 		return profile
 	}
@@ -518,14 +525,14 @@ func validateparsedListCmd(uCmd *userListCmd) error {
 			)
 		}
 	case "ntia-2021":
-		if _, ok := ntiaFeatureKeys[cleaned]; !ok {
+		if _, ok := ntia2021FeatureKeys[cleaned]; !ok {
 			return fmt.Errorf(
 				"feature %q is not supported for profile %q.\n\nSupported features: sbom_authors, sbom_relationships, sbom_timestamp, comp_supplier, comp_name, comp_version, comp_uniq_id",
 				cleaned, uCmd.profile,
 			)
 		}
 	case "ntia":
-		if _, ok := cisa2026FeatureKeys[cleaned]; !ok {
+		if _, ok := ntiaFeatureKeys[cleaned]; !ok {
 			return fmt.Errorf(
 				"feature %q is not supported for profile %q.\n\nSupported features: sbom_data_format, sbom_spec_version, sbom_author, sbom_tool_name, sbom_tool_version, sbom_version, sbom_timestamp, sbom_generation_context, sbom_relationships, sbom_signature, comp_name, comp_version, comp_uniq_id, comp_producer, comp_hash_value, comp_hash_algo, comp_license",
 				cleaned, uCmd.profile,

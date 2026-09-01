@@ -26,15 +26,15 @@ import (
 	"github.com/samber/lo"
 )
 
-// CISA 2026 minimum version requirements.
+// NTIA 2026 minimum version requirements.
 const (
-	cisaMinCDX  = "1.4"
-	cisaMinSPDX = "2.3"
+	ntia2026MinCDX  = "1.4"
+	ntia2026MinSPDX = "2.3"
 )
 
-// CISA2026SBOMDataFormat checks that the SBOM data format is declared (SPDX or CycloneDX)
+// NTIA2026SBOMDataFormat checks that the SBOM data format is declared (SPDX or CycloneDX)
 // and that the file format (JSON/XML/Tag-Value) is present.
-func CISA2026SBOMDataFormat(doc sbom.Document) catalog.ProfFeatScore {
+func NTIA2026SBOMDataFormat(doc sbom.Document) catalog.ProfFeatScore {
 	spec := strings.TrimSpace(strings.ToLower(doc.Spec().GetSpecType()))
 	format := strings.TrimSpace(strings.ToLower(doc.Spec().FileFormat()))
 
@@ -71,9 +71,9 @@ func CISA2026SBOMDataFormat(doc sbom.Document) catalog.ProfFeatScore {
 	}
 }
 
-// CISA2026SBOMSpecVersion checks whether the SBOM's specification version is present
+// NTIA2026SBOMSpecVersion checks whether the SBOM's specification version is present
 // and meets CISA 2026 minimum requirements (CycloneDX >= 1.4, SPDX >= 2.3).
-func CISA2026SBOMSpecVersion(doc sbom.Document) catalog.ProfFeatScore {
+func NTIA2026SBOMSpecVersion(doc sbom.Document) catalog.ProfFeatScore {
 	ver := strings.TrimSpace(doc.Spec().GetVersion())
 	if ver == "" || ver == "SpecVersion(0)" {
 		return catalog.ProfFeatScore{
@@ -87,10 +87,10 @@ func CISA2026SBOMSpecVersion(doc sbom.Document) catalog.ProfFeatScore {
 	switch doc.Spec().GetSpecType() {
 	case string(sbom.SBOMSpecCDX):
 		format = "CycloneDX"
-		minVer = cisaMinCDX
+		minVer = ntia2026MinCDX
 	case string(sbom.SBOMSpecSPDX):
 		format = "SPDX"
-		minVer = cisaMinSPDX
+		minVer = ntia2026MinSPDX
 	}
 
 	if minVer != "" && isVersionAtLeast(ver, minVer) {
@@ -108,9 +108,9 @@ func CISA2026SBOMSpecVersion(doc sbom.Document) catalog.ProfFeatScore {
 	}
 }
 
-// CISA2026SBOMToolName checks whether the tool that generated the SBOM has a name.
+// NTIA2026SBOMToolName checks whether the tool that generated the SBOM has a name.
 // CISA 2026 requires tool name information.
-func CISA2026SBOMToolName(doc sbom.Document) catalog.ProfFeatScore {
+func NTIA2026SBOMToolName(doc sbom.Document) catalog.ProfFeatScore {
 	tools := doc.Tools()
 	if len(tools) == 0 {
 		return catalog.ProfFeatScore{
@@ -138,9 +138,9 @@ func CISA2026SBOMToolName(doc sbom.Document) catalog.ProfFeatScore {
 	}
 }
 
-// CISA2026SBOMToolVersion checks whether the tool that generated the SBOM has a version.
+// NTIA2026SBOMToolVersion checks whether the tool that generated the SBOM has a version.
 // CISA 2026 requires tool version information (not just name).
-func CISA2026SBOMToolVersion(doc sbom.Document) catalog.ProfFeatScore {
+func NTIA2026SBOMToolVersion(doc sbom.Document) catalog.ProfFeatScore {
 	tools := doc.Tools()
 	if len(tools) == 0 {
 		return catalog.ProfFeatScore{
@@ -168,10 +168,10 @@ func CISA2026SBOMToolVersion(doc sbom.Document) catalog.ProfFeatScore {
 	}
 }
 
-// CISA2026SBOMVersion checks whether the SBOM document itself has a version identifier.
+// NTIA2026SBOMVersion checks whether the SBOM document itself has a version identifier.
 // For CycloneDX: checks Spec.GetURI() which returns urn:uuid:{serialNumber}/{version}
 // For SPDX: author-assigned SBOM version is not supported by the spec → N/A
-func CISA2026SBOMVersion(doc sbom.Document) catalog.ProfFeatScore {
+func NTIA2026SBOMVersion(doc sbom.Document) catalog.ProfFeatScore {
 	spec := doc.Spec().GetSpecType()
 
 	if spec == string(sbom.SBOMSpecCDX) {
@@ -206,9 +206,9 @@ func CISA2026SBOMVersion(doc sbom.Document) catalog.ProfFeatScore {
 	}
 }
 
-// CISA2026SBOMCreationTimestamp checks whether the SBOM has a valid creation timestamp.
+// NTIA2026SBOMCreationTimestamp checks whether the SBOM has a valid creation timestamp.
 // CISA 2026 requires the timestamp to be valid and RFC 9557-compliant.
-func CISA2026SBOMCreationTimestamp(doc sbom.Document) catalog.ProfFeatScore {
+func NTIA2026SBOMCreationTimestamp(doc sbom.Document) catalog.ProfFeatScore {
 	ts := strings.TrimSpace(doc.Spec().GetCreationTimestamp())
 	if ts == "" {
 		return catalog.ProfFeatScore{
@@ -236,11 +236,11 @@ func CISA2026SBOMCreationTimestamp(doc sbom.Document) catalog.ProfFeatScore {
 	}
 }
 
-// CISA2026GenerationContext checks whether the SBOM includes context for how it was generated.
+// NTIA2026GenerationContext checks whether the SBOM includes context for how it was generated.
 // For CycloneDX: checks Lifecycles (metadata.lifecycles)
 // For SPDX v2.x: checks CreationInfo.Comment (document-level comment)
 // For SPDX 3.x: checks Lifecycles (software_Sbom.sbomType or CreationInfo.Comment)
-func CISA2026GenerationContext(doc sbom.Document) catalog.ProfFeatScore {
+func NTIA2026GenerationContext(doc sbom.Document) catalog.ProfFeatScore {
 	spec := doc.Spec().GetSpecType()
 	ver := strings.TrimSpace(doc.Spec().GetVersion())
 
@@ -323,10 +323,10 @@ func CISA2026GenerationContext(doc sbom.Document) catalog.ProfFeatScore {
 	}
 }
 
-// CISA2026SBOMAuthors checks whether the SBOM has a person or organization as author.
+// NTIA2026SBOMAuthors checks whether the SBOM has a person or organization as author.
 // CISA 2026 explicitly requires the SBOM Author to be a person or organization;
 // tool entries are NOT accepted.
-func CISA2026SBOMAuthors(doc sbom.Document) catalog.ProfFeatScore {
+func NTIA2026SBOMAuthors(doc sbom.Document) catalog.ProfFeatScore {
 	authors := doc.Authors()
 	var legalAuthors []sbom.GetAuthor
 
@@ -379,9 +379,9 @@ func CISA2026SBOMAuthors(doc sbom.Document) catalog.ProfFeatScore {
 	}
 }
 
-// CISA2026SBOMRelationships checks whether the SBOM has dependency relationships
+// NTIA2026SBOMRelationships checks whether the SBOM has dependency relationships
 // for the primary component.
-func CISA2026SBOMRelationships(doc sbom.Document) catalog.ProfFeatScore {
+func NTIA2026SBOMRelationships(doc sbom.Document) catalog.ProfFeatScore {
 	var have int
 
 	primary := doc.PrimaryComp()
@@ -404,8 +404,8 @@ func CISA2026SBOMRelationships(doc sbom.Document) catalog.ProfFeatScore {
 	}
 }
 
-// CISA2026SBOMSignature checks whether the SBOM has a digital signature.
-func CISA2026SBOMSignature(doc sbom.Document) catalog.ProfFeatScore {
+// NTIA2026SBOMSignature checks whether the SBOM has a digital signature.
+func NTIA2026SBOMSignature(doc sbom.Document) catalog.ProfFeatScore {
 	sig := doc.Signature()
 	if sig == nil {
 		spec := strings.TrimSpace(strings.ToLower(doc.Spec().GetSpecType()))
@@ -455,8 +455,8 @@ func CISA2026SBOMSignature(doc sbom.Document) catalog.ProfFeatScore {
 
 // ── Component-level evaluators with BSI-style ratio descriptions ──
 
-// cisaComponentScore builds BSI-style descriptions for component-level fields.
-func cisaComponentScore(valid, total int, fieldLabel string) catalog.ProfFeatScore {
+// ntia2026ComponentScore builds BSI-style descriptions for component-level fields.
+func ntia2026ComponentScore(valid, total int, fieldLabel string) catalog.ProfFeatScore {
 	if total == 0 {
 		return catalog.ProfFeatScore{Score: 0.0, Desc: "no components found"}
 	}
@@ -478,26 +478,26 @@ func cisaComponentScore(valid, total int, fieldLabel string) catalog.ProfFeatSco
 	}
 }
 
-// CISA2026CompName checks that all components have a name.
-func CISA2026CompName(doc sbom.Document) catalog.ProfFeatScore {
+// NTIA2026CompName checks that all components have a name.
+func NTIA2026CompName(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
 	valid := lo.CountBy(comps, func(c sbom.GetComponent) bool {
 		return strings.TrimSpace(c.GetName()) != ""
 	})
-	return cisaComponentScore(valid, len(comps), "name")
+	return ntia2026ComponentScore(valid, len(comps), "name")
 }
 
-// CISA2026CompVersion checks that all components have a version.
-func CISA2026CompVersion(doc sbom.Document) catalog.ProfFeatScore {
+// NTIA2026CompVersion checks that all components have a version.
+func NTIA2026CompVersion(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
 	valid := lo.CountBy(comps, func(c sbom.GetComponent) bool {
 		return strings.TrimSpace(c.GetVersion()) != ""
 	})
-	return cisaComponentScore(valid, len(comps), "version")
+	return ntia2026ComponentScore(valid, len(comps), "version")
 }
 
-// CISA2026CompUniqID checks that all components have a unique identifier (PURL, CPE, or SWID).
-func CISA2026CompUniqID(doc sbom.Document) catalog.ProfFeatScore {
+// NTIA2026CompUniqID checks that all components have a unique identifier (PURL, CPE, or SWID).
+func NTIA2026CompUniqID(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
 	valid := lo.CountBy(comps, func(c sbom.GetComponent) bool {
 		if common.CompHasAnyPURLs(c) {
@@ -511,13 +511,13 @@ func CISA2026CompUniqID(doc sbom.Document) catalog.ProfFeatScore {
 		}
 		return false
 	})
-	return cisaComponentScore(valid, len(comps), "unique identifier")
+	return ntia2026ComponentScore(valid, len(comps), "unique identifier")
 }
 
-// CISA2026CompProducer checks whether each component has producer information.
+// NTIA2026CompProducer checks whether each component has producer information.
 // CISA 2026 uses "Component Producer" (formerly Supplier Name) and evaluates it
 // per-component using Suppliers, Manufacturer, or Authors.
-func CISA2026CompProducer(doc sbom.Document) catalog.ProfFeatScore {
+func NTIA2026CompProducer(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
 	valid := 0
 	for _, c := range comps {
@@ -551,12 +551,12 @@ func CISA2026CompProducer(doc sbom.Document) catalog.ProfFeatScore {
 			}
 		}
 	}
-	return cisaComponentScore(valid, len(comps), "producer")
+	return ntia2026ComponentScore(valid, len(comps), "producer")
 }
 
-// CISA2026CompHashValue checks whether each component has at least one checksum value.
+// NTIA2026CompHashValue checks whether each component has at least one checksum value.
 // CISA 2026 requires component-level hash values.
-func CISA2026CompHashValue(doc sbom.Document) catalog.ProfFeatScore {
+func NTIA2026CompHashValue(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
 	valid := lo.CountBy(comps, func(c sbom.GetComponent) bool {
 		checksums := c.GetChecksums()
@@ -570,12 +570,12 @@ func CISA2026CompHashValue(doc sbom.Document) catalog.ProfFeatScore {
 		}
 		return false
 	})
-	return cisaComponentScore(valid, len(comps), "hash value")
+	return ntia2026ComponentScore(valid, len(comps), "hash value")
 }
 
-// CISA2026CompHashAlgo checks whether each component has at least one checksum algorithm.
+// NTIA2026CompHashAlgo checks whether each component has at least one checksum algorithm.
 // CISA 2026 requires component-level hashes with algorithm specified.
-func CISA2026CompHashAlgo(doc sbom.Document) catalog.ProfFeatScore {
+func NTIA2026CompHashAlgo(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
 	valid := lo.CountBy(comps, func(c sbom.GetComponent) bool {
 		checksums := c.GetChecksums()
@@ -589,14 +589,14 @@ func CISA2026CompHashAlgo(doc sbom.Document) catalog.ProfFeatScore {
 		}
 		return false
 	})
-	return cisaComponentScore(valid, len(comps), "hash algorithm")
+	return ntia2026ComponentScore(valid, len(comps), "hash algorithm")
 }
 
-// CISA2026CompLicense checks that all components have a declared license.
-func CISA2026CompLicense(doc sbom.Document) catalog.ProfFeatScore {
+// NTIA2026CompLicense checks that all components have a declared license.
+func NTIA2026CompLicense(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
 	valid := lo.CountBy(comps, func(c sbom.GetComponent) bool {
 		return common.ComponentHasAnyDeclared(c)
 	})
-	return cisaComponentScore(valid, len(comps), "declared license")
+	return ntia2026ComponentScore(valid, len(comps), "declared license")
 }
