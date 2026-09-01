@@ -48,7 +48,7 @@ var cisa2026SectionDetails = map[int]bsiSection{
 }
 
 func cisa2026JSONReport(dtb *db.DB, fileName string) {
-	name := "CISA Minimum Elements (2026) Compliance Report"
+	name := "NTIA Minimum Elements (2026) Compliance Report"
 	revision := "CISA 2026 Minimum Elements"
 	jr := newJSONReport(name, revision)
 	jr.Run.FileName = fileName
@@ -129,7 +129,7 @@ func cisa2026DetailedReport(dtb *db.DB, fileName string, colorOutput bool) {
 	table := tablewriter.NewWriter(os.Stdout)
 	score := cisa2026AggregateScore(dtb)
 
-	fmt.Printf("CISA Minimum Elements (2026) Compliance Report \n")
+	fmt.Printf("NTIA Minimum Elements (2026) Compliance Report \n")
 	fmt.Printf("Compliance score by Interlynk Score:%0.1f RequiredScore:%0.1f OptionalScore:%0.1f for %s\n", score.totalScore(), score.totalRequiredScore(), score.totalOptionalScore(), fileName)
 	fmt.Printf("* indicates optional fields\n")
 	table.SetHeader([]string{"ElementId", "Section", "Datafield", "Element Result", "Score"})
@@ -165,6 +165,6 @@ func cisa2026DetailedReport(dtb *db.DB, fileName string, colorOutput bool) {
 
 func cisa2026BasicReport(dtb *db.DB, fileName string) {
 	score := cisa2026AggregateScore(dtb)
-	fmt.Printf("CISA Minimum Elements (2026) Compliance Report\n")
+	fmt.Printf("NTIA Minimum Elements (2026) Compliance Report\n")
 	fmt.Printf("Score:%0.1f RequiredScore:%0.1f OptionalScore:%0.1f for %s\n", score.totalScore(), score.totalRequiredScore(), score.totalOptionalScore(), fileName)
 }

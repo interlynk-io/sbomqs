@@ -55,8 +55,8 @@ func runComplianceTest(_ *testing.T, ctx context.Context, tc ComplianceTestCase)
 
 	// Set the compliance profile
 	switch tc.Profile {
-	case "ntia":
-		params.Ntia = true
+	case "ntia-2021":
+		params.Ntia2021 = true
 	case "bsiv21":
 		params.BsiV21 = true
 	}
@@ -83,7 +83,7 @@ func TestComplianceIntegrationSPDX3_NTIA(t *testing.T) {
 		{
 			Name:       "NTIA - Perfect score SPDX 3.0",
 			SBOMFile:   getComplianceFixturePath("spdx3-perfect-score.json"),
-			Profile:    "ntia",
+			Profile:    "ntia-2021",
 			ExpectPass: true,
 			MinScore:   10.0,
 		},
@@ -92,7 +92,7 @@ func TestComplianceIntegrationSPDX3_NTIA(t *testing.T) {
 		{
 			Name:       "NTIA - Minimal SPDX 3.0",
 			SBOMFile:   getComplianceFixturePath("spdx3-minimal.json"),
-			Profile:    "ntia",
+			Profile:    "ntia-2021",
 			ExpectPass: false,
 			MinScore:   6.7,
 		},
@@ -101,7 +101,7 @@ func TestComplianceIntegrationSPDX3_NTIA(t *testing.T) {
 		{
 			Name:       "NTIA - Complete NTIA SPDX 3.0",
 			SBOMFile:   getComplianceFixturePath("spdx3-complete-ntia.json"),
-			Profile:    "ntia",
+			Profile:    "ntia-2021",
 			ExpectPass: true,
 			MinScore:   9.8,
 		},
@@ -110,7 +110,7 @@ func TestComplianceIntegrationSPDX3_NTIA(t *testing.T) {
 		{
 			Name:       "NTIA - No authors and no tool SPDX 3.0",
 			SBOMFile:   getComplianceFixturePath("spdx3-no-authors.json"),
-			Profile:    "ntia",
+			Profile:    "ntia-2021",
 			ExpectPass: true,
 			MinScore:   9.1,
 		},
@@ -119,7 +119,7 @@ func TestComplianceIntegrationSPDX3_NTIA(t *testing.T) {
 		{
 			Name:       "NTIA - No timestamp SPDX 3.0",
 			SBOMFile:   getComplianceFixturePath("spdx3-no-timestamp.json"),
-			Profile:    "ntia",
+			Profile:    "ntia-2021",
 			ExpectPass: true,
 			MinScore:   9.5,
 		},
@@ -128,7 +128,7 @@ func TestComplianceIntegrationSPDX3_NTIA(t *testing.T) {
 		{
 			Name:       "NTIA - No dependencies SPDX 3.0",
 			SBOMFile:   getComplianceFixturePath("spdx3-no-dependencies.json"),
-			Profile:    "ntia",
+			Profile:    "ntia-2021",
 			ExpectPass: true,
 			MinScore:   9.5,
 		},
@@ -137,7 +137,7 @@ func TestComplianceIntegrationSPDX3_NTIA(t *testing.T) {
 		{
 			Name:       "NTIA - With dependencies SPDX 3.0",
 			SBOMFile:   getComplianceFixturePath("spdx3-with-dependencies.json"),
-			Profile:    "ntia",
+			Profile:    "ntia-2021",
 			ExpectPass: true,
 			MinScore:   10.0,
 		},
@@ -146,7 +146,7 @@ func TestComplianceIntegrationSPDX3_NTIA(t *testing.T) {
 		{
 			Name:       "NTIA - No tool SPDX 3.0",
 			SBOMFile:   getComplianceFixturePath("spdx3-no-tool.json"),
-			Profile:    "ntia",
+			Profile:    "ntia-2021",
 			ExpectPass: true,
 			MinScore:   9.5,
 		},
@@ -155,7 +155,7 @@ func TestComplianceIntegrationSPDX3_NTIA(t *testing.T) {
 		{
 			Name:       "NTIA - No checksum SPDX 3.0",
 			SBOMFile:   getComplianceFixturePath("spdx3-no-checksum.json"),
-			Profile:    "ntia",
+			Profile:    "ntia-2021",
 			ExpectPass: true,
 			MinScore:   10.0,
 		},
@@ -164,7 +164,7 @@ func TestComplianceIntegrationSPDX3_NTIA(t *testing.T) {
 		{
 			Name:       "NTIA - No supplier SPDX 3.0",
 			SBOMFile:   getComplianceFixturePath("spdx3-no-supplier.json"),
-			Profile:    "ntia",
+			Profile:    "ntia-2021",
 			ExpectPass: true,
 			MinScore:   9.1,
 		},
@@ -173,7 +173,7 @@ func TestComplianceIntegrationSPDX3_NTIA(t *testing.T) {
 		{
 			Name:       "NTIA - No version SPDX 3.0",
 			SBOMFile:   getComplianceFixturePath("spdx3-no-version.json"),
-			Profile:    "ntia",
+			Profile:    "ntia-2021",
 			ExpectPass: true,
 			MinScore:   9.1,
 		},
@@ -182,7 +182,7 @@ func TestComplianceIntegrationSPDX3_NTIA(t *testing.T) {
 		{
 			Name:       "NTIA - No unique ID SPDX 3.0",
 			SBOMFile:   getComplianceFixturePath("spdx3-no-unique-id.json"),
-			Profile:    "ntia",
+			Profile:    "ntia-2021",
 			ExpectPass: false,
 			MinScore:   5.0,
 		},

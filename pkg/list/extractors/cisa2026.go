@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// CISA Minimum Elements (2026) extractors.
+// NTIA Minimum Elements (2026) extractors.
 //
 // The list command shows actual field values; it does not enforce version
 // requirements or algorithm rules (that is the scorer's job).

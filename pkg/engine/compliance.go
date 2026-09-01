@@ -50,6 +50,7 @@ func ComplianceRun(ctx context.Context, ep *Params) error {
 		zap.Bool("oct", ep.Oct),
 		zap.Bool("fsct", ep.Fsct),
 		zap.Bool("ntia", ep.Ntia),
+		zap.Bool("ntia2021", ep.Ntia2021),
 		zap.Bool("basic", ep.Basic),
 		zap.Bool("json", ep.JSON),
 		zap.Bool("color", ep.Color),
@@ -79,6 +80,10 @@ func ComplianceRun(ctx context.Context, ep *Params) error {
 		reportType = "FSCT"
 	case ep.Cisa2026:
 		reportType = "CISA-2026"
+	case ep.Ntia:
+		reportType = "CISA-2026"
+	case ep.Ntia2021:
+		reportType = "NTIA"
 	case ep.Cisa2021:
 		reportType = "NTIA"
 	default:

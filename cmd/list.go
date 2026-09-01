@@ -82,9 +82,10 @@ var listCmd = &cobra.Command{
   # Show components with invalid/missing licenses
   sbomqs list --feature comp_spdx_listed_license --missing my-app.spdx.json
 
-  # Use a compliance profile (bsi = latest BSI v2.1)
+  # Use a compliance profile (bsi = latest BSI v2.1, ntia = CISA 2026)
   sbomqs list --profile bsi --feature comp_name my-app.cdx.json
-  sbomqs list --profile ntia --feature comp_supplier --missing my-app.spdx.json
+  sbomqs list --profile ntia --feature comp_producer --missing my-app.spdx.json
+  sbomqs list --profile ntia-2021 --feature comp_supplier --missing my-app.spdx.json
   sbomqs list --profile bsiv21 --feature comp_deployable_hash --missing my-app.cdx.json
 
   # Browse features supported by a profile
@@ -198,7 +199,7 @@ func init() {
 
 	listCmd.Flags().BoolP("missing", "m", false, "List components or properties missing the specified feature")
 
-	listCmd.Flags().String("profile", "", "Compliance profile for feature extraction (e.g. bsi [=bsiv21], bsiv11|bsi-v1.1, bsiv20|bsi-v2.0, bsiv21|bsi-v2.1, cisa-2026|cisa|cisa2026, cisa-2021|cisa2021 [=ntia], fsct, ntia, oct|oct-v1.1, interlynk). Run 'sbomqs features --profile <profile>' to see supported features for each profile.")
+	listCmd.Flags().String("profile", "", "Compliance profile for feature extraction (e.g. bsi [=bsiv21], bsiv11|bsi-v1.1, bsiv20|bsi-v2.0, bsiv21|bsi-v2.1, ntia|cisa-2026|cisa|cisa2026, ntia-2021|cisa-2021|cisa2021, fsct, oct|oct-v1.1, interlynk). Run 'sbomqs features --profile <profile>' to see supported features for each profile.")
 
 	// -- Signature Control --
 	listCmd.Flags().String("signature", "", "Path to detached signature file for SPDX SBOMs")
@@ -424,6 +425,7 @@ var bsiV21FeatureKeys = map[string]struct{}{
 
 // normalizeProfile resolves profile aliases to their canonical names.
 // "bsi" is an alias for "bsiv21" (the latest BSI version).
+// "ntia" is an alias for "cisa-2026" (CISA 2026, the updated NTIA).
 func normalizeProfile(profile string) string {
 	switch strings.ToLower(strings.TrimSpace(profile)) {
 	case "bsi":
@@ -434,10 +436,10 @@ func normalizeProfile(profile string) string {
 		return "bsiv20"
 	case "bsi-v2.1", "bsi-v2_1":
 		return "bsiv21"
-	case "cisa", "cisa2026", "CISA2026":
-		return "cisa-2026"
-	case "cisa-2021", "cisa2021", "CISA2021":
+	case "cisa-2026", "cisa", "cisa2026", "CISA2026":
 		return "ntia"
+	case "ntia-2021", "ntia2021", "cisa-2021", "cisa2021", "CISA2021":
+		return "ntia-2021"
 	case "oct", "oct-v1.1", "oct-v1_1", "octv11":
 		return "oct-v1.1"
 	default:
@@ -445,41 +447,30 @@ func normalizeProfile(profile string) string {
 	}
 }
 
-// supportedProfiles lists the known profile values for --profile.
+// supportedProfiles lists the known canonical profile values for --profile.
+// Aliases are normalized before this check; only canonical keys belong here.
 var supportedProfiles = map[string]struct{}{
-	"fsct":       {},
-	"ntia":       {},
-	"cisa-2021":  {},
-	"cisa2021":   {},
-	"cisa-2026":  {},
-	"cisa2026":   {},
-	"bsiv11":     {},
-	"bsi-v1.1":   {},
-	"bsi-v1_1":   {},
-	"bsiv20":     {},
-	"bsi-v2.0":   {},
-	"bsi-v2_0":   {},
-	"bsiv21":     {},
-	"bsi-v2.1":   {},
-	"bsi-v2_1":   {},
-	"oct-v1.1":   {},
-	"oct-v1_1":   {},
-	"octv11":     {},
-	"oct":        {},
-	"interlynk":  {},
+	"fsct":      {},
+	"ntia":      {},
+	"ntia-2021": {},
+	"bsiv11":    {},
+	"bsiv20":    {},
+	"bsiv21":    {},
+	"oct-v1.1":  {},
+	"interlynk": {},
 }
 
 // profileSectionName maps a --profile value to the display section name used
 // in ProfileSections. Used by the features command to filter by profile.
 var profileSectionName = map[string]string{
-	"bsiv11":      "BSI TR-03183-2 v1.1 (--profile bsiv11 / bsi-v1.1)",
-	"bsiv20":      "BSI TR-03183-2 v2.0 (--profile bsiv20 / bsi-v2.0)",
-	"bsiv21":      "BSI TR-03183-2 v2.1 (--profile bsiv21 / bsi-v2.1)",
-	"ntia":        "NTIA Minimum Elements (--profile ntia / cisa-2021 / cisa2021)",
-	"cisa-2026":   "CISA Minimum Elements 2026 (--profile cisa-2026 / cisa / cisa2026)",
-	"fsct":        "FSCT Framing 3rd Edition (--profile fsct)",
-	"oct-v1.1":    "OpenChain Telco v1.1 (--profile oct / oct-v1.1)",
-	"interlynk":   "Interlynk (--profile interlynk)",
+	"bsiv11":    "BSI TR-03183-2 v1.1 (--profile bsiv11 / bsi-v1.1)",
+	"bsiv20":    "BSI TR-03183-2 v2.0 (--profile bsiv20 / bsi-v2.0)",
+	"bsiv21":    "BSI TR-03183-2 v2.1 (--profile bsiv21 / bsi-v2.1)",
+	"ntia":      "NTIA Minimum Elements (2026) (--profile ntia / cisa-2026 / cisa / cisa2026)",
+	"ntia-2021": "NTIA Minimum Elements 2021 (--profile ntia-2021 / ntia2021 / cisa-2021 / cisa2021)",
+	"fsct":      "FSCT Framing 3rd Edition (--profile fsct)",
+	"oct-v1.1":  "OpenChain Telco v1.1 (--profile oct / oct-v1.1)",
+	"interlynk": "Interlynk (--profile interlynk)",
 }
 
 func validateparsedListCmd(uCmd *userListCmd) error {
@@ -492,7 +483,7 @@ func validateparsedListCmd(uCmd *userListCmd) error {
 	if uCmd.profile != "" {
 		if _, ok := supportedProfiles[uCmd.profile]; !ok {
 			return fmt.Errorf(
-				"profile %q is not supported. Supported profiles: bsi (=bsiv21), bsiv11|bsi-v1.1, bsiv20|bsi-v2.0, bsiv21|bsi-v2.1, cisa-2026|cisa|cisa2026, cisa-2021|cisa2021 (=ntia), oct|oct-v1.1, fsct, ntia, interlynk",
+				"profile %q is not supported. Supported profiles: bsi (=bsiv21), bsiv11|bsi-v1.1, bsiv20|bsi-v2.0, bsiv21|bsi-v2.1, ntia|cisa-2026|cisa|cisa2026, ntia-2021|ntia2021|cisa-2021|cisa2021, oct|oct-v1.1, fsct, interlynk",
 				uCmd.profile,
 			)
 		}
@@ -526,14 +517,14 @@ func validateparsedListCmd(uCmd *userListCmd) error {
 				cleaned, uCmd.profile,
 			)
 		}
-	case "ntia":
+	case "ntia-2021":
 		if _, ok := ntiaFeatureKeys[cleaned]; !ok {
 			return fmt.Errorf(
 				"feature %q is not supported for profile %q.\n\nSupported features: sbom_authors, sbom_relationships, sbom_timestamp, comp_supplier, comp_name, comp_version, comp_uniq_id",
 				cleaned, uCmd.profile,
 			)
 		}
-	case "cisa-2026":
+	case "ntia":
 		if _, ok := cisa2026FeatureKeys[cleaned]; !ok {
 			return fmt.Errorf(
 				"feature %q is not supported for profile %q.\n\nSupported features: sbom_data_format, sbom_spec_version, sbom_author, sbom_tool_name, sbom_tool_version, sbom_version, sbom_timestamp, sbom_generation_context, sbom_relationships, sbom_signature, comp_name, comp_version, comp_uniq_id, comp_producer, comp_hash_value, comp_hash_algo, comp_license",
@@ -801,30 +792,30 @@ var ProfileSections = []ProfileSection{
 			{Name: "comp_security_txt_url", Description: "security.txt URL"},
 		},
 	},
-		{
-			Name: "CISA Minimum Elements 2026 (--profile cisa-2026 / cisa / cisa2026)",
-			Features: []ProfileFeature{
-				// SBOM-level
-				{Name: "sbom_data_format", Description: "Valid spec (SPDX/CycloneDX) and format (JSON/XML)"},
-				{Name: "sbom_spec_version", Description: "SBOM specification version"},
-				{Name: "sbom_author", Description: "SBOM author (person or organization; tool entries not accepted)"},
-				{Name: "sbom_tool_name", Description: "SBOM generation tool name"},
-				{Name: "sbom_tool_version", Description: "SBOM generation tool version"},
-				{Name: "sbom_version", Description: "Author-assigned SBOM document version"},
-				{Name: "sbom_timestamp", Description: "SBOM creation timestamp"},
-				{Name: "sbom_generation_context", Description: "Context describing how the SBOM was generated"},
-				{Name: "sbom_relationships", Description: "Primary component dependency relationships"},
-				{Name: "sbom_signature", Description: "Digital signature on the SBOM document"},
-				// Component-level
-				{Name: "comp_name", Description: "Component name"},
-				{Name: "comp_version", Description: "Component version"},
-				{Name: "comp_uniq_id", Description: "Unique identifier (PURL or CPE)"},
-				{Name: "comp_producer", Description: "Component producer (supplier, manufacturer, or author)"},
-				{Name: "comp_hash_value", Description: "Component hash value"},
-				{Name: "comp_hash_algo", Description: "Component hash with algorithm specified"},
-				{Name: "comp_license", Description: "Component declared license"},
-			},
+	{
+		Name: "NTIA Minimum Elements (2026) (--profile ntia / cisa-2026 / cisa / cisa2026)",
+		Features: []ProfileFeature{
+			// SBOM-level
+			{Name: "sbom_data_format", Description: "Valid spec (SPDX/CycloneDX) and format (JSON/XML)"},
+			{Name: "sbom_spec_version", Description: "SBOM specification version"},
+			{Name: "sbom_author", Description: "SBOM author (person or organization; tool entries not accepted)"},
+			{Name: "sbom_tool_name", Description: "SBOM generation tool name"},
+			{Name: "sbom_tool_version", Description: "SBOM generation tool version"},
+			{Name: "sbom_version", Description: "Author-assigned SBOM document version"},
+			{Name: "sbom_timestamp", Description: "SBOM creation timestamp"},
+			{Name: "sbom_generation_context", Description: "Context describing how the SBOM was generated"},
+			{Name: "sbom_relationships", Description: "Primary component dependency relationships"},
+			{Name: "sbom_signature", Description: "Digital signature on the SBOM document"},
+			// Component-level
+			{Name: "comp_name", Description: "Component name"},
+			{Name: "comp_version", Description: "Component version"},
+			{Name: "comp_uniq_id", Description: "Unique identifier (PURL or CPE)"},
+			{Name: "comp_producer", Description: "Component producer (supplier, manufacturer, or author)"},
+			{Name: "comp_hash_value", Description: "Component hash value"},
+			{Name: "comp_hash_algo", Description: "Component hash with algorithm specified"},
+			{Name: "comp_license", Description: "Component declared license"},
 		},
+	},
 	{
 		Name: "FSCT Framing 3rd Edition (--profile fsct)",
 		Features: []ProfileFeature{
@@ -885,7 +876,7 @@ var ProfileSections = []ProfileSection{
 		},
 	},
 	{
-		Name: "NTIA Minimum Elements (--profile ntia)",
+		Name: "NTIA Minimum Elements 2021 (--profile ntia-2021 / ntia2021 / cisa-2021 / cisa2021)",
 		Features: []ProfileFeature{
 			// SBOM-level
 			{Name: "sbom_authors", Description: "SBOM author declared"},

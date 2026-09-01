@@ -65,7 +65,9 @@ type Params struct {
 	ConfigPath string
 
 	Ntia     bool
-	Cisa2021 bool // alias for ntia
+	Ntia2021 bool
+	Cisa2021 bool // alias for ntia-2021
+
 	Bsi      bool
 	BsiV1    bool
 	BsiV2    bool

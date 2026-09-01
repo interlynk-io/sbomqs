@@ -64,41 +64,11 @@ func LookupFSCTDocExtractor(feature string) (extractors.DocExtractor, bool) {
 	return e, ok
 }
 
-// ProfileNTIA is the profile key for NTIA Minimum Elements (2021).
+// ProfileNTIA is the profile key for NTIA Minimum Elements (2026).
 const ProfileNTIA = "ntia"
 
-// ntiaCompExtractors maps NTIA 2021 feature keys to per-component extractors.
+// ntiaCompExtractors maps NTIA (2026) feature keys to per-component extractors.
 var ntiaCompExtractors = map[string]extractors.CompExtractor{
-	"comp_supplier": extractors.NTIACompSupplier,
-	"comp_name":     extractors.BSIV21CompName,
-	"comp_version":  extractors.BSIV21CompVersion,
-	"comp_uniq_id":  extractors.BSIV20CompOtherIdentifiers, // PURLs + CPEs
-}
-
-// ntiaDocExtractors maps NTIA 2021 feature keys to SBOM-level extractors.
-var ntiaDocExtractors = map[string]extractors.DocExtractor{
-	"sbom_authors":        extractors.NTIASBOMAuthors,
-	"sbom_relationships":  extractors.NTIASBOMRelationships,
-	"sbom_timestamp":      extractors.BSIV21SBOMTimestamp,
-}
-
-// LookupNTIACompExtractor returns the NTIA per-component extractor for the given feature key.
-func LookupNTIACompExtractor(feature string) (extractors.CompExtractor, bool) {
-	e, ok := ntiaCompExtractors[feature]
-	return e, ok
-}
-
-// LookupNTIADocExtractor returns the NTIA document-level extractor for the given feature key.
-func LookupNTIADocExtractor(feature string) (extractors.DocExtractor, bool) {
-	e, ok := ntiaDocExtractors[feature]
-	return e, ok
-}
-
-// ProfileCISA2026 is the profile key for CISA Minimum Elements (2026).
-const ProfileCISA2026 = "cisa-2026"
-
-// cisa2026CompExtractors maps CISA 2026 feature keys to per-component extractors.
-var cisa2026CompExtractors = map[string]extractors.CompExtractor{
 	"comp_name":       extractors.CISA2026CompName,
 	"comp_version":    extractors.CISA2026CompVersion,
 	"comp_uniq_id":    extractors.CISA2026CompUniqID,
@@ -108,8 +78,8 @@ var cisa2026CompExtractors = map[string]extractors.CompExtractor{
 	"comp_license":    extractors.CISA2026CompLicense,
 }
 
-// cisa2026DocExtractors maps CISA 2026 feature keys to SBOM-level extractors.
-var cisa2026DocExtractors = map[string]extractors.DocExtractor{
+// ntiaDocExtractors maps NTIA (2026) feature keys to SBOM-level extractors.
+var ntiaDocExtractors = map[string]extractors.DocExtractor{
 	"sbom_data_format":        extractors.CISA2026SBOMDataFormat,
 	"sbom_spec_version":       extractors.CISA2026SBOMSpecVersion,
 	"sbom_author":             extractors.CISA2026SBOMAuthors,
@@ -122,15 +92,57 @@ var cisa2026DocExtractors = map[string]extractors.DocExtractor{
 	"sbom_signature":          extractors.CISA2026SBOMSignature,
 }
 
-// LookupCISA2026CompExtractor returns the CISA 2026 per-component extractor for the given feature key.
-func LookupCISA2026CompExtractor(feature string) (extractors.CompExtractor, bool) {
-	e, ok := cisa2026CompExtractors[feature]
+// LookupNTIACompExtractor returns the NTIA (2026) per-component extractor for the given feature key.
+func LookupNTIACompExtractor(feature string) (extractors.CompExtractor, bool) {
+	e, ok := ntiaCompExtractors[feature]
 	return e, ok
 }
 
+// LookupNTIADocExtractor returns the NTIA (2026) document-level extractor for the given feature key.
+func LookupNTIADocExtractor(feature string) (extractors.DocExtractor, bool) {
+	e, ok := ntiaDocExtractors[feature]
+	return e, ok
+}
+
+// ProfileCISA2026 is an alias profile key for NTIA Minimum Elements (2026).
+const ProfileCISA2026 = "cisa-2026"
+
+// LookupCISA2026CompExtractor returns the CISA 2026 per-component extractor for the given feature key.
+// Deprecated: Use LookupNTIACompExtractor instead; CISA-2026 is now the canonical NTIA profile.
+func LookupCISA2026CompExtractor(feature string) (extractors.CompExtractor, bool) {
+	return LookupNTIACompExtractor(feature)
+}
+
 // LookupCISA2026DocExtractor returns the CISA 2026 document-level extractor for the given feature key.
+// Deprecated: Use LookupNTIADocExtractor instead; CISA-2026 is now the canonical NTIA profile.
 func LookupCISA2026DocExtractor(feature string) (extractors.DocExtractor, bool) {
-	e, ok := cisa2026DocExtractors[feature]
+	return LookupNTIADocExtractor(feature)
+}
+
+// ntia2021CompExtractors maps NTIA 2021 feature keys to per-component extractors.
+var ntia2021CompExtractors = map[string]extractors.CompExtractor{
+	"comp_supplier": extractors.NTIACompSupplier,
+	"comp_name":     extractors.BSIV21CompName,
+	"comp_version":  extractors.BSIV21CompVersion,
+	"comp_uniq_id":  extractors.BSIV20CompOtherIdentifiers, // PURLs + CPEs
+}
+
+// ntia2021DocExtractors maps NTIA 2021 feature keys to SBOM-level extractors.
+var ntia2021DocExtractors = map[string]extractors.DocExtractor{
+	"sbom_authors":       extractors.NTIASBOMAuthors,
+	"sbom_relationships": extractors.NTIASBOMRelationships,
+	"sbom_timestamp":     extractors.BSIV21SBOMTimestamp,
+}
+
+// LookupNTIA2021CompExtractor returns the NTIA 2021 per-component extractor for the given feature key.
+func LookupNTIA2021CompExtractor(feature string) (extractors.CompExtractor, bool) {
+	e, ok := ntia2021CompExtractors[feature]
+	return e, ok
+}
+
+// LookupNTIA2021DocExtractor returns the NTIA 2021 document-level extractor for the given feature key.
+func LookupNTIA2021DocExtractor(feature string) (extractors.DocExtractor, bool) {
+	e, ok := ntia2021DocExtractors[feature]
 	return e, ok
 }
 

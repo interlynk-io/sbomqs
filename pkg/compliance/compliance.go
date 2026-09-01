@@ -47,7 +47,7 @@ const (
 	// FSCT_V3 represents version 3 of the FSCT (FinTech Supply Chain Transparency)
 	// compliance framework.
 	FSCT_V3 = "FSCT"
-	// CISA_2026_REPORT represents the CISA Minimum Elements (2026) compliance framework.
+	// CISA_2026_REPORT represents the NTIA Minimum Elements (2026) compliance framework.
 	CISA_2026_REPORT = "CISA-2026"
 )
 

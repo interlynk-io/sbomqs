@@ -190,7 +190,7 @@ func Test_NTIAMinimumElementsProfileForStaticSBOMFiles(t *testing.T) {
 			t.Parallel()
 
 			cfg := config.Config{
-				Profile: []string{string(registry.ProfileNTIA)},
+				Profile: []string{string(registry.ProfileNTIA2021)},
 			}
 			paths := []string{path}
 
@@ -1033,7 +1033,7 @@ func Test_CISA2026ProfileForStaticSBOMFiles(t *testing.T) {
 				require.Len(t, r.Profiles.ProfResult, 1, "Should have exactly one profile result")
 
 				profResult := r.Profiles.ProfResult[0]
-				require.Equal(t, "CISA Minimum Elements (2026)", profResult.Name)
+				require.Equal(t, "NTIA Minimum Elements (2026)", profResult.Name)
 
 				gotRaw := profResult.InterlynkScore
 				gotRounded := math.Round(gotRaw*10) / 10

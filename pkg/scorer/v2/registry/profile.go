@@ -112,6 +112,9 @@ func ReadProfileConfigFile(path string) ([]catalog.ProfSpec, error) {
 
 		switch p.Key {
 		case string(ProfileNTIA):
+			profile.Features = similar(p, CISA2026KeyToEvaluatingFunction)
+
+		case string(ProfileNTIA2021):
 			profile.Features = similar(p, NTIAKeyToEvaluatingFunction)
 
 		case string(ProfileNTIA2025):

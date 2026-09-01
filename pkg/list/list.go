@@ -425,6 +425,12 @@ func evaluateFeaturePerComponent(feature, profile string, comp sbom.GetComponent
 		}
 	}
 
+	if profile == "ntia-2021" {
+		if ext, ok := LookupNTIA2021CompExtractor(feature); ok {
+			return ext(doc, comp)
+		}
+	}
+
 	if profile == ProfileBSIV11 {
 		if ext, ok := LookupBSIV11CompExtractor(feature); ok {
 			return ext(doc, comp)
@@ -481,6 +487,12 @@ func evaluateSBOMFeature(feature, profile string, doc sbom.Document) (bool, stri
 
 	if profile == ProfileNTIA {
 		if ext, ok := LookupNTIADocExtractor(feature); ok {
+			return ext(doc)
+		}
+	}
+
+	if profile == "ntia-2021" {
+		if ext, ok := LookupNTIA2021DocExtractor(feature); ok {
 			return ext(doc)
 		}
 	}

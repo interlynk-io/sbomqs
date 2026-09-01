@@ -103,7 +103,9 @@ func (r *Reporter) renderFeatureScore(result api.Result) {
 // getProfileDisplayName returns human-readable profile name
 func getProfileDisplayName(profile string) string {
 	switch profile {
-	case "ntia":
+	case "ntia", "cisa-2026", "cisa2026", "cisa":
+		return "NTIA Minimum Elements (2026)"
+	case "ntia-2021", "ntia2021", "cisa-2021", "cisa2021":
 		return "NTIA Minimum Elements (2021)"
 	case "ntia-2025":
 		return "NTIA Minimum Elements (2025)"
