@@ -86,38 +86,38 @@ var scoreCmd = &cobra.Command{
 	Example: `sbomqs score [--category <category>] [--basic|--json|--detailed] [--profile <profile>] <SBOM file>
 
   # Get a score for a SBOM in table output
-  sbomqs score samples/sbomqs-spdx-syft.json
+  sbomqs score samples/photon.spdx.json
 
   # Get a score for a SBOM in basic output
-  sbomqs score --basic samples/sbomqs-spdx-syft.json
+  sbomqs score --basic samples/photon.spdx.json
 
   # Get a score for a SBOM in JSON output
-  sbomqs score --json samples/sbomqs-spdx-syft.json
+  sbomqs score --json samples/photon.spdx.json
 
   # Get a detailed score for a SBOM
-  sbomqs score --detailed samples/sbomqs-spdx-syft.json
+  sbomqs score --detailed samples/photon.spdx.json
 
   # Score a SBOM for the ntia profile
-  sbomqs score --profile ntia samples/sbomqs-spdx-syft.json
+  sbomqs score --profile ntia samples/photon.spdx.json
 
   # Score a SBOM for ntia, bsi, oct-v1.1, interlynk profiles
-  sbomqs score --profile ntia,bsi,oct-v1.1,interlynk samples/sbomqs-spdx-syft.json
+  sbomqs score --profile ntia,bsi,oct-v1.1,interlynk samples/photon.spdx.json
 
   # Get a score for multiple comprehensive categories
-  sbomqs score --category identification,integrity samples/sbomqs-spdx-syft.json
+  sbomqs score --category identification,integrity samples/photon.spdx.json
 
   # Recursively score all SBOMs under a directory
   sbomqs score --recursive testdata
 
   # Enable component quality analysis with API key via flag
-  sbomqs score --enable-component-analysis --api-key "your-api-key" samples/sbomqs-spdx-syft.json
+  sbomqs score --enable-component-analysis --api-key "your-api-key" samples/photon.spdx.json
 
   # Enable component quality analysis with API key via environment variable
   export INTERLYNK_SECURITY_TOKEN="your-api-key"
-  sbomqs score --enable-component-analysis samples/sbomqs-spdx-syft.json
+  sbomqs score --enable-component-analysis samples/photon.spdx.json
 
   # Enable component quality analysis with custom API URL
-  sbomqs score --enable-component-analysis --api-url "https://api.interlynk.io" --api-key "your-api-key" samples/sbomqs-spdx-syft.json
+  sbomqs score --enable-component-analysis --api-url "https://api.interlynk.io" --api-key "your-api-key" samples/photon.spdx.json
 `,
 
 	Args: func(cmd *cobra.Command, args []string) error {
