@@ -130,5 +130,5 @@ func init() {
 	dtrackScoreCmd.Flags().BoolP("tag-project-with-grade", "g", false, "tag project with sbomqs grade")
 	dtrackScoreCmd.Flags().IntP("timeout", "i", 60, "Timeout in seconds for Dependency-Track API requests")
 	dtrackScoreCmd.Flags().BoolP("legacy", "l", false, "legacy, prior to sbomqs version 2.0")
-	dtrackScoreCmd.Flags().StringSlice("profile", nil, "profile(default: interlynk) to score ('ntia'|'cisa-2021'|'cisa2021', 'cisa-2026'|'cisa'|'cisa2026', 'fsct', 'bsi', 'bsi-v1.1'|'bsiv11', 'bsi-v2.0'|'bsiv20', 'bsi-v2.1'|'bsiv21', 'oct-v1.1'|'octv11'|'oct', 'interlynk')")
+	dtrackScoreCmd.Flags().StringSlice("profile", nil, "profiles to run ('ntia' (CISA-2026), 'ntia-2021'|'ntia2021'|'cisa-2021'|'cisa2021', 'cisa-2026'|'cisa'|'cisa2026', 'fsct', 'bsi', 'bsi-v1.1'|'bsiv11', 'bsi-v2.0'|'bsiv20', 'bsi-v2.1'|'bsiv21', 'oct-v1.1'|'octv11'|'oct', 'interlynk')")
 }

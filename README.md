@@ -81,19 +81,19 @@ In today's software landscape, understanding and managing your software supply c
 
 ```bash
 # Get a quality score (0-10)
-sbomqs score -b my-app.spdx.json
+sbomqs score -b samples/photon.spdx.json
 
 # See detailed breakdown
-sbomqs score my-app.spdx.json
+sbomqs score samples/photon.spdx.json
 
-# Check specific category
-sbomqs score my-app.spdx.json --category integrity
+# Check specific category, other supported categories are: [identification, provenance, integrity, completeness, licensing, vulnerability, structural, cinfo]
+sbomqs score samples/photon.spdx.json --category integrity
 
-# check specific profile 
-sbomqs score my-app.spdx.json --category NTIA-minimum-elements --profile ntia
+# check NTIA-minimum-elements category for legacy scoring
+sbomqs score samples/photon.spdx.json --category NTIA-minimum-elements --legacy
 
 # Use custom weights configuration
-sbomqs score my-app.spdx.json --configpath my-weights.yaml
+sbomqs score samples/photon.spdx.json --configpath my-weights.yaml
 ```
 
 See [Weightage Scoring Guide](docs/guides/weightage-scoring.md) for details on customizing scoring weights.
@@ -102,42 +102,42 @@ See [Weightage Scoring Guide](docs/guides/weightage-scoring.md) for details on c
 
 ```bash
 # BSI TR-03183-2 v2.0
-sbomqs compliance --bsi-v2 my-app.spdx.json
+sbomqs compliance --bsi-v2 samples/photon.spdx.json
 
 # FSCT v3
-sbomqs compliance --fsct my-app.spdx.json
+sbomqs compliance --fsct samples/photon.spdx.json
 
 # OpenChain Telco
-sbomqs compliance --oct my-app.spdx.json
+sbomqs compliance --oct samples/photon.spdx.json
 ```
 
 ### Score Specific Features
 
 ```bash
 # Score comprehensive features (default profile)
-sbomqs score my-app.spdx.json --feature comp_with_name,comp_with_version
+sbomqs score samples/photon.spdx.json --feature comp_with_name,comp_with_version
 
 # Score NTIA-specific features
-sbomqs score my-app.spdx.json --profile ntia --feature comp_name,comp_version,sbom_timestamp
+sbomqs score samples/photon.spdx.json --profile ntia --feature comp_name,comp_version,sbom_timestamp
 
 # Score BSI v2.1-specific features
 sbomqs score my-app.cdx.json --profile bsi --feature sbom_spec_version,sbom_creator,comp_name
 
 # Score with JSON output for automation
-sbomqs score my-app.spdx.json --profile ntia --feature comp_name --json
+sbomqs score samples/photon.spdx.json --profile ntia --feature comp_name --json
 ```
 
 ### Find Missing Data
 
 ```bash
 # Components without versions
-sbomqs list my-app.spdx.json --feature comp_with_version --missing
+sbomqs list samples/photon.spdx.json --feature comp_with_version --missing
 
 # Components without suppliers
-sbomqs list my-app.spdx.json --feature comp_with_supplier --missing
+sbomqs list samples/photon.spdx.json --feature comp_with_supplier --missing
 
 # Show actual supplier values for all components
-sbomqs list my-app.spdx.json --feature comp_supplier --show
+sbomqs list samples/photon.spdx.json --feature comp_supplier --show
 
 # Inspect a compliance profile field (e.g. BSI v2.1 deployable hash)
 sbomqs list --profile bsiv21 --feature comp_deployable_hash --missing my-app.cdx.json
@@ -150,7 +150,7 @@ sbomqs features --profile ntia
 
 ```bash
 # Generate shareable link (doesn't upload SBOM content)
-sbomqs share my-app.spdx.json
+sbomqs share samples/photon.spdx.json
 ```
 
 ### Integrating sbomqs into your software

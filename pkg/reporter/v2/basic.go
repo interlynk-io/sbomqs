@@ -103,22 +103,33 @@ func (r *Reporter) renderFeatureScore(result api.Result) {
 // getProfileDisplayName returns human-readable profile name
 func getProfileDisplayName(profile string) string {
 	switch profile {
-	case "ntia":
+	case "ntia", "cisa-2026", "cisa2026", "cisa":
+		return "NTIA Minimum Elements (2026)"
+
+	case "ntia-2021", "ntia2021", "cisa-2021", "cisa2021":
 		return "NTIA Minimum Elements (2021)"
+
 	case "ntia-2025":
 		return "NTIA Minimum Elements (2025)"
+
 	case "bsi-v1.1":
 		return "BSI TR-03183-2 v1.1"
+
 	case "bsi-v2.0":
 		return "BSI TR-03183-2 v2.0"
+
 	case "bsi", "bsi-v2.1":
 		return "BSI TR-03183-2 v2.1"
+
 	case "oct-v1.1":
 		return "OpenChain Telco v1.1"
+
 	case "fsct":
 		return "Framing 3rd Edition"
+
 	case "interlynk":
 		return "Interlynk Comprehensive"
+
 	default:
 		return profile
 	}

@@ -1,12 +1,12 @@
 
-# CISA 2026 SBOM Minimum Elements: Field Reference
+# NTIA 2026 SBOM Minimum Elements: Field Reference
 
 **Standard:** SBOM Minimum Elements Report, 2026 Edition
 **Issuer:** Cybersecurity and Infrastructure Security Agency (CISA), United States Department of Commerce, and allied agencies
 **Publication Date:** July 29, 2026
 **Effective:** Replaces and supersedes the NTIA Minimum Elements (2021) and all prior drafts
 
-This document explains how **sbomqs** evaluates SBOMs against the finalized CISA 2026 Minimum Elements. It covers the official definitions, terminology shifts from the prior NTIA baseline, exact mappings to SPDX and CycloneDX, and the scoring logic sbomqs applies.
+This document explains how **sbomqs** evaluates SBOMs against the finalized NTIA 2026 Minimum Elements. It covers the official definitions, terminology shifts from the prior NTIA baseline, exact mappings to SPDX and CycloneDX, and the scoring logic sbomqs applies.
 
 ## What Changed from NTIA 2021/2025
 
@@ -24,14 +24,14 @@ The July 2026 guidance makes the following changes explicit:
 
 ## Field Categories
 
-CISA 2026 organizes elements into two groups:
+NTIA 2026 organizes elements into two groups:
 
 1. **SBOM Metadata** (9 elements) — Information about the SBOM document itself
 2. **Component Data** (8 elements) — Information about each enumerated component
 
 ## Summary Table
 
-| CISA 2026 Field | Category | Required | CycloneDX | SPDX v2.x | SPDX v3.x | Notes |
+| NTIA 2026 Field | Category | Required | CycloneDX | SPDX v2.x | SPDX v3.x | Notes |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | SBOM Author | SBOM Metadata | Yes | `metadata.authors[]` (preferred), then `metadata.manufacturer` | `creationInfo.creators[]` (`Person` / `Organization`) | `creationInfo.createdBy` → `Person` / `Organization` | Tool entries are **not** accepted as authors |
 | SBOM Author Signature | SBOM Metadata | Yes | `signature` (JSF) | `--signature` / `--public-key` CLI flags (detached envelope) | `SpdxDocument.verifiedUsing` with `type: "Signature"` (embedded), or `--signature` / `--public-key` CLI flags (detached) | sbomqs detects embedded CycloneDX JSF signatures; SPDX 2.x and 3.x detached signatures via `--signature` + `--public-key`; SPDX 3.x embedded signatures via `verifiedUsing` |
@@ -86,7 +86,7 @@ The SBOM author is the accountable party for the data. If the SBOM is incorrect,
     - `url`
 
 **Final Conclusion — SBOM Author:**
-> **The SBOM Author is the identifiable person or organization that created the SBOM metadata. Automated tools are not accepted as authors under CISA 2026. At least one contact identifier (name, email, or URL) must be present.**
+> **The SBOM Author is the identifiable person or organization that created the SBOM metadata. Automated tools are not accepted as authors under NTIA 2026. At least one contact identifier (name, email, or URL) must be present.**
 
 ### 2. SBOM Author Signature
 
@@ -291,7 +291,7 @@ The SBOM version indicates a relationship with earlier iterations of an SBOM. It
 **Old Terminology (2021):**
 > "Supplier Name"
 
-**Change:** "Component Producer" replaces "Supplier Name." The definition is substantively the same, but the terminology is now aligned with CISA 2026 vocabulary.
+**Change:** "Component Producer" replaces "Supplier Name." The definition is substantively the same, but the terminology is now aligned with NTIA 2026 vocabulary.
 
 **Motive:**
 The component producer is the authority responsible for the component's identity. This entity may be an organization, a project, or an upstream source. Distinguishing between components of the same name produced by different entities is essential for vulnerability correlation and license compliance.
@@ -498,10 +498,10 @@ Vulnerability tracking is version-specific. A CVE may affect version `1.2.3` but
 **Final Conclusion — Component Version:**
 > **Every component must have a version identifier. If the producer does not provide one, the SBOM author must explicitly indicate that the information is unknown.**
 
-## CISA 2026 Compliance Structure (sbomqs)
+## NTIA 2026 Compliance Structure (sbomqs)
 
 ```text
-CISA 2026 Minimum Elements Compliance Report
+NTIA 2026 Minimum Elements Compliance Report
 
 1. SBOM Metadata (Document-level)
    - SBOM Author
@@ -533,7 +533,7 @@ CISA 2026 Minimum Elements Compliance Report
 ## Final Takeaway
 
 > **Profiling measures quality, completeness, and correctness.
-> Compliance measures minimum CISA 2026 acceptability.
+> Compliance measures minimum NTIA 2026 acceptability.
 > sbomqs deliberately keeps these concerns separate, explicit, and explainable.**
 
-The CISA 2026 guidance replaces both the NTIA 2021 Minimum Elements and all prior drafts. The `cisa-2026` profile in sbomqs reflects the finalized vocabulary, new elements, and updated mappings. The legacy `ntia` (2021) profile remains available for regulations that still cite the 2019/2021 baseline.
+The NTIA 2026 guidance replaces both the NTIA 2021 Minimum Elements and all prior drafts. The `ntia` profile in sbomqs reflects the finalized vocabulary, new elements, and updated mappings. The legacy `ntia-2021` (2021) profile remains available for regulations that still cite the 2019/2021 baseline.
