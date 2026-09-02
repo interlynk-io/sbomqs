@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// CISA Minimum Elements (2026) extractors.
+// NTIA Minimum Elements (2026) extractors.
 //
 // The list command shows actual field values; it does not enforce version
 // requirements or algorithm rules (that is the scorer's job).
@@ -27,11 +27,11 @@ import (
 )
 
 // ============================================================
-// CISA 2026 — SBOM-level extractors (DocExtractor)
+// NTIA 2026 — SBOM-level extractors (DocExtractor)
 // ============================================================
 
-// CISA2026SBOMDataFormat reports the SBOM spec type and file format.
-func CISA2026SBOMDataFormat(doc sbom.Document) (bool, string, error) {
+// NTIA2026SBOMDataFormat reports the SBOM spec type and file format.
+func NTIA2026SBOMDataFormat(doc sbom.Document) (bool, string, error) {
 	spec := strings.TrimSpace(doc.Spec().GetSpecType())
 	format := strings.TrimSpace(doc.Spec().FileFormat())
 	if spec == "" {
@@ -43,8 +43,8 @@ func CISA2026SBOMDataFormat(doc sbom.Document) (bool, string, error) {
 	return true, spec, nil
 }
 
-// CISA2026SBOMSpecVersion reports the SBOM specification version.
-func CISA2026SBOMSpecVersion(doc sbom.Document) (bool, string, error) {
+// NTIA2026SBOMSpecVersion reports the SBOM specification version.
+func NTIA2026SBOMSpecVersion(doc sbom.Document) (bool, string, error) {
 	ver := strings.TrimSpace(doc.Spec().GetVersion())
 	if ver == "" || ver == "SpecVersion(0)" {
 		return false, "not declared", nil
@@ -52,9 +52,9 @@ func CISA2026SBOMSpecVersion(doc sbom.Document) (bool, string, error) {
 	return true, ver, nil
 }
 
-// CISA2026SBOMAuthors reports the first person or organization author.
-// Tool entries are NOT accepted (mirrors profiles.CISA2026SBOMAuthors).
-func CISA2026SBOMAuthors(doc sbom.Document) (bool, string, error) {
+// NTIA2026SBOMAuthors reports the first person or organization author.
+// Tool entries are NOT accepted (mirrors profiles.NTIA2026SBOMAuthors).
+func NTIA2026SBOMAuthors(doc sbom.Document) (bool, string, error) {
 	for _, a := range doc.Authors() {
 		if a == nil {
 			continue
@@ -75,8 +75,8 @@ func CISA2026SBOMAuthors(doc sbom.Document) (bool, string, error) {
 	return false, "missing", nil
 }
 
-// CISA2026SBOMToolName reports the first tool name declared in the SBOM.
-func CISA2026SBOMToolName(doc sbom.Document) (bool, string, error) {
+// NTIA2026SBOMToolName reports the first tool name declared in the SBOM.
+func NTIA2026SBOMToolName(doc sbom.Document) (bool, string, error) {
 	for _, t := range doc.Tools() {
 		name := strings.TrimSpace(t.GetName())
 		if name != "" {
@@ -86,8 +86,8 @@ func CISA2026SBOMToolName(doc sbom.Document) (bool, string, error) {
 	return false, "missing", nil
 }
 
-// CISA2026SBOMToolVersion reports the first tool version declared in the SBOM.
-func CISA2026SBOMToolVersion(doc sbom.Document) (bool, string, error) {
+// NTIA2026SBOMToolVersion reports the first tool version declared in the SBOM.
+func NTIA2026SBOMToolVersion(doc sbom.Document) (bool, string, error) {
 	for _, t := range doc.Tools() {
 		version := strings.TrimSpace(t.GetVersion())
 		if version != "" {
@@ -97,10 +97,10 @@ func CISA2026SBOMToolVersion(doc sbom.Document) (bool, string, error) {
 	return false, "missing", nil
 }
 
-// CISA2026SBOMVersion reports the author-assigned SBOM document version.
+// NTIA2026SBOMVersion reports the author-assigned SBOM document version.
 // For CycloneDX: checks the version segment of the URI.
 // For SPDX: always N/A (not supported by spec).
-func CISA2026SBOMVersion(doc sbom.Document) (bool, string, error) {
+func NTIA2026SBOMVersion(doc sbom.Document) (bool, string, error) {
 	spec := doc.Spec().GetSpecType()
 	if spec == string(sbom.SBOMSpecCDX) {
 		uri := strings.TrimSpace(doc.Spec().GetURI())
@@ -116,14 +116,14 @@ func CISA2026SBOMVersion(doc sbom.Document) (bool, string, error) {
 	return false, "N/A (SPDX does not support author-assigned versions)", nil
 }
 
-// CISA2026SBOMTimestamp reports the SBOM creation timestamp.
-func CISA2026SBOMTimestamp(doc sbom.Document) (bool, string, error) {
+// NTIA2026SBOMTimestamp reports the SBOM creation timestamp.
+func NTIA2026SBOMTimestamp(doc sbom.Document) (bool, string, error) {
 	return BSIV21SBOMTimestamp(doc)
 }
 
-// CISA2026SBOMGenerationContext reports the generation context.
+// NTIA2026SBOMGenerationContext reports the generation context.
 // CDX: lifecycle phases. SPDX v2.x: creationInfo.comment. SPDX 3.x: lifecycles or comment.
-func CISA2026SBOMGenerationContext(doc sbom.Document) (bool, string, error) {
+func NTIA2026SBOMGenerationContext(doc sbom.Document) (bool, string, error) {
 	spec := doc.Spec().GetSpecType()
 	ver := strings.TrimSpace(doc.Spec().GetVersion())
 
@@ -143,13 +143,13 @@ func CISA2026SBOMGenerationContext(doc sbom.Document) (bool, string, error) {
 	return false, "missing", nil
 }
 
-// CISA2026SBOMRelationships reports the primary component's direct dependencies.
-func CISA2026SBOMRelationships(doc sbom.Document) (bool, string, error) {
+// NTIA2026SBOMRelationships reports the primary component's direct dependencies.
+func NTIA2026SBOMRelationships(doc sbom.Document) (bool, string, error) {
 	return NTIASBOMRelationships(doc)
 }
 
-// CISA2026SBOMSignature reports whether the SBOM has a digital signature.
-func CISA2026SBOMSignature(doc sbom.Document) (bool, string, error) {
+// NTIA2026SBOMSignature reports whether the SBOM has a digital signature.
+func NTIA2026SBOMSignature(doc sbom.Document) (bool, string, error) {
 	sig := doc.Signature()
 	if sig != nil {
 		return true, "present", nil
@@ -158,28 +158,28 @@ func CISA2026SBOMSignature(doc sbom.Document) (bool, string, error) {
 }
 
 // ============================================================
-// CISA 2026 — component-level extractors (CompExtractor)
+// NTIA 2026 — component-level extractors (CompExtractor)
 // ============================================================
 
-// CISA2026CompName reports the component name.
-func CISA2026CompName(_ sbom.Document, comp sbom.GetComponent) (bool, string, error) {
+// NTIA2026CompName reports the component name.
+func NTIA2026CompName(_ sbom.Document, comp sbom.GetComponent) (bool, string, error) {
 	return BSIV21CompName(nil, comp)
 }
 
-// CISA2026CompVersion reports the component version.
-func CISA2026CompVersion(_ sbom.Document, comp sbom.GetComponent) (bool, string, error) {
+// NTIA2026CompVersion reports the component version.
+func NTIA2026CompVersion(_ sbom.Document, comp sbom.GetComponent) (bool, string, error) {
 	return BSIV21CompVersion(nil, comp)
 }
 
-// CISA2026CompUniqID reports unique identifiers (PURL or CPE).
-func CISA2026CompUniqID(_ sbom.Document, comp sbom.GetComponent) (bool, string, error) {
+// NTIA2026CompUniqID reports unique identifiers (PURL or CPE).
+func NTIA2026CompUniqID(_ sbom.Document, comp sbom.GetComponent) (bool, string, error) {
 	return BSIV20CompOtherIdentifiers(nil, comp)
 }
 
-// CISA2026CompProducer reports the component producer.
+// NTIA2026CompProducer reports the component producer.
 // Priority: supplier → manufacturer → author.
 // Accepts name, email, or URL as valid producer identifiers.
-func CISA2026CompProducer(_ sbom.Document, comp sbom.GetComponent) (bool, string, error) {
+func NTIA2026CompProducer(_ sbom.Document, comp sbom.GetComponent) (bool, string, error) {
 	// 1. Supplier
 	if s := comp.Suppliers(); !s.IsAbsent() {
 		name := strings.TrimSpace(s.GetName())
@@ -230,8 +230,8 @@ func CISA2026CompProducer(_ sbom.Document, comp sbom.GetComponent) (bool, string
 	return false, "missing", nil
 }
 
-// CISA2026CompHashValue reports all hash values on a component.
-func CISA2026CompHashValue(_ sbom.Document, comp sbom.GetComponent) (bool, string, error) {
+// NTIA2026CompHashValue reports all hash values on a component.
+func NTIA2026CompHashValue(_ sbom.Document, comp sbom.GetComponent) (bool, string, error) {
 	checksums := comp.GetChecksums()
 	if len(checksums) == 0 {
 		return false, "missing", nil
@@ -249,8 +249,8 @@ func CISA2026CompHashValue(_ sbom.Document, comp sbom.GetComponent) (bool, strin
 	return false, "missing", nil
 }
 
-// CISA2026CompHashAlgo reports all hash algorithms on a component.
-func CISA2026CompHashAlgo(_ sbom.Document, comp sbom.GetComponent) (bool, string, error) {
+// NTIA2026CompHashAlgo reports all hash algorithms on a component.
+func NTIA2026CompHashAlgo(_ sbom.Document, comp sbom.GetComponent) (bool, string, error) {
 	checksums := comp.GetChecksums()
 	if len(checksums) == 0 {
 		return false, "missing", nil
@@ -270,8 +270,8 @@ func CISA2026CompHashAlgo(_ sbom.Document, comp sbom.GetComponent) (bool, string
 	return false, "missing", nil
 }
 
-// CISA2026CompLicense reports declared licenses on a component.
-func CISA2026CompLicense(_ sbom.Document, comp sbom.GetComponent) (bool, string, error) {
+// NTIA2026CompLicense reports declared licenses on a component.
+func NTIA2026CompLicense(_ sbom.Document, comp sbom.GetComponent) (bool, string, error) {
 	var parts []string
 	for _, l := range comp.DeclaredLicenses() {
 		if l == nil {

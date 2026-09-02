@@ -327,21 +327,21 @@ func TestListIntegrationForSPDX3_NTIA(t *testing.T) {
 			Name:          "NTIA profile - comp_name PRESENT",
 			SBOMFile:      filepath.Join(base, "spdx3-perfect-score.json"),
 			Feature:       "comp_name",
-			Profile:       "ntia",
+			Profile:       "ntia-2021",
 			ExpectedFound: 2,
 		},
 		{
 			Name:          "NTIA profile - comp_supplier PRESENT",
 			SBOMFile:      filepath.Join(base, "spdx3-perfect-score.json"),
 			Feature:       "comp_supplier",
-			Profile:       "ntia",
+			Profile:       "ntia-2021",
 			ExpectedFound: 2,
 		},
 		{
 			Name:          "NTIA profile - comp_uniq_id PRESENT",
 			SBOMFile:      filepath.Join(base, "spdx3-perfect-score.json"),
 			Feature:       "comp_uniq_id",
-			Profile:       "ntia",
+			Profile:       "ntia-2021",
 			ExpectedFound: 2,
 		},
 		// NTIA profile - Document fields
@@ -349,14 +349,14 @@ func TestListIntegrationForSPDX3_NTIA(t *testing.T) {
 			Name:          "NTIA profile - sbom_authors PRESENT",
 			SBOMFile:      filepath.Join(base, "spdx3-perfect-score.json"),
 			Feature:       "sbom_authors",
-			Profile:       "ntia",
+			Profile:       "ntia-2021",
 			ExpectedFound: 1,
 		},
 		{
 			Name:          "NTIA profile - sbom_timestamp PRESENT",
 			SBOMFile:      filepath.Join(base, "spdx3-perfect-score.json"),
 			Feature:       "sbom_timestamp",
-			Profile:       "ntia",
+			Profile:       "ntia-2021",
 			ExpectedFound: 1,
 		},
 		// NTIA profile - ABSENT cases
@@ -364,7 +364,7 @@ func TestListIntegrationForSPDX3_NTIA(t *testing.T) {
 			Name:            "NTIA profile - comp_supplier ABSENT",
 			SBOMFile:        filepath.Join(base, "spdx3-no-supplier.json"),
 			Feature:         "comp_supplier",
-			Profile:         "ntia",
+			Profile:         "ntia-2021",
 			Missing:         true,
 			ExpectedMissing: 2,
 		},
@@ -1084,223 +1084,223 @@ func TestListIntegrationForSPDX3_Interlynk(t *testing.T) {
 	runListTestCases(t, testCases)
 }
 
-// TestListIntegrationForSPDX3_CISA2026 tests CISA 2026 profile features
-func TestListIntegrationForSPDX3_CISA2026(t *testing.T) {
+// TestListIntegrationForSPDX3_NTIA2026 tests NTIA 2026 profile features
+func TestListIntegrationForSPDX3_NTIA2026(t *testing.T) {
 	base := filepath.Join("..", "..", "testdata", "fixtures")
 
 	testCases := []ListTestCase{
-		// CISA 2026 profile - Document fields (PRESENT)
+		// NTIA 2026 profile - Document fields (PRESENT)
 		{
-			Name:          "CISA 2026 profile - sbom_data_format PRESENT",
+			Name:          "NTIA 2026 profile - sbom_data_format PRESENT",
 			SBOMFile:      filepath.Join(base, "spdx3-perfect-score.json"),
 			Feature:       "sbom_data_format",
-			Profile:       "cisa-2026",
+			Profile:       "ntia",
 			ExpectedFound: 1,
 		},
 		{
-			Name:          "CISA 2026 profile - sbom_spec_version PRESENT",
+			Name:          "NTIA 2026 profile - sbom_spec_version PRESENT",
 			SBOMFile:      filepath.Join(base, "spdx3-perfect-score.json"),
 			Feature:       "sbom_spec_version",
-			Profile:       "cisa-2026",
+			Profile:       "ntia",
 			ExpectedFound: 1,
 		},
 		{
-			Name:          "CISA 2026 profile - sbom_author PRESENT",
+			Name:          "NTIA 2026 profile - sbom_author PRESENT",
 			SBOMFile:      filepath.Join(base, "spdx3-perfect-score.json"),
 			Feature:       "sbom_author",
-			Profile:       "cisa-2026",
+			Profile:       "ntia",
 			ExpectedFound: 1,
 		},
 		{
-			Name:          "CISA 2026 profile - sbom_tool_name PRESENT",
+			Name:          "NTIA 2026 profile - sbom_tool_name PRESENT",
 			SBOMFile:      filepath.Join(base, "spdx3-perfect-score.json"),
 			Feature:       "sbom_tool_name",
-			Profile:       "cisa-2026",
+			Profile:       "ntia",
 			ExpectedFound: 1,
 		},
 		{
-			Name:          "CISA 2026 profile - sbom_tool_version PRESENT",
+			Name:          "NTIA 2026 profile - sbom_tool_version PRESENT",
 			SBOMFile:      filepath.Join(base, "spdx3-perfect-score.json"),
 			Feature:       "sbom_tool_version",
-			Profile:       "cisa-2026",
+			Profile:       "ntia",
 			ExpectedFound: 1,
 		},
 		{
-			Name:          "CISA 2026 profile - sbom_timestamp PRESENT",
+			Name:          "NTIA 2026 profile - sbom_timestamp PRESENT",
 			SBOMFile:      filepath.Join(base, "spdx3-perfect-score.json"),
 			Feature:       "sbom_timestamp",
-			Profile:       "cisa-2026",
+			Profile:       "ntia",
 			ExpectedFound: 1,
 		},
 		{
-			Name:          "CISA 2026 profile - sbom_relationships PRESENT",
+			Name:          "NTIA 2026 profile - sbom_relationships PRESENT",
 			SBOMFile:      filepath.Join(base, "spdx3-with-dependencies.json"),
 			Feature:       "sbom_relationships",
-			Profile:       "cisa-2026",
+			Profile:       "ntia",
 			ExpectedFound: 1,
 		},
-		// CISA 2026 profile - Document fields (ABSENT)
+		// NTIA 2026 profile - Document fields (ABSENT)
 		{
-			Name:            "CISA 2026 profile - sbom_author ABSENT",
+			Name:            "NTIA 2026 profile - sbom_author ABSENT",
 			SBOMFile:        filepath.Join(base, "spdx3-no-authors.json"),
 			Feature:         "sbom_author",
-			Profile:         "cisa-2026",
+			Profile:         "ntia",
 			Missing:         true,
 			ExpectedMissing: 1,
 		},
 		{
-			Name:            "CISA 2026 profile - sbom_timestamp ABSENT",
+			Name:            "NTIA 2026 profile - sbom_timestamp ABSENT",
 			SBOMFile:        filepath.Join(base, "spdx3-no-timestamp.json"),
 			Feature:         "sbom_timestamp",
-			Profile:         "cisa-2026",
+			Profile:         "ntia",
 			Missing:         true,
 			ExpectedMissing: 1,
 		},
 		{
-			Name:            "CISA 2026 profile - sbom_relationships ABSENT",
+			Name:            "NTIA 2026 profile - sbom_relationships ABSENT",
 			SBOMFile:        filepath.Join(base, "spdx3-no-dependencies.json"),
 			Feature:         "sbom_relationships",
-			Profile:         "cisa-2026",
+			Profile:         "ntia",
 			Missing:         true,
 			ExpectedMissing: 1,
 		},
-		// CISA 2026 profile - Component fields (PRESENT)
+		// NTIA 2026 profile - Component fields (PRESENT)
 		{
-			Name:          "CISA 2026 profile - comp_name PRESENT",
+			Name:          "NTIA 2026 profile - comp_name PRESENT",
 			SBOMFile:      filepath.Join(base, "spdx3-perfect-score.json"),
 			Feature:       "comp_name",
-			Profile:       "cisa-2026",
+			Profile:       "ntia",
 			ExpectedFound: 2,
 		},
 		{
-			Name:          "CISA 2026 profile - comp_version PRESENT",
+			Name:          "NTIA 2026 profile - comp_version PRESENT",
 			SBOMFile:      filepath.Join(base, "spdx3-perfect-score.json"),
 			Feature:       "comp_version",
-			Profile:       "cisa-2026",
+			Profile:       "ntia",
 			ExpectedFound: 2,
 		},
 		{
-			Name:          "CISA 2026 profile - comp_uniq_id PRESENT",
+			Name:          "NTIA 2026 profile - comp_uniq_id PRESENT",
 			SBOMFile:      filepath.Join(base, "spdx3-perfect-score.json"),
 			Feature:       "comp_uniq_id",
-			Profile:       "cisa-2026",
+			Profile:       "ntia",
 			ExpectedFound: 2,
 		},
 		{
-			Name:          "CISA 2026 profile - comp_producer PRESENT",
+			Name:          "NTIA 2026 profile - comp_producer PRESENT",
 			SBOMFile:      filepath.Join(base, "spdx3-perfect-score.json"),
 			Feature:       "comp_producer",
-			Profile:       "cisa-2026",
+			Profile:       "ntia",
 			ExpectedFound: 2,
 		},
 		{
-			Name:          "CISA 2026 profile - comp_hash_value PRESENT",
+			Name:          "NTIA 2026 profile - comp_hash_value PRESENT",
 			SBOMFile:      filepath.Join(base, "spdx3-perfect-score.json"),
 			Feature:       "comp_hash_value",
-			Profile:       "cisa-2026",
+			Profile:       "ntia",
 			ExpectedFound: 2,
 		},
 		{
-			Name:          "CISA 2026 profile - comp_hash_algo PRESENT",
+			Name:          "NTIA 2026 profile - comp_hash_algo PRESENT",
 			SBOMFile:      filepath.Join(base, "spdx3-perfect-score.json"),
 			Feature:       "comp_hash_algo",
-			Profile:       "cisa-2026",
+			Profile:       "ntia",
 			ExpectedFound: 2,
 		},
 		{
-			Name:          "CISA 2026 profile - comp_license PRESENT",
+			Name:          "NTIA 2026 profile - comp_license PRESENT",
 			SBOMFile:      filepath.Join(base, "spdx3-perfect-score.json"),
 			Feature:       "comp_license",
-			Profile:       "cisa-2026",
+			Profile:       "ntia",
 			ExpectedFound: 2,
 		},
-		// CISA 2026 profile - Component fields (ABSENT)
+		// NTIA 2026 profile - Component fields (ABSENT)
 		{
-			Name:            "CISA 2026 profile - comp_version ABSENT",
+			Name:            "NTIA 2026 profile - comp_version ABSENT",
 			SBOMFile:        filepath.Join(base, "spdx3-no-version.json"),
 			Feature:         "comp_version",
-			Profile:         "cisa-2026",
+			Profile:         "ntia",
 			Missing:         true,
 			ExpectedMissing: 2,
 		},
 		{
-			Name:            "CISA 2026 profile - comp_uniq_id ABSENT",
+			Name:            "NTIA 2026 profile - comp_uniq_id ABSENT",
 			SBOMFile:        filepath.Join(base, "spdx3-no-unique-id.json"),
 			Feature:         "comp_uniq_id",
-			Profile:         "cisa-2026",
+			Profile:         "ntia",
 			Missing:         true,
 			ExpectedMissing: 2,
 		},
 		{
-			Name:            "CISA 2026 profile - comp_producer ABSENT",
+			Name:            "NTIA 2026 profile - comp_producer ABSENT",
 			SBOMFile:        filepath.Join(base, "spdx3-no-supplier.json"),
 			Feature:         "comp_producer",
-			Profile:         "cisa-2026",
+			Profile:         "ntia",
 			Missing:         true,
 			ExpectedMissing: 2,
 		},
 		{
-			Name:            "CISA 2026 profile - comp_hash_value ABSENT",
+			Name:            "NTIA 2026 profile - comp_hash_value ABSENT",
 			SBOMFile:        filepath.Join(base, "spdx3-no-checksum.json"),
 			Feature:         "comp_hash_value",
-			Profile:         "cisa-2026",
+			Profile:         "ntia",
 			Missing:         true,
 			ExpectedMissing: 2,
 		},
 		{
-			Name:            "CISA 2026 profile - comp_hash_algo ABSENT",
+			Name:            "NTIA 2026 profile - comp_hash_algo ABSENT",
 			SBOMFile:        filepath.Join(base, "spdx3-no-checksum.json"),
 			Feature:         "comp_hash_algo",
-			Profile:         "cisa-2026",
+			Profile:         "ntia",
 			Missing:         true,
 			ExpectedMissing: 2,
 		},
 		{
-			Name:            "CISA 2026 profile - comp_license ABSENT",
+			Name:            "NTIA 2026 profile - comp_license ABSENT",
 			SBOMFile:        filepath.Join(base, "spdx3-no-original-license.json"),
 			Feature:         "comp_license",
-			Profile:         "cisa-2026",
+			Profile:         "ntia",
 			Missing:         true,
 			ExpectedMissing: 2,
 		},
 		// Component producer - supplier email only
 		{
-			Name:          "CISA 2026 profile - comp_producer via supplier email only",
+			Name:          "NTIA 2026 profile - comp_producer via supplier email only",
 			SBOMFile:      filepath.Join(base, "spdx3-with-comp-supplier-email-only.json"),
-			Feature:         "comp_producer",
-			Profile:         "cisa-2026",
+			Feature:       "comp_producer",
+			Profile:       "ntia",
 			ExpectedFound: 1,
 		},
 		// Component producer - supplier URL only
 		{
-			Name:          "CISA 2026 profile - comp_producer via supplier URL only",
+			Name:          "NTIA 2026 profile - comp_producer via supplier URL only",
 			SBOMFile:      filepath.Join(base, "spdx3-with-comp-supplier-url-only.json"),
-			Feature:         "comp_producer",
-			Profile:         "cisa-2026",
+			Feature:       "comp_producer",
+			Profile:       "ntia",
 			ExpectedFound: 1,
 		},
 		// Component producer - manufacturer name only
 		{
-			Name:          "CISA 2026 profile - comp_producer via manufacturer name only",
+			Name:          "NTIA 2026 profile - comp_producer via manufacturer name only",
 			SBOMFile:      filepath.Join(base, "spdx3-with-comp-manufacturer-name-only.json"),
-			Feature:         "comp_producer",
-			Profile:         "cisa-2026",
+			Feature:       "comp_producer",
+			Profile:       "ntia",
 			ExpectedFound: 1,
 		},
 		// Component producer - manufacturer email only
 		{
-			Name:          "CISA 2026 profile - comp_producer via manufacturer email only",
+			Name:          "NTIA 2026 profile - comp_producer via manufacturer email only",
 			SBOMFile:      filepath.Join(base, "spdx3-with-comp-manufacturer-email-only.json"),
-			Feature:         "comp_producer",
-			Profile:         "cisa-2026",
+			Feature:       "comp_producer",
+			Profile:       "ntia",
 			ExpectedFound: 1,
 		},
 		// Component producer - manufacturer URL only
 		{
-			Name:          "CISA 2026 profile - comp_producer via manufacturer URL only",
+			Name:          "NTIA 2026 profile - comp_producer via manufacturer URL only",
 			SBOMFile:      filepath.Join(base, "spdx3-with-comp-manufacturer-url-only.json"),
-			Feature:         "comp_producer",
-			Profile:         "cisa-2026",
+			Feature:       "comp_producer",
+			Profile:       "ntia",
 			ExpectedFound: 1,
 		},
 	}
@@ -1308,17 +1308,17 @@ func TestListIntegrationForSPDX3_CISA2026(t *testing.T) {
 	runListTestCases(t, testCases)
 }
 
-// TestListIntegrationForCDX_CISA2026 tests CISA 2026 profile features with CycloneDX fixtures
-func TestListIntegrationForCDX_CISA2026(t *testing.T) {
+// TestListIntegrationForCDX_NTIA2026 tests NTIA 2026 profile features with CycloneDX fixtures
+func TestListIntegrationForCDX_NTIA2026(t *testing.T) {
 	base := filepath.Join("..", "..", "testdata", "fixtures")
 
 	testCases := []ListTestCase{
 		// Component producer - author email only (CycloneDX component-level authors)
 		{
-			Name:          "CISA 2026 profile - CDX comp_producer via author email only",
+			Name:          "NTIA 2026 profile - CDX comp_producer via author email only",
 			SBOMFile:      filepath.Join(base, "cdx-with-comp-author-email-only.json"),
 			Feature:       "comp_producer",
-			Profile:       "cisa-2026",
+			Profile:       "ntia",
 			ExpectedFound: 1,
 		},
 	}

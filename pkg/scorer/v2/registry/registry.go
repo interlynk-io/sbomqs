@@ -90,24 +90,24 @@ var NTIA2025KeyToEvaluatingFunction = map[string]catalog.ProfFeatEval{
 	"generation_context":   profiles.NTIA2025GenerationContext,
 }
 
-var CISA2026KeyToEvaluatingFunction = map[string]catalog.ProfFeatEval{
-	"sbom_data_format":        profiles.CISA2026SBOMDataFormat,
-	"sbom_spec_version":       profiles.CISA2026SBOMSpecVersion,
-	"sbom_author":             profiles.CISA2026SBOMAuthors,
-	"sbom_tool_name":          profiles.CISA2026SBOMToolName,
-	"sbom_tool_version":       profiles.CISA2026SBOMToolVersion,
-	"sbom_version":            profiles.CISA2026SBOMVersion,
-	"sbom_timestamp":          profiles.CISA2026SBOMCreationTimestamp,
-	"sbom_generation_context": profiles.CISA2026GenerationContext,
-	"sbom_relationships":      profiles.CISA2026SBOMRelationships,
-	"sbom_signature":          profiles.CISA2026SBOMSignature,
-	"comp_name":               profiles.CISA2026CompName,
-	"comp_version":            profiles.CISA2026CompVersion,
-	"comp_uniq_id":            profiles.CISA2026CompUniqID,
-	"comp_producer":           profiles.CISA2026CompProducer,
-	"comp_hash_value":         profiles.CISA2026CompHashValue,
-	"comp_hash_algo":          profiles.CISA2026CompHashAlgo,
-	"comp_license":            profiles.CISA2026CompLicense,
+var NTIA2026KeyToEvaluatingFunction = map[string]catalog.ProfFeatEval{
+	"sbom_data_format":        profiles.NTIA2026SBOMDataFormat,
+	"sbom_spec_version":       profiles.NTIA2026SBOMSpecVersion,
+	"sbom_author":             profiles.NTIA2026SBOMAuthors,
+	"sbom_tool_name":          profiles.NTIA2026SBOMToolName,
+	"sbom_tool_version":       profiles.NTIA2026SBOMToolVersion,
+	"sbom_version":            profiles.NTIA2026SBOMVersion,
+	"sbom_timestamp":          profiles.NTIA2026SBOMCreationTimestamp,
+	"sbom_generation_context": profiles.NTIA2026GenerationContext,
+	"sbom_relationships":      profiles.NTIA2026SBOMRelationships,
+	"sbom_signature":          profiles.NTIA2026SBOMSignature,
+	"comp_name":               profiles.NTIA2026CompName,
+	"comp_version":            profiles.NTIA2026CompVersion,
+	"comp_uniq_id":            profiles.NTIA2026CompUniqID,
+	"comp_producer":           profiles.NTIA2026CompProducer,
+	"comp_hash_value":         profiles.NTIA2026CompHashValue,
+	"comp_hash_algo":          profiles.NTIA2026CompHashAlgo,
+	"comp_license":            profiles.NTIA2026CompLicense,
 }
 
 var BSIV11KeyToEvaluatingFunction = map[string]catalog.ProfFeatEval{
@@ -122,17 +122,19 @@ var BSIV11KeyToEvaluatingFunction = map[string]catalog.ProfFeatEval{
 	"comp_hash":    profiles.BSIV11CompExecutableHash,
 
 	// Additional
-	"sbom_uri":            profiles.BSIV11SBOMURI,
-	"comp_source_url":     profiles.BSIV11CompSourceURI,
-	"comp_executable_url": profiles.BSIV11CompExecutableURI,
-	"comp_source_hash":    profiles.BSIV11CompSourceHash,
+	"sbom_uri":                profiles.BSIV11SBOMURI,
+	"comp_source_url":         profiles.BSIV11CompSourceURI,
+	"comp_executable_url":     profiles.BSIV11CompExecutableURI,
+	"comp_source_hash":        profiles.BSIV11CompSourceHash,
+	"comp_unique_identifiers": profiles.BSIV11CompOtherIdentifiers,
 }
 
 var BSIV20KeyToEvaluatingFunction = map[string]catalog.ProfFeatEval{
 	// Required: SBOM level
-	"sbom_creator":   profiles.BSIV20SBOMCreator,
-	"sbom_timestamp": profiles.BSIV20SBOMCreationTimestamp,
-	"sbom_uri":       profiles.BSIV20SBOMURI,
+	"sbom_spec_version": profiles.BSIV20SpecVersion,
+	"sbom_creator":      profiles.BSIV20SBOMCreator,
+	"sbom_timestamp":    profiles.BSIV20SBOMCreationTimestamp,
+	"sbom_uri":          profiles.BSIV20SBOMURI,
 
 	// Required: component level
 	"comp_creator":             profiles.BSIV20CompCreator,
@@ -216,7 +218,15 @@ var OCTV11KeyToEvaluatingFunction = map[string]catalog.ProfFeatEval{
 
 // ProfileSpecificFeatures maps profile keys to their feature keys for feature-level scoring
 var ProfileSpecificFeatures = map[string][]string{
+	// ntia now maps to NTIA 2026 (the updated NTIA)
 	"ntia": {
+		"sbom_data_format", "sbom_spec_version", "sbom_author",
+		"sbom_tool_name", "sbom_tool_version", "sbom_version",
+		"sbom_timestamp", "sbom_generation_context", "sbom_relationships",
+		"sbom_signature", "comp_name", "comp_version", "comp_uniq_id",
+		"comp_producer", "comp_hash_value", "comp_hash_algo", "comp_license",
+	},
+	"ntia-2021": {
 		"comp_supplier", "comp_name", "comp_version", "comp_uniq_id",
 		"comp_dependencies", "sbom_relationships", "sbom_timestamp",
 	},
@@ -226,14 +236,6 @@ var ProfileSpecificFeatures = map[string][]string{
 		"comp_name", "comp_version", "software_identifiers", "comp_hash",
 		"license", "sbom_dependencies", "comp_supplier", "tool_name",
 		"sbom_timestamp", "generation_context",
-	},
-	"cisa-2026": {
-		// Profile-specific keys (aliases)
-		"sbom_data_format", "sbom_spec_version", "sbom_author",
-		"sbom_tool_name", "sbom_tool_version", "sbom_version",
-		"sbom_timestamp", "sbom_generation_context", "sbom_relationships",
-		"sbom_signature", "comp_name", "comp_version", "comp_uniq_id",
-		"comp_producer", "comp_hash_value", "comp_hash_algo", "comp_license",
 	},
 	"bsi-v1.1": {
 		"sbom_creator", "sbom_timestamp", "comp_creator", "comp_name",
@@ -420,8 +422,9 @@ var CompKeyToEvaluatingFunction = map[string]catalog.ComprFeatEval{
 // e.g. ntia, bsi-v1.1, bsi-v2.0, oct-v1.1, etc
 const (
 	ProfileNTIA      catalog.ProfileKey = "ntia"
+	ProfileNTIA2021  catalog.ProfileKey = "ntia-2021"
 	ProfileNTIA2025  catalog.ProfileKey = "ntia-2025"
-	ProfileCISA2026  catalog.ProfileKey = "cisa-2026"
+	ProfileNTIA2026  catalog.ProfileKey = "ntia"
 	ProfileBSI11     catalog.ProfileKey = "bsi-v1.1"
 	ProfileBSI20     catalog.ProfileKey = "bsi-v2.0"
 	ProfileBSI21     catalog.ProfileKey = "bsi-v2.1"
@@ -431,25 +434,29 @@ const (
 )
 
 var profileAliases = map[string]catalog.ProfileKey{
-	"ntia":                  ProfileNTIA,
-	"nita-minimum-elements": ProfileNTIA,
+	// cisa-2026 and related aliases point to the latest NTIA profile (NTIA Minimum Elements 2026)
+	"cisa-2026":             ProfileNTIA,
+	"CISA-2026":             ProfileNTIA,
+	"cisa2026":              ProfileNTIA,
+	"CISA2026":              ProfileNTIA,
+	"cisa":                  ProfileNTIA,
+	"CISA":                  ProfileNTIA,
+	"ntia-minimum-elements": ProfileNTIA,
 	"NTIA-minimum-elements": ProfileNTIA,
 	"NTIA-Minimum-Elements": ProfileNTIA,
 	"NTIA":                  ProfileNTIA,
+	"ntia-2021":             ProfileNTIA2021,
+	"NTIA-2021":             ProfileNTIA2021,
+	"ntia2021":              ProfileNTIA2021,
+	"NTIA2021":              ProfileNTIA2021,
 	"ntia-2025":             ProfileNTIA2025,
 	"NTIA-2025":             ProfileNTIA2025,
 	"ntia2025":              ProfileNTIA2025,
 	"NTIA2025":              ProfileNTIA2025,
-	"cisa-2021":             ProfileNTIA,
-	"CISA-2021":             ProfileNTIA,
-	"cisa2021":              ProfileNTIA,
-	"CISA2021":              ProfileNTIA,
-	"cisa-2026":             ProfileCISA2026,
-	"CISA-2026":             ProfileCISA2026,
-	"cisa2026":              ProfileCISA2026,
-	"CISA2026":              ProfileCISA2026,
-	"cisa":                  ProfileCISA2026,
-	"CISA":                  ProfileCISA2026,
+	"cisa-2021":             ProfileNTIA2021,
+	"CISA-2021":             ProfileNTIA2021,
+	"cisa2021":              ProfileNTIA2021,
+	"CISA2021":              ProfileNTIA2021,
 	"fsct":                  ProfileFSCT,
 	"BSI":                   ProfileBSI21,
 	"bsi":                   ProfileBSI21,
@@ -663,18 +670,17 @@ func mergeConfigFileIntoCatalogYAML(ctx context.Context, path string) ([]catalog
 			return nil, nil, fmt.Errorf("read profile config: %w", err)
 		}
 
-		log.Error("Failed to parse profiles config",
+		log.Info("Loaded profiles from config file",
 			zap.String("path", path),
-			zap.Error(err),
+			zap.Int("profiles", len(prof)),
 		)
 		return nil, prof, nil
 	}
 
-	log.Error("Failed to parse profiles config",
+	log.Error("Unknown config file format",
 		zap.String("path", path),
-		zap.Error(err),
 	)
-	return nil, nil, fmt.Errorf("Unknown config file, neither categories not profiles based")
+	return nil, nil, fmt.Errorf("unknown config file, neither categories nor profiles based")
 }
 
 // filterCategories keeps only requested comprehensive categories.
@@ -870,24 +876,33 @@ func findFeatureProfile(feature string) string {
 // getProfileDisplayName returns human-readable profile name
 func getProfileDisplayName(profile string) string {
 	switch profile {
-	case "ntia", "cisa-2021", "cisa2021":
+	case "ntia", "cisa-2026", "cisa2026", "CISA2026", "cisa", "CISA":
+		return "NTIA Minimum Elements (2026)"
+
+	case "ntia-2021", "ntia2021", "NTIA2021", "cisa-2021", "cisa2021":
 		return "NTIA Minimum Elements (2021)"
+
 	case "ntia-2025":
 		return "NTIA Minimum Elements (2025) - Initial Draft"
-	case "cisa-2026", "cisa2026", "CISA2026", "cisa", "CISA":
-		return "CISA Minimum Elements (2026)"
+
 	case "bsi-v1.1", "bsi-v1_1", "bsiv11":
 		return "BSI TR-03183-2 v1.1"
+
 	case "bsi-v2.0", "bsi-v2_0", "bsiv20":
 		return "BSI TR-03183-2 v2.0"
+
 	case "bsi", "bsi-v2.1", "bsi-v2_1", "bsiv21":
 		return "BSI TR-03183-2 v2.1"
+
 	case "oct-v1.1", "oct-v1_1", "octv11", "OCTV11", "oct", "OCT":
 		return "OpenChain Telco v1.1"
+
 	case "fsct":
 		return "Framing 3rd Edition"
+
 	case "interlynk":
 		return "Interlynk Comprehensive"
+
 	default:
 		return profile
 	}
@@ -917,14 +932,14 @@ func filterProfiles(ctx context.Context, profiles []string) ([]catalog.ProfSpec,
 
 		switch profile {
 
-		case string(ProfileNTIA), "cisa-2021", "cisa2021", "CISA-2021", "CISA2021":
+		case string(ProfileNTIA), "cisa2026", "CISA2026", "cisa", "CISA":
 			finalProfiles = append(finalProfiles, profileNTIASpec)
+
+		case string(ProfileNTIA2021), "ntia2021", "NTIA2021", "cisa-2021", "cisa2021", "CISA-2021", "CISA2021":
+			finalProfiles = append(finalProfiles, profileNTIA2021Spec)
 
 		case string(ProfileNTIA2025):
 			finalProfiles = append(finalProfiles, profileNTIA2025Spec)
-
-		case string(ProfileCISA2026), "cisa2026", "CISA2026", "cisa", "CISA":
-			finalProfiles = append(finalProfiles, profileCISA2026Spec)
 
 		case string(ProfileFSCT):
 			finalProfiles = append(finalProfiles, profileFSCTSpec)
@@ -1090,8 +1105,7 @@ var comprehenssiveCategories = []catalog.ComprCatSpec{
 
 var defaultProfiles = []catalog.ProfSpec{
 	profileInterlynkSpec,
-	profileNTIASpec,
-	profileCISA2026Spec,
+	profileNTIASpec, // now CISA 2026 (latest NTIA)
 	profileFSCTSpec,
 	profileBSI11Spec,
 	profileOCTV11Spec,
@@ -1142,10 +1156,38 @@ var profileInterlynkSpec = catalog.ProfSpec{
 	},
 }
 
+// profileNTIASpec is the latest NTIA profile, which now maps to CISA 2026 Minimum Elements.
 var profileNTIASpec = catalog.ProfSpec{
 	Key:         ProfileNTIA,
+	Name:        "NTIA Minimum Elements (2026)",
+	Description: "NTIA Minimum Elements (2026) Profile",
+	Features: []catalog.ProfFeatSpec{
+		// SBOM Metadata
+		{Key: "sbom_data_format", Name: "Data Format", Required: true, Description: "Valid spec (SPDX/CycloneDX) and format (JSON/XML)", Evaluate: profiles.NTIA2026SBOMDataFormat},
+		{Key: "sbom_spec_version", Name: "SBOM Spec Version", Required: true, Description: "Version of the SBOM specification used", Evaluate: profiles.NTIA2026SBOMSpecVersion},
+		{Key: "sbom_author", Name: "SBOM Author", Required: true, Description: "Person or organization who created SBOM (tool entries not accepted)", Evaluate: profiles.NTIA2026SBOMAuthors},
+		{Key: "sbom_tool_name", Name: "SBOM Tool Name", Required: true, Description: "Name of the tool that generated the SBOM", Evaluate: profiles.NTIA2026SBOMToolName},
+		{Key: "sbom_tool_version", Name: "SBOM Tool Version", Required: true, Description: "Version of the tool that generated the SBOM", Evaluate: profiles.NTIA2026SBOMToolVersion},
+		{Key: "sbom_version", Name: "SBOM Version", Required: true, Description: "Author-assigned version of the SBOM document", Evaluate: profiles.NTIA2026SBOMVersion},
+		{Key: "sbom_timestamp", Name: "SBOM Timestamp", Required: true, Description: "ISO 8601 creation timestamp", Evaluate: profiles.NTIA2026SBOMCreationTimestamp},
+		{Key: "sbom_generation_context", Name: "SBOM Generation Context", Required: true, Description: "Context describing how the SBOM was generated", Evaluate: profiles.NTIA2026GenerationContext},
+		{Key: "sbom_relationships", Name: "SBOM Relationships", Required: true, Description: "Dependency relationships for the primary component", Evaluate: profiles.NTIA2026SBOMRelationships},
+		{Key: "sbom_signature", Name: "SBOM Author Signature", Required: true, Description: "Digital signature on the SBOM document", Evaluate: profiles.NTIA2026SBOMSignature},
+		// Component Data
+		{Key: "comp_name", Name: "Component Name", Required: true, Description: "Name assigned to each component", Evaluate: profiles.NTIA2026CompName},
+		{Key: "comp_version", Name: "Component Version", Required: true, Description: "Version strings for all components", Evaluate: profiles.NTIA2026CompVersion},
+		{Key: "comp_uniq_id", Name: "Component Other Identifiers", Required: true, Description: "PURL, CPE, or other unique IDs", Evaluate: profiles.NTIA2026CompUniqID},
+		{Key: "comp_producer", Name: "Component Producer", Required: true, Description: "Entity that produced the component (supplier/manufacturer/author)", Evaluate: profiles.NTIA2026CompProducer},
+		{Key: "comp_hash_value", Name: "Component Hash Value", Required: true, Description: "Cryptographic hash value for each component", Evaluate: profiles.NTIA2026CompHashValue},
+		{Key: "comp_hash_algo", Name: "Component Hash Algorithm", Required: true, Description: "Cryptographic hash algorithm for each component", Evaluate: profiles.NTIA2026CompHashAlgo},
+		{Key: "comp_license", Name: "Component License", Required: true, Description: "Declared license information for each component", Evaluate: profiles.NTIA2026CompLicense},
+	},
+}
+
+var profileNTIA2021Spec = catalog.ProfSpec{
+	Key:         ProfileNTIA2021,
 	Name:        "NTIA Minimum Elements (2021)",
-	Description: "NTIA Minimum Elements Profile",
+	Description: "NTIA Minimum Elements (2021) Profile",
 	Features: []catalog.ProfFeatSpec{
 		// Required (SHALL) fields
 		// {Key: "sbom_machine_format", Name: "Automation Support", Required: true, Description: "Valid spec (SPDX/CycloneDX) and format (JSON/XML)", Evaluate: profiles.SBOMAutomationSpec},
@@ -1181,33 +1223,6 @@ var profileNTIA2025Spec = catalog.ProfSpec{
 		{Key: "tool_name", Name: "Tool Name", Required: true, Description: "Name of the tool that created SBOM", Evaluate: profiles.NTIA2025ToolName},
 		{Key: "sbom_timestamp", Name: "Timestamp", Required: true, Description: "ISO 8601 creation timestamp", Evaluate: profiles.SBOMCreationTimestamp},
 		{Key: "generation_context", Name: "Generation Context", Required: true, Description: "Context of SBOM generation", Evaluate: profiles.NTIA2025GenerationContext},
-	},
-}
-
-var profileCISA2026Spec = catalog.ProfSpec{
-	Key:         ProfileCISA2026,
-	Name:        "CISA Minimum Elements (2026)",
-	Description: "CISA Minimum Elements 2026 Profile",
-	Features: []catalog.ProfFeatSpec{
-		// SBOM Metadata
-		{Key: "sbom_data_format", Name: "Data Format", Required: true, Description: "Valid spec (SPDX/CycloneDX) and format (JSON/XML)", Evaluate: profiles.CISA2026SBOMDataFormat},
-		{Key: "sbom_spec_version", Name: "SBOM Spec Version", Required: true, Description: "Version of the SBOM specification used", Evaluate: profiles.CISA2026SBOMSpecVersion},
-		{Key: "sbom_author", Name: "SBOM Author", Required: true, Description: "Person or organization who created SBOM (tool entries not accepted)", Evaluate: profiles.CISA2026SBOMAuthors},
-		{Key: "sbom_tool_name", Name: "SBOM Tool Name", Required: true, Description: "Name of the tool that generated the SBOM", Evaluate: profiles.CISA2026SBOMToolName},
-		{Key: "sbom_tool_version", Name: "SBOM Tool Version", Required: true, Description: "Version of the tool that generated the SBOM", Evaluate: profiles.CISA2026SBOMToolVersion},
-		{Key: "sbom_version", Name: "SBOM Version", Required: true, Description: "Author-assigned version of the SBOM document", Evaluate: profiles.CISA2026SBOMVersion},
-		{Key: "sbom_timestamp", Name: "SBOM Timestamp", Required: true, Description: "ISO 8601 creation timestamp", Evaluate: profiles.CISA2026SBOMCreationTimestamp},
-		{Key: "sbom_generation_context", Name: "SBOM Generation Context", Required: true, Description: "Context describing how the SBOM was generated", Evaluate: profiles.CISA2026GenerationContext},
-		{Key: "sbom_relationships", Name: "SBOM Relationships", Required: true, Description: "Dependency relationships for the primary component", Evaluate: profiles.CISA2026SBOMRelationships},
-		{Key: "sbom_signature", Name: "SBOM Author Signature", Required: true, Description: "Digital signature on the SBOM document", Evaluate: profiles.CISA2026SBOMSignature},
-		// Component Data
-		{Key: "comp_name", Name: "Component Name", Required: true, Description: "Name assigned to each component", Evaluate: profiles.CISA2026CompName},
-		{Key: "comp_version", Name: "Component Version", Required: true, Description: "Version strings for all components", Evaluate: profiles.CISA2026CompVersion},
-		{Key: "comp_uniq_id", Name: "Component Other Identifiers", Required: true, Description: "PURL, CPE, or other unique IDs", Evaluate: profiles.CISA2026CompUniqID},
-		{Key: "comp_producer", Name: "Component Producer", Required: true, Description: "Entity that produced the component (supplier/manufacturer/author)", Evaluate: profiles.CISA2026CompProducer},
-		{Key: "comp_hash_value", Name: "Component Hash Value", Required: true, Description: "Cryptographic hash value for each component", Evaluate: profiles.CISA2026CompHashValue},
-		{Key: "comp_hash_algo", Name: "Component Hash Algorithm", Required: true, Description: "Cryptographic hash algorithm for each component", Evaluate: profiles.CISA2026CompHashAlgo},
-		{Key: "comp_license", Name: "Component License", Required: true, Description: "Declared license information for each component", Evaluate: profiles.CISA2026CompLicense},
 	},
 }
 
@@ -1373,9 +1388,9 @@ var profileOCTV11Spec = catalog.ProfSpec{
 }
 
 var Profile = []catalog.ProfSpec{
-	profileNTIASpec,
+	profileNTIASpec,     // now CISA 2026 (latest NTIA)
+	profileNTIA2021Spec, // legacy NTIA 2021
 	profileNTIA2025Spec,
-	profileCISA2026Spec,
 	profileBSI11Spec,
 	profileBSI20Spec,
 	profileBSI21Spec,
@@ -1386,10 +1401,9 @@ var Profile = []catalog.ProfSpec{
 
 // ProfileSpecsMap provides easy access to profile specifications by key
 var ProfileSpecsMap = map[string]catalog.ProfSpec{
-	"ntia":      profileNTIASpec,
+	"ntia":      profileNTIASpec, // NTIA Minimum Elements (2026)
+	"ntia-2021": profileNTIA2021Spec,
 	"ntia-2025": profileNTIA2025Spec,
-	"cisa-2026": profileCISA2026Spec,
-	"cisa":      profileCISA2026Spec,
 	"bsi-v1.1":  profileBSI11Spec,
 	"bsi-v2.0":  profileBSI20Spec,
 	"bsi-v2.1":  profileBSI21Spec,

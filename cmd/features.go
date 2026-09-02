@@ -33,7 +33,8 @@ var featuresCmd = &cobra.Command{
   # Show features for a specific profile
   sbomqs features --profile bsi        # latest BSI (bsiv21)
   sbomqs features --profile bsiv21
-  sbomqs features --profile ntia
+  sbomqs features --profile ntia       # CISA-2026 (latest NTIA)
+  sbomqs features --profile ntia-2021  # NTIA 2021
   sbomqs features --profile interlynk
 
   # JSON output
@@ -62,7 +63,7 @@ func init() {
 	rootCmd.AddCommand(featuresCmd)
 
 	featuresCmd.Flags().BoolP("json", "j", false, "Output in JSON format")
-	featuresCmd.Flags().String("profile", "", "Show features for a specific profile (bsi, bsiv11, bsiv20, bsiv21, ntia, fsct, interlynk). 'bsi' is an alias for bsiv21.")
+	featuresCmd.Flags().String("profile", "", "Show features for a specific profile (bsi, bsiv11, bsiv20, bsiv21, ntia (=cisa-2026), ntia-2021 (=cisa-2021), fsct, interlynk). 'bsi' is an alias for bsiv21.")
 }
 
 // resolveSections returns the ProfileSections to display.
@@ -75,7 +76,7 @@ func resolveSections(profile string) ([]ProfileSection, error) {
 
 	if _, ok := supportedProfiles[profile]; !ok {
 		return nil, fmt.Errorf(
-			"profile %q is not supported. Supported profiles: bsi (=bsiv21), bsiv11, bsiv20, bsiv21, fsct, ntia, interlynk",
+			"profile %q is not supported. Supported profiles: bsi (=bsiv21), bsiv11, bsiv20, bsiv21, cisa-2026|cisa|cisa2026|ntia, ntia-2021|ntia2021|cisa-2021|cisa2021, fsct, oct|oct-v1.1, interlynk",
 			profile,
 		)
 	}

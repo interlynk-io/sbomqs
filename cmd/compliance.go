@@ -32,10 +32,13 @@ var complianceCmd = &cobra.Command{
 Check if our SBOM meets compliance requirements for various standards, such as NTIA minimum elements,
 BSI TR-03183-2, Framing Software Component Transparency (v3) and OpenChain Telco.
 	`,
-	Example: ` sbomqs compliance  < --ntia | --bsi | --bsi-v2 | --bsi-v21 | --fsct | --oct >  [--basic | --json]   <SBOM file>
+	Example: ` sbomqs compliance  < --ntia | --ntia-2021 | --bsi | --bsi-v2 | --bsi-v21 | --fsct | --oct >  [--basic | --json]   <SBOM file>
 
-  # Check a NTIA minimum elements compliance against a SBOM in a table output
+  # Check a NTIA minimum elements (CISA-2026) compliance against a SBOM in a table output
   sbomqs compliance --ntia samples/photon.spdx.json
+
+  # Check a NTIA minimum elements (2021) compliance against a SBOM in a table output
+  sbomqs compliance --ntia-2021 samples/photon.spdx.json
 
   # Check BSI TR-03183-2 compliance (latest version, currently v2.1.0)
   sbomqs compliance --bsi samples/sbom_cdx.json
@@ -90,6 +93,12 @@ func setupEngineParams(cmd *cobra.Command, args []string) *engine.Params {
 	engParams.Color, _ = cmd.Flags().GetBool("color")
 
 	engParams.Ntia, _ = cmd.Flags().GetBool("ntia")
+	if v, _ := cmd.Flags().GetBool("ntia-2021"); v {
+		engParams.Ntia2021 = true
+	}
+	if v, _ := cmd.Flags().GetBool("ntia2021"); v {
+		engParams.Ntia2021 = true
+	}
 	engParams.Bsi, _ = cmd.Flags().GetBool("bsi")
 	engParams.BsiV1, _ = cmd.Flags().GetBool("bsi-v1")
 	if v, _ := cmd.Flags().GetBool("bsi-v1.1"); v {
@@ -122,16 +131,16 @@ func setupEngineParams(cmd *cobra.Command, args []string) *engine.Params {
 		engParams.Oct = true
 	}
 	engParams.Fsct, _ = cmd.Flags().GetBool("fsct")
-	engParams.Cisa2026, _ = cmd.Flags().GetBool("cisa-2026")
+	engParams.Ntia, _ = cmd.Flags().GetBool("cisa-2026")
 	if v, _ := cmd.Flags().GetBool("cisa2026"); v {
-		engParams.Cisa2026 = true
+		engParams.Ntia = true
 	}
 	if v, _ := cmd.Flags().GetBool("cisa"); v {
-		engParams.Cisa2026 = true
+		engParams.Ntia = true
 	}
-	engParams.Cisa2021, _ = cmd.Flags().GetBool("cisa-2021")
+	engParams.Ntia2021, _ = cmd.Flags().GetBool("cisa-2021")
 	if v, _ := cmd.Flags().GetBool("cisa2021"); v {
-		engParams.Cisa2021 = true
+		engParams.Ntia2021 = true
 	}
 
 	engParams.Debug, _ = cmd.Flags().GetBool("debug")
@@ -161,7 +170,9 @@ func init() {
 	complianceCmd.MarkFlagsMutuallyExclusive("json", "basic", "detailed")
 
 	// Standards control
-	complianceCmd.Flags().BoolP("ntia", "n", false, "NTIA minimum elements (July 12, 2021)")
+	complianceCmd.Flags().BoolP("ntia", "n", false, "NTIA minimum elements (2026)")
+	complianceCmd.Flags().BoolP("ntia-2021", "", false, "NTIA minimum elements (2021)")
+	complianceCmd.Flags().BoolP("ntia2021", "", false, "NTIA minimum elements (2021)")
 	complianceCmd.Flags().BoolP("bsi", "c", false, "BSI TR-03183-2 (latest, currently v2.1.0)")
 	complianceCmd.Flags().BoolP("bsi-v1", "", false, "BSI TR-03183-2 (v1.1)")
 	complianceCmd.Flags().BoolP("bsi-v1.1", "", false, "BSI TR-03183-2 (v1.1)")
@@ -176,9 +187,9 @@ func init() {
 	complianceCmd.Flags().BoolP("oct-v1.1", "", false, "OpenChain Telco SBOM (v1.1)")
 	complianceCmd.Flags().BoolP("octv11", "", false, "OpenChain Telco SBOM (v1.1)")
 	complianceCmd.Flags().BoolP("fsct", "f", false, "Framing Software Component Transparency (v3)")
-	complianceCmd.Flags().BoolP("cisa-2026", "", false, "CISA Minimum Elements (2026)")
-	complianceCmd.Flags().BoolP("cisa2026", "", false, "CISA Minimum Elements (2026)")
-	complianceCmd.Flags().BoolP("cisa", "", false, "CISA Minimum Elements (2026)")
+	complianceCmd.Flags().BoolP("cisa-2026", "", false, "NTIA Minimum Elements (2026)")
+	complianceCmd.Flags().BoolP("cisa2026", "", false, "NTIA Minimum Elements (2026)")
+	complianceCmd.Flags().BoolP("cisa", "", false, "NTIA Minimum Elements (2026)")
 	complianceCmd.Flags().BoolP("cisa-2021", "", false, "CISA Minimum Elements (2021); alias for NTIA")
 	complianceCmd.Flags().BoolP("cisa2021", "", false, "CISA Minimum Elements (2021); alias for NTIA")
 
