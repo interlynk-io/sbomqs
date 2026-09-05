@@ -131,14 +131,18 @@ func setupEngineParams(cmd *cobra.Command, args []string) *engine.Params {
 		engParams.Oct = true
 	}
 	engParams.Fsct, _ = cmd.Flags().GetBool("fsct")
-	engParams.Ntia, _ = cmd.Flags().GetBool("cisa-2026")
+	if v, _ := cmd.Flags().GetBool("cisa-2026"); v {
+		engParams.Ntia = true
+	}
 	if v, _ := cmd.Flags().GetBool("cisa2026"); v {
 		engParams.Ntia = true
 	}
 	if v, _ := cmd.Flags().GetBool("cisa"); v {
 		engParams.Ntia = true
 	}
-	engParams.Ntia2021, _ = cmd.Flags().GetBool("cisa-2021")
+	if v, _ := cmd.Flags().GetBool("cisa-2021"); v {
+		engParams.Ntia2021 = true
+	}
 	if v, _ := cmd.Flags().GetBool("cisa2021"); v {
 		engParams.Ntia2021 = true
 	}
