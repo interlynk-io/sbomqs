@@ -21,7 +21,7 @@ concurrency:
 jobs:
   ci-tests:
     name: Run CI Tests
-    uses: ./.github/workflows/ci.yml
+    uses: $/.github/workflows/ci.yml
     permissions:
       contents: read
       packages: read
@@ -91,16 +91,22 @@ jobs:
 
       - name: Generate SBOM
         shell: bash
+        env:
+          TOOL_NAME: ${{ env.TOOL_NAME }}
+          LATEST_TAG: ${{ env.LATEST_TAG }}
+          SUPPLIER_NAME: ${{ env.SUPPLIER_NAME }}
+          SUPPLIER_URL: ${{ env.SUPPLIER_URL }}
+          MS_SBOM_TOOL_EXCLUDE_DIRS: ${{ env.MS_SBOM_TOOL_EXCLUDE_DIRS }}
         run: |
           mkdir -p sbom-output
           /tmp/sbom-tool generate \
             -b sbom-output \
             -bc . \
-            -pn "${{ env.TOOL_NAME }}" \
-            -pv "${{ env.LATEST_TAG }}" \
-            -ps "${{ env.SUPPLIER_NAME }}" \
-            -nsb "${{ env.SUPPLIER_URL }}" \
-            -cd "--DirectoryExclusionList ${{ env.MS_SBOM_TOOL_EXCLUDE_DIRS }}"
+            -pn "${TOOL_NAME}" \
+            -pv "${LATEST_TAG}" \
+            -ps "${SUPPLIER_NAME}" \
+            -nsb "${SUPPLIER_URL}" \
+            -cd "--DirectoryExclusionList ${MS_SBOM_TOOL_EXCLUDE_DIRS}"
           ls -lR sbom-output
 
       - name: Upload SBOM as Release Asset
