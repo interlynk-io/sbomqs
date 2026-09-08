@@ -654,10 +654,9 @@ func spdxPurposeCheck(doc sbom.Document, purpose, fieldLabel string) catalog.Pro
 		}
 	}
 
-	target := strings.ToUpper(purpose)
 	matched := 0
 	for _, c := range comps {
-		if strings.ToUpper(strings.TrimSpace(c.PrimaryPurpose())) == target {
+		if strings.EqualFold(strings.TrimSpace(c.PrimaryPurpose()), purpose) {
 			matched++
 		}
 	}

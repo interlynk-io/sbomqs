@@ -41,7 +41,7 @@ func SBOMWithSpec(_ context.Context, input catalog.EvalInput) catalog.ComprFeatS
 	}
 
 	for _, s := range sbom.SupportedSBOMSpecs() {
-		if spec == strings.ToLower(strings.TrimSpace(s)) {
+		if strings.EqualFold(spec, strings.TrimSpace(s)) {
 			return catalog.ComprFeatScore{
 				Score:  formulae.BooleanScore(true),
 				Desc:   spec,
@@ -78,7 +78,7 @@ func SBOMSpecVersion(_ context.Context, input catalog.EvalInput) catalog.ComprFe
 			// For SPDX restore the "SPDX-" display prefix (e.g. "SPDX-2.3");
 			// the internal version has the prefix stripped by the parser.
 			var desc string
-			if strings.ToLower(spec) == string(sbom.SBOMSpecSPDX) {
+			if strings.EqualFold(spec, string(sbom.SBOMSpecSPDX)) {
 				desc = "SPDX-" + ver
 			} else {
 				desc = "v" + ver
@@ -114,7 +114,7 @@ func SBOMFileFormat(_ context.Context, input catalog.EvalInput) catalog.ComprFea
 
 	supported := sbom.SupportedSBOMFileFormats(spec)
 	for _, f := range supported {
-		if format == strings.ToLower(strings.TrimSpace(f)) {
+		if strings.EqualFold(format, strings.TrimSpace(f)) {
 			return catalog.ComprFeatScore{
 				Score:  formulae.BooleanScore(true),
 				Desc:   format,

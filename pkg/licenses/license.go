@@ -103,9 +103,7 @@ func LookupSpdxLicense(licenseKey string) (License, error) {
 		return nil, errors.New("license not found")
 	}
 
-	lowerKey := strings.ToLower(licenseKey)
-
-	if lowerKey == "none" || lowerKey == "noassertion" {
+	if strings.EqualFold(licenseKey, "none") || strings.EqualFold(licenseKey, "noassertion") {
 		return nil, errors.New("license not found")
 	}
 
@@ -126,9 +124,7 @@ func LookupAboutCodeLicense(licenseKey string) (License, error) {
 		return nil, errors.New("license not found")
 	}
 
-	lowerKey := strings.ToLower(licenseKey)
-
-	if lowerKey == "none" || lowerKey == "noassertion" {
+	if strings.EqualFold(licenseKey, "none") || strings.EqualFold(licenseKey, "noassertion") {
 		return nil, errors.New("license not found")
 	}
 
@@ -157,9 +153,7 @@ func LookupExpression(expression string, customLicenses []License) []License {
 		return nil, errors.New("license not found")
 	}
 
-	lExp := strings.ToLower(expression)
-
-	if expression == "" || lExp == "none" || lExp == "noassertion" {
+	if expression == "" || strings.EqualFold(expression, "none") || strings.EqualFold(expression, "noassertion") {
 		return []License{}
 	}
 

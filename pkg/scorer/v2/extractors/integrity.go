@@ -116,7 +116,7 @@ var verifySignature = common.VerifySignature
 func SBOMSignature(_ context.Context, input catalog.EvalInput) catalog.ComprFeatScore {
 	doc := input.Doc
 	// SPDX does not support signatures in its specification
-	if strings.ToLower(doc.Spec().GetSpecType()) == "spdx" {
+	if strings.EqualFold(doc.Spec().GetSpecType(), "spdx") {
 		return catalog.ComprFeatScore{
 			Score:  0,
 			Desc:   "not supported by SPDX",

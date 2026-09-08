@@ -802,16 +802,16 @@ func FSCTCompCopyright(doc sbom.Document) catalog.ProfFeatScore {
 
 	// Count copyright presence across all components
 	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
-		val := strings.ToLower(strings.TrimSpace(c.GetCopyRight()))
-		return val != "" && val != "none" && val != "noassertion"
+		val := strings.TrimSpace(c.GetCopyRight())
+		return val != "" && !strings.EqualFold(val, "none") && !strings.EqualFold(val, "noassertion")
 	})
 
 	for _, c := range comps {
 		if c.GetID() == primary.GetID() {
 
 			// ----- Minimum expectation: primary component must have copyright -----
-			primaryVal := strings.ToLower(strings.TrimSpace(c.GetCopyRight()))
-			if primaryVal == "" || primaryVal == "none" || primaryVal == "noassertion" {
+			primaryVal := strings.TrimSpace(c.GetCopyRight())
+			if primaryVal == "" || strings.EqualFold(primaryVal, "none") || strings.EqualFold(primaryVal, "noassertion") {
 
 				desc := "copyright missing for primary component (minimum expectation not met) and all components"
 				if have > 0 {

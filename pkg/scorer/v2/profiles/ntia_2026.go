@@ -331,9 +331,8 @@ func NTIA2026SBOMAuthors(doc sbom.Document) catalog.ProfFeatScore {
 	var legalAuthors []sbom.GetAuthor
 
 	for _, author := range authors {
-		authType := strings.ToLower(strings.TrimSpace(author.GetType()))
 		// Explicitly reject tool entries per CISA 2026 guidance
-		if authType == "tool" {
+		if strings.EqualFold(author.GetType(), "tool") {
 			continue
 		}
 		if strings.TrimSpace(author.GetName()) != "" || strings.TrimSpace(author.GetEmail()) != "" || strings.TrimSpace(author.GetURL()) != "" {
@@ -410,7 +409,7 @@ func NTIA2026SBOMSignature(doc sbom.Document) catalog.ProfFeatScore {
 	if sig == nil {
 		spec := strings.TrimSpace(strings.ToLower(doc.Spec().GetSpecType()))
 		ver := strings.TrimSpace(doc.Spec().GetVersion())
-		if spec == string(sbom.SBOMSpecSPDX) && !strings.HasPrefix(ver, "3.") {
+		if strings.EqualFold(spec, string(sbom.SBOMSpecSPDX)) && !strings.HasPrefix(ver, "3.") {
 			return catalog.ProfFeatScore{
 				Score:  0.0,
 				Desc:   "SPDX versions below 3.0 do not support signatures",

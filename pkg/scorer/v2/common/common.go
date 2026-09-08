@@ -140,8 +140,7 @@ func ValidateLicenseText(s string) bool {
 		return false
 	}
 
-	u := strings.ToUpper(strings.TrimSpace(s))
-	if u == "NOASSERTION" || u == "NONE" {
+	if strings.EqualFold(strings.TrimSpace(s), "NOASSERTION") || strings.EqualFold(strings.TrimSpace(s), "NONE") {
 		return false
 	}
 	return true

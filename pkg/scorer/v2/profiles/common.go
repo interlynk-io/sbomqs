@@ -36,7 +36,7 @@ func SBOMSpec(doc sbom.Document) catalog.ProfFeatScore {
 	}
 
 	for _, s := range sbom.SupportedSBOMSpecs() {
-		if spec == strings.ToLower(strings.TrimSpace(s)) {
+		if strings.EqualFold(spec, strings.TrimSpace(s)) {
 			return formulae.ScoreSBOMProfFull(spec, false)
 		}
 	}
@@ -85,7 +85,7 @@ func SBOMAutomationSpec(doc sbom.Document) catalog.ProfFeatScore {
 
 	supportedFileFormats := sbom.SupportedSBOMFileFormats(spec)
 	for _, f := range supportedFileFormats {
-		if format == strings.ToLower(strings.TrimSpace(f)) {
+		if strings.EqualFold(format, strings.TrimSpace(f)) {
 			return formulae.ScoreSBOMProfFull(format, false)
 		}
 	}
@@ -593,7 +593,7 @@ func SBOMSignature(doc sbom.Document) catalog.ProfFeatScore {
 }
 
 func SBOMVulnerabilities(doc sbom.Document) catalog.ProfFeatScore {
-	if strings.ToLower(doc.Spec().GetSpecType()) == "spdx" {
+	if strings.EqualFold(doc.Spec().GetSpecType(), "spdx") {
 		return catalog.ProfFeatScore{Score: 0.0, Desc: formulae.NonSupportedSPDXField(), Ignore: true}
 	}
 

@@ -485,8 +485,7 @@ func bsiV11ComponentLicense(component sbom.GetComponent) *db.Record {
 			anyID = id
 		}
 
-		u := strings.ToUpper(id)
-		if u == "NONE" || u == "NOASSERTION" {
+		if strings.EqualFold(id, "NONE") || strings.EqualFold(id, "NOASSERTION") {
 			continue
 		}
 

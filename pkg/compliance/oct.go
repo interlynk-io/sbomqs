@@ -66,11 +66,10 @@ func octResult(ctx context.Context, doc sbom.Document, fileName string, outForma
 // check document data format
 func octSpec(doc sbom.Document) *db.Record {
 	v := doc.Spec().GetSpecType()
-	vToLower := strings.Trim(strings.ToLower(v), " ")
 	result := ""
 	score := 0.0
 
-	if vToLower == string(sbom.SBOMSpecSPDX) {
+	if strings.EqualFold(v, string(sbom.SBOMSpecSPDX)) {
 		result = v
 		score = 10.0
 	} else {
