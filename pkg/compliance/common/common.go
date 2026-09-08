@@ -283,7 +283,7 @@ func CheckCopyright(cp string) (string, bool) {
 func ComponentsNamesMapToIDs(doc sbom.Document) map[string]string {
 	compIDWithName := make(map[string]string)
 	for _, component := range doc.Components() {
-		if doc.Spec().GetSpecType() == "spdx" {
+		if doc.Spec().GetSpecType() == string(sbom.SBOMSpecSPDX) {
 			id := "SPDXRef-" + component.GetSpdxID()
 			compIDWithName[id] = component.GetName()
 

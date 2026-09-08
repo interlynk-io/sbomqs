@@ -807,7 +807,7 @@ func (s *SpdxDoc) purls(index int) []purl.PURL {
 
 	urls := make([]purl.PURL, 0, len(pkg.PackageExternalReferences))
 	for _, p := range pkg.PackageExternalReferences {
-		if strings.ToLower(p.RefType) == spdx_common.TypePackageManagerPURL {
+		if strings.EqualFold(p.RefType, spdx_common.TypePackageManagerPURL) {
 			prl := purl.NewPURL(p.Locator)
 			if prl.Valid() {
 				urls = append(urls, prl)
@@ -963,7 +963,7 @@ func (s *SpdxDoc) getManufacturer(index int) *Manufacturer {
 		return nil
 	}
 
-	if strings.ToLower(pkg.PackageOriginator.Originator) == "noassertion" {
+	if strings.EqualFold(pkg.PackageOriginator.Originator, "noassertion") {
 		return nil
 	}
 
@@ -1030,7 +1030,7 @@ func parseEntity(in string) *entity {
 		in = strings.TrimSpace(strings.TrimLeft(in, ":"))
 	}
 
-	if strings.ToUpper(in) == "NOASSERTION" || strings.ToUpper(in) == "NONE" {
+	if strings.EqualFold(in, "NOASSERTION") || strings.EqualFold(in, "NONE") {
 		return &entity{name: in}
 	}
 

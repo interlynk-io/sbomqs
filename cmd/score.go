@@ -293,9 +293,9 @@ func toUserCmd(cmd *cobra.Command, args []string) *userCmd {
 	uCmd.profile, _ = cmd.Flags().GetStringSlice("profile")
 
 	if reportFormat != "" {
-		uCmd.json = strings.ToLower(reportFormat) == "json"
-		uCmd.basic = strings.ToLower(reportFormat) == "basic"
-		uCmd.detailed = strings.ToLower(reportFormat) == "detailed"
+		uCmd.json = strings.EqualFold(reportFormat, "json")
+		uCmd.basic = strings.EqualFold(reportFormat, "basic")
+		uCmd.detailed = strings.EqualFold(reportFormat, "detailed")
 	}
 
 	// debug control

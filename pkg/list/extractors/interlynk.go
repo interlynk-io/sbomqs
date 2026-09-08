@@ -149,7 +149,7 @@ func InterlynkSBOMTool(doc sbom.Document) (bool, string, error) {
 // Mirrors: profiles.InterSBOMSupplier → profiles.SBOMSupplier
 func InterlynkSBOMSupplier(doc sbom.Document) (bool, string, error) {
 	spec := strings.ToLower(strings.TrimSpace(doc.Spec().GetSpecType()))
-	if spec == strings.ToLower(string(sbom.SBOMSpecSPDX)) {
+	if strings.EqualFold(spec, string(sbom.SBOMSpecSPDX)) {
 		return false, "not supported in SPDX", nil
 	}
 	s := doc.Supplier()
@@ -190,7 +190,7 @@ func InterlynkSBOMLifecycle(doc sbom.Document) (bool, string, error) {
 	spec := strings.ToLower(strings.TrimSpace(doc.Spec().GetSpecType()))
 	ver := strings.TrimSpace(doc.Spec().GetVersion())
 
-	if spec == strings.ToLower(string(sbom.SBOMSpecSPDX)) && !strings.HasPrefix(ver, "3.") {
+	if strings.EqualFold(spec, string(sbom.SBOMSpecSPDX)) && !strings.HasPrefix(ver, "3.") {
 		return false, "not supported in SPDX", nil
 	}
 
@@ -250,7 +250,7 @@ func InterlynkSBOMSignature(doc sbom.Document) (bool, string, error) {
 	spec := strings.ToLower(strings.TrimSpace(doc.Spec().GetSpecType()))
 	ver := strings.TrimSpace(doc.Spec().GetVersion())
 
-	if spec == strings.ToLower(string(sbom.SBOMSpecSPDX)) && !strings.HasPrefix(ver, "3.") {
+	if strings.EqualFold(spec, string(sbom.SBOMSpecSPDX)) && !strings.HasPrefix(ver, "3.") {
 		return false, "not supported in SPDX", nil
 	}
 
@@ -349,11 +349,11 @@ func InterlynkSBOMCompleteness(doc sbom.Document) (bool, string, error) {
 	spec := strings.ToLower(strings.TrimSpace(doc.Spec().GetSpecType()))
 	ver := strings.TrimSpace(doc.Spec().GetVersion())
 
-	if spec == strings.ToLower(string(sbom.SBOMSpecSPDX)) && !strings.HasPrefix(ver, "3.") {
+	if strings.EqualFold(spec, string(sbom.SBOMSpecSPDX)) && !strings.HasPrefix(ver, "3.") {
 		return false, "not supported in SPDX", nil
 	}
 
-	if spec == strings.ToLower(string(sbom.SBOMSpecSPDX)) && strings.HasPrefix(ver, "3.") {
+	if strings.EqualFold(spec, string(sbom.SBOMSpecSPDX)) && strings.HasPrefix(ver, "3.") {
 		rels := doc.GetRelationships()
 		if len(rels) > 0 {
 			var complete []string
@@ -612,7 +612,7 @@ func InterlynkSBOMSpecDeclared(doc sbom.Document) (bool, string, error) {
 	}
 	specLower := strings.ToLower(spec)
 	for _, s := range sbom.SupportedSBOMSpecs() {
-		if specLower == strings.ToLower(s) {
+		if strings.EqualFold(specLower, s) {
 			return true, spec, nil
 		}
 	}
@@ -646,7 +646,7 @@ func InterlynkSBOMFileFormat(doc sbom.Document) (bool, string, error) {
 	}
 	supported := sbom.SupportedSBOMFileFormats(spec)
 	for _, f := range supported {
-		if format == strings.ToLower(f) {
+		if strings.EqualFold(format, f) {
 			return true, format, nil
 		}
 	}

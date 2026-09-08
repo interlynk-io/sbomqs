@@ -328,7 +328,7 @@ func evaluateSBOMMachineFormat(doc sbom.Document) (bool, string, error) {
 
 	supportedFileFormats := sbom.SupportedSBOMFileFormats(spec)
 	for _, f := range supportedFileFormats {
-		if format == strings.ToLower(strings.TrimSpace(f)) {
+		if strings.EqualFold(format, strings.TrimSpace(f)) {
 			return true, spec + "-" + format, nil
 		}
 	}
