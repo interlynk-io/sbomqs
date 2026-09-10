@@ -131,9 +131,16 @@ func GenericCompSupplier(_ sbom.Document, comp sbom.GetComponent) (bool, string,
 		if name := strings.TrimSpace(s.GetName()); name != "" {
 			parts = append(parts, name)
 		}
-		if email := strings.TrimSpace(s.GetEmail()); email != "" {
+
+		var email string
+		for _, s := range s.GetContacts() {
+			email = strings.TrimSpace(s.GetEmail())
+		}
+
+		if email != "" {
 			parts = append(parts, email)
 		}
+
 		if u := strings.TrimSpace(s.GetURL()); u != "" {
 			parts = append(parts, u)
 		}
@@ -147,9 +154,16 @@ func GenericCompSupplier(_ sbom.Document, comp sbom.GetComponent) (bool, string,
 		if name := strings.TrimSpace(m.GetName()); name != "" {
 			parts = append(parts, name)
 		}
-		if email := strings.TrimSpace(m.GetEmail()); email != "" {
+
+		var email string
+		for _, m := range m.GetContacts() {
+			email = strings.TrimSpace(m.GetEmail())
+		}
+
+		if email != "" {
 			parts = append(parts, email)
 		}
+
 		if u := strings.TrimSpace(m.GetURL()); u != "" {
 			parts = append(parts, u)
 		}

@@ -175,8 +175,14 @@ func (extractor *Extractor) MapFieldWithFunction(ctx context.Context) {
 			if name := sup.GetName(); name != "" {
 				suppliers = append(suppliers, name)
 			}
-			if em := sup.GetEmail(); em != "" {
-				suppliers = append(suppliers, em)
+
+			var email string
+			for _, s := range sup.GetContacts() {
+				email = strings.TrimSpace(s.GetEmail())
+			}
+
+			if email != "" {
+				suppliers = append(suppliers, email)
 			}
 			if u := sup.GetURL(); u != "" {
 				suppliers = append(suppliers, u)
@@ -253,7 +259,13 @@ func (extractor *Extractor) MapFieldWithFunction(ctx context.Context) {
 			if name := s.GetName(); name != "" {
 				sbomSuppliers = append(sbomSuppliers, name)
 			}
-			if email := s.GetEmail(); email != "" {
+
+			var email string
+			for _, s := range s.GetContacts() {
+				email = strings.TrimSpace(s.GetEmail())
+			}
+
+			if email != "" {
 				sbomSuppliers = append(sbomSuppliers, email)
 			}
 

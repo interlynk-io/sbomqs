@@ -103,13 +103,7 @@ func CheckSupplier(supplier sbom.GetSupplier) (string, bool) {
 
 	// Check for name and email
 	if name := supplier.GetName(); name != "" {
-		if email := supplier.GetEmail(); email != "" {
-			parts = append(parts, name+", "+email)
-		} else {
-			parts = append(parts, name)
-		}
-	} else if email := supplier.GetEmail(); email != "" {
-		parts = append(parts, email)
+		parts = append(parts, name)
 	}
 
 	// Check for URL
@@ -120,6 +114,7 @@ func CheckSupplier(supplier sbom.GetSupplier) (string, bool) {
 	// Check for contacts
 	if contacts := supplier.GetContacts(); contacts != nil {
 		var contactParts []string
+
 		for _, contact := range contacts {
 			if contactName := contact.GetName(); contactName != "" {
 				if contactEmail := contact.GetEmail(); contactEmail != "" {
@@ -131,6 +126,7 @@ func CheckSupplier(supplier sbom.GetSupplier) (string, bool) {
 				contactParts = append(contactParts, contactEmail)
 			}
 		}
+
 		if len(contactParts) > 0 {
 			parts = append(parts, "("+strings.Join(contactParts, ", ")+")")
 		}
@@ -146,14 +142,6 @@ func CheckSupplier(supplier sbom.GetSupplier) (string, bool) {
 }
 
 func CheckManufacturer(manufacturer sbom.GetManufacturer) (string, bool) {
-	if email := manufacturer.GetEmail(); email != "" {
-		return email, true
-	}
-
-	if url := manufacturer.GetURL(); url != "" {
-		return url, true
-	}
-
 	if contacts := manufacturer.GetContacts(); contacts != nil {
 		for _, contact := range contacts {
 			if email := contact.GetEmail(); email != "" {
@@ -161,6 +149,11 @@ func CheckManufacturer(manufacturer sbom.GetManufacturer) (string, bool) {
 			}
 		}
 	}
+
+	if url := manufacturer.GetURL(); url != "" {
+		return url, true
+	}
+
 	return "", false
 }
 

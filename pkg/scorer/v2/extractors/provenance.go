@@ -163,9 +163,16 @@ func SBOMSupplier(_ context.Context, input catalog.EvalInput) catalog.ComprFeatS
 		s := doc.Supplier()
 		if s != nil {
 			hasName := strings.TrimSpace(s.GetName()) != ""
-			hasEmail := strings.TrimSpace(s.GetEmail()) != "" || strings.TrimSpace(s.GetURL()) != ""
 
-			if hasName || hasEmail {
+			var email string
+			for _, s := range s.GetContacts() {
+				email = strings.TrimSpace(s.GetEmail())
+			}
+
+			hasEmail := email != ""
+			hasURL := strings.TrimSpace(s.GetURL()) != ""
+
+			if hasName || hasEmail || hasURL {
 				return catalog.ComprFeatScore{
 					Score:  formulae.BooleanScore(true),
 					Desc:   "complete",

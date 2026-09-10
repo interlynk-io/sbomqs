@@ -457,7 +457,7 @@ func TestBSISBOMCreator(t *testing.T) {
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_CREATOR, got.CheckKey)
 		assert.Equal(t, "doc", got.ID)
-		assert.Equal(t, "professional.services@example.com (manufacturer)", got.CheckValue)
+		assert.Equal(t, "professional.services@example.com (manufacturer contact)", got.CheckValue)
 	})
 
 	t.Run("cdxSBOMWithManufacturerContactEmail", func(t *testing.T) {
@@ -470,7 +470,7 @@ func TestBSISBOMCreator(t *testing.T) {
 		assert.Equal(t, SBOM_CREATOR, got.CheckKey)
 		assert.Equal(t, "doc", got.ID)
 		// Email is preferred over URL per BSI spec; extracted from contact
-		assert.Equal(t, "professional.services@example.com (manufacturer)", got.CheckValue)
+		assert.Equal(t, "professional.services@example.com (manufacturer contact)", got.CheckValue)
 	})
 
 	t.Run("cdxSBOMWithManufacturerURLOnly", func(t *testing.T) {
@@ -495,7 +495,7 @@ func TestBSISBOMCreator(t *testing.T) {
 		assert.Equal(t, SBOM_CREATOR, got.CheckKey)
 		assert.Equal(t, "doc", got.ID)
 		// Email extracted from contact is now set as manufacturer email, per BSI spec preference
-		assert.Equal(t, "professional.services@gmail.com (manufacturer)", got.CheckValue)
+		assert.Equal(t, "professional.services@gmail.com (manufacturer contact)", got.CheckValue)
 	})
 
 	t.Run("cdxSBOMWithManufacturerNameOnly", func(t *testing.T) {
@@ -519,7 +519,7 @@ func TestBSISBOMCreator(t *testing.T) {
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, SBOM_CREATOR, got.CheckKey)
 		assert.Equal(t, "doc", got.ID)
-		assert.Equal(t, "https://example.com (supplier)", got.CheckValue)
+		assert.Equal(t, "distribution@example.com (supplier contact)", got.CheckValue)
 	})
 
 	t.Run("cdxSBOMWithSupplierURLOnly", func(t *testing.T) {
@@ -1303,7 +1303,7 @@ func TestBSIComponentCreator(t *testing.T) {
 			assert.InDelta(t, 10.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_CREATOR, got.CheckKey)
 			assert.Equal(t, common.UniqueElementID(c), got.ID)
-			assert.Equal(t, "samantha.wright@example.com (supplier)", got.CheckValue)
+			assert.Equal(t, "samantha.wright@example.com (supplier contact)", got.CheckValue)
 		}
 	})
 
@@ -1317,7 +1317,7 @@ func TestBSIComponentCreator(t *testing.T) {
 			assert.InDelta(t, 10.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_CREATOR, got.CheckKey)
 			assert.Equal(t, common.UniqueElementID(c), got.ID)
-			assert.Equal(t, "samantha.wright@example.com (supplier)", got.CheckValue)
+			assert.Equal(t, "samantha.wright@example.com (supplier contact)", got.CheckValue)
 		}
 	})
 
@@ -1360,7 +1360,7 @@ func TestBSIComponentCreator(t *testing.T) {
 			assert.Equal(t, COMP_CREATOR, got.CheckKey)
 			assert.Equal(t, common.UniqueElementID(c), got.ID)
 			// Email is preferred over URL per BSI spec; extracted from contact
-			assert.Equal(t, "professional.services@example.com (manufacturer)", got.CheckValue)
+			assert.Equal(t, "professional.services@example.com (manufacturer contact)", got.CheckValue)
 		}
 	})
 
@@ -1389,7 +1389,7 @@ func TestBSIComponentCreator(t *testing.T) {
 			assert.Equal(t, COMP_CREATOR, got.CheckKey)
 			assert.Equal(t, common.UniqueElementID(c), got.ID)
 			// Email extracted from contact is now set as manufacturer email, per BSI spec preference
-			assert.Equal(t, "professional.services@example.com (manufacturer)", got.CheckValue)
+			assert.Equal(t, "professional.services@example.com (manufacturer contact)", got.CheckValue)
 		}
 	})
 
@@ -1417,7 +1417,7 @@ func TestBSIComponentCreator(t *testing.T) {
 			assert.InDelta(t, 10.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_CREATOR, got.CheckKey)
 			assert.Equal(t, common.UniqueElementID(c), got.ID)
-			assert.Equal(t, "https://example.com (supplier)", got.CheckValue)
+			assert.Equal(t, "professional.services@example.com (supplier contact)", got.CheckValue)
 		}
 	})
 
@@ -1474,7 +1474,7 @@ func TestBSIComponentCreator(t *testing.T) {
 			assert.InDelta(t, 10.0, got.Score, 1e-9)
 			assert.Equal(t, COMP_CREATOR, got.CheckKey)
 			assert.Equal(t, common.UniqueElementID(c), got.ID)
-			assert.Contains(t, got.CheckValue, "contact@example.com")
+			assert.Equal(t, "contact@example.com (supplier contact)", got.CheckValue)
 		}
 	})
 

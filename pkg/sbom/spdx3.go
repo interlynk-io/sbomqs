@@ -951,9 +951,10 @@ func (s *Spdx3Doc) parseComps() {
 		if pkg.SuppliedBy == nil && len(pkg.OriginatedBy) > 0 {
 			if nc.Manufacture.Name != "" || nc.Manufacture.Email != "" || nc.Manufacture.URL != "" {
 				nc.Supplier = Supplier{
-					Name:  nc.Manufacture.Name,
-					Email: nc.Manufacture.Email,
-					URL:   nc.Manufacture.URL,
+					Name:     nc.Manufacture.Name,
+					Email:    nc.Manufacture.Email,
+					URL:      nc.Manufacture.URL,
+					Contacts: nc.Manufacture.Contacts,
 				}
 			}
 		}
@@ -1101,12 +1102,16 @@ func (s *Spdx3Doc) extractSupplier(suppliedBy *spdx.Agent) Supplier {
 		supplierName = suppliedBy.Name
 	}
 
-	return Supplier{
+	sup := Supplier{
 		Name:   supplierName,
 		Email:  supplierEmail,
 		URL:    supplierURL,
 		Absent: supplierName == "" && supplierEmail == "" && supplierURL == "",
 	}
+	if supplierEmail != "" {
+		sup.Contacts = []Contact{{Email: supplierEmail}}
+	}
+	return sup
 }
 
 // extractManufacturer extracts manufacturer information from SPDX 3.0 OriginatedBy agents
@@ -1164,12 +1169,16 @@ func (s *Spdx3Doc) extractManufacturer(originatedBy []spdx.Agent) Manufacturer {
 		manufacturerName = orig.Name
 	}
 
-	return Manufacturer{
+	man := Manufacturer{
 		Name:   manufacturerName,
 		Email:  manufacturerEmail,
 		URL:    manufacturerURL,
 		Absent: manufacturerName == "" && manufacturerEmail == "" && manufacturerURL == "",
 	}
+	if manufacturerEmail != "" {
+		man.Contacts = []Contact{{Email: manufacturerEmail}}
+	}
+	return man
 }
 
 func (s *Spdx3Doc) pkgRequiredFields(pkg *spdx.Package) bool {

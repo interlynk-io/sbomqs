@@ -172,42 +172,31 @@ func bsiV11SBOMCreator(doc sbom.Document) *db.Record {
 		if bsiIsValidEmail(author.GetEmail()) {
 			return db.NewRecordStmt(SBOM_CREATOR, "doc", author.GetEmail()+" (author)", 10.0, "")
 		}
-		if bsiIsValidURL(author.GetURL()) {
-			return db.NewRecordStmt(SBOM_CREATOR, "doc", author.GetURL()+" (author)", 10.0, "")
-		}
 	}
 
-	// Manufacturer: email -> URL -> contacts email (checked before supplier per BSI spec)
+	// Manufacturer: contacts email  -> URL
 	if m := doc.Manufacturer(); m != nil {
-		if bsiIsValidEmail(m.GetEmail()) {
-			return db.NewRecordStmt(SBOM_CREATOR, "doc", m.GetEmail()+" (manufacturer)", 10.0, "")
-		}
-
-		if bsiIsValidURL(m.GetURL()) {
-			return db.NewRecordStmt(SBOM_CREATOR, "doc", m.GetURL()+" (manufacturer)", 10.0, "")
-		}
-
 		for _, c := range m.GetContacts() {
 			if bsiIsValidEmail(c.GetEmail()) {
 				return db.NewRecordStmt(SBOM_CREATOR, "doc", c.GetEmail()+" (manufacturer contact)", 10.0, "")
 			}
 		}
+
+		if bsiIsValidURL(m.GetURL()) {
+			return db.NewRecordStmt(SBOM_CREATOR, "doc", m.GetURL()+" (manufacturer)", 10.0, "")
+		}
 	}
 
-	// Supplier: email -> URL -> contacts email (fallback)
+	// Supplier: contacts email  -> URL
 	if s := doc.Supplier(); s != nil {
-		if bsiIsValidEmail(s.GetEmail()) {
-			return db.NewRecordStmt(SBOM_CREATOR, "doc", s.GetEmail()+" (supplier)", 10.0, "")
-		}
-
-		if bsiIsValidURL(s.GetURL()) {
-			return db.NewRecordStmt(SBOM_CREATOR, "doc", s.GetURL()+" (supplier)", 10.0, "")
-		}
-
 		for _, c := range s.GetContacts() {
 			if bsiIsValidEmail(c.GetEmail()) {
 				return db.NewRecordStmt(SBOM_CREATOR, "doc", c.GetEmail()+" (supplier contact)", 10.0, "")
 			}
+		}
+
+		if bsiIsValidURL(s.GetURL()) {
+			return db.NewRecordStmt(SBOM_CREATOR, "doc", s.GetURL()+" (supplier)", 10.0, "")
 		}
 	}
 
@@ -284,31 +273,28 @@ func bsiV11ComponentCreator(component sbom.GetComponent) *db.Record {
 
 	// Manufacturer: email -> URL -> contacts email (checked before supplier per BSI spec)
 	if m := component.Manufacturer(); !m.IsAbsent() {
-		if bsiIsValidEmail(m.GetEmail()) {
-			return db.NewRecordStmt(COMP_CREATOR, id, m.GetEmail()+" (manufacturer)", 10.0, "")
-		}
-		if bsiIsValidURL(m.GetURL()) {
-			return db.NewRecordStmt(COMP_CREATOR, id, m.GetURL()+" (manufacturer)", 10.0, "")
-		}
 		for _, c := range m.GetContacts() {
 			if bsiIsValidEmail(c.GetEmail()) {
 				return db.NewRecordStmt(COMP_CREATOR, id, c.GetEmail()+" (manufacturer contact)", 10.0, "")
 			}
 		}
+
+		if bsiIsValidURL(m.GetURL()) {
+			return db.NewRecordStmt(COMP_CREATOR, id, m.GetURL()+" (manufacturer)", 10.0, "")
+		}
 	}
 
 	// Suppliers: email -> URL -> contacts email (fallback)
 	if s := component.Suppliers(); !s.IsAbsent() {
-		if bsiIsValidEmail(s.GetEmail()) {
-			return db.NewRecordStmt(COMP_CREATOR, id, s.GetEmail()+" (supplier)", 10.0, "")
-		}
-		if bsiIsValidURL(s.GetURL()) {
-			return db.NewRecordStmt(COMP_CREATOR, id, s.GetURL()+" (supplier)", 10.0, "")
-		}
+
 		for _, c := range s.GetContacts() {
 			if bsiIsValidEmail(c.GetEmail()) {
 				return db.NewRecordStmt(COMP_CREATOR, id, c.GetEmail()+" (supplier contact)", 10.0, "")
 			}
+		}
+
+		if bsiIsValidURL(s.GetURL()) {
+			return db.NewRecordStmt(COMP_CREATOR, id, s.GetURL()+" (supplier)", 10.0, "")
 		}
 	}
 

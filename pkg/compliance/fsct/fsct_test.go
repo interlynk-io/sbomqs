@@ -1522,7 +1522,7 @@ func TestFSCTCompSupplier(t *testing.T) {
 			assert.Equal(t, COMP_SUPPLIER, got.CheckKey)
 			assert.Equal(t, common.UniqueElementID(c), got.ID)
 			assert.Equal(t, "Minimum Expected", got.Maturity)
-			assert.Equal(t, "Samantha Wright, samantha.wright@example.com", got.CheckValue)
+			assert.Equal(t, "Samantha Wright, (samantha.wright@example.com)", got.CheckValue)
 		}
 	})
 
@@ -1538,7 +1538,7 @@ func TestFSCTCompSupplier(t *testing.T) {
 			assert.Equal(t, COMP_SUPPLIER, got.CheckKey)
 			assert.Equal(t, common.UniqueElementID(c), got.ID)
 			assert.Equal(t, "Minimum Expected", got.Maturity)
-			assert.Equal(t, "Samantha Wright, samantha.wright@example.com", got.CheckValue)
+			assert.Equal(t, "Samantha Wright, (samantha.wright@example.com)", got.CheckValue)
 		}
 	})
 
@@ -1570,7 +1570,7 @@ func TestFSCTCompSupplier(t *testing.T) {
 			assert.Equal(t, COMP_SUPPLIER, got.CheckKey)
 			assert.Equal(t, common.UniqueElementID(c), got.ID)
 			assert.Equal(t, "Minimum Expected", got.Maturity)
-			assert.Equal(t, "samantha.wright@example.com", got.CheckValue)
+			assert.Equal(t, "(samantha.wright@example.com)", got.CheckValue)
 		}
 	})
 
@@ -1586,7 +1586,7 @@ func TestFSCTCompSupplier(t *testing.T) {
 			assert.Equal(t, COMP_SUPPLIER, got.CheckKey)
 			assert.Equal(t, common.UniqueElementID(c), got.ID)
 			assert.Equal(t, "Minimum Expected", got.Maturity)
-			assert.Equal(t, "samantha.wright@example.com", got.CheckValue)
+			assert.Equal(t, "(samantha.wright@example.com)", got.CheckValue)
 		}
 	})
 

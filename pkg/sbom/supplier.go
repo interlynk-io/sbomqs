@@ -21,8 +21,8 @@ type GetSupplier interface {
 	// GetName returns the name of the supplier
 	GetName() string
 
-	// GetEmail returns the email address of the supplier
-	GetEmail() string
+	// // GetEmail returns the email address of the supplier
+	// GetEmail() string
 
 	// GetURL returns the website URL of the supplier
 	GetURL() string
@@ -48,10 +48,10 @@ func (s Supplier) GetName() string {
 	return s.Name
 }
 
-// GetEmail returns the email address of the supplier
-func (s Supplier) GetEmail() string {
-	return s.Email
-}
+// // GetEmail returns the email address of the supplier
+// func (s Supplier) GetEmail() string {
+// 	return s.Email
+// }
 
 // GetURL returns the website URL of the supplier
 func (s Supplier) GetURL() string {

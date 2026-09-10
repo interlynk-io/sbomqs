@@ -400,13 +400,13 @@ func FSCTCompSupplier(doc sbom.Document) catalog.ProfFeatScore {
 
 		name := strings.TrimSpace(supplier.GetName())
 		url := strings.TrimSpace(supplier.GetURL())
-		email := strings.TrimSpace(supplier.GetEmail())
 
+		var email string
 		contactIdentified := false
 		for _, c := range supplier.GetContacts() {
+			email = strings.TrimSpace(c.GetEmail())
 			if strings.TrimSpace(c.GetName()) != "" || strings.TrimSpace(c.GetEmail()) != "" {
 				contactIdentified = true
-				break
 			}
 		}
 

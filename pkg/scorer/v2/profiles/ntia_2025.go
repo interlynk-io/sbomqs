@@ -15,6 +15,8 @@
 package profiles
 
 import (
+	"strings"
+
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/catalog"
 	"github.com/interlynk-io/sbomqs/v2/pkg/scorer/v2/formulae"
@@ -76,7 +78,13 @@ func NTIA2025SoftwareProducer(doc sbom.Document) catalog.ProfFeatScore {
 
 	// Check for supplier
 	if supplier := doc.Supplier(); supplier != nil {
-		if email := supplier.GetEmail(); email != "" {
+
+		var email string
+		for _, s := range supplier.GetContacts() {
+			email = strings.TrimSpace(s.GetEmail())
+		}
+
+		if email != "" {
 			score = 10.0
 			desc = "complete"
 		} else if url := supplier.GetURL(); url != "" {
@@ -91,7 +99,12 @@ func NTIA2025SoftwareProducer(doc sbom.Document) catalog.ProfFeatScore {
 	// If no supplier, check for manufacturer (CycloneDX)
 	if score == 0.0 {
 		if manufacturer := doc.Manufacturer(); manufacturer != nil {
-			if email := manufacturer.GetEmail(); email != "" {
+			var email string
+			for _, m := range manufacturer.GetContacts() {
+				email = strings.TrimSpace(m.GetEmail())
+			}
+
+			if email != "" {
 				score = 10.0
 				desc = "complete"
 			} else if url := manufacturer.GetURL(); url != "" {

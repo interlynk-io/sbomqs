@@ -989,8 +989,8 @@ func (c *CdxDoc) parseSupplier() {
 	// Handle contacts array
 	if c.doc.Metadata.Supplier.Contact != nil {
 		contacts := lo.FromPtr(c.doc.Metadata.Supplier.Contact)
+
 		if len(contacts) > 0 {
-			// Pre-allocate contacts slice with known capacity
 			supplier.Contacts = make([]Contact, 0, len(contacts))
 
 			// Process each contact
@@ -1028,20 +1028,12 @@ func (c *CdxDoc) parseManufacturer() {
 
 	manufacturer := Manufacturer{Name: entity.Name}
 
-	// Extract contact info with priority: email > URL > contacts email
-	// Per BSI spec: "Valid email address (preferred)", "Valid URL (accepted only when no email address is available)"
 	if urls := lo.FromPtr(entity.URL); len(urls) > 0 {
 		manufacturer.URL = urls[0]
 	}
 
 	// Extract email from contacts
 	contacts := lo.FromPtr(entity.Contact)
-	for _, contact := range contacts {
-		if contact.Email != "" {
-			manufacturer.Email = contact.Email
-			break
-		}
-	}
 
 	// Store all contacts
 	if len(contacts) > 0 {
@@ -1184,15 +1176,7 @@ func (c *CdxDoc) assignManufacturer(comp *cydx.Component) *Manufacturer {
 		manufacturer.URL = urls[0]
 	}
 
-	// Extract contact info with priority: email from contacts
-	// Per BSI spec: "Valid email address (preferred)", "Valid URL (accepted only when no email address is available)"
 	contacts := lo.FromPtr(comp.Manufacturer.Contact)
-	for _, contact := range contacts {
-		if contact.Email != "" {
-			manufacturer.Email = contact.Email
-			break
-		}
-	}
 
 	// Store all contacts
 	if len(contacts) > 0 {

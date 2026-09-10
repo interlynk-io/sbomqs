@@ -34,7 +34,13 @@ import (
 // supplier should have either name/email info.
 // these info represents a legal entity
 func IsSupplierEntity(supplier sbom.GetSupplier) bool {
-	if supplier.GetName() != "" || supplier.GetEmail() != "" {
+
+	var email string
+	for _, s := range supplier.GetContacts() {
+		email = strings.TrimSpace(s.GetEmail())
+	}
+
+	if supplier.GetName() != "" || email != "" {
 		return true
 	}
 	return false

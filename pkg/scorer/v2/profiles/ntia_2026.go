@@ -522,9 +522,13 @@ func NTIA2026CompProducer(doc sbom.Document) catalog.ProfFeatScore {
 	for _, c := range comps {
 		found := false
 		if supplier := c.Suppliers(); supplier != nil {
-			if strings.TrimSpace(supplier.GetName()) != "" ||
-				strings.TrimSpace(supplier.GetEmail()) != "" ||
-				strings.TrimSpace(supplier.GetURL()) != "" {
+
+			var email string
+			for _, s := range supplier.GetContacts() {
+				email = strings.TrimSpace(s.GetEmail())
+			}
+
+			if strings.TrimSpace(supplier.GetName()) != "" || email != "" || strings.TrimSpace(supplier.GetURL()) != "" {
 				valid++
 				found = true
 			}
@@ -532,10 +536,14 @@ func NTIA2026CompProducer(doc sbom.Document) catalog.ProfFeatScore {
 		if found {
 			continue
 		}
+
 		if manufacturer := c.Manufacturer(); manufacturer != nil {
-			if strings.TrimSpace(manufacturer.GetName()) != "" ||
-				strings.TrimSpace(manufacturer.GetEmail()) != "" ||
-				strings.TrimSpace(manufacturer.GetURL()) != "" {
+			var email string
+			for _, m := range manufacturer.GetContacts() {
+				email = strings.TrimSpace(m.GetEmail())
+			}
+
+			if strings.TrimSpace(manufacturer.GetName()) != "" || email != "" || strings.TrimSpace(manufacturer.GetURL()) != "" {
 				valid++
 				found = true
 			}

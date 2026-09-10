@@ -317,8 +317,8 @@ func TestOctSbomPass(t *testing.T) {
 			actual: octPackageSupplier(doc.Components()[0]),
 			expected: desired{
 				name:   "octPackageSupplier",
-				score:  10.0,
-				result: "vivekkumarsahu650@gmail.com",
+				score:  0.0,
+				result: "",
 				key:    PACK_SUPPLIER,
 				id:     common.UniqueElementID(doc.Components()[0]),
 			},
