@@ -24,8 +24,8 @@ type GetManufacturer interface {
 	// GetURL returns the website URL of the manufacturer
 	GetURL() string
 
-	// GetEmail returns the email address of the manufacturer
-	GetEmail() string
+	// // GetEmail returns the email address of the manufacturer
+	// GetEmail() string
 
 	// GetContacts returns the contact information for the manufacturer
 	GetContacts() []Contact
@@ -53,10 +53,10 @@ func (m Manufacturer) GetURL() string {
 	return m.URL
 }
 
-// GetEmail returns the email address of the manufacturer
-func (m Manufacturer) GetEmail() string {
-	return m.Email
-}
+// // GetEmail returns the email address of the manufacturer
+// func (m Manufacturer) GetEmail() string {
+// 	return m.Email
+// }
 
 // GetContacts returns the contact information for the manufacturer
 func (m Manufacturer) GetContacts() []Contact {

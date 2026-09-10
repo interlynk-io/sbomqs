@@ -360,24 +360,6 @@ func BSIV21SBOMURI(doc sbom.Document) catalog.ProfFeatScore {
 	}
 }
 
-// --- Helpers ---
-
-// bsiPropertyCheck is a generic checker for BSI component properties (bsi:component:*).
-func bsiPropertyCheck(doc sbom.Document, propertyName, fieldLabel string) catalog.ProfFeatScore {
-	comps := doc.Components()
-	total := len(comps)
-
-	if total == 0 {
-		return catalog.ProfFeatScore{Score: 0.0, Desc: "no components found"}
-	}
-
-	valid := lo.CountBy(comps, func(c sbom.GetComponent) bool {
-		return strings.TrimSpace(c.GetPropertyValue(propertyName)) != ""
-	})
-
-	return componentScore(valid, total, fieldLabel)
-}
-
 // bsiPropertyValue returns the first non-empty value among the given property names.
 func bsiPropertyValue(c sbom.GetComponent, propertyNames ...string) string {
 	for _, name := range propertyNames {
@@ -387,29 +369,6 @@ func bsiPropertyValue(c sbom.GetComponent, propertyNames ...string) string {
 	}
 
 	return ""
-}
-
-// extRefURLCheck checks that components have an externalReference of one of the given types with a non-empty URL.
-func extRefURLCheck(doc sbom.Document, fieldLabel string, refTypes ...string) catalog.ProfFeatScore {
-	comps := doc.Components()
-	total := len(comps)
-
-	if total == 0 {
-		return catalog.ProfFeatScore{Score: 0.0, Desc: "no components found"}
-	}
-
-	valid := lo.CountBy(comps, func(c sbom.GetComponent) bool {
-		for _, er := range c.ExternalReferences() {
-			for _, refType := range refTypes {
-				if er.GetRefType() == refType && strings.TrimSpace(er.GetRefLocator()) != "" {
-					return true
-				}
-			}
-		}
-		return false
-	})
-
-	return componentScore(valid, total, fieldLabel)
 }
 
 // extRefOrFieldURLCheck checks that components have either:

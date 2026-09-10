@@ -780,7 +780,7 @@ func TestBSIV11SBOMCreator(t *testing.T) {
 		got := BSIV11SBOMCreator(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM creator contact(email/URL) provided via supplier (fallback)", got.Desc)
+		assert.Equal(t, "SBOM creator contact(email) provided via supplier (fallback)", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -791,7 +791,7 @@ func TestBSIV11SBOMCreator(t *testing.T) {
 		got := BSIV11SBOMCreator(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM creator contact(email/URL) provided via supplier (fallback)", got.Desc)
+		assert.Equal(t, "SBOM creator contact(URL) provided via supplier (fallback)", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -802,7 +802,7 @@ func TestBSIV11SBOMCreator(t *testing.T) {
 		got := BSIV11SBOMCreator(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM creator contact(email/URL) provided via supplier (fallback)", got.Desc)
+		assert.Equal(t, "SBOM creator contact(email) provided via supplier (fallback)", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -825,7 +825,7 @@ func TestBSIV11SBOMCreator(t *testing.T) {
 		got := BSIV11SBOMCreator(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM creator contact(email/URL) provided via manufacturer", got.Desc)
+		assert.Equal(t, "SBOM creator contact(email) provided via manufacturer", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -836,7 +836,7 @@ func TestBSIV11SBOMCreator(t *testing.T) {
 		got := BSIV11SBOMCreator(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM creator contact(email/URL) provided via manufacturer", got.Desc)
+		assert.Equal(t, "SBOM creator contact(URL) provided via manufacturer", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -847,7 +847,7 @@ func TestBSIV11SBOMCreator(t *testing.T) {
 		got := BSIV11SBOMCreator(doc)
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
-		assert.Equal(t, "SBOM creator contact(email/URL) provided via manufacturer", got.Desc)
+		assert.Equal(t, "SBOM creator contact(email) provided via manufacturer", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 

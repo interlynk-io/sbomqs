@@ -71,8 +71,8 @@ SPDX:
 - creatorsInfo.Creator(Person/Organization).email
 CDX:
 - metadata.authors[].email
-- metadata.manufacturer.email OR .url
-- metadata.supplier.email OR metadata.supplier.contacts[].email/url
+- metadata.manufacturer.contact.email / manufacturer.url
+- metadata.supplier.contact.email / supplier.url
 */
 func BSIV11SBOMCreator(doc sbom.Document) catalog.ProfFeatScore {
 
@@ -108,45 +108,44 @@ func BSIV11SBOMCreator(doc sbom.Document) catalog.ProfFeatScore {
 	if m := doc.Manufacturer(); m != nil {
 		anyFieldPresent = true
 
-		if isValidEmail(m.GetEmail()) || isValidURL(m.GetURL()) {
-			return catalog.ProfFeatScore{
-				Score:  10.0,
-				Desc:   "SBOM creator contact(email/URL) provided via manufacturer",
-				Ignore: false,
-			}
-		}
-
 		for _, c := range m.GetContacts() {
 			if isValidEmail(c.GetEmail()) {
 				return catalog.ProfFeatScore{
 					Score:  10.0,
-					Desc:   "SBOM creator contact(email/URL) provided via manufacturer",
+					Desc:   "SBOM creator contact(email) provided via manufacturer",
 					Ignore: false,
 				}
 			}
 		}
 
+		if isValidURL(m.GetURL()) {
+			return catalog.ProfFeatScore{
+				Score:  10.0,
+				Desc:   "SBOM creator contact(URL) provided via manufacturer",
+				Ignore: false,
+			}
+		}
 	}
 
 	// ---- Supplier ----
 	if s := doc.Supplier(); s != nil {
 		anyFieldPresent = true
 
-		if isValidEmail(s.GetEmail()) || isValidURL(s.GetURL()) {
-			return catalog.ProfFeatScore{
-				Score:  10.0,
-				Desc:   "SBOM creator contact(email/URL) provided via supplier (fallback)",
-				Ignore: false,
-			}
-		}
-
 		for _, c := range s.GetContacts() {
 			if isValidEmail(c.GetEmail()) {
 				return catalog.ProfFeatScore{
 					Score:  10.0,
-					Desc:   "SBOM creator contact(email/URL) provided via supplier (fallback)",
+					Desc:   "SBOM creator contact(email) provided via supplier (fallback)",
 					Ignore: false,
 				}
+			}
+		}
+
+		if isValidURL(s.GetURL()) {
+			return catalog.ProfFeatScore{
+				Score:  10.0,
+				Desc:   "SBOM creator contact(URL) provided via supplier (fallback)",
+				Ignore: false,
 			}
 		}
 	}
@@ -300,8 +299,8 @@ func BSIV11CompVersion(doc sbom.Document) catalog.ProfFeatScore {
 //
 // CycloneDX:
 // - components[].authors[].email
-// - components[].manufacturer.email / .url / .contact.email
-// - components[].supplier.email / .url / .contact.email
+// - components[].manufacturer.contact.email / manufacturer.url
+// - components[].supplier.contact.email / supplier.url
 func BSIV11CompCreator(doc sbom.Document) catalog.ProfFeatScore {
 
 	comps := doc.Components()
@@ -339,19 +338,17 @@ func BSIV11CompCreator(doc sbom.Document) catalog.ProfFeatScore {
 		// ---- Manufacturer ----
 		if !validCreator {
 			if m := c.Manufacturer(); !m.IsAbsent() {
-
 				anyCreatorFieldPresent = true
-
-				if isValidEmail(m.GetEmail()) ||
-					isValidURL(m.GetURL()) {
-					validCreator = true
-				}
 
 				for _, c := range m.GetContacts() {
 					if isValidEmail(c.GetEmail()) {
 						validCreator = true
 						break
 					}
+				}
+
+				if isValidURL(m.GetURL()) {
+					validCreator = true
 				}
 			}
 		}
@@ -361,16 +358,15 @@ func BSIV11CompCreator(doc sbom.Document) catalog.ProfFeatScore {
 			if s := c.Suppliers(); !s.IsAbsent() {
 				anyCreatorFieldPresent = true
 
-				if isValidEmail(s.GetEmail()) ||
-					isValidURL(s.GetURL()) {
-					validCreator = true
-				}
-
 				for _, c := range s.GetContacts() {
 					if isValidEmail(c.GetEmail()) {
 						validCreator = true
 						break
 					}
+				}
+
+				if isValidURL(s.GetURL()) {
+					validCreator = true
 				}
 			}
 		}

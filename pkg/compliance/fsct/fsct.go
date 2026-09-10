@@ -450,7 +450,6 @@ func checkSupplier(supplier sbom.GetSupplier) (string, bool) {
 	var parts []string
 
 	name := strings.TrimSpace(supplier.GetName())
-	email := strings.TrimSpace(supplier.GetEmail())
 	url := strings.TrimSpace(supplier.GetURL())
 
 	// FSCT: explicit "unknown" is a valid supplier declaration
@@ -458,15 +457,9 @@ func checkSupplier(supplier sbom.GetSupplier) (string, bool) {
 		return "unknown", true
 	}
 
-	// Name / email
+	// Name
 	if name != "" {
-		if email != "" {
-			parts = append(parts, name+", "+email)
-		} else {
-			parts = append(parts, name)
-		}
-	} else if email != "" {
-		parts = append(parts, email)
+		parts = append(parts, name)
 	}
 
 	// URL

@@ -222,9 +222,16 @@ func getSupplierInfo(supplier sbom.GetSupplier) (string, bool) {
 	if name := strings.TrimSpace(supplier.GetName()); name != "" {
 		return name, true
 	}
-	if email := strings.TrimSpace(supplier.GetEmail()); email != "" {
+
+	var email string
+	for _, m := range supplier.GetContacts() {
+		email = strings.TrimSpace(m.GetEmail())
+	}
+
+	if email != "" {
 		return email, true
 	}
+
 	if url := strings.TrimSpace(supplier.GetURL()); url != "" {
 		return url, true
 	}
@@ -238,7 +245,13 @@ func getManufacturerInfo(manufacturer sbom.GetManufacturer) (string, bool) {
 	if name := strings.TrimSpace(manufacturer.GetName()); name != "" {
 		return name, true
 	}
-	if email := strings.TrimSpace(manufacturer.GetEmail()); email != "" {
+
+	var email string
+	for _, m := range manufacturer.GetContacts() {
+		email = strings.TrimSpace(m.GetEmail())
+	}
+
+	if email != "" {
 		return email, true
 	}
 	if url := strings.TrimSpace(manufacturer.GetURL()); url != "" {
@@ -350,7 +363,12 @@ func ntiaComponentSupplier(component sbom.GetComponent) *db.Record {
 
 	// 1. Supplier (primary)
 	if supplier := component.Suppliers(); supplier != nil {
-		if val, ok := getEntityIdentifier(supplier.GetName(), supplier.GetEmail(), supplier.GetURL()); ok {
+		var email string
+		for _, s := range supplier.GetContacts() {
+			email = strings.TrimSpace(s.GetEmail())
+		}
+
+		if val, ok := getEntityIdentifier(supplier.GetName(), email, supplier.GetURL()); ok {
 			result = val
 			score = SCORE_FULL
 			return db.NewRecordStmt(COMP_CREATOR, common.UniqueElementID(component), result, score, "")
@@ -359,7 +377,12 @@ func ntiaComponentSupplier(component sbom.GetComponent) *db.Record {
 
 	// 2. Manufacturer (fallback)
 	if manufacturer := component.Manufacturer(); manufacturer != nil {
-		if val, ok := getEntityIdentifier(manufacturer.GetName(), manufacturer.GetEmail(), manufacturer.GetURL()); ok {
+		var email string
+		for _, s := range manufacturer.GetContacts() {
+			email = strings.TrimSpace(s.GetEmail())
+		}
+
+		if val, ok := getEntityIdentifier(manufacturer.GetName(), email, manufacturer.GetURL()); ok {
 			result = val
 			score = SCORE_FULL
 			return db.NewRecordStmt(COMP_CREATOR, common.UniqueElementID(component), result, score, "")

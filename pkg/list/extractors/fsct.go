@@ -241,13 +241,13 @@ func FSCTCompSupplier(_ sbom.Document, comp sbom.GetComponent) (bool, string, er
 
 	name := strings.TrimSpace(s.GetName())
 	url := strings.TrimSpace(s.GetURL())
-	email := strings.TrimSpace(s.GetEmail())
 
 	// Contacts (name or email on contact record)
 	var contactInfo string
 	for _, c := range s.GetContacts() {
 		cn := strings.TrimSpace(c.GetName())
 		ce := strings.TrimSpace(c.GetEmail())
+
 		if cn != "" || ce != "" {
 			if cn != "" && ce != "" {
 				contactInfo = fmt.Sprintf("%s <%s>", cn, ce)
@@ -265,18 +265,15 @@ func FSCTCompSupplier(_ sbom.Document, comp sbom.GetComponent) (bool, string, er
 		return true, "unknown (declared)", nil
 	}
 
-	if name != "" || url != "" || email != "" || contactInfo != "" {
+	if name != "" || url != "" || contactInfo != "" {
 		var parts []string
 		if name != "" {
 			parts = append(parts, name)
 		}
-		if email != "" {
-			parts = append(parts, email)
-		}
 		if url != "" {
 			parts = append(parts, url)
 		}
-		if contactInfo != "" && name == "" {
+		if contactInfo != "" {
 			parts = append(parts, fmt.Sprintf("contact: %s", contactInfo))
 		}
 		return true, strings.Join(parts, ", "), nil

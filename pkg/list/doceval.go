@@ -76,17 +76,20 @@ func evaluateSBOMSupplier(doc sbom.Document) (bool, string, error) {
 
 		if s != nil {
 			hasName := strings.TrimSpace(s.GetName())
-			hasEmail := strings.TrimSpace(s.GetEmail())
+			var email string
+			for _, s := range s.GetContacts() {
+				email = strings.TrimSpace(s.GetEmail())
+			}
 
 			switch {
-			case hasName != "" && hasEmail != "":
-				return true, hasName + ", " + hasEmail, nil
+			case hasName != "" && email != "":
+				return true, hasName + ", " + email, nil
 
 			case hasName != "":
 				return true, hasName, nil
 
-			case hasEmail != "":
-				return true, hasEmail, nil
+			case email != "":
+				return true, email, nil
 
 			default:
 				return false, "mising", nil

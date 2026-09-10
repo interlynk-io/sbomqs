@@ -972,10 +972,14 @@ func (s *SpdxDoc) getManufacturer(index int) *Manufacturer {
 		return nil
 	}
 
-	return &Manufacturer{
+	m := &Manufacturer{
 		Name:  entity.name,
 		Email: entity.email,
 	}
+	if entity.email != "" {
+		m.Contacts = []Contact{{Email: entity.email}}
+	}
+	return m
 }
 
 // getAuthor in spdx checks for packageOriginator
@@ -1014,10 +1018,14 @@ func (s *SpdxDoc) getSupplier(index int) *Supplier {
 		return nil
 	}
 
-	return &Supplier{
+	sup := &Supplier{
 		Name:  entity.name,
 		Email: entity.email,
 	}
+	if entity.email != "" {
+		sup.Contacts = []Contact{{Email: entity.email}}
+	}
+	return sup
 }
 
 type entity struct {

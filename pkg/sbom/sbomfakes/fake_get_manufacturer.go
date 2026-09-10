@@ -18,16 +18,6 @@ type FakeGetManufacturer struct {
 	getContactsReturnsOnCall map[int]struct {
 		result1 []sbom.Contact
 	}
-	GetEmailStub        func() string
-	getEmailMutex       sync.RWMutex
-	getEmailArgsForCall []struct {
-	}
-	getEmailReturns struct {
-		result1 string
-	}
-	getEmailReturnsOnCall map[int]struct {
-		result1 string
-	}
 	GetNameStub        func() string
 	getNameMutex       sync.RWMutex
 	getNameArgsForCall []struct {
@@ -112,59 +102,6 @@ func (fake *FakeGetManufacturer) GetContactsReturnsOnCall(i int, result1 []sbom.
 	}
 	fake.getContactsReturnsOnCall[i] = struct {
 		result1 []sbom.Contact
-	}{result1}
-}
-
-func (fake *FakeGetManufacturer) GetEmail() string {
-	fake.getEmailMutex.Lock()
-	ret, specificReturn := fake.getEmailReturnsOnCall[len(fake.getEmailArgsForCall)]
-	fake.getEmailArgsForCall = append(fake.getEmailArgsForCall, struct {
-	}{})
-	stub := fake.GetEmailStub
-	fakeReturns := fake.getEmailReturns
-	fake.recordInvocation("GetEmail", []interface{}{})
-	fake.getEmailMutex.Unlock()
-	if stub != nil {
-		return stub()
-	}
-	if specificReturn {
-		return ret.result1
-	}
-	return fakeReturns.result1
-}
-
-func (fake *FakeGetManufacturer) GetEmailCallCount() int {
-	fake.getEmailMutex.RLock()
-	defer fake.getEmailMutex.RUnlock()
-	return len(fake.getEmailArgsForCall)
-}
-
-func (fake *FakeGetManufacturer) GetEmailCalls(stub func() string) {
-	fake.getEmailMutex.Lock()
-	defer fake.getEmailMutex.Unlock()
-	fake.GetEmailStub = stub
-}
-
-func (fake *FakeGetManufacturer) GetEmailReturns(result1 string) {
-	fake.getEmailMutex.Lock()
-	defer fake.getEmailMutex.Unlock()
-	fake.GetEmailStub = nil
-	fake.getEmailReturns = struct {
-		result1 string
-	}{result1}
-}
-
-func (fake *FakeGetManufacturer) GetEmailReturnsOnCall(i int, result1 string) {
-	fake.getEmailMutex.Lock()
-	defer fake.getEmailMutex.Unlock()
-	fake.GetEmailStub = nil
-	if fake.getEmailReturnsOnCall == nil {
-		fake.getEmailReturnsOnCall = make(map[int]struct {
-			result1 string
-		})
-	}
-	fake.getEmailReturnsOnCall[i] = struct {
-		result1 string
 	}{result1}
 }
 

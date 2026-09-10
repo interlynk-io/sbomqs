@@ -144,30 +144,27 @@ func BSIV21SBOMCreator(doc sbom.Document) (bool, string, error) {
 	}
 
 	if m := doc.Manufacturer(); m != nil {
-		if bsiIsValidEmail(m.GetEmail()) {
-			return true, fmt.Sprintf("manufacturer email: %s", m.GetEmail()), nil
-		}
-		if bsiIsValidURL(m.GetURL()) {
-			return true, fmt.Sprintf("manufacturer url: %s", m.GetURL()), nil
-		}
+
 		for _, c := range m.GetContacts() {
 			if bsiIsValidEmail(c.GetEmail()) {
 				return true, fmt.Sprintf("manufacturer contact email: %s", c.GetEmail()), nil
 			}
 		}
+
+		if bsiIsValidURL(m.GetURL()) {
+			return true, fmt.Sprintf("manufacturer url: %s", m.GetURL()), nil
+		}
 	}
 
 	if s := doc.Supplier(); s != nil {
-		if bsiIsValidEmail(s.GetEmail()) {
-			return true, fmt.Sprintf("supplier email: %s", s.GetEmail()), nil
-		}
-		if bsiIsValidURL(s.GetURL()) {
-			return true, fmt.Sprintf("supplier url: %s", s.GetURL()), nil
-		}
 		for _, c := range s.GetContacts() {
 			if bsiIsValidEmail(c.GetEmail()) {
 				return true, fmt.Sprintf("supplier contact email: %s", c.GetEmail()), nil
 			}
+		}
+
+		if bsiIsValidURL(s.GetURL()) {
+			return true, fmt.Sprintf("supplier url: %s", s.GetURL()), nil
 		}
 	}
 
@@ -227,31 +224,27 @@ func BSIV21CompCreator(doc sbom.Document, comp sbom.GetComponent) (bool, string,
 
 	// Manufacturer
 	if m := comp.Manufacturer(); !m.IsAbsent() {
-		if bsiIsValidEmail(m.GetEmail()) {
-			return true, fmt.Sprintf("manufacturer email: %s", m.GetEmail()), nil
-		}
-		if bsiIsValidURL(m.GetURL()) {
-			return true, fmt.Sprintf("manufacturer url: %s", m.GetURL()), nil
-		}
 		for _, c := range m.GetContacts() {
 			if bsiIsValidEmail(c.GetEmail()) {
 				return true, fmt.Sprintf("manufacturer contact email: %s", c.GetEmail()), nil
 			}
 		}
+
+		if bsiIsValidURL(m.GetURL()) {
+			return true, fmt.Sprintf("manufacturer url: %s", m.GetURL()), nil
+		}
 	}
 
 	// Supplier
 	if s := comp.Suppliers(); !s.IsAbsent() {
-		if bsiIsValidEmail(s.GetEmail()) {
-			return true, fmt.Sprintf("supplier email: %s", s.GetEmail()), nil
-		}
-		if bsiIsValidURL(s.GetURL()) {
-			return true, fmt.Sprintf("supplier url: %s", s.GetURL()), nil
-		}
 		for _, c := range s.GetContacts() {
 			if bsiIsValidEmail(c.GetEmail()) {
 				return true, fmt.Sprintf("supplier contact email: %s", c.GetEmail()), nil
 			}
+		}
+
+		if bsiIsValidURL(s.GetURL()) {
+			return true, fmt.Sprintf("supplier url: %s", s.GetURL()), nil
 		}
 	}
 

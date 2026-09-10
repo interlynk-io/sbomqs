@@ -1327,7 +1327,7 @@ var profileBSI21Spec = catalog.ProfSpec{
 		{Key: "sbom_timestamp", Name: "Creation Time", Required: true, Description: "Valid timestamp (ISO-8601)", Evaluate: profiles.BSIV11SBOMCreationTimestamp},
 
 		// Required (SHALL) Component fields
-		{Key: "comp_creator", Name: "Component Creator", Required: true, Description: "Creator email/URL for each component", Evaluate: profiles.BSIV20CompCreator},
+		{Key: "comp_creator", Name: "Component Creator", Required: true, Description: "Creator email/URL for each component", Evaluate: profiles.BSIV11CompCreator},
 		{Key: "comp_name", Name: "Component Name", Required: true, Description: "All components named", Evaluate: profiles.BSIV20CompName},
 		{Key: "comp_version", Name: "Component Version", Required: true, Description: "Version for each component", Evaluate: profiles.BSIV20CompVersion},
 		{Key: "comp_filename", Name: "Component Filename", Required: true, Description: "Filename via bsi:component:filename property", Evaluate: profiles.BSIV21CompFilename},

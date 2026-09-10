@@ -186,7 +186,12 @@ func NTIA2026CompProducer(_ sbom.Document, comp sbom.GetComponent) (bool, string
 		if name != "" {
 			return true, name, nil
 		}
-		email := strings.TrimSpace(s.GetEmail())
+
+		var email string
+		for _, s := range s.GetContacts() {
+			email = strings.TrimSpace(s.GetEmail())
+		}
+
 		if email != "" {
 			return true, email, nil
 		}
@@ -202,7 +207,11 @@ func NTIA2026CompProducer(_ sbom.Document, comp sbom.GetComponent) (bool, string
 		if name != "" {
 			return true, name, nil
 		}
-		email := strings.TrimSpace(m.GetEmail())
+		var email string
+		for _, m := range m.GetContacts() {
+			email = strings.TrimSpace(m.GetEmail())
+		}
+
 		if email != "" {
 			return true, email, nil
 		}

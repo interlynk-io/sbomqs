@@ -63,7 +63,13 @@ func NTIACompWithSupplier(doc sbom.Document) catalog.ProfFeatScore {
 		if supplier != nil {
 			hasName := strings.TrimSpace(supplier.GetName()) != ""
 			hasURL := strings.TrimSpace(supplier.GetURL()) != ""
-			hasEmail := strings.TrimSpace(supplier.GetEmail()) != ""
+
+			var email string
+			for _, s := range supplier.GetContacts() {
+				email = strings.TrimSpace(s.GetEmail())
+			}
+
+			hasEmail := email != ""
 
 			if hasName || hasURL || hasEmail {
 				haveSupplier++
@@ -76,7 +82,12 @@ func NTIACompWithSupplier(doc sbom.Document) catalog.ProfFeatScore {
 		if manufacturer != nil {
 			hasName := strings.TrimSpace(manufacturer.GetName()) != ""
 			hasURL := strings.TrimSpace(manufacturer.GetURL()) != ""
-			hasEmail := strings.TrimSpace(manufacturer.GetEmail()) != ""
+
+			var email string
+			for _, m := range manufacturer.GetContacts() {
+				email = strings.TrimSpace(m.GetEmail())
+			}
+			hasEmail := email != ""
 
 			if hasName || hasURL || hasEmail {
 				haveManufacturer++
@@ -423,7 +434,12 @@ func NTIASBOMWithAuthors(doc sbom.Document) catalog.ProfFeatScore {
 	supplier := doc.Supplier()
 	if supplier != nil {
 		name := strings.TrimSpace(supplier.GetName())
-		email := strings.TrimSpace(supplier.GetEmail())
+
+		var email string
+		for _, s := range supplier.GetContacts() {
+			email = strings.TrimSpace(s.GetEmail())
+		}
+
 		url := strings.TrimSpace(supplier.GetURL())
 
 		if name != "" || email != "" || url != "" {
@@ -439,7 +455,12 @@ func NTIASBOMWithAuthors(doc sbom.Document) catalog.ProfFeatScore {
 	manufacturer := doc.Manufacturer()
 	if manufacturer != nil {
 		name := strings.TrimSpace(manufacturer.GetName())
-		email := strings.TrimSpace(manufacturer.GetEmail())
+
+		var email string
+		for _, m := range manufacturer.GetContacts() {
+			email = strings.TrimSpace(m.GetEmail())
+		}
+
 		url := strings.TrimSpace(manufacturer.GetURL())
 
 		if name != "" || email != "" || url != "" {

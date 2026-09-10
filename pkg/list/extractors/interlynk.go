@@ -155,7 +155,12 @@ func InterlynkSBOMSupplier(doc sbom.Document) (bool, string, error) {
 	s := doc.Supplier()
 	if s != nil {
 		name := strings.TrimSpace(s.GetName())
-		email := strings.TrimSpace(s.GetEmail())
+
+		var email string
+		for _, s := range s.GetContacts() {
+			email = strings.TrimSpace(s.GetEmail())
+		}
+
 		url := strings.TrimSpace(s.GetURL())
 		if name != "" && (email != "" || url != "") {
 			contact := email
@@ -306,7 +311,12 @@ func InterlynkCompSupplier(_ sbom.Document, comp sbom.GetComponent) (bool, strin
 	s := comp.Suppliers()
 	if !s.IsAbsent() {
 		name := strings.TrimSpace(s.GetName())
-		email := strings.TrimSpace(s.GetEmail())
+
+		var email string
+		for _, s := range s.GetContacts() {
+			email = strings.TrimSpace(s.GetEmail())
+		}
+
 		if name != "" || email != "" {
 			if name != "" && email != "" {
 				return true, fmt.Sprintf("%s <%s>", name, email), nil
@@ -669,4 +679,3 @@ func InterlynkSBOMSchemaValid(doc sbom.Document) (bool, string, error) {
 	}
 	return false, "invalid schema", nil
 }
-

@@ -315,12 +315,24 @@ func ntia2026CompUniqID(comp sbom.GetComponent, id string) *db.Record {
 
 func ntia2026CompProducer(comp sbom.GetComponent, id string) *db.Record {
 	if supplier := comp.Suppliers(); supplier != nil {
-		if val, ok := getEntityIdentifier(supplier.GetName(), supplier.GetEmail(), supplier.GetURL()); ok {
+
+		var email string
+		for _, s := range supplier.GetContacts() {
+			email = strings.TrimSpace(s.GetEmail())
+		}
+
+		if val, ok := getEntityIdentifier(supplier.GetName(), email, supplier.GetURL()); ok {
 			return db.NewRecordStmt(NTIA2026_COMP_PRODUCER, id, val, SCORE_FULL, "")
 		}
 	}
 	if manufacturer := comp.Manufacturer(); manufacturer != nil {
-		if val, ok := getEntityIdentifier(manufacturer.GetName(), manufacturer.GetEmail(), manufacturer.GetURL()); ok {
+
+		var email string
+		for _, m := range manufacturer.GetContacts() {
+			email = strings.TrimSpace(m.GetEmail())
+		}
+
+		if val, ok := getEntityIdentifier(manufacturer.GetName(), email, manufacturer.GetURL()); ok {
 			return db.NewRecordStmt(NTIA2026_COMP_PRODUCER, id, val, SCORE_FULL, "")
 		}
 	}

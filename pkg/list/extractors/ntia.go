@@ -96,7 +96,12 @@ func NTIASBOMAuthors(doc sbom.Document) (bool, string, error) {
 	// 3. SBOM-level supplier
 	if s := doc.Supplier(); s != nil {
 		name := strings.TrimSpace(s.GetName())
-		email := strings.TrimSpace(s.GetEmail())
+
+		var email string
+		for _, s := range s.GetContacts() {
+			email = strings.TrimSpace(s.GetEmail())
+		}
+
 		url := strings.TrimSpace(s.GetURL())
 		if name != "" || email != "" || url != "" {
 			return true, fmt.Sprintf("supplier: %s", ntiaContactSummary(name, email, url)), nil
@@ -106,7 +111,12 @@ func NTIASBOMAuthors(doc sbom.Document) (bool, string, error) {
 	// 4. SBOM-level manufacturer
 	if m := doc.Manufacturer(); m != nil {
 		name := strings.TrimSpace(m.GetName())
-		email := strings.TrimSpace(m.GetEmail())
+
+		var email string
+		for _, m := range m.GetContacts() {
+			email = strings.TrimSpace(m.GetEmail())
+		}
+
 		url := strings.TrimSpace(m.GetURL())
 		if name != "" || email != "" || url != "" {
 			return true, fmt.Sprintf("manufacturer: %s", ntiaContactSummary(name, email, url)), nil
@@ -171,7 +181,12 @@ func NTIACompSupplier(_ sbom.Document, comp sbom.GetComponent) (bool, string, er
 	// Prefer supplier
 	if s := comp.Suppliers(); !s.IsAbsent() {
 		name := strings.TrimSpace(s.GetName())
-		email := strings.TrimSpace(s.GetEmail())
+
+		var email string
+		for _, s := range s.GetContacts() {
+			email = strings.TrimSpace(s.GetEmail())
+		}
+
 		url := strings.TrimSpace(s.GetURL())
 		if name != "" || email != "" || url != "" {
 			return true, ntiaContactSummary(name, email, url), nil
@@ -181,7 +196,12 @@ func NTIACompSupplier(_ sbom.Document, comp sbom.GetComponent) (bool, string, er
 	// Fallback: manufacturer
 	if m := comp.Manufacturer(); !m.IsAbsent() {
 		name := strings.TrimSpace(m.GetName())
-		email := strings.TrimSpace(m.GetEmail())
+
+		var email string
+		for _, m := range m.GetContacts() {
+			email = strings.TrimSpace(m.GetEmail())
+		}
+
 		url := strings.TrimSpace(m.GetURL())
 		if name != "" || email != "" || url != "" {
 			return true, fmt.Sprintf("manufacturer: %s", ntiaContactSummary(name, email, url)), nil

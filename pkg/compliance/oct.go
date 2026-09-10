@@ -309,8 +309,13 @@ func octPackageVersion(component sbom.GetComponent) *db.Record {
 }
 
 func octPackageSupplier(component sbom.GetComponent) *db.Record {
-	if supplier := component.Suppliers().GetEmail(); supplier != "" {
-		return db.NewRecordStmt(PACK_SUPPLIER, common.UniqueElementID(component), supplier, 10.0, "")
+	var email string
+	for _, s := range component.Suppliers().GetContacts() {
+		email = strings.TrimSpace(s.GetEmail())
+	}
+
+	if email != "" {
+		return db.NewRecordStmt(PACK_SUPPLIER, common.UniqueElementID(component), email, 10.0, "")
 	}
 	return db.NewRecordStmt(PACK_SUPPLIER, common.UniqueElementID(component), "", 0.0, "")
 }

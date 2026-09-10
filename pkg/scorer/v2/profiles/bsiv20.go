@@ -629,55 +629,12 @@ v2.0.0 demotes this from "additional" to "optional" because the hash algorithm
 and source-tree calculation method remain unspecified.
 
 SBOM Mappings:
-  SPDX: PackageVerificationCode (closest available, SHA-1-based)
-  CDX:  externalReferences[].hashes[] on vcs or source-distribution references
+
+	SPDX: PackageVerificationCode (closest available, SHA-1-based)
+	CDX:  externalReferences[].hashes[] on vcs or source-distribution references
 
 NOTE: Logic is identical to BSI v2.1 — delegate directly to avoid drift.
 */
 func BSIV20CompSourceHash(doc sbom.Document) catalog.ProfFeatScore {
 	return BSIV21CompSourceHash(doc)
-}
-
-// spdxPurposeCheck evaluates a BSI property for SPDX documents by checking whether
-// a package's PrimaryPackagePurpose matches the given purpose (case-insensitive).
-// A package with a matching purpose is counted as declaring the property.
-// Ignore is always false — these are required BSI fields.
-func spdxPurposeCheck(doc sbom.Document, purpose, fieldLabel string) catalog.ProfFeatScore {
-	comps := doc.Components()
-	total := len(comps)
-
-	if total == 0 {
-		return catalog.ProfFeatScore{
-			Score:  0.0,
-			Desc:   "no components found in SBOM.",
-			Ignore: false,
-		}
-	}
-
-	matched := 0
-	for _, c := range comps {
-		if strings.EqualFold(strings.TrimSpace(c.PrimaryPurpose()), purpose) {
-			matched++
-		}
-	}
-
-	if matched == total {
-		return catalog.ProfFeatScore{
-			Score:  10.0,
-			Desc:   fmt.Sprintf("%s declared for all components.", fieldLabel),
-			Ignore: false,
-		}
-	}
-	if matched == 0 {
-		return catalog.ProfFeatScore{
-			Score:  0.0,
-			Desc:   fmt.Sprintf("no components declare %s via PrimaryPackagePurpose.", fieldLabel),
-			Ignore: false,
-		}
-	}
-	return catalog.ProfFeatScore{
-		Score:  float64(matched) / float64(total) * 10.0,
-		Desc:   fmt.Sprintf("%d/%d components declare %s via PrimaryPackagePurpose.", matched, total, fieldLabel),
-		Ignore: false,
-	}
 }
