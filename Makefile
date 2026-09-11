@@ -151,7 +151,12 @@ clean-all: clean ## Clean all artifacts including caches
 update-deps: ## Update all dependencies
 	@echo "Updating dependencies..."
 	@go get -u ./...
+	# Pinned: newer tablewriter versions have breaking API changes
+	@go get github.com/olekukonko/tablewriter@v0.0.5
+	# Pinned: keep indirect dep stable (used by anchore/syft)
+	@go get github.com/anchore/go-struct-converter@v0.1.0
 	@go mod tidy
+
 
 .PHONY: update-licenses
 update-licenses: ## Update license database files

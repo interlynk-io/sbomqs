@@ -18,7 +18,7 @@ RUN chmod +x sbomqs
 # Final stage
 FROM alpine:3.24
 LABEL org.opencontainers.image.source="https://github.com/interlynk-io/sbomqs"
-LABEL org.opencontainers.image.description="Quality & Compliance metrics for your sboms"
+LABEL org.opencontainers.image.description="The Comprehensive SBOM Quality & Compliance Tool"
 LABEL org.opencontainers.image.licenses=Apache-2.0
 
 COPY --from=builder /app/sbomqs /app/sbomqs
