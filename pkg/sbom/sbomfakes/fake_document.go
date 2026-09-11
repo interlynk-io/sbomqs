@@ -398,15 +398,20 @@ func (fake *FakeDocument) FilesReturnsOnCall(i int, result1 []sbom.GetComponent)
 }
 
 func (fake *FakeDocument) GetDirectDependencies(arg1 string, arg2 ...string) []sbom.GetComponent {
+	var arg2Copy []string
+	if arg2 != nil {
+		arg2Copy = make([]string, len(arg2))
+		copy(arg2Copy, arg2)
+	}
 	fake.getDirectDependenciesMutex.Lock()
 	ret, specificReturn := fake.getDirectDependenciesReturnsOnCall[len(fake.getDirectDependenciesArgsForCall)]
 	fake.getDirectDependenciesArgsForCall = append(fake.getDirectDependenciesArgsForCall, struct {
 		arg1 string
 		arg2 []string
-	}{arg1, arg2})
+	}{arg1, arg2Copy})
 	stub := fake.GetDirectDependenciesStub
 	fakeReturns := fake.getDirectDependenciesReturns
-	fake.recordInvocation("GetDirectDependencies", []interface{}{arg1, arg2})
+	fake.recordInvocation("GetDirectDependencies", []interface{}{arg1, arg2Copy})
 	fake.getDirectDependenciesMutex.Unlock()
 	if stub != nil {
 		return stub(arg1, arg2...)
