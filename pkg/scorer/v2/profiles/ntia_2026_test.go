@@ -498,6 +498,64 @@ var cdxWithCompManufacturer = []byte(`
 }
 `)
 
+var spdxWithCompSupplier = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "created": "2024-01-15T10:30:00Z",
+    "creators": ["Person: John Doe"]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Pkg",
+      "name": "comp-a",
+      "versionInfo": "1.0.0",
+      "supplier": "Organization: Supplier Inc"
+    }
+  ]
+}
+`)
+
+var spdxWithCompOriginator = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "created": "2024-01-15T10:30:00Z",
+    "creators": ["Person: John Doe"]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Pkg",
+      "name": "comp-a",
+      "versionInfo": "1.0.0",
+      "originator": "Organization: Mfg Inc"
+    }
+  ]
+}
+`)
+
+var spdxWithCompSupplierAndOriginator = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "created": "2024-01-15T10:30:00Z",
+    "creators": ["Person: John Doe"]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Pkg",
+      "name": "comp-a",
+      "versionInfo": "1.0.0",
+      "originator": "Organization: Mfg Inc",
+      "supplier": "Organization: Supplier Inc"
+    }
+  ]
+}
+`)
+
 var cdxWithCompNoProducer = []byte(`
 {
   "bomFormat": "CycloneDX",
@@ -514,15 +572,35 @@ var cdxWithCompNoProducer = []byte(`
 }
 `)
 
+var spdxWithCompNoProducer = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "created": "2024-01-15T10:30:00Z",
+    "creators": ["Person: John Doe"]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Pkg",
+      "name": "comp-a",
+      "versionInfo": "1.0.0"
+    }
+  ]
+}
+`)
+
 func TestNTIA2026CompProducer(t *testing.T) {
 	t.Parallel()
 
-	t.Run("component with supplier", func(t *testing.T) {
+	t.Run("component with supplier only", func(t *testing.T) {
+		// Supplier alone does NOT satisfy Component Producer per CISA 2026.
+		// Producer = entity that creates the component; supplier = entity that distributes it.
 		doc, err := sbom.NewSBOMDocument(context.Background(), strings.NewReader(string(cdxWithCompSupplier)), sbom.Signature{})
 		require.NoError(t, err)
 		got := NTIA2026CompProducer(doc)
-		assert.Equal(t, 10.0, got.Score)
-		assert.Equal(t, "producer declared for all components", got.Desc)
+		assert.Equal(t, 0.0, got.Score)
+		assert.Equal(t, "no components declare producer", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -537,6 +615,42 @@ func TestNTIA2026CompProducer(t *testing.T) {
 
 	t.Run("component with no producer", func(t *testing.T) {
 		doc, err := sbom.NewSBOMDocument(context.Background(), strings.NewReader(string(cdxWithCompNoProducer)), sbom.Signature{})
+		require.NoError(t, err)
+		got := NTIA2026CompProducer(doc)
+		assert.Equal(t, 0.0, got.Score)
+		assert.Equal(t, "no components declare producer", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdx with supplier only", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocument(context.Background(), strings.NewReader(string(spdxWithCompSupplier)), sbom.Signature{})
+		require.NoError(t, err)
+		got := NTIA2026CompProducer(doc)
+		assert.Equal(t, 0.0, got.Score)
+		assert.Equal(t, "no components declare producer", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdx with originator only", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocument(context.Background(), strings.NewReader(string(spdxWithCompOriginator)), sbom.Signature{})
+		require.NoError(t, err)
+		got := NTIA2026CompProducer(doc)
+		assert.Equal(t, 10.0, got.Score)
+		assert.Equal(t, "producer declared for all components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdx with both supplier and originator", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocument(context.Background(), strings.NewReader(string(spdxWithCompSupplierAndOriginator)), sbom.Signature{})
+		require.NoError(t, err)
+		got := NTIA2026CompProducer(doc)
+		assert.Equal(t, 10.0, got.Score)
+		assert.Equal(t, "producer declared for all components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdx with no producer", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocument(context.Background(), strings.NewReader(string(spdxWithCompNoProducer)), sbom.Signature{})
 		require.NoError(t, err)
 		got := NTIA2026CompProducer(doc)
 		assert.Equal(t, 0.0, got.Score)

@@ -177,39 +177,20 @@ func NTIA2026CompUniqID(_ sbom.Document, comp sbom.GetComponent) (bool, string, 
 }
 
 // NTIA2026CompProducer reports the component producer.
-// Priority: supplier → manufacturer → author.
+// Per CISA 2026, producer = entity that creates the component.
+// Priority: manufacturer → author.
+// Supplier is intentionally excluded (supplier = distributor, not creator).
 // Accepts name, email, or URL as valid producer identifiers.
 func NTIA2026CompProducer(_ sbom.Document, comp sbom.GetComponent) (bool, string, error) {
-	// 1. Supplier
-	if s := comp.Suppliers(); !s.IsAbsent() {
-		name := strings.TrimSpace(s.GetName())
-		if name != "" {
-			return true, name, nil
-		}
-
-		var email string
-		for _, s := range s.GetContacts() {
-			email = strings.TrimSpace(s.GetEmail())
-		}
-
-		if email != "" {
-			return true, email, nil
-		}
-		url := strings.TrimSpace(s.GetURL())
-		if url != "" {
-			return true, url, nil
-		}
-	}
-
-	// 2. Manufacturer
+	// 1. Manufacturer
 	if m := comp.Manufacturer(); !m.IsAbsent() {
 		name := strings.TrimSpace(m.GetName())
 		if name != "" {
 			return true, name, nil
 		}
 		var email string
-		for _, m := range m.GetContacts() {
-			email = strings.TrimSpace(m.GetEmail())
+		for _, c := range m.GetContacts() {
+			email = strings.TrimSpace(c.GetEmail())
 		}
 
 		if email != "" {
@@ -221,7 +202,7 @@ func NTIA2026CompProducer(_ sbom.Document, comp sbom.GetComponent) (bool, string
 		}
 	}
 
-	// 3. Author
+	// 2. Author
 	for _, a := range comp.Authors() {
 		if a == nil {
 			continue
