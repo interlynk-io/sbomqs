@@ -171,7 +171,7 @@ func NTIA2026CompVersion(_ sbom.Document, comp sbom.GetComponent) (bool, string,
 	return BSIV21CompVersion(nil, comp)
 }
 
-// NTIA2026CompUniqID reports unique identifiers (PURL or CPE).
+// NTIA2026CompUniqID reports unique identifiers (PURL, CPE, SWID, SWHID, or OmniBOR ID).
 func NTIA2026CompUniqID(_ sbom.Document, comp sbom.GetComponent) (bool, string, error) {
 	return BSIV20CompOtherIdentifiers(nil, comp)
 }

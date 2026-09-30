@@ -178,7 +178,17 @@ var validSPDX3CompleteSBOM = []byte(`
       "spdxId": "SPDXRef-Package-Lib",
       "name": "my-library",
       "software_packageVersion": "2.3.4",
-      "software_primaryPurpose": "library"
+      "software_primaryPurpose": "library",
+      "contentIdentifier": [
+        {
+          "contentIdentifierType": "swhid",
+          "contentIdentifierValue": "swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2"
+        },
+        {
+          "contentIdentifierType": "gitoid",
+          "contentIdentifierValue": "gitoid:blob:sha1:94a9ed024d3859793618152ea559a168bbcbb5e2"
+        }
+      ]
     },
     {
       "type": "software_File",
@@ -450,6 +460,18 @@ func TestSPDX3DocumentParsing(t *testing.T) {
 	// Check components (packages) - should have 2 packages
 	components := doc.Components()
 	assert.GreaterOrEqual(t, len(components), 2)
+
+	// Verify contentIdentifiers (swhid + gitoid) on SPDXRef-Package-Lib
+	var libComp GetComponent
+	for _, c := range components {
+		if c.GetName() == "my-library" {
+			libComp = c
+			break
+		}
+	}
+	require.NotNil(t, libComp, "my-library component should be found")
+	assert.GreaterOrEqual(t, len(libComp.Swhids()), 1, "should have SWHID")
+	assert.GreaterOrEqual(t, len(libComp.OmniborIDs()), 1, "should have OmniBOR ID")
 
 	// Check files
 	files := doc.Files()

@@ -128,6 +128,24 @@ func CompHasAnyCPEs(c sbom.GetComponent) bool {
 	return false
 }
 
+func CompHasAnySwhids(c sbom.GetComponent) bool {
+	for _, s := range c.Swhids() {
+		if s.Valid() {
+			return true
+		}
+	}
+	return false
+}
+
+func CompHasAnyOmniIDs(c sbom.GetComponent) bool {
+	for _, o := range c.OmniborIDs() {
+		if o.Valid() {
+			return true
+		}
+	}
+	return false
+}
+
 // func CompHasAnySWID(c sbom.GetComponent) bool {
 
 // 	for _, p := range c.GetSWIDs() {

@@ -795,6 +795,130 @@ func TestNTIA2026CompVersion(t *testing.T) {
 	})
 }
 
+// ── Component Unique ID ──
+
+var spdx3WithContentIdentifiers = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "test",
+      "creationInfo": "_:creationinfo",
+      "element": ["SPDXRef-Package-App"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2025-01-15T10:30:00Z",
+      "createdBy": ["_:org1"]
+    },
+    {
+      "type": "Organization",
+      "@id": "_:org1",
+      "name": "Example Org"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package-App",
+      "name": "my-app",
+      "software_packageVersion": "1.0.0",
+      "contentIdentifier": [
+        {
+          "contentIdentifierType": "swhid",
+          "contentIdentifierValue": "swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2"
+        },
+        {
+          "contentIdentifierType": "gitoid",
+          "contentIdentifierValue": "gitoid:blob:sha1:94a9ed024d3859793618152ea559a168bbcbb5e2"
+        }
+      ]
+    },
+    {
+      "type": "Relationship",
+      "spdxId": "SPDXRef-Rel-1",
+      "from": "SPDXRef-DOCUMENT",
+      "to": ["SPDXRef-Package-App"],
+      "relationshipType": "describes"
+    }
+  ]
+}
+`)
+
+var spdx3WithInvalidContentIdentifiers = []byte(`
+{
+  "@context": ["https://spdx.org/rdf/3.0.1/spdx-context.jsonld"],
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "SPDXRef-DOCUMENT",
+      "name": "test",
+      "creationInfo": "_:creationinfo",
+      "element": ["SPDXRef-Package-App"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "specVersion": "3.0.1",
+      "created": "2025-01-15T10:30:00Z",
+      "createdBy": ["_:org1"]
+    },
+    {
+      "type": "Organization",
+      "@id": "_:org1",
+      "name": "Example Org"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "SPDXRef-Package-App",
+      "name": "my-app",
+      "software_packageVersion": "1.0.0",
+      "contentIdentifier": [
+        {
+          "contentIdentifierType": "swhid",
+          "contentIdentifierValue": "invalid-swhid"
+        },
+        {
+          "contentIdentifierType": "gitoid",
+          "contentIdentifierValue": "invalid-gitoid"
+        }
+      ]
+    },
+    {
+      "type": "Relationship",
+      "spdxId": "SPDXRef-Rel-1",
+      "from": "SPDXRef-DOCUMENT",
+      "to": ["SPDXRef-Package-App"],
+      "relationshipType": "describes"
+    }
+  ]
+}
+`)
+
+func TestNTIA2026CompUniqID(t *testing.T) {
+	t.Parallel()
+
+	t.Run("spdx3 with valid swhid and gitoid", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocument(context.Background(), strings.NewReader(string(spdx3WithContentIdentifiers)), sbom.Signature{})
+		require.NoError(t, err)
+		got := NTIA2026CompUniqID(doc)
+		assert.Equal(t, 10.0, got.Score)
+		assert.Equal(t, "unique identifier declared for all components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdx3 with invalid content identifiers (no PURL/CPE/SWID)", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocument(context.Background(), strings.NewReader(string(spdx3WithInvalidContentIdentifiers)), sbom.Signature{})
+		require.NoError(t, err)
+		got := NTIA2026CompUniqID(doc)
+		assert.Equal(t, 0.0, got.Score)
+		assert.Equal(t, "no components declare unique identifier", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+}
+
 // ── Component License ──
 
 func TestNTIA2026CompLicense(t *testing.T) {

@@ -303,6 +303,12 @@ func ntia2026CompUniqID(comp sbom.GetComponent, id string) *db.Record {
 	if len(comp.Swids()) > 0 {
 		return db.NewRecordStmt(NTIA2026_COMP_UNIQ_ID, id, comp.Swids()[0].String(), SCORE_FULL, "")
 	}
+	if swhids := comp.Swhids(); len(swhids) > 0 {
+		return db.NewRecordStmt(NTIA2026_COMP_UNIQ_ID, id, swhids[0].String(), SCORE_FULL, "")
+	}
+	if omnis := comp.OmniborIDs(); len(omnis) > 0 {
+		return db.NewRecordStmt(NTIA2026_COMP_UNIQ_ID, id, omnis[0].String(), SCORE_FULL, "")
+	}
 	return db.NewRecordStmt(NTIA2026_COMP_UNIQ_ID, id, "", SCORE_ZERO, "")
 }
 

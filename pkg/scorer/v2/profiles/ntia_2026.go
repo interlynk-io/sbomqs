@@ -495,7 +495,7 @@ func NTIA2026CompVersion(doc sbom.Document) catalog.ProfFeatScore {
 	return ntia2026ComponentScore(valid, len(comps), "version")
 }
 
-// NTIA2026CompUniqID checks that all components have a unique identifier (PURL, CPE, or SWID).
+// NTIA2026CompUniqID checks that all components have a unique identifier (PURL, CPE, SWID, SWHID, or OmniBOR ID).
 func NTIA2026CompUniqID(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
 	valid := lo.CountBy(comps, func(c sbom.GetComponent) bool {
@@ -506,6 +506,12 @@ func NTIA2026CompUniqID(doc sbom.Document) catalog.ProfFeatScore {
 			return true
 		}
 		if len(c.Swids()) > 0 {
+			return true
+		}
+		if common.CompHasAnySwhids(c) {
+			return true
+		}
+		if common.CompHasAnyOmniIDs(c) {
 			return true
 		}
 		return false

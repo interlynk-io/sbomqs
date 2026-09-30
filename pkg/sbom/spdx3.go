@@ -27,7 +27,9 @@ import (
 	"github.com/interlynk-io/sbomqs/v2/pkg/cpe"
 	"github.com/interlynk-io/sbomqs/v2/pkg/licenses"
 	"github.com/interlynk-io/sbomqs/v2/pkg/logger"
+	"github.com/interlynk-io/sbomqs/v2/pkg/omniborid"
 	"github.com/interlynk-io/sbomqs/v2/pkg/purl"
+	"github.com/interlynk-io/sbomqs/v2/pkg/swhid"
 	"github.com/interlynk-io/sbomqs/v2/pkg/validation"
 	spdx "github.com/interlynk-io/spdx-zen/model/v3.0.1"
 	"github.com/interlynk-io/spdx-zen/parse"
@@ -822,8 +824,7 @@ func (s *Spdx3Doc) parseComps() {
 		nc.isReqFieldsPresent = s.pkgRequiredFields(pkg)
 		nc.Purls = s.purls(pkg)
 		nc.Cpes = s.cpes(pkg)
-		nc.OmniID = nil
-		nc.Swhid = nil
+		nc.Swhid, nc.OmniID = s.contentIdentifiers(pkg)
 		nc.Swid = nil
 		nc.Checksums = s.checksums(pkg)
 		nc.ExternalRefs = s.externalRefs(pkg)
@@ -1179,6 +1180,27 @@ func (s *Spdx3Doc) extractManufacturer(originatedBy []spdx.Agent) Manufacturer {
 		man.Contacts = []Contact{{Email: manufacturerEmail}}
 	}
 	return man
+}
+
+func (s *Spdx3Doc) contentIdentifiers(pkg *spdx.Package) ([]swhid.SWHID, []omniborid.OMNIBORID) {
+	var swhids []swhid.SWHID
+	var omnis []omniborid.OMNIBORID
+
+	for _, ci := range pkg.ContentIdentifier {
+		switch ci.ContentIdentifierType {
+		case spdx.ContentIdentifierTypeSwhid:
+			sid := swhid.NewSWHID(ci.ContentIdentifierValue)
+			if sid.Valid() {
+				swhids = append(swhids, sid)
+			}
+		case spdx.ContentIdentifierTypeGitoid:
+			oid := omniborid.NewOmni(ci.ContentIdentifierValue)
+			if oid.Valid() {
+				omnis = append(omnis, oid)
+			}
+		}
+	}
+	return swhids, omnis
 }
 
 func (s *Spdx3Doc) pkgRequiredFields(pkg *spdx.Package) bool {

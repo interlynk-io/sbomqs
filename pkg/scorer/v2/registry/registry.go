@@ -1176,8 +1176,8 @@ var profileNTIASpec = catalog.ProfSpec{
 		// Component Data
 		{Key: "comp_name", Name: "Component Name", Required: true, Description: "Name assigned to each component", Evaluate: profiles.NTIA2026CompName},
 		{Key: "comp_version", Name: "Component Version", Required: true, Description: "Version strings for all components", Evaluate: profiles.NTIA2026CompVersion},
-		{Key: "comp_uniq_id", Name: "Component Other Identifiers", Required: true, Description: "PURL, CPE, or other unique IDs", Evaluate: profiles.NTIA2026CompUniqID},
-		{Key: "comp_producer", Name: "Component Producer", Required: true, Description: "Entity that produced the component (supplier/manufacturer/author)", Evaluate: profiles.NTIA2026CompProducer},
+		{Key: "comp_uniq_id", Name: "Component Other Identifiers", Required: true, Description: "PURL, CPE, SWID, SWHID, or OmniBOR ID", Evaluate: profiles.NTIA2026CompUniqID},
+		{Key: "comp_producer", Name: "Component Producer", Required: true, Description: "Entity that produced the component (manufacturer or author)", Evaluate: profiles.NTIA2026CompProducer},
 		{Key: "comp_hash_value", Name: "Component Hash Value", Required: true, Description: "Cryptographic hash value for each component", Evaluate: profiles.NTIA2026CompHashValue},
 		{Key: "comp_hash_algo", Name: "Component Hash Algorithm", Required: true, Description: "Cryptographic hash algorithm for each component", Evaluate: profiles.NTIA2026CompHashAlgo},
 		{Key: "comp_license", Name: "Component License", Required: true, Description: "Declared license information for each component", Evaluate: profiles.NTIA2026CompLicense},
