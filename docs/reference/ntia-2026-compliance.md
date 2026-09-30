@@ -46,7 +46,7 @@ NTIA 2026 organizes elements into two groups:
 | Component Dependency Relationship | Component Data | Yes | `dependencies[]` graph | `relationships[]` (`DEPENDS_ON`) | `relationships[]` (`dependsOn`) | Evaluated for primary component; top-level direct dependencies minimum |
 | Component Hash Value | Component Data | Yes | `components[].hashes[].content` | `packages[].checksums[].checksumValue` | `software.verifiedUsing.hashValue` | Per-component percentage score |
 | Component Hash Algorithm | Component Data | Yes | `components[].hashes[].alg` | `packages[].checksums[].algorithm` | `software.verifiedUsing.algorithm` | Per-component percentage score |
-| Component Identifiers | Component Data | Yes | `components[].purl`, `components[].cpe`, `components[].swid`, `components[].omniborId`, `components[].swhid` | `packages[].externalRefs[]` (PURL, CPE), `REFERENCE_CATEGORY_OTHER` (SWID, OmniBOR, commit) | `externalIdentifiers` (`packageUrl`, `cpe23`, `swid`, `gitoid`, `swhid`) | Per-component percentage score; at least one identifier sufficient |
+| Component Identifiers | Component Data | Yes | `components[].purl`, `components[].cpe`, `components[].swid`, `components[].omniborId`, `components[].swhid` | `packages[].externalRefs[]` (PURL, CPE), `REFERENCE_CATEGORY_OTHER` (SWID, OmniBOR, commit) | `externalIdentifiers` (`packageUrl`, `cpe23`, `swid`); `contentIdentifier` (`gitoid`, `swhid`) | Per-component percentage score; at least one identifier sufficient |
 | Component License | Component Data | Yes | `components[].licenses[]` (1.4/1.5); `components[].licenses[]` with `acknowledgement=declared` (1.6+) | `packages[].licenseDeclared` | Linked via `hasDeclaredLicense` relationship type | Per-component percentage score; declared licenses only |
 | Component Name | Component Data | Yes | `components[].name` | `packages[].name` | `package.name` | Per-component percentage score |
 | Component Version | Component Data | Yes | `components[].version` | `packages[].versionInfo` | `package.packageVersion` | Per-component percentage score; `UNKNOWN` / `NOASSERTION` / `NONE` accepted |
@@ -410,7 +410,9 @@ Machine-processable, unique identifiers support automated analysis. PURL enables
 
 - **SPDX v3.x:**
   - `externalIdentifiers.identifier`
-  - `externalIdentifierType`: `cpe22`, `cpe23`, `gitoid`, `packageUrl`, `swhid`, `swid`
+  - `externalIdentifierType`: `cpe22`, `cpe23`, `packageUrl`, `swid`
+  - `contentIdentifier.contentIdentifierType`: `gitoid`, `swhid`
+  - `contentIdentifier.contentIdentifierValue`
 
 - **CycloneDX:**
   - `components[].cpe`
