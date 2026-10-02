@@ -105,8 +105,9 @@ func BSIV20CompDeclaredLicense(_ sbom.Document, comp sbom.GetComponent) (bool, s
 	return false, "missing", nil
 }
 
-// BSIV20CompOtherIdentifiers extracts CPE and PURL identifiers.
+// BSIV20CompOtherIdentifiers extracts CPE, PURL, SWHID, and OmniBOR identifiers.
 // v2.0 lists CPE and PURL only; SWIDs were added in v2.1.
+// Content identifiers (SWHID, OmniBOR ID) are included as valid unique identifiers.
 // Mirrors: profiles.BSIV20CompOtherIdentifiers → profiles.BSIV11CompOtherIdentifiers
 func BSIV20CompOtherIdentifiers(_ sbom.Document, comp sbom.GetComponent) (bool, string, error) {
 	var all []string
@@ -119,6 +120,16 @@ func BSIV20CompOtherIdentifiers(_ sbom.Document, comp sbom.GetComponent) (bool, 
 	for _, c := range comp.GetCpes() {
 		if s := strings.TrimSpace(string(c)); s != "" {
 			all = append(all, s)
+		}
+	}
+	for _, s := range comp.Swhids() {
+		if v := strings.TrimSpace(s.String()); v != "" {
+			all = append(all, v)
+		}
+	}
+	for _, o := range comp.OmniborIDs() {
+		if v := strings.TrimSpace(o.String()); v != "" {
+			all = append(all, v)
 		}
 	}
 

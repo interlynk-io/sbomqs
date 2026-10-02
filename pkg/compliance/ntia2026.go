@@ -128,13 +128,6 @@ func ntia2026SBOMAuthor(doc sbom.Document) *db.Record {
 		}
 	}
 
-	// 3. Supplier fallback
-	if supplier := doc.Supplier(); supplier != nil {
-		if val, ok := getSupplierInfo(supplier); ok {
-			return db.NewRecordStmt(NTIA2026_SBOM_AUTHOR, "doc", val, SCORE_FULL, "")
-		}
-	}
-
 	return db.NewRecordStmt(NTIA2026_SBOM_AUTHOR, "doc", "", SCORE_ZERO, "")
 }
 
@@ -310,21 +303,16 @@ func ntia2026CompUniqID(comp sbom.GetComponent, id string) *db.Record {
 	if len(comp.Swids()) > 0 {
 		return db.NewRecordStmt(NTIA2026_COMP_UNIQ_ID, id, comp.Swids()[0].String(), SCORE_FULL, "")
 	}
+	if swhids := comp.Swhids(); len(swhids) > 0 {
+		return db.NewRecordStmt(NTIA2026_COMP_UNIQ_ID, id, swhids[0].String(), SCORE_FULL, "")
+	}
+	if omnis := comp.OmniborIDs(); len(omnis) > 0 {
+		return db.NewRecordStmt(NTIA2026_COMP_UNIQ_ID, id, omnis[0].String(), SCORE_FULL, "")
+	}
 	return db.NewRecordStmt(NTIA2026_COMP_UNIQ_ID, id, "", SCORE_ZERO, "")
 }
 
 func ntia2026CompProducer(comp sbom.GetComponent, id string) *db.Record {
-	if supplier := comp.Suppliers(); supplier != nil {
-
-		var email string
-		for _, s := range supplier.GetContacts() {
-			email = strings.TrimSpace(s.GetEmail())
-		}
-
-		if val, ok := getEntityIdentifier(supplier.GetName(), email, supplier.GetURL()); ok {
-			return db.NewRecordStmt(NTIA2026_COMP_PRODUCER, id, val, SCORE_FULL, "")
-		}
-	}
 	if manufacturer := comp.Manufacturer(); manufacturer != nil {
 
 		var email string

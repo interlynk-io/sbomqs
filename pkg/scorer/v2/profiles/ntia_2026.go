@@ -495,7 +495,7 @@ func NTIA2026CompVersion(doc sbom.Document) catalog.ProfFeatScore {
 	return ntia2026ComponentScore(valid, len(comps), "version")
 }
 
-// NTIA2026CompUniqID checks that all components have a unique identifier (PURL, CPE, or SWID).
+// NTIA2026CompUniqID checks that all components have a unique identifier (PURL, CPE, SWID, SWHID, or OmniBOR ID).
 func NTIA2026CompUniqID(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
 	valid := lo.CountBy(comps, func(c sbom.GetComponent) bool {
@@ -508,6 +508,12 @@ func NTIA2026CompUniqID(doc sbom.Document) catalog.ProfFeatScore {
 		if len(c.Swids()) > 0 {
 			return true
 		}
+		if common.CompHasAnySwhids(c) {
+			return true
+		}
+		if common.CompHasAnyOmniIDs(c) {
+			return true
+		}
 		return false
 	})
 	return ntia2026ComponentScore(valid, len(comps), "unique identifier")
@@ -515,28 +521,14 @@ func NTIA2026CompUniqID(doc sbom.Document) catalog.ProfFeatScore {
 
 // NTIA2026CompProducer checks whether each component has producer information.
 // CISA 2026 uses "Component Producer" (formerly Supplier Name) and evaluates it
-// per-component using Suppliers, Manufacturer, or Authors.
+// per-component using Manufacturer or Authors. Supplier is intentionally excluded
+// because "producer" (who creates the component) is distinct from "supplier"
+// (who distributes it).
 func NTIA2026CompProducer(doc sbom.Document) catalog.ProfFeatScore {
 	comps := doc.Components()
 	valid := 0
 	for _, c := range comps {
 		found := false
-		if supplier := c.Suppliers(); supplier != nil {
-
-			var email string
-			for _, s := range supplier.GetContacts() {
-				email = strings.TrimSpace(s.GetEmail())
-			}
-
-			if strings.TrimSpace(supplier.GetName()) != "" || email != "" || strings.TrimSpace(supplier.GetURL()) != "" {
-				valid++
-				found = true
-			}
-		}
-		if found {
-			continue
-		}
-
 		if manufacturer := c.Manufacturer(); manufacturer != nil {
 			var email string
 			for _, m := range manufacturer.GetContacts() {

@@ -1263,21 +1263,23 @@ func TestListIntegrationForSPDX3_NTIA2026(t *testing.T) {
 			Missing:         true,
 			ExpectedMissing: 2,
 		},
-		// Component producer - supplier email only
+		// Component producer - supplier email only (supplier does NOT satisfy producer)
 		{
-			Name:          "NTIA 2026 profile - comp_producer via supplier email only",
-			SBOMFile:      filepath.Join(base, "spdx3-with-comp-supplier-email-only.json"),
-			Feature:       "comp_producer",
-			Profile:       "ntia",
-			ExpectedFound: 1,
+			Name:            "NTIA 2026 profile - comp_producer via supplier email only (rejected)",
+			SBOMFile:        filepath.Join(base, "spdx3-with-comp-supplier-email-only.json"),
+			Feature:         "comp_producer",
+			Profile:         "ntia",
+			Missing:         true,
+			ExpectedMissing: 1,
 		},
-		// Component producer - supplier URL only
+		// Component producer - supplier URL only (supplier does NOT satisfy producer)
 		{
-			Name:          "NTIA 2026 profile - comp_producer via supplier URL only",
-			SBOMFile:      filepath.Join(base, "spdx3-with-comp-supplier-url-only.json"),
-			Feature:       "comp_producer",
-			Profile:       "ntia",
-			ExpectedFound: 1,
+			Name:            "NTIA 2026 profile - comp_producer via supplier URL only (rejected)",
+			SBOMFile:        filepath.Join(base, "spdx3-with-comp-supplier-url-only.json"),
+			Feature:         "comp_producer",
+			Profile:         "ntia",
+			Missing:         true,
+			ExpectedMissing: 1,
 		},
 		// Component producer - manufacturer name only
 		{
