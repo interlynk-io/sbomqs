@@ -11,7 +11,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/interlynk-io/spdx-zen v0.1.5
 	github.com/knqyf263/go-cpe v0.0.0-20230627041855-cb0794d06872
-	github.com/maxbrunsfeld/counterfeiter/v6 v6.13.0
+	github.com/maxbrunsfeld/counterfeiter/v6 v6.14.0
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/package-url/packageurl-go v0.1.7
 	github.com/samber/lo v1.53.0
@@ -39,14 +39,14 @@ require (
 	github.com/mattn/go-colorable v0.1.15 // indirect
 	github.com/mattn/go-isatty v0.0.24 // indirect
 	github.com/mattn/go-runewidth v0.0.30 // indirect
-	github.com/piprate/json-gold v0.8.0 // indirect
+	github.com/piprate/json-gold v0.9.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pquerna/cachecontrol v0.2.0 // indirect
 	github.com/spdx/gordf v0.0.0-20250128162952-000978ccd6fb // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
 	github.com/tidwall/gjson v1.19.0 // indirect
 	github.com/tidwall/match v1.2.0 // indirect
-	github.com/tidwall/pretty v1.2.1 // indirect
+	github.com/tidwall/pretty v1.2.2 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.yaml.in/yaml/v3 v3.0.5 // indirect
 	golang.org/x/mod v0.41.0 // indirect

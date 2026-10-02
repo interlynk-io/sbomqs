@@ -10,9 +10,8 @@ import (
 type FakeGetTool struct {
 	GetNameStub        func() string
 	getNameMutex       sync.RWMutex
-	getNameArgsForCall []struct {
-	}
-	getNameReturns struct {
+	getNameArgsForCall []struct{}
+	getNameReturns     struct {
 		result1 string
 	}
 	getNameReturnsOnCall map[int]struct {
@@ -20,23 +19,22 @@ type FakeGetTool struct {
 	}
 	GetVersionStub        func() string
 	getVersionMutex       sync.RWMutex
-	getVersionArgsForCall []struct {
-	}
-	getVersionReturns struct {
+	getVersionArgsForCall []struct{}
+	getVersionReturns     struct {
 		result1 string
 	}
 	getVersionReturnsOnCall map[int]struct {
 		result1 string
 	}
 	invocations      map[string][][]interface{}
+	callOrder        []string
 	invocationsMutex sync.RWMutex
 }
 
 func (fake *FakeGetTool) GetName() string {
 	fake.getNameMutex.Lock()
 	ret, specificReturn := fake.getNameReturnsOnCall[len(fake.getNameArgsForCall)]
-	fake.getNameArgsForCall = append(fake.getNameArgsForCall, struct {
-	}{})
+	fake.getNameArgsForCall = append(fake.getNameArgsForCall, struct{}{})
 	stub := fake.GetNameStub
 	fakeReturns := fake.getNameReturns
 	fake.recordInvocation("GetName", []interface{}{})
@@ -88,8 +86,7 @@ func (fake *FakeGetTool) GetNameReturnsOnCall(i int, result1 string) {
 func (fake *FakeGetTool) GetVersion() string {
 	fake.getVersionMutex.Lock()
 	ret, specificReturn := fake.getVersionReturnsOnCall[len(fake.getVersionArgsForCall)]
-	fake.getVersionArgsForCall = append(fake.getVersionArgsForCall, struct {
-	}{})
+	fake.getVersionArgsForCall = append(fake.getVersionArgsForCall, struct{}{})
 	stub := fake.GetVersionStub
 	fakeReturns := fake.getVersionReturns
 	fake.recordInvocation("GetVersion", []interface{}{})
@@ -148,9 +145,18 @@ func (fake *FakeGetTool) Invocations() map[string][][]interface{} {
 	return copiedInvocations
 }
 
+func (fake *FakeGetTool) CallOrder() []string {
+	fake.invocationsMutex.RLock()
+	defer fake.invocationsMutex.RUnlock()
+	order := make([]string, len(fake.callOrder))
+	copy(order, fake.callOrder)
+	return order
+}
+
 func (fake *FakeGetTool) recordInvocation(key string, args []interface{}) {
 	fake.invocationsMutex.Lock()
 	defer fake.invocationsMutex.Unlock()
+	fake.callOrder = append(fake.callOrder, key)
 	if fake.invocations == nil {
 		fake.invocations = map[string][][]interface{}{}
 	}

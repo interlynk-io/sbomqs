@@ -10,23 +10,22 @@ import (
 type FakeGetVulnerabilities struct {
 	GetIDStub        func() string
 	getIDMutex       sync.RWMutex
-	getIDArgsForCall []struct {
-	}
-	getIDReturns struct {
+	getIDArgsForCall []struct{}
+	getIDReturns     struct {
 		result1 string
 	}
 	getIDReturnsOnCall map[int]struct {
 		result1 string
 	}
 	invocations      map[string][][]interface{}
+	callOrder        []string
 	invocationsMutex sync.RWMutex
 }
 
 func (fake *FakeGetVulnerabilities) GetID() string {
 	fake.getIDMutex.Lock()
 	ret, specificReturn := fake.getIDReturnsOnCall[len(fake.getIDArgsForCall)]
-	fake.getIDArgsForCall = append(fake.getIDArgsForCall, struct {
-	}{})
+	fake.getIDArgsForCall = append(fake.getIDArgsForCall, struct{}{})
 	stub := fake.GetIDStub
 	fakeReturns := fake.getIDReturns
 	fake.recordInvocation("GetID", []interface{}{})
@@ -85,9 +84,18 @@ func (fake *FakeGetVulnerabilities) Invocations() map[string][][]interface{} {
 	return copiedInvocations
 }
 
+func (fake *FakeGetVulnerabilities) CallOrder() []string {
+	fake.invocationsMutex.RLock()
+	defer fake.invocationsMutex.RUnlock()
+	order := make([]string, len(fake.callOrder))
+	copy(order, fake.callOrder)
+	return order
+}
+
 func (fake *FakeGetVulnerabilities) recordInvocation(key string, args []interface{}) {
 	fake.invocationsMutex.Lock()
 	defer fake.invocationsMutex.Unlock()
+	fake.callOrder = append(fake.callOrder, key)
 	if fake.invocations == nil {
 		fake.invocations = map[string][][]interface{}{}
 	}

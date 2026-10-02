@@ -11,9 +11,8 @@ import (
 type FakeSpec struct {
 	FileFormatStub        func() string
 	fileFormatMutex       sync.RWMutex
-	fileFormatArgsForCall []struct {
-	}
-	fileFormatReturns struct {
+	fileFormatArgsForCall []struct{}
+	fileFormatReturns     struct {
 		result1 string
 	}
 	fileFormatReturnsOnCall map[int]struct {
@@ -21,9 +20,8 @@ type FakeSpec struct {
 	}
 	GetCommentStub        func() string
 	getCommentMutex       sync.RWMutex
-	getCommentArgsForCall []struct {
-	}
-	getCommentReturns struct {
+	getCommentArgsForCall []struct{}
+	getCommentReturns     struct {
 		result1 string
 	}
 	getCommentReturnsOnCall map[int]struct {
@@ -31,9 +29,8 @@ type FakeSpec struct {
 	}
 	GetCreationTimestampStub        func() string
 	getCreationTimestampMutex       sync.RWMutex
-	getCreationTimestampArgsForCall []struct {
-	}
-	getCreationTimestampReturns struct {
+	getCreationTimestampArgsForCall []struct{}
+	getCreationTimestampReturns     struct {
 		result1 string
 	}
 	getCreationTimestampReturnsOnCall map[int]struct {
@@ -41,9 +38,8 @@ type FakeSpec struct {
 	}
 	GetExtDocRefStub        func() []string
 	getExtDocRefMutex       sync.RWMutex
-	getExtDocRefArgsForCall []struct {
-	}
-	getExtDocRefReturns struct {
+	getExtDocRefArgsForCall []struct{}
+	getExtDocRefReturns     struct {
 		result1 []string
 	}
 	getExtDocRefReturnsOnCall map[int]struct {
@@ -51,9 +47,8 @@ type FakeSpec struct {
 	}
 	GetLicensesStub        func() []licenses.License
 	getLicensesMutex       sync.RWMutex
-	getLicensesArgsForCall []struct {
-	}
-	getLicensesReturns struct {
+	getLicensesArgsForCall []struct{}
+	getLicensesReturns     struct {
 		result1 []licenses.License
 	}
 	getLicensesReturnsOnCall map[int]struct {
@@ -61,9 +56,8 @@ type FakeSpec struct {
 	}
 	GetNameStub        func() string
 	getNameMutex       sync.RWMutex
-	getNameArgsForCall []struct {
-	}
-	getNameReturns struct {
+	getNameArgsForCall []struct{}
+	getNameReturns     struct {
 		result1 string
 	}
 	getNameReturnsOnCall map[int]struct {
@@ -71,9 +65,8 @@ type FakeSpec struct {
 	}
 	GetNamespaceStub        func() string
 	getNamespaceMutex       sync.RWMutex
-	getNamespaceArgsForCall []struct {
-	}
-	getNamespaceReturns struct {
+	getNamespaceArgsForCall []struct{}
+	getNamespaceReturns     struct {
 		result1 string
 	}
 	getNamespaceReturnsOnCall map[int]struct {
@@ -81,9 +74,8 @@ type FakeSpec struct {
 	}
 	GetOrganizationStub        func() string
 	getOrganizationMutex       sync.RWMutex
-	getOrganizationArgsForCall []struct {
-	}
-	getOrganizationReturns struct {
+	getOrganizationArgsForCall []struct{}
+	getOrganizationReturns     struct {
 		result1 string
 	}
 	getOrganizationReturnsOnCall map[int]struct {
@@ -91,9 +83,8 @@ type FakeSpec struct {
 	}
 	GetSpdxIDStub        func() string
 	getSpdxIDMutex       sync.RWMutex
-	getSpdxIDArgsForCall []struct {
-	}
-	getSpdxIDReturns struct {
+	getSpdxIDArgsForCall []struct{}
+	getSpdxIDReturns     struct {
 		result1 string
 	}
 	getSpdxIDReturnsOnCall map[int]struct {
@@ -101,9 +92,8 @@ type FakeSpec struct {
 	}
 	GetSpecTypeStub        func() string
 	getSpecTypeMutex       sync.RWMutex
-	getSpecTypeArgsForCall []struct {
-	}
-	getSpecTypeReturns struct {
+	getSpecTypeArgsForCall []struct{}
+	getSpecTypeReturns     struct {
 		result1 string
 	}
 	getSpecTypeReturnsOnCall map[int]struct {
@@ -111,9 +101,8 @@ type FakeSpec struct {
 	}
 	GetURIStub        func() string
 	getURIMutex       sync.RWMutex
-	getURIArgsForCall []struct {
-	}
-	getURIReturns struct {
+	getURIArgsForCall []struct{}
+	getURIReturns     struct {
 		result1 string
 	}
 	getURIReturnsOnCall map[int]struct {
@@ -121,9 +110,8 @@ type FakeSpec struct {
 	}
 	GetVersionStub        func() string
 	getVersionMutex       sync.RWMutex
-	getVersionArgsForCall []struct {
-	}
-	getVersionReturns struct {
+	getVersionArgsForCall []struct{}
+	getVersionReturns     struct {
 		result1 string
 	}
 	getVersionReturnsOnCall map[int]struct {
@@ -131,9 +119,8 @@ type FakeSpec struct {
 	}
 	ParsableStub        func() bool
 	parsableMutex       sync.RWMutex
-	parsableArgsForCall []struct {
-	}
-	parsableReturns struct {
+	parsableArgsForCall []struct{}
+	parsableReturns     struct {
 		result1 bool
 	}
 	parsableReturnsOnCall map[int]struct {
@@ -141,23 +128,22 @@ type FakeSpec struct {
 	}
 	RequiredFieldsStub        func() bool
 	requiredFieldsMutex       sync.RWMutex
-	requiredFieldsArgsForCall []struct {
-	}
-	requiredFieldsReturns struct {
+	requiredFieldsArgsForCall []struct{}
+	requiredFieldsReturns     struct {
 		result1 bool
 	}
 	requiredFieldsReturnsOnCall map[int]struct {
 		result1 bool
 	}
 	invocations      map[string][][]interface{}
+	callOrder        []string
 	invocationsMutex sync.RWMutex
 }
 
 func (fake *FakeSpec) FileFormat() string {
 	fake.fileFormatMutex.Lock()
 	ret, specificReturn := fake.fileFormatReturnsOnCall[len(fake.fileFormatArgsForCall)]
-	fake.fileFormatArgsForCall = append(fake.fileFormatArgsForCall, struct {
-	}{})
+	fake.fileFormatArgsForCall = append(fake.fileFormatArgsForCall, struct{}{})
 	stub := fake.FileFormatStub
 	fakeReturns := fake.fileFormatReturns
 	fake.recordInvocation("FileFormat", []interface{}{})
@@ -209,8 +195,7 @@ func (fake *FakeSpec) FileFormatReturnsOnCall(i int, result1 string) {
 func (fake *FakeSpec) GetComment() string {
 	fake.getCommentMutex.Lock()
 	ret, specificReturn := fake.getCommentReturnsOnCall[len(fake.getCommentArgsForCall)]
-	fake.getCommentArgsForCall = append(fake.getCommentArgsForCall, struct {
-	}{})
+	fake.getCommentArgsForCall = append(fake.getCommentArgsForCall, struct{}{})
 	stub := fake.GetCommentStub
 	fakeReturns := fake.getCommentReturns
 	fake.recordInvocation("GetComment", []interface{}{})
@@ -262,8 +247,7 @@ func (fake *FakeSpec) GetCommentReturnsOnCall(i int, result1 string) {
 func (fake *FakeSpec) GetCreationTimestamp() string {
 	fake.getCreationTimestampMutex.Lock()
 	ret, specificReturn := fake.getCreationTimestampReturnsOnCall[len(fake.getCreationTimestampArgsForCall)]
-	fake.getCreationTimestampArgsForCall = append(fake.getCreationTimestampArgsForCall, struct {
-	}{})
+	fake.getCreationTimestampArgsForCall = append(fake.getCreationTimestampArgsForCall, struct{}{})
 	stub := fake.GetCreationTimestampStub
 	fakeReturns := fake.getCreationTimestampReturns
 	fake.recordInvocation("GetCreationTimestamp", []interface{}{})
@@ -315,8 +299,7 @@ func (fake *FakeSpec) GetCreationTimestampReturnsOnCall(i int, result1 string) {
 func (fake *FakeSpec) GetExtDocRef() []string {
 	fake.getExtDocRefMutex.Lock()
 	ret, specificReturn := fake.getExtDocRefReturnsOnCall[len(fake.getExtDocRefArgsForCall)]
-	fake.getExtDocRefArgsForCall = append(fake.getExtDocRefArgsForCall, struct {
-	}{})
+	fake.getExtDocRefArgsForCall = append(fake.getExtDocRefArgsForCall, struct{}{})
 	stub := fake.GetExtDocRefStub
 	fakeReturns := fake.getExtDocRefReturns
 	fake.recordInvocation("GetExtDocRef", []interface{}{})
@@ -368,8 +351,7 @@ func (fake *FakeSpec) GetExtDocRefReturnsOnCall(i int, result1 []string) {
 func (fake *FakeSpec) GetLicenses() []licenses.License {
 	fake.getLicensesMutex.Lock()
 	ret, specificReturn := fake.getLicensesReturnsOnCall[len(fake.getLicensesArgsForCall)]
-	fake.getLicensesArgsForCall = append(fake.getLicensesArgsForCall, struct {
-	}{})
+	fake.getLicensesArgsForCall = append(fake.getLicensesArgsForCall, struct{}{})
 	stub := fake.GetLicensesStub
 	fakeReturns := fake.getLicensesReturns
 	fake.recordInvocation("GetLicenses", []interface{}{})
@@ -421,8 +403,7 @@ func (fake *FakeSpec) GetLicensesReturnsOnCall(i int, result1 []licenses.License
 func (fake *FakeSpec) GetName() string {
 	fake.getNameMutex.Lock()
 	ret, specificReturn := fake.getNameReturnsOnCall[len(fake.getNameArgsForCall)]
-	fake.getNameArgsForCall = append(fake.getNameArgsForCall, struct {
-	}{})
+	fake.getNameArgsForCall = append(fake.getNameArgsForCall, struct{}{})
 	stub := fake.GetNameStub
 	fakeReturns := fake.getNameReturns
 	fake.recordInvocation("GetName", []interface{}{})
@@ -474,8 +455,7 @@ func (fake *FakeSpec) GetNameReturnsOnCall(i int, result1 string) {
 func (fake *FakeSpec) GetNamespace() string {
 	fake.getNamespaceMutex.Lock()
 	ret, specificReturn := fake.getNamespaceReturnsOnCall[len(fake.getNamespaceArgsForCall)]
-	fake.getNamespaceArgsForCall = append(fake.getNamespaceArgsForCall, struct {
-	}{})
+	fake.getNamespaceArgsForCall = append(fake.getNamespaceArgsForCall, struct{}{})
 	stub := fake.GetNamespaceStub
 	fakeReturns := fake.getNamespaceReturns
 	fake.recordInvocation("GetNamespace", []interface{}{})
@@ -527,8 +507,7 @@ func (fake *FakeSpec) GetNamespaceReturnsOnCall(i int, result1 string) {
 func (fake *FakeSpec) GetOrganization() string {
 	fake.getOrganizationMutex.Lock()
 	ret, specificReturn := fake.getOrganizationReturnsOnCall[len(fake.getOrganizationArgsForCall)]
-	fake.getOrganizationArgsForCall = append(fake.getOrganizationArgsForCall, struct {
-	}{})
+	fake.getOrganizationArgsForCall = append(fake.getOrganizationArgsForCall, struct{}{})
 	stub := fake.GetOrganizationStub
 	fakeReturns := fake.getOrganizationReturns
 	fake.recordInvocation("GetOrganization", []interface{}{})
@@ -580,8 +559,7 @@ func (fake *FakeSpec) GetOrganizationReturnsOnCall(i int, result1 string) {
 func (fake *FakeSpec) GetSpdxID() string {
 	fake.getSpdxIDMutex.Lock()
 	ret, specificReturn := fake.getSpdxIDReturnsOnCall[len(fake.getSpdxIDArgsForCall)]
-	fake.getSpdxIDArgsForCall = append(fake.getSpdxIDArgsForCall, struct {
-	}{})
+	fake.getSpdxIDArgsForCall = append(fake.getSpdxIDArgsForCall, struct{}{})
 	stub := fake.GetSpdxIDStub
 	fakeReturns := fake.getSpdxIDReturns
 	fake.recordInvocation("GetSpdxID", []interface{}{})
@@ -633,8 +611,7 @@ func (fake *FakeSpec) GetSpdxIDReturnsOnCall(i int, result1 string) {
 func (fake *FakeSpec) GetSpecType() string {
 	fake.getSpecTypeMutex.Lock()
 	ret, specificReturn := fake.getSpecTypeReturnsOnCall[len(fake.getSpecTypeArgsForCall)]
-	fake.getSpecTypeArgsForCall = append(fake.getSpecTypeArgsForCall, struct {
-	}{})
+	fake.getSpecTypeArgsForCall = append(fake.getSpecTypeArgsForCall, struct{}{})
 	stub := fake.GetSpecTypeStub
 	fakeReturns := fake.getSpecTypeReturns
 	fake.recordInvocation("GetSpecType", []interface{}{})
@@ -686,8 +663,7 @@ func (fake *FakeSpec) GetSpecTypeReturnsOnCall(i int, result1 string) {
 func (fake *FakeSpec) GetURI() string {
 	fake.getURIMutex.Lock()
 	ret, specificReturn := fake.getURIReturnsOnCall[len(fake.getURIArgsForCall)]
-	fake.getURIArgsForCall = append(fake.getURIArgsForCall, struct {
-	}{})
+	fake.getURIArgsForCall = append(fake.getURIArgsForCall, struct{}{})
 	stub := fake.GetURIStub
 	fakeReturns := fake.getURIReturns
 	fake.recordInvocation("GetURI", []interface{}{})
@@ -739,8 +715,7 @@ func (fake *FakeSpec) GetURIReturnsOnCall(i int, result1 string) {
 func (fake *FakeSpec) GetVersion() string {
 	fake.getVersionMutex.Lock()
 	ret, specificReturn := fake.getVersionReturnsOnCall[len(fake.getVersionArgsForCall)]
-	fake.getVersionArgsForCall = append(fake.getVersionArgsForCall, struct {
-	}{})
+	fake.getVersionArgsForCall = append(fake.getVersionArgsForCall, struct{}{})
 	stub := fake.GetVersionStub
 	fakeReturns := fake.getVersionReturns
 	fake.recordInvocation("GetVersion", []interface{}{})
@@ -792,8 +767,7 @@ func (fake *FakeSpec) GetVersionReturnsOnCall(i int, result1 string) {
 func (fake *FakeSpec) Parsable() bool {
 	fake.parsableMutex.Lock()
 	ret, specificReturn := fake.parsableReturnsOnCall[len(fake.parsableArgsForCall)]
-	fake.parsableArgsForCall = append(fake.parsableArgsForCall, struct {
-	}{})
+	fake.parsableArgsForCall = append(fake.parsableArgsForCall, struct{}{})
 	stub := fake.ParsableStub
 	fakeReturns := fake.parsableReturns
 	fake.recordInvocation("Parsable", []interface{}{})
@@ -845,8 +819,7 @@ func (fake *FakeSpec) ParsableReturnsOnCall(i int, result1 bool) {
 func (fake *FakeSpec) RequiredFields() bool {
 	fake.requiredFieldsMutex.Lock()
 	ret, specificReturn := fake.requiredFieldsReturnsOnCall[len(fake.requiredFieldsArgsForCall)]
-	fake.requiredFieldsArgsForCall = append(fake.requiredFieldsArgsForCall, struct {
-	}{})
+	fake.requiredFieldsArgsForCall = append(fake.requiredFieldsArgsForCall, struct{}{})
 	stub := fake.RequiredFieldsStub
 	fakeReturns := fake.requiredFieldsReturns
 	fake.recordInvocation("RequiredFields", []interface{}{})
@@ -905,9 +878,18 @@ func (fake *FakeSpec) Invocations() map[string][][]interface{} {
 	return copiedInvocations
 }
 
+func (fake *FakeSpec) CallOrder() []string {
+	fake.invocationsMutex.RLock()
+	defer fake.invocationsMutex.RUnlock()
+	order := make([]string, len(fake.callOrder))
+	copy(order, fake.callOrder)
+	return order
+}
+
 func (fake *FakeSpec) recordInvocation(key string, args []interface{}) {
 	fake.invocationsMutex.Lock()
 	defer fake.invocationsMutex.Unlock()
+	fake.callOrder = append(fake.callOrder, key)
 	if fake.invocations == nil {
 		fake.invocations = map[string][][]interface{}{}
 	}

@@ -10,9 +10,8 @@ import (
 type FakeGetSignature struct {
 	GetAlgorithmStub        func() string
 	getAlgorithmMutex       sync.RWMutex
-	getAlgorithmArgsForCall []struct {
-	}
-	getAlgorithmReturns struct {
+	getAlgorithmArgsForCall []struct{}
+	getAlgorithmReturns     struct {
 		result1 string
 	}
 	getAlgorithmReturnsOnCall map[int]struct {
@@ -20,9 +19,8 @@ type FakeGetSignature struct {
 	}
 	GetCertificatePathStub        func() []string
 	getCertificatePathMutex       sync.RWMutex
-	getCertificatePathArgsForCall []struct {
-	}
-	getCertificatePathReturns struct {
+	getCertificatePathArgsForCall []struct{}
+	getCertificatePathReturns     struct {
 		result1 []string
 	}
 	getCertificatePathReturnsOnCall map[int]struct {
@@ -30,9 +28,8 @@ type FakeGetSignature struct {
 	}
 	GetExcludesStub        func() []string
 	getExcludesMutex       sync.RWMutex
-	getExcludesArgsForCall []struct {
-	}
-	getExcludesReturns struct {
+	getExcludesArgsForCall []struct{}
+	getExcludesReturns     struct {
 		result1 []string
 	}
 	getExcludesReturnsOnCall map[int]struct {
@@ -40,9 +37,8 @@ type FakeGetSignature struct {
 	}
 	GetKeyIDStub        func() string
 	getKeyIDMutex       sync.RWMutex
-	getKeyIDArgsForCall []struct {
-	}
-	getKeyIDReturns struct {
+	getKeyIDArgsForCall []struct{}
+	getKeyIDReturns     struct {
 		result1 string
 	}
 	getKeyIDReturnsOnCall map[int]struct {
@@ -50,9 +46,8 @@ type FakeGetSignature struct {
 	}
 	GetPublicKeyStub        func() string
 	getPublicKeyMutex       sync.RWMutex
-	getPublicKeyArgsForCall []struct {
-	}
-	getPublicKeyReturns struct {
+	getPublicKeyArgsForCall []struct{}
+	getPublicKeyReturns     struct {
 		result1 string
 	}
 	getPublicKeyReturnsOnCall map[int]struct {
@@ -60,23 +55,22 @@ type FakeGetSignature struct {
 	}
 	GetSigValueStub        func() string
 	getSigValueMutex       sync.RWMutex
-	getSigValueArgsForCall []struct {
-	}
-	getSigValueReturns struct {
+	getSigValueArgsForCall []struct{}
+	getSigValueReturns     struct {
 		result1 string
 	}
 	getSigValueReturnsOnCall map[int]struct {
 		result1 string
 	}
 	invocations      map[string][][]interface{}
+	callOrder        []string
 	invocationsMutex sync.RWMutex
 }
 
 func (fake *FakeGetSignature) GetAlgorithm() string {
 	fake.getAlgorithmMutex.Lock()
 	ret, specificReturn := fake.getAlgorithmReturnsOnCall[len(fake.getAlgorithmArgsForCall)]
-	fake.getAlgorithmArgsForCall = append(fake.getAlgorithmArgsForCall, struct {
-	}{})
+	fake.getAlgorithmArgsForCall = append(fake.getAlgorithmArgsForCall, struct{}{})
 	stub := fake.GetAlgorithmStub
 	fakeReturns := fake.getAlgorithmReturns
 	fake.recordInvocation("GetAlgorithm", []interface{}{})
@@ -128,8 +122,7 @@ func (fake *FakeGetSignature) GetAlgorithmReturnsOnCall(i int, result1 string) {
 func (fake *FakeGetSignature) GetCertificatePath() []string {
 	fake.getCertificatePathMutex.Lock()
 	ret, specificReturn := fake.getCertificatePathReturnsOnCall[len(fake.getCertificatePathArgsForCall)]
-	fake.getCertificatePathArgsForCall = append(fake.getCertificatePathArgsForCall, struct {
-	}{})
+	fake.getCertificatePathArgsForCall = append(fake.getCertificatePathArgsForCall, struct{}{})
 	stub := fake.GetCertificatePathStub
 	fakeReturns := fake.getCertificatePathReturns
 	fake.recordInvocation("GetCertificatePath", []interface{}{})
@@ -181,8 +174,7 @@ func (fake *FakeGetSignature) GetCertificatePathReturnsOnCall(i int, result1 []s
 func (fake *FakeGetSignature) GetExcludes() []string {
 	fake.getExcludesMutex.Lock()
 	ret, specificReturn := fake.getExcludesReturnsOnCall[len(fake.getExcludesArgsForCall)]
-	fake.getExcludesArgsForCall = append(fake.getExcludesArgsForCall, struct {
-	}{})
+	fake.getExcludesArgsForCall = append(fake.getExcludesArgsForCall, struct{}{})
 	stub := fake.GetExcludesStub
 	fakeReturns := fake.getExcludesReturns
 	fake.recordInvocation("GetExcludes", []interface{}{})
@@ -234,8 +226,7 @@ func (fake *FakeGetSignature) GetExcludesReturnsOnCall(i int, result1 []string) 
 func (fake *FakeGetSignature) GetKeyID() string {
 	fake.getKeyIDMutex.Lock()
 	ret, specificReturn := fake.getKeyIDReturnsOnCall[len(fake.getKeyIDArgsForCall)]
-	fake.getKeyIDArgsForCall = append(fake.getKeyIDArgsForCall, struct {
-	}{})
+	fake.getKeyIDArgsForCall = append(fake.getKeyIDArgsForCall, struct{}{})
 	stub := fake.GetKeyIDStub
 	fakeReturns := fake.getKeyIDReturns
 	fake.recordInvocation("GetKeyID", []interface{}{})
@@ -287,8 +278,7 @@ func (fake *FakeGetSignature) GetKeyIDReturnsOnCall(i int, result1 string) {
 func (fake *FakeGetSignature) GetPublicKey() string {
 	fake.getPublicKeyMutex.Lock()
 	ret, specificReturn := fake.getPublicKeyReturnsOnCall[len(fake.getPublicKeyArgsForCall)]
-	fake.getPublicKeyArgsForCall = append(fake.getPublicKeyArgsForCall, struct {
-	}{})
+	fake.getPublicKeyArgsForCall = append(fake.getPublicKeyArgsForCall, struct{}{})
 	stub := fake.GetPublicKeyStub
 	fakeReturns := fake.getPublicKeyReturns
 	fake.recordInvocation("GetPublicKey", []interface{}{})
@@ -340,8 +330,7 @@ func (fake *FakeGetSignature) GetPublicKeyReturnsOnCall(i int, result1 string) {
 func (fake *FakeGetSignature) GetSigValue() string {
 	fake.getSigValueMutex.Lock()
 	ret, specificReturn := fake.getSigValueReturnsOnCall[len(fake.getSigValueArgsForCall)]
-	fake.getSigValueArgsForCall = append(fake.getSigValueArgsForCall, struct {
-	}{})
+	fake.getSigValueArgsForCall = append(fake.getSigValueArgsForCall, struct{}{})
 	stub := fake.GetSigValueStub
 	fakeReturns := fake.getSigValueReturns
 	fake.recordInvocation("GetSigValue", []interface{}{})
@@ -400,9 +389,18 @@ func (fake *FakeGetSignature) Invocations() map[string][][]interface{} {
 	return copiedInvocations
 }
 
+func (fake *FakeGetSignature) CallOrder() []string {
+	fake.invocationsMutex.RLock()
+	defer fake.invocationsMutex.RUnlock()
+	order := make([]string, len(fake.callOrder))
+	copy(order, fake.callOrder)
+	return order
+}
+
 func (fake *FakeGetSignature) recordInvocation(key string, args []interface{}) {
 	fake.invocationsMutex.Lock()
 	defer fake.invocationsMutex.Unlock()
+	fake.callOrder = append(fake.callOrder, key)
 	if fake.invocations == nil {
 		fake.invocations = map[string][][]interface{}{}
 	}

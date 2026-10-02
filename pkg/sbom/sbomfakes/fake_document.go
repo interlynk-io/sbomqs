@@ -10,9 +10,8 @@ import (
 type FakeDocument struct {
 	AuthorsStub        func() []sbom.GetAuthor
 	authorsMutex       sync.RWMutex
-	authorsArgsForCall []struct {
-	}
-	authorsReturns struct {
+	authorsArgsForCall []struct{}
+	authorsReturns     struct {
 		result1 []sbom.GetAuthor
 	}
 	authorsReturnsOnCall map[int]struct {
@@ -20,9 +19,8 @@ type FakeDocument struct {
 	}
 	ComponentsStub        func() []sbom.GetComponent
 	componentsMutex       sync.RWMutex
-	componentsArgsForCall []struct {
-	}
-	componentsReturns struct {
+	componentsArgsForCall []struct{}
+	componentsReturns     struct {
 		result1 []sbom.GetComponent
 	}
 	componentsReturnsOnCall map[int]struct {
@@ -30,9 +28,8 @@ type FakeDocument struct {
 	}
 	CompositionStub        func() []sbom.GetComposition
 	compositionMutex       sync.RWMutex
-	compositionArgsForCall []struct {
-	}
-	compositionReturns struct {
+	compositionArgsForCall []struct{}
+	compositionReturns     struct {
 		result1 []sbom.GetComposition
 	}
 	compositionReturnsOnCall map[int]struct {
@@ -40,9 +37,8 @@ type FakeDocument struct {
 	}
 	FilesStub        func() []sbom.GetComponent
 	filesMutex       sync.RWMutex
-	filesArgsForCall []struct {
-	}
-	filesReturns struct {
+	filesArgsForCall []struct{}
+	filesReturns     struct {
 		result1 []sbom.GetComponent
 	}
 	filesReturnsOnCall map[int]struct {
@@ -50,11 +46,8 @@ type FakeDocument struct {
 	}
 	GetDirectDependenciesStub        func(string, ...string) []sbom.GetComponent
 	getDirectDependenciesMutex       sync.RWMutex
-	getDirectDependenciesArgsForCall []struct {
-		arg1 string
-		arg2 []string
-	}
-	getDirectDependenciesReturns struct {
+	getDirectDependenciesArgsForCall []FakeDocumentGetDirectDependenciesArgs
+	getDirectDependenciesReturns     struct {
 		result1 []sbom.GetComponent
 	}
 	getDirectDependenciesReturnsOnCall map[int]struct {
@@ -62,10 +55,8 @@ type FakeDocument struct {
 	}
 	GetOutgoingRelationsStub        func(string) []sbom.GetRelationship
 	getOutgoingRelationsMutex       sync.RWMutex
-	getOutgoingRelationsArgsForCall []struct {
-		arg1 string
-	}
-	getOutgoingRelationsReturns struct {
+	getOutgoingRelationsArgsForCall []FakeDocumentGetOutgoingRelationsArgs
+	getOutgoingRelationsReturns     struct {
 		result1 []sbom.GetRelationship
 	}
 	getOutgoingRelationsReturnsOnCall map[int]struct {
@@ -73,9 +64,8 @@ type FakeDocument struct {
 	}
 	GetRelationshipsStub        func() []sbom.GetRelationship
 	getRelationshipsMutex       sync.RWMutex
-	getRelationshipsArgsForCall []struct {
-	}
-	getRelationshipsReturns struct {
+	getRelationshipsArgsForCall []struct{}
+	getRelationshipsReturns     struct {
 		result1 []sbom.GetRelationship
 	}
 	getRelationshipsReturnsOnCall map[int]struct {
@@ -83,9 +73,8 @@ type FakeDocument struct {
 	}
 	LifecyclesStub        func() []string
 	lifecyclesMutex       sync.RWMutex
-	lifecyclesArgsForCall []struct {
-	}
-	lifecyclesReturns struct {
+	lifecyclesArgsForCall []struct{}
+	lifecyclesReturns     struct {
 		result1 []string
 	}
 	lifecyclesReturnsOnCall map[int]struct {
@@ -93,9 +82,8 @@ type FakeDocument struct {
 	}
 	LogsStub        func() []string
 	logsMutex       sync.RWMutex
-	logsArgsForCall []struct {
-	}
-	logsReturns struct {
+	logsArgsForCall []struct{}
+	logsReturns     struct {
 		result1 []string
 	}
 	logsReturnsOnCall map[int]struct {
@@ -103,9 +91,8 @@ type FakeDocument struct {
 	}
 	ManufacturerStub        func() sbom.GetManufacturer
 	manufacturerMutex       sync.RWMutex
-	manufacturerArgsForCall []struct {
-	}
-	manufacturerReturns struct {
+	manufacturerArgsForCall []struct{}
+	manufacturerReturns     struct {
 		result1 sbom.GetManufacturer
 	}
 	manufacturerReturnsOnCall map[int]struct {
@@ -113,9 +100,8 @@ type FakeDocument struct {
 	}
 	PrimaryCompStub        func() sbom.GetPrimaryComponentInfo
 	primaryCompMutex       sync.RWMutex
-	primaryCompArgsForCall []struct {
-	}
-	primaryCompReturns struct {
+	primaryCompArgsForCall []struct{}
+	primaryCompReturns     struct {
 		result1 sbom.GetPrimaryComponentInfo
 	}
 	primaryCompReturnsOnCall map[int]struct {
@@ -123,9 +109,8 @@ type FakeDocument struct {
 	}
 	SchemaValidationStub        func() bool
 	schemaValidationMutex       sync.RWMutex
-	schemaValidationArgsForCall []struct {
-	}
-	schemaValidationReturns struct {
+	schemaValidationArgsForCall []struct{}
+	schemaValidationReturns     struct {
 		result1 bool
 	}
 	schemaValidationReturnsOnCall map[int]struct {
@@ -133,9 +118,8 @@ type FakeDocument struct {
 	}
 	SignatureStub        func() sbom.GetSignature
 	signatureMutex       sync.RWMutex
-	signatureArgsForCall []struct {
-	}
-	signatureReturns struct {
+	signatureArgsForCall []struct{}
+	signatureReturns     struct {
 		result1 sbom.GetSignature
 	}
 	signatureReturnsOnCall map[int]struct {
@@ -143,9 +127,8 @@ type FakeDocument struct {
 	}
 	SpecStub        func() sbom.Spec
 	specMutex       sync.RWMutex
-	specArgsForCall []struct {
-	}
-	specReturns struct {
+	specArgsForCall []struct{}
+	specReturns     struct {
 		result1 sbom.Spec
 	}
 	specReturnsOnCall map[int]struct {
@@ -153,9 +136,8 @@ type FakeDocument struct {
 	}
 	SupplierStub        func() sbom.GetSupplier
 	supplierMutex       sync.RWMutex
-	supplierArgsForCall []struct {
-	}
-	supplierReturns struct {
+	supplierArgsForCall []struct{}
+	supplierReturns     struct {
 		result1 sbom.GetSupplier
 	}
 	supplierReturnsOnCall map[int]struct {
@@ -163,9 +145,8 @@ type FakeDocument struct {
 	}
 	ToolsStub        func() []sbom.GetTool
 	toolsMutex       sync.RWMutex
-	toolsArgsForCall []struct {
-	}
-	toolsReturns struct {
+	toolsArgsForCall []struct{}
+	toolsReturns     struct {
 		result1 []sbom.GetTool
 	}
 	toolsReturnsOnCall map[int]struct {
@@ -173,23 +154,33 @@ type FakeDocument struct {
 	}
 	VulnerabilitiesStub        func() []sbom.GetVulnerabilities
 	vulnerabilitiesMutex       sync.RWMutex
-	vulnerabilitiesArgsForCall []struct {
-	}
-	vulnerabilitiesReturns struct {
+	vulnerabilitiesArgsForCall []struct{}
+	vulnerabilitiesReturns     struct {
 		result1 []sbom.GetVulnerabilities
 	}
 	vulnerabilitiesReturnsOnCall map[int]struct {
 		result1 []sbom.GetVulnerabilities
 	}
 	invocations      map[string][][]interface{}
+	callOrder        []string
 	invocationsMutex sync.RWMutex
+}
+
+// FakeDocumentGetDirectDependenciesArgs holds the arguments of one call to GetDirectDependencies.
+type FakeDocumentGetDirectDependenciesArgs struct {
+	Arg1 string
+	Arg2 []string
+}
+
+// FakeDocumentGetOutgoingRelationsArgs holds the arguments of one call to GetOutgoingRelations.
+type FakeDocumentGetOutgoingRelationsArgs struct {
+	Arg1 string
 }
 
 func (fake *FakeDocument) Authors() []sbom.GetAuthor {
 	fake.authorsMutex.Lock()
 	ret, specificReturn := fake.authorsReturnsOnCall[len(fake.authorsArgsForCall)]
-	fake.authorsArgsForCall = append(fake.authorsArgsForCall, struct {
-	}{})
+	fake.authorsArgsForCall = append(fake.authorsArgsForCall, struct{}{})
 	stub := fake.AuthorsStub
 	fakeReturns := fake.authorsReturns
 	fake.recordInvocation("Authors", []interface{}{})
@@ -241,8 +232,7 @@ func (fake *FakeDocument) AuthorsReturnsOnCall(i int, result1 []sbom.GetAuthor) 
 func (fake *FakeDocument) Components() []sbom.GetComponent {
 	fake.componentsMutex.Lock()
 	ret, specificReturn := fake.componentsReturnsOnCall[len(fake.componentsArgsForCall)]
-	fake.componentsArgsForCall = append(fake.componentsArgsForCall, struct {
-	}{})
+	fake.componentsArgsForCall = append(fake.componentsArgsForCall, struct{}{})
 	stub := fake.ComponentsStub
 	fakeReturns := fake.componentsReturns
 	fake.recordInvocation("Components", []interface{}{})
@@ -294,8 +284,7 @@ func (fake *FakeDocument) ComponentsReturnsOnCall(i int, result1 []sbom.GetCompo
 func (fake *FakeDocument) Composition() []sbom.GetComposition {
 	fake.compositionMutex.Lock()
 	ret, specificReturn := fake.compositionReturnsOnCall[len(fake.compositionArgsForCall)]
-	fake.compositionArgsForCall = append(fake.compositionArgsForCall, struct {
-	}{})
+	fake.compositionArgsForCall = append(fake.compositionArgsForCall, struct{}{})
 	stub := fake.CompositionStub
 	fakeReturns := fake.compositionReturns
 	fake.recordInvocation("Composition", []interface{}{})
@@ -347,8 +336,7 @@ func (fake *FakeDocument) CompositionReturnsOnCall(i int, result1 []sbom.GetComp
 func (fake *FakeDocument) Files() []sbom.GetComponent {
 	fake.filesMutex.Lock()
 	ret, specificReturn := fake.filesReturnsOnCall[len(fake.filesArgsForCall)]
-	fake.filesArgsForCall = append(fake.filesArgsForCall, struct {
-	}{})
+	fake.filesArgsForCall = append(fake.filesArgsForCall, struct{}{})
 	stub := fake.FilesStub
 	fakeReturns := fake.filesReturns
 	fake.recordInvocation("Files", []interface{}{})
@@ -405,10 +393,7 @@ func (fake *FakeDocument) GetDirectDependencies(arg1 string, arg2 ...string) []s
 	}
 	fake.getDirectDependenciesMutex.Lock()
 	ret, specificReturn := fake.getDirectDependenciesReturnsOnCall[len(fake.getDirectDependenciesArgsForCall)]
-	fake.getDirectDependenciesArgsForCall = append(fake.getDirectDependenciesArgsForCall, struct {
-		arg1 string
-		arg2 []string
-	}{arg1, arg2Copy})
+	fake.getDirectDependenciesArgsForCall = append(fake.getDirectDependenciesArgsForCall, FakeDocumentGetDirectDependenciesArgs{arg1, arg2Copy})
 	stub := fake.GetDirectDependenciesStub
 	fakeReturns := fake.getDirectDependenciesReturns
 	fake.recordInvocation("GetDirectDependencies", []interface{}{arg1, arg2Copy})
@@ -438,7 +423,15 @@ func (fake *FakeDocument) GetDirectDependenciesArgsForCall(i int) (string, []str
 	fake.getDirectDependenciesMutex.RLock()
 	defer fake.getDirectDependenciesMutex.RUnlock()
 	argsForCall := fake.getDirectDependenciesArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
+	return argsForCall.Arg1, argsForCall.Arg2
+}
+
+func (fake *FakeDocument) GetDirectDependenciesArgs() []FakeDocumentGetDirectDependenciesArgs {
+	fake.getDirectDependenciesMutex.RLock()
+	defer fake.getDirectDependenciesMutex.RUnlock()
+	args := make([]FakeDocumentGetDirectDependenciesArgs, len(fake.getDirectDependenciesArgsForCall))
+	copy(args, fake.getDirectDependenciesArgsForCall)
+	return args
 }
 
 func (fake *FakeDocument) GetDirectDependenciesReturns(result1 []sbom.GetComponent) {
@@ -467,9 +460,7 @@ func (fake *FakeDocument) GetDirectDependenciesReturnsOnCall(i int, result1 []sb
 func (fake *FakeDocument) GetOutgoingRelations(arg1 string) []sbom.GetRelationship {
 	fake.getOutgoingRelationsMutex.Lock()
 	ret, specificReturn := fake.getOutgoingRelationsReturnsOnCall[len(fake.getOutgoingRelationsArgsForCall)]
-	fake.getOutgoingRelationsArgsForCall = append(fake.getOutgoingRelationsArgsForCall, struct {
-		arg1 string
-	}{arg1})
+	fake.getOutgoingRelationsArgsForCall = append(fake.getOutgoingRelationsArgsForCall, FakeDocumentGetOutgoingRelationsArgs{arg1})
 	stub := fake.GetOutgoingRelationsStub
 	fakeReturns := fake.getOutgoingRelationsReturns
 	fake.recordInvocation("GetOutgoingRelations", []interface{}{arg1})
@@ -499,7 +490,15 @@ func (fake *FakeDocument) GetOutgoingRelationsArgsForCall(i int) string {
 	fake.getOutgoingRelationsMutex.RLock()
 	defer fake.getOutgoingRelationsMutex.RUnlock()
 	argsForCall := fake.getOutgoingRelationsArgsForCall[i]
-	return argsForCall.arg1
+	return argsForCall.Arg1
+}
+
+func (fake *FakeDocument) GetOutgoingRelationsArgs() []FakeDocumentGetOutgoingRelationsArgs {
+	fake.getOutgoingRelationsMutex.RLock()
+	defer fake.getOutgoingRelationsMutex.RUnlock()
+	args := make([]FakeDocumentGetOutgoingRelationsArgs, len(fake.getOutgoingRelationsArgsForCall))
+	copy(args, fake.getOutgoingRelationsArgsForCall)
+	return args
 }
 
 func (fake *FakeDocument) GetOutgoingRelationsReturns(result1 []sbom.GetRelationship) {
@@ -528,8 +527,7 @@ func (fake *FakeDocument) GetOutgoingRelationsReturnsOnCall(i int, result1 []sbo
 func (fake *FakeDocument) GetRelationships() []sbom.GetRelationship {
 	fake.getRelationshipsMutex.Lock()
 	ret, specificReturn := fake.getRelationshipsReturnsOnCall[len(fake.getRelationshipsArgsForCall)]
-	fake.getRelationshipsArgsForCall = append(fake.getRelationshipsArgsForCall, struct {
-	}{})
+	fake.getRelationshipsArgsForCall = append(fake.getRelationshipsArgsForCall, struct{}{})
 	stub := fake.GetRelationshipsStub
 	fakeReturns := fake.getRelationshipsReturns
 	fake.recordInvocation("GetRelationships", []interface{}{})
@@ -581,8 +579,7 @@ func (fake *FakeDocument) GetRelationshipsReturnsOnCall(i int, result1 []sbom.Ge
 func (fake *FakeDocument) Lifecycles() []string {
 	fake.lifecyclesMutex.Lock()
 	ret, specificReturn := fake.lifecyclesReturnsOnCall[len(fake.lifecyclesArgsForCall)]
-	fake.lifecyclesArgsForCall = append(fake.lifecyclesArgsForCall, struct {
-	}{})
+	fake.lifecyclesArgsForCall = append(fake.lifecyclesArgsForCall, struct{}{})
 	stub := fake.LifecyclesStub
 	fakeReturns := fake.lifecyclesReturns
 	fake.recordInvocation("Lifecycles", []interface{}{})
@@ -634,8 +631,7 @@ func (fake *FakeDocument) LifecyclesReturnsOnCall(i int, result1 []string) {
 func (fake *FakeDocument) Logs() []string {
 	fake.logsMutex.Lock()
 	ret, specificReturn := fake.logsReturnsOnCall[len(fake.logsArgsForCall)]
-	fake.logsArgsForCall = append(fake.logsArgsForCall, struct {
-	}{})
+	fake.logsArgsForCall = append(fake.logsArgsForCall, struct{}{})
 	stub := fake.LogsStub
 	fakeReturns := fake.logsReturns
 	fake.recordInvocation("Logs", []interface{}{})
@@ -687,8 +683,7 @@ func (fake *FakeDocument) LogsReturnsOnCall(i int, result1 []string) {
 func (fake *FakeDocument) Manufacturer() sbom.GetManufacturer {
 	fake.manufacturerMutex.Lock()
 	ret, specificReturn := fake.manufacturerReturnsOnCall[len(fake.manufacturerArgsForCall)]
-	fake.manufacturerArgsForCall = append(fake.manufacturerArgsForCall, struct {
-	}{})
+	fake.manufacturerArgsForCall = append(fake.manufacturerArgsForCall, struct{}{})
 	stub := fake.ManufacturerStub
 	fakeReturns := fake.manufacturerReturns
 	fake.recordInvocation("Manufacturer", []interface{}{})
@@ -740,8 +735,7 @@ func (fake *FakeDocument) ManufacturerReturnsOnCall(i int, result1 sbom.GetManuf
 func (fake *FakeDocument) PrimaryComp() sbom.GetPrimaryComponentInfo {
 	fake.primaryCompMutex.Lock()
 	ret, specificReturn := fake.primaryCompReturnsOnCall[len(fake.primaryCompArgsForCall)]
-	fake.primaryCompArgsForCall = append(fake.primaryCompArgsForCall, struct {
-	}{})
+	fake.primaryCompArgsForCall = append(fake.primaryCompArgsForCall, struct{}{})
 	stub := fake.PrimaryCompStub
 	fakeReturns := fake.primaryCompReturns
 	fake.recordInvocation("PrimaryComp", []interface{}{})
@@ -793,8 +787,7 @@ func (fake *FakeDocument) PrimaryCompReturnsOnCall(i int, result1 sbom.GetPrimar
 func (fake *FakeDocument) SchemaValidation() bool {
 	fake.schemaValidationMutex.Lock()
 	ret, specificReturn := fake.schemaValidationReturnsOnCall[len(fake.schemaValidationArgsForCall)]
-	fake.schemaValidationArgsForCall = append(fake.schemaValidationArgsForCall, struct {
-	}{})
+	fake.schemaValidationArgsForCall = append(fake.schemaValidationArgsForCall, struct{}{})
 	stub := fake.SchemaValidationStub
 	fakeReturns := fake.schemaValidationReturns
 	fake.recordInvocation("SchemaValidation", []interface{}{})
@@ -846,8 +839,7 @@ func (fake *FakeDocument) SchemaValidationReturnsOnCall(i int, result1 bool) {
 func (fake *FakeDocument) Signature() sbom.GetSignature {
 	fake.signatureMutex.Lock()
 	ret, specificReturn := fake.signatureReturnsOnCall[len(fake.signatureArgsForCall)]
-	fake.signatureArgsForCall = append(fake.signatureArgsForCall, struct {
-	}{})
+	fake.signatureArgsForCall = append(fake.signatureArgsForCall, struct{}{})
 	stub := fake.SignatureStub
 	fakeReturns := fake.signatureReturns
 	fake.recordInvocation("Signature", []interface{}{})
@@ -899,8 +891,7 @@ func (fake *FakeDocument) SignatureReturnsOnCall(i int, result1 sbom.GetSignatur
 func (fake *FakeDocument) Spec() sbom.Spec {
 	fake.specMutex.Lock()
 	ret, specificReturn := fake.specReturnsOnCall[len(fake.specArgsForCall)]
-	fake.specArgsForCall = append(fake.specArgsForCall, struct {
-	}{})
+	fake.specArgsForCall = append(fake.specArgsForCall, struct{}{})
 	stub := fake.SpecStub
 	fakeReturns := fake.specReturns
 	fake.recordInvocation("Spec", []interface{}{})
@@ -952,8 +943,7 @@ func (fake *FakeDocument) SpecReturnsOnCall(i int, result1 sbom.Spec) {
 func (fake *FakeDocument) Supplier() sbom.GetSupplier {
 	fake.supplierMutex.Lock()
 	ret, specificReturn := fake.supplierReturnsOnCall[len(fake.supplierArgsForCall)]
-	fake.supplierArgsForCall = append(fake.supplierArgsForCall, struct {
-	}{})
+	fake.supplierArgsForCall = append(fake.supplierArgsForCall, struct{}{})
 	stub := fake.SupplierStub
 	fakeReturns := fake.supplierReturns
 	fake.recordInvocation("Supplier", []interface{}{})
@@ -1005,8 +995,7 @@ func (fake *FakeDocument) SupplierReturnsOnCall(i int, result1 sbom.GetSupplier)
 func (fake *FakeDocument) Tools() []sbom.GetTool {
 	fake.toolsMutex.Lock()
 	ret, specificReturn := fake.toolsReturnsOnCall[len(fake.toolsArgsForCall)]
-	fake.toolsArgsForCall = append(fake.toolsArgsForCall, struct {
-	}{})
+	fake.toolsArgsForCall = append(fake.toolsArgsForCall, struct{}{})
 	stub := fake.ToolsStub
 	fakeReturns := fake.toolsReturns
 	fake.recordInvocation("Tools", []interface{}{})
@@ -1058,8 +1047,7 @@ func (fake *FakeDocument) ToolsReturnsOnCall(i int, result1 []sbom.GetTool) {
 func (fake *FakeDocument) Vulnerabilities() []sbom.GetVulnerabilities {
 	fake.vulnerabilitiesMutex.Lock()
 	ret, specificReturn := fake.vulnerabilitiesReturnsOnCall[len(fake.vulnerabilitiesArgsForCall)]
-	fake.vulnerabilitiesArgsForCall = append(fake.vulnerabilitiesArgsForCall, struct {
-	}{})
+	fake.vulnerabilitiesArgsForCall = append(fake.vulnerabilitiesArgsForCall, struct{}{})
 	stub := fake.VulnerabilitiesStub
 	fakeReturns := fake.vulnerabilitiesReturns
 	fake.recordInvocation("Vulnerabilities", []interface{}{})
@@ -1118,9 +1106,18 @@ func (fake *FakeDocument) Invocations() map[string][][]interface{} {
 	return copiedInvocations
 }
 
+func (fake *FakeDocument) CallOrder() []string {
+	fake.invocationsMutex.RLock()
+	defer fake.invocationsMutex.RUnlock()
+	order := make([]string, len(fake.callOrder))
+	copy(order, fake.callOrder)
+	return order
+}
+
 func (fake *FakeDocument) recordInvocation(key string, args []interface{}) {
 	fake.invocationsMutex.Lock()
 	defer fake.invocationsMutex.Unlock()
+	fake.callOrder = append(fake.callOrder, key)
 	if fake.invocations == nil {
 		fake.invocations = map[string][][]interface{}{}
 	}

@@ -10,9 +10,8 @@ import (
 type FakeGetAuthor struct {
 	GetEmailStub        func() string
 	getEmailMutex       sync.RWMutex
-	getEmailArgsForCall []struct {
-	}
-	getEmailReturns struct {
+	getEmailArgsForCall []struct{}
+	getEmailReturns     struct {
 		result1 string
 	}
 	getEmailReturnsOnCall map[int]struct {
@@ -20,9 +19,8 @@ type FakeGetAuthor struct {
 	}
 	GetNameStub        func() string
 	getNameMutex       sync.RWMutex
-	getNameArgsForCall []struct {
-	}
-	getNameReturns struct {
+	getNameArgsForCall []struct{}
+	getNameReturns     struct {
 		result1 string
 	}
 	getNameReturnsOnCall map[int]struct {
@@ -30,9 +28,8 @@ type FakeGetAuthor struct {
 	}
 	GetPhoneStub        func() string
 	getPhoneMutex       sync.RWMutex
-	getPhoneArgsForCall []struct {
-	}
-	getPhoneReturns struct {
+	getPhoneArgsForCall []struct{}
+	getPhoneReturns     struct {
 		result1 string
 	}
 	getPhoneReturnsOnCall map[int]struct {
@@ -40,9 +37,8 @@ type FakeGetAuthor struct {
 	}
 	GetTypeStub        func() string
 	getTypeMutex       sync.RWMutex
-	getTypeArgsForCall []struct {
-	}
-	getTypeReturns struct {
+	getTypeArgsForCall []struct{}
+	getTypeReturns     struct {
 		result1 string
 	}
 	getTypeReturnsOnCall map[int]struct {
@@ -50,23 +46,22 @@ type FakeGetAuthor struct {
 	}
 	GetURLStub        func() string
 	getURLMutex       sync.RWMutex
-	getURLArgsForCall []struct {
-	}
-	getURLReturns struct {
+	getURLArgsForCall []struct{}
+	getURLReturns     struct {
 		result1 string
 	}
 	getURLReturnsOnCall map[int]struct {
 		result1 string
 	}
 	invocations      map[string][][]interface{}
+	callOrder        []string
 	invocationsMutex sync.RWMutex
 }
 
 func (fake *FakeGetAuthor) GetEmail() string {
 	fake.getEmailMutex.Lock()
 	ret, specificReturn := fake.getEmailReturnsOnCall[len(fake.getEmailArgsForCall)]
-	fake.getEmailArgsForCall = append(fake.getEmailArgsForCall, struct {
-	}{})
+	fake.getEmailArgsForCall = append(fake.getEmailArgsForCall, struct{}{})
 	stub := fake.GetEmailStub
 	fakeReturns := fake.getEmailReturns
 	fake.recordInvocation("GetEmail", []interface{}{})
@@ -118,8 +113,7 @@ func (fake *FakeGetAuthor) GetEmailReturnsOnCall(i int, result1 string) {
 func (fake *FakeGetAuthor) GetName() string {
 	fake.getNameMutex.Lock()
 	ret, specificReturn := fake.getNameReturnsOnCall[len(fake.getNameArgsForCall)]
-	fake.getNameArgsForCall = append(fake.getNameArgsForCall, struct {
-	}{})
+	fake.getNameArgsForCall = append(fake.getNameArgsForCall, struct{}{})
 	stub := fake.GetNameStub
 	fakeReturns := fake.getNameReturns
 	fake.recordInvocation("GetName", []interface{}{})
@@ -171,8 +165,7 @@ func (fake *FakeGetAuthor) GetNameReturnsOnCall(i int, result1 string) {
 func (fake *FakeGetAuthor) GetPhone() string {
 	fake.getPhoneMutex.Lock()
 	ret, specificReturn := fake.getPhoneReturnsOnCall[len(fake.getPhoneArgsForCall)]
-	fake.getPhoneArgsForCall = append(fake.getPhoneArgsForCall, struct {
-	}{})
+	fake.getPhoneArgsForCall = append(fake.getPhoneArgsForCall, struct{}{})
 	stub := fake.GetPhoneStub
 	fakeReturns := fake.getPhoneReturns
 	fake.recordInvocation("GetPhone", []interface{}{})
@@ -224,8 +217,7 @@ func (fake *FakeGetAuthor) GetPhoneReturnsOnCall(i int, result1 string) {
 func (fake *FakeGetAuthor) GetType() string {
 	fake.getTypeMutex.Lock()
 	ret, specificReturn := fake.getTypeReturnsOnCall[len(fake.getTypeArgsForCall)]
-	fake.getTypeArgsForCall = append(fake.getTypeArgsForCall, struct {
-	}{})
+	fake.getTypeArgsForCall = append(fake.getTypeArgsForCall, struct{}{})
 	stub := fake.GetTypeStub
 	fakeReturns := fake.getTypeReturns
 	fake.recordInvocation("GetType", []interface{}{})
@@ -277,8 +269,7 @@ func (fake *FakeGetAuthor) GetTypeReturnsOnCall(i int, result1 string) {
 func (fake *FakeGetAuthor) GetURL() string {
 	fake.getURLMutex.Lock()
 	ret, specificReturn := fake.getURLReturnsOnCall[len(fake.getURLArgsForCall)]
-	fake.getURLArgsForCall = append(fake.getURLArgsForCall, struct {
-	}{})
+	fake.getURLArgsForCall = append(fake.getURLArgsForCall, struct{}{})
 	stub := fake.GetURLStub
 	fakeReturns := fake.getURLReturns
 	fake.recordInvocation("GetURL", []interface{}{})
@@ -337,9 +328,18 @@ func (fake *FakeGetAuthor) Invocations() map[string][][]interface{} {
 	return copiedInvocations
 }
 
+func (fake *FakeGetAuthor) CallOrder() []string {
+	fake.invocationsMutex.RLock()
+	defer fake.invocationsMutex.RUnlock()
+	order := make([]string, len(fake.callOrder))
+	copy(order, fake.callOrder)
+	return order
+}
+
 func (fake *FakeGetAuthor) recordInvocation(key string, args []interface{}) {
 	fake.invocationsMutex.Lock()
 	defer fake.invocationsMutex.Unlock()
+	fake.callOrder = append(fake.callOrder, key)
 	if fake.invocations == nil {
 		fake.invocations = map[string][][]interface{}{}
 	}
