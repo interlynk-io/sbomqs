@@ -10,9 +10,8 @@ import (
 type FakeGetContact struct {
 	GetEmailStub        func() string
 	getEmailMutex       sync.RWMutex
-	getEmailArgsForCall []struct {
-	}
-	getEmailReturns struct {
+	getEmailArgsForCall []struct{}
+	getEmailReturns     struct {
 		result1 string
 	}
 	getEmailReturnsOnCall map[int]struct {
@@ -20,9 +19,8 @@ type FakeGetContact struct {
 	}
 	GetNameStub        func() string
 	getNameMutex       sync.RWMutex
-	getNameArgsForCall []struct {
-	}
-	getNameReturns struct {
+	getNameArgsForCall []struct{}
+	getNameReturns     struct {
 		result1 string
 	}
 	getNameReturnsOnCall map[int]struct {
@@ -30,23 +28,22 @@ type FakeGetContact struct {
 	}
 	GetPhoneStub        func() string
 	getPhoneMutex       sync.RWMutex
-	getPhoneArgsForCall []struct {
-	}
-	getPhoneReturns struct {
+	getPhoneArgsForCall []struct{}
+	getPhoneReturns     struct {
 		result1 string
 	}
 	getPhoneReturnsOnCall map[int]struct {
 		result1 string
 	}
 	invocations      map[string][][]interface{}
+	callOrder        []string
 	invocationsMutex sync.RWMutex
 }
 
 func (fake *FakeGetContact) GetEmail() string {
 	fake.getEmailMutex.Lock()
 	ret, specificReturn := fake.getEmailReturnsOnCall[len(fake.getEmailArgsForCall)]
-	fake.getEmailArgsForCall = append(fake.getEmailArgsForCall, struct {
-	}{})
+	fake.getEmailArgsForCall = append(fake.getEmailArgsForCall, struct{}{})
 	stub := fake.GetEmailStub
 	fakeReturns := fake.getEmailReturns
 	fake.recordInvocation("GetEmail", []interface{}{})
@@ -98,8 +95,7 @@ func (fake *FakeGetContact) GetEmailReturnsOnCall(i int, result1 string) {
 func (fake *FakeGetContact) GetName() string {
 	fake.getNameMutex.Lock()
 	ret, specificReturn := fake.getNameReturnsOnCall[len(fake.getNameArgsForCall)]
-	fake.getNameArgsForCall = append(fake.getNameArgsForCall, struct {
-	}{})
+	fake.getNameArgsForCall = append(fake.getNameArgsForCall, struct{}{})
 	stub := fake.GetNameStub
 	fakeReturns := fake.getNameReturns
 	fake.recordInvocation("GetName", []interface{}{})
@@ -151,8 +147,7 @@ func (fake *FakeGetContact) GetNameReturnsOnCall(i int, result1 string) {
 func (fake *FakeGetContact) GetPhone() string {
 	fake.getPhoneMutex.Lock()
 	ret, specificReturn := fake.getPhoneReturnsOnCall[len(fake.getPhoneArgsForCall)]
-	fake.getPhoneArgsForCall = append(fake.getPhoneArgsForCall, struct {
-	}{})
+	fake.getPhoneArgsForCall = append(fake.getPhoneArgsForCall, struct{}{})
 	stub := fake.GetPhoneStub
 	fakeReturns := fake.getPhoneReturns
 	fake.recordInvocation("GetPhone", []interface{}{})
@@ -211,9 +206,18 @@ func (fake *FakeGetContact) Invocations() map[string][][]interface{} {
 	return copiedInvocations
 }
 
+func (fake *FakeGetContact) CallOrder() []string {
+	fake.invocationsMutex.RLock()
+	defer fake.invocationsMutex.RUnlock()
+	order := make([]string, len(fake.callOrder))
+	copy(order, fake.callOrder)
+	return order
+}
+
 func (fake *FakeGetContact) recordInvocation(key string, args []interface{}) {
 	fake.invocationsMutex.Lock()
 	defer fake.invocationsMutex.Unlock()
+	fake.callOrder = append(fake.callOrder, key)
 	if fake.invocations == nil {
 		fake.invocations = map[string][][]interface{}{}
 	}

@@ -10,9 +10,8 @@ import (
 type FakeGetSupplier struct {
 	GetContactsStub        func() []sbom.Contact
 	getContactsMutex       sync.RWMutex
-	getContactsArgsForCall []struct {
-	}
-	getContactsReturns struct {
+	getContactsArgsForCall []struct{}
+	getContactsReturns     struct {
 		result1 []sbom.Contact
 	}
 	getContactsReturnsOnCall map[int]struct {
@@ -20,9 +19,8 @@ type FakeGetSupplier struct {
 	}
 	GetNameStub        func() string
 	getNameMutex       sync.RWMutex
-	getNameArgsForCall []struct {
-	}
-	getNameReturns struct {
+	getNameArgsForCall []struct{}
+	getNameReturns     struct {
 		result1 string
 	}
 	getNameReturnsOnCall map[int]struct {
@@ -30,9 +28,8 @@ type FakeGetSupplier struct {
 	}
 	GetURLStub        func() string
 	getURLMutex       sync.RWMutex
-	getURLArgsForCall []struct {
-	}
-	getURLReturns struct {
+	getURLArgsForCall []struct{}
+	getURLReturns     struct {
 		result1 string
 	}
 	getURLReturnsOnCall map[int]struct {
@@ -40,23 +37,22 @@ type FakeGetSupplier struct {
 	}
 	IsAbsentStub        func() bool
 	isAbsentMutex       sync.RWMutex
-	isAbsentArgsForCall []struct {
-	}
-	isAbsentReturns struct {
+	isAbsentArgsForCall []struct{}
+	isAbsentReturns     struct {
 		result1 bool
 	}
 	isAbsentReturnsOnCall map[int]struct {
 		result1 bool
 	}
 	invocations      map[string][][]interface{}
+	callOrder        []string
 	invocationsMutex sync.RWMutex
 }
 
 func (fake *FakeGetSupplier) GetContacts() []sbom.Contact {
 	fake.getContactsMutex.Lock()
 	ret, specificReturn := fake.getContactsReturnsOnCall[len(fake.getContactsArgsForCall)]
-	fake.getContactsArgsForCall = append(fake.getContactsArgsForCall, struct {
-	}{})
+	fake.getContactsArgsForCall = append(fake.getContactsArgsForCall, struct{}{})
 	stub := fake.GetContactsStub
 	fakeReturns := fake.getContactsReturns
 	fake.recordInvocation("GetContacts", []interface{}{})
@@ -108,8 +104,7 @@ func (fake *FakeGetSupplier) GetContactsReturnsOnCall(i int, result1 []sbom.Cont
 func (fake *FakeGetSupplier) GetName() string {
 	fake.getNameMutex.Lock()
 	ret, specificReturn := fake.getNameReturnsOnCall[len(fake.getNameArgsForCall)]
-	fake.getNameArgsForCall = append(fake.getNameArgsForCall, struct {
-	}{})
+	fake.getNameArgsForCall = append(fake.getNameArgsForCall, struct{}{})
 	stub := fake.GetNameStub
 	fakeReturns := fake.getNameReturns
 	fake.recordInvocation("GetName", []interface{}{})
@@ -161,8 +156,7 @@ func (fake *FakeGetSupplier) GetNameReturnsOnCall(i int, result1 string) {
 func (fake *FakeGetSupplier) GetURL() string {
 	fake.getURLMutex.Lock()
 	ret, specificReturn := fake.getURLReturnsOnCall[len(fake.getURLArgsForCall)]
-	fake.getURLArgsForCall = append(fake.getURLArgsForCall, struct {
-	}{})
+	fake.getURLArgsForCall = append(fake.getURLArgsForCall, struct{}{})
 	stub := fake.GetURLStub
 	fakeReturns := fake.getURLReturns
 	fake.recordInvocation("GetURL", []interface{}{})
@@ -214,8 +208,7 @@ func (fake *FakeGetSupplier) GetURLReturnsOnCall(i int, result1 string) {
 func (fake *FakeGetSupplier) IsAbsent() bool {
 	fake.isAbsentMutex.Lock()
 	ret, specificReturn := fake.isAbsentReturnsOnCall[len(fake.isAbsentArgsForCall)]
-	fake.isAbsentArgsForCall = append(fake.isAbsentArgsForCall, struct {
-	}{})
+	fake.isAbsentArgsForCall = append(fake.isAbsentArgsForCall, struct{}{})
 	stub := fake.IsAbsentStub
 	fakeReturns := fake.isAbsentReturns
 	fake.recordInvocation("IsAbsent", []interface{}{})
@@ -274,9 +267,18 @@ func (fake *FakeGetSupplier) Invocations() map[string][][]interface{} {
 	return copiedInvocations
 }
 
+func (fake *FakeGetSupplier) CallOrder() []string {
+	fake.invocationsMutex.RLock()
+	defer fake.invocationsMutex.RUnlock()
+	order := make([]string, len(fake.callOrder))
+	copy(order, fake.callOrder)
+	return order
+}
+
 func (fake *FakeGetSupplier) recordInvocation(key string, args []interface{}) {
 	fake.invocationsMutex.Lock()
 	defer fake.invocationsMutex.Unlock()
+	fake.callOrder = append(fake.callOrder, key)
 	if fake.invocations == nil {
 		fake.invocations = map[string][][]interface{}{}
 	}

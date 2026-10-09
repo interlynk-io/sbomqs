@@ -10,9 +10,8 @@ import (
 type FakeGetChecksum struct {
 	GetAlgoStub        func() string
 	getAlgoMutex       sync.RWMutex
-	getAlgoArgsForCall []struct {
-	}
-	getAlgoReturns struct {
+	getAlgoArgsForCall []struct{}
+	getAlgoReturns     struct {
 		result1 string
 	}
 	getAlgoReturnsOnCall map[int]struct {
@@ -20,23 +19,22 @@ type FakeGetChecksum struct {
 	}
 	GetContentStub        func() string
 	getContentMutex       sync.RWMutex
-	getContentArgsForCall []struct {
-	}
-	getContentReturns struct {
+	getContentArgsForCall []struct{}
+	getContentReturns     struct {
 		result1 string
 	}
 	getContentReturnsOnCall map[int]struct {
 		result1 string
 	}
 	invocations      map[string][][]interface{}
+	callOrder        []string
 	invocationsMutex sync.RWMutex
 }
 
 func (fake *FakeGetChecksum) GetAlgo() string {
 	fake.getAlgoMutex.Lock()
 	ret, specificReturn := fake.getAlgoReturnsOnCall[len(fake.getAlgoArgsForCall)]
-	fake.getAlgoArgsForCall = append(fake.getAlgoArgsForCall, struct {
-	}{})
+	fake.getAlgoArgsForCall = append(fake.getAlgoArgsForCall, struct{}{})
 	stub := fake.GetAlgoStub
 	fakeReturns := fake.getAlgoReturns
 	fake.recordInvocation("GetAlgo", []interface{}{})
@@ -88,8 +86,7 @@ func (fake *FakeGetChecksum) GetAlgoReturnsOnCall(i int, result1 string) {
 func (fake *FakeGetChecksum) GetContent() string {
 	fake.getContentMutex.Lock()
 	ret, specificReturn := fake.getContentReturnsOnCall[len(fake.getContentArgsForCall)]
-	fake.getContentArgsForCall = append(fake.getContentArgsForCall, struct {
-	}{})
+	fake.getContentArgsForCall = append(fake.getContentArgsForCall, struct{}{})
 	stub := fake.GetContentStub
 	fakeReturns := fake.getContentReturns
 	fake.recordInvocation("GetContent", []interface{}{})
@@ -148,9 +145,18 @@ func (fake *FakeGetChecksum) Invocations() map[string][][]interface{} {
 	return copiedInvocations
 }
 
+func (fake *FakeGetChecksum) CallOrder() []string {
+	fake.invocationsMutex.RLock()
+	defer fake.invocationsMutex.RUnlock()
+	order := make([]string, len(fake.callOrder))
+	copy(order, fake.callOrder)
+	return order
+}
+
 func (fake *FakeGetChecksum) recordInvocation(key string, args []interface{}) {
 	fake.invocationsMutex.Lock()
 	defer fake.invocationsMutex.Unlock()
+	fake.callOrder = append(fake.callOrder, key)
 	if fake.invocations == nil {
 		fake.invocations = map[string][][]interface{}{}
 	}

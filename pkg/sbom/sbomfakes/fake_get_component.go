@@ -16,9 +16,8 @@ import (
 type FakeGetComponent struct {
 	AuthorsStub        func() []sbom.GetAuthor
 	authorsMutex       sync.RWMutex
-	authorsArgsForCall []struct {
-	}
-	authorsReturns struct {
+	authorsArgsForCall []struct{}
+	authorsReturns     struct {
 		result1 []sbom.GetAuthor
 	}
 	authorsReturnsOnCall map[int]struct {
@@ -26,9 +25,8 @@ type FakeGetComponent struct {
 	}
 	ConcludedLicensesStub        func() []licenses.License
 	concludedLicensesMutex       sync.RWMutex
-	concludedLicensesArgsForCall []struct {
-	}
-	concludedLicensesReturns struct {
+	concludedLicensesArgsForCall []struct{}
+	concludedLicensesReturns     struct {
 		result1 []licenses.License
 	}
 	concludedLicensesReturnsOnCall map[int]struct {
@@ -36,9 +34,8 @@ type FakeGetComponent struct {
 	}
 	CountOfDependenciesStub        func() int
 	countOfDependenciesMutex       sync.RWMutex
-	countOfDependenciesArgsForCall []struct {
-	}
-	countOfDependenciesReturns struct {
+	countOfDependenciesArgsForCall []struct{}
+	countOfDependenciesReturns     struct {
 		result1 int
 	}
 	countOfDependenciesReturnsOnCall map[int]struct {
@@ -46,9 +43,8 @@ type FakeGetComponent struct {
 	}
 	DeclaredLicensesStub        func() []licenses.License
 	declaredLicensesMutex       sync.RWMutex
-	declaredLicensesArgsForCall []struct {
-	}
-	declaredLicensesReturns struct {
+	declaredLicensesArgsForCall []struct{}
+	declaredLicensesReturns     struct {
 		result1 []licenses.License
 	}
 	declaredLicensesReturnsOnCall map[int]struct {
@@ -56,9 +52,8 @@ type FakeGetComponent struct {
 	}
 	DepsStub        func() []string
 	depsMutex       sync.RWMutex
-	depsArgsForCall []struct {
-	}
-	depsReturns struct {
+	depsArgsForCall []struct{}
+	depsReturns     struct {
 		result1 []string
 	}
 	depsReturnsOnCall map[int]struct {
@@ -66,9 +61,8 @@ type FakeGetComponent struct {
 	}
 	DistributionArtifactStub        func() sbom.GetDistributionArtifact
 	distributionArtifactMutex       sync.RWMutex
-	distributionArtifactArgsForCall []struct {
-	}
-	distributionArtifactReturns struct {
+	distributionArtifactArgsForCall []struct{}
+	distributionArtifactReturns     struct {
 		result1 sbom.GetDistributionArtifact
 	}
 	distributionArtifactReturnsOnCall map[int]struct {
@@ -76,9 +70,8 @@ type FakeGetComponent struct {
 	}
 	EffectiveLicensesStub        func() []licenses.License
 	effectiveLicensesMutex       sync.RWMutex
-	effectiveLicensesArgsForCall []struct {
-	}
-	effectiveLicensesReturns struct {
+	effectiveLicensesArgsForCall []struct{}
+	effectiveLicensesReturns     struct {
 		result1 []licenses.License
 	}
 	effectiveLicensesReturnsOnCall map[int]struct {
@@ -86,9 +79,8 @@ type FakeGetComponent struct {
 	}
 	ExternalReferencesStub        func() []sbom.GetExternalReference
 	externalReferencesMutex       sync.RWMutex
-	externalReferencesArgsForCall []struct {
-	}
-	externalReferencesReturns struct {
+	externalReferencesArgsForCall []struct{}
+	externalReferencesReturns     struct {
 		result1 []sbom.GetExternalReference
 	}
 	externalReferencesReturnsOnCall map[int]struct {
@@ -96,9 +88,8 @@ type FakeGetComponent struct {
 	}
 	GetChecksumsStub        func() []sbom.GetChecksum
 	getChecksumsMutex       sync.RWMutex
-	getChecksumsArgsForCall []struct {
-	}
-	getChecksumsReturns struct {
+	getChecksumsArgsForCall []struct{}
+	getChecksumsReturns     struct {
 		result1 []sbom.GetChecksum
 	}
 	getChecksumsReturnsOnCall map[int]struct {
@@ -106,9 +97,8 @@ type FakeGetComponent struct {
 	}
 	GetCopyRightStub        func() string
 	getCopyRightMutex       sync.RWMutex
-	getCopyRightArgsForCall []struct {
-	}
-	getCopyRightReturns struct {
+	getCopyRightArgsForCall []struct{}
+	getCopyRightReturns     struct {
 		result1 string
 	}
 	getCopyRightReturnsOnCall map[int]struct {
@@ -116,9 +106,8 @@ type FakeGetComponent struct {
 	}
 	GetCpesStub        func() []cpe.CPE
 	getCpesMutex       sync.RWMutex
-	getCpesArgsForCall []struct {
-	}
-	getCpesReturns struct {
+	getCpesArgsForCall []struct{}
+	getCpesReturns     struct {
 		result1 []cpe.CPE
 	}
 	getCpesReturnsOnCall map[int]struct {
@@ -126,9 +115,8 @@ type FakeGetComponent struct {
 	}
 	GetDownloadLocationURLStub        func() string
 	getDownloadLocationURLMutex       sync.RWMutex
-	getDownloadLocationURLArgsForCall []struct {
-	}
-	getDownloadLocationURLReturns struct {
+	getDownloadLocationURLArgsForCall []struct{}
+	getDownloadLocationURLReturns     struct {
 		result1 string
 	}
 	getDownloadLocationURLReturnsOnCall map[int]struct {
@@ -136,9 +124,8 @@ type FakeGetComponent struct {
 	}
 	GetFileAnalyzedStub        func() bool
 	getFileAnalyzedMutex       sync.RWMutex
-	getFileAnalyzedArgsForCall []struct {
-	}
-	getFileAnalyzedReturns struct {
+	getFileAnalyzedArgsForCall []struct{}
+	getFileAnalyzedReturns     struct {
 		result1 bool
 	}
 	getFileAnalyzedReturnsOnCall map[int]struct {
@@ -146,9 +133,8 @@ type FakeGetComponent struct {
 	}
 	GetFilenameStub        func() string
 	getFilenameMutex       sync.RWMutex
-	getFilenameArgsForCall []struct {
-	}
-	getFilenameReturns struct {
+	getFilenameArgsForCall []struct{}
+	getFilenameReturns     struct {
 		result1 string
 	}
 	getFilenameReturnsOnCall map[int]struct {
@@ -156,9 +142,8 @@ type FakeGetComponent struct {
 	}
 	GetIDStub        func() string
 	getIDMutex       sync.RWMutex
-	getIDArgsForCall []struct {
-	}
-	getIDReturns struct {
+	getIDArgsForCall []struct{}
+	getIDReturns     struct {
 		result1 string
 	}
 	getIDReturnsOnCall map[int]struct {
@@ -166,9 +151,8 @@ type FakeGetComponent struct {
 	}
 	GetLicensesStub        func() []licenses.License
 	getLicensesMutex       sync.RWMutex
-	getLicensesArgsForCall []struct {
-	}
-	getLicensesReturns struct {
+	getLicensesArgsForCall []struct{}
+	getLicensesReturns     struct {
 		result1 []licenses.License
 	}
 	getLicensesReturnsOnCall map[int]struct {
@@ -176,9 +160,8 @@ type FakeGetComponent struct {
 	}
 	GetNameStub        func() string
 	getNameMutex       sync.RWMutex
-	getNameArgsForCall []struct {
-	}
-	getNameReturns struct {
+	getNameArgsForCall []struct{}
+	getNameReturns     struct {
 		result1 string
 	}
 	getNameReturnsOnCall map[int]struct {
@@ -186,9 +169,8 @@ type FakeGetComponent struct {
 	}
 	GetPackageLicenseConcludedStub        func() string
 	getPackageLicenseConcludedMutex       sync.RWMutex
-	getPackageLicenseConcludedArgsForCall []struct {
-	}
-	getPackageLicenseConcludedReturns struct {
+	getPackageLicenseConcludedArgsForCall []struct{}
+	getPackageLicenseConcludedReturns     struct {
 		result1 string
 	}
 	getPackageLicenseConcludedReturnsOnCall map[int]struct {
@@ -196,9 +178,8 @@ type FakeGetComponent struct {
 	}
 	GetPackageLicenseDeclaredStub        func() string
 	getPackageLicenseDeclaredMutex       sync.RWMutex
-	getPackageLicenseDeclaredArgsForCall []struct {
-	}
-	getPackageLicenseDeclaredReturns struct {
+	getPackageLicenseDeclaredArgsForCall []struct{}
+	getPackageLicenseDeclaredReturns     struct {
 		result1 string
 	}
 	getPackageLicenseDeclaredReturnsOnCall map[int]struct {
@@ -206,9 +187,8 @@ type FakeGetComponent struct {
 	}
 	GetPropertiesStub        func() []sbom.ComponentProperty
 	getPropertiesMutex       sync.RWMutex
-	getPropertiesArgsForCall []struct {
-	}
-	getPropertiesReturns struct {
+	getPropertiesArgsForCall []struct{}
+	getPropertiesReturns     struct {
 		result1 []sbom.ComponentProperty
 	}
 	getPropertiesReturnsOnCall map[int]struct {
@@ -216,10 +196,8 @@ type FakeGetComponent struct {
 	}
 	GetPropertyValueStub        func(string) string
 	getPropertyValueMutex       sync.RWMutex
-	getPropertyValueArgsForCall []struct {
-		arg1 string
-	}
-	getPropertyValueReturns struct {
+	getPropertyValueArgsForCall []FakeGetComponentGetPropertyValueArgs
+	getPropertyValueReturns     struct {
 		result1 string
 	}
 	getPropertyValueReturnsOnCall map[int]struct {
@@ -227,9 +205,8 @@ type FakeGetComponent struct {
 	}
 	GetPurlsStub        func() []purl.PURL
 	getPurlsMutex       sync.RWMutex
-	getPurlsArgsForCall []struct {
-	}
-	getPurlsReturns struct {
+	getPurlsArgsForCall []struct{}
+	getPurlsReturns     struct {
 		result1 []purl.PURL
 	}
 	getPurlsReturnsOnCall map[int]struct {
@@ -237,9 +214,8 @@ type FakeGetComponent struct {
 	}
 	GetSourceCodeURLStub        func() string
 	getSourceCodeURLMutex       sync.RWMutex
-	getSourceCodeURLArgsForCall []struct {
-	}
-	getSourceCodeURLReturns struct {
+	getSourceCodeURLArgsForCall []struct{}
+	getSourceCodeURLReturns     struct {
 		result1 string
 	}
 	getSourceCodeURLReturnsOnCall map[int]struct {
@@ -247,9 +223,8 @@ type FakeGetComponent struct {
 	}
 	GetSpdxIDStub        func() string
 	getSpdxIDMutex       sync.RWMutex
-	getSpdxIDArgsForCall []struct {
-	}
-	getSpdxIDReturns struct {
+	getSpdxIDArgsForCall []struct{}
+	getSpdxIDReturns     struct {
 		result1 string
 	}
 	getSpdxIDReturnsOnCall map[int]struct {
@@ -257,9 +232,8 @@ type FakeGetComponent struct {
 	}
 	GetVersionStub        func() string
 	getVersionMutex       sync.RWMutex
-	getVersionArgsForCall []struct {
-	}
-	getVersionReturns struct {
+	getVersionArgsForCall []struct{}
+	getVersionReturns     struct {
 		result1 string
 	}
 	getVersionReturnsOnCall map[int]struct {
@@ -267,9 +241,8 @@ type FakeGetComponent struct {
 	}
 	HasRelationShipsStub        func() bool
 	hasRelationShipsMutex       sync.RWMutex
-	hasRelationShipsArgsForCall []struct {
-	}
-	hasRelationShipsReturns struct {
+	hasRelationShipsArgsForCall []struct{}
+	hasRelationShipsReturns     struct {
 		result1 bool
 	}
 	hasRelationShipsReturnsOnCall map[int]struct {
@@ -277,9 +250,8 @@ type FakeGetComponent struct {
 	}
 	IsPrimaryComponentStub        func() bool
 	isPrimaryComponentMutex       sync.RWMutex
-	isPrimaryComponentArgsForCall []struct {
-	}
-	isPrimaryComponentReturns struct {
+	isPrimaryComponentArgsForCall []struct{}
+	isPrimaryComponentReturns     struct {
 		result1 bool
 	}
 	isPrimaryComponentReturnsOnCall map[int]struct {
@@ -287,9 +259,8 @@ type FakeGetComponent struct {
 	}
 	ManufacturerStub        func() sbom.GetManufacturer
 	manufacturerMutex       sync.RWMutex
-	manufacturerArgsForCall []struct {
-	}
-	manufacturerReturns struct {
+	manufacturerArgsForCall []struct{}
+	manufacturerReturns     struct {
 		result1 sbom.GetManufacturer
 	}
 	manufacturerReturnsOnCall map[int]struct {
@@ -297,9 +268,8 @@ type FakeGetComponent struct {
 	}
 	OmniborIDsStub        func() []omniborid.OMNIBORID
 	omniborIDsMutex       sync.RWMutex
-	omniborIDsArgsForCall []struct {
-	}
-	omniborIDsReturns struct {
+	omniborIDsArgsForCall []struct{}
+	omniborIDsReturns     struct {
 		result1 []omniborid.OMNIBORID
 	}
 	omniborIDsReturnsOnCall map[int]struct {
@@ -307,9 +277,8 @@ type FakeGetComponent struct {
 	}
 	PrimaryPurposeStub        func() string
 	primaryPurposeMutex       sync.RWMutex
-	primaryPurposeArgsForCall []struct {
-	}
-	primaryPurposeReturns struct {
+	primaryPurposeArgsForCall []struct{}
+	primaryPurposeReturns     struct {
 		result1 string
 	}
 	primaryPurposeReturnsOnCall map[int]struct {
@@ -317,9 +286,8 @@ type FakeGetComponent struct {
 	}
 	RelationShipStateStub        func() string
 	relationShipStateMutex       sync.RWMutex
-	relationShipStateArgsForCall []struct {
-	}
-	relationShipStateReturns struct {
+	relationShipStateArgsForCall []struct{}
+	relationShipStateReturns     struct {
 		result1 string
 	}
 	relationShipStateReturnsOnCall map[int]struct {
@@ -327,9 +295,8 @@ type FakeGetComponent struct {
 	}
 	RequiredFieldsStub        func() bool
 	requiredFieldsMutex       sync.RWMutex
-	requiredFieldsArgsForCall []struct {
-	}
-	requiredFieldsReturns struct {
+	requiredFieldsArgsForCall []struct{}
+	requiredFieldsReturns     struct {
 		result1 bool
 	}
 	requiredFieldsReturnsOnCall map[int]struct {
@@ -337,9 +304,8 @@ type FakeGetComponent struct {
 	}
 	SourceCodeHashStub        func() string
 	sourceCodeHashMutex       sync.RWMutex
-	sourceCodeHashArgsForCall []struct {
-	}
-	sourceCodeHashReturns struct {
+	sourceCodeHashArgsForCall []struct{}
+	sourceCodeHashReturns     struct {
 		result1 string
 	}
 	sourceCodeHashReturnsOnCall map[int]struct {
@@ -347,9 +313,8 @@ type FakeGetComponent struct {
 	}
 	SuppliersStub        func() sbom.GetSupplier
 	suppliersMutex       sync.RWMutex
-	suppliersArgsForCall []struct {
-	}
-	suppliersReturns struct {
+	suppliersArgsForCall []struct{}
+	suppliersReturns     struct {
 		result1 sbom.GetSupplier
 	}
 	suppliersReturnsOnCall map[int]struct {
@@ -357,9 +322,8 @@ type FakeGetComponent struct {
 	}
 	SwhidsStub        func() []swhid.SWHID
 	swhidsMutex       sync.RWMutex
-	swhidsArgsForCall []struct {
-	}
-	swhidsReturns struct {
+	swhidsArgsForCall []struct{}
+	swhidsReturns     struct {
 		result1 []swhid.SWHID
 	}
 	swhidsReturnsOnCall map[int]struct {
@@ -367,23 +331,27 @@ type FakeGetComponent struct {
 	}
 	SwidsStub        func() []swid.SWID
 	swidsMutex       sync.RWMutex
-	swidsArgsForCall []struct {
-	}
-	swidsReturns struct {
+	swidsArgsForCall []struct{}
+	swidsReturns     struct {
 		result1 []swid.SWID
 	}
 	swidsReturnsOnCall map[int]struct {
 		result1 []swid.SWID
 	}
 	invocations      map[string][][]interface{}
+	callOrder        []string
 	invocationsMutex sync.RWMutex
+}
+
+// FakeGetComponentGetPropertyValueArgs holds the arguments of one call to GetPropertyValue.
+type FakeGetComponentGetPropertyValueArgs struct {
+	Arg1 string
 }
 
 func (fake *FakeGetComponent) Authors() []sbom.GetAuthor {
 	fake.authorsMutex.Lock()
 	ret, specificReturn := fake.authorsReturnsOnCall[len(fake.authorsArgsForCall)]
-	fake.authorsArgsForCall = append(fake.authorsArgsForCall, struct {
-	}{})
+	fake.authorsArgsForCall = append(fake.authorsArgsForCall, struct{}{})
 	stub := fake.AuthorsStub
 	fakeReturns := fake.authorsReturns
 	fake.recordInvocation("Authors", []interface{}{})
@@ -435,8 +403,7 @@ func (fake *FakeGetComponent) AuthorsReturnsOnCall(i int, result1 []sbom.GetAuth
 func (fake *FakeGetComponent) ConcludedLicenses() []licenses.License {
 	fake.concludedLicensesMutex.Lock()
 	ret, specificReturn := fake.concludedLicensesReturnsOnCall[len(fake.concludedLicensesArgsForCall)]
-	fake.concludedLicensesArgsForCall = append(fake.concludedLicensesArgsForCall, struct {
-	}{})
+	fake.concludedLicensesArgsForCall = append(fake.concludedLicensesArgsForCall, struct{}{})
 	stub := fake.ConcludedLicensesStub
 	fakeReturns := fake.concludedLicensesReturns
 	fake.recordInvocation("ConcludedLicenses", []interface{}{})
@@ -488,8 +455,7 @@ func (fake *FakeGetComponent) ConcludedLicensesReturnsOnCall(i int, result1 []li
 func (fake *FakeGetComponent) CountOfDependencies() int {
 	fake.countOfDependenciesMutex.Lock()
 	ret, specificReturn := fake.countOfDependenciesReturnsOnCall[len(fake.countOfDependenciesArgsForCall)]
-	fake.countOfDependenciesArgsForCall = append(fake.countOfDependenciesArgsForCall, struct {
-	}{})
+	fake.countOfDependenciesArgsForCall = append(fake.countOfDependenciesArgsForCall, struct{}{})
 	stub := fake.CountOfDependenciesStub
 	fakeReturns := fake.countOfDependenciesReturns
 	fake.recordInvocation("CountOfDependencies", []interface{}{})
@@ -541,8 +507,7 @@ func (fake *FakeGetComponent) CountOfDependenciesReturnsOnCall(i int, result1 in
 func (fake *FakeGetComponent) DeclaredLicenses() []licenses.License {
 	fake.declaredLicensesMutex.Lock()
 	ret, specificReturn := fake.declaredLicensesReturnsOnCall[len(fake.declaredLicensesArgsForCall)]
-	fake.declaredLicensesArgsForCall = append(fake.declaredLicensesArgsForCall, struct {
-	}{})
+	fake.declaredLicensesArgsForCall = append(fake.declaredLicensesArgsForCall, struct{}{})
 	stub := fake.DeclaredLicensesStub
 	fakeReturns := fake.declaredLicensesReturns
 	fake.recordInvocation("DeclaredLicenses", []interface{}{})
@@ -594,8 +559,7 @@ func (fake *FakeGetComponent) DeclaredLicensesReturnsOnCall(i int, result1 []lic
 func (fake *FakeGetComponent) Deps() []string {
 	fake.depsMutex.Lock()
 	ret, specificReturn := fake.depsReturnsOnCall[len(fake.depsArgsForCall)]
-	fake.depsArgsForCall = append(fake.depsArgsForCall, struct {
-	}{})
+	fake.depsArgsForCall = append(fake.depsArgsForCall, struct{}{})
 	stub := fake.DepsStub
 	fakeReturns := fake.depsReturns
 	fake.recordInvocation("Deps", []interface{}{})
@@ -647,8 +611,7 @@ func (fake *FakeGetComponent) DepsReturnsOnCall(i int, result1 []string) {
 func (fake *FakeGetComponent) DistributionArtifact() sbom.GetDistributionArtifact {
 	fake.distributionArtifactMutex.Lock()
 	ret, specificReturn := fake.distributionArtifactReturnsOnCall[len(fake.distributionArtifactArgsForCall)]
-	fake.distributionArtifactArgsForCall = append(fake.distributionArtifactArgsForCall, struct {
-	}{})
+	fake.distributionArtifactArgsForCall = append(fake.distributionArtifactArgsForCall, struct{}{})
 	stub := fake.DistributionArtifactStub
 	fakeReturns := fake.distributionArtifactReturns
 	fake.recordInvocation("DistributionArtifact", []interface{}{})
@@ -700,8 +663,7 @@ func (fake *FakeGetComponent) DistributionArtifactReturnsOnCall(i int, result1 s
 func (fake *FakeGetComponent) EffectiveLicenses() []licenses.License {
 	fake.effectiveLicensesMutex.Lock()
 	ret, specificReturn := fake.effectiveLicensesReturnsOnCall[len(fake.effectiveLicensesArgsForCall)]
-	fake.effectiveLicensesArgsForCall = append(fake.effectiveLicensesArgsForCall, struct {
-	}{})
+	fake.effectiveLicensesArgsForCall = append(fake.effectiveLicensesArgsForCall, struct{}{})
 	stub := fake.EffectiveLicensesStub
 	fakeReturns := fake.effectiveLicensesReturns
 	fake.recordInvocation("EffectiveLicenses", []interface{}{})
@@ -753,8 +715,7 @@ func (fake *FakeGetComponent) EffectiveLicensesReturnsOnCall(i int, result1 []li
 func (fake *FakeGetComponent) ExternalReferences() []sbom.GetExternalReference {
 	fake.externalReferencesMutex.Lock()
 	ret, specificReturn := fake.externalReferencesReturnsOnCall[len(fake.externalReferencesArgsForCall)]
-	fake.externalReferencesArgsForCall = append(fake.externalReferencesArgsForCall, struct {
-	}{})
+	fake.externalReferencesArgsForCall = append(fake.externalReferencesArgsForCall, struct{}{})
 	stub := fake.ExternalReferencesStub
 	fakeReturns := fake.externalReferencesReturns
 	fake.recordInvocation("ExternalReferences", []interface{}{})
@@ -806,8 +767,7 @@ func (fake *FakeGetComponent) ExternalReferencesReturnsOnCall(i int, result1 []s
 func (fake *FakeGetComponent) GetChecksums() []sbom.GetChecksum {
 	fake.getChecksumsMutex.Lock()
 	ret, specificReturn := fake.getChecksumsReturnsOnCall[len(fake.getChecksumsArgsForCall)]
-	fake.getChecksumsArgsForCall = append(fake.getChecksumsArgsForCall, struct {
-	}{})
+	fake.getChecksumsArgsForCall = append(fake.getChecksumsArgsForCall, struct{}{})
 	stub := fake.GetChecksumsStub
 	fakeReturns := fake.getChecksumsReturns
 	fake.recordInvocation("GetChecksums", []interface{}{})
@@ -859,8 +819,7 @@ func (fake *FakeGetComponent) GetChecksumsReturnsOnCall(i int, result1 []sbom.Ge
 func (fake *FakeGetComponent) GetCopyRight() string {
 	fake.getCopyRightMutex.Lock()
 	ret, specificReturn := fake.getCopyRightReturnsOnCall[len(fake.getCopyRightArgsForCall)]
-	fake.getCopyRightArgsForCall = append(fake.getCopyRightArgsForCall, struct {
-	}{})
+	fake.getCopyRightArgsForCall = append(fake.getCopyRightArgsForCall, struct{}{})
 	stub := fake.GetCopyRightStub
 	fakeReturns := fake.getCopyRightReturns
 	fake.recordInvocation("GetCopyRight", []interface{}{})
@@ -912,8 +871,7 @@ func (fake *FakeGetComponent) GetCopyRightReturnsOnCall(i int, result1 string) {
 func (fake *FakeGetComponent) GetCpes() []cpe.CPE {
 	fake.getCpesMutex.Lock()
 	ret, specificReturn := fake.getCpesReturnsOnCall[len(fake.getCpesArgsForCall)]
-	fake.getCpesArgsForCall = append(fake.getCpesArgsForCall, struct {
-	}{})
+	fake.getCpesArgsForCall = append(fake.getCpesArgsForCall, struct{}{})
 	stub := fake.GetCpesStub
 	fakeReturns := fake.getCpesReturns
 	fake.recordInvocation("GetCpes", []interface{}{})
@@ -965,8 +923,7 @@ func (fake *FakeGetComponent) GetCpesReturnsOnCall(i int, result1 []cpe.CPE) {
 func (fake *FakeGetComponent) GetDownloadLocationURL() string {
 	fake.getDownloadLocationURLMutex.Lock()
 	ret, specificReturn := fake.getDownloadLocationURLReturnsOnCall[len(fake.getDownloadLocationURLArgsForCall)]
-	fake.getDownloadLocationURLArgsForCall = append(fake.getDownloadLocationURLArgsForCall, struct {
-	}{})
+	fake.getDownloadLocationURLArgsForCall = append(fake.getDownloadLocationURLArgsForCall, struct{}{})
 	stub := fake.GetDownloadLocationURLStub
 	fakeReturns := fake.getDownloadLocationURLReturns
 	fake.recordInvocation("GetDownloadLocationURL", []interface{}{})
@@ -1018,8 +975,7 @@ func (fake *FakeGetComponent) GetDownloadLocationURLReturnsOnCall(i int, result1
 func (fake *FakeGetComponent) GetFileAnalyzed() bool {
 	fake.getFileAnalyzedMutex.Lock()
 	ret, specificReturn := fake.getFileAnalyzedReturnsOnCall[len(fake.getFileAnalyzedArgsForCall)]
-	fake.getFileAnalyzedArgsForCall = append(fake.getFileAnalyzedArgsForCall, struct {
-	}{})
+	fake.getFileAnalyzedArgsForCall = append(fake.getFileAnalyzedArgsForCall, struct{}{})
 	stub := fake.GetFileAnalyzedStub
 	fakeReturns := fake.getFileAnalyzedReturns
 	fake.recordInvocation("GetFileAnalyzed", []interface{}{})
@@ -1071,8 +1027,7 @@ func (fake *FakeGetComponent) GetFileAnalyzedReturnsOnCall(i int, result1 bool) 
 func (fake *FakeGetComponent) GetFilename() string {
 	fake.getFilenameMutex.Lock()
 	ret, specificReturn := fake.getFilenameReturnsOnCall[len(fake.getFilenameArgsForCall)]
-	fake.getFilenameArgsForCall = append(fake.getFilenameArgsForCall, struct {
-	}{})
+	fake.getFilenameArgsForCall = append(fake.getFilenameArgsForCall, struct{}{})
 	stub := fake.GetFilenameStub
 	fakeReturns := fake.getFilenameReturns
 	fake.recordInvocation("GetFilename", []interface{}{})
@@ -1124,8 +1079,7 @@ func (fake *FakeGetComponent) GetFilenameReturnsOnCall(i int, result1 string) {
 func (fake *FakeGetComponent) GetID() string {
 	fake.getIDMutex.Lock()
 	ret, specificReturn := fake.getIDReturnsOnCall[len(fake.getIDArgsForCall)]
-	fake.getIDArgsForCall = append(fake.getIDArgsForCall, struct {
-	}{})
+	fake.getIDArgsForCall = append(fake.getIDArgsForCall, struct{}{})
 	stub := fake.GetIDStub
 	fakeReturns := fake.getIDReturns
 	fake.recordInvocation("GetID", []interface{}{})
@@ -1177,8 +1131,7 @@ func (fake *FakeGetComponent) GetIDReturnsOnCall(i int, result1 string) {
 func (fake *FakeGetComponent) GetLicenses() []licenses.License {
 	fake.getLicensesMutex.Lock()
 	ret, specificReturn := fake.getLicensesReturnsOnCall[len(fake.getLicensesArgsForCall)]
-	fake.getLicensesArgsForCall = append(fake.getLicensesArgsForCall, struct {
-	}{})
+	fake.getLicensesArgsForCall = append(fake.getLicensesArgsForCall, struct{}{})
 	stub := fake.GetLicensesStub
 	fakeReturns := fake.getLicensesReturns
 	fake.recordInvocation("GetLicenses", []interface{}{})
@@ -1230,8 +1183,7 @@ func (fake *FakeGetComponent) GetLicensesReturnsOnCall(i int, result1 []licenses
 func (fake *FakeGetComponent) GetName() string {
 	fake.getNameMutex.Lock()
 	ret, specificReturn := fake.getNameReturnsOnCall[len(fake.getNameArgsForCall)]
-	fake.getNameArgsForCall = append(fake.getNameArgsForCall, struct {
-	}{})
+	fake.getNameArgsForCall = append(fake.getNameArgsForCall, struct{}{})
 	stub := fake.GetNameStub
 	fakeReturns := fake.getNameReturns
 	fake.recordInvocation("GetName", []interface{}{})
@@ -1283,8 +1235,7 @@ func (fake *FakeGetComponent) GetNameReturnsOnCall(i int, result1 string) {
 func (fake *FakeGetComponent) GetPackageLicenseConcluded() string {
 	fake.getPackageLicenseConcludedMutex.Lock()
 	ret, specificReturn := fake.getPackageLicenseConcludedReturnsOnCall[len(fake.getPackageLicenseConcludedArgsForCall)]
-	fake.getPackageLicenseConcludedArgsForCall = append(fake.getPackageLicenseConcludedArgsForCall, struct {
-	}{})
+	fake.getPackageLicenseConcludedArgsForCall = append(fake.getPackageLicenseConcludedArgsForCall, struct{}{})
 	stub := fake.GetPackageLicenseConcludedStub
 	fakeReturns := fake.getPackageLicenseConcludedReturns
 	fake.recordInvocation("GetPackageLicenseConcluded", []interface{}{})
@@ -1336,8 +1287,7 @@ func (fake *FakeGetComponent) GetPackageLicenseConcludedReturnsOnCall(i int, res
 func (fake *FakeGetComponent) GetPackageLicenseDeclared() string {
 	fake.getPackageLicenseDeclaredMutex.Lock()
 	ret, specificReturn := fake.getPackageLicenseDeclaredReturnsOnCall[len(fake.getPackageLicenseDeclaredArgsForCall)]
-	fake.getPackageLicenseDeclaredArgsForCall = append(fake.getPackageLicenseDeclaredArgsForCall, struct {
-	}{})
+	fake.getPackageLicenseDeclaredArgsForCall = append(fake.getPackageLicenseDeclaredArgsForCall, struct{}{})
 	stub := fake.GetPackageLicenseDeclaredStub
 	fakeReturns := fake.getPackageLicenseDeclaredReturns
 	fake.recordInvocation("GetPackageLicenseDeclared", []interface{}{})
@@ -1389,8 +1339,7 @@ func (fake *FakeGetComponent) GetPackageLicenseDeclaredReturnsOnCall(i int, resu
 func (fake *FakeGetComponent) GetProperties() []sbom.ComponentProperty {
 	fake.getPropertiesMutex.Lock()
 	ret, specificReturn := fake.getPropertiesReturnsOnCall[len(fake.getPropertiesArgsForCall)]
-	fake.getPropertiesArgsForCall = append(fake.getPropertiesArgsForCall, struct {
-	}{})
+	fake.getPropertiesArgsForCall = append(fake.getPropertiesArgsForCall, struct{}{})
 	stub := fake.GetPropertiesStub
 	fakeReturns := fake.getPropertiesReturns
 	fake.recordInvocation("GetProperties", []interface{}{})
@@ -1442,9 +1391,7 @@ func (fake *FakeGetComponent) GetPropertiesReturnsOnCall(i int, result1 []sbom.C
 func (fake *FakeGetComponent) GetPropertyValue(arg1 string) string {
 	fake.getPropertyValueMutex.Lock()
 	ret, specificReturn := fake.getPropertyValueReturnsOnCall[len(fake.getPropertyValueArgsForCall)]
-	fake.getPropertyValueArgsForCall = append(fake.getPropertyValueArgsForCall, struct {
-		arg1 string
-	}{arg1})
+	fake.getPropertyValueArgsForCall = append(fake.getPropertyValueArgsForCall, FakeGetComponentGetPropertyValueArgs{arg1})
 	stub := fake.GetPropertyValueStub
 	fakeReturns := fake.getPropertyValueReturns
 	fake.recordInvocation("GetPropertyValue", []interface{}{arg1})
@@ -1474,7 +1421,15 @@ func (fake *FakeGetComponent) GetPropertyValueArgsForCall(i int) string {
 	fake.getPropertyValueMutex.RLock()
 	defer fake.getPropertyValueMutex.RUnlock()
 	argsForCall := fake.getPropertyValueArgsForCall[i]
-	return argsForCall.arg1
+	return argsForCall.Arg1
+}
+
+func (fake *FakeGetComponent) GetPropertyValueArgs() []FakeGetComponentGetPropertyValueArgs {
+	fake.getPropertyValueMutex.RLock()
+	defer fake.getPropertyValueMutex.RUnlock()
+	args := make([]FakeGetComponentGetPropertyValueArgs, len(fake.getPropertyValueArgsForCall))
+	copy(args, fake.getPropertyValueArgsForCall)
+	return args
 }
 
 func (fake *FakeGetComponent) GetPropertyValueReturns(result1 string) {
@@ -1503,8 +1458,7 @@ func (fake *FakeGetComponent) GetPropertyValueReturnsOnCall(i int, result1 strin
 func (fake *FakeGetComponent) GetPurls() []purl.PURL {
 	fake.getPurlsMutex.Lock()
 	ret, specificReturn := fake.getPurlsReturnsOnCall[len(fake.getPurlsArgsForCall)]
-	fake.getPurlsArgsForCall = append(fake.getPurlsArgsForCall, struct {
-	}{})
+	fake.getPurlsArgsForCall = append(fake.getPurlsArgsForCall, struct{}{})
 	stub := fake.GetPurlsStub
 	fakeReturns := fake.getPurlsReturns
 	fake.recordInvocation("GetPurls", []interface{}{})
@@ -1556,8 +1510,7 @@ func (fake *FakeGetComponent) GetPurlsReturnsOnCall(i int, result1 []purl.PURL) 
 func (fake *FakeGetComponent) GetSourceCodeURL() string {
 	fake.getSourceCodeURLMutex.Lock()
 	ret, specificReturn := fake.getSourceCodeURLReturnsOnCall[len(fake.getSourceCodeURLArgsForCall)]
-	fake.getSourceCodeURLArgsForCall = append(fake.getSourceCodeURLArgsForCall, struct {
-	}{})
+	fake.getSourceCodeURLArgsForCall = append(fake.getSourceCodeURLArgsForCall, struct{}{})
 	stub := fake.GetSourceCodeURLStub
 	fakeReturns := fake.getSourceCodeURLReturns
 	fake.recordInvocation("GetSourceCodeURL", []interface{}{})
@@ -1609,8 +1562,7 @@ func (fake *FakeGetComponent) GetSourceCodeURLReturnsOnCall(i int, result1 strin
 func (fake *FakeGetComponent) GetSpdxID() string {
 	fake.getSpdxIDMutex.Lock()
 	ret, specificReturn := fake.getSpdxIDReturnsOnCall[len(fake.getSpdxIDArgsForCall)]
-	fake.getSpdxIDArgsForCall = append(fake.getSpdxIDArgsForCall, struct {
-	}{})
+	fake.getSpdxIDArgsForCall = append(fake.getSpdxIDArgsForCall, struct{}{})
 	stub := fake.GetSpdxIDStub
 	fakeReturns := fake.getSpdxIDReturns
 	fake.recordInvocation("GetSpdxID", []interface{}{})
@@ -1662,8 +1614,7 @@ func (fake *FakeGetComponent) GetSpdxIDReturnsOnCall(i int, result1 string) {
 func (fake *FakeGetComponent) GetVersion() string {
 	fake.getVersionMutex.Lock()
 	ret, specificReturn := fake.getVersionReturnsOnCall[len(fake.getVersionArgsForCall)]
-	fake.getVersionArgsForCall = append(fake.getVersionArgsForCall, struct {
-	}{})
+	fake.getVersionArgsForCall = append(fake.getVersionArgsForCall, struct{}{})
 	stub := fake.GetVersionStub
 	fakeReturns := fake.getVersionReturns
 	fake.recordInvocation("GetVersion", []interface{}{})
@@ -1715,8 +1666,7 @@ func (fake *FakeGetComponent) GetVersionReturnsOnCall(i int, result1 string) {
 func (fake *FakeGetComponent) HasRelationShips() bool {
 	fake.hasRelationShipsMutex.Lock()
 	ret, specificReturn := fake.hasRelationShipsReturnsOnCall[len(fake.hasRelationShipsArgsForCall)]
-	fake.hasRelationShipsArgsForCall = append(fake.hasRelationShipsArgsForCall, struct {
-	}{})
+	fake.hasRelationShipsArgsForCall = append(fake.hasRelationShipsArgsForCall, struct{}{})
 	stub := fake.HasRelationShipsStub
 	fakeReturns := fake.hasRelationShipsReturns
 	fake.recordInvocation("HasRelationShips", []interface{}{})
@@ -1768,8 +1718,7 @@ func (fake *FakeGetComponent) HasRelationShipsReturnsOnCall(i int, result1 bool)
 func (fake *FakeGetComponent) IsPrimaryComponent() bool {
 	fake.isPrimaryComponentMutex.Lock()
 	ret, specificReturn := fake.isPrimaryComponentReturnsOnCall[len(fake.isPrimaryComponentArgsForCall)]
-	fake.isPrimaryComponentArgsForCall = append(fake.isPrimaryComponentArgsForCall, struct {
-	}{})
+	fake.isPrimaryComponentArgsForCall = append(fake.isPrimaryComponentArgsForCall, struct{}{})
 	stub := fake.IsPrimaryComponentStub
 	fakeReturns := fake.isPrimaryComponentReturns
 	fake.recordInvocation("IsPrimaryComponent", []interface{}{})
@@ -1821,8 +1770,7 @@ func (fake *FakeGetComponent) IsPrimaryComponentReturnsOnCall(i int, result1 boo
 func (fake *FakeGetComponent) Manufacturer() sbom.GetManufacturer {
 	fake.manufacturerMutex.Lock()
 	ret, specificReturn := fake.manufacturerReturnsOnCall[len(fake.manufacturerArgsForCall)]
-	fake.manufacturerArgsForCall = append(fake.manufacturerArgsForCall, struct {
-	}{})
+	fake.manufacturerArgsForCall = append(fake.manufacturerArgsForCall, struct{}{})
 	stub := fake.ManufacturerStub
 	fakeReturns := fake.manufacturerReturns
 	fake.recordInvocation("Manufacturer", []interface{}{})
@@ -1874,8 +1822,7 @@ func (fake *FakeGetComponent) ManufacturerReturnsOnCall(i int, result1 sbom.GetM
 func (fake *FakeGetComponent) OmniborIDs() []omniborid.OMNIBORID {
 	fake.omniborIDsMutex.Lock()
 	ret, specificReturn := fake.omniborIDsReturnsOnCall[len(fake.omniborIDsArgsForCall)]
-	fake.omniborIDsArgsForCall = append(fake.omniborIDsArgsForCall, struct {
-	}{})
+	fake.omniborIDsArgsForCall = append(fake.omniborIDsArgsForCall, struct{}{})
 	stub := fake.OmniborIDsStub
 	fakeReturns := fake.omniborIDsReturns
 	fake.recordInvocation("OmniborIDs", []interface{}{})
@@ -1927,8 +1874,7 @@ func (fake *FakeGetComponent) OmniborIDsReturnsOnCall(i int, result1 []omniborid
 func (fake *FakeGetComponent) PrimaryPurpose() string {
 	fake.primaryPurposeMutex.Lock()
 	ret, specificReturn := fake.primaryPurposeReturnsOnCall[len(fake.primaryPurposeArgsForCall)]
-	fake.primaryPurposeArgsForCall = append(fake.primaryPurposeArgsForCall, struct {
-	}{})
+	fake.primaryPurposeArgsForCall = append(fake.primaryPurposeArgsForCall, struct{}{})
 	stub := fake.PrimaryPurposeStub
 	fakeReturns := fake.primaryPurposeReturns
 	fake.recordInvocation("PrimaryPurpose", []interface{}{})
@@ -1980,8 +1926,7 @@ func (fake *FakeGetComponent) PrimaryPurposeReturnsOnCall(i int, result1 string)
 func (fake *FakeGetComponent) RelationShipState() string {
 	fake.relationShipStateMutex.Lock()
 	ret, specificReturn := fake.relationShipStateReturnsOnCall[len(fake.relationShipStateArgsForCall)]
-	fake.relationShipStateArgsForCall = append(fake.relationShipStateArgsForCall, struct {
-	}{})
+	fake.relationShipStateArgsForCall = append(fake.relationShipStateArgsForCall, struct{}{})
 	stub := fake.RelationShipStateStub
 	fakeReturns := fake.relationShipStateReturns
 	fake.recordInvocation("RelationShipState", []interface{}{})
@@ -2033,8 +1978,7 @@ func (fake *FakeGetComponent) RelationShipStateReturnsOnCall(i int, result1 stri
 func (fake *FakeGetComponent) RequiredFields() bool {
 	fake.requiredFieldsMutex.Lock()
 	ret, specificReturn := fake.requiredFieldsReturnsOnCall[len(fake.requiredFieldsArgsForCall)]
-	fake.requiredFieldsArgsForCall = append(fake.requiredFieldsArgsForCall, struct {
-	}{})
+	fake.requiredFieldsArgsForCall = append(fake.requiredFieldsArgsForCall, struct{}{})
 	stub := fake.RequiredFieldsStub
 	fakeReturns := fake.requiredFieldsReturns
 	fake.recordInvocation("RequiredFields", []interface{}{})
@@ -2086,8 +2030,7 @@ func (fake *FakeGetComponent) RequiredFieldsReturnsOnCall(i int, result1 bool) {
 func (fake *FakeGetComponent) SourceCodeHash() string {
 	fake.sourceCodeHashMutex.Lock()
 	ret, specificReturn := fake.sourceCodeHashReturnsOnCall[len(fake.sourceCodeHashArgsForCall)]
-	fake.sourceCodeHashArgsForCall = append(fake.sourceCodeHashArgsForCall, struct {
-	}{})
+	fake.sourceCodeHashArgsForCall = append(fake.sourceCodeHashArgsForCall, struct{}{})
 	stub := fake.SourceCodeHashStub
 	fakeReturns := fake.sourceCodeHashReturns
 	fake.recordInvocation("SourceCodeHash", []interface{}{})
@@ -2139,8 +2082,7 @@ func (fake *FakeGetComponent) SourceCodeHashReturnsOnCall(i int, result1 string)
 func (fake *FakeGetComponent) Suppliers() sbom.GetSupplier {
 	fake.suppliersMutex.Lock()
 	ret, specificReturn := fake.suppliersReturnsOnCall[len(fake.suppliersArgsForCall)]
-	fake.suppliersArgsForCall = append(fake.suppliersArgsForCall, struct {
-	}{})
+	fake.suppliersArgsForCall = append(fake.suppliersArgsForCall, struct{}{})
 	stub := fake.SuppliersStub
 	fakeReturns := fake.suppliersReturns
 	fake.recordInvocation("Suppliers", []interface{}{})
@@ -2192,8 +2134,7 @@ func (fake *FakeGetComponent) SuppliersReturnsOnCall(i int, result1 sbom.GetSupp
 func (fake *FakeGetComponent) Swhids() []swhid.SWHID {
 	fake.swhidsMutex.Lock()
 	ret, specificReturn := fake.swhidsReturnsOnCall[len(fake.swhidsArgsForCall)]
-	fake.swhidsArgsForCall = append(fake.swhidsArgsForCall, struct {
-	}{})
+	fake.swhidsArgsForCall = append(fake.swhidsArgsForCall, struct{}{})
 	stub := fake.SwhidsStub
 	fakeReturns := fake.swhidsReturns
 	fake.recordInvocation("Swhids", []interface{}{})
@@ -2245,8 +2186,7 @@ func (fake *FakeGetComponent) SwhidsReturnsOnCall(i int, result1 []swhid.SWHID) 
 func (fake *FakeGetComponent) Swids() []swid.SWID {
 	fake.swidsMutex.Lock()
 	ret, specificReturn := fake.swidsReturnsOnCall[len(fake.swidsArgsForCall)]
-	fake.swidsArgsForCall = append(fake.swidsArgsForCall, struct {
-	}{})
+	fake.swidsArgsForCall = append(fake.swidsArgsForCall, struct{}{})
 	stub := fake.SwidsStub
 	fakeReturns := fake.swidsReturns
 	fake.recordInvocation("Swids", []interface{}{})
@@ -2305,9 +2245,18 @@ func (fake *FakeGetComponent) Invocations() map[string][][]interface{} {
 	return copiedInvocations
 }
 
+func (fake *FakeGetComponent) CallOrder() []string {
+	fake.invocationsMutex.RLock()
+	defer fake.invocationsMutex.RUnlock()
+	order := make([]string, len(fake.callOrder))
+	copy(order, fake.callOrder)
+	return order
+}
+
 func (fake *FakeGetComponent) recordInvocation(key string, args []interface{}) {
 	fake.invocationsMutex.Lock()
 	defer fake.invocationsMutex.Unlock()
+	fake.callOrder = append(fake.callOrder, key)
 	if fake.invocations == nil {
 		fake.invocations = map[string][][]interface{}{}
 	}

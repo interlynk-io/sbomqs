@@ -10,9 +10,8 @@ import (
 type FakeGetExternalReference struct {
 	GetRefHashesStub        func() []sbom.GetChecksum
 	getRefHashesMutex       sync.RWMutex
-	getRefHashesArgsForCall []struct {
-	}
-	getRefHashesReturns struct {
+	getRefHashesArgsForCall []struct{}
+	getRefHashesReturns     struct {
 		result1 []sbom.GetChecksum
 	}
 	getRefHashesReturnsOnCall map[int]struct {
@@ -20,9 +19,8 @@ type FakeGetExternalReference struct {
 	}
 	GetRefLocatorStub        func() string
 	getRefLocatorMutex       sync.RWMutex
-	getRefLocatorArgsForCall []struct {
-	}
-	getRefLocatorReturns struct {
+	getRefLocatorArgsForCall []struct{}
+	getRefLocatorReturns     struct {
 		result1 string
 	}
 	getRefLocatorReturnsOnCall map[int]struct {
@@ -30,23 +28,22 @@ type FakeGetExternalReference struct {
 	}
 	GetRefTypeStub        func() string
 	getRefTypeMutex       sync.RWMutex
-	getRefTypeArgsForCall []struct {
-	}
-	getRefTypeReturns struct {
+	getRefTypeArgsForCall []struct{}
+	getRefTypeReturns     struct {
 		result1 string
 	}
 	getRefTypeReturnsOnCall map[int]struct {
 		result1 string
 	}
 	invocations      map[string][][]interface{}
+	callOrder        []string
 	invocationsMutex sync.RWMutex
 }
 
 func (fake *FakeGetExternalReference) GetRefHashes() []sbom.GetChecksum {
 	fake.getRefHashesMutex.Lock()
 	ret, specificReturn := fake.getRefHashesReturnsOnCall[len(fake.getRefHashesArgsForCall)]
-	fake.getRefHashesArgsForCall = append(fake.getRefHashesArgsForCall, struct {
-	}{})
+	fake.getRefHashesArgsForCall = append(fake.getRefHashesArgsForCall, struct{}{})
 	stub := fake.GetRefHashesStub
 	fakeReturns := fake.getRefHashesReturns
 	fake.recordInvocation("GetRefHashes", []interface{}{})
@@ -98,8 +95,7 @@ func (fake *FakeGetExternalReference) GetRefHashesReturnsOnCall(i int, result1 [
 func (fake *FakeGetExternalReference) GetRefLocator() string {
 	fake.getRefLocatorMutex.Lock()
 	ret, specificReturn := fake.getRefLocatorReturnsOnCall[len(fake.getRefLocatorArgsForCall)]
-	fake.getRefLocatorArgsForCall = append(fake.getRefLocatorArgsForCall, struct {
-	}{})
+	fake.getRefLocatorArgsForCall = append(fake.getRefLocatorArgsForCall, struct{}{})
 	stub := fake.GetRefLocatorStub
 	fakeReturns := fake.getRefLocatorReturns
 	fake.recordInvocation("GetRefLocator", []interface{}{})
@@ -151,8 +147,7 @@ func (fake *FakeGetExternalReference) GetRefLocatorReturnsOnCall(i int, result1 
 func (fake *FakeGetExternalReference) GetRefType() string {
 	fake.getRefTypeMutex.Lock()
 	ret, specificReturn := fake.getRefTypeReturnsOnCall[len(fake.getRefTypeArgsForCall)]
-	fake.getRefTypeArgsForCall = append(fake.getRefTypeArgsForCall, struct {
-	}{})
+	fake.getRefTypeArgsForCall = append(fake.getRefTypeArgsForCall, struct{}{})
 	stub := fake.GetRefTypeStub
 	fakeReturns := fake.getRefTypeReturns
 	fake.recordInvocation("GetRefType", []interface{}{})
@@ -211,9 +206,18 @@ func (fake *FakeGetExternalReference) Invocations() map[string][][]interface{} {
 	return copiedInvocations
 }
 
+func (fake *FakeGetExternalReference) CallOrder() []string {
+	fake.invocationsMutex.RLock()
+	defer fake.invocationsMutex.RUnlock()
+	order := make([]string, len(fake.callOrder))
+	copy(order, fake.callOrder)
+	return order
+}
+
 func (fake *FakeGetExternalReference) recordInvocation(key string, args []interface{}) {
 	fake.invocationsMutex.Lock()
 	defer fake.invocationsMutex.Unlock()
+	fake.callOrder = append(fake.callOrder, key)
 	if fake.invocations == nil {
 		fake.invocations = map[string][][]interface{}{}
 	}
