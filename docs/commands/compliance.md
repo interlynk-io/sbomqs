@@ -8,6 +8,7 @@ The compliance command supports multiple standards:
 - **BSI TR-03183-2 v2.1.0**: German Federal Office for Information Security (latest)
 - **BSI TR-03183-2 v2.0.0**: German Federal Office for Information Security
 - **BSI TR-03183-2 v1.1**: German Federal Office for Information Security (legacy)
+- **ENISA SBOM Minimum Elements**: European Union Agency for Cybersecurity (Table 2 synthesis)
 - **FSCT v3**: Framing Software Component Transparency
 - **OpenChain Telco**: Telecommunications industry requirements
 - **NTIA**: National Telecommunications and Information Administration (coming soon)
@@ -23,6 +24,7 @@ sbomqs compliance [flags] <SBOM file>
 ### Standard Selection (One Required)
 - `--bsi-v2`: Check BSI TR-03183-2 v2.1.0 compliance (latest)
 - `--bsi`: Check BSI TR-03183-2 v1.1 compliance (legacy)
+- `--enisa, -e`: Check ENISA SBOM Minimum Elements compliance
 - `--fsct`: Check FSCT v3 compliance
 - `--telco, -t`: Check OpenChain Telco compliance
 - `--ntia`: Check NTIA minimum elements (coming soon)
@@ -126,6 +128,38 @@ Missing Requirements:
 - Package verification codes
 - External references
 - Copyright text for some packages
+```
+
+### ENISA SBOM Minimum Elements
+
+European Union Agency for Cybersecurity (ENISA) minimum elements from Table 2 of the Implementation Guide (v1.20). This is a synthesis of NTIA 2021 and CISA 2025 requirements — 12 fields total (4 document-level, 8 component-level). All fields are required.
+
+Key ENISA-specific rules:
+- **SBOM Author must be a Person** — Organization and Tool entries are not accepted
+- **Software Producer must be a Person** — Organization entries are not accepted
+
+```bash
+$ sbomqs compliance --enisa product.cdx.json --detailed
+
+ENISA SBOM Minimum Elements Compliance Report
+==============================================
+File: product.cdx.json
+Total Score: 8.3/10
+
+SBOM Metadata:
+✓ SBOM Author (Person)     — John Doe
+✓ Timestamp                — 2025-01-15T10:00:00Z
+✓ Tool Name                — CycloneDX Generator
+✓ Generation Context       — build
+
+Component Data:
+⚠ Software Producer (Person) — 180/250 (72% present)
+✓ Component Name             — 250/250
+✓ Component Version          — 250/250
+✓ Software Identifiers       — 220/250 (PURL)
+✓ Dependency Relationship    — 250/250
+⚠ License                    — 200/250
+✓ Component Hash             — 250/250
 ```
 
 ## JSON Output Format
@@ -268,6 +302,7 @@ mkdir -p $OUTPUT_DIR
 
 # Generate all compliance reports
 sbomqs compliance --bsi-v2 $SBOM --json > $OUTPUT_DIR/bsi-v2-compliance.json
+sbomqs compliance --enisa $SBOM --json > $OUTPUT_DIR/enisa-compliance.json
 sbomqs compliance --fsct $SBOM --json > $OUTPUT_DIR/fsct-compliance.json
 sbomqs compliance --telco $SBOM --json > $OUTPUT_DIR/telco-compliance.json
 
@@ -321,7 +356,7 @@ DATE=$(date +%Y-%m-%d)
 SBOM="current-sbom.json"
 
 # Run compliance checks
-for standard in bsi-v2 fsct telco; do
+for standard in bsi-v2 enisa fsct telco; do
   sbomqs compliance --$standard $SBOM --json > "compliance-$standard-$DATE.json"
   
   score=$(jq '.summary.total_score' "compliance-$standard-$DATE.json")

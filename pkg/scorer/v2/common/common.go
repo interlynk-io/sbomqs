@@ -57,6 +57,20 @@ func IsSBOMAuthorEntity(doc sbom.Document) bool {
 	return false
 }
 
+// IsSBOMAuthorPerson checks whether the SBOM has at least one Person-type author.
+// ENISA defines SBOM Author as a person (not an organization or tool).
+// Organization entries represent supplier/producer, not authorship.
+func IsSBOMAuthorPerson(doc sbom.Document) bool {
+	for _, author := range doc.Authors() {
+		if strings.ToLower(author.GetType()) == "person" {
+			if strings.TrimSpace(author.GetName()) != "" || strings.TrimSpace(author.GetEmail()) != "" || strings.TrimSpace(author.GetPhone()) != "" {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 func HasComponentSourceCodeURL(sourceCodeURL string) bool {
 	if strings.TrimSpace(sourceCodeURL) != "" {
 		return true
