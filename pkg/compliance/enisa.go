@@ -252,17 +252,10 @@ func enisaCompHashAlgo(comp sbom.GetComponent, id string) *db.Record {
 
 func enisaCompLicense(comp sbom.GetComponent, id string) *db.Record {
 	licenses := []string{}
-	for _, l := range comp.GetLicenses() {
-		if ln := l.ShortID(); ln != "" {
-			licenses = append(licenses, ln)
-		}
-	}
-	if len(licenses) > 0 {
-		result := strings.Join(licenses, "; ")
-		return db.NewRecordStmt(ENISA_COMP_LICENSE, id, result, SCORE_FULL, "")
-	}
-
 	for _, l := range comp.DeclaredLicenses() {
+		if l == nil {
+			continue
+		}
 		if ln := l.ShortID(); ln != "" {
 			licenses = append(licenses, ln)
 		}
