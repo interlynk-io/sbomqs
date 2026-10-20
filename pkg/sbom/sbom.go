@@ -196,9 +196,17 @@ func detectSbomFormat(f io.ReadSeeker) (SpecFormat, FileFormat, FormatVersion, e
 		log.Printf("Failed to seek: %v", err)
 	}
 
-	if sc := bufio.NewScanner(f); sc.Scan() {
-		if strings.HasPrefix(sc.Text(), "SPDX") {
-			return SBOMSpecSPDX, FileFormatTagValue, "", nil
+	// A document in either SPDX serialization can open with an "SPDXID:" line,
+	// so the first line alone cannot separate YAML from tag-value. The version
+	// field can: YAML and JSON name it "spdxVersion" whereas tag-value names it
+	// "SPDXVersion". A YAML document carrying the lower-camel key is therefore
+	// claimed here, ahead of the tag-value scan.
+	var y spdxbasic
+	isYAML := false
+	if err := yaml.NewDecoder(f).Decode(&y); err == nil {
+		isYAML = strings.HasPrefix(y.ID, "SPDX")
+		if isYAML && y.Version != "" {
+			return SBOMSpecSPDX, FileFormatYAML, FormatVersion(y.Version), nil
 		}
 	}
 
@@ -207,11 +215,15 @@ func detectSbomFormat(f io.ReadSeeker) (SpecFormat, FileFormat, FormatVersion, e
 		log.Printf("Failed to seek: %v", err)
 	}
 
-	var y spdxbasic
-	if err := yaml.NewDecoder(f).Decode(&y); err == nil {
-		if strings.HasPrefix(y.ID, "SPDX") {
-			return SBOMSpecSPDX, FileFormatYAML, FormatVersion(s.Version), nil
+	if sc := bufio.NewScanner(f); sc.Scan() {
+		if strings.HasPrefix(sc.Text(), "SPDX") {
+			return SBOMSpecSPDX, FileFormatTagValue, "", nil
 		}
+	}
+
+	// YAML shape but no version key. The SPDX reader reports the missing field.
+	if isYAML {
+		return SBOMSpecSPDX, FileFormatYAML, FormatVersion(y.Version), nil
 	}
 
 	return SBOMSpecUnknown, FileFormatUnknown, "", nil

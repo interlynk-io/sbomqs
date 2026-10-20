@@ -576,3 +576,108 @@ func TestSPDX3FormatDetection(t *testing.T) {
 		})
 	}
 }
+
+// An SPDX 2.3 YAML document whose first key is SPDXID. Tag-value documents can
+// open with the same key, so the two serializations are told apart on the
+// version key rather than on the first line.
+var spdxYAMLIDFirst = []byte(`SPDXID: SPDXRef-DOCUMENT
+spdxVersion: SPDX-2.3
+dataLicense: CC0-1.0
+name: yaml-id-first
+documentNamespace: https://example.com/yaml-id-first
+creationInfo:
+  created: "2026-01-01T00:00:00Z"
+  creators:
+    - "Tool: probe-1.0"
+packages:
+  - SPDXID: SPDXRef-Package-libfoo
+    name: libfoo
+    versionInfo: "1.2.3"
+    downloadLocation: NOASSERTION
+`)
+
+// The same document with spdxVersion first.
+var spdxYAMLVersionFirst = []byte(`spdxVersion: SPDX-2.3
+SPDXID: SPDXRef-DOCUMENT
+dataLicense: CC0-1.0
+name: yaml-version-first
+documentNamespace: https://example.com/yaml-version-first
+creationInfo:
+  created: "2026-01-01T00:00:00Z"
+  creators:
+    - "Tool: probe-1.0"
+packages:
+  - SPDXID: SPDXRef-Package-libfoo
+    name: libfoo
+    versionInfo: "1.2.3"
+    downloadLocation: NOASSERTION
+`)
+
+// A tag-value document, which must keep being read as tag-value.
+var spdxTagValueDoc = []byte(`SPDXVersion: SPDX-2.3
+DataLicense: CC0-1.0
+SPDXID: SPDXRef-DOCUMENT
+DocumentName: tag-value-doc
+DocumentNamespace: https://example.com/tag-value
+Creator: Tool: probe-1.0
+Created: 2026-01-01T00:00:00Z
+
+PackageName: libfoo
+SPDXID: SPDXRef-Package-libfoo
+PackageVersion: 1.2.3
+PackageDownloadLocation: NOASSERTION
+FilesAnalyzed: false
+`)
+
+// The ambiguous case: a tag-value document that also opens with SPDXID.
+var spdxTagValueIDFirst = []byte(`SPDXID: SPDXRef-DOCUMENT
+SPDXVersion: SPDX-2.3
+DataLicense: CC0-1.0
+DocumentName: tag-value-id-first
+DocumentNamespace: https://example.com/tag-value-id-first
+Creator: Tool: probe-1.0
+Created: 2026-01-01T00:00:00Z
+
+PackageName: libfoo
+SPDXID: SPDXRef-Package-libfoo
+PackageVersion: 1.2.3
+PackageDownloadLocation: NOASSERTION
+FilesAnalyzed: false
+`)
+
+func TestSPDXSerializationDetection(t *testing.T) {
+	ctx := context.Background()
+
+	tests := []struct {
+		name       string
+		input      []byte
+		wantFormat FileFormat
+	}{
+		{"yaml with SPDXID first", spdxYAMLIDFirst, FileFormatYAML},
+		{"yaml with spdxVersion first", spdxYAMLVersionFirst, FileFormatYAML},
+		{"tag-value", spdxTagValueDoc, FileFormatTagValue},
+		{"tag-value with SPDXID first", spdxTagValueIDFirst, FileFormatTagValue},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			doc, err := NewSBOMDocumentFromBytes(ctx, tt.input, Signature{})
+			require.NoError(t, err)
+			require.NotNil(t, doc)
+
+			assert.Equal(t, string(SBOMSpecSPDX), doc.Spec().GetSpecType())
+			assert.Equal(t, string(tt.wantFormat), doc.Spec().FileFormat())
+			assert.Equal(t, "2.3", doc.Spec().GetVersion())
+			assert.Len(t, doc.Components(), 1)
+		})
+	}
+}
+
+func TestDetectSbomFormatReportsYAMLVersion(t *testing.T) {
+	spec, format, version, err := detectSbomFormat(bytes.NewReader(spdxYAMLIDFirst))
+
+	require.NoError(t, err)
+	assert.Equal(t, SBOMSpecSPDX, spec)
+	assert.Equal(t, FileFormatYAML, format)
+	assert.Equal(t, FormatVersion("SPDX-2.3"), version)
+}
