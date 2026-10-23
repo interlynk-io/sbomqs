@@ -27,56 +27,56 @@ The G7 explicitly states these elements are **recommendations to a reasonable ex
 
 | # | G7 Field | Cluster | CycloneDX | SPDX v2.x | SPDX v3.x | Notes |
 |---|----------|---------|-----------|-----------|-----------|-------|
-| 1 | `sbom_author` | Metadata | `metadata.authors[].name` | `creationInfo.creators[]` (`Person`/`Organization`) | `creationInfo.createdBy` → `Person`/`Organization` | Distinct from Producer |
-| 2 | `sbom_version` | Metadata | `version` (top-level) | N/A | N/A | SPDX has no native SBOM version field |
+| 1 | `sbom_author` | Metadata | `metadata.authors[].name` or `metadata.authors[].email` | `creationInfo.creators[]` (`Person:`) | `creationInfo.createdBy` → `Person` | Distinct from Producer; **Person only** |
+| 2 | `sbom_version` | Metadata | `version` (top-level) | `documentNamespace` (version in URI) | `SBOM.spdxId` (URI); optional `Relationship` (`amendedBy`) | SPDX uses URI-based versioning |
 | 3 | `sbom_data_format_name` | Metadata | `bomFormat` | `spdxVersion` (prefix) | Implicit | Always "CycloneDX" or "SPDX" |
 | 4 | `sbom_data_format_version` | Metadata | `specVersion` | `spdxVersion` | `spdxVersion` | e.g., "1.7" or "SPDX-3.0.1" |
-| 5 | `sbom_author_signature` | Metadata | `metadata.component.signature` (JSF) | `--signature` / `--public-key` CLI flags | `SpdxDocument.verifiedUsing` with `type: "Signature"` | sbomqs detects all formats |
+| 5 | `sbom_author_signature` | Metadata | `signature` (top-level JSF) | Detached via `--signature` / `--public-key` CLI flags | `SpdxDocument.verifiedUsing` with `type: "Signature"` | BOM-level signature, not component-level |
 | 6 | `sbom_tool_name` | Metadata | `metadata.tools.components[].name` (1.5+) | `creationInfo.creators[].Tool` | `createdUsing` → `Tool.name` | Full names, not acronyms |
 | 7 | `sbom_tool_version` | Metadata | `metadata.tools.components[].version` (1.5+) | Extracted from `creationInfo.creators[].Tool` | Extracted from `createdUsing` → `Tool` | |
-| 8 | `sbom_generation_context` | Metadata | Custom `properties` or `metadata.lifecycles[].phase` | `creationInfo.comment` | `Software/Sbom.sbomType` | No native field in most formats |
+| 8 | `sbom_generation_context` | Metadata | Custom `properties` or `metadata.lifecycles[].phase` | `creationInfo.comment` | `Software/Sbom.sbomType` | See Discussion #26 |
 | 9 | `sbom_timestamp` | Metadata | `metadata.timestamp` | `creationInfo.created` | `creationInfo.created` | RFC 9557 format |
-| 10 | `sbom_dependency_relationship` | Metadata | `dependencies[]`, `compositions[]` | `relationships[]` | `relationships[]` | "includes"/"derived from" |
-| 11 | `system_name` | SLP | `metadata.component.name` | `packages[].name` | `Package.name` | Human-readable; allow multiple entries |
-| 12 | `system_components` | SLP | `components[]` array | `packages[]` | `Package.hasContainedElement` / relationships | Models, databases, tools |
-| 13 | `system_producer` | SLP | `metadata.component.manufacturer.name` | `packages[].originator` | `Package.suppliedBy` | Entity that creates/defines the system |
-| 14 | `system_version` | SLP | `metadata.component.version` | `packages[].versionInfo` | `Package.packageVersion` | |
+| 10 | `sbom_dependency_relationship` | Metadata | `dependencies[].ref / dependsOn[]` | `relationships[]: spdxElementId / DEPENDS_ON / relatedSpdxElement` | `Relationship: dependsOn` | "includes"/"derived from" |
+| 11 | `system_name` | SLP | `metadata.component.name` | `packages[].name` where `SPDXRef-DOCUMENT` → `DESCRIBES` → package | `Package.name` where `SpdxDocument` → `describes` → package | Human-readable; **primary component** |
+| 12 | `system_components` | SLP | `components[]` (all types) | `packages[]` | `Package` / `AIPackage` / `DatasetPackage` in `@graph` | Constituent parts of the system; its dependencies |
+| 13 | `system_producer` | SLP | `metadata.component.manufacturer.name` | `packages[].originator` of DESCRIBES package | `Package.originatedBy` of described package | Distinct from author; **system is primary component** |
+| 14 | `system_version` | SLP | `metadata.component.version` | `packages[].versionInfo` of DESCRIBES package | `Package.packageVersion` of described package | **System is primary component** |
 | 15 | `system_timestamp` | SLP | Custom `properties` | N/A | N/A | Date/time of most recent system update |
 | 16 | `system_data_flow` | SLP | `externalReferences[]` (type: `documentation`) | `packages[].externalRefs[]` (type: `other`/`documentation`) | `Package.externalRef` (type: `documentation`/`other`) | Link/reference/description |
 | 17 | `system_data_usage` | SLP | Custom `properties` or `externalReferences` | Custom annotations | Custom annotations | I/O endpoints, APIs, multi-agent protocols |
 | 18 | `system_input_output_properties` | SLP | `modelCard.modelParameters.inputs[]`, `outputs[]` | N/A | `AIPackage.informationAboutApplication` | Data types, modality, tokenizer |
 | 19 | `intended_application_area` | SLP | `modelCard.considerations.useCases[]` | N/A | `AIPackage.domain` | Medical, finance, cybersecurity, etc. |
-| 20 | `model_name` | Models | `component.name` (type: `machine-learning-model`) | `packages[].name` | `Package.name` | Human-readable; allow multiple entries |
+| 20 | `model_name` | Models | `component.name` (type: `machine-learning-model`) | `packages[].name` — **no model type in SPDX 2.x** | `AIPackage.name` (`@type: "AIPackage"`) | Human-readable; see Discussion #7 |
 | 21 | `model_identifier` | Models | `component.bom-ref`, `component.purl`, `component.hashes[]` | `packages[].externalRefs[]` (PURL, CPE) | `Package.externalIdentifier` (PURL, CPE, SWHID) | Include ALL available identifiers |
 | 22 | `model_version` | Models | `component.version` | `packages[].versionInfo` | `Package.packageVersion` | |
-| 23 | `model_timestamp` | Models | `component.releaseNotes.timestamp` or custom property | N/A | `Package.releaseTime` | Required for AIPackage in SPDX 3.0 |
-| 24 | `model_producer` | Models | `component.manufacturer.name` | `packages[].originator` | `Package.suppliedBy` | Required for AIPackage in SPDX 3.0 |
+| 23 | `model_timestamp` | Models | `component.releaseNotes.timestamp` or custom property | N/A | `Package.releaseTime` | Required for AIPackage; see Discussion #8 |
+| 24 | `model_producer` | Models | `component.manufacturer.name` or `component.manufacturer.email` | `packages[].originator` | `Package.originatedBy` | Name or email; required for AIPackage |
 | 25 | `model_description` | Models | `component.description` | `packages[].description` | `AIPackage.limitation`, `Package.summaryDescription` | Capabilities, limitations, lineage |
 | 26 | `model_hash_value` | Models | `component.hashes[].content` | `packages[].checksums[].checksumValue` | `Package.verifiedUsing[].hash.hashValue` | Hash of weights or model file |
 | 27 | `model_hash_algorithm` | Models | `component.hashes[].alg` | `packages[].checksums[].algorithm` | `Package.verifiedUsing[].hash.algorithm` | IANA textual names; NIST-approved |
-| 28 | `model_properties` | Models | `modelCard.modelParameters.architectureFamily`, `modelArchitecture`, custom `properties` (cdx:ai-ml:*) | N/A | `AIPackage.typeOfModel`, `AIPackage.informationAboutTraining`, `AIPackage.hyperparameter` | Parametric vs non-parametric, parameter count, architecture |
-| 29 | `model_input_output_properties` | Models | `modelCard.modelParameters.inputs[]`, `outputs[]` | N/A | `AIPackage.informationAboutApplication` | Data types, context length, modality, tokenizer |
-| 30 | `model_training_properties` | Models | `modelCard.modelParameters.approach.type`, custom properties for RLHF/DPO/etc. | N/A | `AIPackage.informationAboutTraining`, `AIPackage.hyperparameter` | Learning type, post-training techniques |
+| 28 | `model_properties` | Models | `modelCard.modelParameters.architectureFamily`, `modelArchitecture`, custom `properties` (cdx:ai-ml:*) | N/A | `AIPackage.typeOfModel`, `AIPackage.informationAboutTraining`, `AIPackage.hyperparameter` | See Discussion #9 |
+| 29 | `model_input_output_properties` | Models | `modelCard.modelParameters.inputs[]`, `outputs[]` | N/A | `AIPackage.informationAboutApplication` | See Discussion #10 |
+| 30 | `model_training_properties` | Models | `modelCard.modelParameters.approach.type`, custom properties for RLHF/DPO/etc. | N/A | `AIPackage.informationAboutTraining`, `AIPackage.hyperparameter` | See Discussion #11 |
 | 31 | `model_license` | Models | `component.licenses[]` | `packages[].licenseDeclared` | `Package.declaredLicense` | SPDX/CDX file references; open weight/architecture/data/training |
 | 32 | `model_external_references` | Models | `component.externalReferences[]` | `packages[].externalRefs[]` | `Package.externalReference` | Model card, system card, research paper |
-| 33 | `dataset_name` | Datasets | `component.name` (type: `data`) | N/A | `DatasetPackage.name` | |
-| 34 | `dataset_description` | Datasets | `component.description` | N/A | `DatasetPackage.datasetAvailability`, `DatasetPackage.datasetType` | Pre-training, fine-tuning, benchmark |
-| 35 | `dataset_content` | Datasets | `data[].contents.url`, `data[].type` (="dataset") | N/A | `DatasetPackage.contentIdentifier` | Content description and format |
+| 33 | `dataset_name` | Datasets | `component.name` (type: `data`) | N/A | `DatasetPackage.name` | See Discussion #12 |
+| 34 | `dataset_description` | Datasets | `component.description` | N/A | `DatasetPackage.datasetAvailability`, `DatasetPackage.datasetType` | See Discussion #13 |
+| 35 | `dataset_content` | Datasets | `data[].contents.url`, `data[].type` (="dataset") | N/A | `DatasetPackage.contentIdentifier` | See Discussion #14 |
 | 36 | `dataset_identifier` | Datasets | `component.purl`, `component.bom-ref` | N/A | `Package.spdxId`, `Package.externalIdentifier` | URL, URI |
 | 37 | `dataset_hash` | Datasets | `component.hashes[]` | N/A | `Package.verifiedUsing[].hash` | |
-| 38 | `dataset_provenance` | Datasets | `component.pedigree`, custom properties | N/A | `DatasetPackage.dataCollectionProcess`, `DatasetPackage.datasetUpdateMechanism` | Origin, processing history |
-| 39 | `dataset_statistical_properties` | Datasets | Custom properties | N/A | Custom annotations | Mean, variance, median, mode, range, skewness |
-| 40 | `dataset_sensitivity` | Datasets | Custom properties | N/A | `DatasetPackage.hasSensitivePersonalInformation`, `DatasetPackage.confidentialityLevel` | PII, copyright, national security |
-| 41 | `dataset_dependency_relationship` | Datasets | `dependencies[]` | N/A | `relationships[]` | Software used to create/maintain dataset |
+| 38 | `dataset_provenance` | Datasets | `component.pedigree`, custom properties | N/A | `DatasetPackage.dataCollectionProcess`, `DatasetPackage.datasetUpdateMechanism` | See Discussion #15 |
+| 39 | `dataset_statistical_properties` | Datasets | Custom properties | N/A | Custom annotations | See Discussion #16 |
+| 40 | `dataset_sensitivity` | Datasets | Custom properties | N/A | `DatasetPackage.hasSensitivePersonalInformation`, `DatasetPackage.confidentialityLevel` | See Discussion #17 |
+| 41 | `dataset_dependency_relationship` | Datasets | `dependencies[]` | N/A | `relationships[]` | See Discussion #18 |
 | 42 | `dataset_license` | Datasets | `component.licenses[]` | N/A | `Package.declaredLicense` | |
 | 43 | `infrastructure_software` | Infrastructure | `components[]` (type: `library`, `framework`, `application`) | `packages[]` | `Package.hasContainedElement` (software packages) | Firmware, libraries, frameworks, runtime environments |
-| 44 | `infrastructure_hardware` | Infrastructure | `externalReferences[]` (type: `bom`) linking to HBOM | N/A | `Package.hasContainedElement` (hardware) or HBOM reference | Link to Hardware Bill of Materials |
-| 45 | `security_controls` | Security | `modelCard.considerations` (technical limitations, ethical), custom properties | N/A | `AIPackage.safetyRiskAssessment`, custom annotations | Encryption, differential privacy, adversarial robustness, prompt injection controls |
-| 46 | `security_compliance` | Security | `modelCard.considerations.ethicalConsiderations`, custom properties | N/A | `AIPackage.standardCompliance` | Certification schemes, standards, frameworks |
-| 47 | `cybersecurity_policy_information` | Security | `externalReferences[]` (type: `support` or custom) | N/A | `Package.primaryPurpose` or external references | Link to producer's security.txt |
-| 48 | `vulnerability_referencing` | Security | `vulnerabilities[]` or external vulnerability databases | `vulnerabilities[]` | `Vulnerability` class or external references | CVE databases, exploitability info |
-| 49 | `security_metrics` | KPI | `modelCard.quantitativeAnalysis.performanceMetrics[]` | N/A | `AIPackage.metric`, `AIPackage.metricDecisionThreshold` | Robustness, resilience against manipulation |
-| 50 | `operational_performance_kpis` | KPI | Custom properties or `modelCard.quantitativeAnalysis` | N/A | `AIPackage.metric` | Uptime, latency, throughput, load balancing |
+| 44 | `infrastructure_hardware` | Infrastructure | `externalReferences[]` (type: `bom`) linking to HBOM | N/A | `Package.hasContainedElement` (hardware) or HBOM reference | See Discussion #19 |
+| 45 | `security_controls` | Security | `modelCard.considerations` (technical limitations, ethical), custom properties | N/A | `AIPackage.safetyRiskAssessment`, custom annotations | See Discussion #20 |
+| 46 | `security_compliance` | Security | `modelCard.considerations.ethicalConsiderations`, custom properties | N/A | `AIPackage.standardCompliance` | See Discussion #21 |
+| 47 | `cybersecurity_policy_information` | Security | `externalReferences[]` (type: `support` or custom) | N/A | `Package.primaryPurpose` or external references | See Discussion #22 |
+| 48 | `vulnerability_referencing` | Security | `vulnerabilities[]` or external vulnerability databases | `vulnerabilities[]` | `Vulnerability` class or external references | See Discussion #23 |
+| 49 | `security_metrics` | KPI | `modelCard.quantitativeAnalysis.performanceMetrics[]` | N/A | `AIPackage.metric`, `AIPackage.metricDecisionThreshold` | See Discussion #24 |
+| 50 | `operational_performance_kpis` | KPI | Custom properties or `modelCard.quantitativeAnalysis` | N/A | `AIPackage.metric` | See Discussion #25 |
 
 ---
 
@@ -100,20 +100,20 @@ The SBOM author is the accountable party for the document. If the AIBOM is incor
 - **SPDX v2.x:**
   - `creationInfo.creators[]`
     - `Person: <name> (<email>)`
-    - `Organization: <name> (<email>)`
+    - **Note:** `Organization` entries in `creators[]` are **not** accepted as SBOM authors; they represent the producing entity, not the document author.
 
 - **SPDX v3.x:**
-  - `creationInfo.createdBy` → `Person` or `Organization`
+  - `creationInfo.createdBy` → `Person`
     - `name`, `email`, or `url`
+    - **Note:** `Organization` is not accepted as SBOM author; use `originatedBy` (system/model producer) instead.
 
 - **CycloneDX:**
   - `metadata.authors[].name` (preferred)
-    - `name`, `email` (optional)
-  - `metadata.manufacturer.name`
-    - `name`, `url`
+  - `metadata.authors[].email` (acceptable fallback)
+  - **Note:** `metadata.manufacturer.name` represents the system/model producer, **not** the SBOM author.
 
 **Final Conclusion — SBOM Author:**
-> **The SBOM Author is the identifiable person or organization that created the AIBOM document. Tool entries are not accepted as authors. At least one contact identifier (name, email, or URL) must be present. The author is distinct from the System Producer and the Model Producer.**
+> **The SBOM Author is the identifiable person (individual or named contact) that created the AIBOM document. Organization entries and tool entries are not accepted as authors. At least one contact identifier (name, email, or URL) must be present. The author is distinct from the System Producer and the Model Producer.**
 
 ---
 
@@ -201,22 +201,24 @@ A digital signature proves the AIBOM data has not been tampered with since the a
 
 **Mapping:**
 
+- **CycloneDX (BOM-level signature):**
+  - `signature` (top-level element, JSON Signature Format — JSF)
+    - Signs the entire BOM document
+    - `algorithm`, `value`, optional `publicKey`
+  - **Note:** `metadata.component.signature` is a *component-level* signature (e.g., signing the model artifact itself), not the SBOM author's signature on the document.
+
 - **SPDX v2.x:**
-  - External signed envelope (detached from the SBOM document)
+  - Detached signed envelope (external to the SBOM document)
   - `--signature` / `--public-key` CLI flags
 
 - **SPDX v3.x:**
   - Embedded: `SpdxDocument.verifiedUsing` with `type: "Signature"`
   - Detached: `--signature` / `--public-key` CLI flags
 
-- **CycloneDX:**
-  - `signature` (JSON Signature Format — JSF)
-    - `algorithm`, `value`, optional `publicKey`
-
 **Final Conclusion — SBOM Author Signature:**
-> **A digital signature attributable to the SBOM author should be present. sbomqs detects signatures as follows:**
+> **A digital signature attributable to the SBOM author should be present at the BOM/document level (not the component level). sbomqs detects signatures as follows:**
 >
-> - **CycloneDX:** inline JSF signature inside the `signature` element.
+> - **CycloneDX:** top-level JSF `signature` element signing the entire BOM document. Component-level signatures (`metadata.component.signature`) do not satisfy this requirement.
 > - **SPDX v2.x:** detached signature via `--signature` and `--public-key` CLI flags.
 > - **SPDX v3.x:** embedded signature inside `SpdxDocument.verifiedUsing` or detached via CLI flags.
 
@@ -429,7 +431,8 @@ The system producer is the entity that created/defined the AI system. This is di
   - `packages[].originator` (for the top-level system package)
 
 - **SPDX v3.x:**
-  - `Package.suppliedBy` (for the primary system package)
+  - `Package.originatedBy` (for the primary system package)
+  - **Note:** `Package.suppliedBy` identifies the **distributor/supplier**, not the creator. For the G7 "producer" semantic, use `originatedBy`.
 
 - **CycloneDX:**
   - `metadata.component.manufacturer.name` — the system is the BOM subject
@@ -708,13 +711,15 @@ The model producer is the originator or manufacturer of the model. This entity m
   - `packages[].originator`
 
 - **SPDX v3.x:**
-  - `Package.suppliedBy` (required for AIPackage)
+  - `Package.originatedBy` (for the AIPackage element)
+  - **Note:** `Package.suppliedBy` identifies the **distributor/supplier**, not the creator. For the G7 "producer" semantic, use `originatedBy`.
 
 - **CycloneDX:**
-  - `component.manufacturer.name`
+  - `component.manufacturer.name` (preferred)
+  - `component.manufacturer.email` (acceptable fallback)
 
 **Final Conclusion — Model Producer:**
-> **The entity that created/defined/identified the model. Distinct from system producer and SBOM author. Should allow multiple entries for collaborative models.**
+> **The entity that created/defined/identified the model. Distinct from system producer and SBOM author. Name or email acceptable. Should allow multiple entries for collaborative models.**
 
 ---
 
@@ -1412,49 +1417,49 @@ Operational KPIs measure system health. A model with 99.9% uptime and 45ms laten
 | 5 | `sbom_author_signature` | Metadata | `signature` (JSF) | Detached CLI flags | `verifiedUsing` (Signature) | sbomqs detects all |
 | 6 | `sbom_tool_name` | Metadata | `metadata.tools.components[].name` | `creationInfo.creators[].Tool` | `createdUsing` → `Tool.name` | Full names, not acronyms |
 | 7 | `sbom_tool_version` | Metadata | `metadata.tools.components[].version` | Extracted from Tool | Extracted from Tool | |
-| 8 | `sbom_generation_context` | Metadata | `metadata.lifecycles[].phase` | `creationInfo.comment` | `Software/Sbom.sbomType` | No native field in most |
+| 8 | `sbom_generation_context` | Metadata | `metadata.lifecycles[].phase` | `creationInfo.comment` | `Software/Sbom.sbomType` | See Discussion #26 |
 | 9 | `sbom_timestamp` | Metadata | `metadata.timestamp` | `creationInfo.created` | `creationInfo.created` | RFC 9557 |
 | 10 | `sbom_dependency_relationship` | Metadata | `dependencies[]` | `relationships[]` | `relationships[]` | "includes"/"derived from" |
-| 11 | `system_name` | SLP | `metadata.component.name` | `packages[].name` | `Package.name` | Human-readable; **system is primary component** |
+| 11 | `system_name` | SLP | `metadata.component.name` | `packages[].name` where `SPDXRef-DOCUMENT` → `DESCRIBES` → package | `Package.name` where `SpdxDocument` → `describes` → package | Human-readable; **primary component** |
 | 12 | `system_components` | SLP | `components[]` (all types) | `packages[]` | `Package` / `AIPackage` / `DatasetPackage` in `@graph` | Constituent parts of the system; its dependencies |
-| 13 | `system_producer` | SLP | `metadata.component.manufacturer.name` | `packages[].originator` | `Package.suppliedBy` | Distinct from author; **system is primary component** |
-| 14 | `system_version` | SLP | `metadata.component.version` | `packages[].versionInfo` | `Package.packageVersion` | **System is primary component** |
+| 13 | `system_producer` | SLP | `metadata.component.manufacturer.name` | `packages[].originator` of DESCRIBES package | `Package.originatedBy` of described package | Distinct from author; **system is primary component** |
+| 14 | `system_version` | SLP | `metadata.component.version` | `packages[].versionInfo` of DESCRIBES package | `Package.packageVersion` of described package | **System is primary component** |
 | 15 | `system_timestamp` | SLP | Custom `properties` | N/A | N/A | System update time |
 | 16 | `system_data_flow` | SLP | `externalReferences[]` (documentation) | `packages[].externalRefs[]` (other/documentation) | `Package.externalRef` (documentation/other) | Link to data flow docs |
 | 17 | `system_data_usage` | SLP | Custom `properties` | Custom annotations | Custom annotations | No native field |
 | 18 | `system_input_output_properties` | SLP | `modelCard.modelParameters.inputs/outputs` | N/A | `AIPackage.informationAboutApplication` | Data types, modality |
 | 19 | `intended_application_area` | SLP | `modelCard.considerations.useCases` | N/A | `AIPackage.domain` | Medical, finance, etc. |
-| 20 | `model_name` | Models | `component.name` (ML) | `packages[].name` | `Package.name` | Human-readable |
+| 20 | `model_name` | Models | `component.name` (type: `machine-learning-model`) | `packages[].name` — **no model type in SPDX 2.x** | `AIPackage.name` (`@type: "AIPackage"`) | Human-readable; see Discussion #7 |
 | 21 | `model_identifier` | Models | `component.purl`, `bom-ref` | `externalRefs[]` | `externalIdentifier` | PURL, CPE, SWHID |
 | 22 | `model_version` | Models | `component.version` | `packages[].versionInfo` | `Package.packageVersion` | |
-| 23 | `model_timestamp` | Models | `releaseNotes.timestamp` | N/A | `Package.releaseTime` | Required for AIPackage |
-| 24 | `model_producer` | Models | `component.manufacturer.name` | `packages[].originator` | `Package.suppliedBy` | Required for AIPackage |
+| 23 | `model_timestamp` | Models | `releaseNotes.timestamp` | N/A | `Package.releaseTime` | Required for AIPackage; see Discussion #8 |
+| 24 | `model_producer` | Models | `component.manufacturer.name` or `component.manufacturer.email` | `packages[].originator` | `Package.originatedBy` | Name or email; required for AIPackage |
 | 25 | `model_description` | Models | `component.description` | `packages[].description` | `AIPackage.limitation` | Capabilities, lineage |
 | 26 | `model_hash_value` | Models | `component.hashes[].content` | `checksums[].checksumValue` | `verifiedUsing[].hash.hashValue` | |
 | 27 | `model_hash_algorithm` | Models | `component.hashes[].alg` | `checksums[].algorithm` | `verifiedUsing[].hash.algorithm` | IANA names |
-| 28 | `model_properties` | Models | `modelCard.modelParameters` | N/A | `AIPackage.typeOfModel`, `hyperparameter` | Architecture, parameters |
-| 29 | `model_input_output_properties` | Models | `modelCard.modelParameters.inputs/outputs` | N/A | `AIPackage.informationAboutApplication` | Modality, tokenizer |
-| 30 | `model_training_properties` | Models | `modelCard.modelParameters.approach.type` | N/A | `AIPackage.informationAboutTraining` | Learning type, RLHF |
+| 28 | `model_properties` | Models | `modelCard.modelParameters` | N/A | `AIPackage.typeOfModel`, `hyperparameter` | See Discussion #9 |
+| 29 | `model_input_output_properties` | Models | `modelCard.modelParameters.inputs/outputs` | N/A | `AIPackage.informationAboutApplication` | See Discussion #10 |
+| 30 | `model_training_properties` | Models | `modelCard.modelParameters.approach.type` | N/A | `AIPackage.informationAboutTraining` | See Discussion #11 |
 | 31 | `model_license` | Models | `component.licenses[]` | `packages[].licenseDeclared` | `Package.declaredLicense` | |
 | 32 | `model_external_references` | Models | `component.externalReferences[]` | `packages[].externalRefs[]` | `Package.externalReference` | Model card, paper |
-| 33 | `dataset_name` | Datasets | `component.name` (data) | N/A | `DatasetPackage.name` | |
-| 34 | `dataset_description` | Datasets | `component.description` | N/A | `DatasetPackage.datasetAvailability` | Pre-training, benchmark |
-| 35 | `dataset_content` | Datasets | `data[].contents.url` | N/A | `DatasetPackage.contentIdentifier` | Format, modality |
+| 33 | `dataset_name` | Datasets | `component.name` (data) | N/A | `DatasetPackage.name` | See Discussion #12 |
+| 34 | `dataset_description` | Datasets | `component.description` | N/A | `DatasetPackage.datasetAvailability` | See Discussion #13 |
+| 35 | `dataset_content` | Datasets | `data[].contents.url` | N/A | `DatasetPackage.contentIdentifier` | See Discussion #14 |
 | 36 | `dataset_identifier` | Datasets | `component.purl`, `bom-ref` | N/A | `Package.spdxId`, `externalIdentifier` | URL, URI |
 | 37 | `dataset_hash` | Datasets | `component.hashes[]` | N/A | `Package.verifiedUsing[].hash` | |
-| 38 | `dataset_provenance` | Datasets | `component.pedigree` | N/A | `DatasetPackage.dataCollectionProcess` | Origin, processing |
-| 39 | `dataset_statistical_properties` | Datasets | Custom `properties` | N/A | Custom annotations | No native field |
-| 40 | `dataset_sensitivity` | Datasets | Custom `properties` | N/A | `DatasetPackage.hasSensitivePersonalInformation` | PII, copyright, etc. |
-| 41 | `dataset_dependency_relationship` | Datasets | `dependencies[]` | N/A | `relationships[]` | Tools, derivation |
+| 38 | `dataset_provenance` | Datasets | `component.pedigree` | N/A | `DatasetPackage.dataCollectionProcess` | See Discussion #15 |
+| 39 | `dataset_statistical_properties` | Datasets | Custom `properties` | N/A | Custom annotations | See Discussion #16 |
+| 40 | `dataset_sensitivity` | Datasets | Custom `properties` | N/A | `DatasetPackage.hasSensitivePersonalInformation` | See Discussion #17 |
+| 41 | `dataset_dependency_relationship` | Datasets | `dependencies[]` | N/A | `relationships[]` | See Discussion #18 |
 | 42 | `dataset_license` | Datasets | `component.licenses[]` | N/A | `Package.declaredLicense` | |
 | 43 | `infrastructure_software` | Infrastructure | `components[]` (library/framework) | `packages[]` | `Package.hasContainedElement` | Dependencies |
-| 44 | `infrastructure_hardware` | Infrastructure | `externalReferences[]` (type: bom) | N/A | HBOM reference | Link to HBOM |
-| 45 | `security_controls` | Security | `modelCard.considerations` | N/A | `AIPackage.safetyRiskAssessment` | Encryption, filters |
-| 46 | `security_compliance` | Security | Custom `properties` | N/A | `AIPackage.standardCompliance` | SOC 2, ISO 27001 |
-| 47 | `cybersecurity_policy_information` | Security | `externalReferences[]` (support) | N/A | External references | security.txt link |
-| 48 | `vulnerability_referencing` | Security | `vulnerabilities[]` | `vulnerabilities[]` | `Vulnerability` class | CVE databases |
-| 49 | `security_metrics` | KPI | `modelCard.quantitativeAnalysis.performanceMetrics` | N/A | `AIPackage.metric` | Robustness, fairness |
-| 50 | `operational_performance_kpis` | KPI | Custom `properties` | N/A | `AIPackage.metric` | Uptime, latency |
+| 44 | `infrastructure_hardware` | Infrastructure | `externalReferences[]` (type: bom) | N/A | HBOM reference | See Discussion #19 |
+| 45 | `security_controls` | Security | `modelCard.considerations` | N/A | `AIPackage.safetyRiskAssessment` | See Discussion #20 |
+| 46 | `security_compliance` | Security | Custom `properties` | N/A | `AIPackage.standardCompliance` | See Discussion #21 |
+| 47 | `cybersecurity_policy_information` | Security | `externalReferences[]` (support) | N/A | External references | See Discussion #22 |
+| 48 | `vulnerability_referencing` | Security | `vulnerabilities[]` | `vulnerabilities[]` | `Vulnerability` class | See Discussion #23 |
+| 49 | `security_metrics` | KPI | `modelCard.quantitativeAnalysis.performanceMetrics` | N/A | `AIPackage.metric` | See Discussion #24 |
+| 50 | `operational_performance_kpis` | KPI | Custom `properties` | N/A | `AIPackage.metric` | See Discussion #25 |
 
 ---
 
