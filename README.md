@@ -8,6 +8,8 @@
 **sbomqs** is the industry-leading tool for evaluating SBOM quality, ensuring compliance, and managing your software supply chain security. From quality scoring to compliance validation, component analysis to vulnerability tracking - sbomqs provides everything you need to work with SBOMs effectively.
 
 > "sbomqs is listed as a relevant tool in the SBOM ecosystem" - [SBOM Generation White Paper, 2025](https://github.com/SBOM-Community/SBOM-Generation)
+>
+> "sbomqs is listed as an open-source tool under Quality/Score and Cryptographic Signing categories" - [ENISA Technical Advisory for Software Bill of Materials, v1.10](https://www.enisa.europa.eu/publications/enisa-technical-advisory-for-software-bill-of-materials)
 
 ## Interlynk Free Tier — Full SBOM Compliance, Zero Friction
 
