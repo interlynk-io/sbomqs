@@ -194,12 +194,15 @@ func SBOMSupplier(doc sbom.Document) catalog.ProfFeatScore {
 	case string(sbom.SBOMSpecCDX):
 		s := doc.Supplier()
 		if s != nil {
-			var email string
+			hasEmail := false
 			for _, c := range s.GetContacts() {
-				email = c.GetEmail()
+				if strings.TrimSpace(c.GetEmail()) != "" {
+					hasEmail = true
+					break
+				}
 			}
 
-			hasContact := strings.TrimSpace(email) != "" || strings.TrimSpace(s.GetURL()) != ""
+			hasContact := hasEmail || strings.TrimSpace(s.GetURL()) != ""
 
 			if hasContact {
 				return formulae.ScoreSBOMProfFull("1 supplier", false)
