@@ -49,7 +49,7 @@ sbomqs score [flags] <SBOM file(s)>
 - `--category, -c <category>`: Score only specific categories (comma-separated)
 - `--feature, -f <features>`: Score only specific features (comma-separated)
 - `--configpath <path>`: Use custom scoring configuration file. See [Weightage Scoring Guide](../guides/weightage-scoring.md) for details on creating custom weight configurations.
-- `--profile <profiles>`: Apply specific compliance profiles (comma-separated: 'ntia', 'bsi', 'bsi-v1.1', 'bsi-v2.0', 'bsi-v2.1', 'oct', 'interlynk')
+- `--profile <profiles>`: Apply specific compliance profiles (comma-separated: 'ntia', 'bsi', 'bsi-v1.1', 'bsi-v2.0', 'bsi-v2.1', 'enisa', 'oct', 'interlynk')
 - `--legacy, -e`: Use legacy scoring mode (prior to sbomqs version 2.0)
 
 ### Other Flags
@@ -121,6 +121,7 @@ These flags are deprecated but still available for backward compatibility:
 - `bsi-v1.1`: BSI TR-03183-2 v1.1 specific
 - `bsi-v2.0`: BSI TR-03183-2 v2.0 specific
 - `bsi-v2.1`: BSI TR-03183-2 v2.1 specific
+- `enisa`: ENISA SBOM Minimum Elements compliance
 - `oct`: OpenChain Telco compliance
 - `interlynk`: Interlynk comprehensive quality profile
 
@@ -263,6 +264,9 @@ $ sbomqs score --profile bsi-v2.1 my-app.cdx.json
 
 # BSI v2.0 profile
 $ sbomqs score --profile bsi-v2.0 my-app.spdx.json
+
+# ENISA profile
+$ sbomqs score --profile enisa my-app.spdx.json
 ```
 
 #### Category-Specific Scoring
@@ -310,6 +314,7 @@ Each profile has its own set of feature keys:
 | **bsi-v1.1** | `sbom_creator`, `sbom_timestamp`, `comp_creator`, `comp_name`, `comp_version`, `comp_depth`, `comp_license`, `comp_hash`, `sbom_uri`, `comp_source_url`, `comp_executable_url`, `comp_source_hash`, `comp_unique_identifiers` |
 | **bsi-v2.0** | `sbom_creator`, `sbom_timestamp`, `sbom_uri`, `comp_creator`, `comp_name`, `comp_version`, `comp_filename`, `comp_depth`, `comp_associated_license`, `comp_deployable_hash`, `comp_executable_property`, `comp_archive_property`, `comp_structured_property` |
 | **bsi** (v2.1) | `sbom_spec_version`, `sbom_creator`, `sbom_timestamp`, `sbom_uri`, `comp_creator`, `comp_name`, `comp_version`, `comp_filename`, `comp_depth`, `comp_distribution_license`, `comp_deployable_hash`, `comp_executable_prop`, `comp_archive_prop`, `comp_structured_prop`, `comp_source_code_url`, `comp_download_url`, `comp_other_identifiers`, `comp_original_licenses`, `comp_effective_license`, `comp_source_hash`, `comp_security_txt_url` |
+| **enisa** | `sbom_author`, `sbom_timestamp`, `sbom_tool_name`, `sbom_generation_context`, `comp_producer`, `comp_name`, `comp_version`, `comp_uniq_id`, `comp_hash`, `comp_license`, `comp_relationships` |
 | **oct-v1.1** | `sbom_spec`, `sbom_spec_version`, `sbom_data_license`, `sbom_identifier`, `sbom_name`, `sbom_namespace`, `sbom_creator`, `sbom_timestamp`, `sbom_creator_comment`, `comp_name`, `comp_identifier`, `comp_version`, `comp_supplier`, `comp_download_location`, `comp_license_concluded`, `comp_license_declared`, `comp_copyright`, `sbom_relationships` |
 | **fsct** | `sbom_provenance`, `sbom_primary_component`, `comp_identity`, `supplier_attribution`, `comp_unique_id`, `artifact_integrity`, `relationships_coverage`, `license_coverage`, `copyright_coverage` |
 

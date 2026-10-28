@@ -75,6 +75,7 @@ type Params struct {
 	Oct      bool
 	Fsct     bool
 	Cisa2026 bool
+	Enisa    bool
 
 	Color bool
 	Blob  string
