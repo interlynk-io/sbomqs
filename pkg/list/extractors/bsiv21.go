@@ -90,6 +90,10 @@ func bsiIsAcceptableLicense(l licenses.License) bool {
 	if l.Spdx() {
 		return true
 	}
+	// Accept ScanCode LicenseDB identifiers (BSI TR-03183-2 §6.1 requirement)
+	if l.AboutCode() {
+		return true
+	}
 	if l.Custom() && strings.HasPrefix(id, "LicenseRef-") {
 		return true
 	}

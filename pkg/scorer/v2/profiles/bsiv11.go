@@ -539,8 +539,13 @@ func isAcceptableLicense(s licenses.License) bool {
 		return false
 	}
 
-	// Accpet valid SPDX licenses
+	// Accept valid SPDX licenses
 	if s.Spdx() {
+		return true
+	}
+
+	// Accept ScanCode LicenseDB identifiers (BSI TR-03183-2 §6.1 requirement)
+	if s.AboutCode() {
 		return true
 	}
 

@@ -3378,6 +3378,52 @@ var spdxCompWithInvalidExpression = []byte(`
 }
 `)
 
+// ScanCode LicenseDB identifiers — BSI TR-03183-2 §6.1 explicitly requires these
+// when no SPDX identifier exists (issue #783).
+var cdxCompWithScancodeLicense = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:scancode-1111",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "name": "scancode-lib",
+      "version": "1.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "LicenseRef-scancode-oracle-free-2021",
+            "acknowledgement": "concluded"
+          }
+        }
+      ]
+    }
+  ]
+}
+`)
+
+var spdxCompWithScancodeLicense = []byte(`
+{
+  "spdxVersion": "SPDX-2.3",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "scancode-doc",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": ["Tool: sbomqs"]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Pkg-scancode",
+      "name": "scancode-lib",
+      "versionInfo": "1.0.0",
+      "licenseConcluded": "LicenseRef-scancode-public-domain"
+    }
+  ]
+}
+`)
+
 var cdxCompWithMixedLicenses = []byte(`
 {
   "bomFormat": "CycloneDX",
@@ -3909,6 +3955,31 @@ func TestBSIV11CompLicense(t *testing.T) {
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "licence info is missing for all components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// Issue #783: ScanCode LicenseDB identifiers must be accepted
+	// BSI TR-03183-2 §6.1 explicitly requires ScanCode LicenseDB identifiers
+	// when no SPDX identifier exists.
+	t.Run("cdxCompWithScancodeLicense", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxCompWithScancodeLicense, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompLicenses(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "licence information declared for all components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("spdxCompWithScancodeLicense", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdxCompWithScancodeLicense, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompLicenses(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "licence information declared for all components", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 }
