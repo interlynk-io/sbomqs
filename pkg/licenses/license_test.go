@@ -352,7 +352,7 @@ func TestLookupExpression_NonCommercialIsRestrictive(t *testing.T) {
 // pkg/licenses/files is regenerated, and the AboutCode category vocabulary
 // drives both the restrictive and freeAnyUse classifications.
 func TestLicenseDatabase_LoadedCounts(t *testing.T) {
-	if got, want := len(licenseList), 819; got != want {
+	if got, want := len(licenseList), 826; got != want {
 		t.Fatalf("expected %d spdx licenses and exceptions, got %d", want, got)
 	}
 
