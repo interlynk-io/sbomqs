@@ -40,6 +40,9 @@ const ProfileNTIA = "ntia"
 // ProfileNTIA2021 is the profile key for NTIA Minimum Elements (2021).
 const ProfileNTIA2021 = "ntia-2021"
 
+// ProfileENISA is the profile key for ENISA SBOM Minimum Elements.
+const ProfileENISA = "enisa"
+
 // fsctCompExtractors maps FSCT feature keys to per-component extractors.
 // Features without the standard comp_/sbom_ prefix are routed via profile-aware dispatch.
 var fsctCompExtractors = map[string]extractors.CompExtractor{
@@ -131,6 +134,38 @@ func LookupNTIA2021CompExtractor(feature string) (extractors.CompExtractor, bool
 // LookupNTIA2021DocExtractor returns the NTIA 2021 document-level extractor for the given feature key.
 func LookupNTIA2021DocExtractor(feature string) (extractors.DocExtractor, bool) {
 	e, ok := ntia2021DocExtractors[feature]
+	return e, ok
+}
+
+// enisaCompExtractors maps ENISA feature keys to per-component extractors.
+var enisaCompExtractors = map[string]extractors.CompExtractor{
+	"comp_name":        extractors.ENISACompName,
+	"comp_version":     extractors.ENISACompVersion,
+	"comp_uniq_id":     extractors.ENISACompUniqID,
+	"comp_producer":    extractors.ENISACompProducer,
+	"comp_hash_value":  extractors.ENISACompHashValue,
+	"comp_hash_algo":   extractors.ENISACompHashAlgo,
+	"comp_license":     extractors.ENISACompLicense,
+	"comp_relationships": extractors.ENISACompRelationships,
+}
+
+// enisaDocExtractors maps ENISA feature keys to SBOM-level extractors.
+var enisaDocExtractors = map[string]extractors.DocExtractor{
+	"sbom_author":             extractors.ENISASBOMAuthor,
+	"sbom_timestamp":          extractors.ENISASBOMTimestamp,
+	"sbom_tool_name":          extractors.ENISASBOMToolName,
+	"sbom_generation_context": extractors.ENISASBOMGenerationContext,
+}
+
+// LookupENISACompExtractor returns the ENISA per-component extractor for the given feature key.
+func LookupENISACompExtractor(feature string) (extractors.CompExtractor, bool) {
+	e, ok := enisaCompExtractors[feature]
+	return e, ok
+}
+
+// LookupENISADocExtractor returns the ENISA document-level extractor for the given feature key.
+func LookupENISADocExtractor(feature string) (extractors.DocExtractor, bool) {
+	e, ok := enisaDocExtractors[feature]
 	return e, ok
 }
 

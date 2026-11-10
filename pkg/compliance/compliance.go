@@ -49,6 +49,8 @@ const (
 	FSCT_V3 = "FSCT"
 	// NTIA_2026_REPORT represents the NTIA Minimum Elements (2026) compliance framework.
 	NTIA_2026_REPORT = "NTIA"
+	// ENISA_REPORT represents the ENISA SBOM Minimum Elements compliance framework.
+	ENISA_REPORT = "ENISA"
 )
 
 func validReportTypes() map[string]bool {
@@ -60,6 +62,7 @@ func validReportTypes() map[string]bool {
 		OCT_TELCO:        true,
 		FSCT_V3:          true,
 		NTIA_2026_REPORT: true,
+		ENISA_REPORT:     true,
 	}
 }
 
@@ -141,6 +144,10 @@ func ComplianceResult(ctx context.Context, doc sbom.Document, reportType, fileNa
 	case reportType == NTIA_2026_REPORT:
 		log.Debug("Running NTIA 2026 compliance report")
 		ntia2026Result(ctx, doc, fileName, outFormat, coloredOutput)
+
+	case reportType == ENISA_REPORT:
+		log.Debug("Running ENISA compliance report")
+		enisaResult(ctx, doc, fileName, outFormat, coloredOutput)
 
 	default:
 		log.Warn("No compliance report generated",

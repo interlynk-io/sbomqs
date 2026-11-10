@@ -32,10 +32,13 @@ var complianceCmd = &cobra.Command{
 Check if our SBOM meets compliance requirements for various standards, such as NTIA minimum elements,
 BSI TR-03183-2, Framing Software Component Transparency (v3) and OpenChain Telco.
 	`,
-	Example: ` sbomqs compliance  < --ntia | --ntia-2021 | --bsi | --bsi-v2 | --bsi-v21 | --fsct | --oct >  [--basic | --json]   <SBOM file>
+	Example: ` sbomqs compliance  < --ntia | --ntia-2021 | --enisa | --bsi | --bsi-v2 | --bsi-v21 | --fsct | --oct >  [--basic | --json]   <SBOM file>
 
   # Check a NTIA minimum elements (CISA-2026) compliance against a SBOM in a table output
   sbomqs compliance --ntia samples/photon.spdx.json
+
+  # Check ENISA SBOM Minimum Elements compliance against a SBOM in a table output
+  sbomqs compliance --enisa samples/photon.spdx.json
 
   # Check a NTIA minimum elements (2021) compliance against a SBOM in a table output
   sbomqs compliance --ntia-2021 samples/photon.spdx.json
@@ -93,6 +96,7 @@ func setupEngineParams(cmd *cobra.Command, args []string) *engine.Params {
 	engParams.Color, _ = cmd.Flags().GetBool("color")
 
 	engParams.Ntia, _ = cmd.Flags().GetBool("ntia")
+	engParams.Enisa, _ = cmd.Flags().GetBool("enisa")
 	if v, _ := cmd.Flags().GetBool("ntia-2021"); v {
 		engParams.Ntia2021 = true
 	}
@@ -175,6 +179,7 @@ func init() {
 
 	// Standards control
 	complianceCmd.Flags().BoolP("ntia", "n", false, "NTIA minimum elements (2026)")
+	complianceCmd.Flags().BoolP("enisa", "e", false, "ENISA SBOM Minimum Elements")
 	complianceCmd.Flags().BoolP("ntia-2021", "", false, "NTIA minimum elements (2021)")
 	complianceCmd.Flags().BoolP("ntia2021", "", false, "NTIA minimum elements (2021)")
 	complianceCmd.Flags().BoolP("bsi", "c", false, "BSI TR-03183-2 (latest, currently v2.1.0)")

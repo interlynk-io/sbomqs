@@ -110,6 +110,23 @@ var NTIA2026KeyToEvaluatingFunction = map[string]catalog.ProfFeatEval{
 	"comp_license":            profiles.NTIA2026CompLicense,
 }
 
+var ENISAKeyToEvaluatingFunction = map[string]catalog.ProfFeatEval{
+	// Document-level
+	"sbom_author":             profiles.ENISASBOMAuthors,
+	"sbom_timestamp":          profiles.NTIA2026SBOMCreationTimestamp,
+	"sbom_tool_name":          profiles.NTIA2026SBOMToolName,
+	"sbom_generation_context": profiles.NTIA2026GenerationContext,
+	// Component-level
+	"comp_name":          profiles.NTIA2026CompName,
+	"comp_version":       profiles.NTIA2026CompVersion,
+	"comp_uniq_id":       profiles.NTIA2026CompUniqID,
+	"comp_producer":      profiles.ENISACompProducer,
+	"comp_hash_value":    profiles.NTIA2026CompHashValue,
+	"comp_hash_algo":     profiles.NTIA2026CompHashAlgo,
+	"comp_license":       profiles.NTIA2026CompLicense,
+	"comp_relationships": profiles.NTIA2026SBOMRelationships,
+}
+
 var BSIV11KeyToEvaluatingFunction = map[string]catalog.ProfFeatEval{
 	"sbom_creator":   profiles.BSIV11SBOMCreator,
 	"sbom_timestamp": profiles.BSIV11SBOMCreationTimestamp,
@@ -266,6 +283,13 @@ var ProfileSpecificFeatures = map[string][]string{
 		"sbom_creator_comment", "comp_name", "comp_identifier", "comp_version",
 		"comp_supplier", "comp_download_location", "comp_license_concluded",
 		"comp_license_declared", "comp_copyright", "sbom_relationships",
+	},
+	"enisa": {
+		// Profile-specific keys (aliases)
+		"sbom_author", "sbom_timestamp", "sbom_tool_name",
+		"sbom_generation_context", "comp_name", "comp_version",
+		"comp_uniq_id", "comp_producer", "comp_hash_value",
+		"comp_hash_algo", "comp_license", "comp_relationships",
 	},
 	"fsct": {
 		// Profile-specific keys (aliases)
@@ -431,6 +455,7 @@ const (
 	ProfileOCTV11    catalog.ProfileKey = "oct-v1.1"
 	ProfileInterlynk catalog.ProfileKey = "interlynk"
 	ProfileFSCT      catalog.ProfileKey = "fsct"
+	ProfileENISA     catalog.ProfileKey = "enisa"
 )
 
 var profileAliases = map[string]catalog.ProfileKey{
@@ -458,6 +483,8 @@ var profileAliases = map[string]catalog.ProfileKey{
 	"cisa2021":              ProfileNTIA2021,
 	"CISA2021":              ProfileNTIA2021,
 	"fsct":                  ProfileFSCT,
+	"enisa":                 ProfileENISA,
+	"ENISA":                 ProfileENISA,
 	"BSI":                   ProfileBSI21,
 	"bsi":                   ProfileBSI21,
 	"BSI-V1.1":              ProfileBSI11,
@@ -900,6 +927,9 @@ func getProfileDisplayName(profile string) string {
 	case "fsct":
 		return "Framing 3rd Edition"
 
+	case "enisa":
+		return "ENISA SBOM Minimum Elements"
+
 	case "interlynk":
 		return "Interlynk Comprehensive"
 
@@ -943,6 +973,9 @@ func filterProfiles(ctx context.Context, profiles []string) ([]catalog.ProfSpec,
 
 		case string(ProfileFSCT):
 			finalProfiles = append(finalProfiles, profileFSCTSpec)
+
+		case string(ProfileENISA):
+			finalProfiles = append(finalProfiles, profileENISASpec)
 
 		case "bsi":
 			finalProfiles = append(finalProfiles, profileBSI21Spec)
@@ -1387,7 +1420,30 @@ var profileOCTV11Spec = catalog.ProfSpec{
 	},
 }
 
+var profileENISASpec = catalog.ProfSpec{
+	Key:         ProfileENISA,
+	Name:        "ENISA SBOM Minimum Elements",
+	Description: "ENISA SBOM Minimum Elements Profile",
+	Features: []catalog.ProfFeatSpec{
+		// SBOM Metadata
+		{Key: "sbom_author", Name: "SBOM Author", Required: true, Description: "Person who created the SBOM (Organization/Tool not accepted)", Evaluate: profiles.ENISASBOMAuthors},
+		{Key: "sbom_timestamp", Name: "SBOM Timestamp", Required: true, Description: "Creation/last-updated timestamp", Evaluate: profiles.NTIA2026SBOMCreationTimestamp},
+		{Key: "sbom_tool_name", Name: "SBOM Tool Name", Required: true, Description: "Name of the tool that generated the SBOM", Evaluate: profiles.NTIA2026SBOMToolName},
+		{Key: "sbom_generation_context", Name: "SBOM Generation Context", Required: true, Description: "Lifecycle stage when SBOM was created", Evaluate: profiles.NTIA2026GenerationContext},
+		// Component Data
+		{Key: "comp_name", Name: "Component Name", Required: true, Description: "Name assigned to each component", Evaluate: profiles.NTIA2026CompName},
+		{Key: "comp_version", Name: "Component Version", Required: true, Description: "Version strings for all components", Evaluate: profiles.NTIA2026CompVersion},
+		{Key: "comp_uniq_id", Name: "Component Software Identifiers", Required: true, Description: "PURL, CPE, SWID, SWHID, or OmniBOR ID", Evaluate: profiles.NTIA2026CompUniqID},
+		{Key: "comp_producer", Name: "Software Producer", Required: true, Description: "Person who created the component (Organization not accepted)", Evaluate: profiles.ENISACompProducer},
+		{Key: "comp_hash_value", Name: "Component Hash Value", Required: true, Description: "Cryptographic hash value for each component", Evaluate: profiles.NTIA2026CompHashValue},
+		{Key: "comp_hash_algo", Name: "Component Hash Algorithm", Required: true, Description: "Cryptographic hash algorithm for each component", Evaluate: profiles.NTIA2026CompHashAlgo},
+		{Key: "comp_license", Name: "Component License", Required: true, Description: "Declared license information for each component", Evaluate: profiles.NTIA2026CompLicense},
+		{Key: "comp_relationships", Name: "Dependency Relationship", Required: true, Description: "Dependency relationships for components", Evaluate: profiles.NTIA2026SBOMRelationships},
+	},
+}
+
 var Profile = []catalog.ProfSpec{
+	profileENISASpec,
 	profileNTIASpec,     // now CISA 2026 (latest NTIA)
 	profileNTIA2021Spec, // legacy NTIA 2021
 	profileNTIA2025Spec,
@@ -1410,6 +1466,7 @@ var ProfileSpecsMap = map[string]catalog.ProfSpec{
 	"bsi":       profileBSI21Spec,
 	"oct-v1.1":  profileOCTV11Spec,
 	"fsct":      profileFSCTSpec,
+	"enisa":     profileENISASpec,
 	"interlynk": profileInterlynkSpec,
 }
 
