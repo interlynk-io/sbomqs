@@ -1216,13 +1216,25 @@ func (s *Spdx3Doc) pkgRequiredFields(pkg *spdx.Package) bool {
 
 func (s *Spdx3Doc) purls(pkg *spdx.Package) []purl.PURL {
 	urls := make([]purl.PURL, 0)
-	// PURL is stored as ExternalIdentifier in SPDX 3.0.
+	seen := make(map[string]bool)
+
+	// SPDX 3.0 native property: software_packageUrl
+	if pkg.PackageUrl != "" {
+		prl := purl.NewPURL(pkg.PackageUrl)
+		if prl.Valid() {
+			urls = append(urls, prl)
+			seen[string(prl)] = true
+		}
+	}
+
+	// PURL stored as ExternalIdentifier in SPDX 3.0.
 	// SPDX 3.0 spec uses "packageUrl" but some documents may use "packageURL".
 	for _, ei := range pkg.ExternalIdentifier {
 		if strings.EqualFold(string(ei.ExternalIdentifierType), string(spdx.ExternalIdentifierTypePackageUrl)) {
 			prl := purl.NewPURL(ei.Identifier)
-			if prl.Valid() {
+			if prl.Valid() && !seen[string(prl)] {
 				urls = append(urls, prl)
+				seen[string(prl)] = true
 			}
 		}
 	}

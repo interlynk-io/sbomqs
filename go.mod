@@ -9,7 +9,7 @@ require (
 	github.com/github/go-spdx/v2 v2.7.0
 	github.com/go-git/go-billy/v5 v5.9.1
 	github.com/google/uuid v1.6.0
-	github.com/interlynk-io/spdx-zen v0.1.5
+	github.com/interlynk-io/spdx-zen v0.1.7
 	github.com/knqyf263/go-cpe v0.0.0-20230627041855-cb0794d06872
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.14.0
 	github.com/olekukonko/tablewriter v0.0.5
@@ -39,7 +39,7 @@ require (
 	github.com/mattn/go-colorable v0.1.15 // indirect
 	github.com/mattn/go-isatty v0.0.24 // indirect
 	github.com/mattn/go-runewidth v0.0.30 // indirect
-	github.com/piprate/json-gold v0.9.0 // indirect
+	github.com/piprate/json-gold v0.9.1 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pquerna/cachecontrol v0.2.0 // indirect
 	github.com/spdx/gordf v0.0.0-20250128162952-000978ccd6fb // indirect
