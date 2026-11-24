@@ -932,7 +932,7 @@ func filterProfiles(ctx context.Context, profiles []string) ([]catalog.ProfSpec,
 
 		switch profile {
 
-		case string(ProfileNTIA), "cisa2026", "CISA2026", "cisa", "CISA":
+		case string(ProfileNTIA), "cisa-2026", "cisa2026", "CISA2026", "cisa", "CISA":
 			finalProfiles = append(finalProfiles, profileNTIASpec)
 
 		case string(ProfileNTIA2021), "ntia2021", "NTIA2021", "cisa-2021", "cisa2021", "CISA-2021", "CISA2021":
