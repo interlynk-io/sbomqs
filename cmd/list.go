@@ -86,11 +86,13 @@ var listCmd = &cobra.Command{
   sbomqs list --profile bsi --feature comp_name my-app.cdx.json
   sbomqs list --profile ntia --feature comp_producer --missing my-app.spdx.json
   sbomqs list --profile ntia-2021 --feature comp_supplier --missing my-app.spdx.json
+  sbomqs list --profile enisa --feature comp_producer --missing my-app.spdx.json
   sbomqs list --profile bsiv21 --feature comp_deployable_hash --missing my-app.cdx.json
 
   # Browse features supported by a profile
   sbomqs features --profile bsi
   sbomqs features --profile ntia
+  sbomqs features --profile enisa
 
   All supported features: https://github.com/interlynk-io/sbomqs/blob/main/docs/commands/list.md#supported-features
 `,
@@ -199,7 +201,7 @@ func init() {
 
 	listCmd.Flags().BoolP("missing", "m", false, "List components or properties missing the specified feature")
 
-	listCmd.Flags().String("profile", "", "Compliance profile for feature extraction (e.g. bsi [=bsiv21], bsiv11|bsi-v1.1, bsiv20|bsi-v2.0, bsiv21|bsi-v2.1, ntia|cisa-2026|cisa|cisa2026, ntia-2021|cisa-2021|cisa2021, fsct, oct|oct-v1.1, interlynk). Run 'sbomqs features --profile <profile>' to see supported features for each profile.")
+	listCmd.Flags().String("profile", "", "Compliance profile for feature extraction (e.g. bsi [=bsiv21], bsiv11|bsi-v1.1, bsiv20|bsi-v2.0, bsiv21|bsi-v2.1, ntia|cisa-2026|cisa|cisa2026, ntia-2021|cisa-2021|cisa2021, enisa, fsct, oct|oct-v1.1, interlynk). Run 'sbomqs features --profile <profile>' to see supported features for each profile.")
 
 	// -- Signature Control --
 	listCmd.Flags().String("signature", "", "Path to detached signature file for SPDX SBOMs")
@@ -286,6 +288,24 @@ var ntiaFeatureKeys = map[string]struct{}{
 	"comp_hash_value": {},
 	"comp_hash_algo":  {},
 	"comp_license":    {},
+}
+
+// enisaFeatureKeys lists the feature keys supported by the enisa profile.
+var enisaFeatureKeys = map[string]struct{}{
+	// SBOM-level
+	"sbom_author":             {},
+	"sbom_timestamp":          {},
+	"sbom_tool_name":          {},
+	"sbom_generation_context": {},
+	// Component-level
+	"comp_name":        {},
+	"comp_version":     {},
+	"comp_uniq_id":     {},
+	"comp_producer":    {},
+	"comp_hash_value":  {},
+	"comp_hash_algo":   {},
+	"comp_license":     {},
+	"comp_relationships": {},
 }
 
 // bsiV11FeatureKeys lists the feature keys supported by the bsiv11 profile.
@@ -446,6 +466,9 @@ func normalizeProfile(profile string) string {
 	case "ntia-2021", "ntia2021", "cisa-2021", "cisa2021", "CISA2021":
 		return "ntia-2021"
 
+	case "enisa":
+		return "enisa"
+
 	case "oct", "oct-v1.1", "oct-v1_1", "octv11":
 		return "oct-v1.1"
 
@@ -460,6 +483,7 @@ var supportedProfiles = map[string]struct{}{
 	"fsct":      {},
 	"ntia":      {},
 	"ntia-2021": {},
+	"enisa":     {},
 	"bsiv11":    {},
 	"bsiv20":    {},
 	"bsiv21":    {},
@@ -475,6 +499,7 @@ var profileSectionName = map[string]string{
 	"bsiv21":    "BSI TR-03183-2 v2.1 (--profile bsiv21 / bsi-v2.1)",
 	"ntia":      "NTIA Minimum Elements (2026) (--profile ntia / cisa-2026 / cisa / cisa2026)",
 	"ntia-2021": "NTIA Minimum Elements 2021 (--profile ntia-2021 / ntia2021 / cisa-2021 / cisa2021)",
+	"enisa":     "ENISA SBOM Minimum Elements (--profile enisa)",
 	"fsct":      "FSCT Framing 3rd Edition (--profile fsct)",
 	"oct-v1.1":  "OpenChain Telco v1.1 (--profile oct / oct-v1.1)",
 	"interlynk": "Interlynk (--profile interlynk)",
@@ -490,7 +515,7 @@ func validateparsedListCmd(uCmd *userListCmd) error {
 	if uCmd.profile != "" {
 		if _, ok := supportedProfiles[uCmd.profile]; !ok {
 			return fmt.Errorf(
-				"profile %q is not supported. Supported profiles: bsi (=bsiv21), bsiv11|bsi-v1.1, bsiv20|bsi-v2.0, bsiv21|bsi-v2.1, ntia|cisa-2026|cisa|cisa2026, ntia-2021|ntia2021|cisa-2021|cisa2021, oct|oct-v1.1, fsct, interlynk",
+				"profile %q is not supported. Supported profiles: bsi (=bsiv21), bsiv11|bsi-v1.1, bsiv20|bsi-v2.0, bsiv21|bsi-v2.1, ntia|cisa-2026|cisa|cisa2026, ntia-2021|ntia2021|cisa-2021|cisa2021, enisa, oct|oct-v1.1, fsct, interlynk",
 				uCmd.profile,
 			)
 		}
@@ -535,6 +560,13 @@ func validateparsedListCmd(uCmd *userListCmd) error {
 		if _, ok := ntiaFeatureKeys[cleaned]; !ok {
 			return fmt.Errorf(
 				"feature %q is not supported for profile %q.\n\nSupported features: sbom_data_format, sbom_spec_version, sbom_author, sbom_tool_name, sbom_tool_version, sbom_version, sbom_timestamp, sbom_generation_context, sbom_relationships, sbom_signature, comp_name, comp_version, comp_uniq_id, comp_producer, comp_hash_value, comp_hash_algo, comp_license",
+				cleaned, uCmd.profile,
+			)
+		}
+	case "enisa":
+		if _, ok := enisaFeatureKeys[cleaned]; !ok {
+			return fmt.Errorf(
+				"feature %q is not supported for profile %q.\n\nSupported features: sbom_author, sbom_timestamp, sbom_tool_name, sbom_generation_context, comp_name, comp_version, comp_uniq_id, comp_producer, comp_hash_value, comp_hash_algo, comp_license, comp_relationships",
 				cleaned, uCmd.profile,
 			)
 		}
@@ -894,6 +926,25 @@ var ProfileSections = []ProfileSection{
 			{Name: "comp_name", Description: "Component name"},
 			{Name: "comp_version", Description: "Component version"},
 			{Name: "comp_uniq_id", Description: "Unique identifier (PURL or CPE)"},
+		},
+	},
+	{
+		Name: "ENISA SBOM Minimum Elements (--profile enisa)",
+		Features: []ProfileFeature{
+			// SBOM-level
+			{Name: "sbom_author", Description: "SBOM author (Person only; Organization/Tool not accepted)"},
+			{Name: "sbom_timestamp", Description: "SBOM creation timestamp"},
+			{Name: "sbom_tool_name", Description: "SBOM generation tool name"},
+			{Name: "sbom_generation_context", Description: "Context describing how the SBOM was generated"},
+			// Component-level
+			{Name: "comp_name", Description: "Component name"},
+			{Name: "comp_version", Description: "Component version"},
+			{Name: "comp_uniq_id", Description: "Unique identifier (PURL or CPE)"},
+			{Name: "comp_producer", Description: "Component producer (Person only; Organization not accepted)"},
+			{Name: "comp_hash_value", Description: "Component hash value"},
+			{Name: "comp_hash_algo", Description: "Component hash algorithm"},
+			{Name: "comp_license", Description: "Component declared license"},
+			{Name: "comp_relationships", Description: "Component dependency relationships"},
 		},
 	},
 }

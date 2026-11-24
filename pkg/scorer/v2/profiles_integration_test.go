@@ -1071,6 +1071,113 @@ func Test_NTIA2026ProfileForStaticSBOMFiles(t *testing.T) {
 	fmt.Printf("Running NTIA 2026 Minimum Elements Profile: ✓ All %d test cases completed\n", len(testCases))
 }
 
+// Test_ENISAProfileForStaticSBOMFiles tests ENISA SBOM Minimum Elements profile
+func Test_ENISAProfileForStaticSBOMFiles(t *testing.T) {
+	fmt.Println()
+	fmt.Println("==========================================")
+	fmt.Println("Running ENISA SBOM Minimum Elements Profile Integration Tests")
+	fmt.Println("==========================================")
+
+	base := filepath.Join("..", "..", "..", "testdata", "fixtures")
+
+	// ENISA has 12 fields total. All are Required.
+	testCases := map[string]expectedProfileScore{
+		// SPDX 2.x test cases
+		filepath.Join(base, "spdx-perfect-score.json"):    {Score: 8.3, Grade: "B", Required: 10},
+		filepath.Join(base, "spdx-minimal.json"):          {Score: 2.5, Grade: "F", Required: 3},
+		filepath.Join(base, "spdx-no-version.json"):       {Score: 3.3, Grade: "F", Required: 4},
+		filepath.Join(base, "spdx-no-checksums.json"):     {Score: 5.0, Grade: "D", Required: 6},
+		filepath.Join(base, "spdx-no-dependencies.json"):  {Score: 6.7, Grade: "D", Required: 8},
+		filepath.Join(base, "spdx-invalid-licenses.json"): {Score: 4.2, Grade: "F", Required: 5},
+		filepath.Join(base, "spdx-no-authors.json"):       {Score: 3.3, Grade: "F", Required: 4},
+		filepath.Join(base, "spdx-no-timestamp.json"):     {Score: 3.3, Grade: "F", Required: 4},
+		filepath.Join(base, "spdx-old-version.json"):      {Score: 4.2, Grade: "F", Required: 5},
+
+		// SPDX 3.0 test cases
+		filepath.Join(base, "spdx3-perfect-score.json"):   {Score: 9.2, Grade: "A", Required: 11},
+		filepath.Join(base, "spdx3-minimal.json"):         {Score: 2.5, Grade: "F", Required: 3},
+		filepath.Join(base, "spdx3-no-version.json"):        {Score: 7.5, Grade: "C", Required: 9},
+		filepath.Join(base, "spdx3-no-authors.json"):       {Score: 6.7, Grade: "D", Required: 8},
+		filepath.Join(base, "spdx3-no-timestamp.json"):     {Score: 7.5, Grade: "C", Required: 9},
+		filepath.Join(base, "spdx3-no-supplier.json"):      {Score: 8.3, Grade: "B", Required: 10},
+		filepath.Join(base, "spdx3-no-unique-id.json"):     {Score: 7.5, Grade: "C", Required: 9},
+		filepath.Join(base, "spdx3-no-dependencies.json"):  {Score: 7.5, Grade: "C", Required: 9},
+		filepath.Join(base, "spdx3-no-tool.json"):          {Score: 7.5, Grade: "C", Required: 9},
+		filepath.Join(base, "spdx3-complete-ntia.json"):    {Score: 5.8, Grade: "D", Required: 7},
+
+		// CycloneDX test cases
+		filepath.Join(base, "cdx-perfect-score.json"):    {Score: 9.2, Grade: "A", Required: 11},
+		filepath.Join(base, "cdx-minimal.json"):          {Score: 0.8, Grade: "F", Required: 1},
+		filepath.Join(base, "cdx-no-version.json"):       {Score: 3.3, Grade: "F", Required: 4},
+		filepath.Join(base, "cdx-no-checksums.json"):     {Score: 5.0, Grade: "D", Required: 6},
+		filepath.Join(base, "cdx-weak-checksums.json"):   {Score: 5.8, Grade: "D", Required: 7},
+		filepath.Join(base, "cdx-no-dependencies.json"):  {Score: 6.7, Grade: "D", Required: 8},
+		filepath.Join(base, "cdx-invalid-licenses.json"): {Score: 4.2, Grade: "F", Required: 5},
+		filepath.Join(base, "cdx-no-authors.json"):       {Score: 3.3, Grade: "F", Required: 4},
+		filepath.Join(base, "cdx-no-timestamp.json"):     {Score: 3.3, Grade: "F", Required: 4},
+		filepath.Join(base, "cdx-old-version.json"):      {Score: 3.3, Grade: "F", Required: 4},
+	}
+
+	for path, want := range testCases {
+		filename := filepath.Base(path)
+		testName := "ENISA_" + filename
+
+		t.Run(testName, func(t *testing.T) {
+			t.Parallel()
+
+			cfg := config.Config{
+				Profile: []string{string(registry.ProfileENISA)},
+			}
+			paths := []string{path}
+
+			ctx := context.Background()
+
+			results, err := score.ScoreSBOM(ctx, cfg, paths)
+			require.NoError(t, err)
+
+			for _, r := range results {
+				require.NotNil(t, r.Profiles, "Profile results should not be nil")
+				require.Len(t, r.Profiles.ProfResult, 1, "Should have exactly one profile result")
+
+				profResult := r.Profiles.ProfResult[0]
+				require.Equal(t, "ENISA SBOM Minimum Elements", profResult.Name)
+
+				gotRaw := profResult.InterlynkScore
+				gotRounded := math.Round(gotRaw*10) / 10
+
+				// Count required fields (all ENISA fields are required)
+				requiredCompliant := 0
+
+				for _, item := range profResult.Items {
+					if item.Required && item.Score >= 10.0 {
+						requiredCompliant++
+					}
+				}
+
+				// Log the score for visibility
+				t.Logf("File: %s | Score: %.1f/10.0 | Grade: %s | Required: %d/12",
+					filename, gotRounded, profResult.Grade, requiredCompliant)
+				t.Logf("  Expected: Score: %.1f | Grade: %s | Required: %d/12",
+					want.Score, want.Grade, want.Required)
+
+				// compare ENISA score
+				require.InDelta(t, want.Score, gotRounded, 1e-9,
+					"ENISA score (rounded to 1 decimal) mismatch for %s", filename)
+
+				// compare grade
+				require.Equal(t, want.Grade, profResult.Grade,
+					"Grade mismatch for %s", filename)
+
+				// compare required fields count
+				require.Equal(t, want.Required, requiredCompliant,
+					"Required fields compliance count mismatch for %s", filename)
+			}
+		})
+	}
+
+	fmt.Printf("ENISA SBOM Minimum Elements Profile: ✓ All %d test cases completed\n", len(testCases))
+}
+
 // Test_ProfileIntegrationSummary provides a summary of all profile integration tests
 func Test_ProfileIntegrationSummary(t *testing.T) {
 	fmt.Println()
@@ -1084,10 +1191,11 @@ func Test_ProfileIntegrationSummary(t *testing.T) {
 	fmt.Println("✓ CycloneDX Signatures: Active (6 test cases)")
 	fmt.Println("✓ BSI v1.1 Profile: Active (25 test cases)")
 	fmt.Println("✓ BSI v2.0 Profile: Active (25 test cases)")
-	fmt.Println("✓ Running NTIA 2026 Minimum Elements Profile: Active (28 test cases)")
+	fmt.Println("✓ NTIA 2026 Minimum Elements Profile: Active (28 test cases)")
+	fmt.Println("✓ ENISA SBOM Minimum Elements Profile: Active (28 test cases)")
 	fmt.Println("○ BSI v2.1 Profile: TODO (3 test cases)")
 	fmt.Println("==========================================")
-	fmt.Println("Total Active Tests: 169")
+	fmt.Println("Total Active Tests: 197")
 	fmt.Println("==========================================")
 }
 

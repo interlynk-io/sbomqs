@@ -171,6 +171,28 @@ The [CISA 2026 SBOM Minimum Elements](https://www.cisa.gov/sites/default/files/2
 | Component Name | Component Data | Yes | `component->name` | `package->name` | `package.name` | Per-component percentage |
 | Component Version | Component Data | Yes | `component->version` | `package->versionInfo` | `package.packageVersion` | Per-component percentage; `UNKNOWN` / `NOASSERTION` / `NONE` accepted |
 
+## ENISA SBOM Minimum Elements
+
+The [ENISA SBOM Minimum Elements](https://www.enisa.europa.eu/) (v1.20, December 2025) synthesizes requirements from NTIA 2021 and CISA 2025 into a single comparative table (Table 2). ENISA itself does not define new fields — it identifies 11 minimum elements (12 when hash is split into value + algorithm) that SBOMs should carry.
+
+| ENISA Field | Table 2 Source | Required | CycloneDX | SPDX(2.3) | SPDX(3.0) | Notes |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **SBOM Metadata** |
+| SBOM Author | NTIA + CISA | Yes | `metadata.authors[]` (Person only) | `creationInfo.creators[]` (`Person` only) | `creationInfo.createdBy` → `Person` only | **Person only** — Organization/Tool not accepted |
+| Timestamp | NTIA + CISA | Yes | `metadata.timestamp` | `creationInfo.created` | `creationInfo.created` | Same single field in both formats |
+| Tool Name | CISA | Yes | `metadata.tools.components[].name` (1.5+) | `creationInfo.creators[].Tool` | `createdUsing` → `Tool.name` | |
+| Generation Context | CISA | Yes | `metadata.lifecycles[].phase` | `creationInfo.comment` | `Software/Sbom.sbomType` | Lifecycle stage: design, pre-build, build, post-build, operations, runtime |
+| **Component Data** |
+| Software Producer | NTIA + CISA | Yes | `components[].authors[]` (Person only) | `packages[].originator` (`Person` only) | `Package.originatedBy` → `Person` only | **Person only** — Organization not accepted |
+| Component Name | NTIA + CISA | Yes | `components[].name` | `packages[].name` | `package.name` | |
+| Component Version | NTIA + CISA | Yes | `components[].version` | `packages[].versionInfo` | `package.packageVersion` | `UNKNOWN` / `NOASSERTION` / `NONE` accepted as valid non-empty |
+| Software Identifiers | NTIA + CISA | Yes | `components[].purl`, `components[].cpe`, `components[].swid` | `packages[].externalRefs[]` (PURL, CPE) | `externalIdentifiers` (`packageUrl`, `cpe23`, `swid`); `contentIdentifier` (`gitoid`, `swhid`) | At least one identifier sufficient |
+| Dependency Relationship | NTIA + CISA | Yes | `dependencies[]` graph | `relationships[]` (`DEPENDS_ON`) | `relationships[]` (`dependsOn`) | Primary component + direct dependencies minimum |
+| License | CISA | Yes | `components[].licenses[]` (declared) | `packages[].licenseDeclared` | Linked via `hasDeclaredLicense` | Declared licenses only |
+| Component Hash | NTIA + CISA | Yes | `components[].hashes[].content` + `components[].hashes[].alg` | `packages[].checksums[].checksumValue` + `packages[].checksums[].algorithm` | `software.verifiedUsing.hashValue` + `software.verifiedUsing.algorithm` | Value + algorithm both required |
+
+---
+
 ## NTIA minimum elements: SBOM Requirements for NTIA
 
 The [NTIA](https://www.ntia.doc.gov/files/ntia/publications/sbom_minimum_elements_report.pdf) specifies mandatory properties for an SBOM. Below is how we have derived all the values.

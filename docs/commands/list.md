@@ -15,7 +15,7 @@ sbomqs list --feature <feature> [flags] <sbom-file>
 | Flag | Short | Default | Description |
 |------|-------|---------|-------------|
 | `--feature` | | _(required)_ | Feature to inspect. Run `sbomqs features` to see all supported features. |
-| `--profile` | | | Compliance profile to use for feature extraction (`bsi`, `bsiv11`, `bsiv20`, `bsiv21`, `ntia`, `fsct`, `interlynk`). `bsi` is an alias for the latest version (`bsiv21`). When set, only features defined for that profile are accepted. |
+| `--profile` | | | Compliance profile to use for feature extraction (`bsi`, `bsiv11`, `bsiv20`, `bsiv21`, `ntia`, `enisa`, `fsct`, `interlynk`). `bsi` is an alias for the latest version (`bsiv21`). When set, only features defined for that profile are accepted. |
 | `--missing` | `-m` | false | Show only components or properties that do NOT have the feature. |
 | `--show` | `-s` | false | Show the actual field value alongside the presence indicator. |
 | `--basic` | `-b` | false | Output results in single-line format. |
@@ -171,6 +171,23 @@ When `--profile` is specified, feature extraction follows the rules of that comp
 | `comp_version` | Component | Component version |
 | `comp_uniq_id` | Component | Unique identifier (PURL or CPE) |
 
+#### ENISA SBOM Minimum Elements (`--profile enisa`) — 12 features
+
+| Feature | Level | Description |
+|---------|-------|-------------|
+| `sbom_author` | SBOM | SBOM author (Person only) |
+| `sbom_timestamp` | SBOM | SBOM creation timestamp |
+| `sbom_tool_name` | SBOM | Tool used to generate the SBOM |
+| `sbom_generation_context` | SBOM | Lifecycle phase or generation context |
+| `comp_producer` | Component | Software producer (Person only) |
+| `comp_name` | Component | Component name |
+| `comp_version` | Component | Component version |
+| `comp_uniq_id` | Component | Unique identifier (PURL, CPE, SWID, etc.) |
+| `comp_hash_value` | Component | Cryptographic hash value |
+| `comp_hash_algo` | Component | Hash algorithm |
+| `comp_license` | Component | License information (declared) |
+| `comp_relationships` | Component | Dependency relationships |
+
 #### FSCT (`--profile fsct`) — 9 features
 
 | Feature | Level | Description |
@@ -291,6 +308,19 @@ sbomqs list --profile bsiv21 --feature comp_deployable_hash --show my-app.cdx.js
 ```bash
 # Find components without a unique identifier
 sbomqs list --profile ntia --feature comp_uniq_id --missing my-app.spdx.json
+```
+
+### ENISA compliance field inspection
+
+```bash
+# Find components missing the Person-only producer field
+sbomqs list --profile enisa --feature comp_producer --missing my-app.spdx.json
+
+# Show actual SBOM author values (rejected if Organization/Tool)
+sbomqs list --profile enisa --feature sbom_author --show my-app.spdx.json
+
+# Show license values per component (declared-only semantics)
+sbomqs list --profile enisa --feature comp_license --show my-app.spdx.json
 ```
 
 ### Interlynk profile field inspection
