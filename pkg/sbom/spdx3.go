@@ -414,6 +414,8 @@ func (s *Spdx3Doc) parseSpec() {
 	}
 
 	// Data license - SPDX 3.0 stores it as a reference in SpdxID
+	// SPDX 3.0.1 schema requires full URL (e.g., https://spdx.org/licenses/CC0-1.0)
+	// but licenses.LookupExpression expects short ID (e.g., CC0-1.0)
 	dataLicense := s.doc.GetDataLicense()
 	if dataLicense != nil {
 		licenseID := dataLicense.SpdxID
@@ -421,6 +423,10 @@ func (s *Spdx3Doc) parseSpec() {
 			licenseID = dataLicense.Name
 		}
 		if licenseID != "" {
+			// SPDX 3.0.1 uses full URL; extract short ID if needed
+			if strings.HasPrefix(licenseID, "https://spdx.org/licenses/") {
+				licenseID = strings.TrimPrefix(licenseID, "https://spdx.org/licenses/")
+			}
 			lics := licenses.LookupExpression(licenseID, nil)
 			sp.Licenses = append(sp.Licenses, lics...)
 		}

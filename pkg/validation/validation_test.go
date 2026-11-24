@@ -122,10 +122,37 @@ func TestValidate_CycloneDX(t *testing.T) {
 	}
 }
 
+func TestValidate_SPDX3(t *testing.T) {
+	// Verify that SPDX 3.0.1 schema compiles without the regex error.
+	// Before the regexp2 fix, loadSchema("spdx:3.0.1") would fail with:
+	//   error parsing regexp: invalid or unsupported Perl syntax: `(?!`
+	// because the schema uses ECMAScript negative lookahead in its IRI pattern.
+	t.Run("schema compiles", func(t *testing.T) {
+		schema, err := loadSchema("spdx:3.0.1")
+		if err != nil {
+			t.Fatalf("spdx 3.0.1 schema failed to compile: %v", err)
+		}
+		if schema == nil {
+			t.Fatal("spdx 3.0.1 schema is nil")
+		}
+	})
+}
+
 func loadCDXTestFile(t *testing.T, name string) []byte {
 	t.Helper()
 
 	path := filepath.Join("..", "..", "testdata", "validation", "cyclonedx", name)
+	data, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatalf("failed to read test file %s: %v", name, err)
+	}
+	return data
+}
+
+func loadFixtureTestFile(t *testing.T, name string) []byte {
+	t.Helper()
+
+	path := filepath.Join("..", "..", "testdata", "fixtures", name)
 	data, err := os.ReadFile(path)
 	if err != nil {
 		t.Fatalf("failed to read test file %s: %v", name, err)

@@ -17,8 +17,11 @@ package validation
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
-	"github.com/santhosh-tekuri/jsonschema/v5"
+	"github.com/santhosh-tekuri/jsonschema/v6"
+	"golang.org/x/text/language"
+	"golang.org/x/text/message"
 )
 
 // Validate validates a raw SBOM JSON Document against the official JSON schema
@@ -81,18 +84,28 @@ func Validate(spec string, version string, sbomBytes []byte) Result {
 	return result
 }
 
+var errorPrinter = message.NewPrinter(language.English)
+
 // collectErrors collect errors into human-readable error messages
 func collectErrors(result *Result, e *jsonschema.ValidationError, path string) {
-	loc := e.InstanceLocation
+	loc := joinLocation(e.InstanceLocation)
 	if loc == "" {
 		loc = path
 	}
 
-	if e.Message != "" {
-		result.Logs = append(result.Logs, loc+": "+e.Message)
+	msg := e.ErrorKind.LocalizedString(errorPrinter)
+	if msg != "" {
+		result.Logs = append(result.Logs, loc+": "+msg)
 	}
 
 	for _, c := range e.Causes {
 		collectErrors(result, c, loc)
 	}
+}
+
+func joinLocation(loc []string) string {
+	if len(loc) == 0 {
+		return ""
+	}
+	return "/" + strings.Join(loc, "/")
 }

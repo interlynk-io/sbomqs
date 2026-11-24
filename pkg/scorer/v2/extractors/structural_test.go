@@ -526,3 +526,54 @@ func TestSBOMFileFormat(t *testing.T) {
 	})
 
 }
+
+// spdx3SBOMSchema is a minimal SPDX 3.0.1 JSON-LD document.
+// Before the regexp2 fix, SBOMSchemaValid would crash during schema compilation
+// because the official SPDX 3.0.1 schema uses ECMAScript negative lookahead.
+var spdx3SBOMSchema = []byte(`
+{
+  "@context": "https://spdx.org/rdf/3.0.1/spdx-context.jsonld",
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "https://example.org/doc",
+      "creationInfo": "_:creationinfo",
+      "name": "Test",
+      "specVersion": "3.0.1",
+      "dataLicense": "https://spdx.org/licenses/CC0-1.0",
+      "profileConformance": ["core", "software"]
+    },
+    {
+      "type": "CreationInfo",
+      "@id": "_:creationinfo",
+      "created": "2024-01-01T00:00:00Z",
+      "createdBy": ["https://example.org/tool"],
+      "specVersion": "SPDX-3.0.1"
+    },
+    {
+      "type": "Tool",
+      "spdxId": "https://example.org/tool",
+      "name": "test-tool"
+    }
+  ]
+}
+`)
+
+func TestSBOMSchemaValid(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("spdx3SchemaCompiles", func(t *testing.T) {
+		// Before the regexp2 fix, this would panic with:
+		//   error parsing regexp: invalid or unsupported Perl syntax: `(?!`
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, spdx3SBOMSchema, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := SBOMSchemaValid(ctx, catalog.EvalInput{Doc: doc})
+
+		// We don't assert the score value here because the minimal fixture
+		// may or may not pass strict schema validation. The important thing
+		// is that the function executes without crashing.
+		assert.NotEmpty(t, got.Desc)
+		assert.False(t, got.Ignore)
+	})
+}
