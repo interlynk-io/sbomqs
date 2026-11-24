@@ -1,21 +1,20 @@
 {
-  "@context": [
-    "https://spdx.org/rdf/3.0.1/spdx-context.jsonld"
-  ],
+  "@context": "https://spdx.org/rdf/3.0.1/spdx-context.jsonld",
   "@graph": [
     {
       "type": "SpdxDocument",
-      "spdxId": "SPDXRef-DOCUMENT",
+      "spdxId": "https://example.org/SPDXRef-DOCUMENT",
       "name": "Minimal SPDX 3.0 SBOM",
       "creationInfo": "_:creationinfo",
-      "dataLicense": "CC0-1.0",
+      "dataLicense": "https://spdx.org/licenses/CC0-1.0",
       "profileConformance": [
         "core"
       ],
       "namespaceMap": [
         {
           "prefix": "",
-          "namespace": "https://example.com/sbom/minimal"
+          "namespace": "https://example.com/sbom/minimal",
+          "type": "NamespaceMap"
         }
       ]
     },
@@ -25,55 +24,64 @@
       "specVersion": "3.0.1",
       "created": "2024-01-15T10:30:00Z",
       "createdBy": [
-        "_:org1",
-        "_:person1"
+        "https://example.org/org1",
+        "https://example.org/person1"
       ],
       "createdUsing": [
-        "_:tool1"
+        "https://example.org/tool1"
       ]
     },
     {
       "type": "Organization",
-      "@id": "_:org1",
       "name": "Example Organization Inc",
-      "externalIdentifiers": [
+      "spdxId": "https://example.org/org1",
+      "creationInfo": "_:creationinfo",
+      "externalIdentifier": [
         {
           "externalIdentifierType": "email",
-          "identifier": "sbom@example.com"
+          "identifier": "sbom@example.com",
+          "type": "ExternalIdentifier"
         },
         {
           "externalIdentifierType": "other",
-          "identifier": "https://example.com"
+          "identifier": "https://example.com",
+          "type": "ExternalIdentifier"
         }
       ]
     },
     {
       "type": "Person",
-      "@id": "_:person1",
       "name": "John Doe",
-      "externalIdentifiers": [
+      "spdxId": "https://example.org/person1",
+      "creationInfo": "_:creationinfo",
+      "externalIdentifier": [
         {
           "externalIdentifierType": "email",
-          "identifier": "john.doe@example.com"
+          "identifier": "john.doe@example.com",
+          "type": "ExternalIdentifier"
         },
         {
           "externalIdentifierType": "other",
-          "identifier": "https://johndoe.example.com"
+          "identifier": "https://johndoe.example.com",
+          "type": "ExternalIdentifier"
         }
       ]
     },
     {
       "type": "Tool",
-      "@id": "_:tool1",
       "name": "sbomqs-generator-1.0.0",
-      "externalIdentifiers": [
+      "spdxId": "https://example.org/tool1",
+      "creationInfo": "_:creationinfo",
+      "externalIdentifier": [
         {
           "externalIdentifierType": "email",
-          "identifier": "tools@sbomqs.dev"
+          "identifier": "tools@sbomqs.dev",
+          "type": "ExternalIdentifier"
         },
         {
           "externalIdentifierType": "other",
-          "identifier": "https://github.com/interlynk-io/sbomqs"
+          "identifier": "https://github.com/interlynk-io/sbomqs",
+          "type": "ExternalIdentifier"
         }
       ]
     }

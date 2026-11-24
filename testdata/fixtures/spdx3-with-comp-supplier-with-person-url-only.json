@@ -1,15 +1,13 @@
 {
-  "@context": [
-    "https://spdx.org/rdf/3.0.1/spdx-context.jsonld"
-  ],
+  "@context": "https://spdx.org/rdf/3.0.1/spdx-context.jsonld",
   "@graph": [
     {
       "type": "SpdxDocument",
-      "spdxId": "SPDXRef-DOCUMENT",
+      "spdxId": "https://example.org/SPDXRef-DOCUMENT",
       "name": "Test",
       "creationInfo": "_:creationinfo",
       "element": [
-        "SPDXRef-Package"
+        "https://example.org/SPDXRef-Package"
       ],
       "profileConformance": [
         "core",
@@ -22,33 +20,37 @@
       "specVersion": "3.0.1",
       "created": "2024-01-15T10:30:00Z",
       "createdBy": [
-        "_:author"
+        "https://example.org/author"
       ]
     },
     {
       "type": "Person",
-      "@id": "_:author",
-      "name": "Test Author"
+      "name": "Test Author",
+      "spdxId": "https://example.org/author",
+      "creationInfo": "_:creationinfo"
     },
     {
       "type": "Person",
-      "@id": "_:supplier1",
       "name": "Samantha Wright",
-      "externalIdentifiers": [
+      "spdxId": "https://example.org/supplier1",
+      "creationInfo": "_:creationinfo",
+      "externalIdentifier": [
         {
           "externalIdentifierType": "urlScheme",
-          "identifier": "https://example.com/supplier"
+          "identifier": "https://example.com/supplier",
+          "type": "ExternalIdentifier"
         }
       ]
     },
     {
       "type": "software_Package",
-      "spdxId": "SPDXRef-Package",
+      "spdxId": "https://example.org/SPDXRef-Package",
       "name": "my-application",
       "software_packageVersion": "1.0.0",
       "originatedBy": [
-        "_:supplier1"
-      ]
+        "https://example.org/supplier1"
+      ],
+      "creationInfo": "_:creationinfo"
     }
   ]
 }

@@ -1,18 +1,16 @@
 {
-  "@context": [
-    "https://spdx.org/rdf/3.0.1/spdx-context.jsonld"
-  ],
+  "@context": "https://spdx.org/rdf/3.0.1/spdx-context.jsonld",
   "@graph": [
     {
       "type": "SpdxDocument",
-      "spdxId": "SPDXRef-DOCUMENT",
+      "spdxId": "https://example.org/SPDXRef-DOCUMENT",
       "name": "SPDX 3.0 with security.txt",
       "creationInfo": "_:creationinfo",
       "element": [
-        "SPDXRef-Package-App",
-        "SPDXRef-Package-Lib"
+        "https://example.org/SPDXRef-Package-App",
+        "https://example.org/SPDXRef-Package-Lib"
       ],
-      "dataLicense": "CC0-1.0",
+      "dataLicense": "https://spdx.org/licenses/CC0-1.0",
       "profileConformance": [
         "core",
         "software"
@@ -24,31 +22,34 @@
       "specVersion": "3.0.1",
       "created": "2024-01-15T10:30:00Z",
       "createdBy": [
-        "_:org1"
+        "https://example.org/org1"
       ],
       "createdUsing": [
-        "_:tool1"
+        "https://example.org/tool1"
       ]
     },
     {
       "type": "Organization",
-      "@id": "_:org1",
       "name": "Example Organization Inc",
-      "externalIdentifiers": [
+      "spdxId": "https://example.org/org1",
+      "creationInfo": "_:creationinfo",
+      "externalIdentifier": [
         {
           "externalIdentifierType": "email",
-          "identifier": "sbom@example.com"
+          "identifier": "sbom@example.com",
+          "type": "ExternalIdentifier"
         }
       ]
     },
     {
       "type": "Tool",
-      "@id": "_:tool1",
-      "name": "sbomqs-generator-1.0.0"
+      "name": "sbomqs-generator-1.0.0",
+      "spdxId": "https://example.org/tool1",
+      "creationInfo": "_:creationinfo"
     },
     {
       "type": "software_Package",
-      "spdxId": "SPDXRef-Package-App",
+      "spdxId": "https://example.org/SPDXRef-Package-App",
       "name": "my-application",
       "software_packageVersion": "1.0.0",
       "software_primaryPurpose": "application",
@@ -61,11 +62,12 @@
             "https://example.com/.well-known/security.txt"
           ]
         }
-      ]
+      ],
+      "creationInfo": "_:creationinfo"
     },
     {
       "type": "software_Package",
-      "spdxId": "SPDXRef-Package-Lib",
+      "spdxId": "https://example.org/SPDXRef-Package-Lib",
       "name": "my-library",
       "software_packageVersion": "2.3.4",
       "software_primaryPurpose": "library",
@@ -78,27 +80,30 @@
             "https://libraryvendor.com/.well-known/security.txt"
           ]
         }
-      ]
+      ],
+      "creationInfo": "_:creationinfo"
     },
     {
       "type": "Relationship",
-      "spdxId": "SPDXRef-Rel-1",
+      "spdxId": "https://example.org/SPDXRef-Rel-1",
       "relationshipType": "describes",
-      "from": "SPDXRef-DOCUMENT",
+      "from": "https://example.org/SPDXRef-DOCUMENT",
       "to": [
-        "SPDXRef-Package-App"
+        "https://example.org/SPDXRef-Package-App"
       ],
-      "completeness": "complete"
+      "completeness": "complete",
+      "creationInfo": "_:creationinfo"
     },
     {
       "type": "Relationship",
-      "spdxId": "SPDXRef-Rel-2",
+      "spdxId": "https://example.org/SPDXRef-Rel-2",
       "relationshipType": "dependsOn",
-      "from": "SPDXRef-Package-App",
+      "from": "https://example.org/SPDXRef-Package-App",
       "to": [
-        "SPDXRef-Package-Lib"
+        "https://example.org/SPDXRef-Package-Lib"
       ],
-      "completeness": "complete"
+      "completeness": "complete",
+      "creationInfo": "_:creationinfo"
     }
   ]
 }

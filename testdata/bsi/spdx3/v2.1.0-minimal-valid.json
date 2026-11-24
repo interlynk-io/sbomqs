@@ -1,69 +1,74 @@
 {
-  "@context": [
-    "https://spdx.org/rdf/3.0.1/spdx-context.jsonld"
-  ],
+  "@context": "https://spdx.org/rdf/3.0.1/spdx-context.jsonld",
   "@graph": [
     {
-      "type": "SpdxDocument",
-      "spdxId": "SPDXRef-DOCUMENT",
-      "name": "BSI v2.1.0 Minimal Valid",
       "creationInfo": "_:creationinfo",
       "element": [
-        "SPDXRef-Package"
+        "https://example.org/SPDXRef-Package"
       ],
+      "name": "BSI v2.1.0 Minimal Valid",
       "profileConformance": [
         "core",
         "software"
-      ]
+      ],
+      "spdxId": "https://example.org/SPDXRef-DOCUMENT",
+      "type": "SpdxDocument"
     },
     {
-      "type": "CreationInfo",
       "@id": "_:creationinfo",
-      "specVersion": "3.0.1",
       "created": "2024-01-15T10:30:00Z",
       "createdBy": [
-        "_:author"
-      ]
+        "https://example.org/author"
+      ],
+      "specVersion": "3.0.1",
+      "type": "CreationInfo"
     },
     {
-      "type": "Person",
-      "@id": "_:author",
+      "creationInfo": "_:creationinfo",
+      "externalIdentifier": [
+        {
+          "externalIdentifierType": "email",
+          "identifier": "author@example.com",
+          "type": "ExternalIdentifier"
+        }
+      ],
       "name": "Test Author",
-      "externalIdentifiers": [
-        {
-          "type": "ExternalIdentifier",
-          "externalIdentifierType": "email",
-          "identifier": "author@example.com"
-        }
-      ]
+      "spdxId": "https://example.org/author",
+      "type": "Person"
     },
     {
-      "type": "software_Package",
-      "spdxId": "SPDXRef-Package",
+      "creationInfo": "_:creationinfo",
       "name": "MinimalPackage",
-      "software_packageVersion": "1.0.0",
       "originatedBy": [
-        "_:supplier"
-      ]
+        "https://example.org/supplier"
+      ],
+      "software_packageVersion": "1.0.0",
+      "spdxId": "https://example.org/SPDXRef-Package",
+      "type": "software_Package"
     },
     {
-      "type": "Organization",
-      "@id": "_:supplier",
-      "name": "Minimal Supplier Inc",
-      "externalIdentifiers": [
+      "creationInfo": "_:creationinfo",
+      "externalIdentifier": [
         {
-          "type": "ExternalIdentifier",
           "externalIdentifierType": "email",
-          "identifier": "supplier@example.com"
+          "identifier": "supplier@example.com",
+          "type": "ExternalIdentifier"
         }
-      ]
+      ],
+      "name": "Minimal Supplier Inc",
+      "spdxId": "https://example.org/supplier",
+      "type": "Organization"
     },
     {
-      "type": "Relationship",
-      "from": "SPDXRef-Package",
-      "to": [],
+      "completeness": "complete",
+      "creationInfo": "_:creationinfo",
+      "from": "https://example.org/SPDXRef-Package",
       "relationshipType": "dependsOn",
-      "completeness": "complete"
+      "spdxId": "https://example.org/relationship1",
+      "to": [
+        "https://example.org/SPDXRef-Package"
+      ],
+      "type": "Relationship"
     }
   ]
 }
