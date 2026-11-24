@@ -2179,6 +2179,18 @@
     "license": "aswf-digital-assets-1.1.LICENSE"
   },
   {
+    "license_key": "atc-game",
+    "category": "Permissive",
+    "spdx_license_key": "atc-game",
+    "other_spdx_license_keys": [],
+    "is_exception": false,
+    "is_deprecated": false,
+    "json": "atc-game.json",
+    "yaml": "atc-game.yml",
+    "html": "atc-game.html",
+    "license": "atc-game.LICENSE"
+  },
+  {
     "license_key": "ati-eula",
     "category": "Proprietary Free",
     "spdx_license_key": "LicenseRef-scancode-ati-eula",
@@ -3231,8 +3243,10 @@
   {
     "license_key": "brian-gladman-3-clause",
     "category": "Permissive",
-    "spdx_license_key": "LicenseRef-scancode-brian-gladman-3-clause",
-    "other_spdx_license_keys": [],
+    "spdx_license_key": "Brian-Gladman-3-Clause-no-conversion",
+    "other_spdx_license_keys": [
+      "LicenseRef-scancode-brian-gladman-3-clause"
+    ],
     "is_exception": false,
     "is_deprecated": false,
     "json": "brian-gladman-3-clause.json",
@@ -3691,6 +3705,18 @@
     "license": "bsd-3-clause-open-mpi.LICENSE"
   },
   {
+    "license_key": "bsd-3-clause-openwebui",
+    "category": "Permissive",
+    "spdx_license_key": "BSD-3-Clause-OpenWebUI",
+    "other_spdx_license_keys": [],
+    "is_exception": false,
+    "is_deprecated": false,
+    "json": "bsd-3-clause-openwebui.json",
+    "yaml": "bsd-3-clause-openwebui.yml",
+    "html": "bsd-3-clause-openwebui.html",
+    "license": "bsd-3-clause-openwebui.LICENSE"
+  },
+  {
     "license_key": "bsd-3-clause-sun",
     "category": "Permissive",
     "spdx_license_key": "BSD-3-Clause-Sun",
@@ -3775,6 +3801,18 @@
     "yaml": "bsd-artwork.yml",
     "html": "bsd-artwork.html",
     "license": "bsd-artwork.LICENSE"
+  },
+  {
+    "license_key": "bsd-ask-to-endorse",
+    "category": "Permissive",
+    "spdx_license_key": "BSD-ask-to-endorse",
+    "other_spdx_license_keys": [],
+    "is_exception": false,
+    "is_deprecated": false,
+    "json": "bsd-ask-to-endorse.json",
+    "yaml": "bsd-ask-to-endorse.yml",
+    "html": "bsd-ask-to-endorse.html",
+    "license": "bsd-ask-to-endorse.LICENSE"
   },
   {
     "license_key": "bsd-atmel",
@@ -4009,8 +4047,10 @@
   {
     "license_key": "bsd-no-disclaimer-unmodified",
     "category": "Permissive",
-    "spdx_license_key": "LicenseRef-scancode-bsd-no-disclaimer-unmodified",
-    "other_spdx_license_keys": [],
+    "spdx_license_key": "BSD-Source-Code-no-disclaimer",
+    "other_spdx_license_keys": [
+      "LicenseRef-scancode-bsd-no-disclaimer-unmodified"
+    ],
     "is_exception": false,
     "is_deprecated": false,
     "json": "bsd-no-disclaimer-unmodified.json",
@@ -4194,6 +4234,18 @@
     "license": "bsd-simplified-source.LICENSE"
   },
   {
+    "license_key": "bsd-source-alt-gpl",
+    "category": "Permissive",
+    "spdx_license_key": "BSD-Source-alt-GPL",
+    "other_spdx_license_keys": [],
+    "is_exception": false,
+    "is_deprecated": false,
+    "json": "bsd-source-alt-gpl.json",
+    "yaml": "bsd-source-alt-gpl.yml",
+    "html": "bsd-source-alt-gpl.html",
+    "license": "bsd-source-alt-gpl.LICENSE"
+  },
+  {
     "license_key": "bsd-source-code",
     "category": "Permissive",
     "spdx_license_key": "BSD-Source-Code",
@@ -4258,8 +4310,10 @@
   {
     "license_key": "bsd-unchanged",
     "category": "Permissive",
-    "spdx_license_key": "LicenseRef-scancode-bsd-unchanged",
-    "other_spdx_license_keys": [],
+    "spdx_license_key": "BSD-2-Clause-pos-unchanged",
+    "other_spdx_license_keys": [
+      "LicenseRef-scancode-bsd-unchanged"
+    ],
     "is_exception": false,
     "is_deprecated": false,
     "json": "bsd-unchanged.json",
@@ -4378,6 +4432,18 @@
     "yaml": "budibase-sqs-2023.yml",
     "html": "budibase-sqs-2023.html",
     "license": "budibase-sqs-2023.LICENSE"
+  },
+  {
+    "license_key": "bugroff",
+    "category": "Permissive",
+    "spdx_license_key": "Bugroff",
+    "other_spdx_license_keys": [],
+    "is_exception": false,
+    "is_deprecated": false,
+    "json": "bugroff.json",
+    "yaml": "bugroff.yml",
+    "html": "bugroff.html",
+    "license": "bugroff.LICENSE"
   },
   {
     "license_key": "bugsense-sdk",
@@ -4998,6 +5064,18 @@
     "yaml": "cc-by-nc-3.0-de.yml",
     "html": "cc-by-nc-3.0-de.html",
     "license": "cc-by-nc-3.0-de.LICENSE"
+  },
+  {
+    "license_key": "cc-by-nc-3.0-igo",
+    "category": "Non-Commercial",
+    "spdx_license_key": "CC-BY-NC-3.0-IGO",
+    "other_spdx_license_keys": [],
+    "is_exception": false,
+    "is_deprecated": false,
+    "json": "cc-by-nc-3.0-igo.json",
+    "yaml": "cc-by-nc-3.0-igo.yml",
+    "html": "cc-by-nc-3.0-igo.html",
+    "license": "cc-by-nc-3.0-igo.LICENSE"
   },
   {
     "license_key": "cc-by-nc-4.0",
@@ -9649,6 +9727,18 @@
     "license": "fcl-1.0-mit.LICENSE"
   },
   {
+    "license_key": "fdk-mpeg-h",
+    "category": "Permissive",
+    "spdx_license_key": "FDK-MPEG-H",
+    "other_spdx_license_keys": [],
+    "is_exception": false,
+    "is_deprecated": false,
+    "json": "fdk-mpeg-h.json",
+    "yaml": "fdk-mpeg-h.yml",
+    "html": "fdk-mpeg-h.html",
+    "license": "fdk-mpeg-h.LICENSE"
+  },
+  {
     "license_key": "ferguson-twofish",
     "category": "Permissive",
     "spdx_license_key": "Ferguson-Twofish",
@@ -11605,8 +11695,10 @@
   {
     "license_key": "google-patent-license-webm",
     "category": "Patent License",
-    "spdx_license_key": "LicenseRef-scancode-google-patent-license-webm",
-    "other_spdx_license_keys": [],
+    "spdx_license_key": "Google-Patent-WebM",
+    "other_spdx_license_keys": [
+      "LicenseRef-scancode-google-patent-license-webm"
+    ],
     "is_exception": false,
     "is_deprecated": false,
     "json": "google-patent-license-webm.json",
@@ -13134,6 +13226,18 @@
     "license": "hippocratic-3.0.LICENSE"
   },
   {
+    "license_key": "hippocratic-3.0-core",
+    "category": "Free Restricted",
+    "spdx_license_key": "Hippocratic-3.0-core",
+    "other_spdx_license_keys": [],
+    "is_exception": false,
+    "is_deprecated": false,
+    "json": "hippocratic-3.0-core.json",
+    "yaml": "hippocratic-3.0-core.yml",
+    "html": "hippocratic-3.0-core.html",
+    "license": "hippocratic-3.0-core.LICENSE"
+  },
+  {
     "license_key": "historical",
     "category": "Permissive",
     "spdx_license_key": "HPND",
@@ -14205,6 +14309,18 @@
     "yaml": "infonode-1.1.yml",
     "html": "infonode-1.1.html",
     "license": "infonode-1.1.LICENSE"
+  },
+  {
+    "license_key": "informatica",
+    "category": "Permissive",
+    "spdx_license_key": "Informatica",
+    "other_spdx_license_keys": [],
+    "is_exception": false,
+    "is_deprecated": false,
+    "json": "informatica.json",
+    "yaml": "informatica.yml",
+    "html": "informatica.html",
+    "license": "informatica.LICENSE"
   },
   {
     "license_key": "initial-developer-public",
@@ -20423,8 +20539,10 @@
   {
     "license_key": "mvt-1.1",
     "category": "Free Restricted",
-    "spdx_license_key": "LicenseRef-scancode-mvt-1.1",
-    "other_spdx_license_keys": [],
+    "spdx_license_key": "MVT-1.1",
+    "other_spdx_license_keys": [
+      "LicenseRef-scancode-mvt-1.1"
+    ],
     "is_exception": false,
     "is_deprecated": false,
     "json": "mvt-1.1.json",
@@ -28253,6 +28371,18 @@
     "yaml": "spell-checker-exception-lgpl-2.1-plus.yml",
     "html": "spell-checker-exception-lgpl-2.1-plus.html",
     "license": "spell-checker-exception-lgpl-2.1-plus.LICENSE"
+  },
+  {
+    "license_key": "spelling-provider-lgpl-exception",
+    "category": "Copyleft Limited",
+    "spdx_license_key": "Spelling-Provider-LGPL-exception",
+    "other_spdx_license_keys": [],
+    "is_exception": true,
+    "is_deprecated": false,
+    "json": "spelling-provider-lgpl-exception.json",
+    "yaml": "spelling-provider-lgpl-exception.yml",
+    "html": "spelling-provider-lgpl-exception.html",
+    "license": "spelling-provider-lgpl-exception.LICENSE"
   },
   {
     "license_key": "spl-1.0",
