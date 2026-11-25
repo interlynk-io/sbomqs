@@ -384,15 +384,8 @@ func (s *SpdxDoc) parseComps() {
 		}
 
 		auth := s.getAuthor(index)
-		if supp != nil {
+		if auth != nil {
 			nc.Athrs = auth
-		}
-
-		// https://github.com/spdx/ntia-conformance-checker/issues/100
-		// Add spdx support to check both supplier and originator
-		if supp == nil && manu != nil {
-			nc.Supplier.Name = manu.Name
-			nc.Supplier.Email = manu.Email
 		}
 
 		if sc.PackageVerificationCode != nil {
