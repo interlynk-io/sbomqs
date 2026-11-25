@@ -146,7 +146,6 @@ renormalises weights.
 | `sbom_supplier` | Provenance | SPDX has no document-level supplier concept. Creator (`createdBy` / `creators`) already covers this role. |
 | `sbom_signature` | Integrity | SPDX specification does not support document-level signatures. |
 | `sbom_completeness_declared` | Completeness | SPDX has no native "completeness declared" field. |
-| `sbom_schema_validation` | Structural | SPDX 3.0 schema was not available for validation (now supported). |
 
 ### SPDX 2.3 — Fields that were `Ignore: true` but are now evaluated
 
