@@ -1482,7 +1482,7 @@ func TestSBOMSupplier(t *testing.T) {
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "N/A (SPDX)", got.Desc)
-		assert.False(t, got.Ignore)
+		assert.True(t, got.Ignore)
 	})
 }
 

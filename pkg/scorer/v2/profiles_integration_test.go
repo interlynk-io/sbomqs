@@ -627,16 +627,16 @@ func Test_InterlynkProfileForStaticSBOMFiles(t *testing.T) {
 
 	testCases := map[string]expectedProfileScore{
 		// SPDX 2.x test cases
-		filepath.Join(base, "spdx-perfect-score.json"):    {Score: 9.6, Grade: "A"},
-		filepath.Join(base, "spdx-minimal.json"):          {Score: 4.0, Grade: "F"},
-		filepath.Join(base, "spdx-no-version.json"):       {Score: 6.0, Grade: "D"},
-		filepath.Join(base, "spdx-no-checksums.json"):     {Score: 7.2, Grade: "C"},
-		filepath.Join(base, "spdx-weak-checksums.json"):   {Score: 6.8, Grade: "D"},
-		filepath.Join(base, "spdx-no-dependencies.json"):  {Score: 8.0, Grade: "C"},
-		filepath.Join(base, "spdx-invalid-licenses.json"): {Score: 5.6, Grade: "D"},
-		filepath.Join(base, "spdx-no-authors.json"):       {Score: 5.6, Grade: "D"},
-		filepath.Join(base, "spdx-no-timestamp.json"):     {Score: 5.6, Grade: "D"},
-		filepath.Join(base, "spdx-old-version.json"):      {Score: 6.4, Grade: "D"},
+		filepath.Join(base, "spdx-perfect-score.json"):    {Score: 9.2, Grade: "A"},
+		filepath.Join(base, "spdx-minimal.json"):          {Score: 3.8, Grade: "F"},
+		filepath.Join(base, "spdx-no-version.json"):       {Score: 5.8, Grade: "D"},
+		filepath.Join(base, "spdx-no-checksums.json"):     {Score: 6.9, Grade: "D"},
+		filepath.Join(base, "spdx-weak-checksums.json"):   {Score: 6.5, Grade: "D"},
+		filepath.Join(base, "spdx-no-dependencies.json"):  {Score: 7.7, Grade: "C"},
+		filepath.Join(base, "spdx-invalid-licenses.json"): {Score: 5.4, Grade: "D"},
+		filepath.Join(base, "spdx-no-authors.json"):       {Score: 5.4, Grade: "D"},
+		filepath.Join(base, "spdx-no-timestamp.json"):     {Score: 5.4, Grade: "D"},
+		filepath.Join(base, "spdx-old-version.json"):      {Score: 6.2, Grade: "D"},
 
 		// SPDX 3.0 test cases - "no-*" files are perfect score minus only that field
 		filepath.Join(base, "spdx3-perfect-score.json"):   {Score: 9.3, Grade: "A"},

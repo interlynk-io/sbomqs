@@ -152,11 +152,11 @@ func SBOMSupplier(_ context.Context, input catalog.EvalInput) catalog.ComprFeatS
 
 	switch spec {
 	case string(sbom.SBOMSpecSPDX):
-		// N/A for SPDX
+		// SPDX has no document-level supplier concept
 		return catalog.ComprFeatScore{
 			Score:  formulae.BooleanScore(false),
 			Desc:   formulae.NonSupportedSPDXField(),
-			Ignore: false,
+			Ignore: true,
 		}
 
 	case string(sbom.SBOMSpecCDX):
