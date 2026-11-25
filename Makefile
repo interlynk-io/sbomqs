@@ -169,6 +169,23 @@ update-licenses: ## Update license database files
 		-o pkg/licenses/files/licenses_aboutcode.json
 	@echo "License database files updated successfully"
 
+.PHONY: update-schemas
+update-schemas: ## Update CycloneDX JSON schema files from upstream
+	@echo "Updating CycloneDX schema files..."
+	@# Common schemas (shared across all versions)
+	@curl -fsSL "https://raw.githubusercontent.com/CycloneDX/specification/master/schema/spdx.schema.json" \
+		-o pkg/validation/schemas/cyclonedx/common/spdx.schema.json
+	@curl -fsSL "https://raw.githubusercontent.com/CycloneDX/specification/master/schema/cryptography-defs.schema.json" \
+		-o pkg/validation/schemas/cyclonedx/common/cryptography-defs.schema.json
+	@curl -fsSL "https://raw.githubusercontent.com/CycloneDX/specification/master/schema/jsf-0.82.schema.json" \
+		-o pkg/validation/schemas/cyclonedx/common/jsf-0.82.schema.json
+	@# Root schemas per version
+	@for ver in 1.2 1.3 1.4 1.5 1.6 1.7; do \
+		curl -fsSL "https://raw.githubusercontent.com/CycloneDX/specification/master/schema/bom-$${ver}.schema.json" \
+			-o pkg/validation/schemas/cyclonedx/$${ver}/bom-$${ver}.schema.json; \
+	done
+	@echo "Schema files updated successfully"
+
 .PHONY: tidy
 tidy: ## Run go mod tidy
 	@echo "Tidying go.mod..."
