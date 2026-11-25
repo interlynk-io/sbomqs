@@ -162,13 +162,33 @@ func spdxDocLifecycle() sbom.SpdxDoc {
 	}
 }
 
+func spdxDocLifecycleWithValue(lifecycle string) sbom.SpdxDoc {
+	s := sbom.NewSpec()
+	s.Version = "SPDX-2.3"
+	s.SpecType = "spdx"
+	s.Format = "json"
+
+	return sbom.SpdxDoc{
+		SpdxSpec: s,
+		Lifecycle: lifecycle,
+	}
+}
+
 func Test_SBOMLifeCycle(t *testing.T) {
-	t.Run("SPDX → N/A", func(t *testing.T) {
+	t.Run("SPDX lifecycle missing → 0", func(t *testing.T) {
 		doc := spdxDocLifecycle()
 		got := SBOMLifeCycle(doc)
-		assert.True(t, got.Ignore)
+		assert.False(t, got.Ignore)
 		assert.Equal(t, 0.0, got.Score)
-		assert.Equal(t, "N/A (SPDX)", got.Desc)
+		assert.Equal(t, "add lifecycle", got.Desc)
+	})
+
+	t.Run("SPDX lifecycle present → 10", func(t *testing.T) {
+		doc := spdxDocLifecycleWithValue("build")
+		got := SBOMLifeCycle(doc)
+		assert.False(t, got.Ignore)
+		assert.Equal(t, 10.0, got.Score)
+		assert.Equal(t, "complete", got.Desc)
 	})
 
 	t.Run("CDX lifecycles present → 10", func(t *testing.T) {

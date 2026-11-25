@@ -115,37 +115,29 @@ func SBOMSchema(doc sbom.Document) catalog.ProfFeatScore {
 	return formulae.ScoreSBOMProfNA("invalid schema", false)
 }
 
-// SBOMLifeCycle check whether cyclonedx has lifecycle build
-// and score accordingly.
-// SPDX < 3.0 does not support this field. SPDX >= 3.0 supports it via software_Sbom.sbomType.
+// SBOMLifeCycle check whether the document declares SBOM lifecycle phases.
+// CDX: metadata.lifecycles/phase.
+// SPDX 2.3: parsed from CreationInfo.CreatorComment.
+// SPDX 3.0+: software_Sbom.sbomType.
 func SBOMLifeCycle(doc sbom.Document) catalog.ProfFeatScore {
 	spec := strings.TrimSpace(strings.ToLower(doc.Spec().GetSpecType()))
-	ver := strings.TrimSpace(doc.Spec().GetVersion())
 
-	if spec == string(sbom.SBOMSpecSPDX) && !strings.HasPrefix(ver, "3.") {
-		return catalog.ProfFeatScore{
-			Score:  formulae.BooleanScore(false),
-			Desc:   formulae.NonSupportedSPDXField(),
-			Ignore: true,
+	if spec != string(sbom.SBOMSpecCDX) && spec != string(sbom.SBOMSpecSPDX) {
+		return formulae.ScoreSBOMProfUnknownNA("lifecycle", false)
+	}
+
+	var phases []string
+	for _, p := range doc.Lifecycles() {
+		if strings.TrimSpace(p) != "" {
+			phases = append(phases, p)
 		}
 	}
 
-	if spec == string(sbom.SBOMSpecCDX) || (spec == string(sbom.SBOMSpecSPDX) && strings.HasPrefix(ver, "3.")) {
-		var phases []string
-
-		for _, p := range doc.Lifecycles() {
-			if strings.TrimSpace(p) != "" {
-				phases = append(phases, p)
-			}
-		}
-
-		if len(phases) > 0 {
-			return formulae.ScoreSBOMProfFull(strings.Join(phases, ", "), false)
-		}
-
-		return formulae.ScoreSBOMProfMissingNA("lifecycle", false)
+	if len(phases) > 0 {
+		return formulae.ScoreSBOMProfFull(strings.Join(phases, ", "), false)
 	}
-	return formulae.ScoreSBOMProfUnknownNA("lifecycle", false)
+
+	return formulae.ScoreSBOMProfMissingNA("lifecycle", false)
 }
 
 // SBOMNamespace check whether spdx has namespace
