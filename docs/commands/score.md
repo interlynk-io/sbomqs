@@ -29,6 +29,9 @@ If you consume `--legacy` output programmatically or compare its scores against
 another tool, read [Legacy v1 scoring engine: known quirks](../specs/LEGACY-V1-QUIRKS.md)
 first. The legacy `avg_score` does not average only these five categories.
 
+For details on why some features report `N/A (SPDX)`, `ignored: true`, or score `0.0`,
+see [Ignore Semantics](../reference/ignore-semantics.md).
+
 ## Usage
 
 ```bash
