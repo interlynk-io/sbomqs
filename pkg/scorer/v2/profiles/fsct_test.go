@@ -2504,6 +2504,18 @@ func TestFSCTCompUniqueIDs(t *testing.T) {
 		assert.Equal(t, "unique identifier declared for all components (PURL, CPE, SWHID, SWID, OmniBOR)", got.Desc)
 		assert.False(t, got.Ignore)
 	})
+
+	// 1 valid CPE, 1 invalid CPE, 1 missing CPE
+	t.Run("cdxMixedValidInvalidMissingCPE", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxThreeCompMixedCPE, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompUniqID(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "unique identifier missing for 2 components; invalid CPE on 1", got.Desc)
+		assert.False(t, got.Ignore)
+	})
 }
 
 var cdxCompWithMixValidChecksums = []byte(`

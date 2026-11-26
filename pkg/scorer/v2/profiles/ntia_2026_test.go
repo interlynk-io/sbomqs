@@ -917,6 +917,15 @@ func TestNTIA2026CompUniqID(t *testing.T) {
 		assert.Equal(t, "no components declare unique identifier", got.Desc)
 		assert.False(t, got.Ignore)
 	})
+
+	t.Run("cdx mixed valid invalid missing CPE", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocument(context.Background(), strings.NewReader(string(cdxThreeCompMixedCPE)), sbom.Signature{})
+		require.NoError(t, err)
+		got := NTIA2026CompUniqID(doc)
+		assert.InDelta(t, 10.0*(1.0/3.0), got.Score, 1e-9)
+		assert.Equal(t, "1/3 components declare unique identifier", got.Desc)
+		assert.False(t, got.Ignore)
+	})
 }
 
 // ── Component License ──

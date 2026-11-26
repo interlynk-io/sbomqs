@@ -6338,4 +6338,16 @@ func TestBSIV11CompOtherIdentifiers(t *testing.T) {
 		assert.Equal(t, "No components declare additional unique identifiers (additional field).", got.Desc)
 		assert.True(t, got.Ignore)
 	})
+
+	// 1 valid CPE, 1 invalid CPE, 1 missing CPE
+	t.Run("cdxMixedValidInvalidMissingCPE", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxThreeCompMixedCPE, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV11CompOtherIdentifiers(doc)
+
+		assert.InDelta(t, 10.0*(1.0/3.0), got.Score, 1e-9)
+		assert.Equal(t, "1/3 components declare unique identifiers.", got.Desc)
+		assert.False(t, got.Ignore)
+	})
 }

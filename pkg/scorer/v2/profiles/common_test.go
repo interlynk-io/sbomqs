@@ -17,6 +17,7 @@ package profiles
 import (
 	"testing"
 
+	"github.com/interlynk-io/sbomqs/v2/pkg/cpe"
 	"github.com/interlynk-io/sbomqs/v2/pkg/purl"
 	"github.com/interlynk-io/sbomqs/v2/pkg/sbom"
 	"github.com/stretchr/testify/assert"
@@ -486,6 +487,124 @@ func Test_CompWithPURL(t *testing.T) {
 		})
 
 		got := CompUniqID(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "add to 2 components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+}
+
+var cdxThreeCompMixedCPE = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:mixed-cpe-test",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "comp-valid",
+      "name": "lib-valid",
+      "version": "1.0.0",
+      "cpe": "cpe:2.3:a:example:libvalid:1.0.0:*:*:*:*:*:*:*"
+    },
+    {
+      "type": "library",
+      "bom-ref": "comp-invalid",
+      "name": "lib-invalid",
+      "version": "2.0.0",
+      "cpe": "cpe:/2.3:a:example:libinvalid:2.0.0:*:*:*:*:*:*:*"
+    },
+    {
+      "type": "library",
+      "bom-ref": "comp-missing",
+      "name": "lib-missing",
+      "version": "3.0.0"
+    }
+  ]
+}
+`)
+
+func spdxDocForCPEs(valid []string, invalid []string, missingCount int) sbom.SpdxDoc {
+	s := commonSpdxSpec()
+	var cs []sbom.GetComponent
+
+	for _, cpeStr := range valid {
+		c := sbom.NewComponent()
+		c.Name = "abc"
+		c.Version = "v1.1"
+		c.Cpes = append(c.Cpes, cpe.CPE(cpeStr))
+		cs = append(cs, c)
+	}
+
+	for _, cpeStr := range invalid {
+		c := sbom.NewComponent()
+		c.Name = "abc"
+		c.Version = "v1.1"
+		c.InvalidCpes = append(c.InvalidCpes, cpeStr)
+		cs = append(cs, c)
+	}
+
+	for i := 0; i < missingCount; i++ {
+		c := sbom.NewComponent()
+		c.Name = "abc"
+		c.Version = "v1.1"
+		cs = append(cs, c)
+	}
+
+	return sbom.SpdxDoc{
+		SpdxSpec: s,
+		Comps:    cs,
+	}
+}
+
+func Test_CompCPE(t *testing.T) {
+	t.Run("mixed valid invalid missing", func(t *testing.T) {
+		doc := spdxDocForCPEs(
+			[]string{"cpe:2.3:a:acme:lib:1.0:*:*:*:*:*:*:*"},
+			[]string{"cpe:/2.3:a:bad:lib:2.0:*:*:*:*:*:*:*"},
+			1,
+		)
+
+		got := CompCPE(doc)
+
+		assert.InDelta(t, 10.0*(1.0/3.0), got.Score, 1e-9)
+		assert.Equal(t, "fix invalid CPE on 1 component(s)", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("all valid", func(t *testing.T) {
+		doc := spdxDocForCPEs(
+			[]string{"cpe:2.3:a:acme:lib:1.0:*:*:*:*:*:*:*", "cpe:2.3:a:acme:lib:2.0:*:*:*:*:*:*:*"},
+			nil,
+			0,
+		)
+
+		got := CompCPE(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "complete", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("all invalid", func(t *testing.T) {
+		doc := spdxDocForCPEs(
+			nil,
+			[]string{"cpe:/2.3:a:bad:lib:1.0:*:*:*:*:*:*:*", "cpe:/2.3:a:bad:lib:2.0:*:*:*:*:*:*:*"},
+			0,
+		)
+
+		got := CompCPE(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "fix invalid CPE on 2 component(s)", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("all missing", func(t *testing.T) {
+		doc := spdxDocForCPEs(nil, nil, 2)
+
+		got := CompCPE(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add to 2 components", got.Desc)
