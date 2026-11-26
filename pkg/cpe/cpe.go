@@ -17,7 +17,9 @@
 package cpe
 
 import (
-	"regexp"
+	"strings"
+
+	"github.com/knqyf263/go-cpe/naming"
 )
 
 // CPE represents a Common Platform Enumeration identifier used to uniquely
@@ -25,13 +27,26 @@ import (
 // present in computing environments.
 type CPE string
 
-const cpeRegex = (`^([c][pP][eE]:/[AHOaho]?(:[A-Za-z0-9\._\-~%]*){0,6})`) +
-	(`|(cpe:2\.3:[aho\*\-](:(((\?*|\*?)([a-zA-Z0-9\-\._]|(\\[\\\*\?!"#$$%&'\(\)\+,/:;<=>@\[\]\^\x60\{\|}~]))+(\?*|\*?))|[\*\-])){5}(:(([a-zA-Z]{2,3}(-([a-zA-Z]{2}|[0-9]{3}))?)|[\*\-]))(:(((\?*|\*?)([a-zA-Z0-9\-\._]|(\\[\\\*\?!"#$$%&'\(\)\+,/:;<=>@\[\]\^\x60\{\|}~]))+(\?*|\*?))|[\*\-])){4})$`)
-
 // Valid checks whether the CPE string conforms to the CPE specification format.
-// It returns true if the CPE matches either CPE 2.2 or CPE 2.3 format.
+// It returns true if the CPE is a valid CPE 2.2 URI or CPE 2.3 formatted string.
+// Uses github.com/knqyf263/go-cpe/naming for validation per NIST IR 7695.
 func (cpe CPE) Valid() bool {
-	return regexp.MustCompile(cpeRegex).MatchString(cpe.String())
+	s := strings.TrimSpace(cpe.String())
+	if s == "" {
+		return false
+	}
+
+	low := strings.ToLower(s)
+	switch {
+	case strings.HasPrefix(low, "cpe:2.3:"):
+		_, err := naming.UnbindFS(s)
+		return err == nil
+	case strings.HasPrefix(low, "cpe:/"):
+		_, err := naming.UnbindURI(s)
+		return err == nil
+	default:
+		return false
+	}
 }
 
 // NewCPE creates a new CPE instance from the provided string.

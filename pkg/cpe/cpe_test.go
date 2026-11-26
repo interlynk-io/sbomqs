@@ -28,6 +28,10 @@ func TestValidCPE(t *testing.T) {
 		{"Is cpe:-2.3:a:CycloneDX:cyclonedx-go:v0.7.0:*:*:*:*:*:*:* is valid CPE2.3", "cpe:-2.3:a:CycloneDX:cyclonedx-go:v0.7.0:*:*:*:*:*:*:*", false},
 		{"Is cpe:2.3:a:interlynk:sbomqs:\\(devel\\):*:*:*:*:*:*:* is valid CPE2.3", "cpe:2.3:a:interlynk:sbomqs:\\(devel\\):*:*:*:*:*:*:*", true},
 		{"Is cpe:/a:%40thi.ng%2fegf_project:%40thi.ng%2fegf:0.2.0::~~~node.js~~ is valid CPE2.2", "cpe:/a:%40thi.ng%2fegf_project:%40thi.ng%2fegf:0.2.0::~~~node.js~~", true},
+		// Regression: cpe:/ prefix mixed with CPE 2.3 format
+		{"Is cpe:/2.3:a:CycloneDX:cyclonedx-go:v0.7.0:*:*:*:*:*:*:* is valid CPE2.3", "cpe:/2.3:a:CycloneDX:cyclonedx-go:v0.7.0:*:*:*:*:*:*:*", false},
+		// Regression: urn: prefix is not part of CPE spec
+		{"Is urn:cpe:2.3:a:apache:log4j:2.17.0:*:*:*:*:*:*:* is valid CPE2.3", "urn:cpe:2.3:a:apache:log4j:2.17.0:*:*:*:*:*:*:*", false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
