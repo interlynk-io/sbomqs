@@ -1840,7 +1840,7 @@ func TestNTIACompUniqueID(t *testing.T) {
 		got := NTIACompWithUniqID(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "unique identifier missing for all 1 components", got.Desc)
+		assert.Equal(t, "unique identifier missing; invalid PURL on 1 component(s)", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1852,7 +1852,7 @@ func TestNTIACompUniqueID(t *testing.T) {
 		got := NTIACompWithUniqID(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "unique identifier missing for all 1 components", got.Desc)
+		assert.Equal(t, "unique identifier missing; invalid PURL on 1 component(s)", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1864,7 +1864,7 @@ func TestNTIACompUniqueID(t *testing.T) {
 		got := NTIACompWithUniqID(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "unique identifier missing for all 1 components", got.Desc)
+		assert.Equal(t, "unique identifier missing; invalid PURL on 1 component(s)", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1888,7 +1888,7 @@ func TestNTIACompUniqueID(t *testing.T) {
 		got := NTIACompWithUniqID(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "unique identifier missing for all 1 components", got.Desc)
+		assert.Equal(t, "unique identifier missing; invalid PURL on 1 component(s)", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -1900,7 +1900,7 @@ func TestNTIACompUniqueID(t *testing.T) {
 		got := NTIACompWithUniqID(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "unique identifier missing for all 1 components", got.Desc)
+		assert.Equal(t, "unique identifier missing; invalid PURL on 1 component(s)", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 	// spdx3CompdPURLWhitespace
@@ -1911,7 +1911,7 @@ func TestNTIACompUniqueID(t *testing.T) {
 		got := NTIACompWithUniqID(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "unique identifier missing for all 1 components", got.Desc)
+		assert.Equal(t, "unique identifier missing; invalid PURL on 1 component(s)", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2008,6 +2008,18 @@ func TestNTIACompUniqueID(t *testing.T) {
 
 		assert.InDelta(t, 5.0, got.Score, 1e-9)
 		assert.Equal(t, "unique identifier declared for 1 of 2 components (CPE)", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// cdx mixed valid invalid missing PURL
+	t.Run("cdxMixedValidInvalidMissingPURL", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxThreeCompMixedPURL, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := NTIACompWithUniqID(doc)
+
+		assert.InDelta(t, 10.0*(1.0/3.0), got.Score, 1e-9)
+		assert.Equal(t, "unique identifier declared for 1 of 3 components (PURL)", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 }

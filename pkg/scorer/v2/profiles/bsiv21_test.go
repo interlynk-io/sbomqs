@@ -3309,4 +3309,15 @@ func TestBSIV21CompOtherIdentifiers(t *testing.T) {
 		assert.Equal(t, "1/3 components declare unique identifiers (CPE/SWID/purl)", got.Desc)
 		assert.False(t, got.Ignore)
 	})
+
+	t.Run("cdx mixed valid invalid missing PURL", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxThreeCompMixedPURL, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := BSIV21CompOtherIdentifiers(doc)
+
+		assert.InDelta(t, 10.0*(1.0/3.0), got.Score, 1e-9)
+		assert.Equal(t, "1/3 components declare unique identifiers (CPE/SWID/purl)", got.Desc)
+		assert.False(t, got.Ignore)
+	})
 }

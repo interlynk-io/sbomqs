@@ -514,15 +514,25 @@ func FSCTCompUniqID(doc sbom.Document) catalog.ProfFeatScore {
 		invalidCPECount := lo.CountBy(comps, func(c sbom.GetComponent) bool {
 			return len(c.GetInvalidCpes()) > 0
 		})
+		invalidPURLCount := lo.CountBy(comps, func(c sbom.GetComponent) bool {
+			return len(c.GetInvalidPurls()) > 0
+		})
 
 		desc := fmt.Sprintf(
 			"unique identifier missing for %d components",
 			total-have,
 		)
-		if invalidCPECount > 0 {
+		if invalidCPECount > 0 || invalidPURLCount > 0 {
+			var parts []string
+			if invalidPURLCount > 0 {
+				parts = append(parts, fmt.Sprintf("invalid PURL on %d", invalidPURLCount))
+			}
+			if invalidCPECount > 0 {
+				parts = append(parts, fmt.Sprintf("invalid CPE on %d", invalidCPECount))
+			}
 			desc = fmt.Sprintf(
-				"unique identifier missing for %d components; invalid CPE on %d",
-				total-have, invalidCPECount,
+				"unique identifier missing for %d components; %s",
+				total-have, strings.Join(parts, "; "),
 			)
 		}
 

@@ -144,6 +144,12 @@ func BSIV20CompOtherIdentifiers(_ sbom.Document, comp sbom.GetComponent) (bool, 
 			invalid = append(invalid, fmt.Sprintf("INVALID: %s", s))
 		}
 	}
+	for _, p := range comp.GetInvalidPurls() {
+		s := strings.TrimSpace(p)
+		if s != "" {
+			invalid = append(invalid, fmt.Sprintf("INVALID: %s", s))
+		}
+	}
 	if len(invalid) > 0 {
 		return true, strings.Join(invalid, ", "), nil
 	}

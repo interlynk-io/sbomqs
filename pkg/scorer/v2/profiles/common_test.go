@@ -525,6 +525,37 @@ var cdxThreeCompMixedCPE = []byte(`
 }
 `)
 
+var cdxThreeCompMixedPURL = []byte(`
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:mixed-purl-test",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "comp-valid",
+      "name": "lib-valid",
+      "version": "1.0.0",
+      "purl": "pkg:golang/github.com/example/libvalid@1.0.0"
+    },
+    {
+      "type": "library",
+      "bom-ref": "comp-invalid",
+      "name": "lib-invalid",
+      "version": "2.0.0",
+      "purl": "not-a-purl"
+    },
+    {
+      "type": "library",
+      "bom-ref": "comp-missing",
+      "name": "lib-missing",
+      "version": "3.0.0"
+    }
+  ]
+}
+`)
+
 func spdxDocForCPEs(valid []string, invalid []string, missingCount int) sbom.SpdxDoc {
 	s := commonSpdxSpec()
 	var cs []sbom.GetComponent
@@ -542,6 +573,39 @@ func spdxDocForCPEs(valid []string, invalid []string, missingCount int) sbom.Spd
 		c.Name = "abc"
 		c.Version = "v1.1"
 		c.InvalidCpes = append(c.InvalidCpes, cpeStr)
+		cs = append(cs, c)
+	}
+
+	for i := 0; i < missingCount; i++ {
+		c := sbom.NewComponent()
+		c.Name = "abc"
+		c.Version = "v1.1"
+		cs = append(cs, c)
+	}
+
+	return sbom.SpdxDoc{
+		SpdxSpec: s,
+		Comps:    cs,
+	}
+}
+
+func spdxDocForPURLs(valid []string, invalid []string, missingCount int) sbom.SpdxDoc {
+	s := commonSpdxSpec()
+	var cs []sbom.GetComponent
+
+	for _, purlStr := range valid {
+		c := sbom.NewComponent()
+		c.Name = "abc"
+		c.Version = "v1.1"
+		c.Purls = append(c.Purls, purl.PURL(purlStr))
+		cs = append(cs, c)
+	}
+
+	for _, purlStr := range invalid {
+		c := sbom.NewComponent()
+		c.Name = "abc"
+		c.Version = "v1.1"
+		c.InvalidPurls = append(c.InvalidPurls, purlStr)
 		cs = append(cs, c)
 	}
 
@@ -605,6 +669,60 @@ func Test_CompCPE(t *testing.T) {
 		doc := spdxDocForCPEs(nil, nil, 2)
 
 		got := CompCPE(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "add to 2 components", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+}
+
+func Test_CompPURL(t *testing.T) {
+	t.Run("mixed valid invalid missing", func(t *testing.T) {
+		doc := spdxDocForPURLs(
+			[]string{"pkg:golang/github.com/example/lib@1.0.0"},
+			[]string{"not-a-purl"},
+			1,
+		)
+
+		got := CompPURL(doc)
+
+		assert.InDelta(t, 10.0*(1.0/3.0), got.Score, 1e-9)
+		assert.Equal(t, "fix invalid PURL on 1 component(s)", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("all valid", func(t *testing.T) {
+		doc := spdxDocForPURLs(
+			[]string{"pkg:golang/github.com/example/lib@1.0.0", "pkg:golang/github.com/example/lib2@2.0.0"},
+			nil,
+			0,
+		)
+
+		got := CompPURL(doc)
+
+		assert.InDelta(t, 10.0, got.Score, 1e-9)
+		assert.Equal(t, "complete", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("all invalid", func(t *testing.T) {
+		doc := spdxDocForPURLs(
+			nil,
+			[]string{"not-a-purl", "also-not-a-purl"},
+			0,
+		)
+
+		got := CompPURL(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "fix invalid PURL on 2 component(s)", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	t.Run("all missing", func(t *testing.T) {
+		doc := spdxDocForPURLs(nil, nil, 2)
+
+		got := CompPURL(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
 		assert.Equal(t, "add to 2 components", got.Desc)

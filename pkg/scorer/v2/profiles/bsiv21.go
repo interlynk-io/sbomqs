@@ -433,8 +433,8 @@ func componentScore(valid, total int, fieldLabel string) catalog.ProfFeatScore {
 	}
 }
 
-// componentScoreWithInvalid is like componentScore but adds invalid-CPE hint
-// when no valid identifiers exist but invalid CPEs are present.
+// componentScoreWithInvalid is like componentScore but adds invalid-CPE/PURL hint
+// when no valid identifiers exist but invalid ones are present.
 func componentScoreWithInvalid(valid, total int, fieldLabel string, doc sbom.Document) catalog.ProfFeatScore {
 	if valid == total {
 		return catalog.ProfFeatScore{
@@ -453,10 +453,20 @@ func componentScoreWithInvalid(valid, total int, fieldLabel string, doc sbom.Doc
 	invalidCPECount := lo.CountBy(doc.Components(), func(c sbom.GetComponent) bool {
 		return len(c.GetInvalidCpes()) > 0
 	})
+	invalidPURLCount := lo.CountBy(doc.Components(), func(c sbom.GetComponent) bool {
+		return len(c.GetInvalidPurls()) > 0
+	})
 
 	desc := fmt.Sprintf("no components declare %s", fieldLabel)
-	if invalidCPECount > 0 {
-		desc = fmt.Sprintf("no valid %s; invalid CPE on %d component(s)", fieldLabel, invalidCPECount)
+	if invalidCPECount > 0 || invalidPURLCount > 0 {
+		var parts []string
+		if invalidPURLCount > 0 {
+			parts = append(parts, fmt.Sprintf("invalid PURL on %d component(s)", invalidPURLCount))
+		}
+		if invalidCPECount > 0 {
+			parts = append(parts, fmt.Sprintf("invalid CPE on %d component(s)", invalidCPECount))
+		}
+		desc = fmt.Sprintf("no valid %s; %s", fieldLabel, strings.Join(parts, "; "))
 	}
 
 	return catalog.ProfFeatScore{
