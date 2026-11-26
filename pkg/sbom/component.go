@@ -34,6 +34,9 @@ type GetComponent interface {
 	GetVersion() string
 	// GetCpes returns the Common Platform Enumeration identifiers for the component
 	GetCpes() []cpe.CPE
+	// GetInvalidCpes returns CPE strings that were present but failed validation.
+	// Used by list and score commands to distinguish "missing" from "invalid".
+	GetInvalidCpes() []string
 	// GetPurls returns the Package URL identifiers for the component
 	GetPurls() []purl.PURL
 	// Swhids returns the Software Heritage identifiers for the component
@@ -113,6 +116,7 @@ type Component struct {
 	Name                    string
 	Version                 string
 	Cpes                    []cpe.CPE
+	InvalidCpes             []string
 	Purls                   []purl.PURL
 	Swhid                   []swhid.SWHID
 	OmniID                  []omniborid.OMNIBORID
@@ -174,6 +178,11 @@ func (c Component) GetPurls() []purl.PURL {
 // GetCpes returns the Common Platform Enumeration identifiers for the component
 func (c Component) GetCpes() []cpe.CPE {
 	return c.Cpes
+}
+
+// GetInvalidCpes returns CPE strings that were present but failed validation.
+func (c Component) GetInvalidCpes() []string {
+	return c.InvalidCpes
 }
 
 // Swhids returns the Software Heritage identifiers for the component

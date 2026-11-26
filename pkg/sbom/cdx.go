@@ -595,7 +595,8 @@ func copyC(cdxc *cydx.Component, c *CdxDoc) *Component {
 	ncpe := cpe.NewCPE(cdxc.CPE)
 	if ncpe.Valid() {
 		nc.Cpes = []cpe.CPE{ncpe}
-	} else {
+	} else if cdxc.CPE != "" {
+		nc.InvalidCpes = append(nc.InvalidCpes, cdxc.CPE)
 		c.addToLogs(fmt.Sprintf("cdx base doc component %s at index %d invalid cpes found", cdxc.Name, -1))
 	}
 

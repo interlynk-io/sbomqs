@@ -136,5 +136,17 @@ func BSIV20CompOtherIdentifiers(_ sbom.Document, comp sbom.GetComponent) (bool, 
 	if len(all) > 0 {
 		return true, strings.Join(all, ", "), nil
 	}
+
+	var invalid []string
+	for _, c := range comp.GetInvalidCpes() {
+		s := strings.TrimSpace(c)
+		if s != "" {
+			invalid = append(invalid, fmt.Sprintf("INVALID: %s", s))
+		}
+	}
+	if len(invalid) > 0 {
+		return true, strings.Join(invalid, ", "), nil
+	}
+
 	return false, "missing", nil
 }

@@ -1083,9 +1083,18 @@ func BSIV11CompOtherIdentifiers(doc sbom.Document) catalog.ProfFeatScore {
 	}
 
 	if withData == 0 {
+		invalidCPECount := lo.CountBy(comps, func(c sbom.GetComponent) bool {
+			return len(c.GetInvalidCpes()) > 0
+		})
+
+		desc := "No components declare additional unique identifiers (additional field)."
+		if invalidCPECount > 0 {
+			desc = fmt.Sprintf("No valid unique identifiers; invalid CPE on %d component(s) (additional field).", invalidCPECount)
+		}
+
 		return catalog.ProfFeatScore{
 			Score:  0.0,
-			Desc:   "No components declare additional unique identifiers (additional field).",
+			Desc:   desc,
 			Ignore: true,
 		}
 	}

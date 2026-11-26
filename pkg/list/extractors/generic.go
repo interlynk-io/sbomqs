@@ -231,6 +231,18 @@ func GenericCompUniqIDs(_ sbom.Document, comp sbom.GetComponent) (bool, string, 
 	if len(found) > 0 {
 		return true, strings.Join(found, "; "), nil
 	}
+
+	var invalid []string
+	for _, c := range comp.GetInvalidCpes() {
+		s := strings.TrimSpace(c)
+		if s != "" {
+			invalid = append(invalid, fmt.Sprintf("INVALID: %s", s))
+		}
+	}
+	if len(invalid) > 0 {
+		return true, strings.Join(invalid, "; "), nil
+	}
+
 	return false, "missing (no PURL, CPE, SWHID, SWID, or OmniBOR)", nil
 }
 

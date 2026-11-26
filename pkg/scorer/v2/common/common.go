@@ -23,7 +23,7 @@ import (
 	"strings"
 
 	"github.com/github/go-spdx/v2/spdxexp"
-	"github.com/knqyf263/go-cpe/naming"
+	cpe "github.com/knqyf263/go-cpe/naming"
 	purl "github.com/package-url/packageurl-go"
 
 	"github.com/interlynk-io/sbomqs/v2/pkg/licenses"
@@ -97,10 +97,10 @@ func isValidCPE(s string) bool {
 
 	switch {
 	case strings.HasPrefix(low, "cpe:2.3:"):
-		_, err := naming.UnbindFS(ls)
+		_, err := cpe.UnbindFS(ls)
 		return err == nil
 	case strings.HasPrefix(low, "cpe:/"):
-		_, err := naming.UnbindURI(ls)
+		_, err := cpe.UnbindURI(ls)
 		return err == nil
 	default:
 		return false

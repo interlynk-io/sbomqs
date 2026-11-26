@@ -1585,7 +1585,7 @@ var cdxMultipleCompWithOnePURLAndAnotherCPE = []byte(`
       "type": "library",
       "name": "cel.dev/expr",
       "version": "v0.19.1",
-      "cpe": "cpe:/golang/cel.dev/expr:v0.19.1"
+      "cpe": "cpe:2.3:a:golang:cel.dev_expr:v0.19.1:*:*:*:*:*:*:*"
     }
   ]
 }
@@ -1629,7 +1629,7 @@ var cdxMultipleCompWithOneCPEAndAnotherMissing = []byte(`
       "type": "library",
       "name": "cel.dev/expr",
       "version": "v0.19.1",
-      "cpe": "cpe:/golang/cel.dev/expr:v0.19.1"
+      "cpe": "cpe:2.3:a:golang:cel.dev_expr:v0.19.1:*:*:*:*:*:*:*"
     }
   ]
 }

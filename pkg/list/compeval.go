@@ -74,8 +74,16 @@ func evaluateCompWithCPE(comp sbom.GetComponent) (bool, string, error) {
 		all = append(all, c.String())
 	}
 
+	var invalid []string
+	for _, c := range comp.GetInvalidCpes() {
+		invalid = append(invalid, fmt.Sprintf("INVALID: %s", c))
+	}
+
 	if len(all) > 0 {
 		return true, strings.Join(all, ", "), nil
+	}
+	if len(invalid) > 0 {
+		return true, strings.Join(invalid, ", "), nil
 	}
 	return false, "missing", nil
 }

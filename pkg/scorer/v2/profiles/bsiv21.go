@@ -290,7 +290,7 @@ func BSIV21CompOtherIdentifiers(doc sbom.Document) catalog.ProfFeatScore {
 		return false
 	})
 
-	return componentScore(valid, total, "unique identifiers (CPE/SWID/purl)")
+	return componentScoreWithInvalid(valid, total, "unique identifiers (CPE/SWID/purl)", doc)
 }
 
 // BSIV21CompSecurityTxtURL checks that components have a security.txt URL.
@@ -430,6 +430,38 @@ func componentScore(valid, total int, fieldLabel string) catalog.ProfFeatScore {
 	return catalog.ProfFeatScore{
 		Score: 0.0,
 		Desc:  fmt.Sprintf("no components declare %s", fieldLabel),
+	}
+}
+
+// componentScoreWithInvalid is like componentScore but adds invalid-CPE hint
+// when no valid identifiers exist but invalid CPEs are present.
+func componentScoreWithInvalid(valid, total int, fieldLabel string, doc sbom.Document) catalog.ProfFeatScore {
+	if valid == total {
+		return catalog.ProfFeatScore{
+			Score: 10.0,
+			Desc:  fmt.Sprintf("%s declared for all components", fieldLabel),
+		}
+	}
+
+	if valid > 0 {
+		return catalog.ProfFeatScore{
+			Score: float64(valid) / float64(total) * 10.0,
+			Desc:  fmt.Sprintf("%d/%d components declare %s", valid, total, fieldLabel),
+		}
+	}
+
+	invalidCPECount := lo.CountBy(doc.Components(), func(c sbom.GetComponent) bool {
+		return len(c.GetInvalidCpes()) > 0
+	})
+
+	desc := fmt.Sprintf("no components declare %s", fieldLabel)
+	if invalidCPECount > 0 {
+		desc = fmt.Sprintf("no valid %s; invalid CPE on %d component(s)", fieldLabel, invalidCPECount)
+	}
+
+	return catalog.ProfFeatScore{
+		Score: 0.0,
+		Desc:  desc,
 	}
 }
 

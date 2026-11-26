@@ -480,6 +480,18 @@ func CompCPE(doc sbom.Document) catalog.ProfFeatScore {
 		return commonV2.CompHasAnyCPEs(c)
 	})
 
+	invalid := lo.CountBy(comps, func(c sbom.GetComponent) bool {
+		return !commonV2.CompHasAnyCPEs(c) && len(c.GetInvalidCpes()) > 0
+	})
+
+	if invalid > 0 {
+		return catalog.ProfFeatScore{
+			Score:  formulae.PerComponentScore(have, len(comps)),
+			Desc:   fmt.Sprintf("fix invalid CPE on %d component(s)", invalid),
+			Ignore: false,
+		}
+	}
+
 	return formulae.ScoreProfFull(have, len(comps), false)
 }
 

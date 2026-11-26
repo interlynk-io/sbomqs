@@ -516,6 +516,19 @@ func NTIA2026CompUniqID(doc sbom.Document) catalog.ProfFeatScore {
 		}
 		return false
 	})
+
+	if valid == 0 {
+		invalidCPECount := lo.CountBy(comps, func(c sbom.GetComponent) bool {
+			return len(c.GetInvalidCpes()) > 0
+		})
+		if invalidCPECount > 0 {
+			return catalog.ProfFeatScore{
+				Score: 0.0,
+				Desc:  fmt.Sprintf("no valid unique identifier; invalid CPE on %d component(s)", invalidCPECount),
+			}
+		}
+	}
+
 	return ntia2026ComponentScore(valid, len(comps), "unique identifier")
 }
 

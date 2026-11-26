@@ -249,6 +249,11 @@ func NTIACompWithUniqID(doc sbom.Document) catalog.ProfFeatScore {
 		kinds = append(kinds, "CPE")
 	}
 
+	// Count invalid CPEs (present but malformed)
+	invalidCPECount := lo.CountBy(comps, func(c sbom.GetComponent) bool {
+		return len(c.GetInvalidCpes()) > 0
+	})
+
 	// Description
 	desc := fmt.Sprintf(
 		"unique identifier missing for all %d components",
@@ -276,6 +281,11 @@ func NTIACompWithUniqID(doc sbom.Document) catalog.ProfFeatScore {
 				have, total,
 			)
 		}
+	} else if invalidCPECount > 0 {
+		desc = fmt.Sprintf(
+			"unique identifier missing; invalid CPE on %d component(s)",
+			invalidCPECount,
+		)
 	}
 
 	return catalog.ProfFeatScore{

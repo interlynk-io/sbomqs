@@ -149,6 +149,15 @@ type FakeGetComponent struct {
 	getIDReturnsOnCall map[int]struct {
 		result1 string
 	}
+	GetInvalidCpesStub        func() []string
+	getInvalidCpesMutex       sync.RWMutex
+	getInvalidCpesArgsForCall []struct{}
+	getInvalidCpesReturns     struct {
+		result1 []string
+	}
+	getInvalidCpesReturnsOnCall map[int]struct {
+		result1 []string
+	}
 	GetLicensesStub        func() []licenses.License
 	getLicensesMutex       sync.RWMutex
 	getLicensesArgsForCall []struct{}
@@ -1125,6 +1134,58 @@ func (fake *FakeGetComponent) GetIDReturnsOnCall(i int, result1 string) {
 	}
 	fake.getIDReturnsOnCall[i] = struct {
 		result1 string
+	}{result1}
+}
+
+func (fake *FakeGetComponent) GetInvalidCpes() []string {
+	fake.getInvalidCpesMutex.Lock()
+	ret, specificReturn := fake.getInvalidCpesReturnsOnCall[len(fake.getInvalidCpesArgsForCall)]
+	fake.getInvalidCpesArgsForCall = append(fake.getInvalidCpesArgsForCall, struct{}{})
+	stub := fake.GetInvalidCpesStub
+	fakeReturns := fake.getInvalidCpesReturns
+	fake.recordInvocation("GetInvalidCpes", []interface{}{})
+	fake.getInvalidCpesMutex.Unlock()
+	if stub != nil {
+		return stub()
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeGetComponent) GetInvalidCpesCallCount() int {
+	fake.getInvalidCpesMutex.RLock()
+	defer fake.getInvalidCpesMutex.RUnlock()
+	return len(fake.getInvalidCpesArgsForCall)
+}
+
+func (fake *FakeGetComponent) GetInvalidCpesCalls(stub func() []string) {
+	fake.getInvalidCpesMutex.Lock()
+	defer fake.getInvalidCpesMutex.Unlock()
+	fake.GetInvalidCpesStub = stub
+}
+
+func (fake *FakeGetComponent) GetInvalidCpesReturns(result1 []string) {
+	fake.getInvalidCpesMutex.Lock()
+	defer fake.getInvalidCpesMutex.Unlock()
+	fake.GetInvalidCpesStub = nil
+	fake.getInvalidCpesReturns = struct {
+		result1 []string
+	}{result1}
+}
+
+func (fake *FakeGetComponent) GetInvalidCpesReturnsOnCall(i int, result1 []string) {
+	fake.getInvalidCpesMutex.Lock()
+	defer fake.getInvalidCpesMutex.Unlock()
+	fake.GetInvalidCpesStub = nil
+	if fake.getInvalidCpesReturnsOnCall == nil {
+		fake.getInvalidCpesReturnsOnCall = make(map[int]struct {
+			result1 []string
+		})
+	}
+	fake.getInvalidCpesReturnsOnCall[i] = struct {
+		result1 []string
 	}{result1}
 }
 
