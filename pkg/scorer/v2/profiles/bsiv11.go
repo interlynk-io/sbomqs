@@ -1083,9 +1083,28 @@ func BSIV11CompOtherIdentifiers(doc sbom.Document) catalog.ProfFeatScore {
 	}
 
 	if withData == 0 {
+		invalidCPECount := lo.CountBy(comps, func(c sbom.GetComponent) bool {
+			return len(c.GetInvalidCpes()) > 0
+		})
+		invalidPURLCount := lo.CountBy(comps, func(c sbom.GetComponent) bool {
+			return len(c.GetInvalidPurls()) > 0
+		})
+
+		desc := "No components declare additional unique identifiers (additional field)."
+		if invalidCPECount > 0 || invalidPURLCount > 0 {
+			var parts []string
+			if invalidPURLCount > 0 {
+				parts = append(parts, fmt.Sprintf("invalid PURL on %d component(s)", invalidPURLCount))
+			}
+			if invalidCPECount > 0 {
+				parts = append(parts, fmt.Sprintf("invalid CPE on %d component(s)", invalidCPECount))
+			}
+			desc = fmt.Sprintf("No valid unique identifiers; %s (additional field).", strings.Join(parts, "; "))
+		}
+
 		return catalog.ProfFeatScore{
 			Score:  0.0,
-			Desc:   "No components declare additional unique identifiers (additional field).",
+			Desc:   desc,
 			Ignore: true,
 		}
 	}

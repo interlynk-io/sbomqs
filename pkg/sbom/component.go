@@ -34,8 +34,14 @@ type GetComponent interface {
 	GetVersion() string
 	// GetCpes returns the Common Platform Enumeration identifiers for the component
 	GetCpes() []cpe.CPE
+	// GetInvalidCpes returns CPE strings that were present but failed validation.
+	// Used by list and score commands to distinguish "missing" from "invalid".
+	GetInvalidCpes() []string
 	// GetPurls returns the Package URL identifiers for the component
 	GetPurls() []purl.PURL
+	// GetInvalidPurls returns PURL strings that were present but failed validation.
+	// Used by list and score commands to distinguish "missing" from "invalid".
+	GetInvalidPurls() []string
 	// Swhids returns the Software Heritage identifiers for the component
 	Swhids() []swhid.SWHID
 	// OmniborIDs returns the OmniBOR identifiers for the component
@@ -113,7 +119,9 @@ type Component struct {
 	Name                    string
 	Version                 string
 	Cpes                    []cpe.CPE
+	InvalidCpes             []string
 	Purls                   []purl.PURL
+	InvalidPurls            []string
 	Swhid                   []swhid.SWHID
 	OmniID                  []omniborid.OMNIBORID
 	Swid                    []swid.SWID
@@ -174,6 +182,16 @@ func (c Component) GetPurls() []purl.PURL {
 // GetCpes returns the Common Platform Enumeration identifiers for the component
 func (c Component) GetCpes() []cpe.CPE {
 	return c.Cpes
+}
+
+// GetInvalidCpes returns CPE strings that were present but failed validation.
+func (c Component) GetInvalidCpes() []string {
+	return c.InvalidCpes
+}
+
+// GetInvalidPurls returns PURL strings that were present but failed validation.
+func (c Component) GetInvalidPurls() []string {
+	return c.InvalidPurls
 }
 
 // Swhids returns the Software Heritage identifiers for the component

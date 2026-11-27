@@ -2148,7 +2148,7 @@ func TestFSCTCompUniqueIDs(t *testing.T) {
 		got := FSCTCompUniqID(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "unique identifier missing for 1 components", got.Desc)
+		assert.Equal(t, "unique identifier missing for 1 components; invalid PURL on 1", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2159,7 +2159,7 @@ func TestFSCTCompUniqueIDs(t *testing.T) {
 		got := FSCTCompUniqID(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "unique identifier missing for 1 components", got.Desc)
+		assert.Equal(t, "unique identifier missing for 1 components; invalid PURL on 1", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2181,7 +2181,7 @@ func TestFSCTCompUniqueIDs(t *testing.T) {
 		got := FSCTCompUniqID(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "unique identifier missing for 1 components", got.Desc)
+		assert.Equal(t, "unique identifier missing for 1 components; invalid PURL on 1", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2192,7 +2192,7 @@ func TestFSCTCompUniqueIDs(t *testing.T) {
 		got := FSCTCompUniqID(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "unique identifier missing for 1 components", got.Desc)
+		assert.Equal(t, "unique identifier missing for 1 components; invalid PURL on 1", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2203,7 +2203,7 @@ func TestFSCTCompUniqueIDs(t *testing.T) {
 		got := FSCTCompUniqID(doc)
 
 		assert.InDelta(t, 0.0, got.Score, 1e-9)
-		assert.Equal(t, "unique identifier missing for 1 components", got.Desc)
+		assert.Equal(t, "unique identifier missing for 1 components; invalid PURL on 1", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 
@@ -2502,6 +2502,30 @@ func TestFSCTCompUniqueIDs(t *testing.T) {
 
 		assert.InDelta(t, 10.0, got.Score, 1e-9)
 		assert.Equal(t, "unique identifier declared for all components (PURL, CPE, SWHID, SWID, OmniBOR)", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// 1 valid CPE, 1 invalid CPE, 1 missing CPE
+	t.Run("cdxMixedValidInvalidMissingCPE", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxThreeCompMixedCPE, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompUniqID(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "unique identifier missing for 2 components; invalid CPE on 1", got.Desc)
+		assert.False(t, got.Ignore)
+	})
+
+	// 1 valid PURL, 1 invalid PURL, 1 missing PURL
+	t.Run("cdxMixedValidInvalidMissingPURL", func(t *testing.T) {
+		doc, err := sbom.NewSBOMDocumentFromBytes(ctx, cdxThreeCompMixedPURL, sbom.Signature{})
+		require.NoError(t, err)
+
+		got := FSCTCompUniqID(doc)
+
+		assert.InDelta(t, 0.0, got.Score, 1e-9)
+		assert.Equal(t, "unique identifier missing for 2 components; invalid PURL on 1", got.Desc)
 		assert.False(t, got.Ignore)
 	})
 }

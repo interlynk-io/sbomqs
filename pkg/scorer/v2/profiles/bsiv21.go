@@ -290,7 +290,7 @@ func BSIV21CompOtherIdentifiers(doc sbom.Document) catalog.ProfFeatScore {
 		return false
 	})
 
-	return componentScore(valid, total, "unique identifiers (CPE/SWID/purl)")
+	return componentScoreWithInvalid(valid, total, "unique identifiers (CPE/SWID/purl)", doc)
 }
 
 // BSIV21CompSecurityTxtURL checks that components have a security.txt URL.
@@ -430,6 +430,48 @@ func componentScore(valid, total int, fieldLabel string) catalog.ProfFeatScore {
 	return catalog.ProfFeatScore{
 		Score: 0.0,
 		Desc:  fmt.Sprintf("no components declare %s", fieldLabel),
+	}
+}
+
+// componentScoreWithInvalid is like componentScore but adds invalid-CPE/PURL hint
+// when no valid identifiers exist but invalid ones are present.
+func componentScoreWithInvalid(valid, total int, fieldLabel string, doc sbom.Document) catalog.ProfFeatScore {
+	if valid == total {
+		return catalog.ProfFeatScore{
+			Score: 10.0,
+			Desc:  fmt.Sprintf("%s declared for all components", fieldLabel),
+		}
+	}
+
+	if valid > 0 {
+		return catalog.ProfFeatScore{
+			Score: float64(valid) / float64(total) * 10.0,
+			Desc:  fmt.Sprintf("%d/%d components declare %s", valid, total, fieldLabel),
+		}
+	}
+
+	invalidCPECount := lo.CountBy(doc.Components(), func(c sbom.GetComponent) bool {
+		return len(c.GetInvalidCpes()) > 0
+	})
+	invalidPURLCount := lo.CountBy(doc.Components(), func(c sbom.GetComponent) bool {
+		return len(c.GetInvalidPurls()) > 0
+	})
+
+	desc := fmt.Sprintf("no components declare %s", fieldLabel)
+	if invalidCPECount > 0 || invalidPURLCount > 0 {
+		var parts []string
+		if invalidPURLCount > 0 {
+			parts = append(parts, fmt.Sprintf("invalid PURL on %d component(s)", invalidPURLCount))
+		}
+		if invalidCPECount > 0 {
+			parts = append(parts, fmt.Sprintf("invalid CPE on %d component(s)", invalidCPECount))
+		}
+		desc = fmt.Sprintf("no valid %s; %s", fieldLabel, strings.Join(parts, "; "))
+	}
+
+	return catalog.ProfFeatScore{
+		Score: 0.0,
+		Desc:  desc,
 	}
 }
 

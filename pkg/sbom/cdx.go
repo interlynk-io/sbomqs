@@ -595,14 +595,16 @@ func copyC(cdxc *cydx.Component, c *CdxDoc) *Component {
 	ncpe := cpe.NewCPE(cdxc.CPE)
 	if ncpe.Valid() {
 		nc.Cpes = []cpe.CPE{ncpe}
-	} else {
+	} else if cdxc.CPE != "" {
+		nc.InvalidCpes = append(nc.InvalidCpes, cdxc.CPE)
 		c.addToLogs(fmt.Sprintf("cdx base doc component %s at index %d invalid cpes found", cdxc.Name, -1))
 	}
 
 	npurl := purl.NewPURL(cdxc.PackageURL)
 	if npurl.Valid() {
 		nc.Purls = []purl.PURL{npurl}
-	} else {
+	} else if cdxc.PackageURL != "" {
+		nc.InvalidPurls = append(nc.InvalidPurls, cdxc.PackageURL)
 		c.addToLogs(fmt.Sprintf("cdx base doc component %s at index %d invalid purl found", cdxc.Name, -1))
 	}
 

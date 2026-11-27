@@ -94,6 +94,25 @@ func InterlynkCompLocalID(_ sbom.Document, comp sbom.GetComponent) (bool, string
 			return true, fmt.Sprintf("cpe: %s", s), nil
 		}
 	}
+
+	// Invalid PURLs/CPEs: surface them so user can distinguish "missing" from "malformed"
+	var invalid []string
+	for _, p := range comp.GetInvalidPurls() {
+		s := strings.TrimSpace(p)
+		if s != "" {
+			invalid = append(invalid, fmt.Sprintf("INVALID: %s", s))
+		}
+	}
+	for _, c := range comp.GetInvalidCpes() {
+		s := strings.TrimSpace(c)
+		if s != "" {
+			invalid = append(invalid, fmt.Sprintf("INVALID: %s", s))
+		}
+	}
+	if len(invalid) > 0 {
+		return true, strings.Join(invalid, ", "), nil
+	}
+
 	return false, "missing", nil
 }
 
@@ -578,6 +597,8 @@ func InterlynkSBOMDataLicense(doc sbom.Document) (bool, string, error) {
 // ============================================================
 
 // InterlynkCompPURL reports all valid PURLs for the component.
+// If invalid PURLs are present, they are surfaced as "INVALID: <purl>" so the
+// user can distinguish "missing" from "malformed".
 // Mirrors: profiles.InterCompWithPURL → profiles.CompPURL → common.CompHasAnyPURLs
 func InterlynkCompPURL(_ sbom.Document, comp sbom.GetComponent) (bool, string, error) {
 	var valid []string
@@ -587,13 +608,27 @@ func InterlynkCompPURL(_ sbom.Document, comp sbom.GetComponent) (bool, string, e
 			valid = append(valid, s)
 		}
 	}
+
+	var invalid []string
+	for _, p := range comp.GetInvalidPurls() {
+		s := strings.TrimSpace(p)
+		if s != "" {
+			invalid = append(invalid, fmt.Sprintf("INVALID: %s", s))
+		}
+	}
+
 	if len(valid) > 0 {
 		return true, strings.Join(valid, ", "), nil
+	}
+	if len(invalid) > 0 {
+		return true, strings.Join(invalid, ", "), nil
 	}
 	return false, "missing", nil
 }
 
 // InterlynkCompCPE reports all valid CPEs for the component.
+// If invalid CPEs are present, they are surfaced as "INVALID: <cpe>" so the
+// user can distinguish "missing" from "malformed".
 // Mirrors: profiles.InterCompWithCPE → profiles.CompCPE → common.CompHasAnyCPEs
 func InterlynkCompCPE(_ sbom.Document, comp sbom.GetComponent) (bool, string, error) {
 	var valid []string
@@ -603,8 +638,20 @@ func InterlynkCompCPE(_ sbom.Document, comp sbom.GetComponent) (bool, string, er
 			valid = append(valid, s)
 		}
 	}
+
+	var invalid []string
+	for _, c := range comp.GetInvalidCpes() {
+		s := strings.TrimSpace(c)
+		if s != "" {
+			invalid = append(invalid, fmt.Sprintf("INVALID: %s", s))
+		}
+	}
+
 	if len(valid) > 0 {
 		return true, strings.Join(valid, ", "), nil
+	}
+	if len(invalid) > 0 {
+		return true, strings.Join(invalid, ", "), nil
 	}
 	return false, "missing", nil
 }

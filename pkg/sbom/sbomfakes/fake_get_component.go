@@ -149,6 +149,24 @@ type FakeGetComponent struct {
 	getIDReturnsOnCall map[int]struct {
 		result1 string
 	}
+	GetInvalidCpesStub        func() []string
+	getInvalidCpesMutex       sync.RWMutex
+	getInvalidCpesArgsForCall []struct{}
+	getInvalidCpesReturns     struct {
+		result1 []string
+	}
+	getInvalidCpesReturnsOnCall map[int]struct {
+		result1 []string
+	}
+	GetInvalidPurlsStub        func() []string
+	getInvalidPurlsMutex       sync.RWMutex
+	getInvalidPurlsArgsForCall []struct{}
+	getInvalidPurlsReturns     struct {
+		result1 []string
+	}
+	getInvalidPurlsReturnsOnCall map[int]struct {
+		result1 []string
+	}
 	GetLicensesStub        func() []licenses.License
 	getLicensesMutex       sync.RWMutex
 	getLicensesArgsForCall []struct{}
@@ -1125,6 +1143,110 @@ func (fake *FakeGetComponent) GetIDReturnsOnCall(i int, result1 string) {
 	}
 	fake.getIDReturnsOnCall[i] = struct {
 		result1 string
+	}{result1}
+}
+
+func (fake *FakeGetComponent) GetInvalidCpes() []string {
+	fake.getInvalidCpesMutex.Lock()
+	ret, specificReturn := fake.getInvalidCpesReturnsOnCall[len(fake.getInvalidCpesArgsForCall)]
+	fake.getInvalidCpesArgsForCall = append(fake.getInvalidCpesArgsForCall, struct{}{})
+	stub := fake.GetInvalidCpesStub
+	fakeReturns := fake.getInvalidCpesReturns
+	fake.recordInvocation("GetInvalidCpes", []interface{}{})
+	fake.getInvalidCpesMutex.Unlock()
+	if stub != nil {
+		return stub()
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeGetComponent) GetInvalidCpesCallCount() int {
+	fake.getInvalidCpesMutex.RLock()
+	defer fake.getInvalidCpesMutex.RUnlock()
+	return len(fake.getInvalidCpesArgsForCall)
+}
+
+func (fake *FakeGetComponent) GetInvalidCpesCalls(stub func() []string) {
+	fake.getInvalidCpesMutex.Lock()
+	defer fake.getInvalidCpesMutex.Unlock()
+	fake.GetInvalidCpesStub = stub
+}
+
+func (fake *FakeGetComponent) GetInvalidCpesReturns(result1 []string) {
+	fake.getInvalidCpesMutex.Lock()
+	defer fake.getInvalidCpesMutex.Unlock()
+	fake.GetInvalidCpesStub = nil
+	fake.getInvalidCpesReturns = struct {
+		result1 []string
+	}{result1}
+}
+
+func (fake *FakeGetComponent) GetInvalidCpesReturnsOnCall(i int, result1 []string) {
+	fake.getInvalidCpesMutex.Lock()
+	defer fake.getInvalidCpesMutex.Unlock()
+	fake.GetInvalidCpesStub = nil
+	if fake.getInvalidCpesReturnsOnCall == nil {
+		fake.getInvalidCpesReturnsOnCall = make(map[int]struct {
+			result1 []string
+		})
+	}
+	fake.getInvalidCpesReturnsOnCall[i] = struct {
+		result1 []string
+	}{result1}
+}
+
+func (fake *FakeGetComponent) GetInvalidPurls() []string {
+	fake.getInvalidPurlsMutex.Lock()
+	ret, specificReturn := fake.getInvalidPurlsReturnsOnCall[len(fake.getInvalidPurlsArgsForCall)]
+	fake.getInvalidPurlsArgsForCall = append(fake.getInvalidPurlsArgsForCall, struct{}{})
+	stub := fake.GetInvalidPurlsStub
+	fakeReturns := fake.getInvalidPurlsReturns
+	fake.recordInvocation("GetInvalidPurls", []interface{}{})
+	fake.getInvalidPurlsMutex.Unlock()
+	if stub != nil {
+		return stub()
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeGetComponent) GetInvalidPurlsCallCount() int {
+	fake.getInvalidPurlsMutex.RLock()
+	defer fake.getInvalidPurlsMutex.RUnlock()
+	return len(fake.getInvalidPurlsArgsForCall)
+}
+
+func (fake *FakeGetComponent) GetInvalidPurlsCalls(stub func() []string) {
+	fake.getInvalidPurlsMutex.Lock()
+	defer fake.getInvalidPurlsMutex.Unlock()
+	fake.GetInvalidPurlsStub = stub
+}
+
+func (fake *FakeGetComponent) GetInvalidPurlsReturns(result1 []string) {
+	fake.getInvalidPurlsMutex.Lock()
+	defer fake.getInvalidPurlsMutex.Unlock()
+	fake.GetInvalidPurlsStub = nil
+	fake.getInvalidPurlsReturns = struct {
+		result1 []string
+	}{result1}
+}
+
+func (fake *FakeGetComponent) GetInvalidPurlsReturnsOnCall(i int, result1 []string) {
+	fake.getInvalidPurlsMutex.Lock()
+	defer fake.getInvalidPurlsMutex.Unlock()
+	fake.GetInvalidPurlsStub = nil
+	if fake.getInvalidPurlsReturnsOnCall == nil {
+		fake.getInvalidPurlsReturnsOnCall = make(map[int]struct {
+			result1 []string
+		})
+	}
+	fake.getInvalidPurlsReturnsOnCall[i] = struct {
+		result1 []string
 	}{result1}
 }
 

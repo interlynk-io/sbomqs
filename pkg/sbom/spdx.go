@@ -360,8 +360,8 @@ func (s *SpdxDoc) parseComps() {
 		nc.CopyRight = sc.PackageCopyrightText
 		nc.FileAnalyzed = sc.FilesAnalyzed
 		nc.isReqFieldsPresent = s.pkgRequiredFields(index)
-		nc.Purls = s.purls(index)
-		nc.Cpes = s.cpes(index)
+		nc.Purls, nc.InvalidPurls = s.purls(index)
+		nc.Cpes, nc.InvalidCpes = s.cpes(index)
 		nc.OmniID = nil
 		nc.Swhid = nil
 		nc.Swid = nil
@@ -797,21 +797,23 @@ func (s *SpdxDoc) pkgRequiredFields(index int) bool {
 	return true
 }
 
-func (s *SpdxDoc) purls(index int) []purl.PURL {
+func (s *SpdxDoc) purls(index int) ([]purl.PURL, []string) {
 	pkg := s.doc.Packages[index]
 
 	if len(pkg.PackageExternalReferences) == 0 {
 		s.addToLogs(fmt.Sprintf("spdx doc pkg %s at index %d no purls found", pkg.PackageName, index))
-		return []purl.PURL{}
+		return []purl.PURL{}, nil
 	}
 
 	urls := make([]purl.PURL, 0, len(pkg.PackageExternalReferences))
+	var invalid []string
 	for _, p := range pkg.PackageExternalReferences {
 		if strings.EqualFold(p.RefType, spdx_common.TypePackageManagerPURL) {
 			prl := purl.NewPURL(p.Locator)
 			if prl.Valid() {
 				urls = append(urls, prl)
 			} else {
+				invalid = append(invalid, p.Locator)
 				s.addToLogs(fmt.Sprintf("spdx doc pkg %s at index %d invalid purl found", pkg.PackageName, index))
 			}
 		}
@@ -821,23 +823,25 @@ func (s *SpdxDoc) purls(index int) []purl.PURL {
 		s.addToLogs(fmt.Sprintf("spdx doc pkg %s at index %d no purls found", pkg.PackageName, index))
 	}
 
-	return urls
+	return urls, invalid
 }
 
-func (s *SpdxDoc) cpes(index int) []cpe.CPE {
+func (s *SpdxDoc) cpes(index int) ([]cpe.CPE, []string) {
 	pkg := s.doc.Packages[index]
 	if len(pkg.PackageExternalReferences) == 0 {
 		s.addToLogs(fmt.Sprintf("spdx doc pkg %s at index %d no cpes found", pkg.PackageName, index))
-		return []cpe.CPE{}
+		return []cpe.CPE{}, nil
 	}
 
 	urls := make([]cpe.CPE, 0, len(pkg.PackageExternalReferences))
+	var invalid []string
 	for _, p := range pkg.PackageExternalReferences {
 		if p.RefType == spdx_common.TypeSecurityCPE23Type || p.RefType == spdx_common.TypeSecurityCPE22Type {
 			cpeV := cpe.NewCPE(p.Locator)
 			if cpeV.Valid() {
 				urls = append(urls, cpeV)
 			} else {
+				invalid = append(invalid, p.Locator)
 				s.addToLogs(fmt.Sprintf("spdx doc pkg %s at index %d invalid cpes found", pkg.PackageName, index))
 			}
 		}
@@ -846,7 +850,7 @@ func (s *SpdxDoc) cpes(index int) []cpe.CPE {
 		s.addToLogs(fmt.Sprintf("spdx doc pkg %s at index %d no cpes found", pkg.PackageName, index))
 	}
 
-	return urls
+	return urls, invalid
 }
 
 func (s *SpdxDoc) checksums(index int) []GetChecksum {

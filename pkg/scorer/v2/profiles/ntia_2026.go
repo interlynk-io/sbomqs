@@ -516,6 +516,29 @@ func NTIA2026CompUniqID(doc sbom.Document) catalog.ProfFeatScore {
 		}
 		return false
 	})
+
+	if valid == 0 {
+		invalidCPECount := lo.CountBy(comps, func(c sbom.GetComponent) bool {
+			return len(c.GetInvalidCpes()) > 0
+		})
+		invalidPURLCount := lo.CountBy(comps, func(c sbom.GetComponent) bool {
+			return len(c.GetInvalidPurls()) > 0
+		})
+		if invalidCPECount > 0 || invalidPURLCount > 0 {
+			var parts []string
+			if invalidPURLCount > 0 {
+				parts = append(parts, fmt.Sprintf("invalid PURL on %d component(s)", invalidPURLCount))
+			}
+			if invalidCPECount > 0 {
+				parts = append(parts, fmt.Sprintf("invalid CPE on %d component(s)", invalidCPECount))
+			}
+			return catalog.ProfFeatScore{
+				Score: 0.0,
+				Desc:  fmt.Sprintf("no valid unique identifier; %s", strings.Join(parts, "; ")),
+			}
+		}
+	}
+
 	return ntia2026ComponentScore(valid, len(comps), "unique identifier")
 }
 

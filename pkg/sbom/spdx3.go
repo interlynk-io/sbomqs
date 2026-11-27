@@ -822,7 +822,7 @@ func (s *Spdx3Doc) parseComps() {
 		nc.CopyRight = pkg.CopyrightText
 		nc.FileAnalyzed = true // SPDX 3.0 doesn't have explicit FilesAnalyzed, assume true
 		nc.isReqFieldsPresent = s.pkgRequiredFields(pkg)
-		nc.Purls = s.purls(pkg)
+		nc.Purls, nc.InvalidPurls = s.purls(pkg)
 		nc.Cpes = s.cpes(pkg)
 		nc.Swhid, nc.OmniID = s.contentIdentifiers(pkg)
 		nc.Swid = nil
@@ -1214,8 +1214,9 @@ func (s *Spdx3Doc) pkgRequiredFields(pkg *spdx.Package) bool {
 	return true
 }
 
-func (s *Spdx3Doc) purls(pkg *spdx.Package) []purl.PURL {
+func (s *Spdx3Doc) purls(pkg *spdx.Package) ([]purl.PURL, []string) {
 	urls := make([]purl.PURL, 0)
+	var invalid []string
 	seen := make(map[string]bool)
 
 	// SPDX 3.0 native property: software_packageUrl
@@ -1224,6 +1225,8 @@ func (s *Spdx3Doc) purls(pkg *spdx.Package) []purl.PURL {
 		if prl.Valid() {
 			urls = append(urls, prl)
 			seen[string(prl)] = true
+		} else {
+			invalid = append(invalid, pkg.PackageUrl)
 		}
 	}
 
@@ -1235,10 +1238,12 @@ func (s *Spdx3Doc) purls(pkg *spdx.Package) []purl.PURL {
 			if prl.Valid() && !seen[string(prl)] {
 				urls = append(urls, prl)
 				seen[string(prl)] = true
+			} else if !prl.Valid() {
+				invalid = append(invalid, ei.Identifier)
 			}
 		}
 	}
-	return urls
+	return urls, invalid
 }
 
 func (s *Spdx3Doc) cpes(pkg *spdx.Package) []cpe.CPE {

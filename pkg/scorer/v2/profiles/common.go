@@ -454,6 +454,28 @@ func CompUniqID(doc sbom.Document) catalog.ProfFeatScore {
 		return checkUniqueID(c)
 	})
 
+	invalidCPE := lo.CountBy(comps, func(c sbom.GetComponent) bool {
+		return !commonV2.CompHasAnyCPEs(c) && len(c.GetInvalidCpes()) > 0
+	})
+	invalidPURL := lo.CountBy(comps, func(c sbom.GetComponent) bool {
+		return !commonV2.CompHasAnyPURLs(c) && len(c.GetInvalidPurls()) > 0
+	})
+
+	if invalidCPE > 0 || invalidPURL > 0 {
+		var parts []string
+		if invalidPURL > 0 {
+			parts = append(parts, fmt.Sprintf("fix invalid PURL on %d component(s)", invalidPURL))
+		}
+		if invalidCPE > 0 {
+			parts = append(parts, fmt.Sprintf("fix invalid CPE on %d component(s)", invalidCPE))
+		}
+		return catalog.ProfFeatScore{
+			Score:  formulae.PerComponentScore(have, len(comps)),
+			Desc:   strings.Join(parts, "; "),
+			Ignore: false,
+		}
+	}
+
 	return formulae.ScoreProfFull(have, len(comps), false)
 }
 
@@ -467,6 +489,18 @@ func CompPURL(doc sbom.Document) catalog.ProfFeatScore {
 		return commonV2.CompHasAnyPURLs(c)
 	})
 
+	invalid := lo.CountBy(comps, func(c sbom.GetComponent) bool {
+		return !commonV2.CompHasAnyPURLs(c) && len(c.GetInvalidPurls()) > 0
+	})
+
+	if invalid > 0 {
+		return catalog.ProfFeatScore{
+			Score:  formulae.PerComponentScore(have, len(comps)),
+			Desc:   fmt.Sprintf("fix invalid PURL on %d component(s)", invalid),
+			Ignore: false,
+		}
+	}
+
 	return formulae.ScoreProfFull(have, len(comps), false)
 }
 
@@ -479,6 +513,18 @@ func CompCPE(doc sbom.Document) catalog.ProfFeatScore {
 	have := lo.CountBy(comps, func(c sbom.GetComponent) bool {
 		return commonV2.CompHasAnyCPEs(c)
 	})
+
+	invalid := lo.CountBy(comps, func(c sbom.GetComponent) bool {
+		return !commonV2.CompHasAnyCPEs(c) && len(c.GetInvalidCpes()) > 0
+	})
+
+	if invalid > 0 {
+		return catalog.ProfFeatScore{
+			Score:  formulae.PerComponentScore(have, len(comps)),
+			Desc:   fmt.Sprintf("fix invalid CPE on %d component(s)", invalid),
+			Ignore: false,
+		}
+	}
 
 	return formulae.ScoreProfFull(have, len(comps), false)
 }
