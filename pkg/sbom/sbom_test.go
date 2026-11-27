@@ -17,6 +17,7 @@ package sbom
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"strings"
 	"testing"
 
@@ -680,4 +681,95 @@ func TestDetectSbomFormatReportsYAMLVersion(t *testing.T) {
 	assert.Equal(t, SBOMSpecSPDX, spec)
 	assert.Equal(t, FileFormatYAML, format)
 	assert.Equal(t, FormatVersion("SPDX-2.3"), version)
+}
+
+// TestSPDXOriginatorAuthorExtraction verifies that PackageOriginator is extracted
+// as component author regardless of whether PackageSupplier is present.
+// Regression for: originator without supplier caused empty authors list.
+func TestSPDXOriginatorAuthorExtraction(t *testing.T) {
+	ctx := context.Background()
+
+	baseSPDX := `{
+		"spdxVersion": "SPDX-2.3",
+		"dataLicense": "CC0-1.0",
+		"SPDXID": "SPDXRef-DOCUMENT",
+		"name": "test",
+		"documentNamespace": "https://example.com/test",
+		"creationInfo": {
+			"created": "2025-01-01T00:00:00Z",
+			"creators": ["Tool: t"]
+		},
+		"packages": [{
+			"SPDXID": "SPDXRef-Package",
+			"name": "pkg",
+			"versionInfo": "1.0.0",
+			"downloadLocation": "https://example.com/pkg",
+%s
+			"licenseConcluded": "MIT",
+			"copyrightText": "NOASSERTION"
+		}]
+	}`
+
+	tests := []struct {
+		name            string
+		extraFields     string
+		wantAuthorCount int
+		wantAuthorName  string
+		wantAuthorEmail string
+	}{
+		{
+			name: "originator only (no supplier)",
+			extraFields: `			"originator": "Person: Alice (alice@example.com)",`,
+			wantAuthorCount: 1,
+			wantAuthorName:  "Alice",
+			wantAuthorEmail: "alice@example.com",
+		},
+		{
+			name: "supplier only (no originator)",
+			extraFields: `			"supplier": "Organization: Acme",`,
+			wantAuthorCount: 0,
+			wantAuthorName:  "",
+			wantAuthorEmail: "",
+		},
+		{
+			name: "both originator and supplier present",
+			extraFields: `			"originator": "Person: Alice (alice@example.com)",
+			"supplier": "Organization: Acme",`,
+			wantAuthorCount: 1,
+			wantAuthorName:  "Alice",
+			wantAuthorEmail: "alice@example.com",
+		},
+		{
+			name:            "both originator and supplier absent",
+			extraFields:     "",
+			wantAuthorCount: 0,
+			wantAuthorName:  "",
+			wantAuthorEmail: "",
+		},
+		{
+			name: "originator is NOASSERTION",
+			extraFields: `			"originator": "NOASSERTION",`,
+			wantAuthorCount: 1,
+			wantAuthorName:  "NOASSERTION",
+			wantAuthorEmail: "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			input := []byte(fmt.Sprintf(baseSPDX, tt.extraFields))
+			doc, err := NewSBOMDocumentFromBytes(ctx, input, Signature{})
+			require.NoError(t, err)
+			require.Len(t, doc.Components(), 1)
+
+			comp := doc.Components()[0]
+			authors := comp.Authors()
+			assert.Len(t, authors, tt.wantAuthorCount, "author count mismatch")
+
+			if tt.wantAuthorCount > 0 {
+				assert.Equal(t, tt.wantAuthorName, authors[0].GetName())
+				assert.Equal(t, tt.wantAuthorEmail, authors[0].GetEmail())
+			}
+		})
+	}
 }
