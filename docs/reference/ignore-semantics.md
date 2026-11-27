@@ -1,155 +1,194 @@
 
-# Ignore Semantics in Profile Scoring
+# Ignore Semantics in sbomqs Scoring
 
-This document explains the meaning and correct use of `Ignore` across all three field tiers
-(Required, Additional, Optional) in sbomqs profile evaluation.
+This document explains the meaning and correct use of `Ignore` in both **profile**
+and **comprehensive** scoring. Understanding this distinction is critical: a feature
+marked `ignored: true` is excluded from score calculation, while `ignored: false`
+with score `0` actively penalises the average.
+
+---
 
 ## What Does `Ignore` Mean?
-
-Every profile field evaluation returns a `ProfFeatScore`:
-
-```go
-type ProfFeatScore struct {
-    Score  float64 // 0–10
-    Desc   string
-    Ignore bool    // true = no basis for evaluation; skip this field
-}
-```
 
 `Ignore` is **not** a softness signal. It answers one narrow question:
 
 > **"Does an evaluation context exist for this field?"**
 
-- `Ignore=false` context exists: evaluate and score (pass or fail)
-- `Ignore=true`  no context: skip entirely (field is N/A)
+- `Ignore=false` → context exists: evaluate and score (pass or fail)
+- `Ignore=true`  → no context: skip entirely (field is N/A for this SBOM)
 
-## The Four Situations
+### Score 0 vs Ignore: True — Critical Difference
 
-| Situation | Ignore | Score | Meaning |
-|-----------|--------|-------|---------|
-| Field present and valid | `false` | 10 | Pass |
-| Field present but invalid / wrong value | `false` | 0 | Fail |
-| Field absent (expected but not provided) | `false` | 0 | Fail compliance violation |
-| No context to evaluate | `true` | 0 | N/A skip |
-
-The key distinction is between **"field absent"** and **"no context to evaluate"**. A missing
-field is still evaluatable the tool can look for it, find it absent, and score it as a
-failure. "No context" means the tool has no way to look for the field in the first place.
+| Scenario | Score | Ignore | Effect on average |
+|----------|-------|--------|-------------------|
+| Feature present but invalid | `0.0` | `false` | **Drags the average down** — counts as 0 |
+| Feature not applicable (e.g. SPDX doesn't support signatures) | `0.0` | `true` | **No impact** — excluded entirely |
+| Optional field absent (e.g. no source hash) | `0.0` | `true` | **No impact** — excluded entirely |
 
 > `Ignore=true` should only be set when there is genuinely no basis for evaluation,
 > not when the data is simply missing or wrong.
 
-## Tier-by-Tier Behaviour
+---
 
-### Required Fields (§5.2)
+## Profile Scoring (`ProfFeatScore`)
 
-The standard says: **"MUST always be provided."** There is no condition. The field is
-unconditionally mandatory. So `Ignore` answers only one question:
-**"Can the tool even attempt to evaluate this field?"**
+Profile scoring evaluates compliance against standards such as NTIA, BSI, and
+Interlynk. Every field evaluation returns:
+
+```go
+type ProfFeatScore struct {
+    Score  float64 // 0–10
+    Desc   string
+    Ignore bool    // true = skip this field
+}
+```
+
+### Tier-by-Tier Behaviour
+
+#### Required Fields (§5.2)
+
+"MUST always be provided." `Ignore=true` means the field cannot be evaluated at all
+(tool or format limitation).
 
 | Situation | Ignore | Score | Reason |
 |-----------|--------|-------|--------|
-| SBOM format does not support the field at all (e.g. signature in SPDX) | `true` | 0 | Tool limitation no field to read |
-| Tool interface cannot yet read the field (e.g. `comp_filename`, `comp_executable_property`) | `true` | 0 | Tool limitation interface not extended |
-| No components in SBOM | `false` | 0 | SBOM exists, field is required absence is a failure |
-| Components exist, field absent | `false` | 0 | Supported field simply not provided compliance violation |
-| Components exist, field present but invalid (e.g. `NOASSERTION`, `NONE`) | `false` | 0 | Data present but wrong failure |
-| Components exist, field present and valid | `false` | 10 | Pass |
+| Format does not support the field (e.g. signature in SPDX) | `true` | 0 | No field to read |
+| Tool cannot yet read the field | `true` | 0 | Interface not extended |
+| No components in SBOM | `false` | 0 | Absence = failure |
+| Components exist, field absent | `false` | 0 | Compliance violation |
+| Components exist, field invalid | `false` | 0 | Wrong data |
+| Components exist, field valid | `false` | 10 | Pass |
 
-**Key point:** "Field absent" for a Required field is `Ignore=false, Score=0` a clear
-failure. The SBOM format supports the field and the tool can evaluate it; the creator
-simply did not provide it. That is a compliance violation, not an N/A.
+#### Additional Fields (§5.3)
 
-`Ignore=true` for Required fields is exclusively a **tool limitation** either the SBOM
-format has no corresponding concept, or the sbomqs interface does not yet expose it.
-Current examples:
-
-- `comp_filename` SPDX has `PackageFileName`; CDX has no native field. Interface not
-  yet extended → `Ignore=true`
-- `comp_executable_property`, `comp_archive_property`, `comp_structured_property` no
-  native SPDX/CDX field for any of these → `Ignore=true`
-- `sbom_signature` in SPDX the format has no signature concept → `Ignore=true`
-
-These are fundamentally different from `comp_deployable_hash` where SHA-512 is absent:
-that is `Ignore=false, Score=0` because the format supports checksums and the tool
-can read them the creator just didn't provide SHA-512.
-
-### Additional Fields (§5.3)
-
-The standard says: **"MUST be provided if they exist and their prerequisites are met."**
-The field is conditional: if the prerequisite condition is not met, the field does not
-apply. So `Ignore` tracks whether the prerequisite is satisfied.
+"MUST be provided if they exist and prerequisites are met." `Ignore` tracks whether
+the prerequisite is satisfied.
 
 Example: `comp_concluded_license`
 
 | Situation | Ignore | Score | Reason |
 |-----------|--------|-------|--------|
-| No components in SBOM | `true` | 0 | Component-level field can't be evaluated at all |
-| Components exist, none have any concluded licence field | `true` | 0 | Prerequisite not met data doesn't exist, field doesn't apply |
-| Components exist, concluded licence present but `NOASSERTION` | `false` | 0 | Prerequisite IS met data exists, just invalid |
-| Components exist, concluded licence is a valid SPDX ID | `false` | 10 | Prerequisite met, data valid pass |
+| No components in SBOM | `true` | 0 | No context |
+| Components exist, none have concluded licence | `true` | 0 | Prerequisite not met |
+| Components exist, concluded licence is `NOASSERTION` | `false` | 0 | Prerequisite met, invalid |
+| Components exist, concluded licence is valid | `false` | 10 | Pass |
 
-The prerequisite here is "does concluded licence data exist at all?" When no component
-provides it, the condition is unmet and `Ignore=true`. Once at least one component has
-a concluded licence field even if the value is invalid the condition is met and
-`Ignore=false` (the evaluator must judge it).
+#### Optional Fields (§5.4)
 
-### Optional Fields (§5.4)
+"MAY be provided if they exist." Optional fields never enter the score formula.
+`Ignore` semantics apply for consistency but have no scoring impact.
 
-The standard says: **"MAY be provided if they exist."** Optional fields never enter the
-InterlynkScore formula regardless of `Ignore`. They affect only the `Passed` boolean
-in the reporter summary.
+### Effect on Profile Score
 
-The same `Ignore` semantics apply for consistency:
-
-- No context to evaluate → `Ignore=true`
-- Context exists (data is present or absent) → `Ignore=false`
-
-But since Optional fields are excluded from scoring in all cases, the distinction has
-no effect on the final score.
-
-## Effect on Scoring
-
-The `ComputeInterlynkProfScore` formula handles each tier as follows:
+`ComputeInterlynkProfScore` (line ~301):
 
 ```go
-if res.Required {
-    // Always counted Ignore=true means score 0 is included in denominator
-    total++
+if res.Required && !res.Ignore {
+    total++          // counted only when evaluable
     totalScore += res.Score
 } else if res.Additional && !res.Ignore {
-    // Counted only when prerequisite is met (data exists)
-    total++
+    total++          // counted only when prerequisite met
     totalScore += res.Score
 }
 // Optional: never counted
 ```
 
-This means:
-
 | Tier | Ignore=false | Ignore=true |
 |------|-------------|-------------|
-| Required | counted (score 0–10) | currently also counted (score=0) penalises |
-| Additional | counted (score 0–10) | excluded no penalty |
+| Required | counted (score 0–10) | **excluded** — no penalty |
+| Additional | counted (score 0–10) | excluded — no penalty |
 | Optional | excluded | excluded |
 
-> **Design note:** Whether a Required field with `Ignore=true` (tool limitation) should
-> penalise the score is an open design question. The current implementation includes it
-> at score=0, penalising profiles for fields the tool cannot yet evaluate. An alternative
-> (Option B) would exclude such fields from the denominator and surface them separately
-> in the reporter as "N/A not evaluated."
+---
+
+## Comprehensive Scoring (`ComprFeatScore`)
+
+Comprehensive scoring evaluates SBOM quality across categories (Identification,
+Provenance, Integrity, etc.). Each feature returns:
+
+```go
+type ComprFeatScore struct {
+    Score  float64
+    Desc   string  // e.g. "235/247 have versions"
+    Ignore bool
+}
+```
+
+### Effect on Comprehensive Score
+
+`ComputeCategoryScore` (line ~212) does a **weighted average over non-ignored features
+only**. Ignored features are excluded from **both numerator and denominator** via
+weight renormalisation:
+
+```go
+for _, feature := range features {
+    if feature.Ignored {
+        continue        // excluded from weight sum AND score computation
+    }
+    totalFeatureWeight += feature.Weight
+    // ...
+}
+```
+
+This differs from the **v1 legacy engine** (`AvgScore` in `pkg/scorer/scores.go:43`):
+v1 skips ignored features in the numerator but **still counts them in the denominator**
+(`len(scs)`), so a ignored feature effectively contributes 0. The v2 engine properly
+renormalises weights.
+
+---
+
+## Field Reference: Ignored Features by Format
+
+### SPDX — Fields that return `Ignore: true`
+
+| Feature | Category | Reason |
+|---------|----------|--------|
+| `sbom_supplier` | Provenance | SPDX has no document-level supplier concept. Creator (`createdBy` / `creators`) already covers this role. |
+| `sbom_signature` | Integrity | SPDX specification does not support document-level signatures. |
+| `sbom_completeness_declared` | Completeness | SPDX has no native "completeness declared" field. |
+
+### SPDX 2.3 — Fields that were `Ignore: true` but are now evaluated
+
+| Feature | Change | Reason |
+|---------|--------|--------|
+| `sbom_lifecycle` | `Ignore: true` → `Ignore: false` | SPDX 2.3 extracts lifecycle from `CreationInfo.CreatorComment`. The spec provides a way to capture this via the creator comment, so it is evaluated (not ignored). |
+
+### CycloneDX — Fields that return `Ignore: true`
+
+| Feature | Category | Reason |
+|---------|----------|--------|
+| `sbom_schema_validation` | Structural | Schema validation skipped for non-JSON formats. |
+
+### Fields that return `Ignore: true` for ALL formats (tool limitation)
+
+| Feature | Category | Reason |
+|---------|----------|--------|
+| `comp_filename` | Completeness | CDX has no native filename field; interface not yet extended. |
+| `comp_executable_property` | Completeness | No native SPDX/CDX field for executable flag. |
+| `comp_archive_property` | Completeness | No native SPDX/CDX field for archive flag. |
+| `comp_structured_property` | Completeness | No native SPDX/CDX field for structured flag. |
+
+### Fields that return `Ignore: true` when optional and absent
+
+| Feature | Profile | Condition |
+|---------|---------|-----------|
+| `comp_source_code_hash` | BSI v2.1 | No component declares source code hash |
+| `comp_deployable_hash` | BSI v2.1 | No component declares deployable hash |
+
+---
 
 ## Quick Decision Guide
 
 ```
-Is the field a tool limitation (format has no concept, or interface not yet built)?
+Is the field a tool/format limitation (no corresponding concept)?
     YES → Ignore=true, Score=0
 
 Is this a Required field?
-    No components in SBOM?         → Ignore=false, Score=0   (absence = failure)
-    Components present, field absent?  → Ignore=false, Score=0   (absence = failure)
-    Components present, field invalid? → Ignore=false, Score=0   (invalid = failure)
-    Components present, field valid?   → Ignore=false, Score=10  (pass)
+    Format doesn't support it?         → Ignore=true, Score=0   (tool limitation)
+    No components in SBOM?               → Ignore=false, Score=0  (absence = failure)
+    Components present, field absent?     → Ignore=false, Score=0  (compliance violation)
+    Components present, field invalid?  → Ignore=false, Score=0  (invalid data)
+    Components present, field valid?    → Ignore=false, Score=10 (pass)
 
 Is this an Additional field?
     No components in SBOM?              → Ignore=true, Score=0   (no context)
