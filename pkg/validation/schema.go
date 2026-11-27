@@ -19,11 +19,34 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/dlclark/regexp2"
 	"github.com/santhosh-tekuri/jsonschema/v6"
 )
 
 //go:embed schemas/**
 var schemaFS embed.FS
+
+// dlclarkRegexp wraps dlclark/regexp2 to implement jsonschema.Regexp interface.
+// SPDX 3.0.1 schema uses ECMAScript regex features (negative lookahead)
+// that Go's stdlib regexp (RE2) does not support.
+type dlclarkRegexp regexp2.Regexp
+
+func (re *dlclarkRegexp) MatchString(s string) bool {
+	matched, err := (*regexp2.Regexp)(re).MatchString(s)
+	return err == nil && matched
+}
+
+func (re *dlclarkRegexp) String() string {
+	return (*regexp2.Regexp)(re).String()
+}
+
+func dlclarkCompile(s string) (jsonschema.Regexp, error) {
+	re, err := regexp2.Compile(s, regexp2.ECMAScript)
+	if err != nil {
+		return nil, err
+	}
+	return (*dlclarkRegexp)(re), nil
+}
 
 // schemaPath returns the schema identifier which will be used to compil
 // the JSON schema for a given SBOM spec and version
@@ -73,6 +96,7 @@ func loadSchema(schemaURL string) (*jsonschema.Schema, error) {
 	}
 
 	c := jsonschema.NewCompiler()
+	c.UseRegexpEngine(dlclarkCompile)
 
 	if err := preloadSchemas(c); err != nil {
 		return nil, err

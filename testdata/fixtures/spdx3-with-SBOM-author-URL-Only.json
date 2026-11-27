@@ -1,7 +1,5 @@
 {
-  "@context": [
-    "https://spdx.org/rdf/3.0.1/spdx-context.jsonld"
-  ],
+  "@context": "https://spdx.org/rdf/3.0.1/spdx-context.jsonld",
   "@graph": [
     {
       "type": "SpdxDocument",
@@ -15,7 +13,8 @@
       "namespaceMap": [
         {
           "prefix": "",
-          "namespace": "https://example.com/sboms/"
+          "namespace": "https://example.com/sboms/",
+          "type": "NamespaceMap"
         }
       ]
     },
@@ -25,14 +24,15 @@
       "specVersion": "3.0.1",
       "created": "2024-01-15T10:30:00Z",
       "createdBy": [
-        "_:author"
+        "https://example.org/author"
       ]
     },
     {
       "type": "Person",
-      "@id": "_:author",
       "name": "Test Author",
-      "externalIdentifiers": [
+      "spdxId": "https://example.org/author",
+      "creationInfo": "_:creationinfo",
+      "externalIdentifier": [
         {
           "type": "ExternalIdentifier",
           "externalIdentifierType": "urlScheme",

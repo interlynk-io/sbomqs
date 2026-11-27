@@ -1,11 +1,9 @@
 {
-  "@context": [
-    "https://spdx.org/rdf/3.0.1/spdx-context.jsonld"
-  ],
+  "@context": "https://spdx.org/rdf/3.0.1/spdx-context.jsonld",
   "@graph": [
     {
       "type": "SpdxDocument",
-      "spdxId": "SPDXRef-DOCUMENT",
+      "spdxId": "https://example.org/SPDXRef-DOCUMENT",
       "name": "Test",
       "creationInfo": "_:creationinfo",
       "profileConformance": [
@@ -19,17 +17,19 @@
       "specVersion": "3.0.1",
       "created": "01-01-2026",
       "createdBy": [
-        "_:author"
+        "https://example.org/author"
       ]
     },
     {
       "type": "Person",
-      "@id": "_:author",
       "name": "Test Author",
-      "externalIdentifiers": [
+      "spdxId": "https://example.org/author",
+      "creationInfo": "_:creationinfo",
+      "externalIdentifier": [
         {
           "externalIdentifierType": "email",
-          "identifier": "test@example.com"
+          "identifier": "test@example.com",
+          "type": "ExternalIdentifier"
         }
       ]
     }
